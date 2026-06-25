@@ -38,6 +38,13 @@ export function WorkflowSteps() {
   useEffect(() => {
     if (!agent) return;
     const sub = agent.subscribe({
+      // TEMP debug: log every AG-UI event so we can see how the approval
+      // interrupt / WorkflowInterruptEvent arrives. Remove once HITL renders.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      onEvent: ({ event }: any) => {
+        // eslint-disable-next-line no-console
+        console.log("[ag-ui]", event?.type, event);
+      },
       onRunInitialized: () => {
         setStatus({});
         setRunning(true);
