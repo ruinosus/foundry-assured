@@ -31,13 +31,13 @@ param modelVersion string = '2025-04-14'
 param modelCapacity int = 30
 
 @description('Embedding model used to vectorize the knowledge base corpus.')
-param embeddingModelName string = 'text-embedding-3-large'
+param embeddingModelName string = 'text-embedding-3-small'
 
 @description('Embedding model version.')
 param embeddingModelVersion string = '1'
 
-@description('Embedding deployment capacity (thousands of TPM).')
-param embeddingCapacity int = 50
+@description('Embedding deployment capacity (thousands of TPM). Keep low — quota is tight.')
+param embeddingCapacity int = 20
 
 @description('Azure AI Search SKU. Basic is the floor for agentic retrieval (managed identity).')
 param searchSkuName string = 'basic'

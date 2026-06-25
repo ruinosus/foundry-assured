@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # Used by the knowledge base for embeddings + query planning.
     azure_ai_openai_endpoint: str = ""
     # Embedding deployment used to vectorize the corpus.
-    foundry_embedding_model: str = "text-embedding-3-large"
+    foundry_embedding_model: str = "text-embedding-3-small"
 
     # --- Phase 1: Foundry IQ knowledge base (Azure AI Search) ---
     azure_search_endpoint: str = ""
