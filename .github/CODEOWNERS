@@ -1,14 +1,14 @@
-# Review ownership. Replace @OWNER with your GitHub handle or team (e.g. @org/team).
+# Review ownership. Replace @ruinosus with your GitHub handle or team (e.g. @org/team).
 # Last matching pattern wins.
 
-*                       @OWNER
+*                       @ruinosus
 
-/apps/backend/          @OWNER
-/apps/frontend/         @OWNER
-/apps/hosted-agent/     @OWNER
-/infra/                 @OWNER
-/.github/               @OWNER
+/apps/backend/          @ruinosus
+/apps/frontend/         @ruinosus
+/apps/hosted-agent/     @ruinosus
+/infra/                 @ruinosus
+/.github/               @ruinosus
 
 # Eval policies and agent prompts are sensitive — guard them.
-/apps/backend/eval/             @OWNER
-/apps/backend/app/agents/prompts.py   @OWNER
+/apps/backend/eval/             @ruinosus
+/apps/backend/app/agents/prompts.py   @ruinosus

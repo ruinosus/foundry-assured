@@ -74,10 +74,10 @@ The cloud workflows authenticate to Azure with **OIDC** (no stored credentials).
    az ad app federated-credential create --id <appId> --parameters '{
      "name": "github-main",
      "issuer": "https://token.actions.githubusercontent.com",
-     "subject": "repo:OWNER/REPO:ref:refs/heads/main",
+     "subject": "repo:ruinosus/foundry-helpdesk:ref:refs/heads/main",
      "audiences": ["api://AzureADTokenExchange"]
    }'
-   # repeat with subject "repo:OWNER/REPO:environment:production" for the deploy env
+   # repeat with subject "repo:ruinosus/foundry-helpdesk:environment:production" for the deploy env
    ```
 2. **Repository → Settings → Secrets and variables → Actions:**
    - **Variables:** `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`,
