@@ -1,0 +1,46 @@
+name: Bug report
+description: Something isn't working as expected
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for the report. Please don't include secrets, tokens, or `.env` values.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Backend (apps/backend)
+        - Frontend (apps/frontend)
+        - Hosted agent (apps/hosted-agent)
+        - Infra / azd (infra/)
+        - Eval (apps/backend/eval)
+        - Docs
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you expect vs. what occurred?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. …
+        2. …
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / error output
+      render: shell
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Python/Node versions, agent-framework / azure-ai-projects versions, azd version

@@ -1,0 +1,57 @@
+name: Deploy (Azure Container Apps)
+
+# Manual deploy of the backend + frontend to Azure Container Apps via azd.
+# Does NOT redeploy the hosted agent (that would reset its content-safety guardrail).
+# Requires Azure OIDC + repo vars/secrets — see CONTRIBUTING.md › CI/CD setup.
+on:
+  workflow_dispatch:
+    inputs:
+      services:
+        description: Services to deploy
+        type: choice
+        default: backend web
+        options:
+          - backend web
+          - backend
+          - web
+
+permissions:
+  contents: read
+  id-token: write # Azure OIDC
+
+jobs:
+  deploy:
+    name: azd provision + deploy
+    runs-on: ubuntu-latest
+    environment: production # add reviewers to this GitHub Environment to gate deploys
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: Azure/setup-azd@v2
+      - name: azd login (OIDC)
+        run: >
+          azd auth login --federated-credential-provider github
+          --client-id "$AZURE_CLIENT_ID" --tenant-id "$AZURE_TENANT_ID"
+      - name: Configure deploy env (NEXT_PUBLIC + Entra)
+        run: |
+          azd env new "$AZURE_ENV_NAME" --no-prompt || azd env select "$AZURE_ENV_NAME"
+          azd env set NEXT_PUBLIC_ENTRA_TENANT_ID     "${{ vars.NEXT_PUBLIC_ENTRA_TENANT_ID }}"
+          azd env set NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID "${{ vars.NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID }}"
+          azd env set NEXT_PUBLIC_ENTRA_API_CLIENT_ID "${{ vars.NEXT_PUBLIC_ENTRA_API_CLIENT_ID }}"
+          azd env set ENTRA_TENANT_ID                 "${{ vars.ENTRA_TENANT_ID }}"
+          azd env set ENTRA_API_CLIENT_ID             "${{ vars.ENTRA_API_CLIENT_ID }}"
+          azd env set ENTRA_API_CLIENT_SECRET         "${{ secrets.ENTRA_API_CLIENT_SECRET }}"
+      - name: Provision (idempotent) + deploy selected services
+        run: |
+          azd provision --no-prompt
+          for svc in ${{ inputs.services }}; do
+            azd deploy "$svc" --no-prompt
+          done
+      - name: Web URL
+        if: always()
+        run: azd env get-values | grep -E '^WEB_URL=' >> "$GITHUB_STEP_SUMMARY" || true

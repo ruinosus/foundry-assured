@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Deployment & provisioning
+    url: https://github.com/OWNER/REPO/blob/main/docs/DEPLOYMENT.md
+    about: Setting it up? Start with the provisioning runbook.
+  - name: Security report
+    url: https://github.com/OWNER/REPO/blob/main/SECURITY.md
+    about: Please report vulnerabilities privately (see SECURITY.md).

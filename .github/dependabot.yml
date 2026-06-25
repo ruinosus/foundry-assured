@@ -1,0 +1,37 @@
+version: 2
+updates:
+  # Backend (uv / pyproject)
+  - package-ecosystem: uv
+    directory: /apps/backend
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
+    groups:
+      python:
+        patterns: ["*"]
+
+  # Hosted agent (pip / requirements.txt)
+  - package-ecosystem: pip
+    directory: /apps/hosted-agent
+    schedule: { interval: weekly }
+
+  # Frontend (npm)
+  - package-ecosystem: npm
+    directory: /apps/frontend
+    schedule: { interval: weekly }
+    open-pull-requests-limit: 5
+    groups:
+      npm:
+        patterns: ["*"]
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }
+
+  # Container base images
+  - package-ecosystem: docker
+    directories:
+      - /apps/backend
+      - /apps/frontend
+      - /apps/hosted-agent
+    schedule: { interval: weekly }

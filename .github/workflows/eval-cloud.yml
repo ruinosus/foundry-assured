@@ -1,0 +1,64 @@
+name: Cloud eval (Foundry)
+
+# Scores the agent against the golden set with Foundry's hosted judges
+# (groundedness/relevance/coherence). Weekly + on demand — it calls Azure and
+# costs a few cents, so it is NOT on every PR (the offline policy gate in ci.yml is).
+on:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  workflow_dispatch:
+    inputs:
+      safety:
+        description: Also run the adversarial/jailbreak set
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  id-token: write # Azure OIDC
+
+jobs:
+  eval:
+    name: FoundryEvals on the golden set
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --frozen
+      - name: Run cloud eval
+        env:
+          FOUNDRY_PROJECT_ENDPOINT: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
+          FOUNDRY_MODEL: ${{ vars.FOUNDRY_MODEL }}
+          AZURE_SEARCH_ENDPOINT: ${{ vars.AZURE_SEARCH_ENDPOINT }}
+          AZURE_SEARCH_KNOWLEDGE_BASE: ${{ vars.AZURE_SEARCH_KNOWLEDGE_BASE }}
+        run: |
+          uv run python -m eval.run_eval --cloud
+          if [ "${{ inputs.safety }}" = "true" ]; then
+            uv run python -m eval.run_eval --safety --cloud
+          fi
+      - name: Job summary
+        if: always()
+        run: |
+          echo "### Recent eval runs" >> "$GITHUB_STEP_SUMMARY"
+          echo '```json' >> "$GITHUB_STEP_SUMMARY"
+          tail -n 3 eval/runs.jsonl >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || echo "(no runs)" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload runs.jsonl
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-runs
+          path: apps/backend/eval/runs.jsonl
+          if-no-files-found: ignore

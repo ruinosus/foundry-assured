@@ -1,0 +1,42 @@
+name: Provision knowledge base
+
+# Manual re-ingestion of the runbook corpus into the Foundry IQ knowledge base.
+# Data-plane + idempotent-ish — never on push (it would re-index on every change).
+# Requires Azure OIDC + repo vars — see CONTRIBUTING.md › CI/CD setup.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  ingest:
+    name: Ingest corpus → knowledge base
+    runs-on: ubuntu-latest
+    environment: production
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --frozen
+      - name: Ingest knowledge base
+        env:
+          FOUNDRY_PROJECT_ENDPOINT: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
+          AZURE_SEARCH_ENDPOINT: ${{ vars.AZURE_SEARCH_ENDPOINT }}
+          AZURE_SEARCH_KNOWLEDGE_BASE: ${{ vars.AZURE_SEARCH_KNOWLEDGE_BASE }}
+          AZURE_STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
+          AZURE_STORAGE_RESOURCE_ID: ${{ vars.AZURE_STORAGE_RESOURCE_ID }}
+          AZURE_STORAGE_CONTAINER: ${{ vars.AZURE_STORAGE_CONTAINER }}
+        run: uv run python -m app.knowledge.ingest

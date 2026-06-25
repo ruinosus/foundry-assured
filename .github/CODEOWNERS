@@ -1,0 +1,14 @@
+# Review ownership. Replace @OWNER with your GitHub handle or team (e.g. @org/team).
+# Last matching pattern wins.
+
+*                       @OWNER
+
+/apps/backend/          @OWNER
+/apps/frontend/         @OWNER
+/apps/hosted-agent/     @OWNER
+/infra/                 @OWNER
+/.github/               @OWNER
+
+# Eval policies and agent prompts are sensitive — guard them.
+/apps/backend/eval/             @OWNER
+/apps/backend/app/agents/prompts.py   @OWNER

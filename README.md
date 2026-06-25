@@ -9,8 +9,10 @@ evaluation, and a managed hosted-agent deployment. The frontend is **CopilotKit*
 > **Clone → provision → deploy:** [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) — the
 > step-by-step runbook (infra, Entra app registrations, KB/memory, hosted agent,
 > Container Apps).
-> Full build spec: [`foundry-helpdesk-spec.md`](./foundry-helpdesk-spec.md) ·
-> working rules: [`CLAUDE.md`](./CLAUDE.md)
+> Contributing & CI/CD: [`CONTRIBUTING.md`](./CONTRIBUTING.md) · security:
+> [`SECURITY.md`](./SECURITY.md) · full build spec:
+> [`foundry-helpdesk-spec.md`](./foundry-helpdesk-spec.md) · working rules:
+> [`CLAUDE.md`](./CLAUDE.md)
 
 A developer asks in chat → the system **triages** intent/urgency → **retrieves**
 from the runbook knowledge base → **resolves** with a grounded, cited answer →
