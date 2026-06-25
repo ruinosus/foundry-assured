@@ -1,35 +1,41 @@
-"""The helpdesk workflow: triage -> retrieve -> resolve.
+"""The helpdesk workflow: triage -> retrieve -> resolve, built per request.
 
-A WorkflowBuilder chain of the three agents, exposed over AG-UI as a
-workflow-as-agent. The AG-UI adapter emits StepStarted/StepFinished per executor
-so the frontend can render the steps as they run (the Phase 2 green signal).
+Phase 3 makes the workflow per-request so each run uses the *signed-in user's*
+On-Behalf-Of credential (Foundry, KB, and memory called as that user) and their
+own memory scope. The AG-UI workflow factory receives only a thread_id, so the
+user identity comes from the request-scoped contextvar set by the auth dependency
+(see app.auth).
 
-- start_executor=triage: the chain entry point.
-- intermediate_output_from=[triage, retrieve]: surface their outputs as
-  intermediate workflow events (the steps), not just the final answer.
-- output_from=[resolve]: the final chat answer comes from resolve only.
-
-Phase 4 will add a conditional escalate edge (HITL + create_ticket); Phase 2 is
-the linear chain.
+When auth is disabled, credential_for_request() falls back to
+DefaultAzureCredential and memory_scope() to a dev scope, so this also works
+locally without Entra.
 
 WorkflowBuilder API verified against agent-framework 1.9.0.
 """
 
 from agent_framework import Workflow, WorkflowBuilder
-from azure.identity import DefaultAzureCredential
 
+from app.auth import credential_for_request, memory_scope
 from app.workflow.agents import (
     build_resolve_agent,
     build_retrieve_agent,
     build_triage_agent,
 )
+from app.workflow.memory import build_memory_provider
 
 
-def build_helpdesk_workflow() -> Workflow:
-    credential = DefaultAzureCredential()
+def build_helpdesk_workflow(thread_id: str | None = None) -> Workflow:
+    """Per-request factory: builds the workflow with the current user's identity."""
+    credential = credential_for_request()
+    scope = memory_scope()
+
+    memory = build_memory_provider(credential, scope)
+
     triage = build_triage_agent(credential)
     retrieve = build_retrieve_agent(credential)
-    resolve = build_resolve_agent(credential)
+    resolve = build_resolve_agent(
+        credential, context_providers=[memory] if memory else None
+    )
 
     return (
         WorkflowBuilder(
