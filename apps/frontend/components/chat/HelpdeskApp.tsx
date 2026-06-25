@@ -29,7 +29,8 @@ function Chat({ authorization }: { authorization?: string }) {
       // Renders the CopilotKit Inspector (the floating devtools icon) with the
       // live core wired up. Setting showDevConsole is the supported way — a bare
       // <CopilotKitInspector/> has no core and shows "core not attached".
-      showDevConsole
+      // Dev-only: NODE_ENV is inlined at build, so production bundles ship without it.
+      showDevConsole={process.env.NODE_ENV !== "production"}
     >
       <main
         style={{
