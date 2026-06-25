@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Foundry Helpdesk — Apresentação</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --bg2: #0e1530;
+    --card: rgba(255,255,255,.04);
+    --card-border: rgba(255,255,255,.10);
+    --text: #e8edf7;
+    --muted: #93a0bd;
+    --blue: #3b82f6;
+    --indigo: #6366f1;
+    --violet: #8b5cf6;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --pink: #f472b6;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    scroll-snap-type: y mandatory;
+    overflow-x: hidden;
+  }
+  section.slide {
+    min-height: 100vh;
+    width: 100%;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6vh 8vw;
+    position: relative;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .kicker {
+    font-size: 13px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  h1 { font-size: clamp(34px, 6vw, 76px); line-height: 1.04; letter-spacing: -.02em; }
+  h2 { font-size: clamp(26px, 3.6vw, 44px); line-height: 1.1; letter-spacing: -.01em; margin-bottom: 8px; }
+  .lead { font-size: clamp(16px, 1.6vw, 21px); color: var(--muted); max-width: 60ch; line-height: 1.5; }
+  .grad {
+    background: linear-gradient(100deg, #60a5fa 0%, #818cf8 45%, #c084fc 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .badge {
+    border: 1px solid var(--card-border); background: var(--card);
+    border-radius: 999px; padding: 7px 14px; font-size: 13px; color: var(--muted);
+  }
+  .dot { color: var(--green); }
+
+  /* progress + footer */
+  .footer {
+    position: absolute; bottom: 22px; left: 8vw; right: 8vw;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--muted);
+  }
+  .nav-dots { position: fixed; right: 22px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 50; }
+  .nav-dots a { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.18); display: block; transition: .2s; }
+  .nav-dots a.on { background: linear-gradient(var(--blue), var(--violet)); transform: scale(1.35); }
+
+  /* flow */
+  .flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 34px; }
+  .step {
+    border: 1px solid var(--card-border); background: var(--card);
+    border-radius: 14px; padding: 16px 18px; min-width: 130px;
+  }
+  .step .n { font-size: 12px; color: var(--muted); }
+  .step .t { font-weight: 700; margin-top: 4px; }
+  .step .d { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .arrow { color: var(--muted); font-size: 22px; }
+  .under {
+    margin-top: 18px; display: inline-flex; gap: 10px; align-items: center;
+    font-size: 13px; color: var(--muted);
+    border: 1px dashed var(--card-border); border-radius: 12px; padding: 10px 14px;
+  }
+
+  /* architecture diagram */
+  .arch { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 30px; max-width: 1100px; }
+  .layer {
+    border: 1px solid var(--card-border); border-radius: 16px; padding: 18px 20px;
+    background: var(--card); position: relative;
+  }
+  .layer h3 { font-size: 15px; margin-bottom: 6px; }
+  .layer p { font-size: 13.5px; color: var(--muted); }
+  .layer .tag { position: absolute; right: 16px; top: 16px; font-size: 11px; color: var(--muted); }
+  .conn { text-align: center; color: var(--muted); font-size: 18px; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px){ .split { grid-template-columns: 1fr; } }
+
+  /* cards grid */
+  .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 30px; max-width: 1100px; }
+  @media (max-width: 860px){ .cards { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px){ .cards { grid-template-columns: 1fr; } }
+  .card {
+    border: 1px solid var(--card-border); background: var(--card);
+    border-radius: 16px; padding: 18px; }
+  .card .ico { font-size: 22px; }
+  .card h3 { font-size: 16px; margin: 10px 0 6px; }
+  .card p { font-size: 13px; color: var(--muted); line-height: 1.45; }
+  .card .ph { display:inline-block; margin-top:12px; font-size:11px; font-weight:700; color: var(--green);
+    border:1px solid rgba(52,211,153,.3); background: rgba(52,211,153,.08); padding:3px 9px; border-radius:999px; }
+
+  /* comparison table */
+  .cmp { width: 100%; border-collapse: collapse; margin-top: 26px; max-width: 1000px; font-size: 14px; }
+  .cmp th, .cmp td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--card-border); vertical-align: top; }
+  .cmp thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .cmp .live { color: #93c5fd; font-weight: 700; }
+  .cmp .host { color: #c4b5fd; font-weight: 700; }
+  .cmp td .y { color: var(--green); } .cmp td .n { color: var(--muted); }
+  .callout { margin-top: 22px; border-left: 3px solid var(--violet); background: var(--card);
+    border-radius: 0 12px 12px 0; padding: 14px 18px; font-size: 14px; color: var(--text); max-width: 900px; }
+  .callout b { color: #c4b5fd; }
+
+  ul.clean { list-style: none; margin-top: 22px; display: grid; gap: 12px; max-width: 820px; }
+  ul.clean li { display: flex; gap: 12px; font-size: 15px; color: var(--text); }
+  ul.clean li .mk { color: var(--green); }
+  ul.clean li small { color: var(--muted); }
+
+  .hint { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--muted); z-index: 50; }
+</style>
+</head>
+<body>
+<div class="nav-dots" id="dots"></div>
+<div class="hint">↑ ↓ / espaço para navegar</div>
+
+<div class="deck">
+
+  <!-- 1 — HERO -->
+  <section class="slide" id="s1" style="background:radial-gradient(1200px 600px at 15% 0%, #16224a 0%, var(--bg) 55%);">
+    <div class="kicker">Microsoft Foundry · Showcase</div>
+    <h1>Foundry <span class="grad">Helpdesk</span></h1>
+    <p class="lead" style="margin-top:22px;">
+      Um concierge de suporte de engenharia interno que <b>tria</b>, <b>fundamenta</b> a
+      resposta em runbooks, <b>resolve</b>, <b>escala com aprovação humana</b>, <b>lembra</b> o
+      desenvolvedor — e é continuamente <b>avaliado</b>. Cada pilar do Foundry, validado na prática.
+    </p>
+    <div class="badges">
+      <span class="badge">Agent Framework</span>
+      <span class="badge">AG-UI + CopilotKit</span>
+      <span class="badge">Foundry IQ · Azure AI Search</span>
+      <span class="badge">Entra ID · On-Behalf-Of</span>
+      <span class="badge">Hosted Agent</span>
+      <span class="badge"><span class="dot">●</span> 6 fases verdes</span>
+    </div>
+    <div class="footer"><span>Foundry Helpdesk</span><span>01 / 07</span></div>
+  </section>
+
+  <!-- 2 — O QUE FAZ -->
+  <section class="slide" id="s2">
+    <div class="kicker">O que faz</div>
+    <h2>Pergunte → fundamente → resolva → escale</h2>
+    <p class="lead">Um dev pergunta no chat. O sistema percorre um workflow multi-agente e responde com fontes — abrindo um chamado só com aprovação humana.</p>
+    <div class="flow">
+      <div class="step"><div class="n">1 · Triage</div><div class="t">Classifica</div><div class="d">intenção & urgência</div></div>
+      <span class="arrow">→</span>
+      <div class="step"><div class="n">2 · Retrieve</div><div class="t">Busca no KB</div><div class="d">runbooks (agentic)</div></div>
+      <span class="arrow">→</span>
+      <div class="step"><div class="n">3 · Resolve</div><div class="t">Responde</div><div class="d">fundamentado + cita fonte</div></div>
+      <span class="arrow">→</span>
+      <div class="step"><div class="n">4 · Escalate</div><div class="t">HITL</div><div class="d">aprova → abre ticket</div></div>
+    </div>
+    <div class="under">📊 Tudo <b style="color:var(--text)">avaliado</b> (groundedness + policies) e <b style="color:var(--text)">rastreável</b> (OpenTelemetry → App Insights)</div>
+    <div class="footer"><span>O que faz</span><span>02 / 07</span></div>
+  </section>
+
+  <!-- 3 — ARQUITETURA -->
+  <section class="slide" id="s3">
+    <div class="kicker">Arquitetura</div>
+    <h2>Três camadas · dois modelos de entrega</h2>
+    <div class="arch">
+      <div class="layer">
+        <span class="tag">Next.js 15</span>
+        <h3>① Frontend — CopilotKit</h3>
+        <p>Chat sobre <b>AG-UI (SSE)</b>. Renderiza os passos do workflow, o card de aprovação e o seletor Live ⇄ Hosted. Login Entra (MSAL).</p>
+      </div>
+      <div class="conn">▼ AG-UI · &nbsp; ▼ Responses</div>
+      <div class="split">
+        <div class="layer">
+          <span class="tag">FastAPI · Python</span>
+          <h3>② Backend — workflow multi-agente</h3>
+          <p>triage → retrieve → resolve → escalate. Chama o Foundry <b>on-behalf-of</b> o usuário (OBO), com memória por usuário e aprovação humana.</p>
+        </div>
+        <div class="layer" style="border-color:rgba(139,92,246,.35)">
+          <span class="tag">Agent Service</span>
+          <h3>②′ Hosted agent — gerenciado</h3>
+          <p>O mesmo workflow empacotado como <b>container</b> e servido pelo Foundry (protocolo Responses). Autoescala, idle = custo zero.</p>
+        </div>
+      </div>
+      <div class="conn">▼</div>
+      <div class="layer" style="border-color:rgba(59,130,246,.35)">
+        <span class="tag">Microsoft Foundry</span>
+        <h3>③ Foundry — nuvem</h3>
+        <p>gpt-4.1-mini · Foundry IQ knowledge base (Azure AI Search) · memory store · evaluation · Application Insights (tracing OTEL).</p>
+      </div>
+    </div>
+    <div class="footer"><span>Arquitetura</span><span>03 / 07</span></div>
+  </section>
+
+  <!-- 4 — PILARES -->
+  <section class="slide" id="s4">
+    <div class="kicker">Capacidades — as 6 fases</div>
+    <h2>Cada pilar do Foundry, validado na prática</h2>
+    <div class="cards">
+      <div class="card"><div class="ico">📚</div><h3>Knowledge base</h3><p>Retrieval agêntico (Foundry IQ) sobre o corpus de runbooks. Cita a fonte ou declina fora do corpus.</p><span class="ph">Fase 1 · verde</span></div>
+      <div class="card"><div class="ico">🔀</div><h3>Workflow multi-agente</h3><p>triage → retrieve → resolve → escalate, com os passos transmitidos ao vivo na UI via AG-UI.</p><span class="ph">Fase 2 · verde</span></div>
+      <div class="card"><div class="ico">🧠</div><h3>Memória + Entra OBO</h3><p>Memória por usuário; Foundry/KB chamados <i>como o usuário logado</i> via tokens delegados.</p><span class="ph">Fase 3 · verde</span></div>
+      <div class="card"><div class="ico">✋</div><h3>Human-in-the-loop</h3><p>Escalonar um chamado pausa para aprovação explícita antes de <code>create_ticket</code> disparar.</p><span class="ph">Fase 4 · verde</span></div>
+      <div class="card"><div class="ico">✅</div><h3>Avaliação</h3><p>Gate determinístico de policies + judges do Foundry (groundedness/relevance/coherence), ligados ao portal.</p><span class="ph">Fase 5 · verde</span></div>
+      <div class="card"><div class="ico">🚀</div><h3>Deploy gerenciado</h3><p>O mesmo workflow empacotado como hosted agent no Foundry Agent Service.</p><span class="ph">Fase 6 · verde</span></div>
+    </div>
+    <div class="footer"><span>Capacidades</span><span>04 / 07</span></div>
+  </section>
+
+  <!-- 5 — DOIS MODELOS -->
+  <section class="slide" id="s5">
+    <div class="kicker">Dois modelos de entrega · o mesmo agente</div>
+    <h2>Live workflow &nbsp;⇄&nbsp; Hosted agent</h2>
+    <table class="cmp">
+      <thead><tr><th>Dimensão</th><th class="live">Live workflow (AG-UI)</th><th class="host">Hosted agent (Foundry)</th></tr></thead>
+      <tbody>
+        <tr><td>Protocolo</td><td>AG-UI (SSE, streaming)</td><td>Responses (OpenAI-style)</td></tr>
+        <tr><td>Passos do workflow na tela</td><td><span class="y">✔ sim</span> — triage/retrieve/resolve ao vivo</td><td><span class="n">✘ não</span> — só a resposta final</td></tr>
+        <tr><td>Human-in-the-loop (aprovação)</td><td><span class="y">✔ sim</span> — approval card</td><td><span class="n">✘ não</span> — request→response</td></tr>
+        <tr><td>Identidade</td><td>OBO — chama <i>como o usuário</i></td><td>Identidade própria do agente</td></tr>
+        <tr><td>Memória por usuário</td><td><span class="y">✔ sim</span></td><td><span class="n">✘ não</span> (variante limpa)</td></tr>
+        <tr><td>Onde roda</td><td>Nosso FastAPI (nós hospedamos)</td><td>Foundry gerencia (autoescala, idle=$0)</td></tr>
+        <tr><td>Quem chama</td><td>Nosso app</td><td>Qualquer app/time, por nome</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      O hosted é <b>CÓDIGO num container</b> (seu workflow Python), não um prompt. As respostas
+      diferem um pouco de propósito: ele é uma <b>variante simplificada</b> (sem memória/OBO/HITL) — e
+      LLMs não são determinísticos. <b>A diferença é o ponto:</b> dois jeitos de entregar o mesmo agente.
+    </div>
+    <div class="footer"><span>Modelos de entrega</span><span>05 / 07</span></div>
+  </section>
+
+  <!-- 6 — EVAL -->
+  <section class="slide" id="s6">
+    <div class="kicker">Confiança</div>
+    <h2>Avaliado e rastreável — não “confie em mim”</h2>
+    <ul class="clean">
+      <li><span class="mk">▰</span><div><b>Gate de policies (determinístico)</b> — toda resposta cita uma fonte (ou declina) e nunca vaza segredo. Viola → CI falha (exit ≠ 0).<br><small>LocalEvaluator + @evaluator · self-test prova que o gate pega a violação plantada</small></div></li>
+      <li><span class="mk">▰</span><div><b>Judges do Foundry (LLM-as-judge)</b> — groundedness · relevance · coherence sobre o golden set, com link direto pro relatório no portal.<br><small>FoundryEvals — groundedness 9/9 no último run</small></div></li>
+      <li><span class="mk">▰</span><div><b>Tracing OpenTelemetry</b> — cada interação vai pro Application Insights; scores ligados aos traces.</div></li>
+    </ul>
+    <div class="under" style="margin-top:28px;">🟢 Página <b style="color:var(--text)">/evals</b> no app mostra os runs com os scores e o link pro portal do Foundry</div>
+    <div class="footer"><span>Avaliação</span><span>06 / 07</span></div>
+  </section>
+
+  <!-- 7 — FECHAMENTO -->
+  <section class="slide" id="s7" style="background:radial-gradient(1200px 600px at 85% 100%, #1a1640 0%, var(--bg) 55%);">
+    <div class="kicker">Stack & status</div>
+    <h2 class="grad" style="font-size:clamp(30px,5vw,60px);">Seis fases. Todas verdes.</h2>
+    <p class="lead" style="margin-top:18px;">Da pergunta no chat ao agente gerenciado na nuvem — com avaliação e rastreabilidade em cada passo.</p>
+    <div class="badges" style="margin-top:30px;">
+      <span class="badge">agent-framework</span>
+      <span class="badge">agent-framework-ag-ui</span>
+      <span class="badge">azure-ai-projects</span>
+      <span class="badge">FastAPI · uvicorn</span>
+      <span class="badge">Next.js 15 · CopilotKit v2</span>
+      <span class="badge">MSAL · Entra OBO</span>
+      <span class="badge">Azure Container Apps</span>
+      <span class="badge">azd · Bicep</span>
+      <span class="badge">Foundry Agent Service</span>
+    </div>
+    <p class="lead" style="margin-top:34px; font-size:15px;">
+      Arquitetura <b>swappable</b>: “pergunte → fundamente → resolva → escale” serve qualquer assistente do tipo.
+      Trocar o domínio = trocar o corpus e os prompts.
+    </p>
+    <div class="footer"><span>Foundry Helpdesk</span><span>07 / 07</span></div>
+  </section>
+
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('section.slide'));
+  const dotsWrap = document.getElementById('dots');
+  slides.forEach((s, i) => {
+    const a = document.createElement('a');
+    a.href = '#' + s.id; if (i === 0) a.className = 'on';
+    dotsWrap.appendChild(a);
+  });
+  const dots = Array.from(dotsWrap.children);
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const i = slides.indexOf(e.target);
+        dots.forEach((d, j) => d.classList.toggle('on', j === i));
+      }
+    });
+  }, { threshold: 0.5 });
+  slides.forEach(s => io.observe(s));
+
+  let idx = 0;
+  function go(n) { idx = Math.max(0, Math.min(slides.length - 1, n)); slides[idx].scrollIntoView({ behavior: 'smooth' }); }
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(idx + 1); }
+    if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(idx - 1); }
+    if (e.key === 'Home') go(0);
+    if (e.key === 'End') go(slides.length - 1);
+  });
+  // keep idx in sync when scrolling manually
+  const io2 = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) idx = slides.indexOf(e.target); });
+  }, { threshold: 0.6 });
+  slides.forEach(s => io2.observe(s));
+</script>
+</body>
+</html>

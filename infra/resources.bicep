@@ -48,6 +48,7 @@ param searchLocation string = ''
 var accountName = 'aif-helpdesk-${resourceToken}'
 var projectName = 'helpdesk-concierge'
 var searchName = 'srch-helpdesk-${resourceToken}'
+var registryName = 'acrhelpdesk${resourceToken}'
 var storageName = 'sthelpdesk${resourceToken}'
 var corpusContainerName = 'corpus'
 
@@ -58,6 +59,7 @@ var roleSearchServiceContributor = '7ca78c08-252a-4471-8644-bb5ff32d4ba0' // cre
 var roleSearchIndexDataReader = '1407120a-92aa-4202-b7e9-c0e197c71c8f' // query (retrieve) indexes
 var roleStorageBlobDataReader = '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1' // search MI reads corpus blobs
 var roleStorageBlobDataContributor = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe' // caller uploads corpus blobs
+var roleAcrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d' // project MI pulls the hosted-agent image
 
 var searchRegion = empty(searchLocation) ? location : searchLocation
 
@@ -167,6 +169,62 @@ resource search 'Microsoft.Search/searchServices@2024-06-01-preview' = {
 }
 
 // ---------------------------------------------------------------------------
+// Container registry for the Phase 6 hosted agent image (azd builds + pushes
+// here; Foundry Agent Service pulls from here at deploy time). Public endpoint —
+// private ACR isn't supported for hosted agents.
+// ---------------------------------------------------------------------------
+
+resource registry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
+  name: registryName
+  location: location
+  tags: tags
+  sku: { name: 'Basic' }
+  properties: {
+    adminUserEnabled: false
+    anonymousPullEnabled: false
+  }
+}
+
+// User-assigned identity shared by the Container Apps (backend + web) when
+// publishing to Azure. Pulls images from ACR and (for the backend) calls Foundry
+// + the search KB as itself. Created here so all its RBAC lives with the targets.
+resource appIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
+  name: 'id-helpdesk-app-${resourceToken}'
+  location: location
+  tags: tags
+}
+
+resource appToRegistry 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(registry.id, appIdentity.id, roleAcrPull)
+  scope: registry
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAcrPull)
+    principalId: appIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource appToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(account.id, appIdentity.id, roleAzureAiUser)
+  scope: account
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAzureAiUser)
+    principalId: appIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource appToSearch 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(search.id, appIdentity.id, roleSearchIndexDataReader)
+  scope: search
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchIndexDataReader)
+    principalId: appIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Role assignments (keyless wiring)
 // ---------------------------------------------------------------------------
 
@@ -189,6 +247,18 @@ resource projectToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' =
   scope: account
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAzureAiUser)
+    principalId: project.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Foundry project MI -> pull the hosted-agent image from ACR at runtime
+// (Container Registry Repository Reader / AcrPull). Without it: image_pull_failed.
+resource projectToRegistry 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(registry.id, project.id, roleAcrPull)
+  scope: registry
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAcrPull)
     principalId: project.identity.principalId
     principalType: 'ServicePrincipal'
   }
@@ -265,3 +335,11 @@ output AZURE_SEARCH_KNOWLEDGE_BASE string = 'helpdesk-kb'
 output AZURE_STORAGE_ACCOUNT string = storage.name
 output AZURE_STORAGE_RESOURCE_ID string = storage.id
 output AZURE_STORAGE_CONTAINER string = corpusContainerName
+
+// Consumed by azd (and the agent extension) to build/push the hosted-agent image.
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
+output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
+
+// Shared app identity for the Container Apps (backend + web).
+output APP_IDENTITY_ID string = appIdentity.id
+output APP_IDENTITY_CLIENT_ID string = appIdentity.properties.clientId

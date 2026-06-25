@@ -30,3 +30,8 @@ yarn-error.log*
 .DS_Store
 .idea/
 .vscode/
+
+# Generated / local artifacts
+copilotkit-events-*.json
+apps/backend/eval/runs.jsonl
+apps/backend/data/

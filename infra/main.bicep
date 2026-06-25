@@ -26,6 +26,16 @@ param modelDeploymentName string = 'gpt-4.1-mini'
 @description('Optional region override for Azure AI Search (set AZURE_SEARCH_LOCATION if eastus2 is out of Search capacity). Falls back to location.')
 param searchLocation string = ''
 
+@description('Entra tenant for backend OBO (optional; azd maps ENTRA_TENANT_ID).')
+param entraTenantId string = ''
+
+@description('Backend API app client id for OBO (optional; azd maps ENTRA_API_CLIENT_ID).')
+param entraApiClientId string = ''
+
+@secure()
+@description('Backend API app client secret for OBO (optional; azd maps ENTRA_API_CLIENT_SECRET).')
+param entraApiClientSecret string = ''
+
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var effectiveSearchLocation = empty(searchLocation) ? location : searchLocation
 var tags = { 'azd-env-name': environmentName }
@@ -49,6 +59,31 @@ module resources 'resources.bicep' = {
   }
 }
 
+// Phase 7 (publish) — backend + web on Container Apps. azd builds/pushes the
+// images and deploys them to the apps tagged backend/web in this module.
+module apps 'containerapps.bicep' = {
+  name: 'containerapps'
+  scope: rg
+  params: {
+    location: location
+    tags: tags
+    resourceToken: resourceToken
+    registryName: resources.outputs.AZURE_CONTAINER_REGISTRY_NAME
+    appIdentityId: resources.outputs.APP_IDENTITY_ID
+    appIdentityClientId: resources.outputs.APP_IDENTITY_CLIENT_ID
+    foundryProjectEndpoint: resources.outputs.FOUNDRY_PROJECT_ENDPOINT
+    foundryModel: resources.outputs.FOUNDRY_MODEL
+    azureSearchEndpoint: resources.outputs.AZURE_SEARCH_ENDPOINT
+    azureSearchKnowledgeBase: resources.outputs.AZURE_SEARCH_KNOWLEDGE_BASE
+    entraTenantId: entraTenantId
+    entraApiClientId: entraApiClientId
+    entraApiClientSecret: entraApiClientSecret
+  }
+}
+
+output BACKEND_URL string = apps.outputs.BACKEND_URL
+output WEB_URL string = apps.outputs.WEB_URL
+
 // Surfaced into .azure/<env>/.env by azd — feed these to the backend / ingestion.
 output FOUNDRY_PROJECT_ENDPOINT string = resources.outputs.FOUNDRY_PROJECT_ENDPOINT
 output FOUNDRY_MODEL string = resources.outputs.FOUNDRY_MODEL
@@ -62,3 +97,6 @@ output AZURE_SEARCH_KNOWLEDGE_BASE string = resources.outputs.AZURE_SEARCH_KNOWL
 output AZURE_STORAGE_ACCOUNT string = resources.outputs.AZURE_STORAGE_ACCOUNT
 output AZURE_STORAGE_RESOURCE_ID string = resources.outputs.AZURE_STORAGE_RESOURCE_ID
 output AZURE_STORAGE_CONTAINER string = resources.outputs.AZURE_STORAGE_CONTAINER
+
+output AZURE_CONTAINER_REGISTRY_ENDPOINT string = resources.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
+output AZURE_CONTAINER_REGISTRY_NAME string = resources.outputs.AZURE_CONTAINER_REGISTRY_NAME

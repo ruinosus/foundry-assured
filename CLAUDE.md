@@ -28,7 +28,7 @@ Três camadas. O frontend Next.js conversa com o backend Python via **AG-UI sobr
 
 **O ponto de maior risco — de-riscar primeiro (Fase 2):** expor um **workflow multi-agente** (não um agente único) sobre AG-UI de forma que o frontend receba os **passos intermediários** (triage, retrieval, draft), não só a resposta final. O caminho é *workflow-as-agent*. Valide que os passos chegam ao UI antes de investir no resto.
 
-Estrutura-alvo do repo (ver seção 5 da spec): `backend/app/{agents,workflow,memory,knowledge,tools,server.py,settings.py}`, `backend/eval/{datasets,rubrics,assert,run_eval.py}`, `frontend/app/{api/copilotkit,components}`, `infra/` (bicep/azd).
+Estrutura-alvo do repo (ver seção 5 da spec): `backend/app/{agents,workflow,memory,knowledge,tools,server.py,settings.py}`, `apps/backend/eval/{datasets,rubrics,assert,run_eval.py}`, `frontend/app/{api/copilotkit,components}`, `infra/` (bicep/azd).
 
 ## Regras inegociáveis
 
@@ -54,9 +54,9 @@ Cada fase é independente e testável. Não avança sem o verde.
 
 > Aspiracionais — a estrutura ainda não existe. Rodam a partir das pastas indicadas depois do scaffold.
 
-- Backend (de `backend/`): `uv run uvicorn app.server:app --port 8000 --reload`
-- Frontend (de `frontend/`): `npm run dev` (porta 3000)
-- Eval (de `backend/`): `uv run python eval/run_eval.py`
+- Backend (de `apps/backend/`): `uv run uvicorn app.main:app --port 8000 --reload`
+- Frontend (de `apps/frontend/`): `npm run dev` (porta 3000)
+- Eval (de `apps/backend/`): `uv run python eval/run_eval.py`
 - Provisioning: `azd up`
 
 ## Referências
