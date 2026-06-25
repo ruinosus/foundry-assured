@@ -7,7 +7,13 @@
 // Phase 4.
 
 import { CopilotKitProvider, CopilotChat } from "@copilotkit/react-core/v2";
-import { WorkflowSteps } from "./components/WorkflowSteps";
+import dynamic from "next/dynamic";
+
+// Client-only: WorkflowSteps' useAgent subscription has no agent during SSR.
+const WorkflowSteps = dynamic(
+  () => import("./components/WorkflowSteps").then((m) => m.WorkflowSteps),
+  { ssr: false },
+);
 
 export default function Page() {
   return (
