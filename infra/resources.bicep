@@ -21,6 +21,10 @@ param resourceToken string
 @description('Principal granted data-plane roles (the deploying user). Empty skips assignments.')
 param principalId string = ''
 
+@description('Type of principalId: User for a person (default), ServicePrincipal for CI/CD. ARM rejects a mismatch.')
+param principalType string = 'User'
+var effectivePrincipalType = empty(principalType) ? 'User' : principalType
+
 @description('Chat model deployment name (must match the app FOUNDRY_MODEL).')
 param modelDeploymentName string = 'gpt-4.1-mini'
 
@@ -282,7 +286,7 @@ resource userSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchServiceContributor)
     principalId: principalId
-    principalType: 'User'
+    principalType: effectivePrincipalType
   }
 }
 
@@ -293,7 +297,7 @@ resource userSearchReader 'Microsoft.Authorization/roleAssignments@2022-04-01' =
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchIndexDataReader)
     principalId: principalId
-    principalType: 'User'
+    principalType: effectivePrincipalType
   }
 }
 
@@ -304,7 +308,7 @@ resource userStorageContributor 'Microsoft.Authorization/roleAssignments@2022-04
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageBlobDataContributor)
     principalId: principalId
-    principalType: 'User'
+    principalType: effectivePrincipalType
   }
 }
 
@@ -315,7 +319,7 @@ resource userAiUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAzureAiUser)
     principalId: principalId
-    principalType: 'User'
+    principalType: effectivePrincipalType
   }
 }
 
