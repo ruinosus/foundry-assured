@@ -8,8 +8,8 @@ chat model deployment to extract/summarize memories. FoundryMemoryProvider then
 reads/writes per-user memories scoped by the signed-in user's object id.
 
 API verified against azure-ai-projects 2.2.0: the async AIProjectClient exposes
-`.memory_stores` (BetaMemoryStoresOperations) with create/get; the sync client
-does not.
+`.beta.memory_stores` (BetaMemoryStoresOperations) with create/get; the sync
+client has no memory operations.
 """
 
 import asyncio
@@ -34,13 +34,13 @@ async def main() -> None:
         ) as client,
     ):
         try:
-            existing = await client.memory_stores.get(name)
+            existing = await client.beta.memory_stores.get(name)
             print(f"Memory store '{existing.name}' already exists — nothing to do.")
             return
         except ResourceNotFoundError:
             pass
 
-        store = await client.memory_stores.create(
+        store = await client.beta.memory_stores.create(
             name=name,
             definition=MemoryStoreDefaultDefinition(chat_model=settings.foundry_model),
             description="Helpdesk per-user memory (developer preferences + recurring resolutions).",
