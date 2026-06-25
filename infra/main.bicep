@@ -20,6 +20,9 @@ param location string
 @description('Object ID granted data-plane access. azd sets this from AZURE_PRINCIPAL_ID.')
 param principalId string = ''
 
+@description('Type of principalId: User locally, ServicePrincipal in CI/CD (azd maps AZURE_PRINCIPAL_TYPE).')
+param principalType string = 'User'
+
 @description('Model deployment name, surfaced to the app as FOUNDRY_MODEL.')
 param modelDeploymentName string = 'gpt-4.1-mini'
 
@@ -54,6 +57,7 @@ module resources 'resources.bicep' = {
     tags: tags
     resourceToken: resourceToken
     principalId: principalId
+    principalType: principalType // 'User' locally, 'ServicePrincipal' in CI/CD
     modelDeploymentName: modelDeploymentName
     searchLocation: effectiveSearchLocation // region override for AI Search capacity
   }

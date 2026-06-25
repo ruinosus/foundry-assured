@@ -52,6 +52,10 @@ jobs:
       - name: Configure deploy env (NEXT_PUBLIC + Entra)
         run: |
           azd env new "$AZURE_ENV_NAME" --no-prompt || azd env select "$AZURE_ENV_NAME"
+          # The deployer here is the CI service principal, not a person — so the
+          # deployer data-plane role assignments must use ServicePrincipal, else ARM
+          # rejects them: "UnmatchedPrincipalType ... specified PrincipalType 'User'".
+          azd env set AZURE_PRINCIPAL_TYPE            "ServicePrincipal"
           # AI Search was provisioned in a different region (capacity override). Without
           # this, bicep defaults it to AZURE_LOCATION and the idempotent re-provision
           # fails: "resource already exists in location eastus ... cannot be created in eastus2".
