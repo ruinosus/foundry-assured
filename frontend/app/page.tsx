@@ -1,16 +1,21 @@
 "use client";
 
-// Phase 0: minimal chat that round-trips through the AG-UI agent.
-// The `agent="helpdesk"` prop selects the agent registered in the runtime route.
-// Generative UI for workflow steps / approval cards arrives in later phases.
+// Phase 2: multi-agent workflow with the steps rendered inline as they run.
+// The executor activity renderer turns each triage/retrieve/resolve step into a
+// live card in the chat (in_progress -> completed), then the final answer
+// streams. Generative UI + approval cards for HITL arrive in Phase 4.
 
 import { CopilotKit } from "@copilotkit/react-core";
 import { CopilotChat } from "@copilotkit/react-ui";
-import { WorkflowSteps } from "./components/WorkflowSteps";
+import { executorActivityRenderer } from "./components/ExecutorActivity";
 
 export default function Page() {
   return (
-    <CopilotKit runtimeUrl="/api/copilotkit" agent="helpdesk">
+    <CopilotKit
+      runtimeUrl="/api/copilotkit"
+      agent="helpdesk"
+      renderActivityMessages={[executorActivityRenderer] as never}
+    >
       <main
         style={{
           height: "100vh",
@@ -20,10 +25,9 @@ export default function Page() {
           margin: "0 auto",
         }}
       >
-        <h1 style={{ padding: "16px 24px 4px", fontFamily: "system-ui" }}>
+        <h1 style={{ padding: "16px 24px 8px", fontFamily: "system-ui" }}>
           Helpdesk Concierge
         </h1>
-        <WorkflowSteps />
         <div style={{ flex: 1, minHeight: 0 }} className="copilotkit-chat-host">
           <CopilotChat
             labels={{
