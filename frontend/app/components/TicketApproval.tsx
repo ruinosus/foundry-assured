@@ -68,9 +68,12 @@ export function TicketApproval() {
     const id = pending.id;
     setPending(null);
     try {
+      // The agent-framework AG-UI backend expects resume as a dict
+      // ({ interrupts: [{ id, value }] }), not the @ag-ui/client array form —
+      // that mismatch returned HTTP 422 ("resume should be a dictionary").
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (agent as any).runAgent({
-        resume: [{ interruptId: id, status: "resolved", payload: approved }],
+        resume: { interrupts: [{ id, value: approved }] },
       });
     } finally {
       setBusy(false);
