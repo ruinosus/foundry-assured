@@ -1,21 +1,17 @@
 "use client";
 
-// Phase 2: multi-agent workflow with the steps rendered inline as they run.
-// The executor activity renderer turns each triage/retrieve/resolve step into a
-// live card in the chat (in_progress -> completed), then the final answer
-// streams. Generative UI + approval cards for HITL arrive in Phase 4.
+// Phase 2: multi-agent workflow. The WorkflowSteps panel reads the per-executor
+// activity messages and lights up triage -> retrieve -> resolve as they run;
+// the final grounded answer streams in the chat. Generative UI + approval cards
+// for HITL arrive in Phase 4.
 
 import { CopilotKit } from "@copilotkit/react-core";
 import { CopilotChat } from "@copilotkit/react-ui";
-import { executorActivityRenderer } from "./components/ExecutorActivity";
+import { WorkflowSteps } from "./components/WorkflowSteps";
 
 export default function Page() {
   return (
-    <CopilotKit
-      runtimeUrl="/api/copilotkit"
-      agent="helpdesk"
-      renderActivityMessages={[executorActivityRenderer] as never}
-    >
+    <CopilotKit runtimeUrl="/api/copilotkit" agent="helpdesk">
       <main
         style={{
           height: "100vh",
@@ -28,6 +24,7 @@ export default function Page() {
         <h1 style={{ padding: "16px 24px 8px", fontFamily: "system-ui" }}>
           Helpdesk Concierge
         </h1>
+        <WorkflowSteps />
         <div style={{ flex: 1, minHeight: 0 }} className="copilotkit-chat-host">
           <CopilotChat
             labels={{
