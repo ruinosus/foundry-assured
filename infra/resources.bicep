@@ -181,6 +181,30 @@ resource searchToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   }
 }
 
+// Foundry account MI -> call its own model deployments. The memory store calls
+// the embedding model server-side with the account/project identity, so without
+// this it gets a 401 ("Authentication to the Azure OpenAI resource failed").
+resource accountToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(account.id, account.id, roleCognitiveServicesUser)
+  scope: account
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleCognitiveServicesUser)
+    principalId: account.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Foundry project MI -> same, in case the memory feature uses the project identity.
+resource projectToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(account.id, project.id, roleCognitiveServicesUser)
+  scope: account
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleCognitiveServicesUser)
+    principalId: project.identity.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 // Search MI -> read corpus blobs during ingestion.
 resource searchToStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid(storage.id, search.id, roleStorageBlobDataReader)
