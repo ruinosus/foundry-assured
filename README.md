@@ -1,119 +1,247 @@
 # Foundry Helpdesk
 
-Internal engineering support concierge — a Microsoft Foundry showcase exercising
-workflow, knowledge base, memory, and eval, with a CopilotKit frontend over the
-**AG-UI** protocol. See [`foundry-helpdesk-spec.md`](./foundry-helpdesk-spec.md)
-for the full build spec and [`CLAUDE.md`](./CLAUDE.md) for the working rules.
+An internal engineering support **concierge** — a Microsoft Foundry showcase that
+exercises every Foundry pillar hands-on: a grounded knowledge base, a streamed
+multi-agent workflow, per-user memory, human-in-the-loop approval, offline
+evaluation, and a managed hosted-agent deployment. The frontend is **CopilotKit**
+(Next.js) talking to a Python backend over the **AG-UI** protocol.
 
-## Status
+> **Clone → provision → deploy:** [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) — the
+> step-by-step runbook (infra, Entra app registrations, KB/memory, hosted agent,
+> Container Apps).
+> Full build spec: [`foundry-helpdesk-spec.md`](./foundry-helpdesk-spec.md) ·
+> working rules: [`CLAUDE.md`](./CLAUDE.md)
 
-- **Phase 0** — hello-world over AG-UI. ✅ Round-trip green (CopilotKit → AG-UI → Foundry `gpt-4.1-mini`).
-- **Phase 1** — Foundry IQ knowledge base. Code-complete; grounds answers in a
-  runbook corpus via Azure AI Search agentic retrieval, cites sources, says "I
-  don't know" off-corpus. Green after `azd up` + ingestion (steps below).
+A developer asks in chat → the system **triages** intent/urgency → **retrieves**
+from the runbook knowledge base → **resolves** with a grounded, cited answer →
+**escalates** with human approval when an action is needed → and the whole thing
+is **evaluated** and **traceable**.
 
-The backend falls back to the Phase 0 (ungrounded) behavior when the knowledge
-base env vars are absent, so it always boots.
+## Status — all six phases green
 
-## Layout
+| Phase | Pillar | What it proves |
+| --- | --- | --- |
+| 0 | AG-UI hello-world | message round-trips with streaming |
+| 1 | Foundry IQ knowledge base | answers cite a runbook, decline off-corpus |
+| 2 | Multi-agent workflow | `triage → retrieve → resolve` steps stream to the UI |
+| 3 | Memory + **Entra ID / OBO** | per-user memory, Foundry called *as the signed-in user* |
+| 4 | Human-in-the-loop | ticket escalation pauses for explicit approval before `create_ticket` |
+| 5 | Evaluation | deterministic policy gate + Foundry groundedness/relevance/coherence |
+| 6 | Hosted-agent deploy | same workflow packaged as a managed Foundry hosted agent |
+
+## Architecture
+
+Three layers. The Next.js frontend talks to the Python backend over **AG-UI (SSE)**;
+the backend runs a **multi-agent workflow** against Foundry in the cloud. Phase 6
+adds a second, parallel delivery model: the same workflow packaged as a **managed
+hosted agent** (Responses protocol) on Foundry Agent Service.
 
 ```
-backend/    FastAPI + Agent Framework, AG-UI endpoint at /helpdesk
-  app/knowledge/corpus/   ~12 fake runbook markdowns (the KB corpus)
-  app/knowledge/ingest.py blob upload + knowledge source + knowledge base
-frontend/   Next.js 15 (App Router) + CopilotKit chat
-infra/      Bicep (azd): Foundry + AI Search + Storage + embedding + RBAC
-azure.yaml  azd config (provision-only — no services yet)
+                         ┌─────────────────── Foundry (cloud) ───────────────────┐
+ Browser                 │  gpt-4.1-mini · Foundry IQ KB (Azure AI Search)         │
+   │  CopilotKit         │  memory store · evaluation · App Insights (OTEL)        │
+   ▼                     └─────────▲───────────────────────────▲──────────────────┘
+ Next.js ── /api/copilotkit ──► Backend (FastAPI, AG-UI)        │ Responses
+   │   helpdesk  (AG-UI)        triage→retrieve→resolve→escalate │ (managed)
+   │                           OBO · memory · HITL approval      │
+   └── helpdesk-hosted ──► Backend /helpdesk-hosted (bridge) ──► Hosted agent (Agent Service)
+                           Responses → AG-UI                     triage→retrieve→resolve
+```
+
+**Two ways to consume the same agent** (switchable in the UI):
+
+- **Live workflow (AG-UI)** — the rich experience: intermediate workflow steps
+  stream into the chat, the approval card gates ticket creation, and Foundry is
+  called *on-behalf-of* the signed-in developer (OBO) with per-user memory.
+- **Hosted agent (Foundry)** — the same `triage → retrieve → resolve` workflow,
+  deployed as a managed, autoscaling agent you invoke by name over the Responses
+  API. Request→response (no live steps/HITL — those are inherent to AG-UI), runs
+  under its own platform identity, and costs nothing while idle.
+
+## Repository layout
+
+A monorepo: deployable apps live under `apps/`; infra and docs sit alongside.
+Each app is internally layered (backend: thin routers → services → core;
+frontend: feature-organized components).
+
+```
+apps/
+  backend/                    Python 3.12 · FastAPI · Agent Framework · uv
+    app/
+      main.py                 app wiring: CORS, lifespan, routers, AG-UI /helpdesk
+      core/                   settings.py · auth.py (Entra JWT + OnBehalfOf / OBO)
+      api/                    thin HTTP routers: health · chat (/helpdesk-hosted) · tickets · evals
+      services/               hosted.py — Responses→AG-UI bridge for the hosted agent
+      agents/                 prompts.py (single source of truth) · concierge.py
+      workflow/               graph · agents · escalation · memory · stream_fix (multi-agent)
+      tools/tickets.py        real create_ticket tool + persistence
+      knowledge/              corpus/*.md (~13 runbooks) · ingest.py
+    cli/                      data-plane scripts: provision_memory · provision_guardrail · provision_eval_rule
+    eval/                     Phase 5 — offline harness (run_eval · assertions · datasets · rubrics)
+  frontend/                   Next.js 15 (App Router) · CopilotKit v2 · MSAL
+    app/                      routes only: page (Overview) · chat · tickets · evals · api/* proxies
+    components/{shell,chat,evals,tickets}/   feature-organized (HelpdeskApp, AppShell, …)
+    lib/auth/msal.ts · styles/globals.css
+  hosted-agent/               Phase 6 — hosted-agent container (main · Dockerfile · agent.yaml)
+infra/                        Bicep (azd): Foundry + AI Search + Storage + ACR + Container Apps + RBAC
+scripts/set-deploy-env.sh     copies Entra values from .env into the azd env (for publishing)
+docs/                         DEPLOYMENT.md (provisioning runbook) · presentation.html (slide deck)
+azure.yaml                    azd config — services point at apps/{backend,frontend,hosted-agent}
+.github/workflows/eval-gate.yml   CI: the policy gate self-test
 ```
 
 ## Run locally
 
-### 1. Provision Foundry with azd (required for live replies)
+### 1. Provision Foundry (azd)
 
 ```bash
 azd auth login
 azd up        # prompts for env name + location; provisions everything in infra/
 ```
 
-`azd up` creates a resource group `rg-<env>`, a Foundry account
-`aif-helpdesk-<token>`, the project **`helpdesk-concierge`**, a `gpt-4.1-mini`
-deployment, and grants your user the **Azure AI User** data-plane role (without
-it, inference returns 401). Pick a region where `gpt-4.1-mini` GlobalStandard is
-available (e.g. `eastus2`). Lower `modelCapacity` in `infra/resources.bicep` if
-you hit a quota error.
+Creates `rg-<env>`, the Foundry account + project **`helpdesk-concierge`**, a
+`gpt-4.1-mini` + `text-embedding-3-small` deployment, **Azure AI Search (Basic)**,
+Storage, an **ACR** (for the Phase 6 image), and keyless RBAC. Pick a region where
+`gpt-4.1-mini` GlobalStandard is available; AI Search may need a different region
+(set `AZURE_SEARCH_LOCATION`).
 
-Phase 1 also provisions **Azure AI Search (Basic, ~$0.10/hr)**, a Storage
-account, and a `text-embedding-3-large` deployment, with keyless RBAC. AI Search
-is billed per hour the service exists — run `azd down` when you finish testing to
-stop the meter.
-
-After it finishes, read all outputs into the backend env:
+### 2. Backend + data-plane objects
 
 ```bash
-azd env get-values > /tmp/azd.env   # then copy the values you need into backend/.env
-azd env get-values | grep -E 'FOUNDRY_|AZURE_'
-```
-
-> The Bicep schema is verified against the official Foundry sample
-> (`microsoft-foundry/foundry-samples` `00-basic`), but it has **not** been
-> compile-checked locally (no bicep CLI in the dev box). If `azd up` surfaces a
-> Bicep error, that's the place to look first.
->
-> **Endpoint form:** `FOUNDRY_PROJECT_ENDPOINT` is emitted as
-> `https://<account>.services.ai.azure.com/api/projects/<project>`. If
-> `FoundryChatClient` rejects it at runtime, try the account-only endpoint from
-> the `AZURE_AI_ACCOUNT_ENDPOINT` output instead.
-
-### 2. Backend env + knowledge base ingestion
-
-```bash
-cd backend
-cp .env.example .env          # fill all values from `azd env get-values`
-az login                      # identity that received the RBAC roles
-
-# One-time data-plane objects (not provisioned by Bicep — same pattern for both):
+cd apps/backend
+cp .env.example .env                       # fill from `azd env get-values`
+az login
 uv run python -m app.knowledge.ingest      # build the Foundry IQ knowledge base
-uv run python -m app.memory_provision      # create the Foundry memory store
+uv run python -m cli.provision_memory      # create the memory store
+uv run uvicorn app.main:app --port 8000 --reload
 ```
 
-Ingestion uploads the corpus to blob, creates the blob knowledge source (Azure
-AI Search auto-chunks + embeds it), and creates the knowledge base. Indexing
-takes a few minutes; the script polls until it settles. The memory store is a
-Foundry data-plane object the per-user memory reads/writes into.
-
-```bash
-uv run uvicorn app.server:app --port 8000 --reload
-```
-
-Auth is always `DefaultAzureCredential` — `az login` / `azd auth login`, no keys.
+Knowledge base and memory store are **data-plane** objects created by scripts (not
+Bicep) — Bicep is control-plane only. Auth is always `DefaultAzureCredential`.
 
 ### 3. Frontend
 
 ```bash
-cd frontend
-cp .env.example .env.local
+cd apps/frontend
+cp .env.example .env.local                 # NEXT_PUBLIC_ENTRA_* for Entra sign-in
 npm install
-npm run dev                   # http://localhost:3000
+npm run dev                                # http://localhost:3000
 ```
 
-Open http://localhost:3000 and send a message — it round-trips
-CopilotKit → `/api/copilotkit` → AG-UI (`:8000/helpdesk`) → Foundry.
+- **`/`** — Overview (hero + the six capability cards).
+- **`/chat`** — the concierge. Toggle **Live workflow** (AG-UI: steps, approval,
+  OBO, memory) ⇄ **Hosted agent** (the deployed Foundry agent).
+- **`/evals`** — recorded eval runs with direct links to the Foundry portal report.
 
-## Acceptance
+### Entra ID (OBO) sign-in
 
-**Phase 0**
-- 🟢 message round-trips with streaming visible in the CopilotKit chat.
-- 🔴 CORS blocking, or `DefaultAzureCredential` failing locally.
+When `NEXT_PUBLIC_ENTRA_*` are set, the chat gates behind Microsoft sign-in and
+forwards the user's token; the backend does the On-Behalf-Of exchange and calls
+Foundry/KB/memory **as the user**. Two app registrations: a SPA (`redirect
+http://localhost:3000`) and an API (`scope access_as_user`, `requestedAccessToken
+Version: 2`). Unset → falls back to `DefaultAzureCredential` so it still boots.
 
-**Phase 1** (ask about a runbook, e.g. *"VPN keeps dropping on my new laptop"*)
-- 🟢 the answer cites a real corpus document; an off-corpus question (e.g.
-  *"what's the capital of France?"*) returns "I don't know" instead of guessing.
-- 🔴 empty retrieval, or an answer with no citation.
-
-## Tear down (stop the cost)
+## Evaluation (Phase 5)
 
 ```bash
-azd down --purge     # deletes the resource group incl. AI Search (the hourly cost)
+cd apps/backend
+uv run python -m eval.run_eval              # local policy gate over real agent outputs
+uv run python -m eval.run_eval --cloud      # + Foundry groundedness/relevance/coherence (portal link)
+uv run python -m eval.run_eval --self-test  # prove the gate catches a planted violation (offline)
 ```
 
-Next: Phase 2 (workflow + streaming of intermediate steps). See the spec's phase plan.
+The **LocalEvaluator** policies (every answer cites a runbook or declines; never
+leak a secret) are the hard CI gate — a violation exits non-zero. **FoundryEvals**
+adds cloud LLM-judge scores, viewable per-run in the Foundry portal. CI runs the
+offline `--self-test` (`.github/workflows/eval-gate.yml`). See
+[`apps/backend/eval/README.md`](./backend/eval/README.md).
+
+## Hosted agent (Phase 6)
+
+The workflow packaged as a managed Foundry hosted agent (Responses protocol),
+deployed via the Azure-recommended `azd ai agent` path:
+
+```bash
+# one-time: the azure.yaml already declares the helpdesk-concierge agent service
+azd env set AZURE_AI_PROJECT_ID "<project ARM id .../projects/helpdesk-concierge>"
+azd deploy helpdesk-concierge               # remote build → ACR → create agent version → active
+azd ai agent show helpdesk-concierge        # status + endpoint + portal playground
+azd ai agent invoke helpdesk-concierge "How do I roll back a bad deploy?"
+```
+
+> **Post-deploy RBAC** (the agent gets its own identity at deploy time, so it
+> can't be pre-assigned in Bicep): grant the agent's *Instance Identity Principal
+> ID* (from `azd ai agent show`) **Azure AI User** on the account and **Search
+> Index Data Reader** on the search service, or it returns 403 at runtime.
+
+## Safety & continuous evaluation (Foundry add-ons)
+
+Beyond the offline harness, two data-plane scripts wire up Foundry's safety and
+online-eval surfaces on the deployed agent (run after `azd deploy`):
+
+```bash
+# Adversarial / jailbreak eval (offline): refuse-or-ground gate + Foundry safety judges
+uv run python -m eval.run_eval --safety [--cloud]
+
+# Content Safety guardrail: screen every prompt + response at runtime (default RAI policy)
+uv run python -m cli.provision_guardrail
+
+# Continuous (online) evaluation: score the agent's LIVE responses against an eval
+uv run python -m cli.provision_eval_rule --eval-id eval_xxx     # eval_xxx from a --cloud run's portal URL
+```
+
+The `--safety` run shows many jailbreaks are stopped by Azure's content + jailbreak
+filter *before* the model (🛡️). `guardrail_provision` adds an agent-level RAI
+guardrail; `eval_rule_provision` registers a rule that scores every `RESPONSE_COMPLETED`
+and links the score to its trace in the Foundry Control Plane.
+
+## Publish backend + frontend (Azure Container Apps)
+
+Both apps ship as containers to Azure Container Apps, built/pushed by azd. The
+infra (`infra/containerapps.bicep`) adds a Container Apps environment + Log
+Analytics + the two apps, all running as a shared managed identity (ACR pull, and
+— for the backend — Foundry + search access). The apps find each other by FQDN,
+so no manual URL wiring.
+
+```bash
+# 1. Browser-baked values (NEXT_PUBLIC_* are compiled into the bundle at image
+#    build) + the backend OBO secret — set them in the azd env first:
+azd env set NEXT_PUBLIC_ENTRA_TENANT_ID    <tenant-id>
+azd env set NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID <spa-client-id>
+azd env set NEXT_PUBLIC_ENTRA_API_CLIENT_ID <api-client-id>
+azd env set ENTRA_TENANT_ID                 <tenant-id>
+azd env set ENTRA_API_CLIENT_ID             <api-client-id>
+azd env set ENTRA_API_CLIENT_SECRET         <api-secret>     # → container app secret
+
+# 2. Provision the Container Apps + build/push/deploy both images:
+azd up                       # or: azd provision && azd deploy backend && azd deploy web
+
+# 3. Register the web app's URL as an Entra SPA redirect URI (one-time):
+azd env get-values | grep WEB_URL
+#    add  https://<web-fqdn>/  to the SPA app registration → Authentication → redirect URIs
+```
+
+The backend's `FRONTEND_ORIGIN` (CORS) and the web's `AGUI_URL` / `HOSTED_AGUI_URL`
+/ `BACKEND_URL` are wired to each other's FQDN by Bicep. Images build remotely in
+ACR (`remoteBuild: true`), so no local Docker/amd64 step is needed.
+
+## Cost & teardown
+
+| Resource | Cost | Note |
+| --- | --- | --- |
+| Azure AI Search (Basic) | ~$0.10/hr | billed while it exists |
+| ACR (Basic) | ~$5/mo | holds the hosted-agent image |
+| Hosted agent compute | **$0 idle** | deprovisions after 15 min inactivity |
+| Models | per-token | |
+
+```bash
+azd ai agent delete helpdesk-concierge   # remove just the hosted agent
+azd down --purge                         # delete the whole resource group (stops AI Search)
+```
+
+## References
+
+- Agent Framework evaluation — learn.microsoft.com/agent-framework/agents/evaluation
+- Deploy a hosted agent — learn.microsoft.com/azure/foundry/agents/how-to/deploy-hosted-agent
+- agent-framework hosting samples — github.com/microsoft/agent-framework `python/samples/04-hosting/foundry-hosted-agents`
+- AG-UI ↔ Agent Framework — learn.microsoft.com/agent-framework/integrations/ag-ui/

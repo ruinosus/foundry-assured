@@ -1,10 +1,43 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
-#
-# azd configuration — Foundry Helpdesk.
-#
-# Provision-only for Phase 0: `azd up` runs infra/ (Foundry account + project +
-# gpt-4.1-mini + data-plane role). Backend/frontend run locally (see README), so
-# no services are declared yet — container hosting arrives in Phase 6.
+
 name: foundry-helpdesk
 metadata:
-  template: foundry-helpdesk@0.1.0
+    template: foundry-helpdesk@0.1.0
+services:
+    # Phase 6 — the workflow as a managed Foundry hosted agent.
+    helpdesk-concierge:
+        project: apps/hosted-agent
+        host: azure.ai.agent
+        language: docker
+        docker:
+            remoteBuild: true
+        config:
+            container:
+                resources:
+                    cpu: "0.5"
+                    memory: 1Gi
+            startupCommand: python main.py
+
+    # Phase 7 (publish) — backend (FastAPI/AG-UI) on Container Apps.
+    backend:
+        project: apps/backend
+        host: containerapp
+        language: docker
+        docker:
+            path: Dockerfile
+            remoteBuild: true
+
+    # Phase 7 (publish) — frontend (Next.js) on Container Apps. NEXT_PUBLIC_* are
+    # baked into the browser bundle at image-build time, so they're passed as
+    # build args (set them in the azd env first).
+    web:
+        project: apps/frontend
+        host: containerapp
+        language: docker
+        docker:
+            path: Dockerfile
+            remoteBuild: true
+            buildArgs:
+                - "NEXT_PUBLIC_ENTRA_TENANT_ID=${NEXT_PUBLIC_ENTRA_TENANT_ID}"
+                - "NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID=${NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID}"
+                - "NEXT_PUBLIC_ENTRA_API_CLIENT_ID=${NEXT_PUBLIC_ENTRA_API_CLIENT_ID}"
