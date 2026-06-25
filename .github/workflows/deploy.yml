@@ -39,6 +39,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: Azure/setup-azd@v2
+      - name: Install azd Foundry agents extension
+        # azure.yaml declares the hosted agent (host: azure.ai.agent). azd needs the
+        # azure.ai.agents extension just to PARSE that service — without it, even
+        # `azd provision` (backend/web only) aborts with "unsupported host". The
+        # fresh runner has no extensions; install is idempotent + GA (no alpha flag).
+        run: azd extension install azure.ai.agents
       - name: azd login (OIDC)
         run: >
           azd auth login --federated-credential-provider github
