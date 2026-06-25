@@ -15,6 +15,7 @@ from agent_framework.foundry import FoundryChatClient
 from azure.core.credentials import TokenCredential
 
 from app.settings import settings
+from app.tools.tickets import create_ticket
 
 
 def _client(credential: TokenCredential) -> FoundryChatClient:
@@ -71,7 +72,11 @@ RESOLVE_INSTRUCTIONS = (
     "the source document title(s) for every claim. If the retrieve step returned "
     "'NO_MATCH' or nothing relevant, say you don't know instead of guessing — never "
     "invent runbooks, sources, or steps. Use the developer's remembered preferences "
-    "(e.g. their OS or stack) to tailor the steps when relevant."
+    "(e.g. their OS or stack) to tailor the steps when relevant.\n"
+    "If the issue needs action beyond the runbooks — the developer asks to open a "
+    "ticket, or it can't be self-resolved and must be escalated — call the "
+    "create_ticket tool with a concise summary. Never claim a ticket was opened "
+    "unless you actually called create_ticket."
 )
 
 
@@ -80,9 +85,11 @@ def build_resolve_agent(
 ) -> Agent:
     # The memory provider (when present) is attached here so it reads the dev's
     # preferences/past resolutions before resolving and stores the resolution after.
+    # create_ticket is approval-gated (HITL): calling it pauses for human approval.
     return _client(credential).as_agent(
         name="resolve",
-        description="Writes the final grounded, cited answer.",
+        description="Writes the final grounded, cited answer; can open a ticket (with approval).",
         instructions=RESOLVE_INSTRUCTIONS,
+        tools=[create_ticket],
         context_providers=context_providers or None,
     )

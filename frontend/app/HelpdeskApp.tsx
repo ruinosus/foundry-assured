@@ -13,6 +13,7 @@ import {
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { apiScopes, authConfigured, msalInstance } from "./auth/msal";
+import { TicketApproval } from "./components/TicketApproval";
 
 const WorkflowSteps = dynamic(
   () => import("./components/WorkflowSteps").then((m) => m.WorkflowSteps),
@@ -38,6 +39,7 @@ function Chat({ authorization }: { authorization?: string }) {
           Helpdesk Concierge
         </h1>
         <WorkflowSteps />
+        <TicketApproval />
         <div style={{ flex: 1, minHeight: 0 }} className="copilotkit-chat-host">
           <CopilotChat agentId="helpdesk" />
         </div>
