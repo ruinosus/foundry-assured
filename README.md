@@ -71,13 +71,15 @@ cd backend
 cp .env.example .env          # fill all values from `azd env get-values`
 az login                      # identity that received the RBAC roles
 
-# One-time (and whenever the corpus changes): build the Foundry IQ knowledge base.
-uv run python -m app.knowledge.ingest
+# One-time data-plane objects (not provisioned by Bicep — same pattern for both):
+uv run python -m app.knowledge.ingest      # build the Foundry IQ knowledge base
+uv run python -m app.memory_provision      # create the Foundry memory store
 ```
 
 Ingestion uploads the corpus to blob, creates the blob knowledge source (Azure
 AI Search auto-chunks + embeds it), and creates the knowledge base. Indexing
-takes a few minutes; the script polls until it settles.
+takes a few minutes; the script polls until it settles. The memory store is a
+Foundry data-plane object the per-user memory reads/writes into.
 
 ```bash
 uv run uvicorn app.server:app --port 8000 --reload
