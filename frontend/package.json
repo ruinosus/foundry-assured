@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@ag-ui/client": "^0.0.57",
+    "@azure/msal-browser": "^5.15.0",
+    "@azure/msal-react": "^5.5.0",
     "@copilotkit/react-core": "^1.61.2",
     "@copilotkit/react-ui": "^1.61.2",
     "@copilotkit/runtime": "^1.61.2",

@@ -1,11 +1,8 @@
-// CopilotKit runtime route — bridges the browser to the backend AG-UI endpoint.
+// CopilotKit runtime route — bridges the browser to the backend AG-UI endpoint,
+// forwarding the user's Entra ID bearer token so the backend can do the OBO
+// exchange and act as the signed-in user.
 //
-// API verified against @copilotkit/runtime 1.61.2 and @ag-ui/client 0.0.57:
-//   - HttpAgent lives in @ag-ui/client (extends AbstractAgent).
-//   - CopilotRuntime takes agents: Record<string, AbstractAgent>.
-//   - copilotRuntimeNextJSAppRouterEndpoint({ runtime, serviceAdapter, endpoint })
-//     returns { handleRequest }. AG-UI agents need no LLM adapter here, so we use
-//     the ExperimentalEmptyAdapter (the model runs server-side in Foundry).
+// Built per request so each call carries that request's Authorization header.
 
 import {
   CopilotRuntime,
@@ -17,13 +14,18 @@ import { NextRequest } from "next/server";
 
 const AGUI_URL = process.env.AGUI_URL ?? "http://localhost:8000/helpdesk";
 
-const runtime = new CopilotRuntime({
-  agents: {
-    helpdesk: new HttpAgent({ url: AGUI_URL }),
-  },
-});
-
 export const POST = async (req: NextRequest) => {
+  const authorization = req.headers.get("authorization") ?? undefined;
+
+  const runtime = new CopilotRuntime({
+    agents: {
+      helpdesk: new HttpAgent({
+        url: AGUI_URL,
+        headers: authorization ? { Authorization: authorization } : {},
+      }),
+    },
+  });
+
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({
     runtime,
     serviceAdapter: new ExperimentalEmptyAdapter(),
