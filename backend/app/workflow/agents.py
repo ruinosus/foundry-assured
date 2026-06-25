@@ -70,13 +70,19 @@ RESOLVE_INSTRUCTIONS = (
     "developer, grounded ONLY in the runbook content the RETRIEVE step provided. Cite "
     "the source document title(s) for every claim. If the retrieve step returned "
     "'NO_MATCH' or nothing relevant, say you don't know instead of guessing — never "
-    "invent runbooks, sources, or steps."
+    "invent runbooks, sources, or steps. Use the developer's remembered preferences "
+    "(e.g. their OS or stack) to tailor the steps when relevant."
 )
 
 
-def build_resolve_agent(credential: TokenCredential) -> Agent:
+def build_resolve_agent(
+    credential: TokenCredential, context_providers: list | None = None
+) -> Agent:
+    # The memory provider (when present) is attached here so it reads the dev's
+    # preferences/past resolutions before resolving and stores the resolution after.
     return _client(credential).as_agent(
         name="resolve",
         description="Writes the final grounded, cited answer.",
         instructions=RESOLVE_INSTRUCTIONS,
+        context_providers=context_providers or None,
     )
