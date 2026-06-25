@@ -37,13 +37,16 @@ def build_helpdesk_workflow(thread_id: str | None = None) -> Workflow:
         credential, context_providers=[memory] if memory else None
     )
 
+    # No explicit output_from/intermediate_output_from: matching the official
+    # AG-UI workflow HITL example. With output_from=[resolve], the resolve
+    # agent's response (including an approval tool call) was re-emitted, which
+    # produced a duplicate TOOL_CALL_START. Step streaming still works (it comes
+    # from executor STEP/activity events, not the output config).
     return (
         WorkflowBuilder(
             name="HelpdeskConcierge",
             description="Triage -> retrieve -> resolve helpdesk workflow.",
             start_executor=triage,
-            intermediate_output_from=[triage, retrieve],
-            output_from=[resolve],
         )
         .add_chain([triage, retrieve, resolve])
         .build()
