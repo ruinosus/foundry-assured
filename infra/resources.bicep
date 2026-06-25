@@ -181,25 +181,14 @@ resource searchToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
   }
 }
 
-// Foundry account MI -> call its own model deployments. The memory store calls
-// the embedding model server-side with the account/project identity, so without
-// this it gets a 401 ("Authentication to the Azure OpenAI resource failed").
-resource accountToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(account.id, account.id, roleCognitiveServicesUser)
-  scope: account
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleCognitiveServicesUser)
-    principalId: account.identity.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// Foundry project MI -> same, in case the memory feature uses the project identity.
+// Foundry project MI -> Azure AI User on the account. Per the memory docs, this
+// lets the memory runtime invoke the chat + embedding deployments server-side.
+// (Without it: 401 "Authentication to the Azure OpenAI resource failed".)
 resource projectToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(account.id, project.id, roleCognitiveServicesUser)
+  name: guid(account.id, project.id, roleAzureAiUser)
   scope: account
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleCognitiveServicesUser)
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAzureAiUser)
     principalId: project.identity.principalId
     principalType: 'ServicePrincipal'
   }
