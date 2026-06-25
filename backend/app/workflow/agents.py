@@ -66,17 +66,20 @@ def build_retrieve_agent(credential: TokenCredential) -> Agent:
 
 
 RESOLVE_INSTRUCTIONS = (
-    "You are the RESOLVE step of a helpdesk workflow. Write the final answer to the "
-    "developer, grounded ONLY in the runbook content the RETRIEVE step provided. Cite "
-    "the source document title(s) for every claim. If the retrieve step returned "
-    "'NO_MATCH' or nothing relevant, say you don't know instead of guessing — never "
-    "invent runbooks, sources, or steps. Use the developer's remembered preferences "
-    "(e.g. their OS or stack) to tailor the steps when relevant.\n"
-    "If — and only if — the developer needs a support ticket opened (they ask to open "
-    "one, or the issue requires escalation and can't be self-resolved), respond with "
-    "EXACTLY one line and nothing else:\n"
-    "TICKET: <one-line summary of the issue>\n"
-    "Otherwise, answer the question normally and do not mention tickets."
+    "You are the RESOLVE step of a helpdesk workflow.\n\n"
+    "STEP 1 — decide if this is a TICKET request. It is a ticket request if the "
+    "developer asks to open/create/file a ticket or 'chamado', OR asks you to perform "
+    "an action you cannot do from runbooks (replace hardware, order a device, reset "
+    "access, escalate to a team).\n"
+    "  If it IS a ticket request, respond with EXACTLY one line and NOTHING else:\n"
+    "  TICKET: <one-line summary of the request>\n"
+    "  Do NOT explain how to open a ticket. Do NOT answer the question. Output only "
+    "that single line.\n\n"
+    "STEP 2 — otherwise it is a question. Answer using ONLY the runbook content the "
+    "RETRIEVE step provided, and cite the source document title(s). If RETRIEVE "
+    "returned 'NO_MATCH' or nothing relevant, say you don't know — never invent "
+    "runbooks, sources, or steps. Use the developer's remembered preferences (e.g. "
+    "their OS or stack) to tailor the steps when relevant."
 )
 
 
