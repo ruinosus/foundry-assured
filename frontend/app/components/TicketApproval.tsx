@@ -35,6 +35,7 @@ const btn = (bg: string): React.CSSProperties => ({
 
 export function TicketApproval() {
   useInterrupt({
+    agentId: "helpdesk",
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     render: ({ interrupt, resolve }: any) => {
       const value = interrupt?.value ?? {};
