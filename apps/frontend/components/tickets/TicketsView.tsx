@@ -4,6 +4,7 @@
 // (backend create_ticket tool → data/tickets.jsonl), served via /api/tickets.
 
 import { useEffect, useState } from "react";
+import { authedFetch } from "@/lib/auth/api";
 
 type Ticket = {
   id: string;
@@ -22,7 +23,7 @@ export function TicketsView() {
   async function load() {
     setError(null);
     try {
-      const r = await fetch("/api/tickets", { cache: "no-store" });
+      const r = await authedFetch("/api/tickets", { cache: "no-store" });
       const data = await r.json();
       setTickets(data.tickets ?? []);
       if (data.error) setError(data.error);

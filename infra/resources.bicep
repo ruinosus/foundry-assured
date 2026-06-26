@@ -55,6 +55,7 @@ var searchName = 'srch-helpdesk-${resourceToken}'
 var registryName = 'acrhelpdesk${resourceToken}'
 var storageName = 'sthelpdesk${resourceToken}'
 var corpusContainerName = 'corpus'
+var dataShareName = 'helpdesk-data'
 
 // Built-in role definition GUIDs (stable Azure identifiers).
 var roleAzureAiUser = '53ca6127-db72-4b80-b1b0-d745d6d5456d' // Azure AI User / Foundry User (Foundry data plane)
@@ -149,6 +150,19 @@ resource corpusContainer 'Microsoft.Storage/storageAccounts/blobServices/contain
   parent: blobService
   name: corpusContainerName
   properties: { publicAccess: 'None' }
+}
+
+// File share mounted by the backend container app (Azure Files) so app data written
+// to /app/data (tickets.jsonl) survives scale-to-zero / restarts. Small + cheap.
+resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {
+  parent: storage
+  name: 'default'
+}
+
+resource dataShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
+  parent: fileService
+  name: dataShareName
+  properties: { shareQuota: 1 } // GiB — jsonl records are tiny
 }
 
 // ---------------------------------------------------------------------------
@@ -339,6 +353,7 @@ output AZURE_SEARCH_KNOWLEDGE_BASE string = 'helpdesk-kb'
 output AZURE_STORAGE_ACCOUNT string = storage.name
 output AZURE_STORAGE_RESOURCE_ID string = storage.id
 output AZURE_STORAGE_CONTAINER string = corpusContainerName
+output AZURE_FILE_SHARE string = dataShareName
 
 // Consumed by azd (and the agent extension) to build/push the hosted-agent image.
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer

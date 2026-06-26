@@ -1,10 +1,15 @@
 "use client";
 
 // Read-only view of eval runs recorded by the offline harness
-// (backend/eval/run_eval.py -> runs.jsonl), served via /api/evals. Each run links
-// to its Foundry portal report when the cloud judges ran.
+// (backend/eval/run_eval.py -> runs.jsonl), served via /api/evals. The canonical
+// store is the Foundry portal Evaluations tab — each cloud run deep-links to it,
+// and a fresh deploy (where the local mirror is empty) points there too.
 
 import { useEffect, useState } from "react";
+import { authedFetch } from "@/lib/auth/api";
+
+// Canonical home for evaluation runs + the continuous-eval observability dashboard.
+const FOUNDRY_PORTAL = "https://ai.azure.com";
 
 type Counts = { passed: number; failed: number; errored?: number };
 type Provider = {
@@ -53,7 +58,7 @@ export function EvalsView() {
   async function load() {
     setError(null);
     try {
-      const r = await fetch("/api/evals", { cache: "no-store" });
+      const r = await authedFetch("/api/evals", { cache: "no-store" });
       const data = await r.json();
       setRuns(data.runs ?? []);
       if (data.error) setError(data.error);
@@ -73,13 +78,23 @@ export function EvalsView() {
         <div>
           <h2 style={{ margin: "0 0 4px" }}>Evaluations</h2>
           <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-            Offline harness runs — deterministic policy gate plus Foundry hosted judges.
-            Each cloud run links to its report in the Foundry portal.
+            Deterministic policy gate plus Foundry hosted judges. Runs execute offline or
+            weekly in CI — the canonical scores live in the Foundry portal.
           </p>
         </div>
-        <button className="btn btn-solid" onClick={load}>
-          ↻ Refresh
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <a
+            className="btn"
+            href={runs?.find((r) => r.providers.find((p) => p.report_url))?.providers.find((p) => p.report_url)?.report_url ?? FOUNDRY_PORTAL}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Foundry portal ↗
+          </a>
+          <button className="btn btn-solid" onClick={load}>
+            ↻ Refresh
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -93,8 +108,13 @@ export function EvalsView() {
       ) : runs.length === 0 ? (
         <div className="table-wrap">
           <div className="empty">
-            No runs yet. From <code>backend/</code>, run{" "}
-            <code>uv run python -m eval.run_eval --cloud</code> to record one.
+            No runs in this local mirror — evals run offline or in CI (the deployed
+            container doesn’t run them). The scored runs live in the{" "}
+            <a href={FOUNDRY_PORTAL} target="_blank" rel="noreferrer">
+              Foundry portal ↗
+            </a>
+            . To record one here, run <code>uv run python -m eval.run_eval --cloud</code>{" "}
+            from <code>apps/backend/</code>.
           </div>
         </div>
       ) : (

@@ -33,6 +33,12 @@ param entraApiClientId string = ''
 @secure()
 param entraApiClientSecret string = ''
 
+@description('Storage account backing the Azure Files share for persisted app data.')
+param storageAccountName string
+
+@description('Azure Files share mounted into the backend at /app/data (tickets.jsonl).')
+param fileShareName string
+
 var placeholderImage = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
 var backendAppName = 'ca-backend-${resourceToken}'
 var webAppName = 'ca-web-${resourceToken}'
@@ -58,6 +64,25 @@ resource env 'Microsoft.App/managedEnvironments@2024-03-01' = {
         customerId: logAnalytics.properties.customerId
         sharedKey: logAnalytics.listKeys().primarySharedKey
       }
+    }
+  }
+}
+
+// Azure Files persistence for app data (tickets). Files access is account-key only
+// (no managed identity for the share key), so we pull it via listKeys.
+resource storageAcct 'Microsoft.Storage/storageAccounts@2023-05-01' existing = {
+  name: storageAccountName
+}
+
+resource envDataStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
+  parent: env
+  name: 'data'
+  properties: {
+    azureFile: {
+      accountName: storageAccountName
+      accountKey: storageAcct.listKeys().keys[0].value
+      shareName: fileShareName
+      accessMode: 'ReadWrite'
     }
   }
 }
@@ -108,9 +133,17 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'ENTRA_API_CLIENT_ID', value: entraApiClientId }
             { name: 'ENTRA_API_CLIENT_SECRET', secretRef: 'entra-api-secret' }
           ]
+          volumeMounts: [
+            { volumeName: 'data', mountPath: '/app/data' } // tickets.jsonl persists here
+          ]
         }
       ]
-      scale: { minReplicas: 0, maxReplicas: 3 }  // scale-to-zero: idle = $0 (cold start on first request)
+      volumes: [
+        { name: 'data', storageType: 'AzureFile', storageName: envDataStorage.name }
+      ]
+      // Single replica: the persisted jsonl is append-based, so >1 writer could
+      // interleave/corrupt it. Scale-to-zero still applies (idle = $0).
+      scale: { minReplicas: 0, maxReplicas: 1 }
     }
   }
 }

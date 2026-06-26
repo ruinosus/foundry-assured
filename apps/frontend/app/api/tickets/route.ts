@@ -1,14 +1,19 @@
 // Proxies the real tickets opened by the HITL approval flow (backend create_ticket
-// tool) to the /tickets page.
-import { NextResponse } from "next/server";
+// tool) to the /tickets page. Forwards the caller's Entra bearer token so the
+// (now auth-gated) backend endpoint accepts the request.
+import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
 const BACKEND = process.env.BACKEND_URL ?? "http://localhost:8000";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const r = await fetch(`${BACKEND}/tickets`, { cache: "no-store" });
+    const auth = req.headers.get("authorization");
+    const r = await fetch(`${BACKEND}/tickets`, {
+      cache: "no-store",
+      headers: auth ? { Authorization: auth } : undefined,
+    });
     if (!r.ok) {
       return NextResponse.json({ tickets: [], error: `backend ${r.status}` }, { status: 502 });
     }

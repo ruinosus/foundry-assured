@@ -79,6 +79,8 @@ module apps 'containerapps.bicep' = {
     foundryModel: resources.outputs.FOUNDRY_MODEL
     azureSearchEndpoint: resources.outputs.AZURE_SEARCH_ENDPOINT
     azureSearchKnowledgeBase: resources.outputs.AZURE_SEARCH_KNOWLEDGE_BASE
+    storageAccountName: resources.outputs.AZURE_STORAGE_ACCOUNT
+    fileShareName: resources.outputs.AZURE_FILE_SHARE
     entraTenantId: entraTenantId
     entraApiClientId: entraApiClientId
     entraApiClientSecret: entraApiClientSecret
