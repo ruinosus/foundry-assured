@@ -28,6 +28,27 @@ standard** and Microsoft's `deep-wiki` skill suite.
   writes a faithful, cited wiki in the bundle format the ingestion already consumes —
   fixing the fidelity gaps of hand/LLM-summarized docs, automatically.
 
+### Two generation paths, one consumption
+
+The *generate* side has **two interchangeable paths** — both driven by Microsoft's
+open Agent Skills (`SKILL.md`) standard, both feeding the same `cockpit-kb`. The
+*consumption* (Foundry IQ + the grounded agent), the eval, memory and HITL stay 100%
+on Foundry regardless of which generator produced the wiki. This is the open-standard
+point: the **same `deep-wiki` skills run in different runtimes**.
+
+| | **Path 1 — Foundry workflow** (`wiki_builder.py`) | **Path 2 — Copilot CLI (native deep-wiki)** |
+| --- | --- | --- |
+| How | `agent-framework` + `FoundryChatClient` reads the same `SKILL.md` depth rules, paced pipeline | `/plugin marketplace add microsoft/skills` → `/plugin install deep-wiki@skills` → `/deep-wiki:generate` |
+| Fidelity | bounded context (avoids TPM 429s) | agentic, real file tools (traces code paths) |
+| Cost | pay-per-token (Foundry) | the developer's GitHub Copilot subscription |
+| Strength | **automatable / hosted** (CI, hosted agent) | **interactive, highest fidelity**, the Microsoft-native deep-wiki UX |
+| Output | already the ingest bundle (manifest + pages + llms.txt) | VitePress/markdown + `llms.txt` → a thin adapter maps it to the bundle |
+
+Path 2 is the way [Microsoft ships deep-wiki](https://github.com/microsoft/skills/tree/main/.github/plugins/deep-wiki)
+(a Copilot CLI plugin); Path 1 wraps the *same* skill rules so generation can run as an
+automatable Foundry workflow. Use Path 2 for a one-off, max-fidelity, zero-budget run on
+a dev machine; use Path 1 when generation must be hosted/scheduled.
+
 ## Key decisions
 
 - **Knowledge**: Foundry IQ (Azure AI Search agentic retrieval), a **separate KB**
@@ -66,6 +87,14 @@ deterministic source read → **plan** (one call) → **write** each page (Micro
 each claim against source, drop the unsupported) → assemble manifest + pages + llms.txt.
 Paced + bounded so it stays under the model TPM cap. `--model` is configurable
 (`gpt-5-codex` for max code fidelity); `--no-verify` to skip the verifier.
+
+**Cost instrumentation (Microsoft pattern).** Each run prints a token+R$ rollup read
+from the response's gen_ai usage (`usage_details.input/output_token_count`) — the same
+data the OpenTelemetry **GenAI semantic conventions** capture. When
+`APPLICATIONINSIGHTS_CONNECTION_STRING` is set, the build also exports those spans to
+Application Insights (`configure_azure_monitor` + `enable_instrumentation`) so they show
+in the Foundry *Tracing* / App Insights "Agents" view — off by default, zero infra.
+The loadbalancer D1 run measured ~161K in + ~26K out across 13 `gpt-5-codex` calls ≈ R$2.5.
 
 Verdict on `cockpit-openai-loadbalancer` (gpt-5-codex + verify): 6 pages, every page
 verified, claims cited to real files **with line ranges** (`src/YarpConfiguration.cs:95-123`,

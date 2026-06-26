@@ -24,6 +24,7 @@ import argparse
 import asyncio
 import json
 import logging
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -38,6 +39,10 @@ _SKILLS_DIR = Path(__file__).parent / "skills"
 _IGNORE = {
     "node_modules", "bin", "obj", "packages", ".vs", "target", "vendor",
     ".terraform", "dist", "build", ".venv", "__pycache__", ".git", ".idea",
+    # Skip git worktrees / agent scratch: they hold feature-branch copies of the
+    # source and would make the wiki cite `.worktrees/<branch>/src/...` instead of
+    # the canonical `src/...` — a fidelity defect for a source-grounded wiki.
+    ".worktrees", ".worktree", ".auto-claude",
 }
 _SOURCE_EXT = {".cs", ".py", ".ts", ".tsx", ".js", ".go", ".java", ".json", ".yaml",
                ".yml", ".toml", ".md", ".csproj", ".sln", ".sql", ".sh", ".tf"}
@@ -88,8 +93,102 @@ def _page_context(files: dict[str, str], wanted: list[str]) -> str:
     return "\n\n".join(parts)
 
 
+# ── Cost instrumentation (Microsoft pattern) ─────────────────────────────────
+# The agent-framework already emits OpenTelemetry **GenAI semantic-convention**
+# spans on every model call (gen_ai.usage.input_tokens / output_tokens). Two
+# complementary layers, both reading that same usage:
+#   A) Platform — when APPLICATIONINSIGHTS_CONNECTION_STRING is set we light up the
+#      standard export (configure_azure_monitor + enable_instrumentation) so tokens
+#      land in the Foundry *Tracing* / App Insights "Agents" view. Off → zero infra.
+#   B) Cost report — we read response.raw_representation.usage_details per call and
+#      print a run-scoped tokens+R$ rollup (the money number dashboards don't compute).
+
+# USD per 1M tokens (input, output). TOKENS are measured exactly; these PRICES are
+# editable estimates (Azure/OpenAI list, 2026) — confirm against your billing.
+_PRICE_USD_PER_1M: dict[str, tuple[float, float]] = {
+    "gpt-5-codex":  (1.25, 10.00),
+    "gpt-5-mini":   (0.25,  2.00),
+    "gpt-5":        (1.25, 10.00),
+    "gpt-4.1-mini": (0.40,  1.60),
+    "gpt-4.1":      (2.00,  8.00),
+}
+_DEFAULT_PRICE = (1.25, 10.00)  # conservative fallback for unknown deployments
+_USD_BRL = float(os.environ.get("USD_BRL", "5.40"))
+
+
+def _price_for(model: str) -> tuple[float, float]:
+    m = model.lower()
+    for key, price in _PRICE_USD_PER_1M.items():
+        if m.startswith(key):
+            return price
+    return _DEFAULT_PRICE
+
+
+def _usage(response) -> tuple[int, int]:
+    """(input, output) tokens from a response's gen_ai usage details."""
+    raw = getattr(response, "raw_representation", None)
+    u = getattr(raw, "usage_details", None) or {}
+    return int(u.get("input_token_count", 0) or 0), int(u.get("output_token_count", 0) or 0)
+
+
+class _CostMeter:
+    """Run-scoped token + cost rollup, fed one agent response at a time."""
+
+    def __init__(self, model: str) -> None:
+        self.model = model
+        self.input = self.output = self.calls = 0
+
+    def add(self, response) -> None:
+        i, o = _usage(response)
+        self.input += i
+        self.output += o
+        self.calls += 1
+
+    def report(self) -> str:
+        pin, pout = _price_for(self.model)
+        usd = self.input / 1e6 * pin + self.output / 1e6 * pout
+        return (
+            f"💰 Custo ({self.model}, {self.calls} chamadas): "
+            f"{self.input / 1000:.1f}K in + {self.output / 1000:.1f}K out "
+            f"= ${usd:.2f} (~R${usd * _USD_BRL:.2f})  "
+            f"[preço {pin}/{pout} USD/1M · USD_BRL={_USD_BRL} — configurável]"
+        )
+
+
+def _maybe_setup_observability() -> bool:
+    """Microsoft pattern: export the gen_ai OTEL spans to Application Insights.
+    Uses APPLICATIONINSIGHTS_CONNECTION_STRING when set, else the convenience path —
+    fetch it from the Foundry project (telemetry.get_application_insights_connection_string).
+    No-op (returns False) when neither yields a connection — zero infra, no error."""
+    conn = os.environ.get("APPLICATIONINSIGHTS_CONNECTION_STRING")
+    if not conn:
+        try:
+            from azure.ai.projects import AIProjectClient
+            project = AIProjectClient(
+                endpoint=settings.foundry_project_endpoint, credential=DefaultAzureCredential()
+            )
+            conn = project.telemetry.get_application_insights_connection_string()
+        except Exception:
+            conn = None
+    if not conn:
+        return False
+    try:
+        from agent_framework.observability import enable_instrumentation
+        from azure.monitor.opentelemetry import configure_azure_monitor
+    except ImportError:
+        print("  (observability: azure-monitor-opentelemetry não instalado — `uv add azure-monitor-opentelemetry`)", flush=True)
+        return False
+    configure_azure_monitor(connection_string=conn)
+    enable_instrumentation()
+    print("  observability: spans gen_ai → Application Insights (Foundry Tracing / Agents view)", flush=True)
+    return True
+
+
 async def build_component_wiki(repo: Path, component: str, version: str, out_dir: Path, model: str | None = None, verify: bool = True) -> Path:
     credential = DefaultAzureCredential()
+    resolved_model = model or settings.foundry_model
+    meter = _CostMeter(resolved_model)
+    _maybe_setup_observability()
 
     def _agent(name: str, instructions: str):
         return FoundryChatClient(
@@ -114,9 +213,11 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
         '{"pages":[{"title":"...","files":["caminho1","caminho2"]}]}',
     )
     async with planner:
-        plan_raw = (await planner.run(
+        plan_resp = await planner.run(
             f"Componente: {component} {version}\nArquivos do repositório:\n{tree}\n\nPlaneje as páginas."
-        )).text
+        )
+    meter.add(plan_resp)
+    plan_raw = plan_resp.text
     plan = _parse_json(plan_raw).get("pages", [])
     if not plan:
         raise SystemExit(f"Planner returned no pages. Raw: {plan_raw[:300]}")
@@ -147,15 +248,19 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
     async with writer, verifier:
         for i, p in enumerate(plan, 1):
             ctx = _page_context(files, p.get("files", []))
-            md = (await writer.run(
+            w_resp = await writer.run(
                 f"Componente: {component} {version}\nPágina: {p['title']}\n\nFONTE:\n{ctx}\n\n"
                 f"Escreva a página '{p['title']}'."
-            )).text
+            )
+            meter.add(w_resp)
+            md = w_resp.text
             if verify:
                 await asyncio.sleep(_PAGE_DELAY_S)
-                md = (await verifier.run(
+                v_resp = await verifier.run(
                     f"ARQUIVOS-FONTE:\n{ctx}\n\nPÁGINA:\n{md}\n\nCorrija para 100% ancorado no fonte."
-                )).text
+                )
+                meter.add(v_resp)
+                md = v_resp.text
             pages.append({"title": p["title"], "content": md})
             print(f"  ✓ page {i}/{len(plan)}: {p['title']}" + (" (verificada)" if verify else ""), flush=True)
             if i < len(plan):
@@ -175,7 +280,7 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
     manifest = {
         "key": f"{component}-{version}", "title": f"{component} {version}",
         "source": {"type": "repo", "ref": str(repo), "commit": ""},
-        "language": "pt-br", "model": settings.foundry_model,
+        "language": "pt-br", "model": resolved_model,
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "kind": "element", "component": component, "componentVersion": version,
         "releaseVersion": None, "pages": manifest_pages,
@@ -183,6 +288,7 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
     (bundle / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     (bundle / "llms.txt").write_text("\n".join(llms) + "\n", encoding="utf-8")
     print(f"\n✅ Bundle: {bundle}  ({len(manifest_pages)} páginas + manifest.json + llms.txt)", flush=True)
+    print(meter.report(), flush=True)
     return bundle
 
 
