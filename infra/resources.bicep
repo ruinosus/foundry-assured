@@ -31,8 +31,8 @@ param modelDeploymentName string = 'gpt-4.1-mini'
 @description('Chat model version for gpt-4.1-mini.')
 param modelVersion string = '2025-04-14'
 
-@description('Chat deployment capacity (thousands of TPM). Lower if you hit quota.')
-param modelCapacity int = 30
+@description('Chat deployment capacity (thousands of TPM). GlobalStandard is pay-per-token, so capacity is just the rate limit — keep it high so agentic retrieval + KB indexing + evals do not throttle. Lower only if you hit a subscription quota cap.')
+param modelCapacity int = 100
 
 @description('Embedding model used to vectorize the knowledge base corpus.')
 param embeddingModelName string = 'text-embedding-3-small'
@@ -40,8 +40,8 @@ param embeddingModelName string = 'text-embedding-3-small'
 @description('Embedding model version.')
 param embeddingModelVersion string = '1'
 
-@description('Embedding deployment capacity (thousands of TPM). Keep low — quota is tight.')
-param embeddingCapacity int = 20
+@description('Embedding deployment capacity (thousands of TPM). This caps the KB indexer embedding throughput — at 20 a large re-ingest crawls (~1s/chunk). GlobalStandard is pay-per-token, so raise it freely. Lower only if a subscription quota cap blocks the deploy.')
+param embeddingCapacity int = 100
 
 @description('Azure AI Search SKU. Basic is the floor for agentic retrieval (managed identity).')
 param searchSkuName string = 'basic'

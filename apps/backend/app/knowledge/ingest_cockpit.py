@@ -58,22 +58,30 @@ INDEXER_NAME = f"{KNOWLEDGE_SOURCE_NAME}-indexer"
 INDEX_NAME = f"{KNOWLEDGE_SOURCE_NAME}-index"
 
 
-def run_and_wait_indexer(indexer_client: SearchIndexerClient, *, poll_s: int = 8, timeout_s: int = 900) -> None:
-    """Force a fresh indexer run and wait for it to finish.
+def trigger_indexer(indexer_client: SearchIndexerClient, *, wait_s: int = 0, poll_s: int = 8) -> None:
+    """Kick a fresh indexer run. **Non-blocking by default** (`wait_s=0`).
 
     The blob data source has NO change/deletion detection, and create_or_update of
     the knowledge source does not run the indexer immediately (it runs on a ~1d
     schedule). Relying on the existing status returns the *previous* run's state, so
-    freshly uploaded blobs look ingested when they aren't. We drive the crawl
-    explicitly instead.
+    freshly uploaded blobs look ingested when they aren't — we drive the crawl
+    explicitly.
+
+    But the run itself is embedding-bound (~1s/chunk) and the index is queryable
+    *incrementally while it runs*, so we do NOT block on completion: a big batch can
+    take 10-20 min server-side and waiting for it just stalls the caller. Pass
+    `wait_s > 0` only when you must confirm completion synchronously.
     """
     try:
         indexer_client.run_indexer(INDEXER_NAME)
     except HttpResponseError as e:
-        if "already" not in str(e).lower():  # already in progress → just wait
+        if "already" not in str(e).lower():  # already in progress → fine
             raise
+    if wait_s <= 0:
+        print("  indexer triggered (runs async; index fills incrementally)")
+        return
     waited = 0
-    while waited < timeout_s:
+    while waited < wait_s:
         st = indexer_client.get_indexer_status(INDEXER_NAME)
         running = st.status == "running" or (st.last_result and st.last_result.status == "inProgress")
         if not running and st.last_result:
@@ -82,7 +90,11 @@ def run_and_wait_indexer(indexer_client: SearchIndexerClient, *, poll_s: int = 8
             return
         time.sleep(poll_s)
         waited += poll_s
-    print("  indexer still running after timeout; continuing")
+    print("  indexer still running (continuing; it finishes server-side)")
+
+
+# Backwards-compatible alias (older callers).
+run_and_wait_indexer = trigger_indexer
 
 
 def purge_orphans(credential, container: str) -> None:
@@ -262,14 +274,21 @@ def main() -> None:
     print("== Step 3/3: create knowledge base ==")
     create_knowledge_base(index_client)
 
-    print("== Step 4/4: run indexer (fresh) + reconcile deletions ==")
+    print("== Step 4/4: trigger indexer (async) + reconcile deletions ==")
     indexer_client = SearchIndexerClient(
         endpoint=settings.azure_search_endpoint, credential=credential,
         api_version=api_version, connection_timeout=20, read_timeout=CALL_TIMEOUT_S,
     )
-    run_and_wait_indexer(indexer_client)
+    # Purge removed-blob chunks now (safe any time — it only deletes docs whose source
+    # blob is gone), then kick the indexer and return. The index fills incrementally
+    # and is queryable during the run; blocking on the full ~1s/chunk embedding pass
+    # just stalls the caller.
     purge_orphans(credential, settings.cockpit_storage_container)
-    print("\nDone. The Cockpit knowledge base is ready for agentic retrieval.")
+    trigger_indexer(indexer_client)  # non-blocking
+    print(
+        "\nDone (uploads + deletions reconciled). The indexer is running async —\n"
+        "new pages appear in the KB incrementally over the next few minutes."
+    )
 
 
 if __name__ == "__main__":
