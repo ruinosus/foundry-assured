@@ -14,6 +14,7 @@ import { branding } from "@/lib/branding";
 const NAV = [
   { href: "/", label: "Overview", icon: "▦" },
   { href: "/chat", label: branding.assistant, icon: "💬" },
+  { href: "/cockpit", label: "Cockpit expert", icon: "🛰️" },
   { href: "/tickets", label: "Tickets", icon: "🎫" },
   { href: "/evals", label: "Evaluations", icon: "✓" },
 ];
@@ -21,6 +22,7 @@ const NAV = [
 const TITLES: Record<string, string> = {
   "/": "Overview",
   "/chat": branding.assistant,
+  "/cockpit": "Cockpit expert",
   "/tickets": "Tickets",
   "/evals": "Evaluations",
 };

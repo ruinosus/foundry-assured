@@ -33,7 +33,7 @@ from azure.search.documents.indexes.models import (
     AzureOpenAIVectorizerParameters,
     KnowledgeBase,
     KnowledgeBaseAzureOpenAIModel,
-    KnowledgeRetrievalLowReasoningEffort,
+    KnowledgeRetrievalMediumReasoningEffort,
     KnowledgeSourceAzureOpenAIVectorizer,
     KnowledgeSourceIngestionParameters,
     KnowledgeSourceReference,
@@ -148,11 +148,13 @@ def create_knowledge_base(index_client: SearchIndexClient) -> None:
         output_mode="answerSynthesis",
         answer_instructions=(
             "Responda APENAS com base nos documentos do Cockpit recuperados. Cite o "
-            "componente e o documento-fonte de cada afirmação (ex.: 'cockpit-portal-api "
-            "v2.1.1 — Arquitetura'). Se a resposta não estiver na base de conhecimento, "
-            "diga que não sabe — nunca invente componentes, versões ou detalhes."
+            "componente e o documento-fonte de cada afirmação. Para perguntas de "
+            "arquitetura ou que envolvem múltiplos componentes, priorize os documentos "
+            "de ARQUITETURA/visão geral da plataforma (autoritativos) sobre resumos de "
+            "componentes individuais, que podem conter imprecisões. Se a resposta não "
+            "estiver na base, diga que não sabe — nunca invente."
         ),
-        retrieval_reasoning_effort=KnowledgeRetrievalLowReasoningEffort(),
+        retrieval_reasoning_effort=KnowledgeRetrievalMediumReasoningEffort(),
     )
     _with_timeout(
         f"create knowledge base '{kb_name}'",

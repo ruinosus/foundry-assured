@@ -46,8 +46,13 @@ const helpdesk = new HttpAgent({
 
 const helpdeskHosted = new HttpAgent({ url: HOSTED_AGUI_URL });
 
+// Second domain: the Cockpit expert (grounded over the cockpit-kb). Plain HttpAgent
+// — request→response grounded Q&A, no interrupts/resume transform needed.
+const COCKPIT_AGUI_URL = process.env.COCKPIT_AGUI_URL ?? "http://localhost:8000/cockpit";
+const cockpit = new HttpAgent({ url: COCKPIT_AGUI_URL });
+
 const runtime = new CopilotRuntime({
-  agents: { helpdesk, "helpdesk-hosted": helpdeskHosted },
+  agents: { helpdesk, "helpdesk-hosted": helpdeskHosted, cockpit },
 });
 
 export const POST = async (req: NextRequest) => {
