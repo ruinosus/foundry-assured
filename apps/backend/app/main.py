@@ -19,6 +19,7 @@ from agent_framework_ag_ui import add_agent_framework_fastapi_endpoint
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.agents.cockpit import build_cockpit_agent, cockpit_configured
 from app.agents.concierge import _knowledge_configured, build_concierge_agent
 from app.api import api_router
 from app.core.auth import auth_dependencies, azure_scheme
@@ -61,6 +62,16 @@ if _knowledge_configured():
 else:
     add_agent_framework_fastapi_endpoint(
         app, agent=build_concierge_agent(), path="/helpdesk"
+    )
+
+# Second domain: the Cockpit expert, grounded in the cockpit-kb (registered only
+# when that KB is configured). Pure grounded Q&A — no workflow/HITL.
+if cockpit_configured():
+    add_agent_framework_fastapi_endpoint(
+        app,
+        agent=build_cockpit_agent(),
+        path="/cockpit",
+        dependencies=auth_dependencies(),
     )
 
 

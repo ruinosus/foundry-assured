@@ -35,3 +35,4 @@ yarn-error.log*
 copilotkit-events-*.json
 apps/backend/eval/runs.jsonl
 apps/backend/data/
+apps/backend/eval/datasets/cockpit_golden.jsonl
