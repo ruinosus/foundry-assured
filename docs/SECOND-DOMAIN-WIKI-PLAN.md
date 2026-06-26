@@ -55,7 +55,22 @@ standard** and Microsoft's `deep-wiki` skill suite.
 | Phase B — Cockpit agent + `/cockpit` endpoint + frontend route/nav | 🟡 done, **uncommitted** |
 | `grounded-qa` retrieval **Skill** (from MS `wiki-qa`) via `SkillsProvider` | 🟡 done, **uncommitted** |
 | Golden set (20, source-verified) + measurement harness | ✅ (gitignored) |
-| Quality | **17/20** (hand-tuned) → measuring the skill version |
+| Quality (consume) | **17/20** (hand-tuned); the `grounded-qa` skill holds (≥17/20) |
+| **Wiki Builder D1** — generate a faithful bundle from source | ✅ **proven** (see below) |
+
+### Wiki Builder — proven (D1)
+
+`app/knowledge/wiki_builder.py` generates a faithful bundle from a repo, on Foundry:
+deterministic source read → **plan** (one call) → **write** each page (Microsoft
+`wiki-page-writer` depth rules: cite the real file, no guessing) → **verify** (re-ground
+each claim against source, drop the unsupported) → assemble manifest + pages + llms.txt.
+Paced + bounded so it stays under the model TPM cap. `--model` is configurable
+(`gpt-5-codex` for max code fidelity); `--no-verify` to skip the verifier.
+
+Verdict on `cockpit-openai-loadbalancer` (gpt-5-codex + verify): 6 pages, every page
+verified, claims cited to real files **with line ranges** (`src/YarpConfiguration.cs:95-123`,
+`src/RetryMiddleware.cs:22-51`, …) — far more faithful than the LLM-summarized docbundle.
+Generic via `--repo/--component/--model` → the reusable protocol for any multi-repo project.
 
 ## Roadmap (in order)
 
