@@ -2,8 +2,16 @@ name: Release
 
 # Release-please reads the Conventional Commits on main and maintains a rolling
 # "release PR" that bumps the version + regenerates CHANGELOG.md. Merging that PR
-# should cut a git tag + GitHub Release — which is what gates the production deploy
-# (see deploy.yml › on.release). No deploy happens here; this only cuts the release.
+# cuts a git tag + GitHub Release — which gates the production deploy (deploy.yml ›
+# on.release). No deploy happens here; this only cuts the release.
+#
+# Token: prefer a GitHub App installation token (short-lived ~1h, least-privilege,
+# a machine identity — the enterprise/compliant choice over a PAT). Set repo
+# variable RELEASE_APP_ID + secret RELEASE_APP_PRIVATE_KEY to enable it. A release
+# created with the App token *does* trigger deploy.yml's `on: release` (unlike one
+# created with the built-in GITHUB_TOKEN, which GitHub blocks to avoid recursion).
+# Falls back to GITHUB_TOKEN when the App isn't configured — the release still cuts,
+# but you then dispatch the deploy manually (deploy.yml has workflow_dispatch).
 on:
   push:
     branches: [main]
@@ -21,8 +29,18 @@ jobs:
     name: Maintain release PR / cut release
     runs-on: ubuntu-latest
     steps:
+      # Mint a short-lived GitHub App token when the App is configured; skipped
+      # otherwise (the token expression below falls back to GITHUB_TOKEN).
+      - uses: actions/create-github-app-token@v2
+        id: app-token
+        if: ${{ vars.RELEASE_APP_ID != '' }}
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
       - uses: googleapis/release-please-action@v4
         with:
+          token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
@@ -33,14 +51,12 @@ jobs:
       # - aborting"), so the GitHub Release never gets cut and the version stalls
       # (it needed a manual cut for both v0.2.0 and v0.3.0). If the manifest version
       # has no release yet, cut it from the CHANGELOG and mark the merged release PR
-      # `autorelease: tagged` so the next run reconciles cleanly.
-      # Note: a GITHUB_TOKEN-created release does NOT trigger deploy.yml's
-      # `on: release` (GitHub's anti-recursion rule), so the production deploy is
-      # dispatched manually (deploy.yml has workflow_dispatch) or via a release
-      # published by a human/PAT.
+      # `autorelease: tagged` so the next run reconciles cleanly. Uses the same token
+      # as release-please, so when the App is configured this cut also triggers the
+      # deploy.
       - name: Cut release if release-please left the version untagged
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           VERSION="$(jq -r '.["."]' .release-please-manifest.json)"
