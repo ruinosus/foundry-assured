@@ -7,6 +7,7 @@
 
 import { useMsal } from "@azure/msal-react";
 import { apiScopes } from "@/lib/auth/msal";
+import { branding } from "@/lib/branding";
 
 export function LoginScreen() {
   const { instance } = useMsal();
@@ -35,10 +36,8 @@ export function LoginScreen() {
         }}
       >
         <div style={{ fontSize: 40, lineHeight: 1 }}>⚡</div>
-        <h1 style={{ margin: "16px 0 4px", fontSize: 22, color: "#0f172a" }}>Foundry Helpdesk</h1>
-        <p style={{ margin: "0 0 28px", color: "#64748b", fontSize: 14 }}>
-          Engineering support concierge
-        </p>
+        <h1 style={{ margin: "16px 0 4px", fontSize: 22, color: "#0f172a" }}>{branding.product}</h1>
+        <p style={{ margin: "0 0 28px", color: "#64748b", fontSize: 14 }}>{branding.description}</p>
         <button
           onClick={() => instance.loginRedirect({ scopes: apiScopes })}
           style={{

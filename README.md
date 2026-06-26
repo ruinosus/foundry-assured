@@ -9,6 +9,9 @@ evaluation, and a managed hosted-agent deployment. The frontend is **CopilotKit*
 > **Clone → provision → deploy:** [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) — the
 > step-by-step runbook (infra, Entra app registrations, KB/memory, hosted agent,
 > Container Apps).
+> **Make it your own domain:** [`docs/CUSTOMIZE.md`](./docs/CUSTOMIZE.md) — swap the
+> corpus, prompts, action and identity to turn this into any "ask → ground → resolve →
+> escalate" assistant.
 > Contributing & CI/CD: [`CONTRIBUTING.md`](./CONTRIBUTING.md) · security:
 > [`SECURITY.md`](./SECURITY.md) · full build spec:
 > [`foundry-helpdesk-spec.md`](./foundry-helpdesk-spec.md) · working rules:

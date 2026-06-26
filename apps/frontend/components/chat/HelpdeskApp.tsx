@@ -9,6 +9,7 @@ import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
+import { branding } from "@/lib/branding";
 import { TicketApproval } from "@/components/chat/TicketApproval";
 
 const WorkflowSteps = dynamic(
@@ -117,7 +118,7 @@ function AuthedChat() {
   if (!isAuthenticated) {
     return (
       <div style={center}>
-        <p>Sign in to use the Helpdesk Concierge.</p>
+        <p>Sign in to use {branding.product}.</p>
         <button
           onClick={() => instance.loginRedirect({ scopes: apiScopes })}
           style={{

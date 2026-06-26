@@ -9,17 +9,18 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
+import { branding } from "@/lib/branding";
 
 const NAV = [
   { href: "/", label: "Overview", icon: "▦" },
-  { href: "/chat", label: "Concierge", icon: "💬" },
+  { href: "/chat", label: branding.assistant, icon: "💬" },
   { href: "/tickets", label: "Tickets", icon: "🎫" },
   { href: "/evals", label: "Evaluations", icon: "✓" },
 ];
 
 const TITLES: Record<string, string> = {
   "/": "Overview",
-  "/chat": "Concierge",
+  "/chat": branding.assistant,
   "/tickets": "Tickets",
   "/evals": "Evaluations",
 };
@@ -92,8 +93,8 @@ export function AppShell({
         <div className="brand">
           <span className="brand-mark">⚡</span>
           <span>
-            Foundry Helpdesk
-            <small>Engineering support</small>
+            {branding.product}
+            <small>{branding.tagline}</small>
           </span>
         </div>
 
