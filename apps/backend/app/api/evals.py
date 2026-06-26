@@ -5,6 +5,7 @@ from pathlib import Path
 from fastapi import APIRouter
 
 from app.core.auth import auth_dependencies
+from app.services.foundry_evals import list_eval_runs
 
 router = APIRouter()
 
@@ -30,3 +31,12 @@ def eval_runs(limit: int = 50) -> dict[str, list[dict]]:
                 runs.append(json.loads(line))
     runs.reverse()
     return {"runs": runs[:limit]}
+
+
+@router.get("/eval/foundry", dependencies=auth_dependencies())
+def foundry_eval_runs(limit: int = 8) -> dict[str, list[dict]]:
+    """Live evaluation runs + scores read from the Foundry project (the canonical
+    store) — groundedness/relevance/coherence pass counts per run, each linking to
+    its portal report. This is what the /evals page renders.
+    """
+    return {"runs": list_eval_runs(limit)}
