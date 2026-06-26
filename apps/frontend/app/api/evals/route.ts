@@ -10,7 +10,7 @@ const BACKEND = process.env.BACKEND_URL ?? "http://localhost:8000";
 export async function GET(req: NextRequest) {
   try {
     const auth = req.headers.get("authorization");
-    const r = await fetch(`${BACKEND}/eval/runs`, {
+    const r = await fetch(`${BACKEND}/eval/foundry`, {
       cache: "no-store",
       headers: auth ? { Authorization: auth } : undefined,
     });
