@@ -39,19 +39,23 @@ Adapt it to your own domain: [`docs/CUSTOMIZE.md`](./docs/CUSTOMIZE.md).
 
 ## Demo mode — see it with **no Azure**
 
-Want to see the experience before provisioning anything? A committed AG-UI fixture is
+Want to see the experience before provisioning anything? Committed AG-UI fixtures are
 replayed by [CopilotKit **aimock**](https://github.com/CopilotKit/aimock) — the real
-frontend renders the full flow (steps → grounded answer → HITL approval) with **no
-Azure and no Python backend**:
+frontend renders the real flow (triage→retrieve→resolve **steps**, grounded **cited**
+answers, honest off-corpus decline) with **no Azure and no Python backend**:
 
 ```bash
 cd apps/frontend && npm install && npm run demo      # → http://localhost:3000
 ```
 
-The fixture is **recorded from a real run** (`./scripts/demo-record.sh`), so it's the
-genuine workflow output, not a hand-faked script — just replayed deterministically.
-(One-time: someone with Azure records it once and commits
-`apps/frontend/demo/fixtures/`; after that `npm run demo` needs nothing.)
+The fixtures are **recorded from real runs** (`./scripts/demo-record.sh`), so they're
+genuine workflow output, not hand-faked — just replayed deterministically. Try the
+recorded prompts: *"How do I roll back a bad deploy?"*, *"My Kubernetes pod is stuck in
+CrashLoopBackOff…"*, *"What's the weather in Paris?"* (off-corpus → declines).
+
+> The **HITL ticket approval** isn't in the fixture yet (the resume handshake is
+> captured by recording through the live UI); it runs in the full app. Add it by
+> re-recording with `./scripts/demo-record.sh` and approving a ticket in the browser.
 
 ## Status — all six phases green
 
