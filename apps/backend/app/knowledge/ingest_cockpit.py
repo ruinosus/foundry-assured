@@ -23,10 +23,13 @@ from __future__ import annotations
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
+from azure.core.exceptions import HttpResponseError
 from azure.identity import DefaultAzureCredential
-from azure.search.documents.indexes import SearchIndexClient
+from azure.search.documents import SearchClient
+from azure.search.documents.indexes import SearchIndexClient, SearchIndexerClient
 from azure.search.documents.indexes.models import (
     AzureBlobKnowledgeSource,
     AzureBlobKnowledgeSourceParameters,
@@ -50,6 +53,70 @@ from app.knowledge.ingest import (
 )
 
 KNOWLEDGE_SOURCE_NAME = "cockpit-docbundles-ks"
+# Foundry IQ derives these from the knowledge source name.
+INDEXER_NAME = f"{KNOWLEDGE_SOURCE_NAME}-indexer"
+INDEX_NAME = f"{KNOWLEDGE_SOURCE_NAME}-index"
+
+
+def run_and_wait_indexer(indexer_client: SearchIndexerClient, *, poll_s: int = 8, timeout_s: int = 900) -> None:
+    """Force a fresh indexer run and wait for it to finish.
+
+    The blob data source has NO change/deletion detection, and create_or_update of
+    the knowledge source does not run the indexer immediately (it runs on a ~1d
+    schedule). Relying on the existing status returns the *previous* run's state, so
+    freshly uploaded blobs look ingested when they aren't. We drive the crawl
+    explicitly instead.
+    """
+    try:
+        indexer_client.run_indexer(INDEXER_NAME)
+    except HttpResponseError as e:
+        if "already" not in str(e).lower():  # already in progress → just wait
+            raise
+    waited = 0
+    while waited < timeout_s:
+        st = indexer_client.get_indexer_status(INDEXER_NAME)
+        running = st.status == "running" or (st.last_result and st.last_result.status == "inProgress")
+        if not running and st.last_result:
+            r = st.last_result
+            print(f"  indexer run: {r.status} ({r.item_count} items, {r.failed_item_count} failed)")
+            return
+        time.sleep(poll_s)
+        waited += poll_s
+    print("  indexer still running after timeout; continuing")
+
+
+def purge_orphans(credential, container: str) -> None:
+    """Delete index chunks whose source blob no longer exists.
+
+    The indexer adds/updates from existing blobs but NEVER removes docs for deleted
+    ones (no deletion-detection policy). When a bundle is regenerated, its old pages'
+    blobs are deleted but their chunks linger in the index and keep being retrieved.
+    We reconcile the index against the container. (Requires Search Index Data
+    Contributor on the search service — Reader cannot delete documents.)
+    """
+    from azure.storage.blob import BlobServiceClient
+
+    account = _require("AZURE_STORAGE_ACCOUNT", settings.azure_storage_account)
+    cc = BlobServiceClient(
+        account_url=f"https://{account}.blob.core.windows.net", credential=credential
+    ).get_container_client(container)
+    live = {b.name for b in cc.list_blobs()}
+
+    search = SearchClient(
+        endpoint=settings.azure_search_endpoint, index_name=INDEX_NAME,
+        credential=credential, api_version=os.environ.get("SEARCH_API_VERSION", "2026-05-01-preview"),
+    )
+    orphans, seen = [], set()
+    for d in search.search(search_text="*", select=["uid", "blob_url"]):
+        blob = str(d.get("blob_url", "")).rsplit("/", 1)[-1]
+        if blob and blob not in live and d["uid"] not in seen:
+            orphans.append({"uid": d["uid"]})
+            seen.add(d["uid"])
+    if orphans:
+        search.delete_documents(documents=orphans)
+        print(f"  purged {len(orphans)} orphan chunks (source blob no longer in '{container}')")
+    else:
+        print("  no orphan chunks to purge")
 
 
 def collect_pages(docbundles: Path) -> list[tuple[str, bytes]]:
@@ -195,9 +262,13 @@ def main() -> None:
     print("== Step 3/3: create knowledge base ==")
     create_knowledge_base(index_client)
 
-    from app.knowledge.ingest import wait_for_ingestion
-
-    wait_for_ingestion(index_client, ks_name=KNOWLEDGE_SOURCE_NAME)
+    print("== Step 4/4: run indexer (fresh) + reconcile deletions ==")
+    indexer_client = SearchIndexerClient(
+        endpoint=settings.azure_search_endpoint, credential=credential,
+        api_version=api_version, connection_timeout=20, read_timeout=CALL_TIMEOUT_S,
+    )
+    run_and_wait_indexer(indexer_client)
+    purge_orphans(credential, settings.cockpit_storage_container)
     print("\nDone. The Cockpit knowledge base is ready for agentic retrieval.")
 
 
