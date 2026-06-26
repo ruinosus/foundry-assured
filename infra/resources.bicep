@@ -125,6 +125,55 @@ resource embeddingDeployment 'Microsoft.CognitiveServices/accounts/deployments@2
 }
 
 // ---------------------------------------------------------------------------
+// Observability: Log Analytics + Application Insights, connected to the Foundry
+// account so agent-framework's OpenTelemetry GenAI spans (gen_ai.usage.*) land in
+// the Foundry "Tracing" / App Insights "Agents" view. The category 'AppInsights'
+// connection is what `project.telemetry.get_application_insights_connection_string()`
+// reads. Connection schema verified against the Microsoft.CognitiveServices/
+// accounts/connections template reference (category/authType/credentials).
+// ---------------------------------------------------------------------------
+
+resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+  name: 'log-helpdesk-${resourceToken}'
+  location: location
+  tags: tags
+  properties: {
+    sku: { name: 'PerGB2018' }
+    retentionInDays: 30
+  }
+}
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: 'appi-helpdesk-${resourceToken}'
+  location: location
+  tags: tags
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalytics.id
+  }
+}
+
+// Account-level connection (shared to all projects) — the telemetry target Foundry reads.
+resource appInsightsConnection 'Microsoft.CognitiveServices/accounts/connections@2025-06-01' = {
+  name: 'appinsights'
+  parent: account
+  properties: {
+    category: 'AppInsights'
+    target: appInsights.id
+    authType: 'ApiKey'
+    credentials: {
+      key: appInsights.properties.ConnectionString
+    }
+    isSharedToAll: true
+    metadata: {
+      ApiType: 'Azure'
+      ResourceId: appInsights.id
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Storage for the knowledge base corpus (blob knowledge source)
 // ---------------------------------------------------------------------------
 
@@ -346,6 +395,9 @@ output AZURE_AI_ACCOUNT_ENDPOINT string = account.properties.endpoint
 output AZURE_AI_OPENAI_ENDPOINT string = 'https://${accountName}.openai.azure.com'
 output FOUNDRY_MODEL string = modelDeploymentName
 output FOUNDRY_EMBEDDING_MODEL string = embeddingModelName
+
+// Observability — set in the local/app env to export gen_ai OTEL spans to App Insights.
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
 
 output AZURE_SEARCH_ENDPOINT string = 'https://${searchName}.search.windows.net'
 output AZURE_SEARCH_KNOWLEDGE_BASE string = 'helpdesk-kb'

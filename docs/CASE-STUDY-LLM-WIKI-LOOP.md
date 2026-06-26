@@ -68,6 +68,40 @@ health/throttling policy, the env-var backend configuration and priority selecti
 all traceable to source. The full `generate → verify → ingest → consume` loop held end
 to end.
 
+## Two generation paths — one consumption
+
+The *generate* side runs on the **open Agent Skills (`SKILL.md`) standard**, so the same
+Microsoft `deep-wiki` skills drive two interchangeable runtimes. We ran **both on the
+same component** to compare:
+
+- **Path 1 — Foundry workflow**: `agent-framework` + `gpt-5-codex`, following the
+  deep-wiki depth rules, with a **verifier pass** that re-grounds every claim.
+- **Path 2 — coding-agent CLI**: the native Microsoft `deep-wiki` plugin running in a
+  terminal coding agent (its fast "crisp" mode), billed to the developer's existing
+  subscription — zero cloud-inference cost.
+
+| metric | Path 1 (Foundry, gpt-5-codex + verifier) | Path 2 (deep-wiki crisp) |
+| --- | ---: | ---: |
+| pages | 6 | 7 |
+| size (chars) | 73,926 | 29,349 |
+| citations to `src/` | 135 | 43 |
+| citations **with line ranges** (`file:NN-MM`) | 129 | 34 |
+| distinct source files cited | 22 | 24 |
+| citations into stale git worktrees | 0 | 0 |
+
+**What it shows.** Both paths are source-grounded and both cite the *canonical* source —
+but *how* they got there differs: Path 1 needed a **code fix** (ignore git worktrees in
+the file walk) to stop citing a feature-branch copy; Path 2 avoided it from a single
+**prompt instruction**. Path 1 is markedly **deeper and more line-anchored** (≈2.5× the
+text, ≈3.8× the line-cited claims); Path 2 is **broader but lighter** — it touched
+slightly more files with far less depth, and ran **free and fast**. *Cheap breadth vs
+cited depth.*
+
+Not apples-to-apples (different models; "crisp" is deliberately light; only Path 1 ran a
+verifier) — and that's the point: **the same open skills run in either runtime**, and you
+pick by need. The consumption side (Foundry IQ retrieval), the eval, memory and HITL stay
+identical regardless of which path produced the wiki.
+
 ## Reproducibility
 
 The loop is generic, not bespoke: the generator takes `--repo / --component / --model`,
