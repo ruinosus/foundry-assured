@@ -15,9 +15,10 @@ the deploy pipeline — is reusable Foundry plumbing you keep as-is.
 | 2 | **Agent prompts** | `apps/backend/app/agents/prompts.py` | rewrite |
 | 3 | **The action** (ticket → yours) | `apps/backend/app/tools/`, `workflow/escalation.py`, the `TICKET:` convention | rewrite |
 | 4 | **Identity / labels** | `apps/frontend/lib/branding.ts`, `app/page.tsx` | set |
+| 5 | **Eval datasets** | `apps/backend/eval/datasets/*.jsonl` | set (data only) |
 
-> Rule of thumb: **#1 and #4 you set; #2 and #3 you rewrite.** The rewrites are small
-> (one prompts file, one tool) — that's the point.
+> Rule of thumb: **#1, #4, #5 you set; #2 and #3 you rewrite.** The rewrites are small
+> (one prompts file, one tool) — that's the point. The eval *harness* never changes.
 
 ---
 
@@ -107,6 +108,40 @@ Two pieces are **content**, not config — edit them directly:
 
 ---
 
+## 5 — Evaluation datasets (swap the data, keep the harness)
+
+The eval harness is reusable; only the **datasets** are domain-specific. Two JSONL
+files in `apps/backend/eval/datasets/`:
+
+**`golden.jsonl`** — one object per line, three fields:
+```json
+{"query": "<a real question your users ask>",
+ "source": "<the H1 title of the corpus doc it should ground in>",
+ "expected_output": "<one-line gist of the right answer>"}
+```
+The `source` must match one of **your** corpus doc titles — the runner feeds that
+doc's text as grounding `context` for the Foundry judges, and the citation check
+(`eval/assertions.py › cites_a_source`) **auto-derives** the valid titles from the
+corpus (`*.md` H1s). So when you swap the corpus (#1), the citation check follows —
+**no code change**. Just write ~10 questions that map to your new docs.
+
+**`adversarial.jsonl`** — same shape; jailbreak / secret-leak prompts with
+`"source": ""`. These are **domain-agnostic** (refuse-or-stay-grounded + never leak a
+secret), so keep them as-is; add a few domain-specific attacks if you like.
+
+Then validate:
+```bash
+cd apps/backend
+uv run python -m eval.run_eval            # deterministic policy gate (blocks on fail)
+uv run python -m eval.run_eval --cloud    # + Foundry groundedness/relevance/coherence
+uv run python -m eval.run_eval --safety   # adversarial set
+uv run python -m eval.run_eval --self-test  # proves the gate catches a planted violation (CI)
+```
+You do **not** touch `assertions.py`, `run_eval.py`, or the rubric unless you're
+adding a new *policy* — the secret-leak and citation policies are domain-neutral.
+
+---
+
 ## Worked example — an "HR Onboarding Assistant"
 
 1. **Corpus**: drop your onboarding/policy/benefits markdown into `knowledge/corpus/`,
@@ -117,6 +152,8 @@ Two pieces are **content**, not config — edit them directly:
    **and** in `escalation.py`; rework `tools/tickets.py` into `create_case(...)`.
 4. **Identity** (`branding.ts`): `product: "People Concierge"`, `tagline: "HR onboarding"`,
    `assistant: "Helper"`. Update the hero copy in `page.tsx`.
+5. **Evals** (`eval/datasets/golden.jsonl`): swap in HR questions pointing at your new
+   doc titles (e.g. `source: "Benefits enrollment"`); keep `adversarial.jsonl`.
 
 Run it, sign in, ask "how do I enroll in benefits?" — grounded answer with citations; ask
 "open a case to fix my payroll" → human-approved `create_case`. Same pillars, new domain.
@@ -130,8 +167,8 @@ The reusable Foundry plumbing — this is the value you're inheriting:
 - `app/workflow/` (the `WorkflowBuilder` graph + AG-UI streaming + `stream_fix.py`)
 - `app/core/auth.py` (Entra sign-in, OBO, memory scoping)
 - `app/memory/` + the memory provider (managed Foundry memory)
-- `eval/` (the offline gate + Foundry judges) — though you'll want to swap the
-  golden/adversarial datasets for your domain's questions
+- `eval/` harness — `assertions.py`, `run_eval.py`, the rubric (the policies are
+  domain-neutral). You only swap the **datasets** — see §5 above.
 - `infra/`, `azure.yaml`, `.github/workflows/` (provisioning + gated CI/CD deploy)
 - the frontend shell, CopilotKit wiring, and the Live ⇄ Hosted toggle
 
