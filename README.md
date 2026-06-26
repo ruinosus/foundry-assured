@@ -12,6 +12,8 @@ evaluation, and a managed hosted-agent deployment. The frontend is **CopilotKit*
 > **Make it your own domain:** [`docs/CUSTOMIZE.md`](./docs/CUSTOMIZE.md) — swap the
 > corpus, prompts, action and identity to turn this into any "ask → ground → resolve →
 > escalate" assistant.
+> **Case study:** [`docs/CASE-STUDY-LLM-WIKI-LOOP.md`](./docs/CASE-STUDY-LLM-WIKI-LOOP.md) —
+> a measured generate→verify→ingest→consume loop for grounding an agent on a large codebase.
 > Contributing & CI/CD: [`CONTRIBUTING.md`](./CONTRIBUTING.md) · security:
 > [`SECURITY.md`](./SECURITY.md) · full build spec:
 > [`foundry-helpdesk-spec.md`](./foundry-helpdesk-spec.md) · working rules:
