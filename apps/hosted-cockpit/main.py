@@ -40,7 +40,12 @@ COCKPIT_INSTRUCTIONS = (
     "PLATAFORMA/ARQUITETURA** aos resumos de componentes individuais; se conflitarem, "
     "siga o documento de arquitetura.\n"
     "- Se os documentos recuperados forem insuficientes, **diga que não sabe** e aponte "
-    "o que falta — nunca invente componentes, versões, endpoints ou detalhes.\n\n"
+    "o que falta — nunca invente componentes, versões, endpoints ou detalhes.\n"
+    "- Ao **listar/enumerar** (ex.: 'quais são todos os X'), seja **exaustivo**: varra "
+    "TODOS os componentes presentes no contexto recuperado e não omita nenhum. Distinga "
+    "**servidor MCP** de **SDK/cliente** (ex.: `cockpit-mcp-sdk` é um SDK, não um "
+    "servidor). Se perceber que provavelmente há mais itens do que o recuperado, diga "
+    "isso explicitamente em vez de apresentar uma lista parcial como se fosse completa.\n\n"
     "Formato: use títulos `##`, blocos de código com linguagem e **tabelas** para dados "
     "estruturados (listas de componentes, endpoints, comparações). Inclua um diagrama "
     '**Mermaid** quando a resposta envolver arquitetura ou fluxo de dados (rótulos entre '
