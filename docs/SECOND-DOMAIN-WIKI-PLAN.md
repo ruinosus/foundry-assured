@@ -17,13 +17,19 @@ standard** and Microsoft's `deep-wiki` skill suite.
                                                                                                               │
                                                                                           ingest → Foundry IQ KB (cockpit-kb)
                                                                                                               │
- QUESTION ──[ Cockpit agent + grounded-qa skill (adapted from deep-wiki wiki-qa), via SkillsProvider ]────────┘──► cited answer
+ QUESTION ──[ Cockpit agent + AzureAISearchContextProvider (Foundry IQ agentic retrieval) ]────────────────────┘──► cited answer
                                                                                                               ▲
                                                                                        measured by the GOLDEN (source-verified)
 ```
 
-- **Consume / retrieve** — a grounded agent answers over the KB, using a retrieval
-  **Skill** for the citing/decline/authority discipline (not hand-rolled prompts).
+- **Consume / retrieve** — a grounded agent answers over the KB via the
+  **AzureAISearchContextProvider** (Foundry IQ agentic retrieval, which returns context
+  *with citations*); the citing/decline/authority discipline lives in the agent's
+  instructions. This is Microsoft's documented Foundry IQ pattern — KB grounding is the
+  context provider, not a consume-side Agent Skill. (We initially adapted deep-wiki's
+  file-oriented `wiki-qa` skill here, but it was the wrong tool for KB consumption: the
+  `SkillsProvider` exposes `read_skill_resource`, which the model misused to hunt
+  non-existent skill resources instead of the retrieved KB context.)
 - **Generate** — a **Wiki Builder** agent reads the *real source* (file tools) and
   writes a faithful, cited wiki in the bundle format the ingestion already consumes —
   fixing the fidelity gaps of hand/LLM-summarized docs, automatically.
@@ -73,10 +79,10 @@ a dev machine; use Path 1 when generation must be hosted/scheduled.
 | --- | --- |
 | Phase A — ingest corpus → `cockpit-kb` (Foundry IQ) | ✅ merged (PR #33) |
 | Corpus enrichment with authoritative source docs | ✅ (cloud KB only) |
-| Phase B — Cockpit agent + `/cockpit` endpoint + frontend route/nav | 🟡 done, **uncommitted** |
-| `grounded-qa` retrieval **Skill** (from MS `wiki-qa`) via `SkillsProvider` | 🟡 done, **uncommitted** |
+| Phase B — Cockpit agent + `/cockpit` endpoint + frontend route/nav | ✅ |
+| Consume grounding via `AzureAISearchContextProvider` (Foundry IQ, with citations) | ✅ |
 | Golden set (20, source-verified) + measurement harness | ✅ (gitignored) |
-| Quality (consume) | **17/20** (hand-tuned); the `grounded-qa` skill holds (≥17/20) |
+| Quality (consume) | **17/20** (hand-tuned), driven by the authority instruction in the agent prompt |
 | **Wiki Builder D1** — generate a faithful bundle from source | ✅ **proven** (see below) |
 
 ### Wiki Builder — proven (D1)
@@ -103,8 +109,8 @@ Generic via `--repo/--component/--model` → the reusable protocol for any multi
 
 ## Roadmap (in order)
 
-1. **Commit Phase B + the `grounded-qa` skill** — consolidate what's done (this plan
-   doc included). Corpus + golden stay gitignored.
+1. **Phase B (Cockpit agent + consume grounding)** — done; grounding via the Foundry IQ
+   context provider, discipline in the prompt. Corpus + golden stay gitignored.
 2. **Wiki Builder (the generate side)** — the main remaining work:
    - **D1**: a Foundry agent + **file tools** (`read_file`/`list_dir`/`search_code`)
      + Microsoft `deep-wiki` generation skills (`wiki-architect`, `wiki-page-writer`,
@@ -123,9 +129,9 @@ Generic via `--repo/--component/--model` → the reusable protocol for any multi
 
 ```
 apps/backend/app/knowledge/ingest_cockpit.py   # Phase A: corpus → cockpit-kb (reads external COCKPIT_DOCBUNDLES)
-apps/backend/app/agents/cockpit.py             # Cockpit agent (search + grounded-qa skill)
-apps/backend/app/agents/skills/grounded-qa/    # the retrieval Skill (SKILL.md), adapted from MS wiki-qa
-apps/backend/app/agents/prompts.py             # COCKPIT_INSTRUCTIONS (identity; discipline lives in the skill)
+apps/backend/app/agents/cockpit.py             # Cockpit agent (AzureAISearchContextProvider, Foundry IQ agentic)
+apps/backend/app/agents/prompts.py             # COCKPIT_INSTRUCTIONS (identity + grounding/citation discipline)
+apps/backend/app/knowledge/skills/             # deep-wiki GENERATION skills (wiki-architect, wiki-page-writer)
 apps/backend/app/main.py                       # registers /cockpit (auth-gated) when cockpit-kb is configured
 apps/frontend/{app/cockpit, components/cockpit} # the /cockpit route + chat
 # gitignored / external (internal content): the Cockpit corpus + eval/datasets/cockpit_golden.jsonl

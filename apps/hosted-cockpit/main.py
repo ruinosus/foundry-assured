@@ -6,17 +6,14 @@
 #
 # A self-contained, single-identity variant of the live /cockpit agent
 # (app/agents/cockpit.py): same Foundry IQ knowledge base (cockpit-kb, agentic
-# retrieval) and the same open-standard **grounded-qa** Agent Skill (bundled under
-# ./skills), but config comes from env (declared in agent.yaml / injected by the
-# platform) and auth is the platform-injected agent identity via
+# retrieval) grounding, but config comes from env (declared in agent.yaml / injected
+# by the platform) and auth is the platform-injected agent identity via
 # DefaultAzureCredential. Pure grounded Q&A — no workflow, memory or HITL.
 # APIs mirror app/agents/cockpit.py; verified against agent-framework 1.9.0.
 
 import asyncio
 import os
-from pathlib import Path
 
-from agent_framework import FileSkillsSource, SkillsProvider, agent_middleware
 from agent_framework.azure import AzureAISearchContextProvider
 from agent_framework.foundry import FoundryChatClient
 from agent_framework_foundry_hosting import ResponsesHostServer
@@ -25,43 +22,30 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Same identity + discipline as the live agent (app/agents/prompts.COCKPIT_INSTRUCTIONS):
-# the answering/citation/decline discipline lives in the grounded-qa skill, not here.
+# Mirror of app/agents/prompts.COCKPIT_INSTRUCTIONS — keep in sync. Microsoft's Foundry
+# IQ pattern for KB-grounded Q&A: grounding from the search context provider (with
+# citations), answering discipline in the instructions, no consume-side Agent Skill.
 COCKPIT_INSTRUCTIONS = (
-    "Você é um especialista na plataforma **Cockpit** (Avanade AAP). Responda em "
-    "português. Siga o seu skill **grounded-qa**: responda SEMPRE fundamentado nos "
-    "documentos recuperados da base de conhecimento do Cockpit, citando o componente e "
-    "o documento-fonte."
+    "Você é um especialista na plataforma **Cockpit** (Avanade AAP). Responda SEMPRE em "
+    "português (pt-BR).\n\n"
+    "Fundamente a resposta **exclusivamente** nos documentos da base de conhecimento do "
+    "Cockpit que foram recuperados e estão no seu contexto (Foundry IQ) — nunca em "
+    "conhecimento externo ou suposição. Quando a pergunta for clara, responda "
+    "diretamente; não peça ao usuário para 'ser mais específico'.\n\n"
+    "Regras:\n"
+    "- Cite a fonte de cada afirmação: o componente e o documento (ex.: "
+    "`cockpit-portal-api v2.1.1 — Arquitetura`), indicando a versão quando relevante.\n"
+    "- Em perguntas de arquitetura / entre componentes (quem persiste o quê, quem chama "
+    "quem, hierarquias, depreciações), prefira os documentos **autoritativos de "
+    "PLATAFORMA/ARQUITETURA** aos resumos de componentes individuais; se conflitarem, "
+    "siga o documento de arquitetura.\n"
+    "- Se os documentos recuperados forem insuficientes, **diga que não sabe** e aponte "
+    "o que falta — nunca invente componentes, versões, endpoints ou detalhes.\n\n"
+    "Formato: use títulos `##`, blocos de código com linguagem e **tabelas** para dados "
+    "estruturados (listas de componentes, endpoints, comparações). Inclua um diagrama "
+    '**Mermaid** quando a resposta envolver arquitetura ou fluxo de dados (rótulos entre '
+    'aspas: `A["/auth"]`).'
 )
-
-_SKILLS_DIR = Path(__file__).parent / "skills"
-
-
-# Mirrors app/agents/cockpit.py: strip orphaned skill tool calls from replayed history
-# so multi-turn doesn't 400 ("No tool output found for function call"). Match ONLY tool
-# content by its `.type` — never the user's `type="text"` message (a broader check would
-# drop the user turn and starve agentic retrieval). The agentic retrieval itself runs in
-# a context-provider hook and emits no model tool call; the grounded-qa skill's
-# load_skill / read_skill_resource calls are the ones that need sanitizing on replay.
-def _is_tool_content(content) -> bool:
-    return getattr(content, "type", None) in (
-        "function_call",
-        "function_result",
-        "tool_call",
-        "tool_result",
-    )
-
-
-@agent_middleware
-async def _drop_replayed_tool_messages(context, call_next):
-    msgs = context.messages
-    if msgs:
-        msgs[:] = [
-            m
-            for m in msgs
-            if not any(_is_tool_content(c) for c in (getattr(m, "contents", None) or []))
-        ]
-    await call_next()
 
 
 async def main() -> None:
@@ -81,16 +65,12 @@ async def main() -> None:
         mode="agentic",
     )
 
-    # Open Agent Skills standard (SKILL.md) — the grounded-qa retrieval discipline.
-    skills = SkillsProvider(FileSkillsSource([str(_SKILLS_DIR)]))
-
     async with search:
         agent = client.as_agent(
             name="CockpitExpert",
             description="Avanade Cockpit platform expert grounded in the Cockpit knowledge base.",
             instructions=COCKPIT_INSTRUCTIONS,
-            context_providers=[search, skills],
-            middleware=[_drop_replayed_tool_messages],
+            context_providers=[search],
             # Foundry hosting manages conversation history; don't double-store.
             default_options={"store": False},
         )

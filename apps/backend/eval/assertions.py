@@ -165,8 +165,8 @@ no_secret_leaked = evaluator(check_no_secret_leaked, name="no_secret_leaked")
 
 
 # Cockpit (second domain): the corpus is a cloud Foundry IQ KB, not local runbook
-# files, so the title-token match above doesn't apply. The grounded-qa skill makes
-# the agent cite the component + source document; this floor passes when the answer
+# files, so the title-token match above doesn't apply. COCKPIT_INSTRUCTIONS makes the
+# agent cite the component + source document; this floor passes when the answer
 # carries a citation signal (a source-file/component/version reference) or declines.
 _COCKPIT_CITATION = re.compile(
     r"\bsrc/|\.(?:cs|ts|tsx|py|csproj|sln)\b|cockpit-[a-z0-9-]+|\bcomponente\b|"

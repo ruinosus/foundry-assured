@@ -47,7 +47,7 @@ finding:
 | --- | --- | --- |
 | Baseline | LLM-summarized docs + LLM-authored golden | 12/20 |
 | Source-verify the **golden** | ~5 "failures" were **golden bugs** the source corrected (the agent had been right) | 16/20 |
-| Authority instruction + retrieval skill | prefer authoritative architecture docs over component summaries | 17/20 |
+| Authority instruction | prefer authoritative architecture docs over component summaries (in the agent's grounding instructions) | 17/20 |
 
 **The meta-finding.** Re-checking the golden against the source showed our *own*
 LLM-authored ground truth was **wrong** on several items — e.g. it claimed a graph
@@ -129,5 +129,7 @@ content.
    curated `deep-wiki` skills rather than reinventing the methodology.
 
 > Method + plan: [`SECOND-DOMAIN-WIKI-PLAN.md`](./SECOND-DOMAIN-WIKI-PLAN.md). Generator:
-> `apps/backend/app/knowledge/wiki_builder.py`. Retrieval skill:
-> `apps/backend/app/agents/skills/grounded-qa`.
+> `apps/backend/app/knowledge/wiki_builder.py` (uses the deep-wiki **generation** skills).
+> Consumption is Microsoft's Foundry IQ pattern — the `AzureAISearchContextProvider`
+> grounds the agent; the answering discipline lives in `COCKPIT_INSTRUCTIONS`
+> (`apps/backend/app/agents/prompts.py`), no consume-side skill.
