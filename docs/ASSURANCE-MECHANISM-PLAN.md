@@ -148,6 +148,11 @@ run but gate nothing.
 
 ## Phase 4 — Permission-aware access (secure retrieval)
 
+> **Shipped data-driven.** Access is the source's read **`groups`** (inherited from the
+> origin repo/ACL or declared in an external map), resolved name→Entra-id via config —
+> **no tiers and no classification logic in code**. For the as-built model, see
+> [`METHOD.md`](./METHOD.md); the framing below is the original plan.
+
 **Objective.** "Security for whoever uses it": each caller only retrieves documents they're
 entitled to — enforced at query time, not by prompt.
 

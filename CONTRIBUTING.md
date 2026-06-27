@@ -58,9 +58,12 @@ Scopes: `backend`, `frontend`, `hosted-agent`, `infra`, `eval`, `auth`, `deps`, 
 | Workflow | Trigger | Does |
 | --- | --- | --- |
 | `ci.yml` | PR + push to `main` | policy gate · typecheck · build · bicep (the required check) |
+| `security-gates.yml` | PR + manual | assurance security gates: access-control (`eval/access_control_test.py`) + red-team (`eval/red_team_test.py`) — a cross-group leak or over-ceiling ASR fails the build |
+| `agent-evals.yml` | manual | Microsoft's official `ai-agent-evals` action on the deployed hosted agent (groundedness/relevance/coherence/intent) — advisory in the run summary, does not block |
 | `eval-cloud.yml` | weekly + manual | Foundry groundedness/relevance/coherence (+ `--safety`) |
 | `deploy.yml` | manual | `azd` deploy backend + frontend to Container Apps |
 | `provision-kb.yml` | manual | re-ingest the knowledge base |
+| `release.yml` | push to `main` | release-please: version bump + changelog + tag (needs the GitHub App, below) |
 
 ### One-time GitHub setup (for the Azure workflows)
 
@@ -84,7 +87,14 @@ The cloud workflows authenticate to Azure with **OIDC** (no stored credentials).
      `AZURE_ENV_NAME`, `AZURE_LOCATION`, `FOUNDRY_PROJECT_ENDPOINT`, `FOUNDRY_MODEL`,
      `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_KNOWLEDGE_BASE`, `AZURE_STORAGE_*`,
      `NEXT_PUBLIC_ENTRA_*`, `ENTRA_TENANT_ID`, `ENTRA_API_CLIENT_ID`.
-   - **Secrets:** `ENTRA_API_CLIENT_SECRET`.
+     - For **`security-gates.yml`** (assurance security gates): `COCKPIT_TEST_USER_A`,
+       `COCKPIT_TEST_USER_B` (the two test identities the access-control / red-team gates
+       run as). Entitlement is derived from the live search ACL, so the `COCKPIT_ACL_*_GROUP`
+       trio (`COCKPIT_ACL_PUBLIC_GROUP` / `_INTERNAL_GROUP` / `_CONFIDENTIAL_GROUP`) is only
+       needed if you ingest with the demo group map rather than your own `COCKPIT_ACL_GROUP_MAP`.
+     - For **`release.yml`** (release-please GitHub App): `RELEASE_APP_ID`.
+   - **Secrets:** `ENTRA_API_CLIENT_SECRET`; `COCKPIT_TEST_PASSWORD` (test-identity password
+     for the security gates); `RELEASE_APP_PRIVATE_KEY` (the release GitHub App key).
 3. **Environments → `production`:** add required reviewers (gates `deploy.yml` / `provision-kb.yml`).
 
 ### Branch protection (Settings → Branches → `main`)

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Estado atual
 
-Repositório **greenfield**: por enquanto só existe `foundry-helpdesk-spec.md` (o build spec completo). Nenhum código foi escrito ainda. A spec é a fonte de verdade para arquitetura, stack e ordem de implementação — leia-a antes de começar qualquer fase.
+Repositório **shipped** (v0.6.0): todas as 6 fases do showcase estão verdes (KB, workflow streaming, memória + OBO, HITL, eval, hosted-agent), e por cima delas o **mecanismo de assurance** (build-fidelity → recall → completeness → controle de acesso por documento → red-team). A fonte de verdade hoje é o código + o [`README.md`](./README.md) e [`docs/METHOD.md`](./docs/METHOD.md) (modelo as-built); a `foundry-helpdesk-spec.md` e a [`docs/ASSURANCE-MECHANISM-PLAN.md`](./docs/ASSURANCE-MECHANISM-PLAN.md) são plano/histórico — leia-as como contexto, não como o estado atual.
 
 ## O que é
 
@@ -23,8 +23,8 @@ O domínio é **swappable**: a arquitetura "pergunte → fundamente → resolva 
 Três camadas. O frontend Next.js conversa com o backend Python via **AG-UI sobre SSE**; o backend roda um **workflow multi-agente** que usa o Foundry na nuvem.
 
 - **Frontend** → `app/api/copilotkit/route.ts` registra um `CopilotRuntime` com um `HttpAgent` para `http://localhost:8000/helpdesk`. A página usa `useCoAgentStateRender` para mostrar os passos intermediários e `useCopilotAction` (`renderAndWaitForResponse`) para o approval card.
-- **Backend** → `app/server.py` cria o FastAPI e chama `add_agent_framework_fastapi_endpoint(app, agent=build_helpdesk_agent(), path="/helpdesk")`. O `build_helpdesk_agent()` em `app/workflow/graph.py` monta o grafo `triage → retrieve → resolve → (condicional) escalate` com `WorkflowBuilder` e o embrulha como **workflow-as-agent** (`wf.as_agent(...)`) para falar AG-UI.
-- **Foundry** → o retriever consulta a **Foundry IQ KB** (`app/knowledge/kb.py`); triage/resolver leem/escrevem **memória** (`app/memory/store.py`, escopos user/procedural/session); eval e traces vão para o Foundry Control Plane.
+- **Backend** → `app/main.py` cria o FastAPI (rodado como `app.main:app`) e expõe o endpoint AG-UI `/helpdesk` para o workflow `triage → retrieve → resolve → (condicional) escalate` embrulhado como **workflow-as-agent**. Camadas: `app/api` (routers finos) → `app/services` → `app/workflow` / `app/agents` / `app/core`.
+- **Foundry** → o retriever consulta a **Foundry IQ KB** e trima por entitlement (`app/agents/secure_search.py`, `app/knowledge/acl_setup.py`); triage/resolver leem/escrevem **memória**; eval e traces vão para o Foundry Control Plane.
 
 **O ponto de maior risco — de-riscar primeiro (Fase 2):** expor um **workflow multi-agente** (não um agente único) sobre AG-UI de forma que o frontend receba os **passos intermediários** (triage, retrieval, draft), não só a resposta final. O caminho é *workflow-as-agent*. Valide que os passos chegam ao UI antes de investir no resto.
 
@@ -37,6 +37,7 @@ Estrutura-alvo do repo (ver seção 5 da spec): `backend/app/{agents,workflow,me
 3. Cada fase tem sinal **verde/vermelho** (ver abaixo). **Não avança** sem o verde da fase atual.
 4. Toda resposta do resolver **DEVE** conter ao menos uma citação de fonte. É policy de eval (ASSERT pega violação).
 5. A tool `create_ticket` só pode disparar **após aprovação humana explícita**.
+6. **Controle de acesso é DADO** (os grupos de leitura de cada fonte), **nunca lógica de classificação no código**. O acesso segue a fonte: grupos vêm do manifesto/`COCKPIT_ACL_CLASSIFICATION`, nomes resolvem para object-IDs via `COCKPIT_ACL_GROUP_MAP`; doc sem acesso declarado → fail-closed. Ver [`docs/METHOD.md`](./docs/METHOD.md).
 
 ## Ordem de implementação (fases)
 
@@ -52,7 +53,7 @@ Cada fase é independente e testável. Não avança sem o verde.
 
 ## Comandos
 
-> Aspiracionais — a estrutura ainda não existe. Rodam a partir das pastas indicadas depois do scaffold.
+> Rodam a partir das pastas indicadas (estrutura já existe). Ver [`README.md`](./README.md) para o runbook completo.
 
 - Backend (de `apps/backend/`): `uv run uvicorn app.main:app --port 8000 --reload`
 - Frontend (de `apps/frontend/`): `npm run dev` (porta 3000)

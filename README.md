@@ -19,6 +19,10 @@ evaluation, and a managed hosted-agent deployment. The frontend is **CopilotKit*
 > the merge → release → gated-deploy flow + the GitHub App setup.
 > **Case study:** [`docs/CASE-STUDY-LLM-WIKI-LOOP.md`](./docs/CASE-STUDY-LLM-WIKI-LOOP.md) —
 > a measured generate→verify→ingest→consume loop for grounding an agent on a large codebase.
+> **Assurance mechanism:** [`docs/METHOD.md`](./docs/METHOD.md) — the reusable, measured
+> KB→agent guarantee (built faithfully · retrieves completely · secure per-caller access ·
+> red-teamed), with a worked example in [`docs/use-case-demo.html`](./docs/use-case-demo.html)
+> / [`docs/USE-CASE-WALKTHROUGH.md`](./docs/USE-CASE-WALKTHROUGH.md).
 > Contributing & CI/CD: [`CONTRIBUTING.md`](./CONTRIBUTING.md) · security:
 > [`SECURITY.md`](./SECURITY.md) · full build spec:
 > [`foundry-helpdesk-spec.md`](./foundry-helpdesk-spec.md) · working rules:
@@ -75,6 +79,28 @@ CrashLoopBackOff…"*, *"What's the weather in Paris?"* (off-corpus → declines
 | 4 | Human-in-the-loop | ticket escalation pauses for explicit approval before `create_ticket` |
 | 5 | Evaluation | deterministic policy gate + Foundry judges, surfaced on `/evals` from the project; CI runs Microsoft's official [`ai-agent-evals`](https://github.com/microsoft/ai-agent-evals) action on the deployed agent |
 | 6 | Hosted-agent deploy | same workflow packaged as a managed Foundry hosted agent |
+
+> On top of the six showcase phases, the repo ships a reusable **assurance mechanism** —
+> the KB→agent guarantees below, each a **measured gate** in CI (not a promise).
+
+## Assurance mechanism
+
+The repo's headline differentiator: a domain-agnostic recipe to point an agent at one or
+more repos/knowledge bases and get **measured, gated** guarantees — the company brings the
+data, the mechanism brings the guarantees. Each pillar is a number wired to a CI gate
+(thresholds in [`apps/backend/eval/assurance.yaml`](./apps/backend/eval/assurance.yaml)):
+
+| Pillar | Guarantee | Gate |
+| --- | --- | --- |
+| **Build** | every wiki claim cites a real source file | fidelity gate (`wiki_builder`) |
+| **Recall** | nothing relevant is left out of retrieval | recall measured (agentic effort) |
+| **Completeness** | answers are grounded *and* complete | completeness gate (`run_eval`) |
+| **Access control** | each caller sees only their entitlement — access **follows the source** (no classification in code); enforced pre-model, defense-in-depth (service-side passthrough + app-side trim) | access-control gate (`access_control_test`, violations = 0) |
+| **Red-team** | no prompt leaks content across groups | red-team gate (`red_team_test`, ASR ≤ ceiling) |
+
+Full as-built model: [`docs/METHOD.md`](./docs/METHOD.md) · visual walkthrough:
+[`docs/use-case-demo.html`](./docs/use-case-demo.html) · design rationale:
+[`docs/ASSURANCE-MECHANISM-PLAN.md`](./docs/ASSURANCE-MECHANISM-PLAN.md).
 
 ## Architecture
 

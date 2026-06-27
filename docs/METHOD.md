@@ -40,9 +40,11 @@ There is **no classification logic in the code** — access *follows the source*
    `create-acl-identities.sh` create demo ones); set `COCKPIT_ACL_GROUP_MAP` (name→id).
 3. **Generate** — `wiki_builder --repo <r> --component <c> --groups <repo read teams>`;
    the fidelity gate rejects a low-fidelity bundle.
-4. **Ingest** — `ingest_cockpit` reads each manifest's `groups`, stamps the index, and
-   enables query-time trimming. (SharePoint/ADLS sources carry native ACLs — Foundry IQ
-   ingests them automatically; this step is for blob/generated sources.)
+4. **Ingest** — `ingest_cockpit` reads each manifest's `groups` and calls
+   `app/knowledge/acl_setup.py`, which stamps the index `groups` field and enables
+   query-time trimming (the code-vs-data split above: data in, no classification logic).
+   (SharePoint/ADLS sources carry native ACLs — Foundry IQ ingests them automatically;
+   this step is for blob/generated sources.)
 5. **Consume** — the agent retrieves *as the caller* (OBO) and trims to entitlement
    (`secure_search`: service-side passthrough + app-side trim — defense in depth).
 6. **Gate** — quality in `ci.yml`/`agent-evals.yml`; security in `security-gates.yml`
