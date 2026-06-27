@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.6.0](https://github.com/ruinosus/foundry-helpdesk/compare/v0.5.0...v0.6.0) (2026-06-27)
+
+
+### Features
+
+* **assurance:** Phase 4 — access-control gate (query-time ACL trimming) ([#56](https://github.com/ruinosus/foundry-helpdesk/issues/56)) ([3cfe4e5](https://github.com/ruinosus/foundry-helpdesk/commit/3cfe4e587af14c70fdefd25b9939ad1a7695ebd9))
+
+
+### Refactors
+
+* **assurance:** classification is owner data, not code ([#59](https://github.com/ruinosus/foundry-helpdesk/issues/59)) ([585dc57](https://github.com/ruinosus/foundry-helpdesk/commit/585dc57c0eb1bc2577aa64808706eb572af602f8))
+
 ## [0.5.0](https://github.com/ruinosus/foundry-helpdesk/compare/v0.4.1...v0.5.0) (2026-06-27)
 
 
