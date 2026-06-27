@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.5.0](https://github.com/ruinosus/foundry-helpdesk/compare/v0.4.1...v0.5.0) (2026-06-27)
+
+
+### Features
+
+* **assurance:** Phase 0 thresholds + Phase 2 retrieval recall tuning ([#51](https://github.com/ruinosus/foundry-helpdesk/issues/51)) ([af97778](https://github.com/ruinosus/foundry-helpdesk/commit/af97778e078f89c5174ef719dae8f242b1d51401))
+* **assurance:** Phase 1 — deterministic fidelity gate on wiki build ([#54](https://github.com/ruinosus/foundry-helpdesk/issues/54)) ([61ca083](https://github.com/ruinosus/foundry-helpdesk/commit/61ca083c9f32abbc4d291d17d7d2f61d3cb27a38))
+* **assurance:** Phase 3 — deterministic completeness gate ([#53](https://github.com/ruinosus/foundry-helpdesk/issues/53)) ([66c4e58](https://github.com/ruinosus/foundry-helpdesk/commit/66c4e580d1fa0a73828e8fa3d79938bb5a4155f7))
+* **assurance:** Phase 4 infra — Entra ACL groups (Bicep) + test users ([#55](https://github.com/ruinosus/foundry-helpdesk/issues/55)) ([82dd4f8](https://github.com/ruinosus/foundry-helpdesk/commit/82dd4f8df09f5ba179ff8285484b4d9d32d6f027))
+
+
+### Documentation
+
+* KB→agent assurance mechanism — full implementation plan ([#50](https://github.com/ruinosus/foundry-helpdesk/issues/50)) ([4d069bb](https://github.com/ruinosus/foundry-helpdesk/commit/4d069bba4f364a470bb1bcbb08716aff0f4c57d8))
+
 ## [0.4.1](https://github.com/ruinosus/foundry-helpdesk/compare/v0.4.0...v0.4.1) (2026-06-27)
 
 
