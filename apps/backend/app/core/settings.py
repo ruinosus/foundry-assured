@@ -35,6 +35,9 @@ class Settings(BaseSettings):
 
     # --- Second domain: Cockpit expert (its own KB over the cockpit docbundles) ---
     cockpit_search_knowledge_base: str = "cockpit-kb"
+    # The search index behind the cockpit knowledge source — queried directly in
+    # semantic mode (agentic mode emits a per-turn tool call that breaks multi-turn).
+    cockpit_search_index: str = "cockpit-docbundles-ks-index"
     cockpit_storage_container: str = "cockpit-corpus"
     # Path to the aap-kb docbundles/ dir (internal Cockpit corpus). Set via env
     # COCKPIT_DOCBUNDLES; the content is ingested to the cloud KB only, never committed.

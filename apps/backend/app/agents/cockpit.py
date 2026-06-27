@@ -36,11 +36,16 @@ def build_cockpit_agent() -> Agent:
         model=settings.foundry_model,
         credential=credential,
     )
+    # Semantic mode (not agentic): agentic retrieval makes the model emit a per-turn
+    # search *tool call*, and over AG-UI the prior turn's tool call replays without its
+    # paired output on the next message → the Responses API rejects it ("No tool output
+    # found for function call") and the 2nd turn fails. Semantic mode injects retrieved
+    # context with no tool call, so multi-turn just works; it still grounds well.
     search = AzureAISearchContextProvider(
         endpoint=settings.azure_search_endpoint,
-        knowledge_base_name=settings.cockpit_search_knowledge_base,
+        index_name=settings.cockpit_search_index,
         credential=credential,
-        mode="agentic",
+        mode="semantic",
     )
     skills = SkillsProvider(FileSkillsSource([str(_SKILLS_DIR)]))
     return client.as_agent(
