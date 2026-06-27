@@ -245,7 +245,7 @@ def _maybe_setup_observability() -> bool:
     return True
 
 
-async def build_component_wiki(repo: Path, component: str, version: str, out_dir: Path, model: str | None = None, verify: bool = True) -> Path:
+async def build_component_wiki(repo: Path, component: str, version: str, out_dir: Path, model: str | None = None, verify: bool = True, groups: list[str] | None = None) -> Path:
     credential = DefaultAzureCredential()
     resolved_model = model or settings.foundry_model
     meter = _CostMeter(resolved_model)
@@ -345,6 +345,10 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "kind": "element", "component": component, "componentVersion": version,
         "releaseVersion": None, "pages": manifest_pages,
+        # Access inherited from the source repo (its read teams) — the ingest stamps
+        # these as the document's allowed groups. Empty = the owner declares access
+        # elsewhere (external map) or it's fail-closed. NOT a classification guess.
+        "groups": groups or [],
     }
     (bundle / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     (bundle / "llms.txt").write_text("\n".join(llms) + "\n", encoding="utf-8")
@@ -394,11 +398,13 @@ def main() -> None:
     ap.add_argument("--out", default="/tmp/wiki-out")
     ap.add_argument("--model", default=None, help="Model deployment for the builder (default: FOUNDRY_MODEL)")
     ap.add_argument("--no-verify", action="store_true", help="Skip the fidelity verifier pass")
+    ap.add_argument("--groups", default="", help="Comma-separated read groups of the source repo (inherited access; written to the manifest)")
     args = ap.parse_args()
     repo = Path(args.repo).expanduser().resolve()
     if not repo.is_dir():
         raise SystemExit(f"repo not found: {repo}")
-    asyncio.run(build_component_wiki(repo, args.component, args.version, Path(args.out).expanduser(), args.model, verify=not args.no_verify))
+    groups = [g.strip() for g in args.groups.split(",") if g.strip()]
+    asyncio.run(build_component_wiki(repo, args.component, args.version, Path(args.out).expanduser(), args.model, verify=not args.no_verify, groups=groups))
 
 
 if __name__ == "__main__":

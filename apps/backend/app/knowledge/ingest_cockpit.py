@@ -131,14 +131,22 @@ def purge_orphans(credential, container: str) -> None:
         print("  no orphan chunks to purge")
 
 
-def collect_pages(docbundles: Path) -> list[tuple[str, bytes]]:
-    """Walk every bundle (manifest.json + pages/*.md) and return (blob_name, content).
+def collect_pages(docbundles: Path) -> tuple[list[tuple[str, bytes]], dict[str, list[str]]]:
+    """Walk every bundle (manifest.json + pages/*.md).
+
+    Returns (items, component_groups): the (blob_name, content) pages, and the
+    {component-key: [groups]} map declared by each manifest (the read access inherited
+    from the source repo by wiki_builder) — fed to the ACL stamping. Access follows the
+    source; this code never classifies.
 
     Each page's generic H1 ("Visão Geral do Repositório") is replaced with a
     component+version-qualified one so the KB cites a meaningful source, e.g.
     "cockpit-portal-api v2.1.1 — Visão Geral do Repositório".
     """
+    from app.knowledge.acl_setup import _component
+
     items: list[tuple[str, bytes]] = []
+    component_groups: dict[str, list[str]] = {}
     for manifest_path in sorted(docbundles.rglob("manifest.json")):
         meta = json.loads(manifest_path.read_text(encoding="utf-8"))
         component = meta.get("component")
@@ -147,6 +155,8 @@ def collect_pages(docbundles: Path) -> list[tuple[str, bytes]]:
         # Skip the legacy unversioned bundle (a duplicate of the versioned ones).
         if not component and not version:
             continue
+        if meta.get("groups"):
+            component_groups[_component(f"{key}__x.md")] = meta["groups"]
         # Citation label: "component version" for elements; the manifest title for
         # the platform bundle (e.g. "Plataforma Cockpit 2.1.0").
         label = f"{component} {version}" if component else (meta.get("title") or key)
@@ -163,7 +173,7 @@ def collect_pages(docbundles: Path) -> list[tuple[str, bytes]]:
             content = f"# {label} — {title}\n\n{body}"
             blob = f"{key}__{page['id']}.md".replace("/", "-")
             items.append((blob, content.encode("utf-8")))
-    return items
+    return items, component_groups
 
 
 def upload(credential, container: str, items: list[tuple[str, bytes]]) -> int:
@@ -264,7 +274,7 @@ def main() -> None:
     )
 
     print("== Step 1/3: collect + upload Cockpit corpus ==")
-    items = collect_pages(docbundles)
+    items, component_groups = collect_pages(docbundles)
     if not items:
         sys.exit(f"No pages found under {docbundles}")
     print(f"Collected {len(items)} pages from {docbundles}")
@@ -284,11 +294,26 @@ def main() -> None:
     # and is queryable during the run; blocking on the full ~1s/chunk embedding pass
     # just stalls the caller.
     purge_orphans(credential, settings.cockpit_storage_container)
-    trigger_indexer(indexer_client)  # non-blocking
-    print(
-        "\nDone (uploads + deletions reconciled). The indexer is running async —\n"
-        "new pages appear in the KB incrementally over the next few minutes."
-    )
+
+    # Phase 4: when access groups are configured, the ingest owns document-level ACL too,
+    # stamping each doc with the read groups its source declared (component_groups, from
+    # the manifests) — access follows the source, no classification in code. Stamping
+    # needs the index populated, so run the indexer to completion first; otherwise keep
+    # the fast non-blocking path.
+    if settings.acl_group_map:
+        print("== Step 5/5: indexer (blocking) + document-level ACL (access from source) ==")
+        trigger_indexer(indexer_client, wait_s=900)
+        from app.knowledge.acl_setup import setup_acl
+
+        setup_acl(component_groups or None)
+        print("\nDone (corpus indexed + per-document access stamped + trimming enabled).")
+    else:
+        trigger_indexer(indexer_client)  # non-blocking
+        print(
+            "\nDone (uploads + deletions reconciled). The indexer is running async —\n"
+            "new pages appear in the KB incrementally over the next few minutes.\n"
+            "(Configure access groups to also stamp document-level access.)"
+        )
 
 
 if __name__ == "__main__":

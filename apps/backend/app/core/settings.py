@@ -39,19 +39,44 @@ class Settings(BaseSettings):
     cockpit_search_knowledge_base: str = "cockpit-kb"
     cockpit_storage_container: str = "cockpit-corpus"
 
-    # --- Phase 4: document-level access control (classification tiers) ---
-    # Entra group object-IDs per sensitivity tier (from infra/entra). Tier NAMES are the
-    # generic standard (public/internal/confidential); the per-document tier is OWNER DATA
-    # (see cockpit_acl_classification), never code. The mechanism maps tier→group here.
+    # --- Phase 4: document-level access control (access follows the source) ---
+    # A document's access = the group(s) that can read its SOURCE — arbitrary groups
+    # (a GitHub team, an ADLS ACL group, a SharePoint group), NOT fixed tiers. The
+    # mechanism stamps whatever groups the data declares per document and trims by the
+    # caller's Entra identity. There is NO classification logic in code.
+    #
+    # cockpit_acl_group_map: the tenant's group NAME → Entra object-ID (env pairs
+    #   "eng-pricing:<guid>,eng-platform:<guid>"). Manifests/classification carry NAMES;
+    #   this resolves them to IDs. Values that are already GUIDs pass through.
+    cockpit_acl_group_map: str = ""
+    # Path to the owner's per-document access map (JSON: {document-key: [group-name,…]}),
+    # external + gitignored like the corpus. Used when the bundle manifests don't already
+    # carry `groups` (wiki_builder writes those by inheriting the repo's read teams).
+    cockpit_acl_classification: str = ""
+    # Groups for documents with NO declared access — empty = fail-closed (nobody sees).
+    cockpit_acl_default_groups: str = ""
+    # Back-compat: the three demo groups also seed the name→id map (public/internal/
+    # confidential). Real tenants use cockpit_acl_group_map with their own group names.
     cockpit_acl_public_group: str = ""
     cockpit_acl_internal_group: str = ""
     cockpit_acl_confidential_group: str = ""
-    # Path to the owner's classification map (JSON: {document-key: tier-name}). External +
-    # gitignored, like the corpus — the data owner declares it (or wiki_builder inherits it
-    # from each source repo's access). The code carries NO classification logic.
-    cockpit_acl_classification: str = ""
-    # Tier for documents absent from the map — fail-closed (most restrictive) by default.
-    cockpit_acl_default_tier: str = "confidential"
+
+    @property
+    def acl_group_map(self) -> dict[str, str]:
+        """Group NAME → Entra object-ID. cockpit_acl_group_map, plus the demo trio."""
+        mapping: dict[str, str] = {}
+        for name, gid in (
+            ("public", self.cockpit_acl_public_group),
+            ("internal", self.cockpit_acl_internal_group),
+            ("confidential", self.cockpit_acl_confidential_group),
+        ):
+            if gid:
+                mapping[name] = gid
+        for pair in self.cockpit_acl_group_map.split(","):
+            if ":" in pair:
+                name, gid = pair.split(":", 1)
+                mapping[name.strip()] = gid.strip()
+        return mapping
     # Path to the aap-kb docbundles/ dir (internal Cockpit corpus). Set via env
     # COCKPIT_DOCBUNDLES; the content is ingested to the cloud KB only, never committed.
     cockpit_docbundles_path: str = ""
