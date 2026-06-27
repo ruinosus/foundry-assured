@@ -16,9 +16,12 @@ the deploy pipeline — is reusable Foundry plumbing you keep as-is.
 | 3 | **The action** (ticket → yours) | `apps/backend/app/tools/`, `workflow/escalation.py`, the `TICKET:` convention | rewrite |
 | 4 | **Identity / labels** | `apps/frontend/lib/branding.ts`, `app/page.tsx` | set |
 | 5 | **Eval datasets** | `apps/backend/eval/datasets/*.jsonl` | set (data only) |
+| 6 | **Access (who sees each doc)** | your Entra groups + `COCKPIT_ACL_GROUP_MAP`; each source's read groups in the bundle manifest `groups` (or an external `{component: [group]}` map via `COCKPIT_ACL_CLASSIFICATION`) | set (data only) |
 
-> Rule of thumb: **#1, #4, #5 you set; #2 and #3 you rewrite.** The rewrites are small
-> (one prompts file, one tool) — that's the point. The eval *harness* never changes.
+> Rule of thumb: **#1, #4, #5, #6 you set; #2 and #3 you rewrite.** The rewrites are small
+> (one prompts file, one tool) — that's the point. The eval *harness*, the ACL mechanism
+> and the security gates never change — access is **data** (each source's read groups),
+> not code. See [`METHOD.md`](./METHOD.md).
 
 ---
 

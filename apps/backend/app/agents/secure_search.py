@@ -34,7 +34,7 @@ from app.core.settings import settings
 from app.knowledge.acl_setup import _component
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
-_INDEX = "cockpit-docbundles-ks-index"
+_INDEX = settings.cockpit_search_index
 _API = "2025-08-01-preview"
 
 

@@ -31,7 +31,7 @@ from azure.identity import DefaultAzureCredential
 from app.core.settings import settings
 
 _API = "2025-08-01-preview"
-_INDEX = "cockpit-docbundles-ks-index"
+_INDEX = settings.cockpit_search_index
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _GUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
 

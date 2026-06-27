@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     # Agentic retrieval (Foundry IQ) queries this Knowledge Base, which wraps the
     # cockpit-docbundles-ks knowledge source / index — no index name needed here.
     cockpit_search_knowledge_base: str = "cockpit-kb"
+    # The index behind the knowledge source — the ACL stamping/trim operate on it.
+    cockpit_search_index: str = "cockpit-docbundles-ks-index"
     cockpit_storage_container: str = "cockpit-corpus"
 
     # --- Phase 4: document-level access control (access follows the source) ---

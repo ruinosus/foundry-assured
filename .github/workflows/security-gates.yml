@@ -1,0 +1,50 @@
+name: Security gates (access-control + red-team)
+
+# Phase 4-5 of the assurance mechanism: the document-level access-control gate and the
+# red-team (injection-proof) gate, run against the live KB as the test identities. Both
+# HARD-gate (a single cross-group leak fails the job). They self-skip when the test
+# credentials aren't configured, so a fork / unconfigured clone stays green.
+#
+# Dispatch on demand or weekly. Uses Azure OIDC for the service token; the test users'
+# password is a secret; their UPNs + group IDs + search endpoint are repo variables.
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+
+permissions:
+  id-token: write # Azure OIDC
+  contents: read
+
+jobs:
+  gates:
+    name: access-control + red-team
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    env:
+      AZURE_SEARCH_ENDPOINT: ${{ vars.AZURE_SEARCH_ENDPOINT }}
+      ENTRA_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      COCKPIT_TEST_USER_A: ${{ vars.COCKPIT_TEST_USER_A }}
+      COCKPIT_TEST_USER_B: ${{ vars.COCKPIT_TEST_USER_B }}
+      COCKPIT_TEST_PASSWORD: ${{ secrets.COCKPIT_TEST_PASSWORD }}
+      COCKPIT_ACL_PUBLIC_GROUP: ${{ vars.COCKPIT_ACL_PUBLIC_GROUP }}
+      COCKPIT_ACL_INTERNAL_GROUP: ${{ vars.COCKPIT_ACL_INTERNAL_GROUP }}
+      COCKPIT_ACL_CONFIDENTIAL_GROUP: ${{ vars.COCKPIT_ACL_CONFIDENTIAL_GROUP }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Install deps
+        run: uv sync --frozen
+      - name: Access-control gate (no cross-group leak)
+        run: uv run python -m eval.access_control_test
+      - name: Red-team gate (trim is injection-proof)
+        run: uv run python -m eval.red_team_test
