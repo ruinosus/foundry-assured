@@ -25,6 +25,7 @@ import asyncio
 import json
 import logging
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -48,6 +49,66 @@ _SOURCE_EXT = {".cs", ".py", ".ts", ".tsx", ".js", ".go", ".java", ".json", ".ya
                ".yml", ".toml", ".md", ".csproj", ".sln", ".sql", ".sh", ".tf"}
 _MAX_FILE_CHARS = 16_000
 _PAGE_DELAY_S = 8  # pace page calls to stay under the model TPM cap
+
+
+# --- Phase 1: deterministic fidelity gate -------------------------------------
+# A source-grounded wiki must cite REAL files. After the verifier pass we measure what
+# fraction of the wiki's file citations actually resolve to a file in the gathered
+# source (and that none point into a git worktree), and gate the bundle on it. This
+# turns "the KB is built faithfully" into a number, not a vibe (Phase 1 of the plan).
+_EXT_ALT = "|".join(sorted(e.lstrip(".") for e in _SOURCE_EXT))
+_CITE_RE = re.compile(rf"((?:[\w.-]+/)*[\w.-]+\.(?:{_EXT_ALT}))(?::\d+(?:-\d+)?)?")
+
+
+def _fidelity_report(pages: list[dict], files: dict[str, str]) -> dict:
+    """Resolve every file citation in the pages against the real source.
+
+    A citation resolves if its path equals, or is a path-suffix of, a real source file
+    (citations are often relative/partial). Citations into `.worktrees` are defects.
+    score = resolved / total; 0 if a faithful wiki cited nothing at all."""
+    keys = set(files)
+    basenames: dict[str, int] = {}
+    for k in keys:
+        basenames[k.rsplit("/", 1)[-1]] = basenames.get(k.rsplit("/", 1)[-1], 0) + 1
+
+    total = resolved = line_ranged = worktree = 0
+    distinct: set[str] = set()
+    for page in pages:
+        text = page.get("content", "")
+        for m in _CITE_RE.finditer(text):
+            cited = m.group(1).lstrip("./")
+            total += 1
+            if ":" in m.group(0):
+                line_ranged += 1
+            if "worktree" in cited:  # note: leading "." already stripped above
+                worktree += 1
+                continue
+            hit = (
+                cited in keys
+                or any(k.endswith("/" + cited) for k in keys)
+                or ("/" not in cited and basenames.get(cited, 0) == 1)
+            )
+            if hit:
+                resolved += 1
+                distinct.add(cited)
+    score = (resolved / total) if total else 0.0
+    return {
+        "total": total, "resolved": resolved, "line_ranged": line_ranged,
+        "worktree": worktree, "distinct": len(distinct), "score": score,
+    }
+
+
+def _fidelity_floor() -> float:
+    """Read build.fidelity_min from the single source of truth (eval/assurance.yaml)."""
+    try:
+        import yaml
+
+        cfg = yaml.safe_load(
+            (Path(__file__).resolve().parents[2] / "eval" / "assurance.yaml").read_text(encoding="utf-8")
+        )
+        return float(((cfg or {}).get("build") or {}).get("fidelity_min", 0.80))
+    except Exception:  # noqa: BLE001 — gate falls back to a sane default if config is absent
+        return 0.80
 
 
 def gather_source(repo: Path) -> dict[str, str]:
@@ -289,6 +350,27 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
     (bundle / "llms.txt").write_text("\n".join(llms) + "\n", encoding="utf-8")
     print(f"\n✅ Bundle: {bundle}  ({len(manifest_pages)} páginas + manifest.json + llms.txt)", flush=True)
     print(meter.report(), flush=True)
+
+    # Fidelity gate (Phase 1) — the bundle is written above for inspection, but a wiki
+    # whose citations don't resolve to real source (or cite a worktree) must not reach
+    # the KB. Gates only when the verifier ran (the fidelity claim depends on it).
+    fid = _fidelity_report(pages, files)
+    print(
+        f"\nFidelity: {fid['score']:.0%} — {fid['resolved']}/{fid['total']} citações resolvem para "
+        f"arquivo real | {fid['distinct']} arquivos distintos, {fid['line_ranged']} com linha, "
+        f"{fid['worktree']} em worktree",
+        flush=True,
+    )
+    floor = _fidelity_floor()
+    if verify and (fid["score"] + 1e-9 < floor or fid["worktree"] > 0):
+        print(
+            f"❌ Fidelity gate FAILED (< {floor:.0%} ou citações em worktree) — "
+            "bundle escrito para inspeção, NÃO ingerir.",
+            flush=True,
+        )
+        raise SystemExit(1)
+    if verify:
+        print(f"✅ Fidelity gate PASSED (≥ {floor:.0%}).", flush=True)
     return bundle
 
 
