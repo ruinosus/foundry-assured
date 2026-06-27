@@ -181,6 +181,9 @@ resource webApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'BACKEND_URL', value: 'https://${backendFqdn}' }
             { name: 'AGUI_URL', value: 'https://${backendFqdn}/helpdesk' }
             { name: 'HOSTED_AGUI_URL', value: 'https://${backendFqdn}/helpdesk-hosted' }
+            // Second domain (Cockpit expert). Without this the /cockpit route proxies
+            // to the localhost default and fails (405/fetch) in the container.
+            { name: 'COCKPIT_AGUI_URL', value: 'https://${backendFqdn}/cockpit' }
           ]
         }
       ]
