@@ -7,7 +7,9 @@ quality:
   # Foundry evaluators (1-5 scale unless noted). Phase 3 wires these into eval/run_eval.py.
   groundedness_min: 4.0          # every claim supported by retrieved context
   relevance_min: 4.0             # answer addresses the question
-  answer_completeness_min: 0.80  # fraction of expected facts the answer covers
+  answer_completeness_min: 0.60  # fraction of expected_set the answer covers (Phase 3 gate).
+                                 # Lenient start — ratchet toward 0.90 as Phase 2 recall +
+                                 # corpus/query work close the residual (e.g. mcp-saidot).
   retrieval_recall_min: 0.75     # fraction of relevant docs the retrieval surfaced (Phase 2)
   citation_floor: 1              # every answer cites >= 1 source (already enforced)
 

@@ -51,6 +51,52 @@ _COCKPIT_GOLDEN = _DATASETS / "cockpit_golden.jsonl"
 _ADVERSARIAL = _DATASETS / "adversarial.jsonl"
 _CORPUS = Path(__file__).resolve().parent.parent / "app" / "knowledge" / "corpus"
 _RUNS = Path(__file__).resolve().parent / "runs.jsonl"
+_ASSURANCE = Path(__file__).resolve().parent / "assurance.yaml"
+
+
+def _load_assurance() -> dict:
+    """The measured-guarantee thresholds (Phase 0). Single source of truth the gates read."""
+    try:
+        import yaml
+
+        return yaml.safe_load(_ASSURANCE.read_text(encoding="utf-8")) or {}
+    except (FileNotFoundError, ImportError):
+        return {}
+
+
+def _completeness_gate(
+    rows: list[dict], items: list, threshold: float
+) -> tuple[bool, str | None]:
+    """Deterministic completeness gate (Phase 3).
+
+    Golden rows that carry an ``expected_set`` — a *source-verified* list of items the
+    answer must mention (e.g. every MCP server) — are scored by coverage: the fraction
+    of the set the answer names. The mean coverage across those rows must meet
+    ``threshold``. Deterministic (no LLM judge) so it can hard-gate CI, and it targets
+    the exact failure the agent showed (listing 6 of 9 MCP servers). Rows without an
+    ``expected_set`` are skipped (their correctness is judged elsewhere)."""
+    scored: list[tuple[str, int, int, list[str]]] = []
+    for row, item in zip(rows, items):
+        expected = row.get("expected_set") or []
+        if not expected:
+            continue
+        answer = (item.conversation[-1].text or "").lower()
+        missing = [e for e in expected if str(e).lower() not in answer]
+        scored.append(
+            (row.get("query", "")[:48], len(expected) - len(missing), len(expected), missing)
+        )
+    if not scored:
+        return True, None
+    mean = sum(hit / total for _, hit, total, _ in scored) / len(scored)
+    lines = [
+        f"   {hit}/{total}  {q}" + (f"  ✗ faltou: {', '.join(miss)}" if miss else "  ✓")
+        for q, hit, total, miss in scored
+    ]
+    summary = (
+        f"Completeness: cobertura média {mean:.0%} (threshold {threshold:.0%}) "
+        f"em {len(scored)} pergunta(s) de enumeração\n" + "\n".join(lines)
+    )
+    return mean + 1e-9 >= threshold, summary
 
 
 def _load_dataset(path: Path) -> list[dict]:
@@ -239,8 +285,9 @@ async def _run(cloud: bool, safety: bool, domain: str) -> int:
     for r in results:
         _print_results(r)
 
-    # The LOCAL policy result is the hard gate; Foundry scores are graded signal,
-    # not a blocker, so a flaky judge score can't break CI.
+    # The LOCAL policy result + the completeness gate are the HARD gates (deterministic,
+    # CI-blocking). Foundry cloud scores are graded signal, not a blocker, so a flaky
+    # judge score can't break CI.
     gate_failed = False
     try:
         results[0].raise_for_status()
@@ -248,6 +295,17 @@ async def _run(cloud: bool, safety: bool, domain: str) -> int:
     except EvalNotPassedError as exc:
         gate_failed = True
         print(f"\n❌ Policy gate FAILED — {exc}")
+
+    # Completeness gate (Phase 3) — only bites on golden rows carrying an expected_set.
+    completeness_min = (_load_assurance().get("quality") or {}).get("answer_completeness_min", 0.8)
+    ok, summary = _completeness_gate(rows, items, completeness_min)
+    if summary:
+        print("\n" + summary)
+        if ok:
+            print(f"✅ Completeness gate PASSED (≥ {completeness_min:.0%}).")
+        else:
+            gate_failed = True
+            print(f"❌ Completeness gate FAILED (< {completeness_min:.0%}).")
 
     _persist_run(results, len(rows), eval_name, cloud=cloud, gate_passed=not gate_failed)
     return 1 if gate_failed else 0
