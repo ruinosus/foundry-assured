@@ -38,6 +38,13 @@ class Settings(BaseSettings):
     # cockpit-docbundles-ks knowledge source / index — no index name needed here.
     cockpit_search_knowledge_base: str = "cockpit-kb"
     cockpit_storage_container: str = "cockpit-corpus"
+
+    # --- Phase 4: document-level access control (classification tiers) ---
+    # Entra group object-IDs per sensitivity tier (from infra/entra). Ingest stamps each
+    # doc's groupIds = the tier's group; retrieval trims to the caller's groups.
+    cockpit_acl_public_group: str = ""
+    cockpit_acl_internal_group: str = ""
+    cockpit_acl_confidential_group: str = ""
     # Path to the aap-kb docbundles/ dir (internal Cockpit corpus). Set via env
     # COCKPIT_DOCBUNDLES; the content is ingested to the cloud KB only, never committed.
     cockpit_docbundles_path: str = ""
