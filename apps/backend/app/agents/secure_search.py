@@ -28,10 +28,9 @@ from agent_framework import Message
 from agent_framework.azure import AzureAISearchContextProvider
 from azure.identity import DefaultAzureCredential
 
-from app.agents.prompts import COCKPIT_INSTRUCTIONS  # noqa: F401  (kept for import stability)
 from app.core.auth import credential_for_request, current_user
 from app.core.settings import settings
-from app.knowledge.acl_setup import _component
+from app.knowledge.acl_setup import _canonical, _component
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _INDEX = settings.cockpit_search_index
@@ -50,20 +49,23 @@ def _caller_search_token() -> str | None:
 
 def authorized_components(caller_token: str) -> set[str]:
     """The components the caller may read — the caller's *entitlement* (query-independent),
-    from a direct search (`*`) that the search service trims by the caller's identity."""
+    from a direct search (`*`) that the search service trims by the caller's identity.
+    Pages through @odata.nextLink so a broadly-entitled caller on a large corpus isn't
+    capped at the first page (which would silently over-trim, never leak)."""
     service = DefaultAzureCredential().get_token(_SEARCH_SCOPE).token
-    url = (f"{settings.azure_search_endpoint}/indexes/{_INDEX}/docs"
-           f"?api-version={_API}&search=*&$top=1000&$select=blob_url")
-    req = urllib.request.Request(url, headers={
-        "Authorization": f"Bearer {service}",
-        "x-ms-query-source-authorization": caller_token,
-    })
+    headers = {"Authorization": f"Bearer {service}", "x-ms-query-source-authorization": caller_token}
+    url: str | None = (f"{settings.azure_search_endpoint}/indexes/{_INDEX}/docs"
+                       f"?api-version={_API}&search=*&$top=1000&$select=blob_url")
+    components: set[str] = set()
     try:
-        with urllib.request.urlopen(req, timeout=25) as r:
-            docs = json.load(r).get("value", [])
-    except Exception:  # noqa: BLE001 — on error, fail-closed (no components → drop all)
+        while url:
+            with urllib.request.urlopen(urllib.request.Request(url, headers=headers), timeout=25) as r:
+                page = json.load(r)
+            components |= {_component(d.get("blob_url", "")) for d in page.get("value", []) if d.get("blob_url")}
+            url = page.get("@odata.nextLink")
+    except Exception:  # noqa: BLE001 — on error, fail-closed (drop all rather than leak)
         return set()
-    return {_component(d.get("blob_url", "")) for d in docs if d.get("blob_url")}
+    return components
 
 
 def _chunk_component(content: str) -> str:
@@ -77,7 +79,7 @@ def _chunk_component(content: str) -> str:
         title = label.split(":", 1)[1].strip()
         return "source__" + re.sub(r"\s+", "_", title).upper()
     head = re.split(r"\s+[—–]\s+", label, 1)[0]
-    return re.sub(r"\s+v?[\d.]+.*$", "", head).strip()
+    return _canonical(head)  # same normalization as acl_setup._component → keys match
 
 
 def _chunk_authorized(content: str, allowed: set[str]) -> bool:

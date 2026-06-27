@@ -99,8 +99,25 @@ async def _run() -> int:
         print(f"\n❌ Access-control gate FAILED — agentic path leaked to User B: {leak} "
               f"(ceiling {ceiling}).")
         return 1
-    print(f"\n✅ Access-control gate PASSED — every chunk User B kept is within entitlement "
-          f"(leaks {len(leak)} ≤ {ceiling}).")
+
+    # Positive side: a cleared user (A) must NOT be over-restricted — they should be
+    # entitled to strictly more than B (else the trim is globally clamping, which the
+    # leak-only check wouldn't catch). Skips quietly if User A isn't configured.
+    upn_a = os.environ.get("COCKPIT_TEST_USER_A", "")
+    if upn_a:
+        kept_a, auth_a = await _kept_components(provider, _ropc_token(upn_a, password))
+        a_leak = sorted(kept_a - auth_a)
+        print(f"User A authorized:      {len(auth_a)} components | kept {len(kept_a)}")
+        if a_leak:
+            print(f"\n❌ FAILED — leak to User A too: {a_leak}.")
+            return 1
+        if not auth_a > auth_b:
+            print("\n❌ FAILED — cleared User A is not entitled to more than public-only B "
+                  "(the trim is over-restricting, not just safe).")
+            return 1
+
+    print(f"\n✅ Access-control gate PASSED — B stays within entitlement (leaks {len(leak)} ≤ "
+          f"{ceiling}); A is entitled to strictly more.")
     return 0
 
 
