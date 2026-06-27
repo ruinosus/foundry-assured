@@ -9,9 +9,14 @@ evaluation, and a managed hosted-agent deployment. The frontend is **CopilotKit*
 > **Clone → provision → deploy:** [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) — the
 > step-by-step runbook (infra, Entra app registrations, KB/memory, hosted agent,
 > Container Apps).
+> **Use this template:** [`docs/USE-THIS-TEMPLATE.md`](./docs/USE-THIS-TEMPLATE.md) —
+> *Use this template → Create a new repository*, then provision your own infra, CI/CD
+> identities (OIDC + GitHub App, no PAT) and reset the version history.
 > **Make it your own domain:** [`docs/CUSTOMIZE.md`](./docs/CUSTOMIZE.md) — swap the
 > corpus, prompts, action and identity to turn this into any "ask → ground → resolve →
 > escalate" assistant.
+> **Release & deploy automation:** [`docs/RELEASE-AUTOMATION.md`](./docs/RELEASE-AUTOMATION.md) —
+> the merge → release → gated-deploy flow + the GitHub App setup.
 > **Case study:** [`docs/CASE-STUDY-LLM-WIKI-LOOP.md`](./docs/CASE-STUDY-LLM-WIKI-LOOP.md) —
 > a measured generate→verify→ingest→consume loop for grounding an agent on a large codebase.
 > Contributing & CI/CD: [`CONTRIBUTING.md`](./CONTRIBUTING.md) · security:
