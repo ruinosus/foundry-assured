@@ -15,11 +15,11 @@ The Cockpit KB is org-wide (not per-user), so this runs under the app's own iden
 """
 
 from agent_framework import Agent
-from agent_framework.azure import AzureAISearchContextProvider
 from agent_framework.foundry import FoundryChatClient
 from azure.identity import DefaultAzureCredential
 
 from app.agents.prompts import COCKPIT_INSTRUCTIONS
+from app.agents.secure_search import SecureAzureAISearchProvider
 from app.core.settings import settings
 
 
@@ -44,7 +44,10 @@ def build_cockpit_agent() -> Agent:
     # semantic search). Measured on the MCP-enumeration golden it lifts retrieval recall
     # 6/12 → 8/12 (8/9 servers) — the completeness lever (Phase 2 of the assurance plan).
     # Trade-off: ~2x context + higher latency; worth it for a completeness-first KB agent.
-    search = AzureAISearchContextProvider(
+    # SecureAzureAISearchProvider (Phase 4): passes the signed-in user's identity as
+    # x-ms-query-source-authorization so the KB trims results to what they're entitled
+    # to. With auth off (local dev) it behaves exactly like the base provider.
+    search = SecureAzureAISearchProvider(
         endpoint=settings.azure_search_endpoint,
         knowledge_base_name=settings.cockpit_search_knowledge_base,
         credential=credential,
