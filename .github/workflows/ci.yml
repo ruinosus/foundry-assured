@@ -33,6 +33,8 @@ jobs:
         run: uv sync --frozen
       - name: Policy gate (planted-violation self-test)
         run: uv run python -m eval.run_eval --self-test
+      - name: ACL attribution round-trip (chunk key == blob key)
+        run: uv run python -m eval.test_attribution
 
   frontend:
     name: Frontend · typecheck + build

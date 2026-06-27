@@ -36,6 +36,16 @@ _SEARCH_SCOPE = "https://search.azure.com/.default"
 _GUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
 
 
+def _canonical(name: str) -> str:
+    """Canonical component key: lowercase, spaces→hyphens, trailing version stripped.
+
+    Both the blob key (`plataforma-cockpit-2.1.0`) and the H1 label (`Plataforma Cockpit
+    2.1.0`) must yield the SAME key, or the trim over-restricts. `-v?[\\d.]+` strips both
+    `-v1.2.0` and `-2.1.0`."""
+    s = name.strip().lower().replace(" ", "-")
+    return re.sub(r"-v?[\d.]+.*$", "", s)
+
+
 def _component(blob_url: str) -> str:
     """Deterministic identity from the blob naming convention (NOT classification).
 
@@ -44,7 +54,7 @@ def _component(blob_url: str) -> str:
     head = name.split("__")[0]
     if head == "source" and "__" in name:
         return "source__" + name.split("__")[1]
-    return re.sub(r"-v[\d.]+.*$", "", head)
+    return _canonical(head)
 
 
 def _resolve(names: list[str]) -> list[str]:
@@ -111,37 +121,41 @@ def setup_acl(component_groups: dict[str, list[str]] | None = None) -> None:
         print("✓ permission field 'groups' added")
 
     # Populate under a disabled window (docs with no group are invisible when enforced).
+    # The window is a deliberate maintenance step — re-trim is ENABLED again in `finally`
+    # even on error, so a transient failure never leaves the index untrimmed/open.
     _set_option(token, index, "disabled")
-    docs, skip = [], 0
-    while True:
-        page = _req(token, "GET", f"indexes/{_INDEX}/docs?api-version={_API}&search=*&$select=uid,blob_url&$top=1000&$skip={skip}")
-        rows = (page or {}).get("value", [])
-        if not rows:
-            break
-        docs += rows
-        skip += len(rows)
-        if len(rows) < 1000:
-            break
+    try:
+        docs, skip = [], 0
+        while True:
+            page = _req(token, "GET", f"indexes/{_INDEX}/docs?api-version={_API}&search=*&$select=uid,blob_url&$top=1000&$skip={skip}")
+            rows = (page or {}).get("value", [])
+            if not rows:
+                break
+            docs += rows
+            skip += len(rows)
+            if len(rows) < 1000:
+                break
 
-    from collections import Counter
-    tally: Counter[str] = Counter()
-    fail_closed = 0
-    batch: list[dict] = []
-    for d in docs:
-        names = access.get(_component(d.get("blob_url", "")), default_groups)
-        gids = _resolve(names)
-        if not gids:
-            fail_closed += 1
-        for n in (names or ["<none>"]):
-            tally[n] += 1
-        batch.append({"@search.action": "mergeOrUpload", "uid": d["uid"], "groups": gids})
-        if len(batch) >= 500:
+        from collections import Counter
+        tally: Counter[str] = Counter()
+        fail_closed = 0
+        batch: list[dict] = []
+        for d in docs:
+            names = access.get(_component(d.get("blob_url", "")), default_groups)
+            gids = _resolve(names)
+            if not gids:
+                fail_closed += 1
+            for n in (names or ["<none>"]):
+                tally[n] += 1
+            batch.append({"@search.action": "mergeOrUpload", "uid": d["uid"], "groups": gids})
+            if len(batch) >= 500:
+                _req(token, "POST", f"indexes/{_INDEX}/docs/index?api-version={_API}", {"value": batch})
+                batch = []
+        if batch:
             _req(token, "POST", f"indexes/{_INDEX}/docs/index?api-version={_API}", {"value": batch})
-            batch = []
-    if batch:
-        _req(token, "POST", f"indexes/{_INDEX}/docs/index?api-version={_API}", {"value": batch})
+    finally:
+        _set_option(token, index, "enabled")  # re-arm trimming no matter what
 
-    _set_option(token, index, "enabled")
     note = f" ({fail_closed} fail-closed — no resolvable group)" if fail_closed else ""
     print(f"✓ stamped {len(docs)} docs by source access {dict(tally)}{note}; trimming ENABLED")
 

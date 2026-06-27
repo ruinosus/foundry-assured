@@ -30,9 +30,11 @@ jobs:
       COCKPIT_TEST_USER_A: ${{ vars.COCKPIT_TEST_USER_A }}
       COCKPIT_TEST_USER_B: ${{ vars.COCKPIT_TEST_USER_B }}
       COCKPIT_TEST_PASSWORD: ${{ secrets.COCKPIT_TEST_PASSWORD }}
-      COCKPIT_ACL_PUBLIC_GROUP: ${{ vars.COCKPIT_ACL_PUBLIC_GROUP }}
-      COCKPIT_ACL_INTERNAL_GROUP: ${{ vars.COCKPIT_ACL_INTERNAL_GROUP }}
-      COCKPIT_ACL_CONFIDENTIAL_GROUP: ${{ vars.COCKPIT_ACL_CONFIDENTIAL_GROUP }}
+      # The gates derive entitlement from the live search ACL (not group IDs), so they
+      # need only the test identities. The KB + index names default in settings to the
+      # deployed ones (cockpit-kb / cockpit-docbundles-ks-index) — override here if yours
+      # differ:
+      # COCKPIT_SEARCH_KNOWLEDGE_BASE: ${{ vars.AZURE_SEARCH_KNOWLEDGE_BASE }}
     steps:
       - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v6
