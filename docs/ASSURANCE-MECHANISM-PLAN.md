@@ -1,3 +1,12 @@
+---
+title: KB → Agent Assurance Mechanism — Implementation Plan
+description: The design and rationale for the assurance mechanism — its guarantees, gates, and intended work, for contributors.
+type: plan
+audience: contributor
+status: draft
+updated: 2026-06-27
+---
+
 # KB → Agent Assurance Mechanism — Implementation Plan
 
 > **North star.** A reusable mechanism any company points at one or more repositories /

@@ -1,3 +1,12 @@
+---
+title: Deployment & provisioning guide
+description: End-to-end steps from a fresh clone to a provisioned, optionally cloud-published Foundry Helpdesk.
+type: how-to
+audience: operator
+status: stable
+updated: 2026-06-27
+---
+
 # Deployment & provisioning guide
 
 End-to-end: from a fresh `git clone` to a fully provisioned, optionally

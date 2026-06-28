@@ -1,3 +1,12 @@
+---
+title: Make it yours — adapting the showcase to your domain
+description: How to swap the four domain-specific pieces (corpus, prompts, action, identity) while keeping the Foundry plumbing as-is.
+type: how-to
+audience: adopter
+status: stable
+updated: 2026-06-27
+---
+
 # Make it yours — adapting the showcase to your domain
 
 This project is a **pattern**, not just a helpdesk: **ask → ground → resolve → escalate**.

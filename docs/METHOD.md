@@ -1,3 +1,12 @@
+---
+title: The mechanism — guarantees, how, and how to run it
+description: Reference for the reusable KB→agent assurance mechanism — what it guarantees, the gates that enforce it, and the operator steps to run it.
+type: reference
+audience: adopter
+status: stable
+updated: 2026-06-27
+---
+
 # The mechanism — what it guarantees, how, and how to run it
 
 The reusable recipe to point an agent at one or more repositories / knowledge bases and
@@ -10,6 +19,32 @@ the company brings the data.
 > Worked example: [`USE-CASE-WALKTHROUGH.md`](./USE-CASE-WALKTHROUGH.md) (and the visual
 > [`use-case-demo.html`](./use-case-demo.html)).
 
+## The shape — three layers
+
+The frontend talks to the backend over AG-UI; the backend runs the workflow against Foundry.
+
+```mermaid
+flowchart TB
+  subgraph FE["Frontend · Next.js + CopilotKit"]
+    UI["/helpdesk and /cockpit chat (MSAL sign-in)"]
+  end
+  subgraph BE["Backend · FastAPI (AG-UI over SSE)"]
+    WF["/helpdesk · multi-agent workflow"]
+    CK["/cockpit · grounded agent + secure_search trim"]
+  end
+  subgraph FDY["Microsoft Foundry"]
+    KB["Foundry IQ KB · Azure AI Search"]
+    MEM["Memory store"]
+    OBS["Tracing · App Insights"]
+  end
+  UI -->|"AG-UI / SSE"| WF
+  UI -->|"AG-UI / SSE"| CK
+  WF --> KB
+  CK -->|"agentic retrieval + per-caller trim"| KB
+  WF --> MEM
+  BE --> OBS
+```
+
 ## The guarantees, as controls (not promises)
 
 | Pillar | Guarantee | Gate (🟢/🔴) |
@@ -21,6 +56,21 @@ the company brings the data.
 | Injection-proof | no prompt leaks across groups | **red-team gate** (`red_team_test`, `redteam_asr_max`) |
 
 Thresholds live in one file: [`apps/backend/eval/assurance.yaml`](../apps/backend/eval/assurance.yaml).
+
+Those gates sit along a build → consume → measure pipeline — each one can stop the build:
+
+```mermaid
+flowchart LR
+  SRC["Source repos / KBs"] --> GEN["Generate wiki (wiki_builder)"]
+  GEN --> VER{"Fidelity gate"}
+  VER -->|"pass"| ING["Ingest + stamp access (acl_setup)"]
+  VER -->|"fail"| STOP["Reject bundle"]
+  ING --> KB["Foundry IQ KB"]
+  KB --> AGT["Agent answers (as the caller)"]
+  AGT --> EVAL{"Gates: completeness · access-control · red-team"}
+  EVAL -->|"below threshold"| BLOCK["Block the build"]
+  EVAL -->|"pass"| SHIP["Ship"]
+```
 
 ## Code vs. data (why it's a template)
 
@@ -47,6 +97,28 @@ There is **no classification logic in the code** — access *follows the source*
    this step is for blob/generated sources.)
 5. **Consume** — the agent retrieves *as the caller* (OBO) and trims to entitlement
    (`secure_search`: service-side passthrough + app-side trim — defense in depth).
+
+   The per-caller trim, as a request flow (defense in depth — the app-side trim is fail-closed):
+
+   ```mermaid
+   sequenceDiagram
+     actor U as Signed-in user
+     participant FE as Frontend (MSAL)
+     participant BE as Backend /cockpit (OBO)
+     participant SP as SecureAzureAISearchProvider
+     participant S as Azure AI Search (Foundry IQ)
+     participant M as Model
+     U->>FE: question
+     FE->>BE: question + user token
+     BE->>SP: run agent (OBO credential)
+     SP->>S: agentic retrieve (caller token — layer C)
+     S-->>SP: chunks (full recall)
+     SP->>S: direct search AS caller → entitled components
+     S-->>SP: caller's authorized set
+     SP->>SP: drop chunks outside entitlement (layer B, fail-closed)
+     SP->>M: only authorized chunks
+     M-->>U: grounded answer (no cross-group leak)
+   ```
 6. **Gate** — quality in `ci.yml`/`agent-evals.yml`; security in `security-gates.yml`
    (access-control + red-team). Below threshold → the build fails.
 

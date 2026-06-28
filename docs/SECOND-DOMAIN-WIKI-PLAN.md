@@ -1,3 +1,12 @@
+---
+title: Second domain + LLM Wiki pattern on Foundry — macro plan
+description: The living plan for adding a second domain (Cockpit expert) that demonstrates the LLM Wiki generate+consume pattern on Foundry.
+type: plan
+audience: contributor
+status: draft
+updated: 2026-06-27
+---
+
 # Second domain (Cockpit expert) + the LLM Wiki pattern on Foundry — macro plan
 
 The living plan for adding a **second domain** to the showcase: a *Cockpit platform

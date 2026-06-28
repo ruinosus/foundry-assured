@@ -1,3 +1,12 @@
+---
+title: Source-grounded LLM wikis on Foundry — a case study
+description: A measured case study showing why both the docs and the eval must be verified against source, with the numbers from a real multi-repo testbed.
+type: explanation
+audience: evaluator
+status: stable
+updated: 2026-06-27
+---
+
 # Source-grounded LLM wikis on Foundry: a measured case study
 
 **Claim.** To ground an agent on a large, multi-repository codebase, *both* the
@@ -21,10 +30,14 @@ So you can end up "measuring" a lossy agent with a lossy ruler and trusting the 
 
 ## The method
 
-```
- SOURCE ──generate──► WIKI ──verify──► faithful WIKI ──ingest──► KB (Foundry IQ) ──consume──► agent
-   │                                                                                            │
-   └──────────────────────── source-verified GOLDEN ───────────────────[ measure ]─────────────┘
+```mermaid
+flowchart LR
+  S["SOURCE (real code)"] --> G["generate"]
+  G --> V["verify (re-ground each claim)"]
+  V --> I["ingest → Foundry IQ KB"]
+  I --> C["consume (grounded agent)"]
+  C --> M["measure vs source-verified golden"]
+  M -.->|"close the loop"| G
 ```
 
 1. **Generate** a wiki from the source with an agent that follows Microsoft's

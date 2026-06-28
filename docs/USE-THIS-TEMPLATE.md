@@ -1,3 +1,12 @@
+---
+title: Use this template
+description: Step-by-step checklist to create your own repo from this template and wire up infra, identities, and CI/CD.
+type: how-to
+audience: adopter
+status: stable
+updated: 2026-06-27
+---
+
 # Use this template
 
 This repo is a **GitHub template**. Click **Use this template → Create a new

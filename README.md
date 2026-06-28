@@ -109,16 +109,41 @@ the backend runs a **multi-agent workflow** against Foundry in the cloud. Phase 
 adds a second, parallel delivery model: the same workflow packaged as a **managed
 hosted agent** (Responses protocol) on Foundry Agent Service.
 
+The three layers — frontend, backend, and Foundry:
+
+```mermaid
+flowchart TB
+  subgraph FE["Frontend · Next.js + CopilotKit"]
+    UI["/helpdesk and /cockpit chat (MSAL sign-in)"]
+  end
+  subgraph BE["Backend · FastAPI (AG-UI over SSE)"]
+    WF["/helpdesk · multi-agent workflow"]
+    CK["/cockpit · grounded agent + secure_search trim"]
+  end
+  subgraph FDY["Microsoft Foundry"]
+    KB["Foundry IQ KB · Azure AI Search"]
+    MEM["Memory store"]
+    OBS["Tracing · App Insights"]
+  end
+  UI -->|"AG-UI / SSE"| WF
+  UI -->|"AG-UI / SSE"| CK
+  WF --> KB
+  CK -->|"agentic retrieval + per-caller trim"| KB
+  WF --> MEM
+  BE --> OBS
 ```
-                         ┌─────────────────── Foundry (cloud) ───────────────────┐
- Browser                 │  gpt-4.1-mini · Foundry IQ KB (Azure AI Search)         │
-   │  CopilotKit         │  memory store · evaluation · App Insights (OTEL)        │
-   ▼                     └─────────▲───────────────────────────▲──────────────────┘
- Next.js ── /api/copilotkit ──► Backend (FastAPI, AG-UI)        │ Responses
-   │   helpdesk  (AG-UI)        triage→retrieve→resolve→escalate │ (managed)
-   │                           OBO · memory · HITL approval      │
-   └── helpdesk-hosted ──► Backend /helpdesk-hosted (bridge) ──► Hosted agent (Agent Service)
-                           Responses → AG-UI                     triage→retrieve→resolve
+
+The helpdesk workflow itself — triage, retrieve, resolve, and a human-approved escalation:
+
+```mermaid
+flowchart LR
+  Q["Developer question"] --> T["triage"]
+  T --> R["retrieve (runbook KB)"]
+  R --> RES{"resolve: answer or action?"}
+  RES -->|"answer"| A["grounded answer + citation"]
+  RES -->|"action / low groundedness"| E["escalate → ApprovalCard"]
+  E -->|"approved"| TK["create_ticket"]
+  E -->|"rejected"| R
 ```
 
 **Two ways to consume the same agent** (switchable in the UI):

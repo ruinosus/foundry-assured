@@ -1,3 +1,12 @@
+---
+title: Release & deploy automation (no PAT)
+description: How a merge becomes a versioned release and a gated production deploy, using a short-lived GitHub App token instead of a PAT.
+type: how-to
+audience: operator
+status: stable
+updated: 2026-06-27
+---
+
 # Release & deploy automation (enterprise-grade, no PAT)
 
 How a merge becomes a versioned release and a gated production deploy — automatically,
@@ -6,17 +15,14 @@ your own repo (it has no secrets in it; you wire your own).
 
 ## The flow
 
-```
- Conventional Commits on main
-        │
-        ▼
- release-please  ──opens/maintains──►  "release PR" (bumps version + CHANGELOG)
-        │  (you merge it)
-        ▼
- Release workflow  ──cuts──►  git tag + GitHub Release   ← gated, auditable
-        │  (release: published)
-        ▼
- Deploy workflow  ──►  production Environment gate  ──approve──►  azd deploy
+```mermaid
+flowchart TB
+  CC["Conventional Commits on main"] --> RP["release-please → release PR"]
+  RP -->|"you merge it"| REL["Release workflow (GitHub App token)"]
+  REL --> TAG["git tag + GitHub Release"]
+  TAG -->|"on: release"| DEP["Deploy workflow"]
+  DEP --> GATE{"production Environment gate"}
+  GATE -->|"a human approves"| AZD["azd deploy → live"]
 ```
 
 Everything is automatic **up to the production gate**, which stays **manual on

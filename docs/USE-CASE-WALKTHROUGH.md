@@ -1,3 +1,12 @@
+---
+title: Use-case walkthrough — a company adopts the mechanism
+description: A worked, fictional example of the whole assurance mechanism end to end, separating generic code from the company's own data.
+type: explanation
+audience: evaluator
+status: stable
+updated: 2026-06-27
+---
+
 # Use-case walkthrough — a company adopts the mechanism end to end
 
 A concrete, fictional example of the whole mechanism, so it's clear **what** each piece
