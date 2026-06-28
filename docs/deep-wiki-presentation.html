@@ -118,7 +118,7 @@
       <div><div class="n grad">$0.30</div><div class="l">monorepo inteiro · ~R$1,64</div></div>
       <div><div class="n">112→28</div><div class="l">arquivos-fonte → páginas</div></div>
       <div><div class="n">70</div><div class="l">chunks indexados</div></div>
-      <div><div class="n">94–98%</div><div class="l">fidelidade de citação</div></div>
+      <div><div class="n">85–98%</div><div class="l">fidelidade de citação</div></div>
     </div>
   </div>
 </section>
@@ -322,6 +322,27 @@
     </div>
     <p class="note reveal"><b>Estimar para um repo novo:</b> conte os arquivos-fonte → ~7 páginas por área lógica,
       ≈ $0,011/página, e a fidelidade depende do verificador (não do tamanho). Um monorepo de 4 áreas como este: <b>centavos</b>.</p>
+  </div>
+</section>
+
+<!-- DEEP DIVES (páginas complementares) -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow reveal">Aprofundar</div>
+    <h2 class="reveal" data-d="1">Dois recortes, <span class="grad">em detalhe.</span></h2>
+    <p class="reveal lead" data-d="2">O fluxo ponta-a-ponta (build-time × query-time) e o comparativo honesto contra as outras engines de deep-wiki.</p>
+    <div class="grid g2">
+      <a class="card domain-card reveal" data-d="1" href="./fluxo-deepwiki.html">
+        <div class="domain-card-head"><span class="domain-card-icon">🔀</span><h3>Fluxo completo</h3></div>
+        <p>Do repositório à resposta citada: as duas garantias (gate de fidelidade no build, trim de identidade na consulta) e o índice que as conecta.</p>
+        <span class="tag b">build-time × query-time →</span>
+      </a>
+      <a class="card domain-card reveal" data-d="2" href="./quadro-comparativo-deepwiki.html">
+        <div class="domain-card-head"><span class="domain-card-icon">📊</span><h3>Quadro comparativo</h3></div>
+        <p>DeepWiki (SaaS) · deepwiki-open · OpenDeepWiki × este mecanismo. Geração + gate de fidelidade + trim por identidade num pipeline local.</p>
+        <span class="tag v">capacidades lado a lado →</span>
+      </a>
+    </div>
   </div>
 </section>
 

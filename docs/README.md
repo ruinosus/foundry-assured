@@ -23,6 +23,8 @@ Every doc in this folder, with its type and audience, so you can find the one th
 | [CASE-STUDY-SELFWIKI-DOGFOOD.md](./CASE-STUDY-SELFWIKI-DOGFOOD.md) | explanation | evaluator | Dogfooding the mechanism on this repo — two bugs it found in itself, and the genericity proof. |
 | [wiki/](./wiki/README.md) | (generated) | evaluator | The machine-generated deep-wiki of this monorepo (the `selfwiki` domain corpus). |
 | [deep-wiki-presentation.html](./deep-wiki-presentation.html) | (presentation) | evaluator | A standalone visual deck — how the deep-wiki is built, ingested, and what it costs (real run data). [Rendered via GitHub Pages](https://ruinosus.github.io/foundry-helpdesk/deep-wiki-presentation.html). |
+| [fluxo-deepwiki.html](./fluxo-deepwiki.html) | (presentation) | evaluator | The end-to-end flow — build-time (fidelity gate) × query-time (identity trim). [Pages](https://ruinosus.github.io/foundry-helpdesk/fluxo-deepwiki.html). |
+| [quadro-comparativo-deepwiki.html](./quadro-comparativo-deepwiki.html) | (presentation) | evaluator | Capability comparison vs other deep-wiki engines (DeepWiki SaaS, deepwiki-open, OpenDeepWiki). [Pages](https://ruinosus.github.io/foundry-helpdesk/quadro-comparativo-deepwiki.html). |
 | [ASSURANCE-MECHANISM-PLAN.md](./ASSURANCE-MECHANISM-PLAN.md) | plan | contributor | Design and rationale for the assurance mechanism and its intended work. |
 | [SECOND-DOMAIN-WIKI-PLAN.md](./SECOND-DOMAIN-WIKI-PLAN.md) | plan | contributor | The living plan for adding a second domain via the LLM Wiki pattern. |
 | [DOCS-STANDARD.md](./DOCS-STANDARD.md) | reference | contributor | How docs here are typed, structured, and diagrammed. |

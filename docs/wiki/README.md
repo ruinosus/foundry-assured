@@ -33,7 +33,7 @@ One bundle per monorepo area, in the format the ingest consumes
 >    `json`), silently failing every `.json`/`.tsx` citation — unfairly failing the
 >    config/frontend-heavy bundles (frontend 37%, infra 50% before the fix). Fixed
 >    (longest-extension-first) in `wiki_builder.py`; backend/frontend/infra scores above
->    are post-fix (94–98%).
+>    are post-fix (85–98%).
 > 2. ¹ The fidelity check resolved citations only against the bundle's `--repo` gather,
 >    but a cross-cutting `docs/` bundle legitimately cites files across `apps/` + `infra/`.
 >    Scored against `docs/` alone it read 71%; against the whole monorepo (the fair
