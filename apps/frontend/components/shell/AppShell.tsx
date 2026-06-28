@@ -10,21 +10,22 @@ import { useEffect, useState } from "react";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
+import { DOMAINS } from "@/lib/domains";
 
-const NAV = [
+// The domain agents are config-driven from the registry → /d/<id>. Workspace pages are
+// static. Two sections so the sidebar reads as "tools" + "agents".
+const AGENT_NAV = DOMAINS.map((d) => ({ href: `/d/${d.id}`, label: d.label, icon: d.icon }));
+const WORKSPACE_NAV = [
   { href: "/", label: "Overview", icon: "▦" },
-  { href: "/chat", label: branding.assistant, icon: "💬" },
-  { href: "/cockpit", label: "Cockpit expert", icon: "🛰️" },
   { href: "/tickets", label: "Tickets", icon: "🎫" },
   { href: "/evals", label: "Evaluations", icon: "✓" },
 ];
 
 const TITLES: Record<string, string> = {
   "/": "Overview",
-  "/chat": branding.assistant,
-  "/cockpit": "Cockpit expert",
   "/tickets": "Tickets",
   "/evals": "Evaluations",
+  ...Object.fromEntries(DOMAINS.map((d) => [`/d/${d.id}`, d.label])),
 };
 
 function BackendStatus() {
@@ -100,17 +101,28 @@ export function AppShell({
           </span>
         </div>
 
-        <div className="nav-section">Workspace</div>
-        {NAV.map((item) => {
-          const active =
-            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-          return (
-            <Link key={item.href} href={item.href} className={`nav-item ${active ? "active" : ""}`}>
-              <span className="ico">{item.icon}</span>
-              {item.label}
-            </Link>
-          );
-        })}
+        {[
+          { section: "Workspace", items: WORKSPACE_NAV },
+          { section: "AI agents", items: AGENT_NAV },
+        ].map(({ section, items }) => (
+          <div key={section}>
+            <div className="nav-section">{section}</div>
+            {items.map((item) => {
+              const active =
+                item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`nav-item ${active ? "active" : ""}`}
+                >
+                  <span className="ico">{item.icon}</span>
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
 
         <div className="sidebar-foot-group">
           {authConfigured && <AccountChip />}

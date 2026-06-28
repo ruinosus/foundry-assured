@@ -1,6 +1,6 @@
 // Foundry Helpdesk — azd entry point (subscription-scoped).
 //
-// Provisions a resource group, then the Foundry account + project + gpt-4.1-mini
+// Provisions a resource group, then the Foundry account + project + gpt-5-mini
 // deployment + data-plane role assignment (in resources.bicep).
 //
 // Schema verified against the official Foundry sample
@@ -24,7 +24,7 @@ param principalId string = ''
 param principalType string = 'User'
 
 @description('Model deployment name, surfaced to the app as FOUNDRY_MODEL.')
-param modelDeploymentName string = 'gpt-4.1-mini'
+param modelDeploymentName string = 'gpt-5-mini'
 
 @description('Optional region override for Azure AI Search (set AZURE_SEARCH_LOCATION if eastus2 is out of Search capacity). Falls back to location.')
 param searchLocation string = ''

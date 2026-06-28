@@ -1,0 +1,68 @@
+{
+  "key": "foundry-helpdesk-infra-v0.1.0",
+  "title": "foundry-helpdesk-infra v0.1.0",
+  "source": {
+    "type": "repo",
+    "ref": "/Users/jefferson.barnabe/projects/foundry-helpdesk/infra",
+    "commit": ""
+  },
+  "language": "pt-br",
+  "model": "gpt-5-mini",
+  "generatedAt": "2026-06-27T20:20:19+00:00",
+  "kind": "element",
+  "component": "foundry-helpdesk-infra",
+  "componentVersion": "v0.1.0",
+  "releaseVersion": null,
+  "pages": [
+    {
+      "id": "page-1",
+      "title": "Visão Geral",
+      "order": 1,
+      "file": "pages/page-1.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-2",
+      "title": "Arquitetura da Infraestrutura",
+      "order": 2,
+      "file": "pages/page-2.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-3",
+      "title": "Provisionamento e Deploy",
+      "order": 3,
+      "file": "pages/page-3.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-4",
+      "title": "Configuração e Parâmetros",
+      "order": 4,
+      "file": "pages/page-4.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-5",
+      "title": "Identidades e Controle de Acesso (ACL)",
+      "order": 5,
+      "file": "pages/page-5.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-6",
+      "title": "Usuários de Teste e Cenários de Validação",
+      "order": 6,
+      "file": "pages/page-6.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-7",
+      "title": "Referência de Scripts e Automação",
+      "order": 7,
+      "file": "pages/page-7.md",
+      "audience": "base"
+    }
+  ],
+  "groups": []
+}

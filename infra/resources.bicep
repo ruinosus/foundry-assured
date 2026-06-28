@@ -1,6 +1,6 @@
 // Foundry Helpdesk — resource-group-scoped resources.
 //
-// Phase 0: Foundry account + project + gpt-4.1-mini + caller data-plane role.
+// Phase 0: Foundry account + project + gpt-5-mini + caller data-plane role.
 // Phase 1: Azure AI Search (Foundry IQ knowledge base), Storage for the corpus,
 //          an embedding deployment, and the role assignments that let the search
 //          managed identity reach the model + blobs, and the caller build/query
@@ -26,10 +26,10 @@ param principalType string = 'User'
 var effectivePrincipalType = empty(principalType) ? 'User' : principalType
 
 @description('Chat model deployment name (must match the app FOUNDRY_MODEL).')
-param modelDeploymentName string = 'gpt-4.1-mini'
+param modelDeploymentName string = 'gpt-5-mini'
 
-@description('Chat model version for gpt-4.1-mini.')
-param modelVersion string = '2025-04-14'
+@description('Chat model version for gpt-5-mini (gpt-4.1-mini was retired/deprecating; the gpt-4.x and gpt-4o chat families are no longer GA in eastus2 — only the gpt-5.x family is).')
+param modelVersion string = '2025-08-07'
 
 @description('Chat deployment capacity (thousands of TPM). GlobalStandard is pay-per-token, so capacity is just the rate limit — keep it high so agentic retrieval + KB indexing + evals do not throttle. Lower only if you hit a subscription quota cap.')
 param modelCapacity int = 100

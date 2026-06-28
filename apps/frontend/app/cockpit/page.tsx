@@ -1,16 +1,7 @@
-"use client";
+import { redirect } from "next/navigation";
 
-// Client-only (MSAL + v2 useAgent can't run during SSR). Rendered flush so the
-// Cockpit expert chat fills the shell.
-import dynamic from "next/dynamic";
-import { AppShell } from "@/components/shell/AppShell";
-
-const CockpitApp = dynamic(() => import("@/components/cockpit/CockpitApp"), { ssr: false });
-
-export default function CockpitPage() {
-  return (
-    <AppShell flush>
-      <CockpitApp />
-    </AppShell>
-  );
+// The Cockpit expert moved into the unified Assurance Console (/d/<domain>). Keep the
+// old path working.
+export default function CockpitRedirect() {
+  redirect("/d/cockpit");
 }

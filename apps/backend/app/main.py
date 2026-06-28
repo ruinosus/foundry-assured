@@ -21,6 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.agents.cockpit import build_cockpit_agent, cockpit_configured
 from app.agents.concierge import _knowledge_configured, build_concierge_agent
+from app.agents.selfwiki import build_selfwiki_agent, selfwiki_configured
 from app.api import api_router
 from app.core.auth import auth_dependencies, azure_scheme
 from app.core.settings import settings
@@ -71,6 +72,16 @@ if cockpit_configured():
         app,
         agent=build_cockpit_agent(),
         path="/cockpit",
+        dependencies=auth_dependencies(),
+    )
+
+# Third domain: the selfwiki expert, grounded in a deep-wiki generated from THIS repo's
+# own source (the dogfood). Registered only once selfwiki-kb is ingested + configured.
+if selfwiki_configured():
+    add_agent_framework_fastapi_endpoint(
+        app,
+        agent=build_selfwiki_agent(),
+        path="/selfwiki",
         dependencies=auth_dependencies(),
     )
 

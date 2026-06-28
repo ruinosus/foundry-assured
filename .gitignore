@@ -39,3 +39,6 @@ apps/backend/eval/datasets/cockpit_golden.jsonl
 
 # GitHub App / TLS private keys — never commit
 *.pem
+
+# Local-only notes that may hold secrets (e.g. TEST-CREDENTIALS.local.md) — never commit
+*.local.md

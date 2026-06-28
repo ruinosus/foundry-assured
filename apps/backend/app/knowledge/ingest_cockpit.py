@@ -52,7 +52,12 @@ from app.knowledge.ingest import (
     _with_timeout,
 )
 
-KNOWLEDGE_SOURCE_NAME = "cockpit-docbundles-ks"
+# The mechanism is domain-generic: the SAME pipeline serves any doc-bundle corpus by
+# pointing it at a different knowledge source / container / KB. Defaults are the Cockpit
+# domain; the selfwiki domain (this repo's own deep-wiki) reuses this module verbatim by
+# overriding KB_KNOWLEDGE_SOURCE + COCKPIT_STORAGE_CONTAINER + COCKPIT_SEARCH_KNOWLEDGE_BASE.
+KNOWLEDGE_SOURCE_NAME = os.environ.get("KB_KNOWLEDGE_SOURCE", "cockpit-docbundles-ks")
+DOMAIN_LABEL = os.environ.get("KB_DOMAIN_LABEL", "Avanade Cockpit platform")
 # Foundry IQ derives these from the knowledge source name.
 INDEXER_NAME = f"{KNOWLEDGE_SOURCE_NAME}-indexer"
 INDEX_NAME = f"{KNOWLEDGE_SOURCE_NAME}-index"
@@ -197,7 +202,7 @@ def create_knowledge_source(index_client: SearchIndexClient) -> None:
     _validate_storage_resource_id(storage_id)
     knowledge_source = AzureBlobKnowledgeSource(
         name=KNOWLEDGE_SOURCE_NAME,
-        description="Avanade Cockpit platform documentation (components + release).",
+        description=f"{DOMAIN_LABEL} documentation (components + release).",
         azure_blob_parameters=AzureBlobKnowledgeSourceParameters(
             connection_string=f"ResourceId={storage_id};",
             container_name=settings.cockpit_storage_container,
@@ -223,7 +228,7 @@ def create_knowledge_base(index_client: SearchIndexClient) -> None:
     kb_name = settings.cockpit_search_knowledge_base
     knowledge_base = KnowledgeBase(
         name=kb_name,
-        description="Avanade Cockpit platform knowledge base for the Cockpit expert agent.",
+        description=f"{DOMAIN_LABEL} knowledge base for its grounded expert agent.",
         knowledge_sources=[KnowledgeSourceReference(name=KNOWLEDGE_SOURCE_NAME)],
         models=[
             KnowledgeBaseAzureOpenAIModel(
@@ -236,7 +241,7 @@ def create_knowledge_base(index_client: SearchIndexClient) -> None:
         ],
         output_mode="answerSynthesis",
         answer_instructions=(
-            "Responda APENAS com base nos documentos do Cockpit recuperados. Cite o "
+            f"Responda APENAS com base nos documentos de {DOMAIN_LABEL} recuperados. Cite o "
             "componente e o documento-fonte de cada afirmação. Para perguntas de "
             "arquitetura ou que envolvem múltiplos componentes, priorize os documentos "
             "de ARQUITETURA/visão geral da plataforma (autoritativos) sobre resumos de "

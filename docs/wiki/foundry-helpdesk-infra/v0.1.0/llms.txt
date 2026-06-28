@@ -1,0 +1,9 @@
+# foundry-helpdesk-infra v0.1.0
+
+- [Visão Geral](pages/page-1.md)
+- [Arquitetura da Infraestrutura](pages/page-2.md)
+- [Provisionamento e Deploy](pages/page-3.md)
+- [Configuração e Parâmetros](pages/page-4.md)
+- [Identidades e Controle de Acesso (ACL)](pages/page-5.md)
+- [Usuários de Teste e Cenários de Validação](pages/page-6.md)
+- [Referência de Scripts e Automação](pages/page-7.md)

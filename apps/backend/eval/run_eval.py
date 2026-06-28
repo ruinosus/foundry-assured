@@ -34,6 +34,7 @@ from agent_framework import EvalItem, EvalNotPassedError, LocalEvaluator, Messag
 
 from app.agents.cockpit import build_cockpit_agent
 from app.agents.concierge import build_concierge_agent
+from app.agents.selfwiki import build_selfwiki_agent
 from app.core.settings import settings
 from eval.assertions import (
     _TITLE_PREFIX,
@@ -43,11 +44,13 @@ from eval.assertions import (
     cockpit_cites_source,
     no_secret_leaked,
     secret_findings,
+    selfwiki_cites_source,
 )
 
 _DATASETS = Path(__file__).resolve().parent / "datasets"
 _GOLDEN = _DATASETS / "golden.jsonl"
 _COCKPIT_GOLDEN = _DATASETS / "cockpit_golden.jsonl"
+_SELFWIKI_GOLDEN = _DATASETS / "selfwiki_golden.jsonl"
 _ADVERSARIAL = _DATASETS / "adversarial.jsonl"
 _CORPUS = Path(__file__).resolve().parent.parent / "app" / "knowledge" / "corpus"
 _RUNS = Path(__file__).resolve().parent / "runs.jsonl"
@@ -147,11 +150,23 @@ _FILTER_MARKERS = ("content_filter", "contentfiltered", "jailbreak", "content ma
 _BLOCKED_ANSWER = "I can't help with that — the request was blocked by the content safety filter."
 
 
-async def _agent_answer(agent, query: str, *, retries: int = 4) -> str:
-    """Run one query, retrying on rate limits. The cockpit agent does agentic
-    retrieval (several model calls per query), so a tight 20-query loop bursts over
-    the deployment TPM cap — back off and retry instead of failing the whole run.
-    Content-filter blocks are re-raised for the caller to classify as a refusal."""
+# Transient conditions to retry: rate limits AND the "Project not found" 404 a
+# freshly-(re)provisioned Foundry project intermittently throws under burst while its
+# inference routing propagates (and connection resets). Same class the wiki_builder
+# retries — without it, one flaky call crashes the whole eval run.
+_TRANSIENT_MARKERS = (
+    "429", "rate limit", "rate_limit", "project not found", "not found",
+    "timeout", "timed out", "502", "503", "temporarily unavailable",
+    "service unavailable", "connection aborted", "remotedisconnected",
+)
+
+
+async def _agent_answer(agent, query: str, *, retries: int = 6) -> str:
+    """Run one query, retrying on transient Foundry conditions. The agent does agentic
+    retrieval (several model calls per query), so a tight loop bursts over the deployment
+    TPM cap — and a just-provisioned project intermittently 404s — so back off and retry
+    instead of failing the whole run. Content-filter blocks are re-raised for the caller
+    to classify as a refusal."""
     delay = 15
     for attempt in range(retries):
         try:
@@ -160,11 +175,11 @@ async def _agent_answer(agent, query: str, *, retries: int = 4) -> str:
             s = str(exc).lower()
             if any(marker in s for marker in _FILTER_MARKERS):
                 raise
-            throttled = "429" in s or "rate limit" in s or "rate_limit" in s
-            if throttled and attempt < retries - 1:
-                print(f"  ⏳ rate-limited; retry in {delay}s…", flush=True)
+            transient = any(marker in s for marker in _TRANSIENT_MARKERS)
+            if transient and attempt < retries - 1:
+                print(f"  ⏳ transient ({s[:50]}…); retry in {delay}s…", flush=True)
                 await asyncio.sleep(delay)
-                delay *= 2
+                delay = min(delay * 2, 90)
                 continue
             raise
 
@@ -223,6 +238,17 @@ async def _run(cloud: bool, safety: bool, domain: str) -> int:
         agent_factory = build_cockpit_agent
         build_kwargs = {"use_context": False, "expected_field": "expected", "pace_s": 3.0}
         label = "cockpit golden"
+    elif domain == "selfwiki":
+        # Third domain (dogfood): grounded in a deep-wiki generated from THIS repo.
+        # Like cockpit, the corpus is a cloud Foundry IQ KB (no local source file), so
+        # we score correctness against the golden `expected` (reference-based judges),
+        # not groundedness, and gate locally on a citation/decline floor.
+        rows = _load_dataset(_SELFWIKI_GOLDEN)
+        eval_name = "selfwiki-golden"
+        local = LocalEvaluator(selfwiki_cites_source, no_secret_leaked)
+        agent_factory = build_selfwiki_agent
+        build_kwargs = {"use_context": False, "expected_field": "expected", "pace_s": 3.0}
+        label = "selfwiki golden"
     else:
         rows = _load_dataset(_ADVERSARIAL if safety else _GOLDEN)
         eval_name = "helpdesk-safety" if safety else "helpdesk-golden"
@@ -241,7 +267,7 @@ async def _run(cloud: bool, safety: bool, domain: str) -> int:
         project = AIProjectClient(
             endpoint=settings.foundry_project_endpoint, credential=cred
         )
-        if domain == "cockpit":
+        if domain in ("cockpit", "selfwiki"):
             # SIMILARITY is the reference-based correctness score (answer vs the
             # golden `expected`) — the cloud analogue of the source-verified
             # "key-fact" judge — plus relevance/coherence. (RESPONSE_COMPLETENESS is
@@ -362,7 +388,7 @@ def _self_test() -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Eval harness (Phase 5) — helpdesk + cockpit domains.")
-    parser.add_argument("--domain", choices=["helpdesk", "cockpit"], default="helpdesk", help="which agent/golden to evaluate (default: helpdesk)")
+    parser.add_argument("--domain", choices=["helpdesk", "cockpit", "selfwiki"], default="helpdesk", help="which agent/golden to evaluate (default: helpdesk)")
     parser.add_argument("--cloud", action="store_true", help="add Foundry cloud evaluators (helpdesk: groundedness/relevance/coherence; cockpit: similarity/completeness/relevance/coherence; +safety judges with --safety)")
     parser.add_argument("--safety", action="store_true", help="[helpdesk] run the adversarial/jailbreak set; gate on refuse-or-ground + no-secret, score with Foundry safety judges")
     parser.add_argument("--self-test", action="store_true", help="prove the policy gate catches a planted violation (no network)")

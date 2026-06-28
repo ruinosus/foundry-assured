@@ -10,7 +10,7 @@ Steps:
   2. Create a blob *knowledge source* (Azure AI Search auto-chunks + embeds it
      using the Foundry embedding deployment, via the search managed identity).
   3. Create the *knowledge base* that orchestrates agentic retrieval over that
-     source, using gpt-4.1-mini for query planning + answer synthesis.
+     source, using gpt-5-mini for query planning + answer synthesis.
 
 Auth is DefaultAzureCredential throughout (no keys). The deploying user needs
 Search Service Contributor + Storage Blob Data Contributor (granted by the
@@ -235,7 +235,7 @@ def wait_for_ingestion(
 def main() -> None:
     _setup_logging()
     _require("AZURE_SEARCH_ENDPOINT", settings.azure_search_endpoint)
-    # A blob knowledge source that uses an LLM (gpt-4.1-mini query planning) needs
+    # A blob knowledge source that uses an LLM (gpt-5-mini query planning) needs
     # the 2026-05-01-preview API; the SDK default (2025-11-01-preview) is older.
     api_version = os.environ.get("SEARCH_API_VERSION", "2026-05-01-preview")
     print(f"Search endpoint: {settings.azure_search_endpoint}")

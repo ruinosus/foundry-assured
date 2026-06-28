@@ -1,0 +1,68 @@
+{
+  "key": "foundry-helpdesk-backend-v0.1.0",
+  "title": "foundry-helpdesk-backend v0.1.0",
+  "source": {
+    "type": "repo",
+    "ref": "/Users/jefferson.barnabe/projects/foundry-helpdesk/apps/backend",
+    "commit": ""
+  },
+  "language": "pt-br",
+  "model": "gpt-5-mini",
+  "generatedAt": "2026-06-27T19:45:46+00:00",
+  "kind": "element",
+  "component": "foundry-helpdesk-backend",
+  "componentVersion": "v0.1.0",
+  "releaseVersion": null,
+  "pages": [
+    {
+      "id": "page-1",
+      "title": "Visão Geral do Componente",
+      "order": 1,
+      "file": "pages/page-1.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-2",
+      "title": "Arquitetura e Componentes Principais",
+      "order": 2,
+      "file": "pages/page-2.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-3",
+      "title": "API e Endpoints",
+      "order": 3,
+      "file": "pages/page-3.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-4",
+      "title": "Agentes e Fluxos de Trabalho",
+      "order": 4,
+      "file": "pages/page-4.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-5",
+      "title": "Base de Conhecimento e Ingestão (Knowledge)",
+      "order": 5,
+      "file": "pages/page-5.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-6",
+      "title": "Configuração, Provisionamento e Deploy",
+      "order": 6,
+      "file": "pages/page-6.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-7",
+      "title": "Testes, Avaliações e QA",
+      "order": 7,
+      "file": "pages/page-7.md",
+      "audience": "base"
+    }
+  ],
+  "groups": []
+}

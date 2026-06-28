@@ -48,6 +48,11 @@ updated: YYYY-MM-DD
 Root docs (`README.md`, `CONTRIBUTING.md`, `SECURITY.md`) keep their conventional shape
 (no front-matter) — GitHub treats them specially.
 
+**Exception — generated content.** Everything under [`docs/wiki/`](./wiki/) is the
+machine-generated deep-wiki (the `selfwiki` domain, in the ingest bundle format) and is
+**exempt from the front-matter + one-H1 rules** — it's not hand-written and is regenerated,
+not edited. See [`docs/wiki/README.md`](./wiki/README.md).
+
 ## 3. Diagrams are Mermaid, as code
 
 Architecture and flows are **[Mermaid](https://learn.microsoft.com/en-us/azure/devops/project/wiki/markdown-guidance)**,

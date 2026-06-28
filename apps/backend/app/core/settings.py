@@ -15,8 +15,8 @@ class Settings(BaseSettings):
 
     # Foundry project endpoint, e.g. https://<project>.services.ai.azure.com/api/projects/<name>
     foundry_project_endpoint: str = ""
-    # Model deployment name, e.g. gpt-4.1-mini
-    foundry_model: str = "gpt-4.1-mini"
+    # Model deployment name, e.g. gpt-5-mini
+    foundry_model: str = "gpt-5-mini"
 
     # Foundry account OpenAI endpoint, e.g. https://<account>.openai.azure.com
     # Used by the knowledge base for embeddings + query planning.
@@ -40,6 +40,15 @@ class Settings(BaseSettings):
     # The index behind the knowledge source — the ACL stamping/trim operate on it.
     cockpit_search_index: str = "cockpit-docbundles-ks-index"
     cockpit_storage_container: str = "cockpit-corpus"
+
+    # --- Third domain: selfwiki (this repo's own deep-wiki — dogfood) ---
+    # Same machinery as Cockpit, pointed at a deep-wiki generated FROM this monorepo's
+    # own source. Empty KB name → the /selfwiki endpoint stays off until it's ingested.
+    # The ingest reuses ingest_cockpit by overriding KB_KNOWLEDGE_SOURCE +
+    # COCKPIT_STORAGE_CONTAINER + COCKPIT_SEARCH_KNOWLEDGE_BASE with these names.
+    selfwiki_search_knowledge_base: str = ""
+    selfwiki_search_index: str = "selfwiki-docbundles-ks-index"
+    selfwiki_storage_container: str = "selfwiki-corpus"
 
     # --- Phase 4: document-level access control (access follows the source) ---
     # A document's access = the group(s) that can read its SOURCE — arbitrary groups

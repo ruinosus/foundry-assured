@@ -17,6 +17,7 @@ import {
 } from "@copilotkit/runtime";
 import { HttpAgent } from "@ag-ui/client";
 import { NextRequest } from "next/server";
+import { DOMAINS } from "@/lib/domains";
 
 const AGUI_URL = process.env.AGUI_URL ?? "http://localhost:8000/helpdesk";
 // Phase 6: the hosted agent bridged to AG-UI (backend /helpdesk-hosted), so the
@@ -50,13 +51,21 @@ const helpdesk = new HttpAgent({
 
 const helpdeskHosted = new HttpAgent({ url: HOSTED_AGUI_URL });
 
-// Second domain: the Cockpit expert (grounded over the cockpit-kb). Plain HttpAgent
-// — request→response grounded Q&A, no interrupts/resume transform needed.
-const COCKPIT_AGUI_URL = process.env.COCKPIT_AGUI_URL ?? "http://localhost:8000/cockpit";
-const cockpit = new HttpAgent({ url: COCKPIT_AGUI_URL });
+// Grounded domains (Cockpit, selfwiki, …) are plain request→response Q&A — no resume
+// bridge needed — so they're built straight from the domains registry. Adding a domain
+// is one entry in lib/domains.ts (+ its backend agent); no per-domain wiring here.
+// Per-domain env override: <ID>_AGUI_URL (e.g. COCKPIT_AGUI_URL, SELFWIKI_AGUI_URL).
+const groundedAgents = Object.fromEntries(
+  DOMAINS.filter((d) => d.kind === "grounded").map((d) => {
+    const override = process.env[`${d.id.toUpperCase()}_AGUI_URL`];
+    return [d.id, new HttpAgent({ url: override ?? `http://localhost:8000${d.endpoint}` })];
+  }),
+);
 
 const runtime = new CopilotRuntime({
-  agents: { helpdesk, "helpdesk-hosted": helpdeskHosted, cockpit },
+  // helpdesk keeps its bespoke wiring (workflow resume bridge + hosted twin); the rest
+  // come from the registry.
+  agents: { helpdesk, "helpdesk-hosted": helpdeskHosted, ...groundedAgents },
 });
 
 const handle = (req: NextRequest) => {

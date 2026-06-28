@@ -16,7 +16,7 @@ O domínio é **swappable**: a arquitetura "pergunte → fundamente → resolva 
 
 - **Backend** (Python 3.12): `agent-framework` (agentes + `WorkflowBuilder`), `agent-framework-ag-ui` (adapter AG-UI: `AgentFrameworkAgent`, `add_agent_framework_fastapi_endpoint`), `azure-ai-projects>=2.2.0` (Foundry client: KB, `.beta.memory_stores`, eval), `azure-identity` (`DefaultAzureCredential`), `fastapi`, `uvicorn`. Deps via **`uv`**.
 - **Frontend** (Next.js 15, App Router): `@copilotkit/react-core`, `@copilotkit/react-ui`, `@copilotkit/runtime`, com `HttpAgent` apontando para o endpoint AG-UI do backend.
-- **Foundry** (provisionar via `azd` + extensão Foundry): project + model deployment (default seguro: **`gpt-4.1-mini`**), Foundry IQ knowledge base, memory store, Application Insights (tracing OTEL).
+- **Foundry** (provisionar via `azd` + extensão Foundry): project + model deployment (default seguro: **`gpt-5-mini`**), Foundry IQ knowledge base, memory store, Application Insights (tracing OTEL).
 
 ## Arquitetura (big picture)
 

@@ -40,6 +40,8 @@ _SKILLS_DIR = Path(__file__).parent / "skills"
 _IGNORE = {
     "node_modules", "bin", "obj", "packages", ".vs", "target", "vendor",
     ".terraform", "dist", "build", ".venv", "__pycache__", ".git", ".idea",
+    # Frontend/tooling build output + azd env (compiled .js, caches — not source).
+    ".next", ".turbo", "coverage", ".azure", ".pytest_cache", ".ruff_cache",
     # Skip git worktrees / agent scratch: they hold feature-branch copies of the
     # source and would make the wiki cite `.worktrees/<branch>/src/...` instead of
     # the canonical `src/...` — a fidelity defect for a source-grounded wiki.
@@ -56,7 +58,12 @@ _PAGE_DELAY_S = 8  # pace page calls to stay under the model TPM cap
 # fraction of the wiki's file citations actually resolve to a file in the gathered
 # source (and that none point into a git worktree), and gate the bundle on it. This
 # turns "the KB is built faithfully" into a number, not a vibe (Phase 1 of the plan).
-_EXT_ALT = "|".join(sorted(e.lstrip(".") for e in _SOURCE_EXT))
+# Longest extension FIRST in the alternation: regex alternation is first-match, so an
+# alphabetical sort would match `.js` inside `main.parameters.json` (js < json) and the
+# truncated `main.parameters.js` never resolves — silently failing every .json/.tsx
+# citation. (Found by dogfooding this gate on our own infra/frontend, which are
+# .json/.tsx-heavy; the Python-heavy backend hid it.) Sort by length desc, then alpha.
+_EXT_ALT = "|".join(sorted((e.lstrip(".") for e in _SOURCE_EXT), key=lambda e: (-len(e), e)))
 _CITE_RE = re.compile(rf"((?:[\w.-]+/)*[\w.-]+\.(?:{_EXT_ALT}))(?::\d+(?:-\d+)?)?")
 
 
@@ -245,7 +252,34 @@ def _maybe_setup_observability() -> bool:
     return True
 
 
-async def build_component_wiki(repo: Path, component: str, version: str, out_dir: Path, model: str | None = None, verify: bool = True, groups: list[str] | None = None) -> Path:
+# Transient conditions a freshly-provisioned (or rate-limited) Foundry project throws:
+# the inference routing for a just-created project propagates for ~10-20 min, so bursts
+# of calls intermittently 404 with "Project not found" even though isolated calls work;
+# a small deployment also 429s under the page loop. Retry both with backoff — isolated
+# retries land on warmed nodes, so spreading them out converges.
+_TRANSIENT_MARKERS = (
+    "project not found", "not found", "429", "rate limit", "rate_limit",
+    "timeout", "timed out", "502", "503", "temporarily unavailable", "service unavailable",
+)
+
+
+async def _run_resilient(agent, prompt: str, *, label: str, retries: int = 7, base_delay: int = 10):
+    """Run one agent turn, retrying on transient Foundry conditions with exponential backoff."""
+    delay = base_delay
+    for attempt in range(retries):
+        try:
+            return await agent.run(prompt)
+        except Exception as exc:  # noqa: BLE001
+            s = str(exc).lower()
+            if attempt < retries - 1 and any(m in s for m in _TRANSIENT_MARKERS):
+                print(f"  ⏳ {label}: transient ({s[:60]}…); retry {attempt + 1}/{retries - 1} in {delay}s", flush=True)
+                await asyncio.sleep(delay)
+                delay = min(delay * 2, 90)
+                continue
+            raise
+
+
+async def build_component_wiki(repo: Path, component: str, version: str, out_dir: Path, model: str | None = None, verify: bool = True, groups: list[str] | None = None, fidelity_root: Path | None = None) -> Path:
     credential = DefaultAzureCredential()
     resolved_model = model or settings.foundry_model
     meter = _CostMeter(resolved_model)
@@ -274,8 +308,10 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
         '{"pages":[{"title":"...","files":["caminho1","caminho2"]}]}',
     )
     async with planner:
-        plan_resp = await planner.run(
-            f"Componente: {component} {version}\nArquivos do repositório:\n{tree}\n\nPlaneje as páginas."
+        plan_resp = await _run_resilient(
+            planner,
+            f"Componente: {component} {version}\nArquivos do repositório:\n{tree}\n\nPlaneje as páginas.",
+            label="planner",
         )
     meter.add(plan_resp)
     plan_raw = plan_resp.text
@@ -309,16 +345,20 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
     async with writer, verifier:
         for i, p in enumerate(plan, 1):
             ctx = _page_context(files, p.get("files", []))
-            w_resp = await writer.run(
+            w_resp = await _run_resilient(
+                writer,
                 f"Componente: {component} {version}\nPágina: {p['title']}\n\nFONTE:\n{ctx}\n\n"
-                f"Escreva a página '{p['title']}'."
+                f"Escreva a página '{p['title']}'.",
+                label=f"writer p{i}",
             )
             meter.add(w_resp)
             md = w_resp.text
             if verify:
                 await asyncio.sleep(_PAGE_DELAY_S)
-                v_resp = await verifier.run(
-                    f"ARQUIVOS-FONTE:\n{ctx}\n\nPÁGINA:\n{md}\n\nCorrija para 100% ancorado no fonte."
+                v_resp = await _run_resilient(
+                    verifier,
+                    f"ARQUIVOS-FONTE:\n{ctx}\n\nPÁGINA:\n{md}\n\nCorrija para 100% ancorado no fonte.",
+                    label=f"verifier p{i}",
                 )
                 meter.add(v_resp)
                 md = v_resp.text
@@ -358,7 +398,11 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
     # Fidelity gate (Phase 1) — the bundle is written above for inspection, but a wiki
     # whose citations don't resolve to real source (or cite a worktree) must not reach
     # the KB. Gates only when the verifier ran (the fidelity claim depends on it).
-    fid = _fidelity_report(pages, files)
+    # A monorepo sub-area bundle (e.g. --repo docs) legitimately cites files in OTHER
+    # areas (apps/, infra/). Resolve citations against the wider root when given, so the
+    # gate doesn't penalize honest cross-area references. Defaults to the --repo gather.
+    fidelity_files = gather_source(fidelity_root) if fidelity_root else files
+    fid = _fidelity_report(pages, fidelity_files)
     print(
         f"\nFidelity: {fid['score']:.0%} — {fid['resolved']}/{fid['total']} citações resolvem para "
         f"arquivo real | {fid['distinct']} arquivos distintos, {fid['line_ranged']} com linha, "
@@ -399,12 +443,16 @@ def main() -> None:
     ap.add_argument("--model", default=None, help="Model deployment for the builder (default: FOUNDRY_MODEL)")
     ap.add_argument("--no-verify", action="store_true", help="Skip the fidelity verifier pass")
     ap.add_argument("--groups", default="", help="Comma-separated read groups of the source repo (inherited access; written to the manifest)")
+    ap.add_argument("--fidelity-root", default=None, help="Resolve fidelity citations against THIS dir instead of --repo (use the monorepo root for a sub-area bundle that cites other areas, e.g. docs/ citing apps/)")
     args = ap.parse_args()
     repo = Path(args.repo).expanduser().resolve()
     if not repo.is_dir():
         raise SystemExit(f"repo not found: {repo}")
+    fidelity_root = Path(args.fidelity_root).expanduser().resolve() if args.fidelity_root else None
+    if fidelity_root and not fidelity_root.is_dir():
+        raise SystemExit(f"--fidelity-root not found: {fidelity_root}")
     groups = [g.strip() for g in args.groups.split(",") if g.strip()]
-    asyncio.run(build_component_wiki(repo, args.component, args.version, Path(args.out).expanduser(), args.model, verify=not args.no_verify, groups=groups))
+    asyncio.run(build_component_wiki(repo, args.component, args.version, Path(args.out).expanduser(), args.model, verify=not args.no_verify, groups=groups, fidelity_root=fidelity_root))
 
 
 if __name__ == "__main__":

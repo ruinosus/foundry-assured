@@ -184,3 +184,26 @@ def check_cockpit_cites_source(response: str) -> bool:
 
 
 cockpit_cites_source = evaluator(check_cockpit_cites_source, name="cockpit_cites_source")
+
+
+# Selfwiki (third domain, dogfood): grounded in a deep-wiki generated from THIS repo.
+# SELFWIKI_INSTRUCTIONS makes the agent cite the area + document (and often a real
+# module/file path). The floor passes when the answer carries such a citation signal or
+# declines.
+_SELFWIKI_CITATION = re.compile(
+    r"foundry-helpdesk-[a-z]+|\b(?:app|infra|docs|eval|apps)/[\w./-]+|"
+    r"\.(?:py|ts|tsx|bicep|yaml|yml|md)\b|\bdocumento[- ]?fonte\b|\bfonte[s]?\b|"
+    r"\b(?:backend|frontend|infra)\b|\bmecanismo\b|\bFase \d",
+    re.IGNORECASE,
+)
+
+
+def check_selfwiki_cites_source(response: str) -> bool:
+    """Selfwiki policy: cite a project area/document (or a real path), or decline."""
+    text = (response or "").lower().replace("’", "'")
+    if any(marker in text for marker in _REFUSAL_MARKERS):
+        return True
+    return bool(_SELFWIKI_CITATION.search(response or ""))
+
+
+selfwiki_cites_source = evaluator(check_selfwiki_cites_source, name="selfwiki_cites_source")

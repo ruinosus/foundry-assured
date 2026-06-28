@@ -198,9 +198,9 @@ azd up        # prompts for env name + location; provisions everything in infra/
 ```
 
 Creates `rg-<env>`, the Foundry account + project **`helpdesk-concierge`**, a
-`gpt-4.1-mini` + `text-embedding-3-small` deployment, **Azure AI Search (Basic)**,
+`gpt-5-mini` + `text-embedding-3-small` deployment, **Azure AI Search (Basic)**,
 Storage, an **ACR** (for the Phase 6 image), and keyless RBAC. Pick a region where
-`gpt-4.1-mini` GlobalStandard is available; AI Search may need a different region
+`gpt-5-mini` GlobalStandard is available; AI Search may need a different region
 (set `AZURE_SEARCH_LOCATION`).
 
 ### 2. Backend + data-plane objects

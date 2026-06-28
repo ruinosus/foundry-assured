@@ -1,0 +1,9 @@
+# foundry-helpdesk-backend v0.1.0
+
+- [Visão Geral do Componente](pages/page-1.md)
+- [Arquitetura e Componentes Principais](pages/page-2.md)
+- [API e Endpoints](pages/page-3.md)
+- [Agentes e Fluxos de Trabalho](pages/page-4.md)
+- [Base de Conhecimento e Ingestão (Knowledge)](pages/page-5.md)
+- [Configuração, Provisionamento e Deploy](pages/page-6.md)
+- [Testes, Avaliações e QA](pages/page-7.md)

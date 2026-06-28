@@ -68,11 +68,11 @@ azd up        # prompts for an environment name + region
 
 This runs `infra/` and creates, in a `rg-<env>` resource group:
 a Foundry account `aif-helpdesk-<token>` + project **`helpdesk-concierge`**,
-`gpt-4.1-mini` + `text-embedding-3-small` deployments, **Azure AI Search (Basic)**,
+`gpt-5-mini` + `text-embedding-3-small` deployments, **Azure AI Search (Basic)**,
 a Storage account, an **ACR**, a **Container Apps environment**, a shared managed
 identity, and all keyless role assignments.
 
-Region tips: pick where `gpt-4.1-mini` GlobalStandard has quota (e.g. `eastus2`);
+Region tips: pick where `gpt-5-mini` GlobalStandard has quota (e.g. `eastus2`);
 if Azure AI Search is out of capacity there, set `AZURE_SEARCH_LOCATION` (e.g.
 `eastus`). Lower `modelCapacity` in `infra/resources.bicep` on quota errors.
 
@@ -271,7 +271,7 @@ or not anyone uses the app) from **usage meters** (≈\$0 when idle).
 | Container Apps (backend + web) | Consumption, 0.5 vCPU / 1 GiB, **scale-to-zero** | **\$0 idle** · ~cents under demo load | 🟢 usage — within the monthly free grant (180k vCPU-s / 360k GiB-s / 2M req) |
 | Hosted agent compute | — | **\$0 idle** | 🟢 deprovisions ~15 min after last call |
 | Azure AI Foundry | Cognitive Services S0 | no fixed fee | 🟢 pay per token (below) |
-| Model usage | `gpt-4.1-mini` GlobalStandard | ~\$0.40 / 1M input · ~\$1.60 / 1M output tok | 🟢 usage — a showcase is cents–few \$/mo |
+| Model usage | `gpt-5-mini` GlobalStandard | ~\$0.25 / 1M input · ~\$2.00 / 1M output tok | 🟢 usage — a showcase is cents–few \$/mo |
 | Embeddings | `text-embedding-3-*` | ~\$0.02 / 1M tok | 🟢 usage — negligible |
 | Storage (blob corpus) | Standard_LRS | <\$1/mo | 🟢 usage |
 | **Azure Files** (tickets) | 1 GiB share on the same account | ~\$0.06/mo + tiny txns → **cents** | 🟢 usage — persists `data/tickets.jsonl` across scale-to-zero |
