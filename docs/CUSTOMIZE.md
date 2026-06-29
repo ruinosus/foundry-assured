@@ -26,11 +26,12 @@ the deploy pipeline — is reusable Foundry plumbing you keep as-is.
 | 4 | **Identity / labels** | `apps/frontend/lib/branding.ts`, `app/page.tsx` | set |
 | 5 | **Eval datasets** | `apps/backend/eval/datasets/*.jsonl` | set (data only) |
 | 6 | **Access (who sees each doc)** | your Entra groups + `COCKPIT_ACL_GROUP_MAP`; each source's read groups in the bundle manifest `groups` (or an external `{component: [group]}` map via `COCKPIT_ACL_CLASSIFICATION`) | set (data only) |
+| 7 | **A whole new domain** (alongside helpdesk) | `apps/frontend/lib/domains.ts` + `apps/backend/app/agents/<domain>.py` + that domain's KB ingest | add |
 
-> Rule of thumb: **#1, #4, #5, #6 you set; #2 and #3 you rewrite.** The rewrites are small
-> (one prompts file, one tool) — that's the point. The eval *harness*, the ACL mechanism
-> and the security gates never change — access is **data** (each source's read groups),
-> not code. See [`METHOD.md`](./METHOD.md).
+> Rule of thumb: **#1, #4, #5, #6 you set; #2 and #3 you rewrite; #7 you add.** The
+> rewrites are small (one prompts file, one tool) — that's the point. The eval *harness*,
+> the ACL mechanism and the security gates never change — access is **data** (each
+> source's read groups), not code. See [`METHOD.md`](./METHOD.md).
 
 ---
 
@@ -159,6 +160,24 @@ adding a new *policy* — the secret-leak and citation policies are domain-neutr
 
 ---
 
+## 7 — A whole new domain (add — keep helpdesk, run side-by-side)
+
+Swap points #1–#6 *replace* the helpdesk. If instead you want to **add** another assistant
+alongside it — the showcase ships three (helpdesk, cockpit, selfwiki) — domains are
+**config-driven**. Adding one is three additions, no engine changes:
+
+1. **Frontend** — add **one entry** to `apps/frontend/lib/domains.ts` (id, label, the
+   backend agent path, branding). The domain selector and routing pick it up from there.
+2. **Backend agent** — add `apps/backend/app/agents/<domain>.py` mirroring
+   `apps/backend/app/agents/selfwiki.py` (its prompts + its knowledge source).
+3. **Ingest** — point that domain's KB ingest at its corpus so its own Foundry IQ KB
+   exists.
+
+The workflow engine, AG-UI streaming, auth/OBO, eval harness, memory, tracing and deploy
+are shared across all domains — you don't fork them per domain.
+
+---
+
 ## Worked example — an "HR Onboarding Assistant"
 
 1. **Corpus**: drop your onboarding/policy/benefits markdown into `knowledge/corpus/`,
@@ -182,7 +201,9 @@ Run it, sign in, ask "how do I enroll in benefits?" — grounded answer with cit
 The reusable Foundry plumbing — this is the value you're inheriting:
 
 - `app/workflow/` (the `WorkflowBuilder` graph + AG-UI streaming + `stream_fix.py`)
-- `app/core/auth.py` (Entra sign-in, OBO, memory scoping)
+- `app/core/auth.py` (Entra sign-in, OBO, memory scoping) — **including the RBAC**
+  (Entra App Roles → Admin/Author/Approver/Reader + the `/admin/users` portal). It's
+  reusable plumbing you configure (assign roles in Entra), not code you rewrite.
 - `app/memory/` + the memory provider (managed Foundry memory)
 - `eval/` harness — `assertions.py`, `run_eval.py`, the rubric (the policies are
   domain-neutral). You only swap the **datasets** — see §5 above.

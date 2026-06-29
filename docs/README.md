@@ -9,6 +9,13 @@ updated: 2026-06-27
 
 # Documentation index
 
+**Three domains, one mechanism.** The same assurance code drives three swappable knowledge
+domains — **helpdesk** (fake runbooks), **cockpit** (Cockpit doc bundles), and **selfwiki**
+(this repo's own deep-wiki) — each with its own knowledge base and ingest; deploy any subset.
+Start with [METHOD.md](./METHOD.md) for what the mechanism guarantees, [DEPLOYMENT.md](./DEPLOYMENT.md)
+to run it from zero (incl. the three ingests, app-role RBAC, and the two wiki-generation paths),
+and the [RBAC plan](./RBAC-AND-USER-MANAGEMENT-PLAN.md) + [generated wiki](./wiki/README.md) for those pieces.
+
 Every doc in this folder, with its type and audience, so you can find the one that fits your need.
 
 | Doc | Type | Audience | What it's for |

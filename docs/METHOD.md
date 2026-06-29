@@ -88,8 +88,11 @@ There is **no classification logic in the code** — access *follows the source*
 1. **Provision** — `azd up` (your Foundry + Search + apps).
 2. **Identities** — your security groups exist (or `infra/entra/entra.bicep` /
    `create-acl-identities.sh` create demo ones); set `COCKPIT_ACL_GROUP_MAP` (name→id).
-3. **Generate** — `wiki_builder --repo <r> --component <c> --groups <repo read teams>`;
-   the fidelity gate rejects a low-fidelity bundle.
+3. **Generate** — produce the wiki bundle, two paths: (a) the **Foundry pipeline**
+   `wiki_builder --repo <r> --component <c> --groups <repo read teams>` (automated, in-cloud,
+   the fidelity gate rejects a low-fidelity bundle); or (b) the **Microsoft Agent Skills**
+   (`app/knowledge/skills/{wiki-architect,wiki-page-writer}`) run by VS Code Copilot / Claude
+   Code — open the repo, ask it to "create a wiki" — no cloud, no cost.
 4. **Ingest** — `ingest_cockpit` reads each manifest's `groups` and calls
    `app/knowledge/acl_setup.py`, which stamps the index `groups` field and enables
    query-time trimming (the code-vs-data split above: data in, no classification logic).
@@ -121,6 +124,11 @@ There is **no classification logic in the code** — access *follows the source*
    ```
 6. **Gate** — quality in `ci.yml`/`agent-evals.yml`; security in `security-gates.yml`
    (access-control + red-team). Below threshold → the build fails.
+
+App **roles** gate who can *do* what: **Admin / Author / Approver / Reader** (e.g. the HITL
+approval needs Approver or Admin; the `/admin/users` portal needs Admin). They're declared
+on the API app via `scripts/setup-app-roles.sh` — see
+[DEPLOYMENT.md Step 3d](./DEPLOYMENT.md) and [RBAC-AND-USER-MANAGEMENT-PLAN.md](./RBAC-AND-USER-MANAGEMENT-PLAN.md).
 
 ## Adapting to a new domain
 

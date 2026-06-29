@@ -1,4 +1,4 @@
-# Foundry Helpdesk — Build Spec
+# Foundry Assured — Build Spec
 
 > Caso de uso showcase do Microsoft Foundry que exercita **workflow, base de conhecimento, memória e eval**, com frontend **CopilotKit** via protocolo **AG-UI**. Pensado para ser construído com **Claude Code**.
 >
@@ -57,7 +57,7 @@ flowchart TB
     end
 
     subgraph FDY["Microsoft Foundry (cloud)"]
-        MODEL["Model deployment<br/>(gpt-4.1-mini)"]
+        MODEL["Model deployment<br/>(gpt-5-mini)"]
         IQ["Foundry IQ<br/>Knowledge base"]
         MEM["Memory store<br/>(user / procedural / session)"]
         EVAL["Evaluation + Tracing<br/>(Rubric, groundedness, OTEL)"]
@@ -90,7 +90,7 @@ flowchart TB
 - `HttpAgent` apontando para o endpoint AG-UI do backend
 
 **Foundry (provisionar)**
-- Foundry project + model deployment (default seguro: `gpt-4.1-mini`)
+- Foundry project + model deployment (default seguro: `gpt-5-mini`)
 - Foundry IQ knowledge base
 - Memory store
 - Application Insights (tracing OTEL já vem nos samples)
@@ -313,12 +313,12 @@ export default function Page() {
 ## 8. CLAUDE.md (colar no repo)
 
 ```markdown
-# Foundry Helpdesk — guia para o Claude Code
+# Foundry Assured — guia para o Claude Code
 
 ## Stack
 - Backend: Python 3.12, agent-framework, agent-framework-ag-ui, azure-ai-projects>=2.2.0, FastAPI. Deps via `uv`.
 - Frontend: Next.js 15 (App Router), CopilotKit (react-core/react-ui/runtime).
-- Foundry: project + gpt-4.1-mini, Foundry IQ KB, memory store, evaluation/tracing.
+- Foundry: project + gpt-5-mini, Foundry IQ KB, memory store, evaluation/tracing.
 
 ## Regras inegociáveis
 1. **NÃO invente assinaturas de SDK.** Antes de fixar qualquer chamada a `azure-ai-projects`

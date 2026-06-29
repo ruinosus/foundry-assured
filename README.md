@@ -1,4 +1,4 @@
-# Foundry Helpdesk
+# Foundry Assured
 
 An internal engineering support **concierge** — a Microsoft Foundry showcase that
 exercises every Foundry pillar hands-on: a grounded knowledge base, a streamed
@@ -32,6 +32,34 @@ A developer asks in chat → the system **triages** intent/urgency → **retriev
 from the runbook knowledge base → **resolves** with a grounded, cited answer →
 **escalates** with human approval when an action is needed → and the whole thing
 is **evaluated** and **traceable**.
+
+## Three domains (config-driven)
+
+The frontend is an **Assurance Console** that fronts three agents, all sharing the
+same grounded/assured plumbing:
+
+- **helpdesk** — the multi-agent workflow above (triage → retrieve → resolve →
+  escalate, with HITL).
+- **cockpit** — grounded, cited Q&A over the `cockpit-kb` corpus.
+- **selfwiki** — grounded, cited Q&A over a deep-wiki generated from **this repo's
+  own source** (the dogfood).
+
+Domains are **config-driven**: a single registry, [`apps/frontend/lib/domains.ts`](./apps/frontend/lib/domains.ts),
+drives the agent map, the nav, the generic console route, and the per-domain
+suggested prompts. Adding a domain = **one entry there + a backend agent**; deploy
+any subset (cockpit and selfwiki only register once their KB is ingested).
+
+### Two wiki-generation paths
+
+The deep-wiki the **selfwiki** domain grounds on can be generated two ways:
+
+- **Foundry pipeline** — [`apps/backend/app/knowledge/wiki_builder.py`](./apps/backend/app/knowledge/wiki_builder.py),
+  automated via `uv run`, using the Foundry model (`gpt-5-mini`) with the build-fidelity
+  gate. Costs roughly **$0.30** for the whole monorepo.
+- **Microsoft Agent Skills** — [`apps/backend/app/knowledge/skills/{wiki-architect,wiki-page-writer}`](./apps/backend/app/knowledge/skills).
+  Open the repo in **VS Code Copilot or Claude Code** and ask it to *"create a wiki"*;
+  the IDE agent reads the `SKILL.md` and runs the loop. **No cloud, no azd, no cost** —
+  it uses the IDE's own Copilot.
 
 ## Quickstart
 
@@ -114,11 +142,11 @@ The three layers — frontend, backend, and Foundry:
 ```mermaid
 flowchart TB
   subgraph FE["Frontend · Next.js + CopilotKit"]
-    UI["/helpdesk and /cockpit chat (MSAL sign-in)"]
+    UI["/d/[domain] Assurance Console (MSAL sign-in)<br/>helpdesk · cockpit · selfwiki"]
   end
   subgraph BE["Backend · FastAPI (AG-UI over SSE)"]
     WF["/helpdesk · multi-agent workflow"]
-    CK["/cockpit · grounded agent + secure_search trim"]
+    CK["/cockpit, /selfwiki · grounded agents + secure_search trim"]
   end
   subgraph FDY["Microsoft Foundry"]
     KB["Foundry IQ KB · Azure AI Search"]
@@ -227,8 +255,13 @@ npm run dev                                # http://localhost:3000
 ```
 
 - **`/`** — Overview (hero + the six capability cards).
-- **`/chat`** — the concierge. Toggle **Live workflow** (AG-UI: steps, approval,
-  OBO, memory) ⇄ **Hosted agent** (the deployed Foundry agent).
+- **`/d/[domain]`** — the generic Assurance Console (defaults to **`/d/helpdesk`**;
+  also **`/d/cockpit`** and **`/d/selfwiki`**). An **EvidencePanel** shows the
+  sources a grounded answer cited plus its assurance badges. For helpdesk, toggle
+  **Live workflow** (AG-UI: steps, approval, OBO, memory) ⇄ **Hosted agent** (the
+  deployed Foundry agent). Legacy **`/chat`** and **`/cockpit`** redirect to
+  `/d/<id>`.
+- **`/admin/users`** — in-portal user + role management (Admin role only; see below).
 - **`/evals`** — recorded eval runs with direct links to the Foundry portal report.
 
 ### Entra ID (OBO) sign-in
@@ -238,6 +271,15 @@ forwards the user's token; the backend does the On-Behalf-Of exchange and calls
 Foundry/KB/memory **as the user**. Two app registrations: a SPA (`redirect
 http://localhost:3000`) and an API (`scope access_as_user`, `requestedAccessToken
 Version: 2`). Unset → falls back to `DefaultAzureCredential` so it still boots.
+
+### App roles & user management
+
+Authorization rides in the token's **`roles`** claim via four Entra **App Roles** —
+**Admin · Author · Approver · Reader**. The HITL ticket approval requires the
+**Approver** (or **Admin**) role, so a Reader can ask and ground but can't green-light
+an action. The in-portal admin page **`/admin/users`** manages users and their role
+assignments through **Microsoft Graph** (app-only), backed by the backend's `/admin/*`
+endpoints. Design + setup: [`docs/RBAC-AND-USER-MANAGEMENT-PLAN.md`](./docs/RBAC-AND-USER-MANAGEMENT-PLAN.md).
 
 ## Evaluation (Phase 5)
 

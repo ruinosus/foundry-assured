@@ -1,6 +1,6 @@
 # Contributing
 
-How we work on Foundry Helpdesk. Setup lives in [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md);
+How we work on Foundry Assured. Setup lives in [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md);
 this is the workflow + repo-governance guide.
 
 ## Branching & flow (trunk-based)
@@ -71,16 +71,16 @@ The cloud workflows authenticate to Azure with **OIDC** (no stored credentials).
 
 1. **Create an Entra app + federated credential** for the repo:
    ```bash
-   az ad app create --display-name foundry-helpdesk-ci
+   az ad app create --display-name foundry-assured-ci
    # note the appId; create a service principal and grant it Contributor + the
    # Foundry/Search data-plane roles on rg-<env>
    az ad app federated-credential create --id <appId> --parameters '{
      "name": "github-main",
      "issuer": "https://token.actions.githubusercontent.com",
-     "subject": "repo:ruinosus/foundry-helpdesk:ref:refs/heads/main",
+     "subject": "repo:ruinosus/foundry-assured:ref:refs/heads/main",
      "audiences": ["api://AzureADTokenExchange"]
    }'
-   # repeat with subject "repo:ruinosus/foundry-helpdesk:environment:production" for the deploy env
+   # repeat with subject "repo:ruinosus/foundry-assured:environment:production" for the deploy env
    ```
 2. **Repository → Settings → Secrets and variables → Actions:**
    - **Variables:** `AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, `AZURE_SUBSCRIPTION_ID`,
@@ -96,6 +96,11 @@ The cloud workflows authenticate to Azure with **OIDC** (no stored credentials).
    - **Secrets:** `ENTRA_API_CLIENT_SECRET`; `COCKPIT_TEST_PASSWORD` (test-identity password
      for the security gates); `RELEASE_APP_PRIVATE_KEY` (the release GitHub App key).
 3. **Environments → `production`:** add required reviewers (gates `deploy.yml` / `provision-kb.yml`).
+
+> **Separate from CI:** the `foundry-assured-ci` app above is the *deploy* identity. The
+> **runtime** app also needs **app-only Microsoft Graph permissions** for the RBAC / admin
+> portal (App Roles + `/admin/users`) — set up out-of-band via `scripts/setup-app-roles.sh`,
+> not here. See [`docs/RBAC-AND-USER-MANAGEMENT-PLAN.md`](./docs/RBAC-AND-USER-MANAGEMENT-PLAN.md).
 
 ### Branch protection (Settings → Branches → `main`)
 

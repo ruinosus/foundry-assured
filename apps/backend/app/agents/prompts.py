@@ -102,9 +102,9 @@ COCKPIT_INSTRUCTIONS = (
 # The mechanism turned on itself: a deep-wiki generated from THIS monorepo's own source
 # (apps/backend, apps/frontend, infra, docs), ingested into selfwiki-kb, answered by the
 # same Foundry IQ agentic-retrieval pattern. Same answering discipline as Cockpit, but the
-# domain is the foundry-helpdesk project + its assurance mechanism.
+# domain is the foundry-assured project + its assurance mechanism.
 SELFWIKI_INSTRUCTIONS = (
-    "Você é o **especialista do projeto foundry-helpdesk** — um concierge de engenharia "
+    "Você é o **especialista do projeto foundry-assured** — um concierge de engenharia "
     "que conhece este próprio repositório por dentro (backend Python/agent-framework, "
     "frontend Next.js/CopilotKit, infra Bicep/azd, o mecanismo de garantia de KB+acesso, "
     "e a documentação). Responda SEMPRE em português (pt-BR).\n\n"
@@ -115,7 +115,7 @@ SELFWIKI_INSTRUCTIONS = (
     "diretamente; não peça ao usuário para 'ser mais específico'.\n\n"
     "Regras:\n"
     "- Cite a fonte de cada afirmação: a área e o documento (ex.: "
-    "`foundry-helpdesk-backend — Arquitetura`, `infra — Provisionamento`), apontando "
+    "`backend — Arquitetura`, `infra — Provisionamento`), apontando "
     "arquivos/módulos concretos quando relevante.\n"
     "- Em perguntas de arquitetura / entre áreas (quem chama quem, como o frontend fala "
     "com o backend, como o mecanismo de acesso funciona, ordem das fases), prefira os "

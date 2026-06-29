@@ -22,7 +22,7 @@ O domínio é **swappable**: a arquitetura "pergunte → fundamente → resolva 
 
 Três camadas. O frontend Next.js conversa com o backend Python via **AG-UI sobre SSE**; o backend roda um **workflow multi-agente** que usa o Foundry na nuvem.
 
-- **Frontend** → `app/api/copilotkit/route.ts` registra um `CopilotRuntime` com um `HttpAgent` para `http://localhost:8000/helpdesk`. A página usa `useCoAgentStateRender` para mostrar os passos intermediários e `useCopilotAction` (`renderAndWaitForResponse`) para o approval card.
+- **Frontend** → o "Assurance Console". A rota genérica `/d/[domain]` (ex.: `/d/helpdesk`, `/d/cockpit`, `/d/selfwiki`; as antigas `/chat` e `/cockpit` redirecionam) é dirigida por **um registry**: `apps/frontend/lib/domains.ts` define o agent map, a nav, a rota genérica e os prompts sugeridos — **adicionar domínio = 1 entrada lá + um agente no backend**. `app/api/copilotkit/route.ts` registra um `CopilotRuntime` com um `HttpAgent` por domínio. A página usa `useCoAgentStateRender` para mostrar os passos intermediários, `useCopilotAction` (`renderAndWaitForResponse`) para o approval card, e um `EvidencePanel` para as fontes citadas + badges de assurance.
 - **Backend** → `app/main.py` cria o FastAPI (rodado como `app.main:app`) e expõe o endpoint AG-UI `/helpdesk` para o workflow `triage → retrieve → resolve → (condicional) escalate` embrulhado como **workflow-as-agent**. Camadas: `app/api` (routers finos) → `app/services` → `app/workflow` / `app/agents` / `app/core`.
 - **Foundry** → o retriever consulta a **Foundry IQ KB** e trima por entitlement (`app/agents/secure_search.py`, `app/knowledge/acl_setup.py`); triage/resolver leem/escrevem **memória**; eval e traces vão para o Foundry Control Plane.
 
@@ -36,7 +36,7 @@ Estrutura-alvo do repo (ver seção 5 da spec): `backend/app/{agents,workflow,me
 2. Auth **sempre** via `DefaultAzureCredential`. Nada de API key hardcoded.
 3. Cada fase tem sinal **verde/vermelho** (ver abaixo). **Não avança** sem o verde da fase atual.
 4. Toda resposta do resolver **DEVE** conter ao menos uma citação de fonte. É policy de eval (ASSERT pega violação).
-5. A tool `create_ticket` só pode disparar **após aprovação humana explícita**.
+5. A tool `create_ticket` só pode disparar **após aprovação humana explícita** — e a aprovação HITL exige o papel **Approver** (ou **Admin**). Autorização vem de App Roles do Entra (Admin / Author / Approver / Reader) no claim `roles` do token; gestão de usuários + papéis fica em `/admin/users` (via Microsoft Graph, app-only). Plano: [`docs/RBAC-AND-USER-MANAGEMENT-PLAN.md`](./docs/RBAC-AND-USER-MANAGEMENT-PLAN.md).
 6. **Controle de acesso é DADO** (os grupos de leitura de cada fonte), **nunca lógica de classificação no código**. O acesso segue a fonte: grupos vêm do manifesto/`COCKPIT_ACL_CLASSIFICATION`, nomes resolvem para object-IDs via `COCKPIT_ACL_GROUP_MAP`; doc sem acesso declarado → fail-closed. Ver [`docs/METHOD.md`](./docs/METHOD.md).
 
 ## Ordem de implementação (fases)

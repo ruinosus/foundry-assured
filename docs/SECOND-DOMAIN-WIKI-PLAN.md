@@ -3,11 +3,16 @@ title: Second domain + LLM Wiki pattern on Foundry — macro plan
 description: The living plan for adding a second domain (Cockpit expert) that demonstrates the LLM Wiki generate+consume pattern on Foundry.
 type: plan
 audience: contributor
-status: draft
+status: historical
 updated: 2026-06-27
 ---
 
 # Second domain (Cockpit expert) + the LLM Wiki pattern on Foundry — macro plan
+
+> **Status: historical.** The second domain (**Cockpit**) **shipped**, and a **third**
+> domain (**selfwiki**) was later added by dogfooding the recipe — see
+> [`CASE-STUDY-SELFWIKI-DOGFOOD.md`](./CASE-STUDY-SELFWIKI-DOGFOOD.md). Keep this doc as
+> the design rationale, not the current state.
 
 The living plan for adding a **second domain** to the showcase: a *Cockpit platform
 expert* agent that demonstrates the **LLM Wiki** pattern (generate + consume)

@@ -11,6 +11,7 @@ import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
 import { DOMAINS } from "@/lib/domains";
+import { useMyRoles, isAdmin } from "@/lib/auth/roles";
 
 // The domain agents are config-driven from the registry → /d/<id>. Workspace pages are
 // static. Two sections so the sidebar reads as "tools" + "agents".
@@ -21,10 +22,13 @@ const WORKSPACE_NAV = [
   { href: "/evals", label: "Evaluations", icon: "✓" },
 ];
 
+const ADMIN_NAV = { href: "/admin/users", label: "Admin", icon: "🛡️" };
+
 const TITLES: Record<string, string> = {
   "/": "Overview",
   "/tickets": "Tickets",
   "/evals": "Evaluations",
+  "/admin/users": "Admin",
   ...Object.fromEntries(DOMAINS.map((d) => [`/d/${d.id}`, d.label])),
 };
 
@@ -89,6 +93,9 @@ export function AppShell({
 }) {
   const pathname = usePathname() || "/";
   const title = TITLES[pathname] ?? "";
+  const roles = useMyRoles();
+  // Show Admin in the nav only to Admins (the page + every endpoint re-check server-side).
+  const workspace = isAdmin(roles) ? [...WORKSPACE_NAV, ADMIN_NAV] : WORKSPACE_NAV;
 
   return (
     <div className="shell">
@@ -102,7 +109,7 @@ export function AppShell({
         </div>
 
         {[
-          { section: "Workspace", items: WORKSPACE_NAV },
+          { section: "Workspace", items: workspace },
           { section: "AI agents", items: AGENT_NAV },
         ].map(({ section, items }) => (
           <div key={section}>

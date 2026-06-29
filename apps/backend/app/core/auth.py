@@ -26,11 +26,15 @@ import contextvars
 
 from azure.core.credentials import TokenCredential
 from azure.identity import DefaultAzureCredential, OnBehalfOfCredential
-from fastapi import Depends, Security
+from fastapi import Depends, HTTPException, Security, status
 from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
 from fastapi_azure_auth.user import User
 
 from app.core.settings import settings
+
+# App roles the app owns (Entra App Roles → token `roles` claim). The company maps its own
+# groups onto these; the app keeps the set small. See docs/RBAC-AND-USER-MANAGEMENT-PLAN.md.
+APP_ROLES = ("Admin", "Author", "Approver", "Reader")
 
 _current_user: contextvars.ContextVar[User | None] = contextvars.ContextVar(
     "current_user", default=None
@@ -66,8 +70,49 @@ def auth_dependencies() -> list:
     return [Depends(require_user)] if settings.auth_enabled else []
 
 
+def require_role(*roles: str):
+    """FastAPI dependency: require ANY of `roles` in the caller's token `roles` claim.
+
+    Defense in depth — the frontend hides admin UI, but every protected endpoint re-checks
+    server-side. When auth is OFF (local dev) it's a no-op so the app stays usable locally.
+    Admin is NOT implicitly granted; list it explicitly where it should pass (e.g.
+    require_role("Author", "Admin")).
+    """
+    if not settings.auth_enabled:
+
+        async def _open() -> None:
+            return None
+
+        return _open
+
+    async def _check(user: User = Security(azure_scheme)) -> User:  # type: ignore[arg-type]
+        _current_user.set(user)
+        if not (set(roles) & set(user.roles or [])):
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail=f"requires role: {' or '.join(roles)}",
+            )
+        return user
+
+    return _check
+
+
 def current_user() -> User | None:
     return _current_user.get()
+
+
+def current_roles() -> set[str]:
+    """The signed-in caller's app roles (from the token `roles` claim)."""
+    user = current_user()
+    return set(user.roles or []) if user is not None else set()
+
+
+def has_role(*roles: str) -> bool:
+    """True if the caller has ANY of `roles`. Always True when auth is OFF (local dev),
+    so behavior outside HTTP endpoints (e.g. inside the workflow) degrades open locally."""
+    if not settings.auth_enabled:
+        return True
+    return bool(set(roles) & current_roles())
 
 
 def credential_for_request() -> TokenCredential:

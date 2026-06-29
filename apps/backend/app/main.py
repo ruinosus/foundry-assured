@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
     await hosted_aclose()
 
 
-app = FastAPI(title="Foundry Helpdesk", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Foundry Assured", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,

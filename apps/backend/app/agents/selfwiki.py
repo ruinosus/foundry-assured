@@ -54,7 +54,7 @@ def build_selfwiki_agent() -> Agent:
     )
     return client.as_agent(
         name="SelfWikiExpert",
-        description="Expert on the foundry-helpdesk project, grounded in its own generated deep-wiki.",
+        description="Expert on the foundry-assured project, grounded in its own generated deep-wiki.",
         instructions=SELFWIKI_INSTRUCTIONS,
         context_providers=[search],
     )

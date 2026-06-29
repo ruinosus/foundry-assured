@@ -5,7 +5,7 @@
 // rewrite separately — see docs/CUSTOMIZE.md for the full recipe.
 export const branding = {
   /** Product name — browser title, sidebar brand, login screen. */
-  product: "Foundry Helpdesk",
+  product: "Foundry Assured",
   /** Short tagline under the brand mark. */
   tagline: "Engineering support",
   /** One-line description — <meta description> + login subtitle. */

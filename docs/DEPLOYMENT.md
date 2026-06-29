@@ -1,6 +1,6 @@
 ---
 title: Deployment & provisioning guide
-description: End-to-end steps from a fresh clone to a provisioned, optionally cloud-published Foundry Helpdesk.
+description: End-to-end steps from a fresh clone to a provisioned, optionally cloud-published Foundry Assured.
 type: how-to
 audience: operator
 status: stable
@@ -10,7 +10,7 @@ updated: 2026-06-27
 # Deployment & provisioning guide
 
 End-to-end: from a fresh `git clone` to a fully provisioned, optionally
-cloud-published Foundry Helpdesk. Read top to bottom the first time.
+cloud-published Foundry Assured. Read top to bottom the first time.
 
 > Architecture & repo layout: [`../README.md`](../README.md). This doc is the
 > operational runbook.
@@ -109,7 +109,7 @@ whole step to run without auth (single shared `DefaultAzureCredential` identity)
 
 ### 3a. API app registration (the backend's audience)
 
-1. **Entra ID → App registrations → New registration.** Name e.g. `foundry-helpdesk-api`. Register.
+1. **Entra ID → App registrations → New registration.** Name e.g. `foundry-assured-api`. Register.
 2. **Expose an API → Add a scope.** Accept the default `api://<api-client-id>` Application ID URI. Scope name **`access_as_user`**, admins+users can consent.
 3. **Certificates & secrets → New client secret.** Copy the **value** → this is `ENTRA_API_CLIENT_SECRET`.
 4. **Manifest →** set `"requestedAccessTokenVersion": 2` (otherwise the backend rejects v1 tokens with "invalid claims").
@@ -120,7 +120,7 @@ whole step to run without auth (single shared `DefaultAzureCredential` identity)
 
 ### 3b. SPA app registration (the frontend)
 
-1. **New registration.** Name e.g. `foundry-helpdesk-spa`. Under *Redirect URI*, platform **Single-page application**, URI **`http://localhost:3000`** (add your deployed `WEB_URL` after Step 7).
+1. **New registration.** Name e.g. `foundry-assured-spa`. Under *Redirect URI*, platform **Single-page application**, URI **`http://localhost:3000`** (add your deployed `WEB_URL` after Step 7).
 2. **API permissions → Add → My APIs →** select the API app → delegated **`access_as_user`** → **Grant admin consent**.
 3. If you sign in with a **personal/guest** account (live.com/gmail), the backend scheme sets `allow_guest_users=True` already; just make sure the account is a guest member of the tenant.
 
@@ -140,21 +140,82 @@ NEXT_PUBLIC_ENTRA_API_CLIENT_ID=<api-app-client-id>
 
 The frontend must run on **port 3000** (it must match the SPA redirect URI).
 
+### 3d. App roles (RBAC) — required for HITL approval + the admin portal
+
+Declare the four app roles on the **API** app and grant the app-only Microsoft Graph
+permissions the in-portal user management needs:
+
+```bash
+ENTRA_API_CLIENT_ID=<api-app-client-id> ./scripts/setup-app-roles.sh
+```
+
+This is idempotent and:
+- declares the four app roles — **Admin**, **Author**, **Approver**, **Reader**;
+- grants the app-only Graph permissions (`User.ReadWrite.All`, `User.Invite.All`,
+  `AppRoleAssignment.ReadWrite.All`, `Directory.Read.All`) and runs admin consent.
+
+Then **assign yourself the Admin role**: **Entra → Enterprise applications → the API app →
+Users and groups → Add user/group** → pick yourself → role **Admin**. The HITL approval
+card requires **Approver** or **Admin**; the `/admin/users` portal requires **Admin**.
+
+> Design & company-group→app-role mapping: [RBAC-AND-USER-MANAGEMENT-PLAN.md](./RBAC-AND-USER-MANAGEMENT-PLAN.md).
+
 ---
 
 ## Step 4 — Data-plane objects (KB + memory)
 
-> **Fast path:** `./scripts/bootstrap.sh` runs both of these (and fills `.env` from
-> the azd outputs first). The manual commands:
+> **Fast path:** `./scripts/bootstrap.sh` runs the helpdesk ingest + memory (and fills
+> `.env` from the azd outputs first). The manual commands:
 
 ```bash
 cd apps/backend
-uv run python -m app.knowledge.ingest      # upload corpus → knowledge source → Foundry IQ knowledge base
 uv run python -m cli.provision_memory      # create the Foundry memory store
 ```
 
-These are **data-plane** (not Bicep). Ingestion indexes ~13 runbooks (a few
-minutes; the script polls until it settles).
+These are **data-plane** (not Bicep), so you ingest each domain by hand. There are
+**three domains, each with its own knowledge base + ingest** — deploy/ingest any subset
+(at least one):
+
+```bash
+cd apps/backend
+
+# Helpdesk KB — ~13 fake runbooks (a few minutes; the script polls until it settles)
+uv run python -m app.knowledge.ingest
+
+# Cockpit KB — point at a folder of Cockpit doc bundles
+COCKPIT_DOCBUNDLES=/path/to/cockpit/docbundles \
+  uv run python -m app.knowledge.ingest_cockpit
+
+# Selfwiki KB — this repo's own deep-wiki (docs/wiki); reuses ingest_cockpit via ENV override
+KB_KNOWLEDGE_SOURCE=selfwiki-docbundles-ks \
+KB_DOMAIN_LABEL="o projeto foundry-assured" \
+COCKPIT_STORAGE_CONTAINER=selfwiki-corpus \
+COCKPIT_SEARCH_KNOWLEDGE_BASE=selfwiki-kb \
+COCKPIT_SEARCH_INDEX=selfwiki-docbundles-ks-index \
+COCKPIT_DOCBUNDLES=../../docs/wiki \
+  uv run python -m app.knowledge.ingest_cockpit
+```
+
+Each ingest uploads its corpus → knowledge source → Foundry IQ knowledge base, stamps
+the per-document access groups, and polls until the index settles.
+
+### Generating the selfwiki corpus — two paths
+
+The `docs/wiki` deep-wiki that the **selfwiki** ingest consumes is itself generated.
+There are **two ways** to produce it:
+
+1. **Foundry pipeline (`wiki_builder.py`)** — automated, runs in-cloud. From
+   `apps/backend`: `uv run python -m app.knowledge.wiki_builder …`. Needs `azd up` done
+   and the Foundry model (`gpt-5-mini`) deployed; it enforces the **build-fidelity gate**
+   (rejects a low-fidelity bundle). This is the path that costs tokens.
+2. **Microsoft Agent Skills** — no cloud, no cost. The skills under
+   `apps/backend/app/knowledge/skills/{wiki-architect,wiki-page-writer}` are run by your
+   IDE agent (**VS Code Copilot** or **Claude Code**): open the repo and ask it to
+   *"create a wiki"* — the agent follows the skill instructions to write the bundle
+   locally. (There is no `copilot plugin install` / slash command; it's the skills the
+   IDE agent reads.)
+
+Either path produces a doc bundle the selfwiki ingest above can index.
 
 ---
 

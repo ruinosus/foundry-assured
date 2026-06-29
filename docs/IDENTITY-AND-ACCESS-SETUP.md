@@ -42,6 +42,7 @@ flowchart TB
 | Demo **groups + test users** + memberships (ACL demo) | `infra/entra/create-acl-identities.sh` · `create-test-users.sh` | ✅ (script) | infra/entra/ |
 | **API app registration** (backend audience, OBO) | `scripts/setup-entra.sh` *(or manual)* | ⚠️ semi | [DEPLOYMENT.md Step 3a](./DEPLOYMENT.md) |
 | **SPA app registration** (frontend sign-in) | `scripts/setup-entra.sh` *(or manual)* | ⚠️ semi | [DEPLOYMENT.md Step 3b](./DEPLOYMENT.md) |
+| **App roles** (Admin/Author/Approver/Reader) on the API app + app-only Graph permissions | `scripts/setup-app-roles.sh` | ⚠️ semi (you still assign yourself Admin in the portal) | [DEPLOYMENT.md Step 3d](./DEPLOYMENT.md) · [RBAC plan](./RBAC-AND-USER-MANAGEMENT-PLAN.md) |
 | **CI app registration** (GitHub Actions OIDC + federated credentials) | manual `az ad app create` | ❌ | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | Admin consent (Graph / Search `user_impersonation`) | manual (Entra admin) | ❌ | DEPLOYMENT Step 3 |
 
@@ -58,6 +59,8 @@ flowchart TB
 > renamed, update the subject** (`az ad app federated-credential update`), or the jobs that
 > sign in to Azure (deploy, security-gates, eval-cloud) stop authenticating. The basic CI
 > (lint/build/typecheck) doesn't use OIDC and keeps working.
+> *(Already done for this repo: the subjects were updated to `repo:ruinosus/foundry-assured`
+> after the rename.)*
 
 ## Why the app registrations aren't in Bicep
 
@@ -79,9 +82,10 @@ persist**: app registrations, groups, and users **remain** in the tenant. So:
 
 1. **Infra:** `azd up` → [DEPLOYMENT.md Step 1](./DEPLOYMENT.md).
 2. **App regs (sign-in + OBO):** `scripts/setup-entra.sh` (idempotent) → [Step 3](./DEPLOYMENT.md). Skip if you'll run **without sign-in** (single `DefaultAzureCredential`).
-3. **CI (OIDC):** create the CI app + federated credentials → [CONTRIBUTING.md](../CONTRIBUTING.md); set the repo vars/secrets.
-4. **ACL (optional, Phase 4):** deploy `infra/entra/entra.bicep` + `create-acl-identities.sh` → [METHOD.md](./METHOD.md).
-5. **Data:** ingest the KBs → [DEPLOYMENT.md Step 4](./DEPLOYMENT.md).
+3. **App roles (RBAC):** `ENTRA_API_CLIENT_ID=<api> scripts/setup-app-roles.sh`, then assign yourself **Admin** in the portal → [Step 3d](./DEPLOYMENT.md). Needed for HITL approval (Approver/Admin) + the `/admin/users` portal (Admin).
+4. **CI (OIDC):** create the CI app + federated credentials → [CONTRIBUTING.md](../CONTRIBUTING.md); set the repo vars/secrets.
+5. **ACL (optional, Phase 4):** deploy `infra/entra/entra.bicep` + `create-acl-identities.sh` → [METHOD.md](./METHOD.md).
+6. **Data:** ingest the KBs → [DEPLOYMENT.md Step 4](./DEPLOYMENT.md).
 
-If you're **only running/demoing** without multi-user, steps 2–4 are optional: the app falls
+If you're **only running/demoing** without multi-user, steps 2–5 are optional: the app falls
 back to `DefaultAzureCredential` and auth is simply off.

@@ -3,11 +3,15 @@ title: KB → Agent Assurance Mechanism — Implementation Plan
 description: The design and rationale for the assurance mechanism — its guarantees, gates, and intended work, for contributors.
 type: plan
 audience: contributor
-status: draft
+status: historical
 updated: 2026-06-27
 ---
 
 # KB → Agent Assurance Mechanism — Implementation Plan
+
+> **Status: historical.** All phases of this plan have **shipped** — keep this doc as the
+> design rationale, not the current state. For the as-built model, see
+> [`METHOD.md`](./METHOD.md).
 
 > **North star.** A reusable mechanism any company points at one or more repositories /
 > knowledge bases and gets three guarantees: (1) the KB is **built faithfully** from
