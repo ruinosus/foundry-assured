@@ -12,7 +12,7 @@ project_endpoint, credential, memory_store_name, scope, update_delay).
 from agent_framework.foundry import FoundryMemoryProvider
 from azure.core.credentials import TokenCredential
 
-from app.core.settings import settings
+from app.core.tenant import tenant_config
 
 MEMORY_CONTEXT_PROMPT = (
     "Known facts about this developer from past sessions (use when relevant):"
@@ -20,7 +20,7 @@ MEMORY_CONTEXT_PROMPT = (
 
 
 def memory_enabled() -> bool:
-    return bool(settings.foundry_project_endpoint and settings.foundry_memory_store)
+    return bool(tenant_config().foundry_project_endpoint and tenant_config().foundry_memory_store)
 
 
 def build_memory_provider(
@@ -30,9 +30,9 @@ def build_memory_provider(
     if not memory_enabled():
         return None
     return FoundryMemoryProvider(
-        project_endpoint=settings.foundry_project_endpoint,
+        project_endpoint=tenant_config().foundry_project_endpoint,
         credential=credential,
-        memory_store_name=settings.foundry_memory_store,
+        memory_store_name=tenant_config().foundry_memory_store,
         scope=scope,
         context_prompt=MEMORY_CONTEXT_PROMPT,
         update_delay=0,  # store immediately (default waits 5 min)

@@ -20,7 +20,7 @@ from agent_framework.azure import AzureAISearchContextProvider
 from azure.identity import DefaultAzureCredential
 from azure.search.documents import SearchClient
 
-from app.core.settings import settings
+from app.core.tenant import tenant_config
 
 _API = "2026-05-01-preview"
 
@@ -70,7 +70,7 @@ class GroundedAzureAISearchProvider(AzureAISearchContextProvider):
 
     def _direct_semantic(self, query: str) -> list[dict]:
         sc = SearchClient(
-            endpoint=settings.azure_search_endpoint,
+            endpoint=tenant_config().azure_search_endpoint,
             index_name=self._fallback_index,
             credential=DefaultAzureCredential(),
             api_version=_API,

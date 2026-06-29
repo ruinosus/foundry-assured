@@ -20,19 +20,19 @@ from azure.identity import DefaultAzureCredential
 
 from app.agents.grounded_search import GroundedAzureAISearchProvider
 from app.agents.prompts import SELFWIKI_INSTRUCTIONS
-from app.core.settings import settings
+from app.core.tenant import tenant_config
 
 
 def selfwiki_configured() -> bool:
-    return bool(settings.azure_search_endpoint and settings.selfwiki_search_knowledge_base)
+    return bool(tenant_config().azure_search_endpoint and tenant_config().selfwiki_search_knowledge_base)
 
 
 def build_selfwiki_agent() -> Agent:
     """A grounded expert over this project's own deep-wiki (Foundry IQ agentic retrieval)."""
     credential = DefaultAzureCredential()
     client = FoundryChatClient(
-        project_endpoint=settings.foundry_project_endpoint or None,
-        model=settings.foundry_model,
+        project_endpoint=tenant_config().foundry_project_endpoint or None,
+        model=tenant_config().foundry_model,
         credential=credential,
     )
     # Agentic retrieval (reasoning_effort="medium" = iterative query planning) — the
@@ -45,12 +45,12 @@ def build_selfwiki_agent() -> Agent:
     # GroundedAzureAISearchProvider falls back to a direct search on the index so the
     # agent grounds whenever the content exists.
     search = GroundedAzureAISearchProvider(
-        endpoint=settings.azure_search_endpoint,
-        knowledge_base_name=settings.selfwiki_search_knowledge_base,
+        endpoint=tenant_config().azure_search_endpoint,
+        knowledge_base_name=tenant_config().selfwiki_search_knowledge_base,
         credential=credential,
         mode="agentic",
         retrieval_reasoning_effort="medium",
-        fallback_index=settings.selfwiki_search_index,
+        fallback_index=tenant_config().selfwiki_search_index,
     )
     return client.as_agent(
         name="SelfWikiExpert",

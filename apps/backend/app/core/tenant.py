@@ -18,13 +18,72 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class TenantConfig:
     """Per-tenant data-plane pointers (customer resources). ZERO secrets.
 
-    Illustrative subset; the file-split task adds the rest (storage, embedding, per-domain
-    KBs, ACL, memory store, hosted agent) per the spec's field classification.
+    Storage, embedding, per-domain KBs, ACL, memory store, and hosted agent — every
+    field the core reads that varies by tenant.
     """
+    # Foundry project endpoint, e.g. https://<project>.services.ai.azure.com/api/projects/<name>
     foundry_project_endpoint: str = ""
+    # Model deployment name, e.g. gpt-5-mini
     foundry_model: str = "gpt-5-mini"
+
+    # Foundry account OpenAI endpoint, e.g. https://<account>.openai.azure.com
+    # Used by the knowledge base for embeddings + query planning.
+    azure_ai_openai_endpoint: str = ""
+    # Embedding deployment used to vectorize the corpus.
+    foundry_embedding_model: str = "text-embedding-3-small"
+
+    # --- Phase 1: Foundry IQ knowledge base (Azure AI Search) ---
     azure_search_endpoint: str = ""
     azure_search_knowledge_base: str = "helpdesk-kb"
+
+    # Storage holding the corpus (blob knowledge source).
+    azure_storage_account: str = ""
+    azure_storage_resource_id: str = ""
+    azure_storage_container: str = "corpus"
+
+    # --- Second domain: Cockpit expert (its own KB over the cockpit docbundles) ---
+    cockpit_search_knowledge_base: str = "cockpit-kb"
+    cockpit_search_index: str = "cockpit-docbundles-ks-index"
+    cockpit_storage_container: str = "cockpit-corpus"
+
+    # --- Third domain: selfwiki (this repo's own deep-wiki — dogfood) ---
+    selfwiki_search_knowledge_base: str = ""
+    selfwiki_search_index: str = "selfwiki-docbundles-ks-index"
+    selfwiki_storage_container: str = "selfwiki-corpus"
+
+    # --- Phase 4: document-level access control (access follows the source) ---
+    cockpit_acl_group_map: str = ""
+    cockpit_acl_classification: str = ""
+    cockpit_acl_default_groups: str = ""
+    cockpit_acl_public_group: str = ""
+    cockpit_acl_internal_group: str = ""
+    cockpit_acl_confidential_group: str = ""
+
+    # Path to the aap-kb docbundles/ dir (internal Cockpit corpus).
+    cockpit_docbundles_path: str = ""
+
+    # --- Phase 3: Foundry memory store ---
+    foundry_memory_store: str = "helpdesk-memory"
+
+    # --- Phase 6: hosted agent (Foundry Agent Service) ---
+    hosted_agent_name: str = "helpdesk-concierge"
+
+    @property
+    def acl_group_map(self) -> dict[str, str]:
+        """Group NAME → Entra object-ID. cockpit_acl_group_map, plus the demo trio."""
+        mapping: dict[str, str] = {}
+        for name, gid in (
+            ("public", self.cockpit_acl_public_group),
+            ("internal", self.cockpit_acl_internal_group),
+            ("confidential", self.cockpit_acl_confidential_group),
+        ):
+            if gid:
+                mapping[name] = gid
+        for pair in self.cockpit_acl_group_map.split(","):
+            if ":" in pair:
+                name, gid = pair.split(":", 1)
+                mapping[name.strip()] = gid.strip()
+        return mapping
 
 
 class _TenantEnv(BaseSettings):
@@ -32,15 +91,55 @@ class _TenantEnv(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
     foundry_project_endpoint: str = ""
     foundry_model: str = "gpt-5-mini"
+    azure_ai_openai_endpoint: str = ""
+    foundry_embedding_model: str = "text-embedding-3-small"
     azure_search_endpoint: str = ""
     azure_search_knowledge_base: str = "helpdesk-kb"
+    azure_storage_account: str = ""
+    azure_storage_resource_id: str = ""
+    azure_storage_container: str = "corpus"
+    cockpit_search_knowledge_base: str = "cockpit-kb"
+    cockpit_search_index: str = "cockpit-docbundles-ks-index"
+    cockpit_storage_container: str = "cockpit-corpus"
+    selfwiki_search_knowledge_base: str = ""
+    selfwiki_search_index: str = "selfwiki-docbundles-ks-index"
+    selfwiki_storage_container: str = "selfwiki-corpus"
+    cockpit_acl_group_map: str = ""
+    cockpit_acl_classification: str = ""
+    cockpit_acl_default_groups: str = ""
+    cockpit_acl_public_group: str = ""
+    cockpit_acl_internal_group: str = ""
+    cockpit_acl_confidential_group: str = ""
+    cockpit_docbundles_path: str = ""
+    foundry_memory_store: str = "helpdesk-memory"
+    hosted_agent_name: str = "helpdesk-concierge"
 
     def as_config(self) -> TenantConfig:
         return TenantConfig(
             foundry_project_endpoint=self.foundry_project_endpoint,
             foundry_model=self.foundry_model,
+            azure_ai_openai_endpoint=self.azure_ai_openai_endpoint,
+            foundry_embedding_model=self.foundry_embedding_model,
             azure_search_endpoint=self.azure_search_endpoint,
             azure_search_knowledge_base=self.azure_search_knowledge_base,
+            azure_storage_account=self.azure_storage_account,
+            azure_storage_resource_id=self.azure_storage_resource_id,
+            azure_storage_container=self.azure_storage_container,
+            cockpit_search_knowledge_base=self.cockpit_search_knowledge_base,
+            cockpit_search_index=self.cockpit_search_index,
+            cockpit_storage_container=self.cockpit_storage_container,
+            selfwiki_search_knowledge_base=self.selfwiki_search_knowledge_base,
+            selfwiki_search_index=self.selfwiki_search_index,
+            selfwiki_storage_container=self.selfwiki_storage_container,
+            cockpit_acl_group_map=self.cockpit_acl_group_map,
+            cockpit_acl_classification=self.cockpit_acl_classification,
+            cockpit_acl_default_groups=self.cockpit_acl_default_groups,
+            cockpit_acl_public_group=self.cockpit_acl_public_group,
+            cockpit_acl_internal_group=self.cockpit_acl_internal_group,
+            cockpit_acl_confidential_group=self.cockpit_acl_confidential_group,
+            cockpit_docbundles_path=self.cockpit_docbundles_path,
+            foundry_memory_store=self.foundry_memory_store,
+            hosted_agent_name=self.hosted_agent_name,
         )
 
 

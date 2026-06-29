@@ -1,96 +1,22 @@
-"""Application settings, loaded from environment / .env.
+"""Platform-global application settings, loaded from environment / .env.
 
-Env var names match what FoundryChatClient reads natively
-(FOUNDRY_PROJECT_ENDPOINT, FOUNDRY_MODEL), so the client can also pick them
-up on its own — we surface them here for explicit wiring and validation.
+Per-tenant data-plane config (Foundry/Search/Storage pointers, ACL, memory store,
+hosted agent) lives in ``app.core.tenant`` and is read via ``tenant_config()``.
+This module keeps only platform-global settings (auth, CORS, tenant-store wiring).
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class PlatformSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
-    # Foundry project endpoint, e.g. https://<project>.services.ai.azure.com/api/projects/<name>
-    foundry_project_endpoint: str = ""
-    # Model deployment name, e.g. gpt-5-mini
-    foundry_model: str = "gpt-5-mini"
-
-    # Foundry account OpenAI endpoint, e.g. https://<account>.openai.azure.com
-    # Used by the knowledge base for embeddings + query planning.
-    azure_ai_openai_endpoint: str = ""
-    # Embedding deployment used to vectorize the corpus.
-    foundry_embedding_model: str = "text-embedding-3-small"
-
-    # --- Phase 1: Foundry IQ knowledge base (Azure AI Search) ---
-    azure_search_endpoint: str = ""
-    azure_search_knowledge_base: str = "helpdesk-kb"
-
-    # Storage holding the corpus (blob knowledge source).
-    azure_storage_account: str = ""
-    azure_storage_resource_id: str = ""
-    azure_storage_container: str = "corpus"
-
-    # --- Second domain: Cockpit expert (its own KB over the cockpit docbundles) ---
-    # Agentic retrieval (Foundry IQ) queries this Knowledge Base, which wraps the
-    # cockpit-docbundles-ks knowledge source / index — no index name needed here.
-    cockpit_search_knowledge_base: str = "cockpit-kb"
-    # The index behind the knowledge source — the ACL stamping/trim operate on it.
-    cockpit_search_index: str = "cockpit-docbundles-ks-index"
-    cockpit_storage_container: str = "cockpit-corpus"
-
-    # --- Third domain: selfwiki (this repo's own deep-wiki — dogfood) ---
-    # Same machinery as Cockpit, pointed at a deep-wiki generated FROM this monorepo's
-    # own source. Empty KB name → the /selfwiki endpoint stays off until it's ingested.
-    # The ingest reuses ingest_cockpit by overriding KB_KNOWLEDGE_SOURCE +
-    # COCKPIT_STORAGE_CONTAINER + COCKPIT_SEARCH_KNOWLEDGE_BASE with these names.
-    selfwiki_search_knowledge_base: str = ""
-    selfwiki_search_index: str = "selfwiki-docbundles-ks-index"
-    selfwiki_storage_container: str = "selfwiki-corpus"
-
-    # --- Phase 4: document-level access control (access follows the source) ---
-    # A document's access = the group(s) that can read its SOURCE — arbitrary groups
-    # (a GitHub team, an ADLS ACL group, a SharePoint group), NOT fixed tiers. The
-    # mechanism stamps whatever groups the data declares per document and trims by the
-    # caller's Entra identity. There is NO classification logic in code.
-    #
-    # cockpit_acl_group_map: the tenant's group NAME → Entra object-ID (env pairs
-    #   "eng-pricing:<guid>,eng-platform:<guid>"). Manifests/classification carry NAMES;
-    #   this resolves them to IDs. Values that are already GUIDs pass through.
-    cockpit_acl_group_map: str = ""
-    # Path to the owner's per-document access map (JSON: {document-key: [group-name,…]}),
-    # external + gitignored like the corpus. Used when the bundle manifests don't already
-    # carry `groups` (wiki_builder writes those by inheriting the repo's read teams).
-    cockpit_acl_classification: str = ""
-    # Groups for documents with NO declared access — empty = fail-closed (nobody sees).
-    cockpit_acl_default_groups: str = ""
-    # Back-compat: the three demo groups also seed the name→id map (public/internal/
-    # confidential). Real tenants use cockpit_acl_group_map with their own group names.
-    cockpit_acl_public_group: str = ""
-    cockpit_acl_internal_group: str = ""
-    cockpit_acl_confidential_group: str = ""
-
-    @property
-    def acl_group_map(self) -> dict[str, str]:
-        """Group NAME → Entra object-ID. cockpit_acl_group_map, plus the demo trio."""
-        mapping: dict[str, str] = {}
-        for name, gid in (
-            ("public", self.cockpit_acl_public_group),
-            ("internal", self.cockpit_acl_internal_group),
-            ("confidential", self.cockpit_acl_confidential_group),
-        ):
-            if gid:
-                mapping[name] = gid
-        for pair in self.cockpit_acl_group_map.split(","):
-            if ":" in pair:
-                name, gid = pair.split(":", 1)
-                mapping[name.strip()] = gid.strip()
-        return mapping
-    # Path to the aap-kb docbundles/ dir (internal Cockpit corpus). Set via env
-    # COCKPIT_DOCBUNDLES; the content is ingested to the cloud KB only, never committed.
-    cockpit_docbundles_path: str = ""
+    # --- Deployment mode + tenant store (a later task wires DEPLOYMENT_MODE) ---
+    deployment_mode: str = "self_hosted"
+    tenant_store_table: str = "tenants"
+    tenant_store_account_url: str = ""
 
     # --- Phase 3: Entra ID + On-Behalf-Of (per-user identity) ---
     # Backend API app registration (the audience of incoming tokens).
@@ -99,13 +25,6 @@ class Settings(BaseSettings):
     entra_api_client_secret: str = ""
     # Frontend SPA app registration (surfaced to the frontend env; not used here).
     entra_spa_client_id: str = ""
-
-    # --- Phase 3: Foundry memory store ---
-    foundry_memory_store: str = "helpdesk-memory"
-
-    # --- Phase 6: hosted agent (Foundry Agent Service) ---
-    # Name of the deployed hosted agent, invoked via the Responses protocol.
-    hosted_agent_name: str = "helpdesk-concierge"
 
     # CORS origin for the local Next.js frontend
     frontend_origin: str = "http://localhost:3000"
@@ -124,4 +43,4 @@ class Settings(BaseSettings):
         return f"api://{self.entra_api_client_id}/access_as_user"
 
 
-settings = Settings()
+settings = PlatformSettings()

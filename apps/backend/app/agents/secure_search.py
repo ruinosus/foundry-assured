@@ -30,10 +30,10 @@ from azure.identity import DefaultAzureCredential
 
 from app.core.auth import credential_for_request, current_user
 from app.core.settings import settings
+from app.core.tenant import tenant_config
 from app.knowledge.acl_setup import _canonical, _component
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
-_INDEX = settings.cockpit_search_index
 _API = "2025-08-01-preview"
 
 
@@ -54,7 +54,8 @@ def authorized_components(caller_token: str) -> set[str]:
     capped at the first page (which would silently over-trim, never leak)."""
     service = DefaultAzureCredential().get_token(_SEARCH_SCOPE).token
     headers = {"Authorization": f"Bearer {service}", "x-ms-query-source-authorization": caller_token}
-    url: str | None = (f"{settings.azure_search_endpoint}/indexes/{_INDEX}/docs"
+    cfg = tenant_config()
+    url: str | None = (f"{cfg.azure_search_endpoint}/indexes/{cfg.cockpit_search_index}/docs"
                        f"?api-version={_API}&search=*&$top=1000&$select=blob_url")
     components: set[str] = set()
     try:

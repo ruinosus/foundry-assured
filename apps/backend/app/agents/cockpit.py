@@ -20,19 +20,19 @@ from azure.identity import DefaultAzureCredential
 
 from app.agents.prompts import COCKPIT_INSTRUCTIONS
 from app.agents.secure_search import SecureAzureAISearchProvider
-from app.core.settings import settings
+from app.core.tenant import tenant_config
 
 
 def cockpit_configured() -> bool:
-    return bool(settings.azure_search_endpoint and settings.cockpit_search_knowledge_base)
+    return bool(tenant_config().azure_search_endpoint and tenant_config().cockpit_search_knowledge_base)
 
 
 def build_cockpit_agent() -> Agent:
     """A grounded expert over the Cockpit knowledge base (Foundry IQ agentic retrieval)."""
     credential = DefaultAzureCredential()
     client = FoundryChatClient(
-        project_endpoint=settings.foundry_project_endpoint or None,
-        model=settings.foundry_model,
+        project_endpoint=tenant_config().foundry_project_endpoint or None,
+        model=tenant_config().foundry_model,
         credential=credential,
     )
     # Agentic retrieval (Foundry IQ KB query planning) — best quality on broad questions.
@@ -48,8 +48,8 @@ def build_cockpit_agent() -> Agent:
     # x-ms-query-source-authorization so the KB trims results to what they're entitled
     # to. With auth off (local dev) it behaves exactly like the base provider.
     search = SecureAzureAISearchProvider(
-        endpoint=settings.azure_search_endpoint,
-        knowledge_base_name=settings.cockpit_search_knowledge_base,
+        endpoint=tenant_config().azure_search_endpoint,
+        knowledge_base_name=tenant_config().cockpit_search_knowledge_base,
         credential=credential,
         mode="agentic",
         retrieval_reasoning_effort="medium",

@@ -43,7 +43,7 @@ from azure.search.documents.indexes.models import (
 )
 from azure.storage.blob import BlobServiceClient
 
-from app.core.settings import settings
+from app.core.tenant import tenant_config
 from app.knowledge.ingest import (
     CALL_TIMEOUT_S,
     _require,
@@ -113,14 +113,14 @@ def purge_orphans(credential, container: str) -> None:
     """
     from azure.storage.blob import BlobServiceClient
 
-    account = _require("AZURE_STORAGE_ACCOUNT", settings.azure_storage_account)
+    account = _require("AZURE_STORAGE_ACCOUNT", tenant_config().azure_storage_account)
     cc = BlobServiceClient(
         account_url=f"https://{account}.blob.core.windows.net", credential=credential
     ).get_container_client(container)
     live = {b.name for b in cc.list_blobs()}
 
     search = SearchClient(
-        endpoint=settings.azure_search_endpoint, index_name=INDEX_NAME,
+        endpoint=tenant_config().azure_search_endpoint, index_name=INDEX_NAME,
         credential=credential, api_version=os.environ.get("SEARCH_API_VERSION", "2026-05-01-preview"),
     )
     orphans, seen = [], set()
@@ -182,7 +182,7 @@ def collect_pages(docbundles: Path) -> tuple[list[tuple[str, bytes]], dict[str, 
 
 
 def upload(credential, container: str, items: list[tuple[str, bytes]]) -> int:
-    account = _require("AZURE_STORAGE_ACCOUNT", settings.azure_storage_account)
+    account = _require("AZURE_STORAGE_ACCOUNT", tenant_config().azure_storage_account)
     blob_service = BlobServiceClient(
         account_url=f"https://{account}.blob.core.windows.net", credential=credential
     )
@@ -197,21 +197,21 @@ def upload(credential, container: str, items: list[tuple[str, bytes]]) -> int:
 
 
 def create_knowledge_source(index_client: SearchIndexClient) -> None:
-    openai_endpoint = _require("AZURE_AI_OPENAI_ENDPOINT", settings.azure_ai_openai_endpoint)
-    storage_id = _require("AZURE_STORAGE_RESOURCE_ID", settings.azure_storage_resource_id)
+    openai_endpoint = _require("AZURE_AI_OPENAI_ENDPOINT", tenant_config().azure_ai_openai_endpoint)
+    storage_id = _require("AZURE_STORAGE_RESOURCE_ID", tenant_config().azure_storage_resource_id)
     _validate_storage_resource_id(storage_id)
     knowledge_source = AzureBlobKnowledgeSource(
         name=KNOWLEDGE_SOURCE_NAME,
         description=f"{DOMAIN_LABEL} documentation (components + release).",
         azure_blob_parameters=AzureBlobKnowledgeSourceParameters(
             connection_string=f"ResourceId={storage_id};",
-            container_name=settings.cockpit_storage_container,
+            container_name=tenant_config().cockpit_storage_container,
             ingestion_parameters=KnowledgeSourceIngestionParameters(
                 embedding_model=KnowledgeSourceAzureOpenAIVectorizer(
                     azure_open_ai_parameters=AzureOpenAIVectorizerParameters(
                         resource_url=openai_endpoint,
-                        deployment_name=settings.foundry_embedding_model,
-                        model_name=settings.foundry_embedding_model,
+                        deployment_name=tenant_config().foundry_embedding_model,
+                        model_name=tenant_config().foundry_embedding_model,
                     )
                 ),
             ),
@@ -225,7 +225,7 @@ def create_knowledge_source(index_client: SearchIndexClient) -> None:
 
 
 def create_knowledge_base(index_client: SearchIndexClient) -> None:
-    kb_name = settings.cockpit_search_knowledge_base
+    kb_name = tenant_config().cockpit_search_knowledge_base
     knowledge_base = KnowledgeBase(
         name=kb_name,
         description=f"{DOMAIN_LABEL} knowledge base for its grounded expert agent.",
@@ -233,9 +233,9 @@ def create_knowledge_base(index_client: SearchIndexClient) -> None:
         models=[
             KnowledgeBaseAzureOpenAIModel(
                 azure_open_ai_parameters=AzureOpenAIVectorizerParameters(
-                    resource_url=settings.azure_ai_openai_endpoint,
-                    deployment_name=settings.foundry_model,
-                    model_name=settings.foundry_model,
+                    resource_url=tenant_config().azure_ai_openai_endpoint,
+                    deployment_name=tenant_config().foundry_model,
+                    model_name=tenant_config().foundry_model,
                 )
             )
         ],
@@ -259,8 +259,8 @@ def create_knowledge_base(index_client: SearchIndexClient) -> None:
 
 def main() -> None:
     _setup_logging()
-    _require("AZURE_SEARCH_ENDPOINT", settings.azure_search_endpoint)
-    docbundles_path = os.environ.get("COCKPIT_DOCBUNDLES", settings.cockpit_docbundles_path)
+    _require("AZURE_SEARCH_ENDPOINT", tenant_config().azure_search_endpoint)
+    docbundles_path = os.environ.get("COCKPIT_DOCBUNDLES", tenant_config().cockpit_docbundles_path)
     if not docbundles_path:
         sys.exit("Set COCKPIT_DOCBUNDLES to the aap-kb docbundles/ directory.")
     docbundles = Path(docbundles_path).expanduser()
@@ -270,7 +270,7 @@ def main() -> None:
     api_version = os.environ.get("SEARCH_API_VERSION", "2026-05-01-preview")
     credential = DefaultAzureCredential()
     index_client = SearchIndexClient(
-        endpoint=settings.azure_search_endpoint,
+        endpoint=tenant_config().azure_search_endpoint,
         credential=credential,
         api_version=api_version,
         logging_enable=True,
@@ -283,7 +283,7 @@ def main() -> None:
     if not items:
         sys.exit(f"No pages found under {docbundles}")
     print(f"Collected {len(items)} pages from {docbundles}")
-    upload(credential, settings.cockpit_storage_container, items)
+    upload(credential, tenant_config().cockpit_storage_container, items)
     print("== Step 2/3: create knowledge source ==")
     create_knowledge_source(index_client)
     print("== Step 3/3: create knowledge base ==")
@@ -291,21 +291,21 @@ def main() -> None:
 
     print("== Step 4/4: trigger indexer (async) + reconcile deletions ==")
     indexer_client = SearchIndexerClient(
-        endpoint=settings.azure_search_endpoint, credential=credential,
+        endpoint=tenant_config().azure_search_endpoint, credential=credential,
         api_version=api_version, connection_timeout=20, read_timeout=CALL_TIMEOUT_S,
     )
     # Purge removed-blob chunks now (safe any time — it only deletes docs whose source
     # blob is gone), then kick the indexer and return. The index fills incrementally
     # and is queryable during the run; blocking on the full ~1s/chunk embedding pass
     # just stalls the caller.
-    purge_orphans(credential, settings.cockpit_storage_container)
+    purge_orphans(credential, tenant_config().cockpit_storage_container)
 
     # Phase 4: when access groups are configured, the ingest owns document-level ACL too,
     # stamping each doc with the read groups its source declared (component_groups, from
     # the manifests) — access follows the source, no classification in code. Stamping
     # needs the index populated, so run the indexer to completion first; otherwise keep
     # the fast non-blocking path.
-    if settings.acl_group_map:
+    if tenant_config().acl_group_map:
         print("== Step 5/5: indexer (blocking) + document-level ACL (access from source) ==")
         trigger_indexer(indexer_client, wait_s=900)
         from app.knowledge.acl_setup import setup_acl

@@ -19,13 +19,13 @@ from app.agents.prompts import (
     RETRIEVE_INSTRUCTIONS,
     TRIAGE_INSTRUCTIONS,
 )
-from app.core.settings import settings
+from app.core.tenant import tenant_config
 
 
 def _client(credential: TokenCredential) -> FoundryChatClient:
     return FoundryChatClient(
-        project_endpoint=settings.foundry_project_endpoint or None,
-        model=settings.foundry_model,
+        project_endpoint=tenant_config().foundry_project_endpoint or None,
+        model=tenant_config().foundry_model,
         credential=credential,
     )
 
@@ -40,8 +40,8 @@ def build_triage_agent(credential: TokenCredential) -> Agent:
 
 def build_retrieve_agent(credential: TokenCredential) -> Agent:
     search = AzureAISearchContextProvider(
-        endpoint=settings.azure_search_endpoint,
-        knowledge_base_name=settings.azure_search_knowledge_base,
+        endpoint=tenant_config().azure_search_endpoint,
+        knowledge_base_name=tenant_config().azure_search_knowledge_base,
         credential=credential,
         mode="agentic",
     )
