@@ -80,8 +80,14 @@ mechanisms, chosen by the server's `auth` + the Connection's reference:
 
 **Path selection** = the existing live-vs-hosted toggle. Internal mode: OBO → internal tool; non-OBO
 → the internal SDK-broker line (or skip with a "needs hosted" signal if unresolved). Hosted mode:
-all via `get_mcp_tool(project_connection_id)`. **`keyvault_ref` is dropped** in favor of
-`foundry_connection_id`; no `azure-keyvault-secrets` dependency.
+all via `get_mcp_tool(project_connection_id)`. **`keyvault_ref` is deprecated** — the build no longer
+reads it; the field stays on `Connection` for back-compat with existing Table records (removing it
+would break their round-trip). `foundry_connection_id` is the single non-OBO reference; no
+`azure-keyvault-secrets` dependency.
+
+> **Note for the plan:** the **hosted builder is greenfield** — there is no existing `get_mcp_tool`/
+> `HostedMCPTool` code in `tools.py` today (only the internal `MCPStreamableHTTPTool` path). The
+> registry's data model is the only thing to consume; the hosted builder is new code (infra-gated).
 
 ## 3. Per-tool RBAC (stricter-of-both)
 
@@ -110,10 +116,17 @@ Per [ADR-009](../../adr/ADR-009-native-tool-approval-foundry-connection-resoluti
   `{"always_require": [<visible write tools>], "never_require": [<read tools>]}` on the
   `MCPStreamableHTTPTool` / `get_mcp_tool`. Reads flow; a write **pauses** and the framework emits a
   `RequestInfoEvent` carrying `ToolApprovalRequestContent`.
-- **Frontend reuses the existing approval card** — the `useCopilotAction(renderAndWaitForResponse)`
-  that already handles the `create_ticket` approval is extended to render `ToolApprovalRequestContent`
-  (tool name + args) and post approve/reject. The **resume bridge** for the `tool` domain already
-  exists (MCP wiring). Little new UI.
+- **Frontend extends the existing approval card** — the as-built card is
+  `apps/frontend/components/chat/TicketApproval.tsx`, which (because CopilotKit's native interrupt
+  detection does NOT match the agent-framework interrupt) **taps the raw stream** (`agent.subscribe`,
+  catching the `request_info` **CUSTOM** event) and resumes via
+  `agent.runAgent({ resume: [{ interruptId, status, payload }] })`. C extends *that* tap to also
+  carry `ToolApprovalRequestContent` (tool name + args). **Scoping caveat (tie to #3199):** confirm
+  the native `always_require` approval surfaces as the **same `request_info`-style CUSTOM event** the
+  existing tap consumes. If it surfaces differently (likely if #3199 is unfixed), the "little new UI"
+  assumption is wrong — the resume-bridge handling must be scoped as real work (a new event shape +
+  a new card path), not a one-line extension. The `tool`-domain resume bridge from the MCP wiring is
+  reused either way.
 - **Two barriers (defense in depth):** a write tool is **visible** only to Author/Admin (§3) **and**
   the **approval requires Approver/Admin** (project rule #5 — reuses A's HITL role gate). A
   single-Admin tenant: the Admin triggers and approves (Admin satisfies both).

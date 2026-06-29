@@ -25,15 +25,20 @@ Use the Microsoft-native mechanisms; build neither a secret reader nor a custom 
     retrieve the connection's credential via `azure-ai-projects` **at runtime** (Foundry is the
     store; we broker in memory, never persist). Microsoft: *"your agent definition never contains
     the actual secret values — only template references… the platform resolves them."*
-  - **`keyvault_ref` is dropped** (it implied we read the Key Vault) in favor of
-    `foundry_connection_id`. No `azure-keyvault-secrets` dependency.
+  - **`keyvault_ref` is deprecated** (it implied we read the Key Vault) in favor of
+    `foundry_connection_id` — the build stops reading it; the field stays on `Connection` for
+    back-compat with existing records. No `azure-keyvault-secrets` dependency.
 - **Write approval → the framework's native tool-approval, not a custom workflow.**
   Set per-tool `approval_mode="always_require"` on write tools; the framework pauses and emits a
-  `RequestInfoEvent` carrying `ToolApprovalRequestContent`. The existing CopilotKit approval card
-  (already used for `create_ticket`) renders it; approval requires the **Approver/Admin** role
-  (project rule #5). The AG-UI bug agent-framework #3199 (always_require not executing over AG-UI)
-  is a **verification item** — confirm it's fixed in the installed version; if not, the fallback is
-  a framework `RequestInfoEvent`-emitting middleware, still not a hand-rolled workflow.
+  `RequestInfoEvent` carrying `ToolApprovalRequestContent`. The existing approval card
+  (`components/chat/TicketApproval.tsx`, which taps the raw `request_info` CUSTOM event and resumes
+  via `agent.runAgent({ resume })` — CopilotKit's native interrupt detection doesn't match the
+  framework interrupt) is **extended** to carry `ToolApprovalRequestContent`; approval requires the
+  **Approver/Admin** role (project rule #5). The AG-UI bug agent-framework #3199 (always_require not
+  executing over AG-UI) is a **verification item** — confirm it's fixed AND that the approval
+  surfaces as the same `request_info`-style CUSTOM event the tap consumes; if not, the fallback is a
+  framework `RequestInfoEvent`-emitting middleware (still not a hand-rolled workflow), and the
+  frontend resume-bridge handling is scoped as real work, not a one-liner.
 
 ## Consequences
 
