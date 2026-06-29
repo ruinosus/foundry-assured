@@ -21,6 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.agents.cockpit import build_cockpit_agent, cockpit_configured
 from app.agents.concierge import _knowledge_configured, build_concierge_agent
+from app.agents.platform import PerRequestPlatformAgent, platform_configured
 from app.agents.selfwiki import build_selfwiki_agent, selfwiki_configured
 from app.api import api_router
 from app.core.auth import auth_dependencies, azure_scheme
@@ -82,6 +83,18 @@ if selfwiki_configured():
         app,
         agent=build_selfwiki_agent(),
         path="/selfwiki",
+        dependencies=auth_dependencies(),
+    )
+
+# Fourth domain: the platform/ops concierge — tool-driven over the Microsoft first-party
+# MCP servers (Learn public now; OBO servers as infra lands). The PerRequestPlatformAgent
+# proxy rebuilds the agent on each run so tools are filtered under the caller's roles + OBO
+# credential (NOT once at boot — that's the whole point of this domain).
+if platform_configured():
+    add_agent_framework_fastapi_endpoint(
+        app,
+        agent=PerRequestPlatformAgent(),
+        path="/platform",
         dependencies=auth_dependencies(),
     )
 

@@ -107,6 +107,21 @@ class Settings(BaseSettings):
     # Name of the deployed hosted agent, invoked via the Responses protocol.
     hosted_agent_name: str = "helpdesk-concierge"
 
+    # --- MCP integration (platform/ops domain) ---
+    # Learn is public; the rest are infra-gated (OBO/hosted). Off by default so the app
+    # boots without the platform domain until explicitly enabled.
+    mcp_enabled: bool = False
+    mcp_learn_url: str = "https://learn.microsoft.com/api/mcp"
+    # Azure DevOps Remote MCP: the org name fills the {org} in the registry URL. Unset → azdo
+    # tools are skipped by the builder.
+    mcp_ado_organization: str = ""
+    # GitHub MCP uses GitHub's own OAuth, NOT Entra OBO. A shared PAT (MVP); unset → github
+    # tools are skipped. Per-user GitHub OAuth is the later, OBO-equivalent path.
+    mcp_github_pat: str = ""
+    # Azure MCP has no managed remote endpoint; set this only if you self-host it on Container
+    # Apps. Unset → azure stays off (it's enabled=False in the registry anyway).
+    mcp_azure_url: str = ""
+
     # CORS origin for the local Next.js frontend
     frontend_origin: str = "http://localhost:3000"
 

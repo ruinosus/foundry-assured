@@ -329,16 +329,17 @@ gh workflow run agent-evals.yml -f version=3 -f baseline=helpdesk-concierge:2
 
 ## Cost & teardown
 
-Pay-as-you-go, East US 2, USD. The numbers are order-of-magnitude — check the
-[Azure pricing calculator](https://azure.microsoft.com/pricing/calculator/) for
-your region/agreement. The table separates **fixed meters** (billed 24/7 whether
-or not anyone uses the app) from **usage meters** (≈\$0 when idle).
+Pay-as-you-go, East US 2, USD. Prices below are pulled **live from the Azure Retail
+Prices API**; for the full derivation (the Microsoft-indicated method + how to
+reproduce it with the Azure Cost Estimator), see **[COST.md](./COST.md)**. The table
+separates **fixed meters** (billed 24/7 whether or not anyone uses the app) from
+**usage meters** (≈\$0 when idle).
 
 | Resource | SKU | Cost | Kind |
 | --- | --- | --- | --- |
 | **Azure AI Search** | Basic | **~\$0.10/hr ≈ \$74/mo** | 🔴 fixed — runs 24/7, **the meter to watch** |
 | Azure Container Registry | Basic | ~\$0.17/day ≈ **\$5/mo** | 🔴 fixed (already provisioned for the hosted agent) |
-| Log Analytics | PerGB2018 | ~\$2.76/GB ingested · **\$0–3/mo** | 🟡 usage — demo telemetry is <1 GB/mo; 30-day retention free |
+| Log Analytics | PerGB2018 | \$2.30/GB analyzed · **\$0/mo demo** | 🟡 usage — first 5 GB/mo free; demo telemetry is well under it |
 | Container Apps (backend + web) | Consumption, 0.5 vCPU / 1 GiB, **scale-to-zero** | **\$0 idle** · ~cents under demo load | 🟢 usage — within the monthly free grant (180k vCPU-s / 360k GiB-s / 2M req) |
 | Hosted agent compute | — | **\$0 idle** | 🟢 deprovisions ~15 min after last call |
 | Azure AI Foundry | Cognitive Services S0 | no fixed fee | 🟢 pay per token (below) |
