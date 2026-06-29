@@ -168,3 +168,12 @@ data plane), ADR-005 (never store secrets), ADR-006 (tenant-scoped config), ADR-
 2. **Onboarding UX** — admin-consent + resource delegation flow; Lighthouse ARM template vs marketplace Managed Service offer.
 3. **GitHub per-user vs shared** — PAT/connection MVP vs per-user GitHub OAuth (the OBO-equivalent); inherited from the MCP plan.
 4. **Allowed-tenant policy** — open sign-up vs allow-list of customer tenants; affects token validation in A.
+5. **Shared-mode domain mounting (→ sub-project D / shared-enablement)** — *known gap surfaced
+   during B.* The AG-UI domain endpoints (`/helpdesk`, `/cockpit`, `/selfwiki`, `/platform`) are
+   gated at **boot** by `*_configured()` helpers that read per-tenant config via `tenant_config()`.
+   In `self_hosted` that's the `.env` (works); in `shared` with auth on, `MultiTenantConfigProvider`
+   has no resolved tenant at boot → `RuntimeError`. In shared mode these endpoints should mount
+   **globally** (they exist for all tenants; each tenant's config/connections gate behavior at
+   request time), not via a boot-time per-tenant check. Decide the shared-mode mounting policy in D.
+   (Does NOT affect sub-project A or B: A's evals run self_hosted; B's `/tenant` router mounts
+   correctly and its store backend now supports an offline `memory` mode for dev/CI.)
