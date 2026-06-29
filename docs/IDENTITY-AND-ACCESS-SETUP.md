@@ -35,53 +35,53 @@ flowchart TB
 
 ## What creates what
 
-| Objeto | Criado por | Automático? | Onde |
+| Object | Created by | Automated? | Where |
 | --- | --- | :---: | --- |
 | Azure resources (Foundry, Search, Storage, Container Apps, …) + role assignments | `azd up` → `infra/main.bicep` | ✅ | [DEPLOYMENT.md Step 1](./DEPLOYMENT.md) |
-| Entra **security groups** (public/internal/confidential) for the KB ACL | `infra/entra/entra.bicep` (MS Graph Bicep extension) | ✅ (deploy separado, tenant-scoped) | Phase 4 / [METHOD.md](./METHOD.md) |
+| Entra **security groups** (public/internal/confidential) for the KB ACL | `infra/entra/entra.bicep` (MS Graph Bicep extension) | ✅ (separate, tenant-scoped deploy) | Phase 4 / [METHOD.md](./METHOD.md) |
 | Demo **groups + test users** + memberships (ACL demo) | `infra/entra/create-acl-identities.sh` · `create-test-users.sh` | ✅ (script) | infra/entra/ |
-| **API app registration** (backend audience, OBO) | `scripts/setup-entra.sh` *(ou manual)* | ⚠️ semi | [DEPLOYMENT.md Step 3a](./DEPLOYMENT.md) |
-| **SPA app registration** (frontend sign-in) | `scripts/setup-entra.sh` *(ou manual)* | ⚠️ semi | [DEPLOYMENT.md Step 3b](./DEPLOYMENT.md) |
+| **API app registration** (backend audience, OBO) | `scripts/setup-entra.sh` *(or manual)* | ⚠️ semi | [DEPLOYMENT.md Step 3a](./DEPLOYMENT.md) |
+| **SPA app registration** (frontend sign-in) | `scripts/setup-entra.sh` *(or manual)* | ⚠️ semi | [DEPLOYMENT.md Step 3b](./DEPLOYMENT.md) |
 | **CI app registration** (GitHub Actions OIDC + federated credentials) | manual `az ad app create` | ❌ | [CONTRIBUTING.md](../CONTRIBUTING.md) |
 | Admin consent (Graph / Search `user_impersonation`) | manual (Entra admin) | ❌ | DEPLOYMENT Step 3 |
 
 ## The three app registrations
 
-| App | Para quê | Produz (env / secret) |
+| App | What it's for | Produces (env / secret) |
 | --- | --- | --- |
-| **API** | a *audiência* que o backend valida; faz o **OBO** (troca o token do usuário por um token de Search agindo como ele) | `ENTRA_API_CLIENT_ID`, `ENTRA_API_CLIENT_SECRET` |
-| **SPA** | o frontend (MSAL) onde o usuário **assina** | `NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID` (+ `NEXT_PUBLIC_ENTRA_API_CLIENT_ID`, `_TENANT_ID`) |
-| **CI** | o **GitHub Actions** logar no Azure sem secret, via **OIDC + federated credentials** | repo vars `AZURE_CLIENT_ID` / `_TENANT_ID` / `_SUBSCRIPTION_ID` |
+| **API** | the *audience* the backend validates; performs the **OBO** exchange (swaps the user's token for a Search token acting as them) | `ENTRA_API_CLIENT_ID`, `ENTRA_API_CLIENT_SECRET` |
+| **SPA** | the frontend (MSAL) where the user **signs in** | `NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID` (+ `NEXT_PUBLIC_ENTRA_API_CLIENT_ID`, `_TENANT_ID`) |
+| **CI** | lets **GitHub Actions** sign in to Azure with no secret, via **OIDC + federated credentials** | repo vars `AZURE_CLIENT_ID` / `_TENANT_ID` / `_SUBSCRIPTION_ID` |
 
-> A **federated credential** do app de CI referencia o **nome do repo** no subject
-> (`repo:<owner>/<repo>:ref:refs/heads/main` e `…:environment:production`). **Se o repo for
-> renomeado, atualize o subject** (`az ad app federated-credential update`), senão os jobs que
-> logam no Azure (deploy, security-gates, eval-cloud) param de autenticar. O CI básico
-> (lint/build/typecheck) não usa OIDC e segue funcionando.
+> The CI app's **federated credential** references the **repo name** in its subject
+> (`repo:<owner>/<repo>:ref:refs/heads/main` and `…:environment:production`). **If the repo is
+> renamed, update the subject** (`az ad app federated-credential update`), or the jobs that
+> sign in to Azure (deploy, security-gates, eval-cloud) stop authenticating. The basic CI
+> (lint/build/typecheck) doesn't use OIDC and keeps working.
 
-## Por que os app registrations não estão no Bicep
+## Why the app registrations aren't in Bicep
 
-1. **Secret**: o app de OBO precisa de client secret — não se quer o Bicep gerando/expondo secret em output de texto plano.
-2. **Admin consent**: as permissões delegadas exigem consentimento de admin — passo interativo, não declarativo.
-3. **Separação**: identidade (apps) costuma ser de outro processo/time que a infra.
-4. A extensão Graph do Bicep *até* criaria `Microsoft.Graph/applications`, mas por (1)–(3) optou-se por script + parâmetros. (Os **grupos**, que não têm esses problemas, *estão* no Bicep.)
+1. **Secret**: the OBO app needs a client secret — you don't want Bicep generating/exposing a secret in a plaintext output.
+2. **Admin consent**: the delegated permissions require admin consent — an interactive, non-declarative step.
+3. **Separation**: identity (apps) is usually a different process/team than infra.
+4. The Graph Bicep extension *could* create `Microsoft.Graph/applications`, but for reasons (1)–(3) we use a script + parameters instead. (The **groups**, which don't have those problems, *are* in Bicep.)
 
-## Gotcha: o que sobrevive ao `azd down`
+## Gotcha: what survives `azd down`
 
-`azd down` apaga **só o resource group** (os recursos Azure). **Os objetos do Entra
-persistem**: app registrations, grupos e usuários **continuam** no tenant. Então:
+`azd down` deletes **only the resource group** (the Azure resources). **The Entra objects
+persist**: app registrations, groups, and users **remain** in the tenant. So:
 
-- Re-rodar `azd up` **não** recria os app regs — reaproveite os existentes (os `ENTRA_*` continuam válidos).
-- Os secrets de client **expiram** (rotacione quando vencer).
-- Para zerar de verdade a identidade, apague os app regs/grupos à mão (`az ad app delete`, `az ad group delete`).
+- Re-running `azd up` does **not** recreate the app regs — reuse the existing ones (the `ENTRA_*` values stay valid).
+- Client secrets **expire** (rotate when they do).
+- To truly reset identity, delete the app regs/groups by hand (`az ad app delete`, `az ad group delete`).
 
-## Handoff — do zero ao rodando
+## Handoff — from zero to running
 
 1. **Infra:** `azd up` → [DEPLOYMENT.md Step 1](./DEPLOYMENT.md).
-2. **App regs (sign-in + OBO):** `scripts/setup-entra.sh` (idempotente) → [Step 3](./DEPLOYMENT.md). Pule se for rodar **sem login** (só `DefaultAzureCredential`).
-3. **CI (OIDC):** crie o app de CI + federated credentials → [CONTRIBUTING.md](../CONTRIBUTING.md); configure as repo vars/secrets.
-4. **ACL (opcional, Phase 4):** deploy `infra/entra/entra.bicep` + `create-acl-identities.sh` → [METHOD.md](./METHOD.md).
-5. **Dados:** ingest das KBs → [DEPLOYMENT.md Step 4](./DEPLOYMENT.md).
+2. **App regs (sign-in + OBO):** `scripts/setup-entra.sh` (idempotent) → [Step 3](./DEPLOYMENT.md). Skip if you'll run **without sign-in** (single `DefaultAzureCredential`).
+3. **CI (OIDC):** create the CI app + federated credentials → [CONTRIBUTING.md](../CONTRIBUTING.md); set the repo vars/secrets.
+4. **ACL (optional, Phase 4):** deploy `infra/entra/entra.bicep` + `create-acl-identities.sh` → [METHOD.md](./METHOD.md).
+5. **Data:** ingest the KBs → [DEPLOYMENT.md Step 4](./DEPLOYMENT.md).
 
-Se for **só rodar/demonstrar** sem multiusuário, os passos 2–4 são opcionais: o app cai no
-`DefaultAzureCredential` e a auth fica desligada.
+If you're **only running/demoing** without multi-user, steps 2–4 are optional: the app falls
+back to `DefaultAzureCredential` and auth is simply off.
