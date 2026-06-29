@@ -440,27 +440,38 @@ class PerRequestPlatformAgent:
     request-context contextvar set by the auth dependency).
 
     Why this exists: `add_agent_framework_fastapi_endpoint(agent=...)` wants a
-    `SupportsAgentRun` *instance* (methods `run`/`create_session`/`get_session`), not a
-    factory function. The grounded domains build once at boot under `DefaultAzureCredential`
-    — we can't, because the whole point of this agent is per-request identity/role filtering.
-    The helpdesk path solves the same problem with a `Workflow` subclass factory; a single
-    agent needs this lighter proxy instead. Each method delegates to a freshly built agent.
+    `SupportsAgentRun` *instance*, not a factory function. The grounded domains build once at
+    boot under `DefaultAzureCredential` — we can't, because the whole point of this agent is
+    per-request identity/role filtering. The helpdesk path solves the same problem with a
+    `Workflow` subclass factory; a single agent needs this lighter proxy instead.
+
+    `SupportsAgentRun` is a `@runtime_checkable` Protocol whose members are
+    `run`/`create_session`/`get_session` AND the data attributes `id`/`name`/`description`
+    — `isinstance` enforces the attributes too, so the three methods ALONE fail the check and
+    registration raises `TypeError`. Hence the class attributes below. The `run` delegation is
+    the live path; `create_session`/`get_session` exist only to satisfy the protocol (the AG-UI
+    adapter builds its own `AgentSession` and never calls them on the default
+    `use_service_session=False` path), so they delegate but carry no session state.
     """
+
+    id = "platform"
+    name = "PlatformConcierge"
+    description = "Engineering-platform concierge over Microsoft first-party MCP tools."
 
     def run(self, *args, **kwargs):  # returns Awaitable | ResponseStream — pass through
         return build_platform_agent().run(*args, **kwargs)
 
-    def create_session(self, *args, **kwargs):
+    def create_session(self, *args, **kwargs):  # protocol-only (see docstring)
         return build_platform_agent().create_session(*args, **kwargs)
 
-    def get_session(self, *args, **kwargs):
+    def get_session(self, *args, **kwargs):  # protocol-only (see docstring)
         return build_platform_agent().get_session(*args, **kwargs)
 ```
 
-- [ ] **Step 3: Smoke check the imports (incl. the proxy)**
+- [ ] **Step 3: Smoke check the imports AND prove the proxy satisfies the protocol**
 
-Run: `uv run python -c "from app.agents.platform import build_platform_agent, platform_configured, PerRequestPlatformAgent; print('ok')"`
-Expected: `ok`.
+Run: `uv run python -c "from agent_framework import SupportsAgentRun; from app.agents.platform import build_platform_agent, platform_configured, PerRequestPlatformAgent; assert isinstance(PerRequestPlatformAgent(), SupportsAgentRun); print('ok')"`
+Expected: `ok`. *(The `isinstance` assertion is the real check — `SupportsAgentRun` is `@runtime_checkable` and requires `id`/`name`/`description` in addition to the methods; a plain import would pass even if the proxy were unregisterable.)*
 
 - [ ] **Step 4: Commit**
 
@@ -569,13 +580,15 @@ if platform_configured():
 ```
 
 > WHY the proxy (verified): `add_agent_framework_fastapi_endpoint(agent=...)` requires a
-> `SupportsAgentRun` **instance** (protocol = `run`/`create_session`/`get_session`); a bare
-> factory function does NOT satisfy it and registration would fail. The grounded domains pass
-> a *built* agent because they build once at boot under `DefaultAzureCredential`; the helpdesk
+> `SupportsAgentRun` **instance**; a bare factory function does NOT satisfy it and registration
+> raises `TypeError`. `SupportsAgentRun` is `@runtime_checkable`, so `isinstance` enforces its
+> data attributes `id`/`name`/`description` **as well as** `run`/`create_session`/`get_session`
+> — a methods-only class fails the check (verified directly). The grounded domains pass a
+> *built* agent because they build once at boot under `DefaultAzureCredential`; the helpdesk
 > path uses a `Workflow` subclass factory (`OrderedAgentFrameworkWorkflow(workflow_factory=…)`)
-> — neither fits a single per-request agent. `PerRequestPlatformAgent` (Task 3) is the seam:
-> it implements the three protocol methods, each delegating to a freshly built agent so the
-> role/OBO filter runs per request.
+> — neither fits a single per-request agent. `PerRequestPlatformAgent` (Task 3) is the seam: it
+> carries the three attributes + delegates each method to a freshly built agent, so the role/OBO
+> filter runs per request. Task 3 Step 3's `isinstance` assertion proves the seam.
 
 - [ ] **Step 2: Boot the backend and verify the route exists**
 
