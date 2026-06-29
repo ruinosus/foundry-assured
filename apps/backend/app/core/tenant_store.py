@@ -49,7 +49,10 @@ class TableStorageTenantStore:
     """
 
     def __init__(self, account_url: str, table_name: str, credential) -> None:
-        from azure.data.tables import TableServiceClient  # lazy: only the shared mode needs it
+        # Imported at construction, not module load — and this class is ONLY instantiated in
+        # shared mode (the boot-time store factory, Task 6), so single-tenant never imports
+        # azure-data-tables. API verified against azure-data-tables 12.7.0 (endpoint= kwarg).
+        from azure.data.tables import TableServiceClient
         svc = TableServiceClient(endpoint=account_url, credential=credential)
         self._table = svc.create_table_if_not_exists(table_name)
 
