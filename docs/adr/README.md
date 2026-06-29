@@ -14,5 +14,6 @@ grounded in the Microsoft guidance it follows. Format is lightweight (MADR-style
 | [ADR-005](./ADR-005-never-store-secrets.md) | The control plane **never stores customer secrets** (passthrough + CMK refs) |
 | [ADR-006](./ADR-006-tenant-scoped-config.md) | **Tenant-scoped** config — replace the global `settings`; namespace memory by tenant |
 | [ADR-007](./ADR-007-coexistence-deployment-mode.md) | Coexistence via a **deployment-mode** seam (one codebase, three modes) |
+| [ADR-008](./ADR-008-foundry-connections-app-configuration.md) | Use **Foundry connections + Azure App Configuration + Key Vault**, not a custom credential store |
 
-ADRs 001–007 belong to the [SaaS target architecture](../superpowers/specs/2026-06-29-saas-target-architecture-design.md) design.
+ADRs 001–007 belong to the [SaaS target architecture](../superpowers/specs/2026-06-29-saas-target-architecture-design.md) design; ADR-008 refines connection/secret storage for [sub-project B](../superpowers/specs/2026-06-29-subproject-b-connections-design.md).

@@ -77,7 +77,15 @@ if settings.auth_enabled:
 def _make_tenant_store():
     """Build the shared-mode store at boot. Uses the PLATFORM-global control-plane Storage
     account (settings.tenant_store_account_url) — NOT per-tenant, since no tenant is resolved
-    at boot yet."""
+    at boot yet.
+
+    settings.tenant_store_backend selects the impl: "table" (default, production — fail-fast if
+    no account URL) or "memory" (DEV/CI only — an ephemeral in-memory store so shared mode can
+    boot offline; NEVER use in production: it doesn't persist and isn't shared across instances).
+    """
+    if settings.tenant_store_backend == "memory":
+        from app.core.tenant_store import InMemoryTenantStore  # dev/CI: no Azure needed
+        return InMemoryTenantStore()
     from app.core.tenant_store import TableStorageTenantStore  # lazy: shared mode only
     if not settings.tenant_store_account_url:
         raise RuntimeError("DEPLOYMENT_MODE=shared requires TENANT_STORE_ACCOUNT_URL")

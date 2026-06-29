@@ -17,6 +17,9 @@ class PlatformSettings(BaseSettings):
     deployment_mode: str = "self_hosted"
     tenant_store_table: str = "tenants"
     tenant_store_account_url: str = ""
+    # "table" (default, production) | "memory" (DEV/CI only — ephemeral, lets shared mode boot
+    # offline; never use in production).
+    tenant_store_backend: str = "table"
 
     # --- Phase 3: Entra ID + On-Behalf-Of (per-user identity) ---
     # Backend API app registration (the audience of incoming tokens).
@@ -32,6 +35,13 @@ class PlatformSettings(BaseSettings):
     # in TenantConfig (app.core.tenant), read via tenant_config().
     mcp_enabled: bool = False
     mcp_learn_url: str = "https://learn.microsoft.com/api/mcp"
+
+    # Tenants permitted to self-onboard (CSV of tids) — controlled rollout. WE control this.
+    onboarding_allowed_tids: str = ""
+
+    @property
+    def allowed_tids(self) -> set[str]:
+        return {t.strip() for t in self.onboarding_allowed_tids.split(",") if t.strip()}
 
     # CORS origin for the local Next.js frontend
     frontend_origin: str = "http://localhost:3000"
