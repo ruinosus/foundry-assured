@@ -678,8 +678,13 @@ if settings.auth_enabled:
             app_client_id=settings.entra_api_client_id,
             scopes={settings.entra_api_scope: "access_as_user"},
             validate_iss=True,
-            # TODO: verify iss_callable signature against the installed fastapi_azure_auth
-            # version before relying on it (rule: don't invent SDK signatures).
+            # TODO (close condition): check the installed fastapi_azure_auth's
+            # MultiTenantAzureAuthorizationCodeBearer — does validate_iss=True validate the
+            # per-tenant issuer on its own, or is an iss_callable(tid)->issuer required? Inspect
+            # `inspect.signature(MultiTenantAzureAuthorizationCodeBearer.__init__)` + the lib's
+            # multitenant example. If a callable is required, pass one returning
+            # f"https://login.microsoftonline.com/{tid}/v2.0". Done when the Chunk 3 (d) iss-
+            # mismatch case rejects. (Rule: don't invent SDK signatures — verify, don't guess.)
             allow_guest_users=True,
         )
 ```
