@@ -65,6 +65,18 @@ _PAGE_DELAY_S = 8  # pace page calls to stay under the model TPM cap
 # .json/.tsx-heavy; the Python-heavy backend hid it.) Sort by length desc, then alpha.
 _EXT_ALT = "|".join(sorted((e.lstrip(".") for e in _SOURCE_EXT), key=lambda e: (-len(e), e)))
 _CITE_RE = re.compile(rf"((?:[\w.-]+/)*[\w.-]+\.(?:{_EXT_ALT}))(?::\d+(?:-\d+)?)?")
+# The two generation paths cite differently: the Foundry pipeline emits repo-relative paths,
+# but the deep-wiki Agent Skill (VS Code Copilot / Claude Code) resolves the git remote and
+# cites full GitHub blob URLs (…/blob/<ref>/infra/resources.bicep). Strip the blob-URL prefix
+# so both reduce to the same repo-relative path the resolver matches — the gate scores either
+# path. (Found by actually running the Copilot CLI path: 100% faithful, but scored ~44% until
+# the URL form was normalized.)
+_BLOB_URL_RE = re.compile(r"(?:https?:)?//github\.com/[^/\s]+/[^/\s]+/blob/[^/\s]+/")
+# After reducing blob URLs to repo paths, drop any REMAINING external URLs (schema refs like
+# schema.management.azure.com/…/deploymentParameters.json, doc links): the fidelity gate
+# measures FILE-PATH citations, not external URLs — counting those as failed citations
+# under-scores a faithful page.
+_URL_RE = re.compile(r"https?://\S+")
 
 
 def _fidelity_report(pages: list[dict], files: dict[str, str]) -> dict:
@@ -81,7 +93,8 @@ def _fidelity_report(pages: list[dict], files: dict[str, str]) -> dict:
     total = resolved = line_ranged = worktree = 0
     distinct: set[str] = set()
     for page in pages:
-        text = page.get("content", "")
+        text = _BLOB_URL_RE.sub("", page.get("content", ""))  # GitHub blob URL → repo-relative path
+        text = _URL_RE.sub("", text)  # drop remaining external URLs (not file citations)
         for m in _CITE_RE.finditer(text):
             cited = m.group(1).lstrip("./")
             total += 1

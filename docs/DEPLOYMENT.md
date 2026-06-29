@@ -217,6 +217,16 @@ There are **two ways** to produce it:
 
 Either path produces a doc bundle the selfwiki ingest above can index.
 
+> **Citation style differs between the paths** (verified by actually running the Copilot CLI
+> path on `infra/` — 100% of the source files it cited exist). The Foundry pipeline emits
+> **repo-relative paths** (`infra/resources.bicep`); the Agent Skill resolves the git remote
+> and emits **GitHub blob URLs** plus external/schema URLs and intra-wiki page links. The
+> build-fidelity gate (`eval` / `wiki_builder._fidelity_report`) now **normalizes blob +
+> external URLs**, so it scores the Foundry bundles cleanly (94–100%); but it still counts the
+> skill's wiki-internal `.md` cross-links + prose, so it under-scores skill output. Validate a
+> skill-generated bundle by **source-file existence** (do its cited files exist?), not the same
+> gate threshold — the two are faithful, but not drop-in identical for the gate.
+
 ---
 
 ## Step 5 — Run locally
