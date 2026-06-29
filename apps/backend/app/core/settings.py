@@ -107,6 +107,12 @@ class Settings(BaseSettings):
     # Name of the deployed hosted agent, invoked via the Responses protocol.
     hosted_agent_name: str = "helpdesk-concierge"
 
+    # --- MCP integration (platform/ops domain) ---
+    # Learn is public; the rest are infra-gated (OBO/hosted). Off by default so the app
+    # boots without the platform domain until explicitly enabled.
+    mcp_enabled: bool = False
+    mcp_learn_url: str = "https://learn.microsoft.com/api/mcp"
+
     # CORS origin for the local Next.js frontend
     frontend_origin: str = "http://localhost:3000"
 
