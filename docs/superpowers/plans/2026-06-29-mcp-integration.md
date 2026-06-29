@@ -210,7 +210,7 @@ SERVERS: tuple[McpServer, ...] = (
         label="Azure DevOps",
         url="https://<azdo-mcp-endpoint>",  # TODO: confirm when wiring
         auth="obo",
-        obo_scope="499b84ac-1321-427f-aa17-267ca6975798/.default",  # Azure DevOps resource
+        obo_scope="499b84ac-1321-427f-aa17-267ca6975798/.default",  # Azure DevOps resource — TODO: confirm scope when wiring
         read_tools=("azdo_workitem_query", "azdo_pipeline_list"),
         write_tools=("azdo_workitem_create",),
     ),
@@ -432,11 +432,34 @@ def build_platform_agent() -> Agent:
         instructions=PLATFORM_INSTRUCTIONS,
         tools=build_mcp_tools(),
     )
+
+
+class PerRequestPlatformAgent:
+    """A `SupportsAgentRun` proxy that REBUILDS the platform agent on every call, so each
+    request gets tools filtered by the CURRENT caller's roles + OBO credential (read from the
+    request-context contextvar set by the auth dependency).
+
+    Why this exists: `add_agent_framework_fastapi_endpoint(agent=...)` wants a
+    `SupportsAgentRun` *instance* (methods `run`/`create_session`/`get_session`), not a
+    factory function. The grounded domains build once at boot under `DefaultAzureCredential`
+    — we can't, because the whole point of this agent is per-request identity/role filtering.
+    The helpdesk path solves the same problem with a `Workflow` subclass factory; a single
+    agent needs this lighter proxy instead. Each method delegates to a freshly built agent.
+    """
+
+    def run(self, *args, **kwargs):  # returns Awaitable | ResponseStream — pass through
+        return build_platform_agent().run(*args, **kwargs)
+
+    def create_session(self, *args, **kwargs):
+        return build_platform_agent().create_session(*args, **kwargs)
+
+    def get_session(self, *args, **kwargs):
+        return build_platform_agent().get_session(*args, **kwargs)
 ```
 
-- [ ] **Step 3: Smoke check the import**
+- [ ] **Step 3: Smoke check the imports (incl. the proxy)**
 
-Run: `uv run python -c "from app.agents.platform import build_platform_agent, platform_configured; print('ok')"`
+Run: `uv run python -c "from app.agents.platform import build_platform_agent, platform_configured, PerRequestPlatformAgent; print('ok')"`
 Expected: `ok`.
 
 - [ ] **Step 4: Commit**
@@ -485,7 +508,7 @@ async def _run() -> int:
         "Using the Microsoft Learn docs, what is Azure AI Foundry Agent Service? "
         "Cite the doc you used."
     )
-    text = str(reply)
+    text = reply.text  # AgentResponse.text — repo convention (eval/run_eval.py)
     print("---- agent reply ----")
     print(text[:800])
     print("---------------------")
@@ -526,25 +549,33 @@ git commit -m "test(mcp): Learn MCP end-to-end proof (infra-free, public server)
 - [ ] **Step 1: Add the endpoint registration** — in `apps/backend/app/main.py`, add the import near the other agent imports:
 
 ```python
-from app.agents.platform import build_platform_agent, platform_configured
+from app.agents.platform import PerRequestPlatformAgent, platform_configured
 ```
 
 and, after the `selfwiki` block, add:
 
 ```python
 # Fourth domain: the platform/ops concierge — tool-driven over the Microsoft first-party
-# MCP servers (Learn public now; OBO servers as infra lands). Per-request factory so each
-# run builds tools under the caller's roles + OBO credential.
+# MCP servers (Learn public now; OBO servers as infra lands). The PerRequestPlatformAgent
+# proxy rebuilds the agent on each run so tools are filtered under the caller's roles + OBO
+# credential (NOT once at boot — that's the whole point of this domain).
 if platform_configured():
     add_agent_framework_fastapi_endpoint(
         app,
-        agent=build_platform_agent,  # factory: per-request roles/credential
+        agent=PerRequestPlatformAgent(),
         path="/platform",
         dependencies=auth_dependencies(),
     )
 ```
 
-> NOTE: confirm whether `add_agent_framework_fastapi_endpoint` accepts a **callable factory** for `agent=` (the helpdesk workflow uses a per-request factory via `OrderedAgentFrameworkWorkflow(workflow_factory=...)`; the grounded domains pass a built agent). If it requires an already-built agent, wrap `build_platform_agent` the same way the helpdesk path wraps its factory so tools are rebuilt per request (the role/OBO filter MUST run per request, not once at boot). Adjust this step to match the verified signature — do not guess.
+> WHY the proxy (verified): `add_agent_framework_fastapi_endpoint(agent=...)` requires a
+> `SupportsAgentRun` **instance** (protocol = `run`/`create_session`/`get_session`); a bare
+> factory function does NOT satisfy it and registration would fail. The grounded domains pass
+> a *built* agent because they build once at boot under `DefaultAzureCredential`; the helpdesk
+> path uses a `Workflow` subclass factory (`OrderedAgentFrameworkWorkflow(workflow_factory=…)`)
+> — neither fits a single per-request agent. `PerRequestPlatformAgent` (Task 3) is the seam:
+> it implements the three protocol methods, each delegating to a freshly built agent so the
+> role/OBO filter runs per request.
 
 - [ ] **Step 2: Boot the backend and verify the route exists**
 
