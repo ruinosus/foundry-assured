@@ -33,6 +33,15 @@ def main() -> int:
     check("reads FOUNDRY_MODEL from env", cfg.foundry_model == "gpt-5-mini-canary")
     check("current_tenant_id() is None in single-tenant mode", current_tenant_id() is None)
 
+    from app.core.tenant import MultiTenantConfigProvider, set_current_tenant
+    from app.core.tenant_store import TenantRecord
+    rec = TenantRecord(tid="t1", name="n", tier="shared", status="active",
+                       data_plane=TenantConfig(foundry_model="model-x"))
+    set_current_tenant(rec)
+    check("MultiTenant returns the resolved tenant's config",
+          MultiTenantConfigProvider().current().foundry_model == "model-x")
+    set_current_tenant(None)
+
     if failures:
         print(f"\n❌ {len(failures)} assertion(s) failed.")
         return 1

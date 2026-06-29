@@ -143,6 +143,16 @@ _current_tenant: contextvars.ContextVar[object | None] = contextvars.ContextVar(
 )
 
 
+class MultiTenantConfigProvider:
+    """shared — the config of the tenant resolved for THIS request (set in require_user)."""
+
+    def current(self) -> TenantConfig:
+        rec = _current_tenant.get()
+        if rec is None:
+            raise RuntimeError("no tenant resolved for this request")
+        return rec.data_plane  # type: ignore[attr-defined]
+
+
 def set_current_tenant(record: object | None) -> None:
     _current_tenant.set(record)
 
