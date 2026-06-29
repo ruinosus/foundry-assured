@@ -252,14 +252,14 @@ git commit -m "feat(c): mode-aware build — connection-driven in shared, regist
 
 **Files:** Modify `tools.py`; extend `connection_tools_build_test.py`.
 
-- [ ] Using the Task-0 `MCPSpecificApproval` finding, set the per-tool `approval_mode` on the connection-built tool: writes → always_require, reads → never_require (the exact shape per Task 0). Add a test asserting the built tool carries always_require for the write tool names (introspect the constructed `approval_mode`). If the shape is uncertain after Task 0, leave a `# TODO: confirm MCPSpecificApproval shape` and use the documented form. Commit.
+- [ ] **VERIFIED shape (Task 0):** `MCPSpecificApproval` = `{"always_require_approval": [<write tool names>], "never_require_approval": [<read tool names>]}` (each `Collection[str] | None`). Set the per-tool `approval_mode` on the connection-built tool to this dict. Add a test asserting the built tool's `approval_mode["always_require_approval"]` == the visible write tool names and `["never_require_approval"]` == the reads. Commit.
 
 ### Task 5: credential mechanisms (OBO reuse + internal SDK-broker, gated)
 
 **Files:** Modify `tools.py`.
 
 - [ ] **OBO** — for `server.auth == "obo"`, reuse `_obo_header_provider(server.obo_scope)` (unchanged from today). Test: a built `azdo` tool (with an endpoint org) gets an OBO `header_provider` (mock `credential_for_request`).
-- [ ] **Internal SDK-broker (gated on Task-0 Step 2)** — for non-OBO with `conn.foundry_connection_id`, IF the `azure-ai-projects` call exists: a `header_provider` that fetches the connection credential at runtime and returns the bearer. IF NOT available: skip non-OBO on the internal path (return None with a logged "needs hosted") and mark this sub-task deferred in `c-verifications.md`. **Do not invent the SDK call.**
+- [ ] **Internal SDK-broker (VERIFIED feasible, Task 0)** — for non-OBO with `conn.foundry_connection_id`: a `header_provider` that calls `AIProjectClient(...).connections.get(conn.foundry_connection_id, include_credentials=True)` at runtime and returns the bearer from the returned `Connection` model (confirm the credential field name on the model when implementing). Broker in memory, never persist. If `foundry_connection_id` is empty → skip with a "needs hosted/connection" signal.
 - [ ] Commit each with its test.
 
 ### Task 6: hosted path (greenfield, infra-gated)
