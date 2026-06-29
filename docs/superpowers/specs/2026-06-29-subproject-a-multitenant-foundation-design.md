@@ -61,6 +61,21 @@ class TenantConfig:                          # PER-TENANT — resolved by the pr
     # (Connections are added in sub-project B)
 ```
 
+**Field classification (where each current `settings` field lands — the rule, applied to all ~20):**
+
+- **`PlatformSettings` (global, control-plane):** `deployment_mode` (new), `tenant_store_table`
+  (new), `frontend_origin`, `entra_tenant_id`, `entra_api_client_id`, `entra_api_client_secret`,
+  `entra_spa_client_id`, and the derived properties `auth_enabled` + `entra_api_scope`.
+- **`TenantConfig` (per-tenant data-plane pointers — everything that names a customer resource):**
+  `foundry_project_endpoint`, `foundry_model`, `azure_ai_openai_endpoint`,
+  `foundry_embedding_model`, `azure_search_endpoint`, `azure_search_knowledge_base`,
+  `azure_storage_account` / `_resource_id` / `_container`, `foundry_memory_store`,
+  `hosted_agent_name`, the per-domain KB/index/container fields (`cockpit_search_*`,
+  `cockpit_storage_container`, `selfwiki_search_*`, `selfwiki_storage_container`,
+  `cockpit_docbundles_path`), and the ACL/group config (`cockpit_acl_*` + the `acl_group_map`
+  property). The 4 named in `TenantConfig` above are illustrative; the **rule** is "names a
+  customer resource → per-tenant." The plan enumerates the full set when it splits the file.
+
 The provider is the only point of variation:
 
 ```python
@@ -127,13 +142,21 @@ directly, so self-hosted/dedicated keep zero database dependency. Table Storage 
 JWT validation):
 
 ```python
+# auth OFF (local dev) → unchanged in EVERY mode: azure_scheme = None, require_user is a no-op
+#   (today's behavior — auth.py gates on settings.auth_enabled). This branch MUST be preserved
+#   so step-1 zero-behavior-change holds: with auth off, current_user() is None → memory_scope
+#   returns the bare "dev-local" scope, exactly as today.
+if not platform.auth_enabled:
+    azure_scheme = None
 # self_hosted / dedicated  → as today
-azure_scheme = SingleTenantAzureAuthorizationCodeBearer(tenant_id=platform.entra_tenant_id, ...)
+elif platform.deployment_mode in ("self_hosted", "dedicated"):
+    azure_scheme = SingleTenantAzureAuthorizationCodeBearer(tenant_id=platform.entra_tenant_id, ...)
 # shared
-azure_scheme = MultiTenantAzureAuthorizationCodeBearer(
-    app_client_id=..., validate_iss=True,                # validates sig + aud + iss + exp
-    iss_callable=...,                                     # expected iss = login.microsoftonline.com/{tid}/v2.0
-)
+else:
+    azure_scheme = MultiTenantAzureAuthorizationCodeBearer(
+        app_client_id=..., validate_iss=True,            # validates sig + aud + iss + exp
+        iss_callable=...,                                # expected iss = login.microsoftonline.com/{tid}/v2.0
+    )
 ```
 
 Request flow (shared) — two layers, one choke point:
@@ -168,8 +191,10 @@ def memory_scope() -> str:
   exact behavior; existing memories stay reachable. **Zero behavior change.**
 - **MultiTenant:** `f"{tid}:{oid}"` — isolates memory per tenant.
 
-All per-tenant state access goes through the provider / the contextvars resolved in `require_user`
-— never a global read for tenant data. That is the single, auditable tenant-scoping choke point.
+`current_tenant_id()` reads its **own `_current_tenant` contextvar** (set in `require_user`) and
+returns `None` when unset — so a unit test sets the contextvar directly, with no store. All
+per-tenant state access goes through the provider / the contextvars resolved in `require_user` —
+never a global read for tenant data. That is the single, auditable tenant-scoping choke point.
 
 ## 5. Migration, testing, error handling
 
