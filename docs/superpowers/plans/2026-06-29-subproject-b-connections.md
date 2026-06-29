@@ -651,8 +651,8 @@ Expected: exit 0.
 
 ```bash
 cd /Users/jefferson.barnabe/projects/foundry-helpdesk
-git add apps/frontend/app/admin/connections/page.tsx apps/frontend/components/admin/Connections.tsx apps/frontend/components/shell/AppShell.tsx
-git commit -m "feat(connections): admin Connections page (onboard + config + connections), mirrors admin/users"
+git add "apps/frontend/app/api/tenant/[...path]/route.ts" apps/frontend/app/admin/connections/page.tsx apps/frontend/components/admin/Connections.tsx apps/frontend/components/shell/AppShell.tsx
+git commit -m "feat(connections): admin Connections page + /api/tenant proxy, mirrors admin/users"
 ```
 
 ---
