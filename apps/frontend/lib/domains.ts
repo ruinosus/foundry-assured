@@ -5,14 +5,15 @@
 // sidebar nav, the generic console route (/d/[domain]), the landing role-cards, and the
 // per-domain starter prompts. Adding a domain = one entry here (+ a backend agent).
 
-export type DomainKind = "workflow" | "grounded";
+export type DomainKind = "workflow" | "grounded" | "tool";
 
 export interface Domain {
   /** Stable id — matches the backend agentId + the AG-UI endpoint path segment. */
   id: string;
   icon: string;
   label: string;
-  /** "workflow" = triage→retrieve→resolve→escalate with steps + HITL; "grounded" = pure cited Q&A. */
+  /** "workflow" = triage→retrieve→resolve→escalate with steps + HITL; "grounded" = pure cited
+   * Q&A; "tool" = tool-driven (Microsoft MCP servers) with HITL on write actions. */
   kind: DomainKind;
   /** One line for the switcher + landing card. */
   blurb: string;
@@ -64,6 +65,20 @@ export const DOMAINS: Domain[] = [
       "Quais são as fases de implementação do projeto?",
     ],
     endpoint: "/selfwiki",
+  },
+  {
+    id: "platform",
+    icon: "🛠️",
+    label: "Platform ops",
+    kind: "tool",
+    blurb:
+      "Concierge de plataforma sobre as ferramentas Microsoft (Learn, Azure, Entra, DevOps, GitHub) — com aprovação humana antes de qualquer ação de escrita.",
+    suggested: [
+      "O que é o Azure AI Foundry Agent Service? (via Microsoft Learn)",
+      "Liste os recursos do meu resource group.",
+      "Quanto gastei em AI Search neste mês?",
+    ],
+    endpoint: "/platform",
   },
 ];
 

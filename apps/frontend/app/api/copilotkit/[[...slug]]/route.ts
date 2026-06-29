@@ -26,46 +26,54 @@ const AGUI_URL = process.env.AGUI_URL ?? "http://localhost:8000/helpdesk";
 const HOSTED_AGUI_URL =
   process.env.HOSTED_AGUI_URL ?? "http://localhost:8000/helpdesk-hosted";
 
-const helpdesk = new HttpAgent({
-  url: AGUI_URL,
-  fetch: async (url, requestInit) => {
-    if (requestInit?.body && typeof requestInit.body === "string") {
-      try {
-        const body = JSON.parse(requestInit.body);
-        if (Array.isArray(body.resume)) {
-          body.resume = {
-            interrupts: body.resume.map(
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (r: any) => ({ id: r.interruptId ?? r.id, value: r.payload ?? r.value }),
-            ),
-          };
-          requestInit = { ...requestInit, body: JSON.stringify(body) };
+// Resume-format bridge (AG-UI `resume` array → agent-framework `{interrupts:[…]}` dict),
+// needed by any domain with HITL interrupts (workflow + tool).
+function withResumeBridge(url: string): HttpAgent {
+  return new HttpAgent({
+    url,
+    fetch: async (u, requestInit) => {
+      if (requestInit?.body && typeof requestInit.body === "string") {
+        try {
+          const body = JSON.parse(requestInit.body);
+          if (Array.isArray(body.resume)) {
+            body.resume = {
+              interrupts: body.resume.map(
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                (r: any) => ({ id: r.interruptId ?? r.id, value: r.payload ?? r.value }),
+              ),
+            };
+            requestInit = { ...requestInit, body: JSON.stringify(body) };
+          }
+        } catch {
+          // leave the body untouched if it isn't JSON
         }
-      } catch {
-        // leave the body untouched if it isn't JSON
       }
-    }
-    return fetch(url, requestInit);
-  },
-});
+      return fetch(u, requestInit);
+    },
+  });
+}
 
 const helpdeskHosted = new HttpAgent({ url: HOSTED_AGUI_URL });
 
-// Grounded domains (Cockpit, selfwiki, …) are plain request→response Q&A — no resume
-// bridge needed — so they're built straight from the domains registry. Adding a domain
-// is one entry in lib/domains.ts (+ its backend agent); no per-domain wiring here.
-// Per-domain env override: <ID>_AGUI_URL (e.g. COCKPIT_AGUI_URL, SELFWIKI_AGUI_URL).
-const groundedAgents = Object.fromEntries(
-  DOMAINS.filter((d) => d.kind === "grounded").map((d) => {
-    const override = process.env[`${d.id.toUpperCase()}_AGUI_URL`];
-    return [d.id, new HttpAgent({ url: override ?? `http://localhost:8000${d.endpoint}` })];
-  }),
+const urlFor = (d: { id: string; endpoint: string }) =>
+  process.env[`${d.id.toUpperCase()}_AGUI_URL`] ?? `http://localhost:8000${d.endpoint}`;
+
+// Grounded domains are plain request→response. Interrupt-bearing domains (workflow + tool)
+// get the resume bridge. Both come straight from the registry — adding a domain is one entry
+// in lib/domains.ts (+ its backend agent), no per-domain wiring here.
+// Per-domain env override: <ID>_AGUI_URL (e.g. COCKPIT_AGUI_URL, PLATFORM_AGUI_URL).
+const registryAgents = Object.fromEntries(
+  DOMAINS.map((d) => [
+    d.id,
+    d.kind === "grounded"
+      ? new HttpAgent({ url: urlFor(d) })
+      : withResumeBridge(d.id === "helpdesk" ? AGUI_URL : urlFor(d)),
+  ]),
 );
 
 const runtime = new CopilotRuntime({
-  // helpdesk keeps its bespoke wiring (workflow resume bridge + hosted twin); the rest
-  // come from the registry.
-  agents: { helpdesk, "helpdesk-hosted": helpdeskHosted, ...groundedAgents },
+  // helpdesk keeps its hosted twin; everything else (incl. platform) comes from the registry.
+  agents: { ...registryAgents, "helpdesk-hosted": helpdeskHosted },
 });
 
 const handle = (req: NextRequest) => {
