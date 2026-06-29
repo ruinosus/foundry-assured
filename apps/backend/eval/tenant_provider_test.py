@@ -26,10 +26,11 @@ def main() -> int:
         if not cond:
             failures.append(name)
 
-    os.environ["FOUNDRY_MODEL"] = "gpt-5-mini"
+    # A canary (≠ the field default) so the check actually proves env-reading, not the default.
+    os.environ["FOUNDRY_MODEL"] = "gpt-5-mini-canary"
     cfg = SingleTenantConfigProvider().current()
     check("SingleTenant returns a TenantConfig", isinstance(cfg, TenantConfig))
-    check("reads FOUNDRY_MODEL from env", cfg.foundry_model == "gpt-5-mini")
+    check("reads FOUNDRY_MODEL from env", cfg.foundry_model == "gpt-5-mini-canary")
     check("current_tenant_id() is None in single-tenant mode", current_tenant_id() is None)
 
     if failures:

@@ -49,10 +49,17 @@ class TenantConfigProvider(Protocol):
 
 
 class SingleTenantConfigProvider:
-    """self_hosted / dedicated — one config from .env. Identical to today."""
+    """self_hosted / dedicated — one config from .env, static for the process. Identical to today.
+
+    Parsed once at construction: single-tenant config doesn't change per request, and the workflow
+    calls tenant_config() several times per run (triage/retrieve/resolve).
+    """
+
+    def __init__(self) -> None:
+        self._cfg = _TenantEnv().as_config()
 
     def current(self) -> TenantConfig:
-        return _TenantEnv().as_config()
+        return self._cfg
 
 
 # The per-request resolved tenant record (set by require_user in multi-tenant mode).
