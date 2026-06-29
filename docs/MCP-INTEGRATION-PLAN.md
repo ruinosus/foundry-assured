@@ -121,7 +121,15 @@ deployment target does.
 
 - **Secrets can't go in hosted-MCP headers** on Agent Service → use `project_connection_id`.
 - **"Cannot pass a Microsoft-audience token to an untrusted MCP endpoint"** → for Microsoft MCP servers use **custom OAuth with our own Entra app registration** (audience we control), per the docs; `offline_access` in scopes for refresh.
-- **GitHub MCP is GitHub OAuth/PAT**, not Entra OBO — a separate credential path (`github_pat` / its own OAuth), per the framework's GitHub MCP sample.
+- **GitHub MCP is GitHub OAuth/PAT, NOT Entra OBO — verified.** GitHub's MCP
+  (`https://api.githubcopilot.com/mcp/`) advertises `authorization_servers=["https://github.com/login/oauth"]`
+  and validates GitHub-issued tokens only. An Entra OBO token has a Microsoft audience, which
+  GitHub rejects; Foundry additionally blocks it (*"Cannot pass Microsoft token to untrusted MCP
+  endpoint"*). Per-user identity is still achievable, but through GitHub's own OAuth — a PAT/OAuth
+  bearer on the internal path, or **custom-OAuth identity passthrough** (your own GitHub OAuth app)
+  on the hosted path (`User context persists: Yes`). OBO works only for Microsoft-audience servers:
+  Azure (ARM), Azure DevOps (ADO resource), Entra/M365 (Graph). Verified against
+  [Foundry MCP authentication](https://learn.microsoft.com/azure/foundry/agents/how-to/mcp-authentication).
 
 ## Governance: native approval + our RBAC (complementary)
 
@@ -220,8 +228,9 @@ sequenceDiagram
 1. **M365 needs M365** — this tenant has none (no SPO/Graph M365). `m365` stays `enabled=False`
    until M365 is enabled (e.g. M365 Developer Program). The Agent 365 MCP servers are also
    Frontier-tenant-gated.
-2. **GitHub auth** — PAT (simple, shared) vs GitHub OAuth (per-user). MVP: PAT via a connection;
-   per-user OAuth later.
+2. **GitHub auth** — **not OBO** (verified above; GitHub rejects Microsoft-audience tokens). PAT
+   (simple, shared) vs GitHub OAuth (per-user, the OBO-equivalent). MVP: PAT via a connection;
+   per-user GitHub OAuth / custom-OAuth passthrough later.
 3. **AG-UI approval bug (#3199)** — gate write tools through our HITL on the internal path; revisit
    when the upstream fix lands.
 4. **Custom OAuth app reg** for hosted passthrough — a new Entra app (audience we control) to

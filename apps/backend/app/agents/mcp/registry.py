@@ -74,6 +74,13 @@ SERVERS: tuple[McpServer, ...] = (
         read_tools=("azdo_workitem_query", "azdo_pipeline_list"),
         write_tools=("azdo_workitem_create",),
     ),
+    # GitHub auth is NOT Entra OBO. GitHub's MCP advertises
+    # authorization_servers=["https://github.com/login/oauth"] — it validates GitHub-issued
+    # tokens only. An Entra OBO token has a Microsoft audience, which GitHub rejects; Foundry
+    # also blocks it ("Cannot pass Microsoft token to untrusted MCP endpoint"). Per-user
+    # identity still works, but via GitHub's own OAuth: a PAT/OAuth bearer here (internal),
+    # or custom-OAuth identity passthrough (hosted). Verified against learn.microsoft.com
+    # /azure/foundry/agents/how-to/mcp-authentication.
     McpServer(
         id="github",
         label="GitHub",

@@ -751,8 +751,15 @@ These need live Azure / external services, so they can't be TDD'd offline. Each 
 - The frontend resume bridge (Task 7) is already in place, so the approve/reject round-trip works for `kind: "tool"`.
 - Test: as an Author, ask for a write → approval card appears → approve → tool runs; reject → no write. As a Reader, the write tool isn't even offered.
 
-### Task 10: GitHub MCP (PAT path)
-- `auth="github_pat"`: extend the tool builder to handle `github_pat` — inject `Authorization: Bearer <PAT>` from a connection/secret (MVP: a shared PAT via settings; per-user GitHub OAuth later, spec open question #2).
+### Task 10: GitHub MCP (PAT path — NOT OBO)
+- **Verified:** GitHub MCP cannot use Entra OBO — its MCP advertises
+  `authorization_servers=["https://github.com/login/oauth"]` and rejects Microsoft-audience
+  tokens; Foundry blocks it too (*"Cannot pass Microsoft token to untrusted MCP endpoint"*). Use
+  GitHub's own OAuth instead.
+- `auth="github_pat"`: extend the tool builder to handle `github_pat` — add a `mcp_github_pat`
+  setting and a `_github_header_provider()` that injects `Authorization: Bearer <PAT>` (mirror
+  `_obo_header_provider`). MVP: a shared PAT; per-user GitHub OAuth later (the OBO-equivalent).
+- Hosted path: custom-OAuth identity passthrough with your own GitHub OAuth app (per-user).
 - Verify against `https://api.githubcopilot.com/mcp/` tool names.
 
 ### Task 11: Hosted mirror (Foundry OAuth passthrough)
