@@ -325,6 +325,35 @@
   </div>
 </section>
 
+<!-- SETUP REAL · AUTOMÁTICO vs MANUAL -->
+<section>
+  <div class="wrap">
+    <div class="eyebrow reveal">Setup real · o que é automático vs manual</div>
+    <h2 class="reveal" data-d="1">O <span class="grad">azd</span> sobe a infra. A <span class="grad">identidade</span> é meio manual — e isso é de propósito.</h2>
+    <p class="reveal lead" data-d="2">A pegadinha de quem herda o repo: <code class="mono">azd up</code> cria os recursos Azure e até
+      os grupos de acesso, mas <b>não</b> cria os app registrations do Entra (login, OBO, CI). Saber a fronteira é o que separa um deploy limpo de horas perdidas.</p>
+
+    <div class="grid g2">
+      <div class="card reveal" data-d="1" style="border-color:rgba(55,224,160,.35)">
+        <div class="domain-card-head"><span class="domain-card-icon" style="background:rgba(55,224,160,.12)">⚙️</span><h3>Automático · <code class="mono">azd up</code></h3></div>
+        <p><span style="color:var(--ok)">✓</span> Recursos Azure: Foundry, AI Search, Storage, Container Apps, App Insights + role assignments (Bicep).<br>
+           <span style="color:var(--ok)">✓</span> Grupos de segurança do ACL (Bicep via <b>extensão Microsoft Graph</b>) — eles <i>podem</i> ser declarativos porque não têm secret.</p>
+        <span class="tag">declarativo · reproduzível</span>
+      </div>
+      <div class="card reveal" data-d="2" style="border-color:rgba(255,207,91,.35)">
+        <div class="domain-card-head"><span class="domain-card-icon" style="background:rgba(255,207,91,.12)">🔑</span><h3>Manual · script / à mão</h3></div>
+        <p><span style="color:var(--warn)">⚠️</span> 3 <b>app registrations</b>: <b>API</b> (audiência + OBO), <b>SPA</b> (login no front), <b>CI</b> (OIDC do GitHub).<br>
+           <span style="color:var(--warn)">⚠️</span> <b>Admin consent</b> das permissões delegadas.<br>
+           <span class="muted" style="font-size:13px">(`scripts/setup-entra.sh` automatiza os 2 primeiros.)</span></p>
+        <span class="tag" style="background:rgba(255,207,91,.12);color:var(--warn);border-color:rgba(255,207,91,.25)">precisa de gente</span>
+      </div>
+    </div>
+
+    <div class="note reveal"><b>Por que não está tudo no Bicep?</b> O app de OBO precisa de <b>client secret</b> (não se expõe secret em output de texto plano), e as permissões exigem <b>admin consent</b> (passo interativo). Por isso: infra + grupos no Bicep; app registrations num script + parâmetros.</div>
+    <div class="gate reveal" data-d="2" style="border-color:rgba(91,140,255,.4);background:rgba(91,140,255,.06);color:#cdd8f5">🧭 <span>Duas pegadinhas de handoff: <b>(1)</b> renomear o repo quebra a <span class="mono">federated credential</span> do CI (atualize o subject); <b>(2)</b> os app registrations <b>sobrevivem ao <span class="mono">azd down</span></b> — só o resource group some. Mapa completo em <span class="mono">docs/IDENTITY-AND-ACCESS-SETUP.md</span>.</span></div>
+  </div>
+</section>
+
 <!-- DEEP DIVES (páginas complementares) -->
 <section>
   <div class="wrap">
