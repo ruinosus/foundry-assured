@@ -210,7 +210,11 @@ git commit -m "feat(tenant): TenantConfigProvider seam + SingleTenant impl (zero
 
 In `apps/backend/app/core/settings.py`, rename `Settings` → `PlatformSettings`, **keep only the
 global fields** (per the spec's classification): `deployment_mode` (new, default `"self_hosted"`),
-`tenant_store_table` (new, default `"tenants"`), `frontend_origin`, `entra_tenant_id`,
+`tenant_store_table` (new, default `"tenants"`), `tenant_store_account_url` (new, default `""` —
+the **control-plane** Storage account's Table endpoint, e.g.
+`https://<acct>.table.core.windows.net`; platform-global because the store is built at boot
+*before* any tenant is resolved, so it CANNOT come from per-tenant `tenant_config()`),
+`frontend_origin`, `entra_tenant_id`,
 `entra_api_client_id`, `entra_api_client_secret`, `entra_spa_client_id`, and the derived
 properties `auth_enabled` + `entra_api_scope`. Keep the module-level instance named `settings`
 (so platform call sites are unchanged): `settings = PlatformSettings()`. Remove the per-tenant
@@ -236,6 +240,17 @@ per-domain KBs, ACL, memory store, hosted agent) — keep the dataclass and the 
 
 > Keep behavior identical: `_TenantEnv` reads the **same env var names** with the **same
 > defaults** the old `Settings` had, so a self-hosted deploy reads exactly what it read before.
+
+> ⚠️ **Module-level reads — do NOT mechanically replace.** Two sites read a per-tenant field at
+> **import time**, not per-request: `app/agents/secure_search.py:36` and
+> `app/knowledge/acl_setup.py:34` (both `_INDEX = settings.cockpit_search_index`).
+> `tenant_config()` at import works in SingleTenant but **crashes boot in `shared` mode**
+> (`MultiTenantConfigProvider.current()` with no `_current_tenant` → `RuntimeError`). **Convert
+> these to lazy per-call lookups:** delete the `_INDEX = …` module constant and read
+> `tenant_config().cockpit_search_index` **inside the function bodies** that use it (e.g.
+> `secure_search.py:57`). Before migrating, sweep for any other module-level per-tenant constant:
+> `grep -rnE "^_?[A-Z][A-Za-z_]* *= *.*settings\." app/` — every hit must become a per-call read,
+> not an import-time one.
 
 - [ ] **Step 4: Boot + the zero-behavior-change gate (existing evals green)**
 
@@ -675,11 +690,16 @@ if settings.auth_enabled:
 
 ```python
 def _make_tenant_store():
-    """Build the shared-mode store (Table Storage on the existing Storage account)."""
+    """Build the shared-mode store at boot. Uses the PLATFORM-global control-plane Storage
+    account (settings.tenant_store_account_url) — NOT a per-tenant field, since no tenant is
+    resolved yet at boot."""
     from azure.identity import DefaultAzureCredential
     from app.core.tenant_store import TableStorageTenantStore
-    account = settings_account_url()  # derive from the storage account (helper)
-    return TableStorageTenantStore(account, settings.tenant_store_table, DefaultAzureCredential())
+    if not settings.tenant_store_account_url:
+        raise RuntimeError("DEPLOYMENT_MODE=shared requires TENANT_STORE_ACCOUNT_URL")  # fail-fast
+    return TableStorageTenantStore(
+        settings.tenant_store_account_url, settings.tenant_store_table, DefaultAzureCredential()
+    )
 
 
 def resolve_tenant(user, store) -> None:
@@ -727,6 +747,10 @@ Needs `azd up` (Foundry + Storage) + two Entra test tenants. Can't be validated 
 - Create: `apps/backend/eval/tenant_e2e_test.py`
 
 - [ ] **Step 1: Write the E2E test** — `DEPLOYMENT_MODE=shared`, two tenants onboarded in the Table store, assert: (a) a token from tenant A resolves A's config; (b) a token from tenant B resolves B's; (c) a token from an un-onboarded tenant → 403; (d) `iss` mismatch → rejected; (e) memory_scope is `tidA:oid` vs `tidB:oid`. Acquire the two tenants' tokens via the existing test-credential pattern (see `eval/access_control_test.py` for the ROPC token-acquisition shape).
+
+> **Prereq:** assertion (d) (`iss` validation) can only pass once the `iss_callable` TODO in Task 6
+> is resolved against the installed `fastapi_azure_auth` version. Close that TODO before running
+> this E2E, or the `iss`-mismatch case won't reject as expected.
 
 - [ ] **Step 2: Run it (infra + two tenants required)**
 
