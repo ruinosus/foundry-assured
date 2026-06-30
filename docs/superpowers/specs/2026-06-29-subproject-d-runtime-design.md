@@ -120,14 +120,21 @@ def require_domain(domain_id: str):
 In `main.py` (shared): `dependencies=[*auth_dependencies(), Depends(require_domain("cockpit"))]` —
 ordering guarantees `require_user` resolves the tenant before `require_domain` reads it.
 
-**Onboarding default** — B's `POST /tenant/onboard` seeds `enabled_domains=DOMAIN_IDS` (MVP: all
-domains enabled; the Admin tightens later). A tier→domain-set default can replace the constant later
-**without** a schema change (the field already exists).
+**Onboarding default** — B's `onboard()` (`app/api/tenant.py`) today constructs the record
+explicitly: `TenantRecord(tid=..., name=..., tier="shared", status="active", data_plane=TenantConfig())`
+— it does **not** pass `connections`, relying on the default. Seeding the entitlement is therefore a
+**real change to that constructor call**: add `enabled_domains=DOMAIN_IDS` there (MVP: all domains
+enabled; the Admin tightens later). **This will not happen by defaulting** — the field defaults to
+`()`, and `()` + the fail-closed `require_domain` gate means **zero** domains for a new tenant until
+onboarding explicitly seeds them. A tier→domain-set default can replace the constant later **without**
+a schema change (the field already exists).
 
-**Management (API + UI)** — extend B's `/tenant` router and Connections page:
-- `GET /tenant/domains` → `{catalog: DOMAIN_IDS, enabled: [...]}`; `PUT /tenant/domains`
-  (body `{enabled: [...]}`) — `require_user` + Admin, **tenant-scoped** (read-modify-write of the
-  caller's own record; validates every id ∈ `DOMAIN_IDS`; rejects unknown ids).
+**Management (API + UI)** — extend B's `/tenant` router and Connections page (mirroring B's Pydantic
+body convention — `ConfigBody`/`ConnectionBody`):
+- `GET /tenant/domains` → `{catalog: DOMAIN_IDS, enabled: [...]}`; `PUT /tenant/domains` with a
+  `DomainsBody(BaseModel)` (`enabled: list[str]`) — `require_user` + Admin, **tenant-scoped**
+  (read-modify-write of the caller's own record; validates every id ∈ `DOMAIN_IDS`; rejects unknown
+  ids with 422/400).
 - A "Domains" section on the Connections admin page with a checkbox per `DOMAIN_IDS` entry, posting
   to the `/api/tenant/domains` proxy (mirrors B's existing list/proxy pattern).
 
@@ -173,7 +180,7 @@ D-packaging. D-runtime only records the seam.
   default-open.
 - `PUT /tenant/domains`: unknown domain id → **422/400** (reject), tenant-scoped to the caller's own
   record (no path tid, ever).
-- Hosted bridge: unreachable/недeployed hosted agent → a clear error to the client, never a hang;
+- Hosted bridge: unreachable/undeployed hosted agent → a clear error to the client, never a hang;
   writes on a Responses stopgap → disabled (§3), not silently un-approved.
 
 **Testing (repo convention: runnable `def main() -> int` modules in `apps/backend/eval/`, NO pytest):**
@@ -215,9 +222,12 @@ route/bridge-skeleton/toggle, fully unit-tested.
 
 ## Open questions (for the plan)
 
-1. **Invocations bridge SSE shape** — confirm the exact Invocations request/response envelope and how
-   the AG-UI approval interrupt maps onto raw SSE for the platform agent (don't invent the contract;
-   verify against the Foundry hosted-agent Invocations protocol library before relying on it).
+1. **Invocations bridge contract** — treat **both** the endpoint URL shape
+   (`{project_endpoint}/agents/{name}/endpoint/protocols/invocations`, asserted from the doc, not yet
+   verified) **and** the SSE request/response envelope as unverified until checked against the Foundry
+   hosted-agent Invocations protocol library (project rule #1 — don't invent SDK signatures). Confirm
+   how the AG-UI approval interrupt maps onto raw SSE for the platform agent before relying on it; the
+   plan's step 0 verifies this.
 2. **`require_domain` ordering** — verify `add_agent_framework_fastapi_endpoint` runs `dependencies=`
    in order so `require_user` resolves the tenant before `require_domain` reads `_current_tenant`
    (else resolve the tenant inside `require_domain`).
