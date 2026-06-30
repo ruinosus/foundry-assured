@@ -166,8 +166,8 @@ environment_variables:
   - name: AZURE_AI_MODEL_DEPLOYMENT_NAME
     value: ${FOUNDRY_MODEL}
   # The Foundry Toolbox the agent resolves its MCP tools through (ADR-011). Name/ref set at deploy.
-  - name: FOUNDRY_TOOLBOX_NAME
-    value: ${FOUNDRY_TOOLBOX_NAME}
+  - name: TOOLBOX_NAME
+    value: ${TOOLBOX_NAME}
 ```
 
 `apps/hosted-platform/Dockerfile` — copy `hosted-agent/Dockerfile` verbatim (same `python:3.12-slim`, `EXPOSE 8088`, `CMD ["python","main.py"]`).
@@ -214,7 +214,7 @@ async def main() -> None:
         name="PlatformConcierge",
         instructions=PLATFORM_INSTRUCTIONS,
         # tools: from the Foundry Toolbox MCP endpoint (per Task 0 — TODO(infra-gated) if the
-        # config surface isn't determinable offline; reference FOUNDRY_TOOLBOX_NAME).
+        # config surface isn't determinable offline; reference TOOLBOX_NAME).
     )
     server = InvocationsHostServer(agent)
     await server.run_async()
@@ -439,7 +439,7 @@ git commit -m "feat(D-packaging): Azure Lighthouse delegation template (least-pr
 
 **Files:** Create `docs/D-PACKAGING-RUNBOOK.md`.
 
-- [ ] **Step 1: Write the runbook** — the infra-gated steps, honestly labeled: (a) Managed App → Partner Center offer creation, upload `managed-app.zip`, plan config (publisher management, Complete vs Incremental), publish; (b) customer deploys the Managed App into their subscription; (c) Lighthouse → customer deploys `infra/lighthouse` to delegate scopes to our managing tenant (revocable); (d) deploy the `platform-concierge` hosted agent (`azd deploy`) + provision the Foundry Toolbox (ADR-011) + wire `FOUNDRY_TOOLBOX_NAME`. Mark each as requiring a Partner Center account / customer subscription / deployed Foundry (NOT runnable in CI).
+- [ ] **Step 1: Write the runbook** — the infra-gated steps, honestly labeled: (a) Managed App → Partner Center offer creation, upload `managed-app.zip`, plan config (publisher management, Complete vs Incremental), publish; (b) customer deploys the Managed App into their subscription; (c) Lighthouse → customer deploys `infra/lighthouse` to delegate scopes to our managing tenant (revocable); (d) deploy the `platform-concierge` hosted agent (`azd deploy`) + provision the Foundry Toolbox (ADR-011) + wire `TOOLBOX_NAME`. Mark each as requiring a Partner Center account / customer subscription / deployed Foundry (NOT runnable in CI).
 
 - [ ] **Step 2: Commit**
 ```bash

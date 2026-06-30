@@ -117,7 +117,7 @@ cat <<'EOF'
 
   SaaS / D-packaging add-ons (docs/D-PACKAGING-RUNBOOK.md):
     • platform domain (real tools): configure per-tenant Connections + the Foundry Toolbox
-      (OAuth passthrough, ADR-011), then  azd deploy platform-concierge  + set FOUNDRY_TOOLBOX_NAME
+      (OAuth passthrough, ADR-011), then  azd deploy platform-concierge  + set TOOLBOX_NAME
     • shared multi-tenant:  DEPLOYMENT_MODE=shared + the Table tenant store + multi-tenant Entra
     • dedicated stamp:  the Managed Application marketplace path (needs a Partner Center account)
 

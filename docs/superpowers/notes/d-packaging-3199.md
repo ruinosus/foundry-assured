@@ -17,7 +17,7 @@ Verified on `feature/saas-d-packaging` against the installed backend venv (`apps
 
 Offline confirms the fix is *present in the SDK*. What it does NOT confirm is the *exact AG-UI wire shape* of the native MCP `ToolApprovalRequestContent` interrupt as it surfaces through the Foundry-hosted path — i.e. whether `TicketApproval.tsx`'s discriminator (`tool_name ?? name ?? function_name ?? toolName` / `arguments ?? args ?? …`, `TicketApproval.tsx:72-83`) matches the real payload, and whether resume re-executes the write. That is the remaining live gate.
 
-**Preconditions (not runnable in CI):** the shared stack up (backend `app.main:app` + frontend `npm run dev`); the platform domain configured + a write-capable MCP connection enabled for the caller's tenant with the caller holding **Author/Admin** (so a write tool is visible); for the hosted leg, the deployed `platform-concierge` agent + its Foundry Toolbox (ADR-011) and `FOUNDRY_TOOLBOX_NAME` wired.
+**Preconditions (not runnable in CI):** the shared stack up (backend `app.main:app` + frontend `npm run dev`); the platform domain configured + a write-capable MCP connection enabled for the caller's tenant with the caller holding **Author/Admin** (so a write tool is visible); for the hosted leg, the deployed `platform-concierge` agent + its Foundry Toolbox (ADR-011) and `TOOLBOX_NAME` wired.
 
 **Procedure — run twice, against `/platform` (live, in-process build) AND `/platform-hosted` (the deployed Invocations agent via `stream_platform_agui`):**
 

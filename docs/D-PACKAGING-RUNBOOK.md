@@ -162,7 +162,7 @@ so the container never handles credentials.
    (see [verifications](./superpowers/notes/d-packaging-verifications.md)), but
    the **Toolbox↔hosted-agent binding** is a deploy-time fact (infra-gated).
 
-3. **Wire `FOUNDRY_TOOLBOX_NAME`.** Set the env var on the hosted agent to the
+3. **Wire `TOOLBOX_NAME`.** Set the env var on the hosted agent to the
    Toolbox name; `apps/hosted-platform/main.py` reads it to resolve its MCP tools
    at runtime. (That file fences the binding with `TODO(infra-gated)` — the
    binding is configured here at deploy, not in container code.)

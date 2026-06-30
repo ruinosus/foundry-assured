@@ -29,7 +29,7 @@ graph TB
   subgraph foundry["Foundry Agent Service"]
     HA["ResponsesHostServer<br>helpdesk + cockpit (8088)"]
     PA["InvocationsHostServer<br>platform (8088)"]
-    TB["Foundry Toolbox<br>FOUNDRY_TOOLBOX_NAME"]
+    TB["Foundry Toolbox<br>TOOLBOX_NAME"]
   end
   KB["Foundry IQ KB<br>helpdesk-kb / cockpit-kb"]
   IMG1 --> HA
@@ -71,7 +71,7 @@ O `main.py` reconstrói o pipeline `triage→retrieve→resolve` com `WorkflowBu
 
 ## platform-concierge — tools via Toolbox (ADR-011)
 
-O ponto-chave: **as tools não são montadas por request** (isso é o caminho OBO vivo, `build_mcp_tools()`). Para um hosted agent, as tools são configuradas **no Foundry Toolbox em deploy time**, e o agente as resolve pelo Toolbox referenciado por `FOUNDRY_TOOLBOX_NAME` ([hosted-platform/main.py:18-21](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-platform/main.py#L18-L21), [:54-57](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-platform/main.py#L54-L57)). O passthrough de identidade OAuth é **DADO** no Toolbox/connection, nunca código de credencial à mão (ADR-011 / regra #6) ([hosted-platform/main.py:18-20](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-platform/main.py#L18-L20)). O binding Toolbox↔agente é deploy-time e infra-gated, marcado com `TODO(infra-gated)` no código ([hosted-platform/main.py:59-62](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-platform/main.py#L59-L62)).
+O ponto-chave: **as tools não são montadas por request** (isso é o caminho OBO vivo, `build_mcp_tools()`). Para um hosted agent, as tools são configuradas **no Foundry Toolbox em deploy time**, e o agente as resolve pelo Toolbox referenciado por `TOOLBOX_NAME` ([hosted-platform/main.py:18-21](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-platform/main.py#L18-L21), [:54-57](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-platform/main.py#L54-L57)). O passthrough de identidade OAuth é **DADO** no Toolbox/connection, nunca código de credencial à mão (ADR-011 / regra #6) ([hosted-platform/main.py:18-20](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-platform/main.py#L18-L20)). O binding Toolbox↔agente é deploy-time e infra-gated, marcado com `TODO(infra-gated)` no código ([hosted-platform/main.py:59-62](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-platform/main.py#L59-L62)).
 
 ## Configuração — agent.yaml
 
@@ -81,7 +81,7 @@ Cada agente declara `kind: hosted`, recursos `0.5 vCPU / 1Gi` e suas env vars (o
 |---|---|---|
 | helpdesk | `AZURE_AI_MODEL_DEPLOYMENT_NAME`, `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_KNOWLEDGE_BASE` (`${...}` do azd) | [hosted-agent/agent.yaml:9-17](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-agent/agent.yaml#L9-L17) |
 | cockpit | idem, mas `AZURE_SEARCH_KNOWLEDGE_BASE: cockpit-kb` (literal, não output azd) | [hosted-cockpit/agent.yaml:9-19](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-cockpit/agent.yaml#L9-L19) |
-| platform | `AZURE_AI_MODEL_DEPLOYMENT_NAME` + `FOUNDRY_TOOLBOX_NAME` | [hosted-platform/agent.yaml:9-19](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-platform/agent.yaml#L9-L19) |
+| platform | `AZURE_AI_MODEL_DEPLOYMENT_NAME` + `TOOLBOX_NAME` | [hosted-platform/agent.yaml:9-19](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-platform/agent.yaml#L9-L19) |
 
 **Detalhe:** o cockpit aterrissa numa **segunda KB** (`cockpit-kb`), criada data-plane pelo ingest, não a `helpdesk-kb` — por isso o nome é fixo no yaml ([hosted-cockpit/agent.yaml:16-19](https://github.com/ruinosus/foundry-assured/blob/feature/saas-d-packaging/apps/hosted-cockpit/agent.yaml#L16-L19)).
 
