@@ -23,7 +23,13 @@ from agent_framework import Agent
 
 
 class PerRequestAgent:
-    """A `SupportsAgentRun` proxy that rebuilds `builder()` on each delegated call."""
+    """A `SupportsAgentRun` proxy that rebuilds `builder()` on each delegated call.
+
+    The advertised `name` defaults to `agent_id` (e.g. "cockpit") — an intentional shared-mode
+    cosmetic default: the inner agent's richer name (e.g. "CockpitExpert") isn't available without
+    building it, which we deliberately defer to request time, so we don't build just to read a name
+    (self_hosted is unaffected — it serves the eagerly-built agent with its full name).
+    """
 
     def __init__(self, agent_id: str, builder: Callable[[], Agent]) -> None:
         self.id = agent_id

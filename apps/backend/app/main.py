@@ -12,9 +12,11 @@ its docstring marks it "not yet implemented" (agent-framework-ag-ui 1.0.0rc5), s
 apply CORSMiddleware ourselves.
 """
 
+from collections.abc import Callable
 from contextlib import asynccontextmanager
 
 import uvicorn
+from agent_framework import Agent
 from agent_framework_ag_ui import add_agent_framework_fastapi_endpoint
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -63,7 +65,7 @@ def _domain_deps(domain_id: str) -> list:
     return deps
 
 
-def _grounded_agent(agent_id: str, builder):
+def _grounded_agent(agent_id: str, builder: Callable[[], Agent]) -> PerRequestAgent | Agent:
     """The serving object for a grounded (build-once) domain.
 
     self_hosted/dedicated: build eagerly at boot under the single-tenant config — byte-identical
