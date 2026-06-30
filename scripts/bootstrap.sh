@@ -48,7 +48,7 @@ done
 upsert "$BACK_ENV" FOUNDRY_MEMORY_STORE "$(val FOUNDRY_MEMORY_STORE || echo helpdesk-memory)"
 upsert "$BACK_ENV" FRONTEND_ORIGIN "http://localhost:3000"
 
-echo "▸ Writing $FRONT_ENV…"
+echo "▸ Writing ${FRONT_ENV}…"
 upsert "$FRONT_ENV" AGUI_URL "http://localhost:8000/helpdesk"
 
 echo "▸ Ingesting the knowledge base (corpus → Foundry IQ KB; a few minutes)…"

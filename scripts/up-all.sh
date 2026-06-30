@@ -8,9 +8,11 @@
 #   preflight  — tools installed (azd/az/uv/node) + you're logged in (azd + az)
 #   1) OPTIONAL (--with-auth) — the 2 Entra app regs (sign-in + OBO) + the 4 app roles
 #      (Admin/Author/Approver/Reader) + self-assign you the Admin role — BEFORE provision.
-#   2) azd up   — provision + build + deploy. The azd HOOKS (azure.yaml) then auto-do the rest:
-#      • postprovision: push NEXT_PUBLIC_*/ENTRA_* into the azd env (web build) + ingest KB + memory
-#      • postdeploy:    grant each hosted agent's instance identity its runtime RBAC (the 403 fix)
+#   2) azd up   — provision + build + deploy. The azd HOOKS (azure.yaml) then auto-do:
+#      • postprovision: push NEXT_PUBLIC_*/ENTRA_* into the azd env (so the web image builds with auth)
+#      • postdeploy:    grant each hosted agent's instance identity its RBAC (the 403 fix) + register
+#                       the deployed web URL as a SPA redirect URI (cloud sign-in)
+#   3) bootstrap — ingest the helpdesk KB + provision memory (explicit + visible, not a silent hook).
 #   No manual post-deploy commands. Genuinely-external bits (consent / Partner Center / Toolbox) remain.
 #
 # Usage (from the repo root):
@@ -84,28 +86,37 @@ else
   echo "  Single DefaultAzureCredential identity (no sign-in). Re-run with --with-auth for Entra + HITL roles."
 fi
 
-# ── Stage 2: provision + deploy (azd up) — the hooks do the rest ───────────────
-# postprovision hook: push NEXT_PUBLIC_*/ENTRA_* into the azd env (web build) + bootstrap the KB+memory.
-# postdeploy hook:    grant each hosted agent's deploy-time instance identity its runtime RBAC (403 fix).
-azd env set AUTO_BOOTSTRAP true >/dev/null 2>&1 || true   # tell the postprovision hook to ingest the KB
+# ── Stage 2: provision + deploy (azd up) — the hooks do env-push + agent RBAC + SPA redirect ──
+# postprovision hook: push NEXT_PUBLIC_*/ENTRA_* into the azd env so the web image builds with auth.
+# postdeploy hook:    grant each hosted agent's instance identity its RBAC (403 fix) + register the
+#                     deployed web URL as a SPA redirect URI (cloud sign-in).
 if [ "$PROVISION_ONLY" = "1" ]; then
-  step "2/2 — azd provision (+ postprovision hook: env push · KB bootstrap)"
+  step "2/3 — azd provision (+ postprovision hook: env push)"
   azd provision
-  ok "infra provisioned + data plane bootstrapped"
+  ok "infra provisioned"
+  echo "  Next: ./scripts/bootstrap.sh   (ingest the KB + memory)"
   exit 0
 fi
-step "2/2 — azd up (provision · build · deploy — hooks auto-do env, KB, and agent RBAC)"
+step "2/3 — azd up (provision · build · deploy — hooks: env push · agent RBAC · SPA redirect)"
 echo "  azd prompts for an environment name + region on first run."
 azd up
 ok "provisioned + deployed"
+
+# ── Stage 3: bootstrap the data plane (EXPLICIT + visible — not a silent hook) ─────────────────
+# The KB ingest is slow (polls for minutes) and data-plane-fragile, so it runs here in the open
+# where you see progress/errors — not swallowed by a continueOnError azd hook.
+step "3/3 — Bootstrap the data plane (ingest the helpdesk KB + provision memory)"
+./scripts/bootstrap.sh
+ok "KB ingested + memory provisioned"
 
 # ── Done ──────────────────────────────────────────────────────────────────────
 step "Done. The azd hooks automated the post-deploy steps:"
 cat <<'EOF'
     ✓ NEXT_PUBLIC_*/ENTRA_* pushed into the azd env before the web build (sign-in works)
-    ✓ helpdesk KB ingested + memory provisioned        (postprovision hook)
     ✓ each hosted agent's runtime RBAC granted          (postdeploy hook — the 403 fix)
+    ✓ the deployed web URL registered as a SPA redirect (postdeploy hook — cloud sign-in)
     ✓ (--with-auth) you assigned the Admin app role     (Graph, no portal click)
+  ✓ helpdesk KB ingested (Stage 3 above)
 
   Run it locally:
     cd apps/backend  && uv run uvicorn app.main:app --port 8000 --reload
