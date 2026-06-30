@@ -121,7 +121,13 @@ def _resolve_connection_url(server: McpServer, conn) -> str | None:
     return server.url or None
 
 
-def _build_from_connection(conn, roles: set[str]) -> MCPStreamableHTTPTool | None:
+def _connection_build_params(conn, roles: set[str]) -> tuple[McpServer, list, list, str, dict] | None:
+    """Shared RBAC + URL + approval resolution for a connection.
+
+    Returns (server, reads, writes, url, approval_mode_dict) or None if the connection should be
+    skipped (disabled, unknown kind, no visible tools, missing URL). Used by both the internal
+    MCPStreamableHTTPTool path and the hosted get_mcp_tool path so the logic lives in one place.
+    """
     if not conn.enabled:
         return None
     server = server_for_kind(conn.kind)
@@ -131,19 +137,28 @@ def _build_from_connection(conn, roles: set[str]) -> MCPStreamableHTTPTool | Non
     allowed = reads + writes
     if not allowed:
         return None
-
     url = _resolve_connection_url(server, conn)
     if not url:
         return None
+    approval_mode = {
+        "always_require_approval": list(writes),
+        "never_require_approval": list(reads),
+    }
+    return server, reads, writes, url, approval_mode
+
+
+def _build_from_connection(conn, roles: set[str]) -> MCPStreamableHTTPTool | None:
+    params = _connection_build_params(conn, roles)
+    if params is None:
+        return None
+    server, reads, writes, url, approval_mode = params
+    allowed = reads + writes
 
     kwargs: dict = {
         "name": f"mcp_{server.id}",
         "url": url,
         "allowed_tools": allowed,
-        "approval_mode": {
-            "always_require_approval": list(writes),
-            "never_require_approval": list(reads),
-        },
+        "approval_mode": approval_mode,
     }
     if server.auth == "public":
         pass  # no auth header
@@ -164,6 +179,35 @@ def build_from_connections(conns, roles: set[str]) -> list[MCPStreamableHTTPTool
     """Shared-mode build: tools from the tenant's Connections (not the flat registry path)."""
     tools = [_build_from_connection(c, roles) for c in conns]
     return [t for t in tools if t is not None]
+
+
+def build_hosted_from_connections(conns, roles: set[str], get_tool) -> list:
+    """Hosted-mode build: assembles tools via ``get_tool`` (i.e. ``client.get_mcp_tool``).
+
+    In hosted mode Foundry resolves the credential from the project connection, so there is no
+    header_provider — auth flows through ``project_connection_id`` instead. The ``get_tool``
+    callable is injected (bound ``FoundryChatClient.get_mcp_tool`` in production, a fake in tests)
+    to keep this function infra-free and unit-testable.
+
+    Per connection: skip disabled / unknown kind / no visible tools / missing URL (same as the
+    internal path), then call ``get_tool(name=..., url=..., allowed_tools=..., approval_mode=...,
+    project_connection_id=...)`` and append the result.
+    """
+    result = []
+    for conn in conns:
+        params = _connection_build_params(conn, roles)
+        if params is None:
+            continue
+        server, reads, writes, url, approval_mode = params
+        tool = get_tool(
+            name=f"mcp_{server.id}",
+            url=url,
+            allowed_tools=reads + writes,
+            approval_mode=approval_mode,
+            project_connection_id=conn.foundry_connection_id or None,
+        )
+        result.append(tool)
+    return result
 
 
 def _current_tenant_connections():
