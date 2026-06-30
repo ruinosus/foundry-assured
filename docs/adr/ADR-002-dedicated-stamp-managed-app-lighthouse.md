@@ -28,6 +28,16 @@ in the shared model — without ever owning the customer's data.
 - **−** Managed Application packaging is extra build/release work (a separate artifact + marketplace offer).
 - **−** Lighthouse delegation scope must be least-privilege and reviewed; over-delegation is a risk.
 
+## Implementation note (D-packaging)
+
+The Managed App's marketplace artifacts are authored in **Bicep that composes the existing `infra/`
+modules** (`resources.bicep`, `containerapps.bicep`) and compiled to the required root
+`mainTemplate.json` (ARM JSON) via `bicep build` — so the dedicated-stamp template is a
+customer-subscription re-parameterization of the same resources, not a duplicate. Structurally
+validated offline (`bicep build` + ARM-TTK + the createUiDefinition sandbox); marketplace publish +
+real-tenant Lighthouse delegation are infra-gated. See
+[sub-project D-packaging](../superpowers/specs/2026-06-29-subproject-d-packaging-design.md).
+
 ## Alternatives considered
 
 - **Service principal with broad rights in the customer tenant** — simpler but opaque and hard to revoke; rejected for the auditability Lighthouse gives.
