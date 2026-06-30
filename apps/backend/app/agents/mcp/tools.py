@@ -59,7 +59,11 @@ def _foundry_connection_header_provider(connection_id: str):
         client = AIProjectClient(
             endpoint=tenant_config().foundry_project_endpoint, credential=credential_for_request())
         conn = client.connections.get(connection_id, include_credentials=True)
-        key = conn.credentials.api_key
+        key = getattr(conn.credentials, "api_key", None)  # ApiKeyCredentials.api_key (read-only)
+        if not key:  # non-ApiKey Foundry connection (e.g. SAS/Entra) → clear error, not an opaque AttributeError
+            raise RuntimeError(
+                f"Foundry connection {connection_id!r} has no api_key credential "
+                "(only ApiKey connections are supported on the internal path)")
         return {"Authorization": f"Bearer {key}"}
     return provider
 
