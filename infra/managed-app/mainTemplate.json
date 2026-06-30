@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.44.1.10279",
-      "templateHash": "3058942113065028614"
+      "templateHash": "16494992314123448076"
     }
   },
   "parameters": {
@@ -55,7 +55,7 @@
   "variables": {
     "resourceToken": "[toLower(uniqueString(subscription().id, resourceGroup().id, parameters('location')))]",
     "tags": {
-      "foundry-helpdesk-stamp": "managed-app"
+      "foundry-assured-stamp": "managed-app"
     }
   },
   "resources": [
@@ -95,7 +95,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.44.1.10279",
-              "templateHash": "16869151679302983894"
+              "templateHash": "10325929839606754426"
             }
           },
           "parameters": {
@@ -191,13 +191,13 @@
           },
           "variables": {
             "effectivePrincipalType": "[if(empty(parameters('principalType')), 'User', parameters('principalType'))]",
-            "accountName": "[format('aif-helpdesk-{0}', parameters('resourceToken'))]",
-            "projectName": "helpdesk-concierge",
-            "searchName": "[format('srch-helpdesk-{0}', parameters('resourceToken'))]",
-            "registryName": "[format('acrhelpdesk{0}', parameters('resourceToken'))]",
-            "storageName": "[format('sthelpdesk{0}', parameters('resourceToken'))]",
+            "accountName": "[format('aif-assured-{0}', parameters('resourceToken'))]",
+            "projectName": "foundry-assured",
+            "searchName": "[format('srch-assured-{0}', parameters('resourceToken'))]",
+            "registryName": "[format('acrassured{0}', parameters('resourceToken'))]",
+            "storageName": "[format('stassured{0}', parameters('resourceToken'))]",
             "corpusContainerName": "corpus",
-            "dataShareName": "helpdesk-data",
+            "dataShareName": "assured-data",
             "roleAzureAiUser": "53ca6127-db72-4b80-b1b0-d745d6d5456d",
             "roleCognitiveServicesUser": "a97b65f3-24c7-4388-baec-2e87135dc908",
             "roleSearchServiceContributor": "7ca78c08-252a-4471-8644-bb5ff32d4ba0",
@@ -284,7 +284,7 @@
             {
               "type": "Microsoft.OperationalInsights/workspaces",
               "apiVersion": "2023-09-01",
-              "name": "[format('log-helpdesk-{0}', parameters('resourceToken'))]",
+              "name": "[format('log-assured-{0}', parameters('resourceToken'))]",
               "location": "[parameters('location')]",
               "tags": "[parameters('tags')]",
               "properties": {
@@ -297,16 +297,16 @@
             {
               "type": "Microsoft.Insights/components",
               "apiVersion": "2020-02-02",
-              "name": "[format('appi-helpdesk-{0}', parameters('resourceToken'))]",
+              "name": "[format('appi-assured-{0}', parameters('resourceToken'))]",
               "location": "[parameters('location')]",
               "tags": "[parameters('tags')]",
               "kind": "web",
               "properties": {
                 "Application_Type": "web",
-                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', format('log-helpdesk-{0}', parameters('resourceToken')))]"
+                "WorkspaceResourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', format('log-assured-{0}', parameters('resourceToken')))]"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', format('log-helpdesk-{0}', parameters('resourceToken')))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', format('log-assured-{0}', parameters('resourceToken')))]"
               ]
             },
             {
@@ -315,20 +315,20 @@
               "name": "[format('{0}/{1}', variables('accountName'), 'appinsights')]",
               "properties": {
                 "category": "AppInsights",
-                "target": "[resourceId('Microsoft.Insights/components', format('appi-helpdesk-{0}', parameters('resourceToken')))]",
+                "target": "[resourceId('Microsoft.Insights/components', format('appi-assured-{0}', parameters('resourceToken')))]",
                 "authType": "ApiKey",
                 "credentials": {
-                  "key": "[reference(resourceId('Microsoft.Insights/components', format('appi-helpdesk-{0}', parameters('resourceToken'))), '2020-02-02').ConnectionString]"
+                  "key": "[reference(resourceId('Microsoft.Insights/components', format('appi-assured-{0}', parameters('resourceToken'))), '2020-02-02').ConnectionString]"
                 },
                 "isSharedToAll": true,
                 "metadata": {
                   "ApiType": "Azure",
-                  "ResourceId": "[resourceId('Microsoft.Insights/components', format('appi-helpdesk-{0}', parameters('resourceToken')))]"
+                  "ResourceId": "[resourceId('Microsoft.Insights/components', format('appi-assured-{0}', parameters('resourceToken')))]"
                 }
               },
               "dependsOn": [
                 "[resourceId('Microsoft.CognitiveServices/accounts', variables('accountName'))]",
-                "[resourceId('Microsoft.Insights/components', format('appi-helpdesk-{0}', parameters('resourceToken')))]"
+                "[resourceId('Microsoft.Insights/components', format('appi-assured-{0}', parameters('resourceToken')))]"
               ]
             },
             {
@@ -426,7 +426,7 @@
             {
               "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
               "apiVersion": "2023-01-31",
-              "name": "[format('id-helpdesk-app-{0}', parameters('resourceToken'))]",
+              "name": "[format('id-assured-app-{0}', parameters('resourceToken'))]",
               "location": "[parameters('location')]",
               "tags": "[parameters('tags')]"
             },
@@ -434,14 +434,14 @@
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
               "scope": "[resourceId('Microsoft.ContainerRegistry/registries', variables('registryName'))]",
-              "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries', variables('registryName')), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-helpdesk-app-{0}', parameters('resourceToken'))), variables('roleAcrPull'))]",
+              "name": "[guid(resourceId('Microsoft.ContainerRegistry/registries', variables('registryName')), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-assured-app-{0}', parameters('resourceToken'))), variables('roleAcrPull'))]",
               "properties": {
                 "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleAcrPull'))]",
-                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-helpdesk-app-{0}', parameters('resourceToken'))), '2023-01-31').principalId]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-assured-app-{0}', parameters('resourceToken'))), '2023-01-31').principalId]",
                 "principalType": "ServicePrincipal"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-helpdesk-app-{0}', parameters('resourceToken')))]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-assured-app-{0}', parameters('resourceToken')))]",
                 "[resourceId('Microsoft.ContainerRegistry/registries', variables('registryName'))]"
               ]
             },
@@ -449,29 +449,29 @@
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
               "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('accountName'))]",
-              "name": "[guid(resourceId('Microsoft.CognitiveServices/accounts', variables('accountName')), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-helpdesk-app-{0}', parameters('resourceToken'))), variables('roleAzureAiUser'))]",
+              "name": "[guid(resourceId('Microsoft.CognitiveServices/accounts', variables('accountName')), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-assured-app-{0}', parameters('resourceToken'))), variables('roleAzureAiUser'))]",
               "properties": {
                 "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleAzureAiUser'))]",
-                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-helpdesk-app-{0}', parameters('resourceToken'))), '2023-01-31').principalId]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-assured-app-{0}', parameters('resourceToken'))), '2023-01-31').principalId]",
                 "principalType": "ServicePrincipal"
               },
               "dependsOn": [
                 "[resourceId('Microsoft.CognitiveServices/accounts', variables('accountName'))]",
-                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-helpdesk-app-{0}', parameters('resourceToken')))]"
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-assured-app-{0}', parameters('resourceToken')))]"
               ]
             },
             {
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
               "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchName'))]",
-              "name": "[guid(resourceId('Microsoft.Search/searchServices', variables('searchName')), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-helpdesk-app-{0}', parameters('resourceToken'))), variables('roleSearchIndexDataReader'))]",
+              "name": "[guid(resourceId('Microsoft.Search/searchServices', variables('searchName')), resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-assured-app-{0}', parameters('resourceToken'))), variables('roleSearchIndexDataReader'))]",
               "properties": {
                 "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleSearchIndexDataReader'))]",
-                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-helpdesk-app-{0}', parameters('resourceToken'))), '2023-01-31').principalId]",
+                "principalId": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-assured-app-{0}', parameters('resourceToken'))), '2023-01-31').principalId]",
                 "principalType": "ServicePrincipal"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-helpdesk-app-{0}', parameters('resourceToken')))]",
+                "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-assured-app-{0}', parameters('resourceToken')))]",
                 "[resourceId('Microsoft.Search/searchServices', variables('searchName'))]"
               ]
             },
@@ -619,7 +619,7 @@
             },
             "APPLICATIONINSIGHTS_CONNECTION_STRING": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.Insights/components', format('appi-helpdesk-{0}', parameters('resourceToken'))), '2020-02-02').ConnectionString]"
+              "value": "[reference(resourceId('Microsoft.Insights/components', format('appi-assured-{0}', parameters('resourceToken'))), '2020-02-02').ConnectionString]"
             },
             "AZURE_SEARCH_ENDPOINT": {
               "type": "string",
@@ -655,11 +655,11 @@
             },
             "APP_IDENTITY_ID": {
               "type": "string",
-              "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-helpdesk-app-{0}', parameters('resourceToken')))]"
+              "value": "[resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-assured-app-{0}', parameters('resourceToken')))]"
             },
             "APP_IDENTITY_CLIENT_ID": {
               "type": "string",
-              "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-helpdesk-app-{0}', parameters('resourceToken'))), '2023-01-31').clientId]"
+              "value": "[reference(resourceId('Microsoft.ManagedIdentity/userAssignedIdentities', format('id-assured-app-{0}', parameters('resourceToken'))), '2023-01-31').clientId]"
             }
           }
         }
@@ -728,7 +728,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.44.1.10279",
-              "templateHash": "16098816472561238915"
+              "templateHash": "6970895763308166876"
             }
           },
           "parameters": {
@@ -815,7 +815,7 @@
             {
               "type": "Microsoft.OperationalInsights/workspaces",
               "apiVersion": "2023-09-01",
-              "name": "[format('log-helpdesk-{0}', parameters('resourceToken'))]",
+              "name": "[format('log-assured-{0}', parameters('resourceToken'))]",
               "location": "[parameters('location')]",
               "tags": "[parameters('tags')]",
               "properties": {
@@ -828,26 +828,26 @@
             {
               "type": "Microsoft.App/managedEnvironments",
               "apiVersion": "2024-03-01",
-              "name": "[format('cae-helpdesk-{0}', parameters('resourceToken'))]",
+              "name": "[format('cae-assured-{0}', parameters('resourceToken'))]",
               "location": "[parameters('location')]",
               "tags": "[parameters('tags')]",
               "properties": {
                 "appLogsConfiguration": {
                   "destination": "log-analytics",
                   "logAnalyticsConfiguration": {
-                    "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', format('log-helpdesk-{0}', parameters('resourceToken'))), '2023-09-01').customerId]",
-                    "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', format('log-helpdesk-{0}', parameters('resourceToken'))), '2023-09-01').primarySharedKey]"
+                    "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', format('log-assured-{0}', parameters('resourceToken'))), '2023-09-01').customerId]",
+                    "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', format('log-assured-{0}', parameters('resourceToken'))), '2023-09-01').primarySharedKey]"
                   }
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.OperationalInsights/workspaces', format('log-helpdesk-{0}', parameters('resourceToken')))]"
+                "[resourceId('Microsoft.OperationalInsights/workspaces', format('log-assured-{0}', parameters('resourceToken')))]"
               ]
             },
             {
               "type": "Microsoft.App/managedEnvironments/storages",
               "apiVersion": "2024-03-01",
-              "name": "[format('{0}/{1}', format('cae-helpdesk-{0}', parameters('resourceToken')), 'data')]",
+              "name": "[format('{0}/{1}', format('cae-assured-{0}', parameters('resourceToken')), 'data')]",
               "properties": {
                 "azureFile": {
                   "accountName": "[parameters('storageAccountName')]",
@@ -857,7 +857,7 @@
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.App/managedEnvironments', format('cae-helpdesk-{0}', parameters('resourceToken')))]"
+                "[resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken')))]"
               ]
             },
             {
@@ -873,7 +873,7 @@
                 }
               },
               "properties": {
-                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', format('cae-helpdesk-{0}', parameters('resourceToken')))]",
+                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken')))]",
                 "configuration": {
                   "activeRevisionsMode": "Single",
                   "ingress": {
@@ -922,7 +922,7 @@
                         },
                         {
                           "name": "FRONTEND_ORIGIN",
-                          "value": "[format('https://{0}', format('{0}.{1}', variables('webAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-helpdesk-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
+                          "value": "[format('https://{0}', format('{0}.{1}', variables('webAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
                         },
                         {
                           "name": "AZURE_CLIENT_ID",
@@ -963,8 +963,8 @@
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.App/managedEnvironments', format('cae-helpdesk-{0}', parameters('resourceToken')))]",
-                "[resourceId('Microsoft.App/managedEnvironments/storages', format('cae-helpdesk-{0}', parameters('resourceToken')), 'data')]"
+                "[resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken')))]",
+                "[resourceId('Microsoft.App/managedEnvironments/storages', format('cae-assured-{0}', parameters('resourceToken')), 'data')]"
               ]
             },
             {
@@ -980,7 +980,7 @@
                 }
               },
               "properties": {
-                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', format('cae-helpdesk-{0}', parameters('resourceToken')))]",
+                "managedEnvironmentId": "[resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken')))]",
                 "configuration": {
                   "activeRevisionsMode": "Single",
                   "ingress": {
@@ -1007,19 +1007,19 @@
                       "env": [
                         {
                           "name": "BACKEND_URL",
-                          "value": "[format('https://{0}', format('{0}.{1}', variables('backendAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-helpdesk-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
+                          "value": "[format('https://{0}', format('{0}.{1}', variables('backendAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
                         },
                         {
                           "name": "AGUI_URL",
-                          "value": "[format('https://{0}/helpdesk', format('{0}.{1}', variables('backendAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-helpdesk-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
+                          "value": "[format('https://{0}/helpdesk', format('{0}.{1}', variables('backendAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
                         },
                         {
                           "name": "HOSTED_AGUI_URL",
-                          "value": "[format('https://{0}/helpdesk-hosted', format('{0}.{1}', variables('backendAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-helpdesk-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
+                          "value": "[format('https://{0}/helpdesk-hosted', format('{0}.{1}', variables('backendAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
                         },
                         {
                           "name": "COCKPIT_AGUI_URL",
-                          "value": "[format('https://{0}/cockpit', format('{0}.{1}', variables('backendAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-helpdesk-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
+                          "value": "[format('https://{0}/cockpit', format('{0}.{1}', variables('backendAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
                         }
                       ]
                     }
@@ -1031,7 +1031,7 @@
                 }
               },
               "dependsOn": [
-                "[resourceId('Microsoft.App/managedEnvironments', format('cae-helpdesk-{0}', parameters('resourceToken')))]"
+                "[resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken')))]"
               ]
             }
           ],

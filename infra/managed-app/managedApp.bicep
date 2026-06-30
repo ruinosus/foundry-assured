@@ -43,11 +43,11 @@ param entraApiClientSecret string = ''
 // customer subscription; derive the resource token the same way the azd path does
 // but from the managed RG identity (resourceGroup().id) so re-deploys are stable.
 var resourceToken = toLower(uniqueString(subscription().id, resourceGroup().id, location))
-var tags = { 'foundry-helpdesk-stamp': 'managed-app' }
+var tags = { 'foundry-assured-stamp': 'managed-app' }
 
 // DEPLOYMENT-MODE CAVEAT (read before the two module compositions below):
 // BOTH composed modules — '../resources.bicep' and '../containerapps.bicep' —
-// declare a Log Analytics workspace named `log-helpdesk-${resourceToken}` (same
+// declare a Log Analytics workspace named `log-assured-${resourceToken}` (same
 // name, identical body; pre-existing in the shared modules). As two separate
 // nested module deployments this COMPILES CLEAN and CONVERGES under ARM
 // **Incremental** mode (both deploy the same workspace → idempotent). It is

@@ -49,13 +49,13 @@ param searchSkuName string = 'basic'
 @description('Region for Azure AI Search. Empty falls back to the main location; override if a region is out of Search capacity.')
 param searchLocation string = ''
 
-var accountName = 'aif-helpdesk-${resourceToken}'
-var projectName = 'helpdesk-concierge'
-var searchName = 'srch-helpdesk-${resourceToken}'
-var registryName = 'acrhelpdesk${resourceToken}'
-var storageName = 'sthelpdesk${resourceToken}'
+var accountName = 'aif-assured-${resourceToken}'
+var projectName = 'foundry-assured'
+var searchName = 'srch-assured-${resourceToken}'
+var registryName = 'acrassured${resourceToken}'
+var storageName = 'stassured${resourceToken}'
 var corpusContainerName = 'corpus'
-var dataShareName = 'helpdesk-data'
+var dataShareName = 'assured-data'
 
 // Built-in role definition GUIDs (stable Azure identifiers).
 var roleAzureAiUser = '53ca6127-db72-4b80-b1b0-d745d6d5456d' // Azure AI User / Foundry User (Foundry data plane)
@@ -134,7 +134,7 @@ resource embeddingDeployment 'Microsoft.CognitiveServices/accounts/deployments@2
 // ---------------------------------------------------------------------------
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
-  name: 'log-helpdesk-${resourceToken}'
+  name: 'log-assured-${resourceToken}'
   location: location
   tags: tags
   properties: {
@@ -144,7 +144,7 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
 }
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: 'appi-helpdesk-${resourceToken}'
+  name: 'appi-assured-${resourceToken}'
   location: location
   tags: tags
   kind: 'web'
@@ -256,7 +256,7 @@ resource registry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = 
 // publishing to Azure. Pulls images from ACR and (for the backend) calls Foundry
 // + the search KB as itself. Created here so all its RBAC lives with the targets.
 resource appIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: 'id-helpdesk-app-${resourceToken}'
+  name: 'id-assured-app-${resourceToken}'
   location: location
   tags: tags
 }

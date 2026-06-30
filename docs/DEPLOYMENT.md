@@ -76,7 +76,7 @@ azd up        # prompts for an environment name + region
 ```
 
 This runs `infra/` and creates, in a `rg-<env>` resource group:
-a Foundry account `aif-helpdesk-<token>` + project **`helpdesk-concierge`**,
+a Foundry account `aif-assured-<token>` + project **`foundry-assured`**,
 `gpt-5-mini` + `text-embedding-3-small` deployments, **Azure AI Search (Basic)**,
 a Storage account, an **ACR**, a **Container Apps environment**, a shared managed
 identity, and all keyless role assignments.
@@ -253,7 +253,7 @@ Open <http://localhost:3000> — Overview, **/chat** (Live ⇄ Hosted toggle),
 ## Step 6 — Deploy the hosted agent (Foundry Agent Service)
 
 ```bash
-azd env set AZURE_AI_PROJECT_ID "<project ARM id, ends in /projects/helpdesk-concierge>"
+azd env set AZURE_AI_PROJECT_ID "<project ARM id, ends in /projects/foundry-assured>"
 azd deploy helpdesk-concierge
 azd ai agent show helpdesk-concierge        # status + endpoint + portal playground
 azd ai agent invoke helpdesk-concierge "How do I roll back a bad deploy?"
@@ -265,8 +265,8 @@ the agent at deploy time, so it can't be pre-assigned in Bicep. Grant the agent'
 
 ```bash
 AID=<instance-identity-principal-id>
-ACC=<account ARM id .../accounts/aif-helpdesk-...>
-SRCH=<search ARM id .../searchServices/srch-helpdesk-...>
+ACC=<account ARM id .../accounts/aif-assured-...>
+SRCH=<search ARM id .../searchServices/srch-assured-...>
 az role assignment create --assignee-object-id $AID --assignee-principal-type ServicePrincipal \
   --role 53ca6127-db72-4b80-b1b0-d745d6d5456d --scope $ACC      # Azure AI User (call the model)
 az role assignment create --assignee-object-id $AID --assignee-principal-type ServicePrincipal \

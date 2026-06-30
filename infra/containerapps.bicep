@@ -44,7 +44,7 @@ var backendAppName = 'ca-backend-${resourceToken}'
 var webAppName = 'ca-web-${resourceToken}'
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
-  name: 'log-helpdesk-${resourceToken}'
+  name: 'log-assured-${resourceToken}'
   location: location
   tags: tags
   properties: {
@@ -54,7 +54,7 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
 }
 
 resource env 'Microsoft.App/managedEnvironments@2024-03-01' = {
-  name: 'cae-helpdesk-${resourceToken}'
+  name: 'cae-assured-${resourceToken}'
   location: location
   tags: tags
   properties: {
