@@ -198,7 +198,7 @@ from agent_framework.foundry import FoundryChatClient
 from agent_framework_foundry_hosting import InvocationsHostServer  # per Task 0
 from azure.identity import DefaultAzureCredential
 
-from prompts import PLATFORM_INSTRUCTIONS  # vendored or imported per Task 0's packaging finding
+from prompts import PLATFORM_INSTRUCTIONS  # see prompt-vendoring note below
 
 
 async def main() -> None:
@@ -224,6 +224,8 @@ if __name__ == "__main__":
     asyncio.run(main())
 ```
 > The exact tool-wiring + host-server call MUST match Task 0. If Task 0 fenced the Toolbox surface as infra-gated, leave a precise `TODO(infra-gated)` and reference the Toolbox by env — do not hand-roll credential code (ADR-011/rule #1).
+>
+> **Prompt vendoring (the container has no backend on its path):** `PLATFORM_INSTRUCTIONS` lives in the backend at `app/agents/prompts.py` — NOT importable from the container. Either **inline** the platform instructions string in `hosted-platform/main.py` (as `hosted-agent/main.py` does for its instructions), or **vendor** a small `apps/hosted-platform/prompts.py` copying just `PLATFORM_INSTRUCTIONS`. Inlining is simplest; pick one and the `from prompts import …` line resolves.
 
 - [ ] **Step 4: Run the smoke test, expect PASS** (`✅ hosted-platform scaffold well-formed (Invocations).`).
 > If Task 0 found `InvocationsHostServer` isn't importable in the backend venv (it's a hosted-image dep), the smoke test still passes — it does NOT import `main.py`; it only checks file presence + parses `agent.yaml`. (Importing `main.py` here would require the hosting package; keep the test to scaffold+yaml so it stays infra-free.)
@@ -406,6 +408,7 @@ cd infra/managed-app && az bicep build --file managedApp.bicep --outfile mainTem
 # pwsh -c "Test-AzTemplate -TemplatePath ."
 ```
 Expected: `mainTemplate.json` generated, `bicep build OK`. If `az`/bicep isn't installed in the env, record that Phase 2 validation is the documented gate (the runbook) and that the Bicep is authored but compiled where the toolchain exists.
+> **Heads-up (pre-existing):** `resources.bicep` and `containerapps.bicep` each declare a `logAnalytics` resource named `log-helpdesk-${resourceToken}`. In the azd path they're in separate RG-scoped module deployments so it's fine; if composing them under `managedApp.bicep` makes `bicep build` flag a duplicate resource-name at RG scope, that's the cause — dedupe by having one module own Log Analytics and pass its id to the other (additive change; don't break the azd path).
 
 - [ ] **Step 5: Commit**
 ```bash
@@ -630,7 +633,7 @@ from app.agents.platform import build_platform_agent, platform_configured, platf
 ...
         agent=platform_agent_proxy,   # was PerRequestPlatformAgent()
 ```
-> Grep for every `PerRequestPlatformAgent` reference (`grep -rn PerRequestPlatformAgent apps/backend`) and update all. The collapse is a pure refactor — the live `/platform` per-request rebuild is identical (the proxy still calls `build_platform_agent()` per `.run()`). **Self-hosted byte-identical.**
+> Grep for every `PerRequestPlatformAgent` reference (`grep -rn PerRequestPlatformAgent apps/backend`) and update all — note there are **2 functional refs** (`main.py` import + instantiation) **and 3 stale comment/docstring mentions** (`main.py:75`, `main.py:118`, `per_request.py:10`); fix the comments too (esp. `main.py:118`'s "The PerRequestPlatformAgent proxy rebuilds…") so no dangling prose remains. The collapse is a pure refactor — the live `/platform` per-request rebuild is identical (the proxy still calls `build_platform_agent()` per `.run()`). **Self-hosted byte-identical.**
 
 - [ ] **Step 4: Run the test, expect PASS.**
 
