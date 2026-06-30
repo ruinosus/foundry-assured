@@ -499,7 +499,10 @@ git commit -m "feat(D-runtime): mode-aware *_configured() — shared mounts glob
 
 **Files:**
 - Modify: `apps/backend/app/main.py:22-30` (imports), `:57-99` (endpoint registrations)
+- Create: `apps/backend/app/agents/per_request.py` (the generic deferred-build proxy — see the correction below)
 - Test: `apps/backend/eval/shared_boot_smoke_test.py`
+
+> **AS-BUILT CORRECTION (discovered during execution; verified by review).** The `dependencies=` swap alone does **not** make shared boot. `cockpit`/`selfwiki` register with `agent=build_cockpit_agent()` / `build_selfwiki_agent()` — **evaluated eagerly at import** (helpdesk uses `OrderedAgentFrameworkWorkflow(workflow_factory=…)` and platform uses `PerRequestPlatformAgent()`, both lazy). With the mode-aware `*_configured()` returning `True` in shared, those eager builds run at boot → `tenant_config()` → `RuntimeError: no tenant resolved`. Fix (mode-gated, self-hosted byte-identical): a new generic **`app/agents/per_request.py::PerRequestAgent`** (a `SupportsAgentRun` proxy generalizing `PerRequestPlatformAgent` — stores a builder, calls `builder().run(...)` per request) + a `_grounded_agent(id, builder)` helper in `main.py` that returns `PerRequestAgent(id, builder)` in shared and `builder()` eagerly otherwise. cockpit/selfwiki use `agent=_grounded_agent("cockpit", build_cockpit_agent)`. Also: the smoke test's env must set the **real** backing fields `ENTRA_TENANT_ID` + `ENTRA_API_CLIENT_ID` (not `AUTH_ENABLED`/`ENTRA_API_SCOPE` — `auth_enabled` is a derived property). Shipped in commit `38ae8fc`.
 
 - [ ] **Step 1: Write the failing test**
 
