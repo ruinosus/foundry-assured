@@ -48,6 +48,22 @@ def _static_header_provider(value: str):
     return provider
 
 
+def _foundry_connection_header_provider(connection_id: str):
+    """Broker a non-OBO credential from the tenant's Foundry connection at call time — Foundry is
+    the store; we never persist the secret. (Internal path; the hosted path uses get_mcp_tool.)"""
+    def provider(_existing: dict) -> dict:
+        from azure.ai.projects import AIProjectClient
+
+        from app.core.auth import credential_for_request
+        from app.core.tenant import tenant_config
+        client = AIProjectClient(
+            endpoint=tenant_config().foundry_project_endpoint, credential=credential_for_request())
+        conn = client.connections.get(connection_id, include_credentials=True)
+        key = conn.credentials.api_key
+        return {"Authorization": f"Bearer {key}"}
+    return provider
+
+
 def _resolve_url(server: McpServer) -> str | None:
     """Fill any URL template from settings; None if the needed config is missing → skip."""
     cfg = tenant_config()
@@ -129,9 +145,13 @@ def _build_from_connection(conn, roles: set[str]) -> MCPStreamableHTTPTool | Non
         pass  # no auth header
     elif server.auth == "obo" and server.obo_scope:
         kwargs["header_provider"] = _obo_header_provider(server.obo_scope)
+    elif conn.foundry_connection_id:
+        # Non-OBO (github_pat / oauth_passthrough / other) carrying a foundry_connection_id →
+        # broker the credential from the tenant's Foundry connection at call time (in memory,
+        # never persisted). The closure is lazy: no Azure import/call until invoked.
+        kwargs["header_provider"] = _foundry_connection_header_provider(conn.foundry_connection_id)
     else:
-        # github_pat / oauth_passthrough / foundry_connection_id non-OBO → Task 5 wires the
-        # broker; skip for now (learn is public, so the test still passes).
+        # Non-OBO without any reference → needs the hosted/connection path; skip here.
         return None
     return MCPStreamableHTTPTool(**kwargs)
 
