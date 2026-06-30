@@ -119,31 +119,54 @@ async def stream_platform_agui(body: dict) -> AsyncGenerator[str]:
     Twin of stream_agui, but Invocations (raw SSE) — the protocol Microsoft indicates for
     AG-UI — so C's write-approval interrupt can round-trip on the hosted path (Responses can't).
 
-    SKELETON: the deployed agent + its Foundry Toolbox tool config are infra-gated (D-packaging);
-    the Invocations SSE envelope is not determinable offline (Task 0), so until it's verified
-    against a deployed agent this surfaces a clean RunErrorEvent rather than a fabricated stream.
+    Unlike stream_agui (Responses → AG-UI re-encode), the Invocations endpoint already serves
+    AG-UI: the platform hosted agent's response bytes ARE AG-UI SSE, so this is a 1:1 PASSTHROUGH
+    — the response lines are relayed UNTOUCHED, no envelope parsing, no re-encoding. We only frame
+    a clean RunErrorEvent for the failure path (e.g. no endpoint configured), mirroring stream_agui.
     """
-    from ag_ui.core import (
-        RunErrorEvent, RunStartedEvent,
-        TextMessageEndEvent, TextMessageStartEvent,
-    )  # RunFinishedEvent added when the real Invocations streaming lands (D-packaging)
+    from ag_ui.core import RunErrorEvent, RunStartedEvent, TextMessageEndEvent, TextMessageStartEvent
     from ag_ui.encoder import EventEncoder
 
     thread_id = body.get("threadId") or body.get("thread_id") or uuid.uuid4().hex
     run_id = body.get("runId") or body.get("run_id") or uuid.uuid4().hex
     enc = EventEncoder()
-    yield enc.encode(RunStartedEvent(thread_id=thread_id, run_id=run_id))
     message_id = uuid.uuid4().hex
-    yield enc.encode(TextMessageStartEvent(message_id=message_id, role="assistant"))
     try:
         url = _platform_invocations_url()
         if not url:
             raise RuntimeError("platform hosted agent not configured (foundry_project_endpoint empty)")
-        # TODO(D-packaging): implement the verified Invocations streaming POST to `url`
-        # (raw SSE: forward the AG-UI run, re-emit content deltas + the tool-approval interrupt).
-        # Build via build_hosted_from_connections (C) + the Foundry Toolbox; do NOT invent the
-        # envelope — only implement once the contract is verified against a deployed agent.
-        raise NotImplementedError("platform-hosted Invocations bridge pending verified contract + deployed agent")
+
+        import httpx
+
+        from app.core.auth import credential_for_request
+
+        # TODO(infra-gated): confirm the Foundry data-plane scope against the deployed agent.
+        # `https://ai.azure.com/.default` is best-evidence (the AI Projects audience), NOT pinned
+        # by an SDK constant offline (Task 0).
+        token = credential_for_request().get_token("https://ai.azure.com/.default").token
+
+        # TODO(infra-gated): confirm the request body shape against the deployed agent. The exact
+        # AG-UI run-input envelope the Invocations endpoint expects is not verifiable offline
+        # (Task 0) — relay the caller's AG-UI run body as-is; refine once verified against deploy.
+        async with httpx.AsyncClient(timeout=None) as http:
+            async with http.stream(
+                "POST",
+                url,
+                headers={
+                    "Authorization": f"Bearer {token}",
+                    "Content-Type": "application/json",
+                    "Accept": "text/event-stream",
+                },
+                json=body,
+            ) as resp:
+                resp.raise_for_status()
+                # Passthrough: the endpoint's SSE lines are already AG-UI — relay UNTOUCHED.
+                # TODO(infra-gated): confirm the SSE framing (line/chunk boundaries) against deploy.
+                async for line in resp.aiter_lines():
+                    if line:
+                        yield line + "\n"
     except Exception as exc:  # surface to the UI as a clean run error (mirrors stream_agui)
+        yield enc.encode(RunStartedEvent(thread_id=thread_id, run_id=run_id))
+        yield enc.encode(TextMessageStartEvent(message_id=message_id, role="assistant"))
         yield enc.encode(TextMessageEndEvent(message_id=message_id))
         yield enc.encode(RunErrorEvent(message=str(exc), code=type(exc).__name__))

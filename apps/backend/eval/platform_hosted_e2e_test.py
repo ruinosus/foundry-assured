@@ -6,12 +6,13 @@ it WOULD drive `stream_platform_agui` against the live Invocations endpoint and 
 non-error terminal event.
 
 == Why the live body is a placeholder NOW ==
-Per Task 0, the Invocations SSE request/response envelope is NOT determinable offline
-(`azure-ai-projects` 2.2.0 exposes only `protocols/openai`). The bridge ships as a clean-error
-skeleton (project rule #1: never fabricate an SDK contract). The real raw-SSE streaming +
-its assertions land in D-packaging, against a deployed agent — the infra-gated E2E is its
-real test. So the live branch below is a clearly marked TODO(D-packaging) placeholder; the
-key requirement NOW is the skip-clean offline path.
+The bridge (`stream_platform_agui`) now implements the raw-httpx Invocations POST + AG-UI
+passthrough (D-packaging Task 3). BUT three literals are infra-gated and NOT verifiable offline
+(Task 0): the Foundry data-plane auth scope, the request-body envelope the deployed agent
+expects, and the SSE framing. Those are fenced `TODO(infra-gated)` in the bridge and only
+confirmable against a deployed agent. So the live branch below stays a TODO(D-packaging)
+placeholder that asserts nothing about the wire contract; the key requirement NOW is the
+skip-clean offline path (project rule #1: never assert a contract not verified against deploy).
 
 == Required environment ==
 A deployed platform hosted agent reachable via a configured FOUNDRY_PROJECT_ENDPOINT.
@@ -40,9 +41,9 @@ def main() -> int:
     # Live path — infra present. Deferred to D-packaging.                 #
     # ------------------------------------------------------------------ #
     # TODO(D-packaging): drive stream_platform_agui against the live Invocations endpoint and
-    # assert a non-error terminal event (RUN_FINISHED, not RUN_ERROR). The Invocations SSE
-    # contract is not verified offline (Task 0), so this stays a placeholder until D-packaging
-    # implements + verifies the real streaming POST against a deployed agent.
+    # assert a non-error terminal event (RUN_FINISHED, not RUN_ERROR). The bridge now implements
+    # the raw-httpx POST + AG-UI passthrough, but the auth scope / request envelope / SSE framing
+    # are fenced `TODO(infra-gated)` (Task 0) — confirm + assert them here against a deployed agent.
     #
     # NAMESPACE NOTE: to point the bridge at a configured endpoint, patch
     #   app.services.hosted.tenant_config  (the IMPORTING namespace — hosted.py imports the
