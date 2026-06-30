@@ -7,8 +7,8 @@ which reads `tenant_config()` — can't run until a request has resolved its ten
 `require_domain` dependencies). This proxy defers the build to request time: each `.run()` calls
 the builder fresh, so it reads THIS request's tenant config.
 
-This generalizes `PerRequestPlatformAgent` (which is bespoke because it also filters MCP tools by
-caller role/OBO). `SupportsAgentRun` is a `@runtime_checkable` Protocol whose members include the
+The platform domain reuses this with name/description overrides (its builder also filters MCP
+tools by caller role/OBO). `SupportsAgentRun` is a `@runtime_checkable` Protocol whose members include the
 data attributes `id`/`name`/`description` AND `run`/`create_session`/`get_session`; `isinstance`
 checks the attributes too, so the class carries `id`/`name`/`description` and delegates the three
 methods. The AG-UI adapter builds its own `AgentSession` on the default
@@ -31,10 +31,11 @@ class PerRequestAgent:
     (self_hosted is unaffected — it serves the eagerly-built agent with its full name).
     """
 
-    def __init__(self, agent_id: str, builder: Callable[[], Agent]) -> None:
+    def __init__(self, agent_id: str, builder: Callable[[], Agent],
+                 name: str | None = None, description: str | None = None) -> None:
         self.id = agent_id
-        self.name = agent_id
-        self.description = f"Per-request grounded agent for the {agent_id} domain."
+        self.name = name or agent_id
+        self.description = description or f"Per-request grounded agent for the {agent_id} domain."
         self._builder = builder
 
     def run(self, *args, **kwargs):  # returns Awaitable | ResponseStream — pass through

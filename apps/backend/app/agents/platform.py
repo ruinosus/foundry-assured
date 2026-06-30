@@ -15,6 +15,7 @@ from agent_framework import Agent
 from agent_framework.foundry import FoundryChatClient
 
 from app.agents.mcp.tools import build_mcp_tools
+from app.agents.per_request import PerRequestAgent
 from app.agents.prompts import PLATFORM_INSTRUCTIONS
 from app.core.auth import credential_for_request
 from app.core.settings import settings  # platform-global (mcp_enabled)
@@ -43,35 +44,13 @@ def build_platform_agent() -> Agent:
     )
 
 
-class PerRequestPlatformAgent:
-    """A `SupportsAgentRun` proxy that REBUILDS the platform agent on every call, so each
-    request gets tools filtered by the CURRENT caller's roles + OBO credential (read from the
-    request-context contextvar set by the auth dependency).
-
-    Why this exists: `add_agent_framework_fastapi_endpoint(agent=...)` wants a
-    `SupportsAgentRun` *instance*, not a factory function. The grounded domains build once at
-    boot under `DefaultAzureCredential` — we can't, because the whole point of this agent is
-    per-request identity/role filtering. The helpdesk path solves the same problem with a
-    `Workflow` subclass factory; a single agent needs this lighter proxy instead.
-
-    `SupportsAgentRun` is a `@runtime_checkable` Protocol whose members are
-    `run`/`create_session`/`get_session` AND the data attributes `id`/`name`/`description`
-    — `isinstance` enforces the attributes too, so the three methods ALONE fail the check and
-    registration raises `TypeError`. Hence the class attributes below. The `run` delegation is
-    the live path; `create_session`/`get_session` exist only to satisfy the protocol (the AG-UI
-    adapter builds its own `AgentSession` and never calls them on the default
-    `use_service_session=False` path), so they delegate but carry no session state.
-    """
-
-    id = "platform"
-    name = "PlatformConcierge"
-    description = "Engineering-platform concierge over Microsoft first-party MCP tools."
-
-    def run(self, *args, **kwargs):  # returns Awaitable | ResponseStream — pass through
-        return build_platform_agent().run(*args, **kwargs)
-
-    def create_session(self, *args, **kwargs):  # protocol-only (see docstring)
-        return build_platform_agent().create_session(*args, **kwargs)
-
-    def get_session(self, *args, **kwargs):  # protocol-only (see docstring)
-        return build_platform_agent().get_session(*args, **kwargs)
+# The platform endpoint's serving object: the generic per-request proxy (app/agents/per_request.py)
+# rebuilds `build_platform_agent()` on every `.run()`, so each request gets tools filtered by the
+# CURRENT caller's roles + OBO credential. `add_agent_framework_fastapi_endpoint(agent=...)` wants a
+# `SupportsAgentRun` *instance*, not a factory — the proxy IS that instance. The name/description
+# overrides advertise the platform identity (the generic default would be "platform").
+platform_agent_proxy = PerRequestAgent(
+    "platform", build_platform_agent,
+    name="PlatformConcierge",
+    description="Engineering-platform concierge over Microsoft first-party MCP tools.",
+)

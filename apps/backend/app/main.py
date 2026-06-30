@@ -24,7 +24,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.agents.cockpit import build_cockpit_agent, cockpit_configured
 from app.agents.concierge import _knowledge_configured, build_concierge_agent
 from app.agents.per_request import PerRequestAgent
-from app.agents.platform import PerRequestPlatformAgent, platform_configured
+from app.agents.platform import platform_agent_proxy, platform_configured
 from app.agents.selfwiki import build_selfwiki_agent, selfwiki_configured
 from app.api import api_router
 from app.core.auth import auth_dependencies, azure_scheme
@@ -72,7 +72,7 @@ def _grounded_agent(agent_id: str, builder: Callable[[], Agent]) -> PerRequestAg
     to today. shared: NO tenant is resolved at boot, so builder() (which reads tenant_config())
     must NOT run yet — wrap it in a PerRequestAgent proxy that builds per request, once the
     auth/entitlement deps have resolved THIS request's tenant. Mirrors the helpdesk workflow
-    factory + PerRequestPlatformAgent pattern, generalized for the grounded domains.
+    factory + platform per-request proxy pattern, generalized for the grounded domains.
     """
     if settings.deployment_mode == "shared":
         return PerRequestAgent(agent_id, builder)
@@ -115,13 +115,13 @@ if selfwiki_configured():
     )
 
 # Fourth domain: the platform/ops concierge — tool-driven over the Microsoft first-party
-# MCP servers (Learn public now; OBO servers as infra lands). The PerRequestPlatformAgent
-# proxy rebuilds the agent on each run so tools are filtered under the caller's roles + OBO
-# credential (NOT once at boot — that's the whole point of this domain).
+# MCP servers (Learn public now; OBO servers as infra lands). The platform_agent_proxy
+# (a PerRequestAgent) rebuilds the agent on each run so tools are filtered under the caller's
+# roles + OBO credential (NOT once at boot — that's the whole point of this domain).
 if platform_configured():
     add_agent_framework_fastapi_endpoint(
         app,
-        agent=PerRequestPlatformAgent(),
+        agent=platform_agent_proxy,
         path="/platform",
         dependencies=_domain_deps("platform"),
     )
