@@ -1,20 +1,27 @@
 ---
 title: Cost — what Foundry Assured costs, and how the number is derived
-description: Total Azure cost of the stack from the Bicep, the Microsoft-indicated way to compute it (Retail Prices API + Azure Cost Estimator), with live SKU prices and the always-on floor.
+description: Total Azure cost of the stack from the Bicep, the Microsoft-indicated way to compute it (Retail Prices API + Azure Cost Estimator), with live SKU prices, the always-on floor, and the per-deployment-mode model (self_hosted / dedicated / shared).
 type: reference
 audience: operator
 status: stable
-updated: 2026-06-29
+updated: 2026-06-30
 ---
 
 # Cost
 
-**Bottom line:** the always-on floor is **≈ $79/month (~$0.11/hour)**, and **~93% of it is Azure
-AI Search Basic** ($73.73/mo). Everything else is usage-based and **≈ $0 while idle** (the
-Container Apps scale to zero, Log Analytics stays inside the free tier, storage is pennies). Left
-running with light demo use it's **~$80–90/month**; `azd down` drops it to ~$0 (a few cents of
-retained storage). The one meter to watch is **AI Search** — it has no scale-to-zero, so the
+**Bottom line:** one data plane has an always-on floor of **≈ $79/month (~$0.11/hour)**, and
+**~93% of it is Azure AI Search Basic** ($73.73/mo). Everything else is usage-based and **≈ $0
+while idle** (the Container Apps scale to zero, Log Analytics stays inside the free tier, storage is
+pennies). Left running with light demo use it's **~$80–90/month**; `azd down` drops it to ~$0 (a few
+cents of retained storage). The one meter to watch is **AI Search** — it has no scale-to-zero, so the
 control is `azd down`, not downsizing (Basic is the floor for agentic retrieval).
+
+> **Multi-tenant note (SaaS):** that ≈ $79/mo floor is **per data plane**. The number below is the
+> single-stack cost; the [per-deployment-mode model](#cost-per-deployment-mode) shows how it maps to
+> `self_hosted` (one stack you run), `dedicated` (one stack in the **customer's** subscription via the
+> Managed App), and `shared` (one shared control plane + per-tenant data-plane resources). The
+> SaaS evolution (sub-projects A→B→C→D) added **no new always-on SKU** — the dedicated stamp reuses
+> the same Bicep modules, Azure Lighthouse delegation is free, and the 3rd hosted agent is consumption.
 
 ## How this number is derived (the Microsoft-indicated method)
 
@@ -51,8 +58,16 @@ a Foundry (Cognitive Services `AIServices` **S0**) account + project, **gpt-5-mi
 Basic**, **Storage** `Standard_LRS` (corpus blobs + a 1 GiB file share for `tickets.jsonl`),
 **Log Analytics** `PerGB2018` + Application Insights, **Container Registry Basic**, a **Container
 Apps** environment with 2 apps (backend `min 0/max 1`, web `min 0/max 3`, both scale-to-zero), and
-2 **Foundry hosted agents** (0.5 vCPU / 1 GiB each). Managed identity, role assignments,
-connections, blob containers and the file service are free.
+**3 Foundry hosted agents** (`helpdesk-concierge`, `cockpit-expert`, `platform-concierge`, 0.5 vCPU /
+1 GiB each — the 3rd, platform, is the D-packaging Invocations twin). Managed identity, role
+assignments, connections, blob containers and the file service are free.
+
+The **dedicated stamp** ([`infra/managed-app/managedApp.bicep`](../infra/managed-app/managedApp.bicep))
+**composes the same `resources.bicep` + `containerapps.bicep` modules** — so a dedicated tenant's cost
+is this same stack, billed to the *customer's* subscription. **Azure Lighthouse**
+([`infra/lighthouse/`](../infra/lighthouse/)) is a delegation (`Microsoft.ManagedServices`) with **no
+resource cost**, and the Managed Application wrapper itself carries no Azure fee beyond the resources
+in its `mainTemplate.json`.
 
 ## Cost table (live Retail-API prices, `eastus2`, USD)
 
@@ -67,7 +82,7 @@ connections, blob containers and the file service are free.
 | Azure Files (tickets) | Standard LRS, 1 GiB | $0.0255 / GB-mo | ≈ $0.03 | 🟢 usage |
 | Model — gpt-5-mini | GlobalStandard | ~$0.25 in / ~$2.00 out per 1M tok³ | pennies / session | 🟢 usage |
 | Embeddings — text-embedding-3-small | GlobalStandard | ~$0.02 per 1M tok³ | cents / re-ingest | 🟢 usage |
-| Foundry hosted agents ×2 | Agent Service | compute + token-based⁴ | variable | 🟢 usage |
+| Foundry hosted agents ×3 | Agent Service | compute + token-based⁴ | variable | 🟢 usage |
 
 ¹ Both apps set `minReplicas: 0` → idle = $0; demo traffic falls inside the monthly free grant
 (180k vCPU-s + 360k GiB-s + 2M requests). ² Demo tracing stays well under the 5 GB/mo free tier.
@@ -75,6 +90,28 @@ connections, blob containers and the file service are free.
 reference, not a live quote. ⁴ Foundry Agent Service hosted agents bill the underlying model tokens
 + container compute; only accrues while invoked (deprovisions ~15 min after the last call). This is
 the least-pinned-down line.
+
+## Cost per deployment mode
+
+The same Bicep serves three `DEPLOYMENT_MODE`s (ADR-007); the cost model differs by **who pays** and
+**what's shared**. The floor below is the single-data-plane number from the table above.
+
+| Mode | What's deployed | Always-on floor | Who pays | Delivery vehicle |
+|---|---|---|---|---|
+| **`self_hosted`** | one full stack (the `azd` deployment) | ≈ **$79/mo** | you (the operator) | `azd up` |
+| **`dedicated`** | one full stack **in the customer's subscription** | ≈ **$79/mo** *(on the customer's bill)* | the **customer** | Azure **Managed Application** ([`infra/managed-app/`](../infra/managed-app/)) — you operate, they pay |
+| **`shared`** | one shared control plane + **per-tenant data plane** (each tenant's own Foundry project / AI Search via their `Connection` records) | ≈ **$79/mo × active data planes** + a flat control plane | per the SaaS operator's pricing; data-plane resources are the customer's (BYO, [ADR-004](./adr/ADR-004-byo-data-plane-foundry-project.md)) | shared multi-tenant app + Azure **Lighthouse** for cross-tenant management |
+
+Key points:
+- **AI Search Basic is the floor in every mode** — there's one per data plane and it has no
+  scale-to-zero. In `shared`, a tenant's AI Search lives in *their* Foundry project (BYO data plane),
+  so it's the tenant's cost, not the platform's.
+- **`dedicated` and `shared` add no platform-side always-on SKU.** Lighthouse is free; the Managed
+  App wrapper is free; the 3rd hosted agent is consumption. The control plane (the backend + web
+  Container Apps) scales to zero.
+- **The reproducible per-resource estimate** (the [official method](#how-this-number-is-derived-the-microsoft-indicated-method) above) runs identically against
+  the dedicated stamp: `az bicep build --file infra/managed-app/managedApp.bicep` → the same Retail
+  Prices API / ACE pass, since it composes the same modules.
 
 ## Teardown
 
