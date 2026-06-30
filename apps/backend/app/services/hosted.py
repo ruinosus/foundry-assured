@@ -161,7 +161,12 @@ async def stream_platform_agui(body: dict) -> AsyncGenerator[str]:
             ) as resp:
                 resp.raise_for_status()
                 # Passthrough: the endpoint's SSE lines are already AG-UI — relay UNTOUCHED.
-                # TODO(infra-gated): confirm the SSE framing (line/chunk boundaries) against deploy.
+                # TODO(infra-gated): confirm the SSE framing against the deployed agent. NOTE:
+                # aiter_lines() strips line terminators and the `if line` filter drops SSE's
+                # blank-line event separators — so for a TRUE byte-identical AG-UI passthrough this
+                # very likely needs resp.aiter_bytes() (or aiter_raw()) yielding chunks UNCHANGED,
+                # NOT aiter_lines() (which would corrupt event boundaries). Verify the exact framing
+                # the Invocations endpoint emits before relying on it.
                 async for line in resp.aiter_lines():
                     if line:
                         yield line + "\n"
