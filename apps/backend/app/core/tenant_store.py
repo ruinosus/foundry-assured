@@ -18,8 +18,9 @@ class Connection:
     id: str
     kind: str                          # a registry server id VERBATIM: github | azdo | azure | entra | learn | m365
     label: str
+    endpoint: str = ""                 # per-connection target, e.g. the Azure DevOps org that fills the registry URL {org}
     foundry_connection_id: str = ""    # the Foundry project connection that brokers auth (Microsoft-native)
-    keyvault_ref: str = ""             # alternative: the customer's Key Vault URI
+    keyvault_ref: str = ""             # DEPRECATED (C/ADR-009): the build no longer reads it; kept for back-compat
     min_role_read: str = "Reader"
     min_role_write: str = "Author"
     enabled: bool = True

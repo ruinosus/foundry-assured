@@ -70,6 +70,7 @@ class TenantConfig:
 
     # --- MCP integration: per-tenant fields (each tenant's own ADO org / GitHub PAT / self-
     # hosted Azure MCP URL). The platform-global mcp_enabled/mcp_learn_url stay in PlatformSettings.
+    # DEPRECATED (C): the shared-mode build reads per-tenant Connections instead; kept for self-hosted back-compat
     mcp_ado_organization: str = ""
     mcp_github_pat: str = ""
     mcp_azure_url: str = ""
@@ -119,6 +120,7 @@ class _TenantEnv(BaseSettings):
     cockpit_docbundles_path: str = ""
     foundry_memory_store: str = "helpdesk-memory"
     hosted_agent_name: str = "helpdesk-concierge"
+    # DEPRECATED (C): the shared-mode build reads per-tenant Connections instead; kept for self-hosted back-compat
     mcp_ado_organization: str = ""
     mcp_github_pat: str = ""
     mcp_azure_url: str = ""

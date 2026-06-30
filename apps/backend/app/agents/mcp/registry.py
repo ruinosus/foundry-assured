@@ -145,3 +145,31 @@ def visible_tools(server: McpServer, roles: set[str]) -> tuple[list[str], list[s
     reads = list(server.read_tools) if _granted(roles, server.min_role) else []
     writes = list(server.write_tools) if _granted(roles, server.min_role_write) else []
     return reads, writes
+
+
+def server_for_kind(kind: str) -> "McpServer | None":
+    """Map a Connection.kind to its registry server (the catalog is the source of truth)."""
+    for s in SERVERS:
+        if s.id == kind:
+            return s
+    return None
+
+
+def visible_tools_for(server: "McpServer", conn, roles: set[str]) -> tuple[list[str], list[str]]:
+    """Tools visible to this caller — stricter-of-both: the registry's min-role AND the
+    Connection's min-role must both be satisfied (the tenant can only tighten, never loosen).
+
+    `conn` is duck-typed (just needs .min_role_read/.min_role_write) to avoid a registry ->
+    tenant_store import cycle.
+    """
+    reads = (
+        list(server.read_tools)
+        if _granted(roles, server.min_role) and _granted(roles, conn.min_role_read)
+        else []
+    )
+    writes = (
+        list(server.write_tools)
+        if _granted(roles, server.min_role_write) and _granted(roles, conn.min_role_write)
+        else []
+    )
+    return reads, writes
