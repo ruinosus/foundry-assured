@@ -57,3 +57,30 @@ except Exception:
   [ -n "$SRCH_ID" ] && assign "$AID" "$ROLE_SEARCH_READER" "$SRCH_ID" "Search Index Data Reader → search"
 done
 echo "  ✓ agent RBAC reconciled"
+
+# ── Register the deployed web URL as a SPA redirect URI ───────────────────────────────────────
+# The web FQDN is only known AFTER deploy, so the SPA app reg can't have it up front — without it
+# cloud sign-in fails with AADSTS50011 (redirect URI mismatch). Merge it in idempotently.
+WEB_URL="$(val WEB_URL | sed 's#/$##')"
+SPA_APPID="$(val NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID)"
+if [ -n "$WEB_URL" ] && [ -n "$SPA_APPID" ]; then
+  SPA_OBJ="$(az ad app show --id "$SPA_APPID" --query id -o tsv 2>/dev/null || true)"
+  if [ -n "$SPA_OBJ" ]; then
+    CUR="$(az ad app show --id "$SPA_APPID" --query 'spa.redirectUris' -o json 2>/dev/null || echo '[]')"
+    if echo "$CUR" | grep -qF "$WEB_URL"; then
+      echo "  ✓ SPA redirect URI already includes the deployed web ($WEB_URL)"
+    else
+      NEW="$(python3 -c '
+import json, sys
+cur = json.loads(sys.argv[1] or "[]")
+uris = sorted(set(cur + ["http://localhost:3000", sys.argv[2]]))
+print(json.dumps(uris))' "$CUR" "$WEB_URL")"
+      if az rest --method PATCH --url "https://graph.microsoft.com/v1.0/applications/$SPA_OBJ" \
+           --headers "Content-Type=application/json" --body "{\"spa\":{\"redirectUris\":$NEW}}" >/dev/null 2>&1; then
+        echo "  ✓ added the deployed web URL as a SPA redirect URI ($WEB_URL)"
+      else
+        echo "  · could not patch the SPA redirect URIs (insufficient rights?) — add $WEB_URL by hand"
+      fi
+    fi
+  fi
+fi
