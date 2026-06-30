@@ -127,6 +127,9 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'FOUNDRY_MODEL', value: foundryModel }
             { name: 'AZURE_SEARCH_ENDPOINT', value: azureSearchEndpoint }
             { name: 'AZURE_SEARCH_KNOWLEDGE_BASE', value: azureSearchKnowledgeBase }
+            // selfwiki domain (grounded on this repo's deep-wiki). Setting this mounts /selfwiki;
+            // ingest selfwiki-kb so retrieval has data (build_selfwiki_agent tolerates a missing KB at boot).
+            { name: 'SELFWIKI_SEARCH_KNOWLEDGE_BASE', value: 'selfwiki-kb' }
             { name: 'FRONTEND_ORIGIN', value: 'https://${webFqdn}' }
             { name: 'AZURE_CLIENT_ID', value: appIdentityClientId }
             { name: 'ENTRA_TENANT_ID', value: entraTenantId }

@@ -19,17 +19,21 @@ import { HttpAgent } from "@ag-ui/client";
 import { NextRequest } from "next/server";
 import { DOMAINS } from "@/lib/domains";
 
-const AGUI_URL = process.env.AGUI_URL ?? "http://localhost:8000/helpdesk";
+// Single base for the backend AG-UI endpoints. In the deployed web container BACKEND_URL is set
+// (containerapps.bicep) to the backend FQDN; locally it falls back to localhost:8000. EVERY domain
+// URL derives from this, so a new domain works in the cloud with no per-domain env var — the old
+// per-domain *_AGUI_URL still override if set.
+const BACKEND = process.env.BACKEND_URL ?? "http://localhost:8000";
+const AGUI_URL = process.env.AGUI_URL ?? `${BACKEND}/helpdesk`;
 // Phase 6: the hosted agent bridged to AG-UI (backend /helpdesk-hosted), so the
 // "Hosted agent" toggle renders the same CopilotChat. No resume transform needed
 // — the hosted path is request→response with no interrupts.
-const HOSTED_AGUI_URL =
-  process.env.HOSTED_AGUI_URL ?? "http://localhost:8000/helpdesk-hosted";
+const HOSTED_AGUI_URL = process.env.HOSTED_AGUI_URL ?? `${BACKEND}/helpdesk-hosted`;
 // D-runtime: the platform domain's hosted twin (backend /platform-hosted). Unlike
 // helpdesk-hosted, the platform hosted path carries HITL (the write-approval interrupt
 // over Invocations), so it goes through the resume bridge — not a bare HttpAgent.
 const PLATFORM_HOSTED_AGUI_URL =
-  process.env.PLATFORM_HOSTED_AGUI_URL ?? "http://localhost:8000/platform-hosted";
+  process.env.PLATFORM_HOSTED_AGUI_URL ?? `${BACKEND}/platform-hosted`;
 
 // Resume-format bridge (AG-UI `resume` array → agent-framework `{interrupts:[…]}` dict),
 // needed by any domain with HITL interrupts (workflow + tool).
@@ -63,7 +67,7 @@ const helpdeskHosted = new HttpAgent({ url: HOSTED_AGUI_URL });
 const platformHosted = withResumeBridge(PLATFORM_HOSTED_AGUI_URL);
 
 const urlFor = (d: { id: string; endpoint: string }) =>
-  process.env[`${d.id.toUpperCase()}_AGUI_URL`] ?? `http://localhost:8000${d.endpoint}`;
+  process.env[`${d.id.toUpperCase()}_AGUI_URL`] ?? `${BACKEND}${d.endpoint}`;
 
 // Grounded domains are plain request→response. Interrupt-bearing domains (workflow + tool)
 // get the resume bridge. Both come straight from the registry — adding a domain is one entry
