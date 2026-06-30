@@ -67,16 +67,23 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
           <SuggestedPrompts domain={domain} />
 
           {domain.hostedAgentId && (
-            <div className="seg" style={{ margin: "8px 0" }}>
-              <button className={mode === "live" ? "on" : ""} onClick={() => setMode("live")}>
-                Live
-              </button>
-              <button
-                className={mode === "hosted" ? "on" : ""}
-                onClick={() => setMode("hosted")}
-              >
-                Hosted
-              </button>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "8px 0" }}>
+              <div className="seg">
+                <button className={mode === "live" ? "on" : ""} onClick={() => setMode("live")}>
+                  Live
+                </button>
+                <button
+                  className={mode === "hosted" ? "on" : ""}
+                  onClick={() => setMode("hosted")}
+                >
+                  Hosted
+                </button>
+              </div>
+              <span className="muted" style={{ fontSize: 12 }}>
+                {mode === "live"
+                  ? "AG-UI · live tool steps + write-approval"
+                  : "Foundry Agent Service · managed hosted agent"}
+              </span>
             </div>
           )}
 
