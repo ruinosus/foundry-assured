@@ -22,6 +22,8 @@ from app.core.tenant import tenant_config  # per-tenant (foundry endpoint/model)
 
 
 def platform_configured() -> bool:
+    if settings.deployment_mode == "shared":
+        return bool(settings.mcp_enabled)  # shared: mount if MCP globally on; per-tenant gated at request time
     return bool(settings.mcp_enabled and tenant_config().foundry_project_endpoint)
 
 
