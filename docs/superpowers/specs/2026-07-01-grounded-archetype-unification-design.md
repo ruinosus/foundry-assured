@@ -35,7 +35,7 @@ Symptoms:
 2. **Single head** (one grounded code path for all domains).
 3. **Per-user ACL** (cockpit's confidential trimming — fail-closed).
 
-The only conflict is **(1)↔(3)**: the native agentic `knowledge_base_retrieve` path does **not** honor the automatic per-user `x-ms-query-source-authorization` header (verified; azure-sdk-for-python#44454). This design reconciles them with a **pre-retrieval security filter** (§4), gated by a **STEP 0** that must prove the native retriever accepts it — with a mapped **Plan B** if it doesn't.
+The apparent conflict is **(1)↔(3)**: the native agentic `knowledge_base_retrieve` path was believed to never honor the per-user `x-ms-query-source-authorization` header (azure-sdk-for-python#44454). **STEP 0 + 0.5 resolved this (§4):** that gap is specific to `azureBlob`-backed KBs — a **`searchIndex`-backed KB honors the header**, so all three coexist by migrating the KB to a `searchIndex` source and trimming via the header. (`filterAddOn` is accepted but is *not* the ACL lever.) Plan B (direct-search) is retained as the fallback behind the same `retrieve()` seam.
 
 Non-goals: merging knowledge bases (each domain keeps its **own isolated KB**); changing helpdesk's workflow internals or platform's tool internals; changing `self_hosted` behavior (byte-identical where the `deployment_mode` seam applies).
 
@@ -46,7 +46,7 @@ Non-goals: merging knowledge bases (each domain keeps its **own isolated KB**); 
 A single assembly line with a clean contract. It receives `(question, user, domain_spec)` and returns the AG-UI SSE stream. Four stations:
 
 1. **Identity (OBO)** — run as the signed-in user. The user is **captured in the endpoint and passed as an argument** — never read from the `current_user()` contextvar, which is lost inside the `StreamingResponse` async generator (verified; the bug that silently fell back to the app MI and 403'd). Preserved from the shipped design.
-2. **Retrieve** — call the **native retriever** with a **security filter** built from the user's group claims (§4). Returns `[{index, source, url, snippet}]`. A domain with no confidential content passes an empty filter (no-op). **Fail-closed:** a source with no declared access does not enter the result.
+2. **Retrieve** — call the **native agentic retriever** over the domain's `searchIndex`-backed KB, service credential = app MI, with the **per-user `x-ms-query-source-authorization` header** for ACL domains (§4). Returns `[{index, source, url, snippet}]`. A domain without `permissionFilterOption` (no confidential content) returns docs with no header. **Fail-closed:** an ACL domain with no header returns zero docs; a source with no declared access does not enter the result.
 3. **Synthesize** — answer from **only** the retrieved documents, with the citation directive (project rule #4: every grounded answer carries ≥1 source citation).
 4. **Emit** — stream text deltas + a `sources` CUSTOM event `{index, source, url, content}` → clickable inline snippet for **every** grounded domain. Two invariants carried over verbatim from the shipped code (`grounded.py:239–243`) and must NOT regress in a reimplementation: `content` is the snippet **truncated to 800 chars**, and sources are **de-duplicated by URL** (the `seen` set).
 
@@ -99,28 +99,26 @@ DOMAINS: list[DomainSpec] = [ ... ]  # helpdesk, cockpit, selfwiki, platform
 - `app/api/chat.py` grounded router endpoints → replaced by the registry mount loop; each grounded endpoint captures `current_user()` in the endpoint and calls the archetype.
 - `app/main.py` → the workflow/tool mounts move under the same registry loop.
 
-## 4. The retrieval reconciliation (STEP 0 gate)
+## 4. The retrieval reconciliation (STEP 0 — RESOLVED)
 
-### 4.1 Native retriever + pre-retrieval security filter (target)
+STEP 0 ran as two runnable `eval/` probes against live infra; full record in `docs/superpowers/plans/2026-07-01-grounded-archetype-unification-STEP0-findings.md`. Verdict: **all three (native retriever + single head + per-user ACL) ARE achievable — via the `x-ms-query-source-authorization` header over a `searchIndex`-backed KB.** The key discovery: the "agentic ignores ACL" blocker (#44454) was **specific to `azureBlob`-backed KBs**; a `searchIndex`-backed KB **honors the header**.
 
-Instead of the automatic per-user header (ignored on the agentic path), compute the user's authorized groups from their token and pass them as an **explicit search filter** to the native retriever, applied **at retrieval time**. Because the filter is applied *during* retrieval, the retriever **never sees nor reasons over** unauthorized documents → fail-closed **and** native.
+### 4.1 The mechanism (what `retrieve()`'s body does)
 
-This is categorically different from the **rejected** "post-filter" approach (retrieve everything with the native retriever, hide disallowed citations afterward): there the model already read and reasoned over confidential content, so the prose can leak it even with the citation hidden. **The distinction is WHEN the filter applies: before/during (safe) vs after (leaks).**
+For a `searchIndex`-backed KB over an ACL-stamped index (`permissionFilterOption=enabled`, `permissionFilter=groupIds`, filterable `groups` field):
 
-> **Project rule #1 (do not invent SDK signatures).** Whether the native Foundry IQ retriever accepts a caller-supplied group filter is **UNVERIFIED**. The agentic path ignores the *header*; a *filter* is a different mechanism and MAY be honored. This must be confirmed against `learn.microsoft.com/azure/foundry` + `microsoft-foundry/foundry-samples` before any code depends on it. Until confirmed, the retrieval call is STEP-0-provisional.
->
-> **`api-version` is itself part of STEP 0.** Today one constant `_KB_API = "2026-05-01-preview"` (`grounded.py:34`) is shared by both the MCP `server_url` and the direct-search `docs/search` URL. The filter surface, **if** it exists, may require a *different* api-version — STEP 0 must probe the version independently, not assume the pinned one.
+- **Service credential = app MI** (Search Index Data Reader) — always. End users have no search RBAC, so the user token is never the service credential.
+- **Per-user ACL = the `x-ms-query-source-authorization: Bearer <end-user search token>` header** on the native agentic retrieve. The searchIndex retriever honors it: without it, `permissionFilterOption` returns **zero** candidates (fail-closed); with it, subqueries return the docs that user may read, including permission-gated ones. This is the **same header** the direct-search path uses today — now over the native agentic retriever (query planning, multi-subquery recall).
+- **`filterAddOn` is NOT the ACL lever.** It is accepted on `searchIndex` sources and composes AND-wise (narrows only, never widens past the permission boundary), but with `permissionFilterOption` enabled it is inert as an access control — the header does the trimming. `filterAddOn` remains available for *optional* content narrowing, not ACL. (This corrected the design's original "pre-retrieval filter" hypothesis, which STEP 0 empirically refuted.)
+- **Fail-closed by construction:** the retriever never sees nor reasons over unauthorized documents — the permission trim removes them before synthesis. This preserves the property the rejected "post-filter" approach violated (there the model reasons over confidential content, then hides the citation → prose leak).
 
-### 4.2 STEP 0 (hard gate, first thing built)
+**Prerequisite (new work):** the KB must be **migrated from `azureBlob` to `searchIndex`** over the existing ACL-stamped index (`cockpit-docbundles-ks-index`; already `groups`-stamped and queried by the current direct-search path). Verified live: creating a `searchIndex` KB over that index needs no extra role; the app/dev identity can create+delete it. `api-version 2026-05-01-preview`.
 
-STEP 0 proves — as a runnable `eval/` module — that the native retriever **trims by a caller-supplied group filter**, using two users (one in the confidential group, one not) against a doc that only the first may read:
+**Citations (native searchIndex path):** `references[].docKey` = `<12hex>_<base64(blob_url)>N_pages_M`; `sourceData` is `null` on the answer-synthesis path. Mapping: base64-decode the middle segment → `blob_url` → `source` = filename, `url` = (private) blob URL, `snippet` = the matching `response[0].content[0].text` chunk by `[ref_id:N]`. This parsing lives inside `retrieve()`; stations 3/4 still receive the uniform `[{index,source,url,snippet}]`.
 
-- ✅ **Filter honored** → `retrieve()` uses the native retriever + filter. The owner gets all three (native + single head + ACL).
-- ❌ **Filter ignored** → `retrieve()`'s body falls back to **Plan B**: our own lightweight query planning over the **direct-search-as-user** path (which already trims per-user via `x-ms-query-source-authorization` — proven in `_direct_search_authorized`). We keep single head + ACL + content, and lose only the *managed* native retriever on grounded (owning retrieval tuning ourselves). Adaptive planning (simple question → one sub-query) bounds the added cost/latency.
+### 4.2 Fallback (Plan B) — retained behind the same seam
 
-**Nothing is built on top until STEP 0 closes.** Either outcome lands in the same `retrieve()` interface, so §3's shape is unchanged regardless.
-
-If Microsoft later honors per-user ACL on the native agentic path, `retrieve()`'s body swaps to it — a welcome change, not a refactor.
+If a domain's KB cannot be `searchIndex`-backed, `retrieve()`'s body falls back to **direct-search-as-user** (`_direct_search_authorized` — the proven header-trimmed `/docs/search`), optionally with our own lightweight query planning. Single head + ACL + content preserved; only the *managed* native agentic recall is lost for that domain. Same `retrieve()` interface, so §3's shape is unchanged either way. Plan B is the fallback, not the primary — the primary is §4.1.
 
 ## 5. Housekeeping
 
@@ -140,7 +138,7 @@ Test convention (repo): runnable `def main() -> int` modules in `apps/backend/ev
 3. **E2E** — adapt the existing `e2e/cockpit-acl.spec.ts` browser A-vs-B test to the unified endpoint.
 4. **Infra-free green** — `import app.main`, payload-shape tests, all pass without creds; infra-gated tests skip cleanly.
 
-Rollout order: **cockpit first** (the hard case — it has ACL), then **selfwiki** (same path, empty filter). helpdesk/platform enter the registry without touching their internals.
+Rollout order: **migrate cockpit-kb to a `searchIndex` source** (§4.1 prerequisite) → **cockpit first** (the hard case — it has ACL) → **selfwiki** (same path; its index without `permissionFilterOption` returns docs with no header). helpdesk/platform enter the registry without touching their internals.
 
 Constraints held throughout: keyless / `DefaultAzureCredential` + OBO (no API keys); ACL is **data**, not code (rule #6); `self_hosted` byte-identical where the `deployment_mode` seam applies; every grounded answer carries ≥1 citation (rule #4).
 
@@ -148,12 +146,13 @@ Constraints held throughout: keyless / `DefaultAzureCredential` + OBO (no API ke
 
 | Risk | Mitigation |
 |------|------------|
-| Native retriever rejects the filter | STEP 0 gates it; Plan B (§4.2) mapped and lands in the same interface |
-| DIY planning (Plan B) retrieves worse than native | STEP 0 / a small recall check on the corpus before committing; adaptive planning bounds cost |
+| KB migration (blob→searchIndex) regresses recall/citations for cockpit | STEP 0.5 proved the searchIndex retrieve reaches + cites the confidential doc; validate the migrated production KB with the A-vs-B round-trip before cutover; keep the blob KB until green |
+| Native searchIndex path returns 0 docs (header missing / index not permission-stamped) | Fail-closed is the safe failure; `retrieve()` asserts the header is attached for ACL domains; the index is already `permissionFilterOption=enabled` + `groups`-stamped (verified) |
+| `docKey` citation parsing brittle (base64 decode, `sourceData` null) | Parsing isolated inside `retrieve()`; covered by the shape test; stations 3/4 see only the uniform `[{index,source,url,snippet}]` |
 | Eval refactor changes what's measured | Point eval at `retrieve()` so it measures the production path; keep the golden set unchanged |
 | `deployment_mode` regression | Gate any behavior change behind `settings.deployment_mode`; `self_hosted` stays byte-identical |
 
-## 8. Open questions
+## 8. Resolved / open questions
 
-- Exact native-retriever filter surface + `api-version` (STEP 0 resolves; rule #1).
-- Whether `/platform-hosted` remains the only tool twin or also gains a live path later (out of scope here).
+- **RESOLVED (STEP 0 + 0.5):** the three coexist via the `x-ms-query-source-authorization` header over a `searchIndex`-backed KB; `filterAddOn` is not the ACL lever; api-version `2026-05-01-preview`; KB migration needs no extra role. See the findings file.
+- **Open:** whether `/platform-hosted` remains the only tool twin or also gains a live path later (out of scope here).
