@@ -266,7 +266,10 @@ async def stream_grounded_agui(body: dict, domain: GroundedDomain, user=None) ->
             domain.acl, user is not None, settings.auth_enabled, exc, str(body)[:700],
         )
         yield enc.encode(TextMessageEndEvent(message_id=message_id))
-        yield enc.encode(RunErrorEvent(message=str(exc), code=type(exc).__name__))
+        # DIAGNOSTIC: surface the full detail in the error message (the app logger isn't emitted under
+        # uvicorn, and the container is scaling). Revert to str(exc) once the deployed 403 is fixed.
+        detail = f"{exc} | user={user is not None} acl={domain.acl} | body={str(body)[:400]}"
+        yield enc.encode(RunErrorEvent(message=detail, code=type(exc).__name__))
     finally:
         import contextlib
 
