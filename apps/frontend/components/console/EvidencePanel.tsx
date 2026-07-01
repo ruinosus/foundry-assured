@@ -20,7 +20,8 @@ import type { Domain } from "@/lib/domains";
 interface Citation {
   index: number;
   source: string; // the document filename (e.g. cockpit-mcp-server-v1.4.0__page-1.md)
-  url?: string; // the source URL (blob URL for blob KBs; may require auth to open)
+  url?: string; // the source URL (private blob — can't be opened directly; kept for reference)
+  content?: string; // the retrieved snippet — shown INLINE on click (the storage is private by design)
 }
 
 // A heuristic source (v1 fallback) derived from the answer text.
@@ -96,7 +97,7 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
         } else if (event?.type === "CUSTOM" && event?.name === "sources") {
           const value = (event.value ?? []) as Citation[];
           setCitations(
-            value.map((v) => ({ index: v.index, source: v.source, url: v.url })),
+            value.map((v) => ({ index: v.index, source: v.source, url: v.url, content: v.content })),
           );
         }
       },
@@ -134,12 +135,13 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
                 </button>
                 {openIdx === c.index && (
                   <div className="citation-detail">
-                    {c.url ? (
-                      <a href={c.url} target="_blank" rel="noreferrer" className="citation-link">
-                        {c.url}
-                      </a>
+                    {c.content ? (
+                      // Show the retrieved snippet inline — the blob is private (can't be opened).
+                      <p className="citation-content">{c.content}</p>
                     ) : (
-                      <span className="muted">{c.source}</span>
+                      <span className="muted">
+                        {c.source} — documento interno (recuperação segura; sem prévia)
+                      </span>
                     )}
                   </div>
                 )}

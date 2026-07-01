@@ -607,6 +607,16 @@ table.evals tr:last-child td {
   word-break: break-all;
   color: #4f46e5;
 }
+.citation-content {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-height: 180px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  border-left: 2px solid var(--border);
+  padding-left: 10px;
+}
 .evidence-empty {
   font-size: 12.5px;
   line-height: 1.5;

@@ -234,7 +234,13 @@ async def stream_grounded_agui(body: dict, domain: GroundedDomain, user=None) ->
                 else None
             )
             docs = await _direct_search_authorized(domain, user_text, app_search_token, user_search_token)
-            sources = [{"index": d["index"], "source": d["source"], "url": d["url"]} for d in docs]
+            # Include the retrieved snippet as `content` so the UI can show the source INLINE on click —
+            # the blob URLs are private (allowBlobPublicAccess=false, by design), so opening them 403s.
+            sources = [
+                {"index": d["index"], "source": d["source"], "url": d["url"],
+                 "content": (d.get("snippet") or "")[:800]}
+                for d in docs
+            ]
             kwargs = build_synthesis_kwargs(user_text, domain, docs, model=cfg.foundry_model)
         else:
             # Single-audience path: inline MCP tool (native url_citation annotations, collected below).
