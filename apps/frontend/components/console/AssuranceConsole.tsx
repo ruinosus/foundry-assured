@@ -29,6 +29,13 @@ const WorkflowSteps = dynamic(
 );
 
 function Console({ domain, authorization }: { domain: Domain; authorization?: string }) {
+  // Live vs Hosted twin — registry-driven: only renders when the domain declares a
+  // hostedAgentId, so any domain that later gains a Foundry hosted twin gets the toggle
+  // for free (no per-domain special-casing here).
+  const [mode, setMode] = useState<"live" | "hosted">("live");
+  const activeAgentId =
+    mode === "hosted" && domain.hostedAgentId ? domain.hostedAgentId : domain.id;
+
   return (
     <CopilotKitProvider
       runtimeUrl="/api/copilotkit"
@@ -59,8 +66,29 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
 
           <SuggestedPrompts domain={domain} />
 
+          {domain.hostedAgentId && (
+            <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "8px 0" }}>
+              <div className="seg">
+                <button className={mode === "live" ? "on" : ""} onClick={() => setMode("live")}>
+                  Live
+                </button>
+                <button
+                  className={mode === "hosted" ? "on" : ""}
+                  onClick={() => setMode("hosted")}
+                >
+                  Hosted
+                </button>
+              </div>
+              <span className="muted" style={{ fontSize: 12 }}>
+                {mode === "live"
+                  ? "AG-UI · live tool steps + write-approval"
+                  : "Foundry Agent Service · managed hosted agent"}
+              </span>
+            </div>
+          )}
+
           <div className="console-chat copilotkit-chat-host">
-            <CopilotChat agentId={domain.id} />
+            <CopilotChat agentId={activeAgentId} />
           </div>
         </div>
 

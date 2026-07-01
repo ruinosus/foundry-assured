@@ -20,10 +20,13 @@ from azure.identity import DefaultAzureCredential
 
 from app.agents.grounded_search import GroundedAzureAISearchProvider
 from app.agents.prompts import SELFWIKI_INSTRUCTIONS
+from app.core.settings import settings
 from app.core.tenant import tenant_config
 
 
 def selfwiki_configured() -> bool:
+    if settings.deployment_mode == "shared":
+        return True  # shared: mount globally; per-tenant decided at request time
     cfg = tenant_config()
     return bool(cfg.azure_search_endpoint and cfg.selfwiki_search_knowledge_base)
 

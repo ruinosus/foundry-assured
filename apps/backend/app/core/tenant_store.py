@@ -35,6 +35,7 @@ class TenantRecord:
     status: str          # active | suspended
     data_plane: TenantConfig
     connections: tuple[Connection, ...] = ()   # NEW (keep after data_plane)
+    enabled_domains: tuple[str, ...] = ()   # NEW (D-runtime) — per-tenant license entitlement (ADR-010)
 
 
 def validate_kind(kind: str) -> bool:
@@ -81,6 +82,7 @@ def _record_from_entity(e, tid: str | None = None) -> TenantRecord:
         tid=tid or e["PartitionKey"], name=e["name"], tier=e["tier"], status=e["status"],
         data_plane=TenantConfig(**json.loads(e["data_plane"])),
         connections=conns,
+        enabled_domains=tuple(json.loads(e.get("enabled_domains") or "[]")),
     )
 
 
@@ -111,6 +113,7 @@ class TableStorageTenantStore:
             "name": rec.name, "tier": rec.tier, "status": rec.status,
             "data_plane": json.dumps(asdict(rec.data_plane)),
             "connections": json.dumps([asdict(c) for c in rec.connections]),
+            "enabled_domains": json.dumps(list(rec.enabled_domains)),
         })
 
     def list(self) -> list[TenantRecord]:

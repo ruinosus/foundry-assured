@@ -21,6 +21,8 @@ export interface Domain {
   suggested: string[];
   /** Backend AG-UI path (default; per-domain env override resolved in the runtime route). */
   endpoint: string;
+  /** Optional Foundry hosted twin agent id (enables the live-vs-hosted toggle). */
+  hostedAgentId?: string;
 }
 
 export const DOMAINS: Domain[] = [
@@ -79,6 +81,7 @@ export const DOMAINS: Domain[] = [
       "Quanto gastei em AI Search neste mês?",
     ],
     endpoint: "/platform",
+    hostedAgentId: "platform-hosted",
   },
 ];
 

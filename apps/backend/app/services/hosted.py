@@ -97,3 +97,53 @@ async def stream_agui(body: dict) -> AsyncGenerator[str]:
     except Exception as exc:  # surface to the UI as a clean run error
         yield enc.encode(TextMessageEndEvent(message_id=message_id))
         yield enc.encode(RunErrorEvent(message=str(exc), code=type(exc).__name__))
+
+
+def _platform_invocations_url() -> str:
+    """The deployed platform agent's Invocations endpoint (AG-UI → Invocations, not Responses;
+    per the Foundry hosted-agents guidance). Empty endpoint ⇒ not deployed.
+
+    NOTE (Task 0): `azure-ai-projects` 2.2.0 exposes only `protocols/openai`; the `invocations`
+    protocol + its SSE envelope are not in any installed library and are NOT verified offline.
+    This URL shape is forward-looking; the bridge raises before using it until the contract is
+    verified against a deployed agent (D-packaging)."""
+    cfg = tenant_config()
+    base = (cfg.foundry_project_endpoint or "").rstrip("/")
+    name = cfg.platform_hosted_agent_name
+    return f"{base}/agents/{name}/endpoint/protocols/invocations" if base else ""
+
+
+async def stream_platform_agui(body: dict) -> AsyncGenerator[str]:
+    """Stream the deployed PLATFORM hosted agent (Invocations protocol) as AG-UI SSE.
+
+    Twin of stream_agui, but Invocations (raw SSE) — the protocol Microsoft indicates for
+    AG-UI — so C's write-approval interrupt can round-trip on the hosted path (Responses can't).
+
+    SKELETON: the deployed agent + its Foundry Toolbox tool config are infra-gated (D-packaging);
+    the Invocations SSE envelope is not determinable offline (Task 0), so until it's verified
+    against a deployed agent this surfaces a clean RunErrorEvent rather than a fabricated stream.
+    """
+    from ag_ui.core import (
+        RunErrorEvent, RunStartedEvent,
+        TextMessageEndEvent, TextMessageStartEvent,
+    )  # RunFinishedEvent added when the real Invocations streaming lands (D-packaging)
+    from ag_ui.encoder import EventEncoder
+
+    thread_id = body.get("threadId") or body.get("thread_id") or uuid.uuid4().hex
+    run_id = body.get("runId") or body.get("run_id") or uuid.uuid4().hex
+    enc = EventEncoder()
+    yield enc.encode(RunStartedEvent(thread_id=thread_id, run_id=run_id))
+    message_id = uuid.uuid4().hex
+    yield enc.encode(TextMessageStartEvent(message_id=message_id, role="assistant"))
+    try:
+        url = _platform_invocations_url()
+        if not url:
+            raise RuntimeError("platform hosted agent not configured (foundry_project_endpoint empty)")
+        # TODO(D-packaging): implement the verified Invocations streaming POST to `url`
+        # (raw SSE: forward the AG-UI run, re-emit content deltas + the tool-approval interrupt).
+        # Build via build_hosted_from_connections (C) + the Foundry Toolbox; do NOT invent the
+        # envelope — only implement once the contract is verified against a deployed agent.
+        raise NotImplementedError("platform-hosted Invocations bridge pending verified contract + deployed agent")
+    except Exception as exc:  # surface to the UI as a clean run error (mirrors stream_agui)
+        yield enc.encode(TextMessageEndEvent(message_id=message_id))
+        yield enc.encode(RunErrorEvent(message=str(exc), code=type(exc).__name__))

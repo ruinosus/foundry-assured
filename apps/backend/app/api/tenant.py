@@ -18,7 +18,7 @@ from app.core import auth as _auth
 from app.core.auth import _current_user, azure_scheme, require_role, require_user
 from app.core.onboarding import onboarding_guard
 from app.core.settings import settings
-from app.core.tenant import TenantConfig, current_tenant_id
+from app.core.tenant import TenantConfig, current_tenant_id, DOMAIN_IDS
 from app.core.tenant_store import (
     Connection, TenantRecord, validate_kind, with_connection, without_connection,
 )
@@ -86,7 +86,7 @@ def onboard(user: User = Depends(onboarding_guard)):
     tid = getattr(user, "tid", None)
     if store.get(tid) is None:
         store.put(TenantRecord(tid=tid, name=tid, tier="shared", status="active",
-                               data_plane=TenantConfig()))
+                               data_plane=TenantConfig(), enabled_domains=DOMAIN_IDS))
     return {"onboarded": True}
 
 
@@ -116,4 +116,26 @@ def add_connection(body: ConnectionBody):
 @router.delete("/connections/{conn_id}", dependencies=_user_admin)
 def delete_connection(conn_id: str):
     _store().put(without_connection(_my_record(), conn_id))
+    return {"ok": True}
+
+
+class DomainsBody(BaseModel):
+    enabled: list[str]
+
+
+@router.get("/domains", dependencies=_user_admin)
+def get_domains():
+    """The domain catalog + this tenant's entitlement (Admin, tenant-scoped)."""
+    return {"catalog": list(DOMAIN_IDS), "enabled": list(_my_record().enabled_domains)}
+
+
+@router.put("/domains", dependencies=_user_admin)
+def put_domains(body: DomainsBody):
+    """Tighten/adjust this tenant's domain entitlement. Rejects ids outside the catalog."""
+    unknown = [d for d in body.enabled if d not in DOMAIN_IDS]
+    if unknown:
+        raise HTTPException(422, f"unknown domain(s): {', '.join(unknown)}")
+    rec = _my_record()
+    enabled = tuple(d for d in DOMAIN_IDS if d in set(body.enabled))   # preserve catalog order, dedupe
+    _store().put(replace(rec, enabled_domains=enabled))
     return {"ok": True}

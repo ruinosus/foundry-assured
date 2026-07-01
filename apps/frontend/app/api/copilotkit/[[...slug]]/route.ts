@@ -25,6 +25,11 @@ const AGUI_URL = process.env.AGUI_URL ?? "http://localhost:8000/helpdesk";
 // — the hosted path is request→response with no interrupts.
 const HOSTED_AGUI_URL =
   process.env.HOSTED_AGUI_URL ?? "http://localhost:8000/helpdesk-hosted";
+// D-runtime: the platform domain's hosted twin (backend /platform-hosted). Unlike
+// helpdesk-hosted, the platform hosted path carries HITL (the write-approval interrupt
+// over Invocations), so it goes through the resume bridge — not a bare HttpAgent.
+const PLATFORM_HOSTED_AGUI_URL =
+  process.env.PLATFORM_HOSTED_AGUI_URL ?? "http://localhost:8000/platform-hosted";
 
 // Resume-format bridge (AG-UI `resume` array → agent-framework `{interrupts:[…]}` dict),
 // needed by any domain with HITL interrupts (workflow + tool).
@@ -54,6 +59,8 @@ function withResumeBridge(url: string): HttpAgent {
 }
 
 const helpdeskHosted = new HttpAgent({ url: HOSTED_AGUI_URL });
+// Resume bridge (not a bare HttpAgent): platform-hosted has a write-approval interrupt.
+const platformHosted = withResumeBridge(PLATFORM_HOSTED_AGUI_URL);
 
 const urlFor = (d: { id: string; endpoint: string }) =>
   process.env[`${d.id.toUpperCase()}_AGUI_URL`] ?? `http://localhost:8000${d.endpoint}`;
@@ -73,7 +80,12 @@ const registryAgents = Object.fromEntries(
 
 const runtime = new CopilotRuntime({
   // helpdesk keeps its hosted twin; everything else (incl. platform) comes from the registry.
-  agents: { ...registryAgents, "helpdesk-hosted": helpdeskHosted },
+  // platform-hosted is the platform domain's hosted twin (resume bridge for its write-approval interrupt).
+  agents: {
+    ...registryAgents,
+    "helpdesk-hosted": helpdeskHosted,
+    "platform-hosted": platformHosted,
+  },
 });
 
 const handle = (req: NextRequest) => {
