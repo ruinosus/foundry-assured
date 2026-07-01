@@ -417,14 +417,15 @@ resource userStorageContributor 'Microsoft.Authorization/roleAssignments@2022-04
   }
 }
 
-// Search MI -> read the ADLS Gen2 corpus + its POSIX ACLs during ingestion. Account-scope RBAC read
-// lets the indexer read every file (to index it) while it ingests each file's ACLs as permission
-// metadata; per-user trimming happens at query time from those ingested ACLs.
+// Search MI -> read the ADLS Gen2 corpus + its POSIX ACLs during ingestion. Data OWNER (not just
+// Reader): ingesting POSIX ACLs as permission metadata requires reading each file's ACL
+// (getAccessControl), which Storage Blob Data Reader does NOT permit — only Owner can read/manage
+// ACLs. Owner is a superset of Reader, so it also covers content reads for indexing.
 resource searchToAdls 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(adls.id, search.id, roleStorageBlobDataReader)
+  name: guid(adls.id, search.id, roleStorageBlobDataOwner)
   scope: adls
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageBlobDataReader)
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageBlobDataOwner)
     principalId: search.identity.principalId
     principalType: 'ServicePrincipal'
   }
