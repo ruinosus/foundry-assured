@@ -12,7 +12,7 @@ set -euo pipefail
 
 ROLE_AI_USER=53ca6127-db72-4b80-b1b0-d745d6d5456d        # Azure AI User — call the model
 ROLE_SEARCH_READER=1407120a-92aa-4202-b7e9-c0e197c71c8f  # Search Index Data Reader — query the KB
-AGENTS="helpdesk-concierge cockpit-expert platform-concierge"
+AGENTS="helpdesk-concierge cockpit-expert selfwiki-expert platform-concierge"
 
 VALUES="$(azd env get-values 2>/dev/null)" || { echo "  (no azd env — skipping agent RBAC)"; exit 0; }
 val() { echo "$VALUES" | sed -n "s/^$1=\"\(.*\)\"\$/\1/p" | head -1; }

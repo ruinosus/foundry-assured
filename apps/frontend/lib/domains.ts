@@ -39,6 +39,10 @@ export const DOMAINS: Domain[] = [
       "Meu pod está em CrashLoopBackOff, por onde começo?",
     ],
     endpoint: "/helpdesk",
+    // Foundry hosted twin (backend /helpdesk-hosted). The hosted agent runs inside Foundry, so the
+    // backend invokes it via the agent endpoint (/agents/<name>/.../responses) — a path the MI IS
+    // authorized for, unlike raw model inference (/openai/v1/responses) which 403s on this project.
+    hostedAgentId: "helpdesk-hosted",
   },
   {
     id: "cockpit",
@@ -53,6 +57,9 @@ export const DOMAINS: Domain[] = [
       "Como funciona a hierarquia de multi-tenancy?",
     ],
     endpoint: "/cockpit",
+    // Foundry hosted twin (backend /cockpit-hosted). The hosted cockpit-expert agent runs inside
+    // Foundry — the MI can invoke it (unlike the live /cockpit raw inference, which 403s).
+    hostedAgentId: "cockpit-hosted",
   },
   {
     id: "selfwiki",
@@ -67,6 +74,8 @@ export const DOMAINS: Domain[] = [
       "Quais são as fases de implementação do projeto?",
     ],
     endpoint: "/selfwiki",
+    // Foundry hosted twin (backend /selfwiki-hosted) — the MI can invoke it (unlike raw inference).
+    hostedAgentId: "selfwiki-hosted",
   },
   {
     id: "platform",

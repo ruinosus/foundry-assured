@@ -130,6 +130,9 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             // selfwiki domain (grounded on this repo's deep-wiki). Setting this mounts /selfwiki;
             // ingest selfwiki-kb so retrieval has data (build_selfwiki_agent tolerates a missing KB at boot).
             { name: 'SELFWIKI_SEARCH_KNOWLEDGE_BASE', value: 'selfwiki-kb' }
+            // platform domain (tool-driven, MCP). mcp_enabled defaults false in code, so /platform only
+            // mounts when this is true. The first-party MS MCP servers (Learn, etc.) need no extra infra.
+            { name: 'MCP_ENABLED', value: 'true' }
             { name: 'FRONTEND_ORIGIN', value: 'https://${webFqdn}' }
             { name: 'AZURE_CLIENT_ID', value: appIdentityClientId }
             { name: 'ENTRA_TENANT_ID', value: entraTenantId }

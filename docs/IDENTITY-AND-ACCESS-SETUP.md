@@ -62,6 +62,35 @@ flowchart TB
 > *(Already done for this repo: the subjects were updated to `repo:ruinosus/foundry-assured`
 > after the rename.)*
 
+## The On-Behalf-Of chain (grounded answers as the user)
+
+The grounded domains (Cockpit, Selfwiki) answer **as the signed-in user** via On-Behalf-Of (OBO), so
+inference is attributable and per-user document ACL works. That's a **three-tier OBO chain** —
+`SPA → API app → downstream` — and it has three requirements, all set by `scripts/setup-entra.sh`:
+
+```mermaid
+flowchart LR
+  U[User signs in] -->|MSAL| SPA
+  SPA -->|"token (aud = API app)"| API[API app]
+  API -->|"OBO exchange"| AI["ai.azure.com<br/>(Foundry inference)"]
+  API -->|"OBO exchange"| S["search.azure.com<br/>(KB retrieval)"]
+```
+
+| # | Requirement | Where | Symptom if missing |
+| --- | --- | --- | --- |
+| 1 | API app holds the **delegated** `user_impersonation` on **ai.azure.com** (`18a66f5f-…`) + **search.azure.com** | `setup-entra.sh` (`az ad app permission add`) | OBO can't get a downstream token |
+| 2 | **Admin consent** on the API app for those delegated permissions | `setup-entra.sh` (`admin-consent`) | OBO returns `interaction_required` / consent error |
+| 3 | **SPA registered as a `knownClientApplications` of the API app** | `setup-entra.sh` (`az rest PATCH … knownClientApplications`) | **The browser 403s on inference** — the OBO of a *SPA-issued* token to the downstream returns a token that isn't authorized, even though (1)+(2) are in place. A *direct* API-app token OBO's fine, which is why it's easy to miss. |
+
+Requirement **(3)** is the non-obvious one: consent to the SPA must **cascade** to the API's downstream
+permissions (combined consent), which only happens when the SPA is a known client of the API. Verified
+in-session: with (3) missing the deployed `/cockpit` streamed `RUN_ERROR: 403` for signed-in users
+even though a direct API-app→OBO→Responses call returned 200.
+
+Beyond the app registrations, each **app user needs `Foundry User`** on the Foundry account (they run
+inference as themselves) — granted to a group via `infra/resources.bicep` (`appUsersGroupId` →
+`APP_USERS_GROUP_ID`). And the backend/deploying identities need the Search roles in that same Bicep.
+
 ## Why the app registrations aren't in Bicep
 
 1. **Secret**: the OBO app needs a client secret — you don't want Bicep generating/exposing a secret in a plaintext output.

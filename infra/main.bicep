@@ -20,6 +20,9 @@ param location string
 @description('Object ID granted data-plane access. azd sets this from AZURE_PRINCIPAL_ID.')
 param principalId string = ''
 
+@description('Entra group of app users, granted Foundry User so they can run inference as themselves (OBO). azd maps APP_USERS_GROUP_ID. Empty skips.')
+param appUsersGroupId string = ''
+
 @description('Type of principalId: User locally, ServicePrincipal in CI/CD (azd maps AZURE_PRINCIPAL_TYPE).')
 param principalType string = 'User'
 
@@ -58,6 +61,7 @@ module resources 'resources.bicep' = {
     resourceToken: resourceToken
     principalId: principalId
     principalType: principalType // 'User' locally, 'ServicePrincipal' in CI/CD
+    appUsersGroupId: appUsersGroupId
     modelDeploymentName: modelDeploymentName
     searchLocation: effectiveSearchLocation // region override for AI Search capacity
   }

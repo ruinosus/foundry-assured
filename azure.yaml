@@ -3,21 +3,6 @@
 name: foundry-assured
 metadata:
     template: foundry-assured@0.1.0
-
-# azd lifecycle hooks — automate the steps Bicep can't, so `azd up` is one-shot.
-# postprovision: push local env (NEXT_PUBLIC_*/ENTRA_*) for the web build + optional KB bootstrap.
-# postdeploy: grant each hosted agent's deploy-time instance identity its runtime roles (the 403 fix).
-# continueOnError: a hook (e.g. an RBAC perms gap) reports but never fails an otherwise-good deploy.
-hooks:
-    postprovision:
-        shell: sh
-        continueOnError: true
-        run: ./scripts/hook-postprovision.sh
-    postdeploy:
-        shell: sh
-        continueOnError: true
-        run: ./scripts/hook-postdeploy.sh
-
 services:
     backend:
         project: apps/backend
@@ -28,6 +13,18 @@ services:
             remoteBuild: true
     cockpit-expert:
         project: apps/hosted-cockpit
+        host: azure.ai.agent
+        language: docker
+        docker:
+            remoteBuild: true
+        config:
+            container:
+                resources:
+                    cpu: "0.5"
+                    memory: 1Gi
+            startupCommand: python main.py
+    selfwiki-expert:
+        project: apps/hosted-selfwiki
         host: azure.ai.agent
         language: docker
         docker:
@@ -73,3 +70,12 @@ services:
                 - NEXT_PUBLIC_ENTRA_TENANT_ID=${NEXT_PUBLIC_ENTRA_TENANT_ID}
                 - NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID=${NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID}
                 - NEXT_PUBLIC_ENTRA_API_CLIENT_ID=${NEXT_PUBLIC_ENTRA_API_CLIENT_ID}
+hooks:
+    postdeploy:
+        shell: sh
+        run: ./scripts/hook-postdeploy.sh
+        continueOnError: true
+    postprovision:
+        shell: sh
+        run: ./scripts/hook-postprovision.sh
+        continueOnError: true

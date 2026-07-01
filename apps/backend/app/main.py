@@ -12,20 +12,15 @@ its docstring marks it "not yet implemented" (agent-framework-ag-ui 1.0.0rc5), s
 apply CORSMiddleware ourselves.
 """
 
-from collections.abc import Callable
 from contextlib import asynccontextmanager
 
 import uvicorn
-from agent_framework import Agent
 from agent_framework_ag_ui import add_agent_framework_fastapi_endpoint
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.agents.cockpit import build_cockpit_agent, cockpit_configured
 from app.agents.concierge import _knowledge_configured, build_concierge_agent
-from app.agents.per_request import PerRequestAgent
 from app.agents.platform import platform_agent_proxy, platform_configured
-from app.agents.selfwiki import build_selfwiki_agent, selfwiki_configured
 from app.api import api_router
 from app.core.auth import auth_dependencies, azure_scheme
 from app.core.settings import settings
@@ -65,20 +60,6 @@ def _domain_deps(domain_id: str) -> list:
     return deps
 
 
-def _grounded_agent(agent_id: str, builder: Callable[[], Agent]) -> PerRequestAgent | Agent:
-    """The serving object for a grounded (build-once) domain.
-
-    self_hosted/dedicated: build eagerly at boot under the single-tenant config — byte-identical
-    to today. shared: NO tenant is resolved at boot, so builder() (which reads tenant_config())
-    must NOT run yet — wrap it in a PerRequestAgent proxy that builds per request, once the
-    auth/entitlement deps have resolved THIS request's tenant. Mirrors the helpdesk workflow
-    factory + platform per-request proxy pattern, generalized for the grounded domains.
-    """
-    if settings.deployment_mode == "shared":
-        return PerRequestAgent(agent_id, builder)
-    return builder()
-
-
 # AG-UI workflow endpoint (registered on the app, not via a router). With a KB
 # wired, the per-request factory streams the Phase 2 steps + Phase 3 OBO/memory;
 # without one, fall back to the single concierge agent.
@@ -94,25 +75,14 @@ else:
         app, agent=build_concierge_agent(), path="/helpdesk"
     )
 
-# Second domain: the Cockpit expert, grounded in the cockpit-kb (registered only
-# when that KB is configured). Pure grounded Q&A — no workflow/HITL.
-if cockpit_configured():
-    add_agent_framework_fastapi_endpoint(
-        app,
-        agent=_grounded_agent("cockpit", build_cockpit_agent),
-        path="/cockpit",
-        dependencies=_domain_deps("cockpit"),
-    )
-
-# Third domain: the selfwiki expert, grounded in a deep-wiki generated from THIS repo's
-# own source (the dogfood). Registered only once selfwiki-kb is ingested + configured.
-if selfwiki_configured():
-    add_agent_framework_fastapi_endpoint(
-        app,
-        agent=_grounded_agent("selfwiki", build_selfwiki_agent),
-        path="/selfwiki",
-        dependencies=_domain_deps("selfwiki"),
-    )
+# Grounded domains (Cockpit, Selfwiki) now serve STRUCTURED CITATIONS via the router endpoints
+# app/api/chat.py::/cockpit + /selfwiki (Responses API as the user + inline knowledge_base_retrieve
+# MCP tool → url_citation annotations + per-user ACL). They are NO LONGER mounted here on the
+# agent-framework AG-UI adapter (which injected docs as context → prose citations, empty annotations,
+# and 403'd under the managed identity). See app/services/grounded.py + the 2026-07-01 spec.
+# The agent builders (build_cockpit_agent/build_selfwiki_agent + SecureAzureAISearchProvider) are
+# retained for now as the app-side-ACL-trim fallback while header-based ACL trimming is verified
+# (STEP 0 findings, item (c)).
 
 # Fourth domain: the platform/ops concierge — tool-driven over the Microsoft first-party
 # MCP servers (Learn public now; OBO servers as infra lands). The platform_agent_proxy

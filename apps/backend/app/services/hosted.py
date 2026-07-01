@@ -15,12 +15,14 @@ from collections.abc import AsyncGenerator
 
 from app.core.tenant import tenant_config
 
-# Cached async OpenAI client (+ its project/credential) bound to the hosted agent.
-_state: dict = {"client": None, "project": None, "credential": None}
+# Cached async OpenAI clients (+ project/credential), keyed by hosted-agent name — so the same
+# bridge serves any hosted twin (helpdesk-concierge, cockpit-expert, …) without re-warming.
+_clients: dict[str, dict] = {}
 
 
-async def _client():
-    if _state["client"] is None:
+async def _client(agent_name: str):
+    st = _clients.get(agent_name)
+    if st is None:
         from azure.ai.projects.aio import AIProjectClient
         from azure.identity.aio import DefaultAzureCredential
 
@@ -30,25 +32,28 @@ async def _client():
             credential=credential,
             allow_preview=True,
         )
-        client = project.get_openai_client(agent_name=tenant_config().hosted_agent_name)
-        # TODO(multitenant): this process-global cache binds to the FIRST tenant that warms it;
-        # bust/scope it per-tenant when the MultiTenant provider lands (else cross-tenant data-plane mismatch).
-        _state.update(
-            client=await client if inspect.isawaitable(client) else client,
-            project=project,
-            credential=credential,
-        )
-    return _state["client"]
+        client = project.get_openai_client(agent_name=agent_name)
+        # TODO(multitenant): process-global cache binds to the FIRST tenant that warms each agent;
+        # bust/scope it per-tenant when the MultiTenant provider lands (else cross-tenant mismatch).
+        st = {
+            "client": await client if inspect.isawaitable(client) else client,
+            "project": project,
+            "credential": credential,
+        }
+        _clients[agent_name] = st
+    return st["client"]
 
 
 async def aclose() -> None:
-    """Close the cached client + project + credential (called on app shutdown)."""
+    """Close every cached client + project + credential (called on app shutdown)."""
     import contextlib
 
-    for obj in (_state["client"], _state["project"], _state["credential"]):
-        if obj is not None:
-            with contextlib.suppress(Exception):
-                await obj.close()
+    for st in _clients.values():
+        for obj in (st["client"], st["project"], st["credential"]):
+            if obj is not None:
+                with contextlib.suppress(Exception):
+                    await obj.close()
+    _clients.clear()
 
 
 def _last_user_text(messages: list) -> str:
@@ -64,8 +69,8 @@ def _last_user_text(messages: list) -> str:
     return ""
 
 
-async def stream_agui(body: dict) -> AsyncGenerator[str]:
-    """Stream the hosted agent's Responses output as AG-UI SSE events."""
+async def stream_agui(body: dict, agent_name: str) -> AsyncGenerator[str]:
+    """Stream the named hosted agent's Responses output as AG-UI SSE events."""
     from ag_ui.core import (
         RunErrorEvent,
         RunFinishedEvent,
@@ -85,7 +90,7 @@ async def stream_agui(body: dict) -> AsyncGenerator[str]:
     message_id = uuid.uuid4().hex
     yield enc.encode(TextMessageStartEvent(message_id=message_id, role="assistant"))
     try:
-        client = await _client()
+        client = await _client(agent_name)
         events = await client.responses.create(input=user_text, stream=True)
         async for event in events:
             if getattr(event, "type", "") == "response.output_text.delta":

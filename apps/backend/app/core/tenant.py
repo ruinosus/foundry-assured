@@ -70,6 +70,8 @@ class TenantConfig:
 
     # D-runtime: the deployed platform hosted agent (Invocations protocol). Empty until deployed.
     platform_hosted_agent_name: str = "platform-concierge"
+    cockpit_hosted_agent_name: str = "cockpit-expert"
+    selfwiki_hosted_agent_name: str = "selfwiki-expert"
 
     # --- MCP integration: per-tenant fields (each tenant's own ADO org / GitHub PAT / self-
     # hosted Azure MCP URL). The platform-global mcp_enabled/mcp_learn_url stay in PlatformSettings.
@@ -124,6 +126,8 @@ class _TenantEnv(BaseSettings):
     foundry_memory_store: str = "helpdesk-memory"
     hosted_agent_name: str = "helpdesk-concierge"
     platform_hosted_agent_name: str = "platform-concierge"
+    cockpit_hosted_agent_name: str = "cockpit-expert"
+    selfwiki_hosted_agent_name: str = "selfwiki-expert"
     # DEPRECATED (C): the shared-mode build reads per-tenant Connections instead; kept for self-hosted back-compat
     mcp_ado_organization: str = ""
     mcp_github_pat: str = ""
