@@ -23,8 +23,11 @@ Fail-closed (RULE #6): an ACL domain whose user token is None sends no header; o
 permissionFilterOption=enabled index the retrieve then belongs to no groups and returns ZERO docs — the
 correct fail-closed behavior, never a leak.
 
-The native request shape + the `docKey` → blob_url base64 decode are COPIED from the proven probe
+The native request shape is COPIED from the proven probe
 `apps/backend/eval/step0_searchindex_filter_probe.py` (RULE #1 — captured fact, not invented). The
+`docKey` → blob_url decode was VERIFIED LIVE against 38 real `cockpit-si-kb` docKeys (see `_decode_dockey`
+and `eval/dockey_decode_test.py`) — the probe's naïve `split("_")[1]` decode fell back to raw base64 for
+~half the keys; the current decode strips the prefix/`_pages_` suffix by regex and uses standard base64. The
 `references[].id` ↔ chunk `ref_id` join used to attach a snippet is an EXTRAPOLATION the probe never
 exercised (the probe only decoded docKeys for a substring check) — it is best-effort and flagged
 `# TODO: verify signature` at the join site; a miss yields an empty snippet, never a wrong one.
@@ -34,6 +37,7 @@ from __future__ import annotations
 
 import base64
 import json
+import re
 
 from app.core.settings import settings
 
@@ -153,17 +157,43 @@ async def _native_retrieve(
     return _parse_native(body)
 
 
+_DOCKEY_HEX_PREFIX = re.compile(r"^[0-9a-fA-F]{12}_")
+_DOCKEY_PAGES_SUFFIX = re.compile(r"_pages_\d+$")
+_BLOB_URL_IN_TEXT = re.compile(r"https?://\S+?\.md")
+
+
 def _decode_dockey(dockey: str) -> str:
-    """searchIndex `docKey` = `<12hex>_<base64(blob_url)>N_pages_M` → the blob URL (COPIED from the probe).
-    Base64-decode the MIDDLE segment. Falls back to the raw docKey if it doesn't decode."""
-    parts = dockey.split("_")
-    if len(parts) < 2:
-        return dockey
-    mid = parts[1]
-    try:
-        return base64.b64decode(mid + "=" * (-len(mid) % 4)).decode("utf-8", "replace")
-    except Exception:  # noqa: BLE001
-        return dockey
+    """searchIndex `docKey` → the blob URL. VERIFIED LIVE against 38 real `cockpit-si-kb` docKeys
+    (eval._dockey_investigate, 2026-07): the format is
+
+        <12-hex>_<STANDARD-base64(blob_url + trailing byte)>_pages_<M>
+
+    Three facts confirmed live, correcting the old naïve `split("_")[1]` decode which fell back to the
+    RAW base64 for ~half the docKeys (giving broken citations):
+
+      1. The base64 alphabet is **standard** (`+`/`/`), NOT url-safe — for keys where the two alphabets
+         diverge, only `base64.b64decode` recovers the URL.
+      2. The middle segment encodes `blob_url` PLUS a glued trailing byte (a page-number char / `\r`), so
+         raw decode yields the URL followed by 1-3 garbage chars past `.md` — we extract the `…​.md` URL.
+      3. Padding is stripped in the wire form, and the segment length is sometimes ≡ 1 (mod 4), which is
+         structurally invalid base64 → the old code threw and fell back to raw. Dropping the glued tail
+         byte(s) (try trims 0..3) restores a valid, decodable segment.
+
+    Strategy: strip the `<12hex>_` prefix and the trailing `_pages_<M>` suffix (regex — NOT split-and-take,
+    which would mangle a base64 body that contained the delimiter), then decode standard base64 tolerating
+    the glued tail byte, and return the first `https://…​.md` URL found. Safe readable fallback (the raw
+    docKey) only if nothing plausible decodes."""
+    seg = _DOCKEY_PAGES_SUFFIX.sub("", _DOCKEY_HEX_PREFIX.sub("", dockey, count=1))
+    for trim in range(4):  # tolerate the glued page-number/tail byte: try dropping 0..3 trailing chars
+        candidate = seg[: len(seg) - trim] if trim else seg
+        try:
+            text = base64.b64decode(candidate + "=" * (-len(candidate) % 4)).decode("utf-8")
+        except Exception:  # noqa: BLE001
+            continue
+        m = _BLOB_URL_IN_TEXT.search(text)
+        if m:
+            return m.group(0)
+    return dockey  # readable fallback — only if no plausible blob URL decodes
 
 
 def _snippets_by_ref(body: dict) -> dict[str, str]:
@@ -195,8 +225,8 @@ def _snippets_by_ref(body: dict) -> dict[str, str]:
 def _parse_native(body: dict) -> list[dict]:
     """references[] → raw rows [{source, url, snippet}].
 
-    `references[].docKey` base64-decodes (middle segment) to the blob_url → `source` = filename,
-    `url` = blob_url (this decode IS proven by the probe). The `snippet` join, however, keys the
+    `references[].docKey` decodes (see `_decode_dockey`, VERIFIED LIVE) to the blob_url → `source` =
+    filename, `url` = blob_url. The `snippet` join, however, keys the
     reference's `id` against the response chunks' `ref_id` — an extrapolation the probe did NOT exercise
     (best-effort; see the join-site TODO). `sourceData` is null on the answerSynthesis path — don't
     rely on it."""
