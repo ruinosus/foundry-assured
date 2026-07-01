@@ -443,7 +443,7 @@ Expected: import clean; the trim tests unaffected (SKIP cleanly if infra-gated, 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add -A apps/backend/app/agents apps/backend/app/api/chat.py
+git add -A apps/backend/app/agents apps/backend/app/api/chat.py apps/backend/eval/grounded_acl_roundtrip_test.py
 git commit -m "chore: retire grounded agent builders + providers + redundant grounded hosted twins"
 ```
 
