@@ -39,6 +39,7 @@ from azure.search.documents.indexes.models import (
     KnowledgeRetrievalMediumReasoningEffort,
     KnowledgeSourceAzureOpenAIVectorizer,
     KnowledgeSourceIngestionParameters,
+    KnowledgeSourceIngestionPermissionOption,
     KnowledgeSourceReference,
 )
 from azure.storage.blob import BlobServiceClient
@@ -200,6 +201,18 @@ def create_knowledge_source(index_client: SearchIndexClient) -> None:
     openai_endpoint = _require("AZURE_AI_OPENAI_ENDPOINT", tenant_config().azure_ai_openai_endpoint)
     storage_id = _require("AZURE_STORAGE_RESOURCE_ID", tenant_config().azure_storage_resource_id)
     _validate_storage_resource_id(storage_id)
+    # Document-level ACL on the AGENTIC path: when access groups are configured, the knowledge source
+    # must ingest permission metadata (a groupIds permission field on its generated index) — else the
+    # knowledge_base_retrieve returns results UNFILTERED regardless of the x-ms-query-source-authorization
+    # header (verified: our old KS lacked this, so B saw confidential docs). This is the ingestion half
+    # of query-time ACL; the query half is the header. See docs/METHOD.md + the grounded-obo-citations
+    # STEP0 findings. Only groupIds (our access model is group-based), gated on ACL being configured so
+    # non-ACL corpora (selfwiki) stay byte-identical.
+    permission_opts = (
+        [KnowledgeSourceIngestionPermissionOption.GROUP_IDS]
+        if tenant_config().acl_group_map
+        else None
+    )
     knowledge_source = AzureBlobKnowledgeSource(
         name=KNOWLEDGE_SOURCE_NAME,
         description=f"{DOMAIN_LABEL} documentation (components + release).",
@@ -214,6 +227,7 @@ def create_knowledge_source(index_client: SearchIndexClient) -> None:
                         model_name=tenant_config().foundry_embedding_model,
                     )
                 ),
+                ingestion_permission_options=permission_opts,
             ),
         ),
     )
