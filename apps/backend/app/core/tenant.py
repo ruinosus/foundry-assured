@@ -42,9 +42,18 @@ class TenantConfig:
     azure_storage_container: str = "corpus"
 
     # --- Second domain: Cockpit expert (its own KB over the cockpit docbundles) ---
+    # cockpit_search_knowledge_base is the ACTIVE cockpit KB — flip this to cut the
+    # domain over between the legacy azureBlob KB and the searchIndex KB below.
+    # Task 2b: the searchIndex KB (cockpit-si-kb over cockpit-si-ks) is what lets the
+    # native agentic retrieve honor the per-user ACL header (x-ms-query-source-authorization).
     cockpit_search_knowledge_base: str = "cockpit-kb"
     cockpit_search_index: str = "cockpit-docbundles-ks-index"
     cockpit_storage_container: str = "cockpit-corpus"
+    # searchIndex-backed cockpit KB + its knowledge source (over the EXISTING ACL index).
+    # Provisioned alongside the blob KB by ingest_cockpit; cutover = point
+    # cockpit_search_knowledge_base at cockpit_searchindex_knowledge_base (fully reversible).
+    cockpit_searchindex_knowledge_base: str = "cockpit-si-kb"
+    cockpit_searchindex_knowledge_source: str = "cockpit-docbundles-si-ks"
 
     # --- Third domain: selfwiki (this repo's own deep-wiki — dogfood) ---
     selfwiki_search_knowledge_base: str = ""
@@ -113,6 +122,8 @@ class _TenantEnv(BaseSettings):
     cockpit_search_knowledge_base: str = "cockpit-kb"
     cockpit_search_index: str = "cockpit-docbundles-ks-index"
     cockpit_storage_container: str = "cockpit-corpus"
+    cockpit_searchindex_knowledge_base: str = "cockpit-si-kb"
+    cockpit_searchindex_knowledge_source: str = "cockpit-docbundles-si-ks"
     selfwiki_search_knowledge_base: str = ""
     selfwiki_search_index: str = "selfwiki-docbundles-ks-index"
     selfwiki_storage_container: str = "selfwiki-corpus"
