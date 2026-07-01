@@ -56,10 +56,6 @@ var registryName = 'acrassured${resourceToken}'
 var storageName = 'stassured${resourceToken}'
 var corpusContainerName = 'corpus'
 var dataShareName = 'assured-data'
-// ADLS Gen2 (hierarchical namespace) account for the ACL-enabled corpus (per-user document ACL on
-// the agentic path needs POSIX ACLs, which require isHnsEnabled — the flat store above can't).
-var adlsName = 'stadls${resourceToken}'
-var aclCorpusContainerName = 'cockpit-corpus-acl'
 
 // Built-in role definition GUIDs (stable Azure identifiers).
 var roleAzureAiUser = '53ca6127-db72-4b80-b1b0-d745d6d5456d' // Azure AI User / Foundry User (Foundry data plane)
@@ -69,7 +65,6 @@ var roleSearchIndexDataReader = '1407120a-92aa-4202-b7e9-c0e197c71c8f' // query 
 var roleSearchIndexDataContributor = '8ebe5a00-799e-43f5-93ac-243d3dce84a7' // write index docs: ACL stamping (acl_setup) + purge_orphans (superset of Data Reader)
 var roleStorageBlobDataReader = '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1' // search MI reads corpus blobs
 var roleStorageBlobDataContributor = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe' // caller uploads corpus blobs
-var roleStorageBlobDataOwner = 'b7e6dc6d-f1e8-4753-8033-0f276bb0955b' // caller sets POSIX ACLs on ADLS Gen2 (Contributor can't)
 var roleAcrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d' // project MI pulls the hosted-agent image
 
 var searchRegion = empty(searchLocation) ? location : searchLocation
@@ -218,38 +213,6 @@ resource dataShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-0
   parent: fileService
   name: dataShareName
   properties: { shareQuota: 1 } // GiB — jsonl records are tiny
-}
-
-// ---------------------------------------------------------------------------
-// ADLS Gen2 storage for the ACL-enabled corpus (native per-user document ACL)
-// ---------------------------------------------------------------------------
-// The agentic knowledge_base_retrieve enforces per-user document ACL only when the knowledge source
-// ingests POSIX ACLs (ingestionPermissionOptions=[groupIds/userIds]), which are ONLY supported on an
-// ADLS Gen2 (isHnsEnabled) account — a flat blob source rejects groupIds. So the ACL corpus lives
-// here, uploaded with per-file POSIX ACLs derived from the manifest read-groups (app/knowledge/*).
-resource adls 'Microsoft.Storage/storageAccounts@2023-05-01' = {
-  name: adlsName
-  location: location
-  tags: tags
-  sku: { name: 'Standard_LRS' }
-  kind: 'StorageV2'
-  properties: {
-    isHnsEnabled: true
-    allowBlobPublicAccess: false
-    minimumTlsVersion: 'TLS1_2'
-    allowSharedKeyAccess: true
-  }
-}
-
-resource adlsBlobService 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
-  parent: adls
-  name: 'default'
-}
-
-resource aclCorpusContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
-  parent: adlsBlobService
-  name: aclCorpusContainerName
-  properties: { publicAccess: 'None' }
 }
 
 // ---------------------------------------------------------------------------
@@ -417,33 +380,6 @@ resource userStorageContributor 'Microsoft.Authorization/roleAssignments@2022-04
   }
 }
 
-// Search MI -> read the ADLS Gen2 corpus + its POSIX ACLs during ingestion. Data OWNER (not just
-// Reader): ingesting POSIX ACLs as permission metadata requires reading each file's ACL
-// (getAccessControl), which Storage Blob Data Reader does NOT permit — only Owner can read/manage
-// ACLs. Owner is a superset of Reader, so it also covers content reads for indexing.
-resource searchToAdls 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(adls.id, search.id, roleStorageBlobDataOwner)
-  scope: adls
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageBlobDataOwner)
-    principalId: search.identity.principalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// Caller -> upload the ACL corpus AND set per-file POSIX ACLs. Setting ACLs on ADLS Gen2 requires
-// Storage Blob Data Owner (Data Contributor can write blobs but NOT set ACLs), so the ingest
-// (app/knowledge/ingest_cockpit.py) can stamp each file's read-groups.
-resource userAdlsOwner 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
-  name: guid(adls.id, principalId, roleStorageBlobDataOwner)
-  scope: adls
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageBlobDataOwner)
-    principalId: principalId
-    principalType: effectivePrincipalType
-  }
-}
-
 // Caller -> Foundry data plane (Phase 0; kept here so the whole stack is one template).
 resource userAiUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
   name: guid(account.id, principalId, roleAzureAiUser)
@@ -484,11 +420,6 @@ output AZURE_STORAGE_ACCOUNT string = storage.name
 output AZURE_STORAGE_RESOURCE_ID string = storage.id
 output AZURE_STORAGE_CONTAINER string = corpusContainerName
 output AZURE_FILE_SHARE string = dataShareName
-
-// ADLS Gen2 account for the ACL-enabled corpus (read by ingest_cockpit for the native-ACL path).
-output AZURE_ADLS_ACCOUNT string = adls.name
-output AZURE_ADLS_RESOURCE_ID string = adls.id
-output AZURE_ADLS_CONTAINER string = aclCorpusContainerName
 
 // Consumed by azd (and the agent extension) to build/push the hosted-agent image.
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer

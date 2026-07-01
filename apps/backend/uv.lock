@@ -785,21 +785,6 @@ wheels = [
 ]
 
 [[package]]
-name = "azure-storage-file-datalake"
-version = "12.25.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "azure-core" },
-    { name = "azure-storage-blob" },
-    { name = "isodate" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/63/2b/9019c472f42dc9dd02b7e6443fff89901e4ea1f03be4abb6902eb3587933/azure_storage_file_datalake-12.25.0.tar.gz", hash = "sha256:34813c6f3e9bf1636898cec62529dd2ced189cd2c677160ec69ef88c3b72da7f", size = 306219, upload-time = "2026-06-08T17:28:48.314Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b7/cb/b12d8a824b8523cdb624033e731f5b2809069a178da61aab9bc74d24bc63/azure_storage_file_datalake-12.25.0-py3-none-any.whl", hash = "sha256:11fbb18250961711afc40c8442207d71bac81961e4b7b80f17fbd550f95e6fc6", size = 287753, upload-time = "2026-06-08T17:28:50.686Z" },
-]
-
-[[package]]
 name = "backoff"
 version = "2.2.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1084,7 +1069,6 @@ dependencies = [
     { name = "azure-monitor-opentelemetry" },
     { name = "azure-search-documents" },
     { name = "azure-storage-blob" },
-    { name = "azure-storage-file-datalake" },
     { name = "fastapi" },
     { name = "fastapi-azure-auth" },
     { name = "httpx" },
@@ -1103,7 +1087,6 @@ requires-dist = [
     { name = "azure-monitor-opentelemetry", specifier = ">=1.8.8" },
     { name = "azure-search-documents", specifier = ">=11.7.0b2" },
     { name = "azure-storage-blob", specifier = ">=12.20.0" },
-    { name = "azure-storage-file-datalake", specifier = ">=12.25.0" },
     { name = "fastapi", specifier = ">=0.115.0" },
     { name = "fastapi-azure-auth", specifier = ">=5.2.0" },
     { name = "httpx", specifier = ">=0.28.1" },
