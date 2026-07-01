@@ -171,20 +171,20 @@ test("authenticated smoke — sign in + 4 domains + grounded helpdesk answer", a
   //    "Hosted" runs helpdesk-hosted, which invokes the Foundry hosted agent via the agent endpoint
   //    (/agents/<name>/.../responses) — a path the MI IS authorized for, unlike raw model inference
   //    (/openai/v1/responses) which 403s. This is where the grounded answer should actually complete.
-  await page.goto("/d/cockpit");
+  await page.goto("/d/selfwiki");
   await page.waitForLoadState("networkidle").catch(() => {});
   const hostedBtn = page.getByRole("button", { name: /^hosted$/i });
   if (await hostedBtn.isVisible().catch(() => false)) {
     await hostedBtn.click();
-    await shot(page, "cockpit-hosted-mode");
+    await shot(page, "selfwiki-hosted-mode");
     const pc = page.locator("textarea, [contenteditable='true']").first();
     await pc.click();
-    await pc.fill("Quais são os servidores MCP do Cockpit?");
+    await pc.fill("Quais endpoints AG-UI o backend expõe?");
     await pc.press("Enter");
-    await page.waitForTimeout(110_000); // hosted agent cold-start + agentic retrieval over cockpit-kb
-    await shot(page, "cockpit-hosted-answer");
+    await page.waitForTimeout(110_000); // hosted agent cold-start + agentic retrieval over selfwiki-kb
+    await shot(page, "selfwiki-hosted-answer");
   } else {
-    await shot(page, "cockpit-no-hosted-toggle");
+    await shot(page, "selfwiki-no-hosted-toggle");
   }
   dumpDiag();
 });
