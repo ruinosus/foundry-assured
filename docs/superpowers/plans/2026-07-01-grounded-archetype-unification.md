@@ -29,9 +29,11 @@
 | `apps/backend/eval/step0_native_filter_probe.py` | STEP-0 gate: does the native retriever trim by a caller-supplied group filter? Capture shape + api-version. | Create |
 | `apps/backend/app/services/retrieval.py` | The `retrieve()` seam. Owns both identities. Native-filter path (from STEP 0) OR Plan B (`_direct_search_authorized`). Returns `[{index,source,url,snippet}]`. | Create |
 | `apps/backend/app/services/grounded.py` | Collapses to the single archetype `stream_grounded(body, domain, user)` (4 stations) using `retrieve()`. Drop the `acl` fork + `build_responses_kwargs`. Keep `_async_credential`, `build_synthesis_kwargs`, emit invariants. | Modify |
-| `apps/backend/app/domains.py` | Backend `DomainSpec` registry (mirrors `domains.ts`) + `mount_domains(app)` loop dispatching by `kind`. | Create |
-| `apps/backend/app/api/chat.py` | Remove the grounded `/cockpit` + `/selfwiki` router endpoints (moved into the mount loop) and the two redundant grounded hosted twins. | Modify |
-| `apps/backend/app/main.py` | Replace the hand-wired helpdesk/platform mounts + the grounded comment block with `mount_domains(app)`. | Modify |
+| `apps/backend/app/domains.py` | Backend `DomainSpec` registry (mirrors `domains.ts`) + `mount_domains(app)` loop dispatching by `kind`. **Owns `_domain_deps`** (moved from `main.py`) to break the `main↔domains` cycle and de-dupe `chat.py::_hosted_deps`. | Create |
+| `apps/backend/app/api/chat.py` | Remove the grounded `/cockpit` + `/selfwiki` router endpoints (moved into the mount loop) and the two redundant grounded hosted twins. Drop the local `_hosted_deps`; import `_domain_deps` from `app.domains`. | Modify |
+| `apps/backend/app/main.py` | Replace the hand-wired helpdesk/platform mounts + the grounded comment block with `mount_domains(app)`. Import `_domain_deps` from `app.domains`. | Modify |
+| `apps/backend/eval/grounded_payload_test.py` | Rewrite: drop `build_responses_kwargs`/`CITATION_DIRECTIVE` assertions; keep `build_synthesis_kwargs`. | Modify |
+| `apps/backend/eval/grounded_acl_roundtrip_test.py` | Retire (imports removed `GroundedDomain`; coverage moved to the new round-trip tests). | Delete |
 | `apps/backend/eval/run_eval.py` | Rewire `agent_factory` off `build_*_agent` onto `retrieve()`. | Modify |
 | `apps/backend/app/agents/{cockpit,selfwiki,secure_search,grounded_search}.py` | Remove the builders + provider classes AFTER run_eval is rewired. Keep the trim primitives in `secure_search.py` (tests import them). | Modify/Delete |
 | `apps/frontend/lib/domains.ts` | Drop `hostedAgentId` from cockpit+selfwiki and update the now-stale twin-justification comments. | Modify |
@@ -72,7 +74,7 @@ Expected (infra present): a clear verdict —
 
 - [ ] **Step 3: Record the outcome in the plan's findings file**
 
-Create `docs/superpowers/plans/2026-07-01-grounded-archetype-unification-STEP0-findings.md` capturing: verdict, the exact filter field name + syntax (if ✅), the api-version, and the annotation→`{source,url,snippet}` mapping for the native path. This file is the input to Task 2.
+Create `docs/superpowers/plans/2026-07-01-grounded-archetype-unification-STEP0-findings.md` capturing: verdict, the exact filter field name + syntax (if ✅), the api-version, and the annotation→`{source,url,snippet}` mapping for the native path. This file is the input to Task 2. (Note: this is a NEW file — do not overwrite the pre-existing `2026-07-01-grounded-obo-citations-STEP0-findings.md` from the prior shipped slice; different name, different scope.)
 
 - [ ] **Step 4: Commit**
 
@@ -154,6 +156,8 @@ async def retrieve(query: str, user, domain, *, top: int = 8) -> list[dict]:
 
 `_project()` centralizes the dedup+index invariant (moved out of `stream_grounded_agui`). For Plan B, `_direct_search_authorized` already returns the right shape — `_project` is a passthrough/dedupe. `_user_search_token(user)` mirrors the OBO logic in `grounded._async_credential` (returns `None` when `not settings.auth_enabled or user is None`).
 
+**Plan B reads endpoint + index off the domain.** `_direct_search_authorized` dereferences `domain.search_endpoint` (grounded.py:158) and `domain.search_index`. Move `_direct_search_authorized` into `retrieval.py` (or import it) and confirm the `DomainSpec` passed to `retrieve()` carries both `search_endpoint` (from `cfg.azure_search_endpoint`) and `search_index` — Task 5 adds `search_endpoint` to `DomainSpec` for exactly this. The shape test's `_fake_domain()` must therefore be a `DomainSpec` (or a stub exposing `.search_endpoint`/`.search_index`), even though the low-level fetch is patched.
+
 If STEP 0 was ❌, `_native_retrieve` is NOT written (YAGNI) — only Plan B. If ✅, `_native_retrieve` is authored from the STEP-0 findings shape (api-version + filter field verbatim). Leave `# TODO: verify signature` on any field STEP 0 didn't nail.
 
 - [ ] **Step 4: Run to verify it passes**
@@ -198,7 +202,8 @@ git commit -m "test(retrieval): A-vs-B ACL parity over retrieve() (fail-closed)"
 
 **Files:**
 - Modify: `apps/backend/app/services/grounded.py`
-- Test: `apps/backend/eval/grounded_payload_test.py` (existing — keep green), `apps/backend/eval/archetype_emit_test.py` (create)
+- Rewrite: `apps/backend/eval/grounded_payload_test.py` — **it will break** (it imports `CITATION_DIRECTIVE`, `build_responses_kwargs`, and the `acl=True/False` `GroundedDomain` forks — all deleted in Step 3). It does NOT stay green unchanged.
+- Test: `apps/backend/eval/archetype_emit_test.py` (create)
 
 - [ ] **Step 1: Write a failing emit-invariants test (infra-free)**
 
@@ -215,17 +220,23 @@ Expected: FAIL (`stream_grounded` doesn't exist yet).
 - **Station 2 becomes one line:** `docs = await retrieve(user_text, user, domain)`. DELETE the `if domain.acl:` fork, `build_responses_kwargs`, the inline MCP tool block, the annotation-collection branch, and the app/user token acquisition (now inside `retrieve()`).
 - **Station 3:** always `build_synthesis_kwargs(user_text, domain, docs, model=...)` — synthesize from the retrieved docs only (rule #4). Keep `build_synthesis_kwargs` + `SYNTHESIS_DIRECTIVE`.
 - **Station 4:** `sources = [{"index": d["index"], "source": d["source"], "url": d["url"], "content": (d.get("snippet") or "")[:800]} for d in docs]` — the 800-char cap preserved; dedupe already done in `retrieve()`.
-- Keep `_async_credential(user)` (OBO for the *inference* call — station 1). Remove `_source_from_annotation` and `CITATION_DIRECTIVE` (MCP-only, now dead). Remove the `acl`/`search` no-longer-needed fields from the old `GroundedDomain` (superseded by `DomainSpec`, Task 5) — or keep `GroundedDomain` as a thin alias if other eval modules import it; check `grep -rn GroundedDomain eval app`.
+- Keep `_async_credential(user)` (OBO for the *inference* call — station 1). Remove `_source_from_annotation` and `CITATION_DIRECTIVE` (MCP-only, now dead).
+- **`GroundedDomain` is removed** (superseded by `DomainSpec`, Task 5). Its importers are handled deterministically: `grounded_payload_test.py` is rewritten in this task (Step 4); `grounded_acl_roundtrip_test.py` is retired in Task 8 (its coverage is replaced by `retrieval_acl_parity_test` Task 3 + `grounded_archetype_roundtrip_test` Task 10). Run `grep -rn "GroundedDomain\|_direct_search_authorized" eval app` and confirm the only remaining references are the ones this plan explicitly repoints — nothing else may import them after Task 8.
+- **`_direct_search_authorized` moves to `retrieval.py`** (Task 2) since it's now Plan B's engine, not a `grounded.py` internal.
 
-- [ ] **Step 4: Run both tests**
+- [ ] **Step 4: Rewrite `grounded_payload_test.py` for the collapsed path**
+
+Drop the `build_responses_kwargs`/`CITATION_DIRECTIVE`/`acl=` assertions (those symbols no longer exist). Keep only the `build_synthesis_kwargs` assertions (docs are the ONLY context; empty-docs branch). Update its imports to the surviving symbols. If `GroundedDomain` is being replaced by `DomainSpec` (Step 3), repoint the test's construction accordingly.
+
+- [ ] **Step 5: Run both tests**
 
 Run: `cd apps/backend && uv run python -m eval.archetype_emit_test && uv run python -m eval.grounded_payload_test`
 Expected: both PASS. Also `uv run python -c "import app.main"` still imports.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 6: Commit**
 
 ```bash
-git add apps/backend/app/services/grounded.py apps/backend/eval/archetype_emit_test.py
+git add apps/backend/app/services/grounded.py apps/backend/eval/archetype_emit_test.py apps/backend/eval/grounded_payload_test.py
 git commit -m "refactor(grounded): collapse acl/mcp fork into one archetype over retrieve()"
 ```
 
@@ -263,7 +274,8 @@ class DomainSpec:
     instructions: str = ""
     kb_name: str | None = None
     search_index: str | None = None
-    acl_group_map: dict | None = None   # ACL is DATA (rule #6); None/empty → no-op filter
+    search_endpoint: str = ""           # REQUIRED for grounded — Plan B's _direct_search_authorized reads it
+    acl_group_map: dict | None = None   # ACL is DATA (rule #6); name→objectID; None/empty → no-op filter
     hosted_agent_name: str | None = None
 
 def _domains() -> list[DomainSpec]:
@@ -274,16 +286,17 @@ def _domains() -> list[DomainSpec]:
         DomainSpec("helpdesk", "workflow", hosted_agent_name=cfg.hosted_agent_name),
         DomainSpec("cockpit", "grounded", COCKPIT_INSTRUCTIONS,
                    kb_name=cfg.cockpit_search_knowledge_base, search_index=cfg.cockpit_search_index,
-                   acl_group_map=cfg.cockpit_acl_group_map),   # DATA, from config
+                   search_endpoint=cfg.azure_search_endpoint,
+                   acl_group_map=cfg.acl_group_map),   # the PARSED PROPERTY (dict name→objectID), NOT the raw str
         DomainSpec("selfwiki", "grounded", SELFWIKI_INSTRUCTIONS,
-                   kb_name=cfg.selfwiki_search_knowledge_base, search_index=cfg.selfwiki_search_index),
+                   kb_name=cfg.selfwiki_search_knowledge_base, search_index=cfg.selfwiki_search_index,
+                   search_endpoint=cfg.azure_search_endpoint),   # selfwiki: no acl_group_map → no-op filter
         DomainSpec("platform", "tool"),
     ]
 
 def mount_domains(app) -> None:
     """One loop, dispatch by kind. self_hosted byte-identical: the gate is _domain_deps (shared-mode
     only adds the entitlement dep)."""
-    from app.main import _domain_deps   # or move _domain_deps here and import into main
     for d in _domains():
         if d.kind == "grounded":
             _mount_grounded(app, d)
@@ -292,6 +305,10 @@ def mount_domains(app) -> None:
         elif d.kind == "tool":
             _mount_platform(app, d)      # existing platform_agent_proxy logic
 ```
+
+**Circular-import resolution (firm):** `_domain_deps` **moves into `app/domains.py`** (it belongs with the mount loop). `app/main.py` imports it from `app.domains` (not the reverse), and `app/api/chat.py` drops its duplicate `_hosted_deps` and imports the same `_domain_deps` from `app.domains`. This removes the `main ↔ domains` cycle and de-duplicates the gate. `_domains()` reads `tenant_config()` **lazily inside the function** (not at import), so importing `app.domains` has no import-time side effects.
+
+**`acl_group_map` semantics (rule #6, fail-closed):** `cfg.acl_group_map` is the property (`tenant.py:84`) returning **group NAME → object-ID** — the SOURCE-side declaration of which groups may read. The native filter (STEP 0) needs the intersection with the **user's** authorized groups (from their token claims), computed inside `retrieve()`/`_native_retrieve`. `DomainSpec` only carries the source-side map as DATA; the per-user computation is not in the spec.
 
 `_mount_grounded` registers a POST `/{d.id}` that captures `current_user()` in the endpoint and streams the archetype:
 
@@ -308,7 +325,7 @@ def _mount_grounded(app, d: DomainSpec) -> None:
     app.add_api_route(f"/{d.id}", endpoint, methods=["POST"], dependencies=_domain_deps(d.id))
 ```
 
-Add the missing config fields (`cockpit_acl_group_map`, `selfwiki_search_index`) to `app/core/tenant.py` with safe defaults (empty → no-op / fail-closed). `selfwiki_search_index` is needed for Plan B direct-search over selfwiki; default empty until selfwiki rollout.
+**Config fields already exist — do NOT add duplicates.** Verify (don't re-add): `cockpit_acl_group_map` (`tenant.py:55,119`, raw comma-str; consume via the `acl_group_map` property `:84`), `selfwiki_search_index` (`:51,117`, already defaults `selfwiki-docbundles-ks-index`), `hosted_agent_name` (`:69,127`), `azure_search_endpoint`. Only add a field if STEP 0's native filter needs a genuinely new one — name that one specifically then.
 
 - [ ] **Step 4: Run to verify it passes**
 
@@ -362,13 +379,31 @@ git commit -m "refactor(mounting): main.py/chat.py serve grounded via mount_doma
 - Modify: `apps/backend/eval/run_eval.py:35,37,239,250`
 - Reference: `apps/backend/app/services/retrieval.py`
 
-- [ ] **Step 1: Inspect how `agent_factory` is consumed**
+- [ ] **Step 1: Inspect the exact factory protocol**
 
-Read `run_eval.py` around 230-260 to see what the golden harness calls on `agent_factory` (build → run → collect answer+citations). The replacement must expose the SAME observable output (answer text + cited sources) sourced from `retrieve()` + one synthesis call.
+The harness (`run_eval.py:300`) does `async with agent_factory() as agent:` then `_agent_answer(agent, q)` calls `(await agent.run(query)).text` (`:165-174`). So the replacement is NOT a "returns answer dict" helper — it must be an **async context manager** yielding an object with an `async run(query) -> obj_with_.text`. The cockpit/selfwiki golden evaluators score `cites_source` on the answer TEXT (`:87`), so the synthesized answer must carry the citations inline.
 
-- [ ] **Step 2: Replace the factory**
+- [ ] **Step 2: Replace the factory with a retrieve()-backed adapter**
 
-Swap `agent_factory = build_cockpit_agent` / `build_selfwiki_agent` for a small local helper that, per golden row, builds the `DomainSpec` for the domain, calls `retrieve()`, synthesizes (reuse `build_synthesis_kwargs`), and returns answer+sources in the shape the harness scores. Remove the `from app.agents.cockpit/selfwiki import build_*_agent` imports.
+Add a small adapter that satisfies that protocol, sourcing from `retrieve()` + one synthesis call:
+
+```python
+# in run_eval.py (or a tiny eval/_retrieve_agent.py)
+class _RetrieveAgent:
+    def __init__(self, domain): self._d = domain
+    async def __aenter__(self): return self
+    async def __aexit__(self, *exc): return False
+    async def run(self, query: str):
+        from app.services.retrieval import retrieve
+        from app.services.grounded import build_synthesis_kwargs
+        docs = await retrieve(query, user=None, domain=self._d)     # eval runs as the app identity
+        kwargs = build_synthesis_kwargs(query, self._d, docs, model=tenant_config().foundry_model)
+        # non-streaming synthesis; return an object exposing .text (mirror _agent_answer's expectation)
+        text = await _synthesize_text(kwargs)                       # helper: responses.create(stream=False).output_text
+        return type("R", (), {"text": text})()
+```
+
+Set `agent_factory = lambda: _RetrieveAgent(_spec_for(domain))` where `_spec_for` builds the `DomainSpec` (reuse `app.domains._domains()`). Remove the `from app.agents.cockpit/selfwiki import build_*_agent` imports (`:35,37`). Leave the `build_concierge_agent` branch (`:257`) untouched — helpdesk is not grounded.
 
 - [ ] **Step 3: Run the golden eval (infra-gated)**
 
@@ -398,7 +433,7 @@ Expected AFTER Task 7: matches only in the files being deleted (no live consumer
 Run: `cd apps/backend && grep -rn "trim_agentic_content\|authorized_components\|_chunk_component" --include='*.py' eval`
 Expected: the 3 ACL/red-team/attribution tests. These stay.
 
-- [ ] **Step 3: Remove in order** — `build_*_agent` (cockpit.py/selfwiki.py) → then `SecureAzureAISearchProvider` (from secure_search.py) + `GroundedAzureAISearchProvider` (grounded_search.py). Then delete `/cockpit-hosted` + `/selfwiki-hosted` from `chat.py`.
+- [ ] **Step 3: Remove in order** — `build_*_agent` (cockpit.py/selfwiki.py) → then `SecureAzureAISearchProvider` (from secure_search.py) + `GroundedAzureAISearchProvider` (grounded_search.py). Then delete `/cockpit-hosted` + `/selfwiki-hosted` from `chat.py`. **Also retire `eval/grounded_acl_roundtrip_test.py`** (it imports the now-removed `GroundedDomain`; its A-vs-B coverage is superseded by `retrieval_acl_parity_test` + `grounded_archetype_roundtrip_test`). `git rm` it.
 
 - [ ] **Step 4: Verify the three trim tests + boot still green**
 
@@ -483,4 +518,4 @@ git commit -m "test(e2e): A-vs-B ACL round-trip over the unified grounded archet
 
 ## Post-plan: selfwiki rollout note
 
-selfwiki has no `search_index` today (it used the MCP tool). For the unified archetype it needs one for Plan B (or the native-filter path with an empty group map). Set `selfwiki_search_index` + re-ingest if needed as the selfwiki step of rollout — cockpit lands first and proves the path.
+selfwiki used the MCP tool at runtime, but `selfwiki_search_index` already exists in config (`tenant.py:51,117`, defaults `selfwiki-docbundles-ks-index`). Confirm that index is actually populated/ingested before the selfwiki step (the cockpit path lands and proves everything first; selfwiki just points the same archetype at its own index with an empty group map).
