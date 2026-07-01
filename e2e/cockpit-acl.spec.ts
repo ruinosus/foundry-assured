@@ -4,15 +4,22 @@ import path from "node:path";
 import { completeMfa } from "./entra-mfa";
 
 // ── Per-user ACL round-trip in the BROWSER (the end-to-end proof) ────────────────────────────
-// Signs in as two Entra users against the deployed app, asks Cockpit (Live) the same grounded
-// question, and asserts the confidential doc is cited for the CLEARED user (A) but NOT for the
-// public-only user (B). This exercises the full stack: MSAL login → OBO → grounded.py direct-search
-// (x-ms-query-source-authorization trims by the `groups` field) → synthesize → the `sources`
-// CUSTOM event → EvidencePanel. The API-level proof lives in apps/backend/eval/grounded_acl_roundtrip_test.py;
-// this confirms it surfaces correctly in the real UI.
+// Signs in as two Entra users against the app, asks Cockpit the same grounded question, and asserts
+// the confidential doc is CITED for the CLEARED user (A) but NOT for the public-only user (B). This
+// exercises the full UNIFIED grounded stack: MSAL login → the /d/cockpit route → backend /cockpit →
+// OBO → stream_grounded → retrieve() (native searchIndex retrieve; x-ms-query-source-authorization
+// trims per-user by the stamped `groups` field) → synthesize → the `sources` CUSTOM event →
+// EvidencePanel (.citation-src). The headless API-level twin of this proof lives in
+// apps/backend/eval/grounded_archetype_roundtrip_test.py (POSTs the same A/B tokens straight to the
+// live /cockpit); this spec confirms the same ACL surfaces correctly in the real browser UI.
 //
-// REQUIRES: the app reachable at E2E_BASE_URL running the Option A cockpit path, and the two test
-// users' creds. Skips cleanly when creds are absent.
+// NOTE (unification): cockpit no longer has a Foundry hosted twin — grounded runs live-OBO only, so
+// there is no "Live" toggle to click anymore (the earlier toggle step is now a harmless no-op). The
+// route (/d/cockpit) and the winning assertion (cited SOURCE FILENAMES in .citation-src, never prose)
+// are UNCHANGED.
+//
+// REQUIRES: the app reachable at E2E_BASE_URL running the unified grounded /cockpit path, and the two
+// test users' creds. Skips cleanly when creds are absent.
 
 const PASS = process.env.COCKPIT_TEST_PASSWORD ?? "";
 const USER_A = process.env.COCKPIT_TEST_USER_A ?? "";
@@ -79,7 +86,8 @@ async function askCockpitAs(browser: Browser, upn: string, tag: string): Promise
     await page.waitForURL((u) => u.host === APP_HOST, { timeout: 60_000 });
     await page.goto("/d/cockpit");
     await page.waitForLoadState("networkidle").catch(() => {});
-    // Ensure Live (not the hosted toggle).
+    // Post-unification cockpit runs live-OBO only (no hosted twin), so there's usually no "Live"
+    // toggle — this click is a harmless no-op kept for older builds that still render it.
     await page.getByRole("button", { name: /^live$/i }).click().catch(() => {});
     const composer = page.locator("textarea, [contenteditable='true']").first();
     await composer.click();
