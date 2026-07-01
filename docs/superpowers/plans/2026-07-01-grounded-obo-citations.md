@@ -44,7 +44,7 @@ Print the full `response` object shape: `output_text`, any `annotations`, the `R
 
 - [ ] **Step 4: (c) Prove the `x-ms-query-source-authorization` header trims by document — on OUR service version**
 
-Requires the ACL prerequisite to exist for at least one probe doc. If cockpit-kb has no permission metadata yet, either (i) run a minimal `setup_acl` stamping on a scratch/`cockpit-kb` index first (see Chunk 2 — you may pull it earlier), or (ii) use the existing `access_control_test.py` fixtures if they already stamp groups. Then run the Step-2 call twice: once with the header = user A's search-OBO token, once with user B's (public-only). **Assert:** A's retrieved sources include the confidential doc and B's do not (spec §5 test). Record whether the header trims (Nov-2025 behavior) or is still "inert" on our service version.
+Requires the ACL prerequisite to exist for at least one probe doc. **`access_control_test.py` does NOT stamp — it assumes an already-stamped `cockpit-kb`** (it only runs the agentic retrieve as two ROPC users), so it is not a shortcut here. **You MUST run the Chunk 2 stamp first:** pull **Chunk 2 Steps 1 + 4 forward into this gate** (author the minimal classification, then run `ingest_cockpit` with `COCKPIT_ACL_CLASSIFICATION` set so `setup_acl` stamps the `groups` field + enables `permissionFilterOption`). Then run the Step-2 call twice: once with the header = user A's search-OBO token, once with user B's (public-only). **Assert:** A's retrieved sources include the confidential doc and B's do not (spec §5 test). Record whether the header trims (Nov-2025 behavior) or is still "inert" on our service version.
 - **Contingency (spec §5 issue #5):** if it does NOT trim, record it — Chunk 1 must then KEEP the app-side trim (`secure_search.py` layer B) instead of deleting it, and Chunk 2/4's ACL claim shifts to the app-side path.
 
 - [ ] **Step 5: (frontend) Prove the `sources` channel reaches `useAgent`**
@@ -174,15 +174,20 @@ git commit -m "feat(grounded): live citations via Responses+MCP OBO bridge; /coc
 **Depends on:** Chunk 0 GO. Only needed if the header trims (else the app-side trim in Chunk 1 Step 7 covers ACL and this chunk provides the group stamping for that path instead). **Infra-gated** — this touches the live cockpit-kb index; the plan documents it as a runbook + a verification test, and skips cleanly without creds.
 
 **Files:**
-- Create (minimal classification, gitignored): `apps/backend/.cockpit-acl-poc.json` (add to `.gitignore`)
+- Create (minimal classification, gitignored): `apps/backend/.cockpit-acl-poc.json`
+- Modify: repo-root `.gitignore` (add the classification file — there is no `apps/backend/.gitignore` today)
 - Reference: `apps/backend/app/knowledge/ingest_cockpit.py`, `apps/backend/app/knowledge/acl_setup.py`, `apps/backend/eval/access_control_test.py`
 - Create (test): `apps/backend/eval/cockpit_acl_stamp_test.py`
 
-> The ingest already owns ACL (`ingest_cockpit.main` → `setup_acl(component_groups)` when `tenant_config().acl_group_map` is set; `setup_acl` adds the `groups` permission field + `permissionFilterOption=enabled`). So the "re-ingest with permission metadata" is mostly **configuration + a minimal classification**, not new pipeline code.
+> The ingest already owns ACL (`ingest_cockpit.main` → `setup_acl(component_groups or None)` when `tenant_config().acl_group_map` is set; `setup_acl` adds the `groups` permission field + `permissionFilterOption=enabled`). Because the aap-kb manifests have `groups: None`, `component_groups` collapses to `{}` → `None`, so `setup_acl` uses the **external `COCKPIT_ACL_CLASSIFICATION` map** — which is exactly the PoC classification below. So the "re-ingest with permission metadata" is mostly **configuration + a minimal classification**, not new pipeline code.
 
 - [ ] **Step 1: Author the minimal PoC classification (makes the A-vs-B test meaningful — spec §5 issue #4)**
 
-Create `.cockpit-acl-poc.json` = `{ "<confidential-component-key>": ["cockpit-confidential"], ... }` mapping ONE specific component (whose content answers a chosen probe query) to a group only test-user **A** is in; every other doc falls to the default group (public, both A and B). Pick the probe query so its top answer lives in that confidential component. Add `.cockpit-acl-poc.json` to `apps/backend/.gitignore` (the corpus + access map are never committed — see `acl_setup.py` docstring).
+Create `.cockpit-acl-poc.json` = `{ "<canonical-component-key>": ["confidential"] }` mapping ONE specific component (whose content answers a chosen probe query) to a group only test-user **A** is in.
+- **Group names MUST resolve** via `tenant_config().acl_group_map` — the only resolvable names are the demo trio **`public` / `internal` / `confidential`** (from `cockpit_acl_public_group` / `_internal_group` / `_confidential_group`) plus any custom entries in `cockpit_acl_group_map`. `acl_setup._resolve()` **drops** any unknown non-GUID name → `groups: []` → fail-closed to *nobody* (which would make A *also* lose the doc — a false negative). So use **`confidential`** (test-user A in that group), NOT an invented label like `cockpit-confidential`. Set `cockpit_acl_default_groups="public"` so every other doc → `public` (both A and B see it).
+- **The classification KEY is the canonical component key** produced by `acl_setup._component(blob_url)` → `_canonical()`: `<component>` lowercased, spaces→hyphens, trailing version stripped (e.g. `cockpit-portal-api`); source pages are `source__<NAME>`. Look at a stamped blob name / the `access_control_test.py` `_chunk_component` logic to pick a real key. A wrong key silently stamps nothing.
+- Pick the probe query so its top answer lives in that confidential component.
+- Add `apps/backend/.cockpit-acl-poc.json` to the **repo-root `.gitignore`** (create `apps/backend/.gitignore` with the entry if you prefer per-dir) — the corpus + access map are never committed (see `acl_setup.py` docstring).
 
 - [ ] **Step 2: Write the failing verification test (infra-gated)**
 
@@ -212,7 +217,7 @@ Expected: `PASS` (field present, option enabled, confidential doc stamped).
 - [ ] **Step 6: Commit (the test + .gitignore entry; NOT the classification JSON or corpus)**
 
 ```bash
-git add apps/backend/eval/cockpit_acl_stamp_test.py apps/backend/.gitignore
+git add apps/backend/eval/cockpit_acl_stamp_test.py .gitignore   # root .gitignore now ignores the PoC classification
 git commit -m "test(acl): verify cockpit-kb permission-metadata stamping for per-user trimming"
 ```
 
