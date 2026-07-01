@@ -26,30 +26,6 @@ async def helpdesk_hosted(request: Request) -> StreamingResponse:
     )
 
 
-@router.post("/cockpit-hosted", dependencies=_domain_deps("cockpit"))
-async def cockpit_hosted(request: Request) -> StreamingResponse:
-    """AG-UI twin of /cockpit — the deployed cockpit-expert hosted agent (Responses protocol),
-    streamed as AG-UI. The managed identity is authorized to invoke hosted agents (unlike raw
-    inference), so this is the keyless path that actually answers. Same Entra gate (+ shared-mode
-    domain entitlement)."""
-    body = await request.json()
-    return StreamingResponse(
-        stream_agui(body, tenant_config().cockpit_hosted_agent_name),
-        media_type="text/event-stream",
-    )
-
-
-@router.post("/selfwiki-hosted", dependencies=_domain_deps("selfwiki"))
-async def selfwiki_hosted(request: Request) -> StreamingResponse:
-    """AG-UI twin of /selfwiki — the deployed selfwiki-expert hosted agent (Responses protocol),
-    streamed as AG-UI. Keyless: the MI can invoke hosted agents where the live path 403s."""
-    body = await request.json()
-    return StreamingResponse(
-        stream_agui(body, tenant_config().selfwiki_hosted_agent_name),
-        media_type="text/event-stream",
-    )
-
-
 @router.post("/platform-hosted", dependencies=_domain_deps("platform"))
 async def platform_hosted(request: Request) -> StreamingResponse:
     """AG-UI twin of /platform — the deployed platform hosted agent over the Invocations

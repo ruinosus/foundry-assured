@@ -24,27 +24,13 @@ import json
 import re
 import urllib.request
 
-from agent_framework import Message
-from agent_framework.azure import AzureAISearchContextProvider
 from azure.identity import DefaultAzureCredential
 
-from app.core.auth import credential_for_request, current_user
-from app.core.settings import settings
 from app.core.tenant import tenant_config
 from app.knowledge.acl_setup import _canonical, _component
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _API = "2025-08-01-preview"
-
-
-def _caller_search_token() -> str | None:
-    """The signed-in user's search-scoped token (OBO), or None when auth is off."""
-    if not (settings.auth_enabled and current_user() is not None):
-        return None
-    try:
-        return credential_for_request().get_token(_SEARCH_SCOPE).token
-    except Exception:  # noqa: BLE001 — no token → fail-closed below
-        return None
 
 
 def authorized_components(caller_token: str) -> set[str]:
@@ -100,37 +86,3 @@ def trim_agentic_content(text: str, allowed: set[str]) -> str:
     kept = [c for c in chunks if _chunk_authorized(
         (c.get("content", "") if isinstance(c, dict) else str(c)), allowed)]
     return json.dumps(kept, ensure_ascii=False)
-
-
-class SecureAzureAISearchProvider(AzureAISearchContextProvider):
-    """Agentic provider with caller-identity passthrough (C) + app-side trim (B)."""
-
-    async def _ensure_knowledge_base(self) -> None:  # type: ignore[override]
-        await super()._ensure_knowledge_base()
-        client = self._retrieval_client
-        if client is not None and not getattr(client, "_obo_wrapped", False):
-            original_retrieve = client.retrieve
-
-            async def retrieve_as_caller(*args, **kwargs):  # noqa: ANN002, ANN003
-                token = _caller_search_token()
-                if token and not kwargs.get("x_ms_query_source_authorization"):
-                    kwargs["x_ms_query_source_authorization"] = token  # layer C
-                return await original_retrieve(*args, **kwargs)
-
-            client.retrieve = retrieve_as_caller  # type: ignore[method-assign]
-            client._obo_wrapped = True  # type: ignore[attr-defined]
-
-    async def _agentic_search(self, messages: list[Message]) -> list[Message]:  # type: ignore[override]
-        result = await super()._agentic_search(messages)
-        token = _caller_search_token()
-        if token is None:  # auth off (dev) → no caller to trim for
-            return result
-        allowed = authorized_components(token)  # layer B — the caller's entitlement
-        trimmed: list[Message] = []
-        for m in result:
-            new_contents = [
-                (trim_agentic_content(t, allowed) if (t := getattr(c, "text", None)) else c)
-                for c in (m.contents or [])
-            ]
-            trimmed.append(Message(role=m.role, contents=new_contents))
-        return trimmed
