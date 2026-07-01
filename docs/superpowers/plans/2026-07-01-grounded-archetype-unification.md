@@ -304,6 +304,7 @@ class DomainSpec:
     kind: Literal["grounded", "workflow", "tool"]
     instructions: str = ""
     kb_name: str | None = None
+    ks_name: str | None = None          # the KB's knowledge-source name (native path); None → defaults to kb_name
     search_index: str | None = None
     search_endpoint: str = ""           # REQUIRED for grounded — Plan B's _direct_search_authorized reads it
     acl_group_map: dict | None = None   # ACL is DATA (rule #6); name→objectID; None/empty → no-op filter
@@ -316,7 +317,11 @@ def _domains() -> list[DomainSpec]:
     return [
         DomainSpec("helpdesk", "workflow", hosted_agent_name=cfg.hosted_agent_name),
         DomainSpec("cockpit", "grounded", COCKPIT_INSTRUCTIONS,
-                   kb_name=cfg.cockpit_search_knowledge_base, search_index=cfg.cockpit_search_index,
+                   # Task 2b migrated cockpit to a searchIndex KB (native agentic retrieve + ACL header).
+                   # Use the searchIndex KB + its knowledge-source name — NOT the legacy blob cockpit-kb.
+                   kb_name=cfg.cockpit_searchindex_knowledge_base,      # "cockpit-si-kb"
+                   ks_name=cfg.cockpit_searchindex_knowledge_source,    # "cockpit-docbundles-si-ks"
+                   search_index=cfg.cockpit_search_index,               # for Plan B fallback
                    search_endpoint=cfg.azure_search_endpoint,
                    acl_group_map=cfg.acl_group_map),   # the PARSED PROPERTY (dict name→objectID), NOT the raw str
         DomainSpec("selfwiki", "grounded", SELFWIKI_INSTRUCTIONS,
@@ -356,7 +361,7 @@ def _mount_grounded(app, d: DomainSpec) -> None:
     app.add_api_route(f"/{d.id}", endpoint, methods=["POST"], dependencies=_domain_deps(d.id))
 ```
 
-**Config fields already exist — do NOT add duplicates.** Verify (don't re-add): `cockpit_acl_group_map` (`tenant.py:55,119`, raw comma-str; consume via the `acl_group_map` property `:84`), `selfwiki_search_index` (`:51,117`, already defaults `selfwiki-docbundles-ks-index`), `hosted_agent_name` (`:69,127`), `azure_search_endpoint`. The native-header path needs no new filter field (STEP 0.5 identified none); `search_endpoint` on `DomainSpec` is added in Task 5 for Plan B.
+**Config fields already exist — do NOT add duplicates.** Verify (don't re-add): `cockpit_acl_group_map` (`tenant.py:55,119`, raw comma-str; consume via the `acl_group_map` property `:84`), `selfwiki_search_index` (`:51,117`, already defaults `selfwiki-docbundles-ks-index`), `hosted_agent_name` (`:69,127`), `azure_search_endpoint`, and — added by Task 2b — `cockpit_searchindex_knowledge_base` (=`cockpit-si-kb`) + `cockpit_searchindex_knowledge_source` (=`cockpit-docbundles-si-ks`). The native-header path needs no new filter field (STEP 0.5 identified none); `search_endpoint` + `ks_name` on `DomainSpec` are added in Task 5.
 
 - [ ] **Step 4: Run to verify it passes**
 
