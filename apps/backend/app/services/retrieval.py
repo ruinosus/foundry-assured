@@ -9,10 +9,9 @@ One interface, two identities, two engines behind the same seam:
   call is the APP managed identity (Search Index Data Reader); the header carries the END USER's
   search-scoped token, and its group membership drives the permission trim on the ACL-stamped index.
 
-- **FALLBACK (direct-search-as-user):** when the domain has no `kb_name`, reuse
-  `grounded._direct_search_authorized` (the same header trim, over `domain.search_index`). Imported —
-  NOT moved — so the live `grounded.stream_grounded_agui` path keeps working until a later task
-  relocates the engine.
+- **FALLBACK (direct-search-as-user):** when the domain has no `kb_name`, `_direct_search_authorized`
+  (defined below) does a DIRECT search over `domain.search_index` with the same header trim. This is the
+  fallback engine — it lives HERE now (moved out of grounded.py, which collapsed to one archetype).
 
 Two token identities (mirrors grounded.py:216–224):
   - service credential on the retrieve call = APP managed identity (end users have no Search RBAC);
@@ -65,9 +64,7 @@ async def retrieve(query: str, user, domain, *, top: int = 8) -> list[dict]:
         user_token = await _user_search_token(user)  # OBO, or None (dev / no-auth / public)
         if getattr(domain, "kb_name", None):  # PRIMARY: native agentic retrieve
             rows = await _native_retrieve(domain, query, primary, user_token)
-        else:  # FALLBACK: direct-search-as-user (imported from grounded, not moved)
-            from app.services.grounded import _direct_search_authorized
-
+        else:  # FALLBACK: direct-search-as-user (the engine lives here now)
             rows = await _direct_search_authorized(domain, query, primary, user_token, top=top)
         return _project(rows)
     finally:
@@ -146,7 +143,7 @@ async def _native_retrieve(
     if user_token is not None:  # ACL domains only; public domains omit the header (RULE #6 fail-closed)
         # BARE user token — no "Bearer " prefix (RULE #1: copy the PROVEN shape, not the prose). Both the
         # probe that empirically proved the searchIndex ACL trim (step0_searchindex_filter_probe.py:241)
-        # and the live direct-search path (grounded._direct_search_authorized) send it bare.
+        # and the direct-search fallback (_direct_search_authorized, below) send it bare.
         headers["x-ms-query-source-authorization"] = user_token
 
     async with httpx.AsyncClient(timeout=120) as http:
@@ -243,6 +240,36 @@ def _parse_native(body: dict) -> list[dict]:
         snippet = by_ref.get(str(ref_id), "") if ref_id is not None else ""
         rows.append({"source": source, "url": blob_url, "snippet": snippet})
     return rows
+
+
+async def _direct_search_authorized(
+    domain, query: str, primary_token: str, user_token: str | None, *, top: int = 8
+) -> list[dict]:
+    """FALLBACK engine — DIRECT search over `domain.search_index` AS THE USER. The service trims by the
+    stamped `groups` field (permissionFilterOption enabled), so the result contains ONLY documents the
+    user may read. Returns raw rows [{source, url, snippet}] (dedup + 1-based reindex happen in _project).
+    This is where per-user ACL works on non-searchIndex-KB domains."""
+    import httpx
+
+    headers = {"Authorization": f"Bearer {primary_token}", "Content-Type": "application/json"}
+    if user_token:
+        headers["x-ms-query-source-authorization"] = user_token  # the ACL trim (real per-user)
+    else:
+        # Dev / auth-off: no caller identity. Elevated-read returns all docs so local dev isn't
+        # fail-closed to public-only. Best-effort — if the identity lacks the elevated permission,
+        # the query still runs (returns whatever the primary identity is entitled to).
+        headers["x-ms-enable-elevated-read"] = "true"
+    url = f"{domain.search_endpoint.rstrip('/')}/indexes/{domain.search_index}/docs/search?api-version={_KB_API}"
+    payload = {"search": query, "select": "snippet,blob_url", "top": top}
+    async with httpx.AsyncClient(timeout=30) as http:
+        resp = await http.post(url, headers=headers, json=payload)
+        resp.raise_for_status()
+        rows = resp.json().get("value", [])
+    return [
+        {"source": (r.get("blob_url") or "").rsplit("/", 1)[-1], "url": r.get("blob_url") or "",
+         "snippet": r.get("snippet") or ""}
+        for r in rows
+    ]
 
 
 def _project(rows: list[dict]) -> list[dict]:

@@ -21,48 +21,54 @@ def _hosted_deps(domain_id: str) -> list:
 
 @router.post("/cockpit", dependencies=_hosted_deps("cockpit"))
 async def cockpit(request: Request) -> StreamingResponse:
-    """Grounded Cockpit expert with STRUCTURED citations — the Responses API run AS THE USER (OBO)
-    with the cockpit-kb attached as an inline knowledge_base_retrieve MCP tool. Per-user document
-    ACL via the x-ms-query-source-authorization header (acl=True). Replaces the old agent-framework
-    AzureAISearchContextProvider mount (prose citations, empty annotations, MI 403). See
-    app/services/grounded.py + the 2026-07-01 spec."""
+    """Grounded Cockpit expert with STRUCTURED citations — the Responses API run AS THE USER (OBO),
+    grounded on docs from the `retrieve()` seam over the searchIndex-backed cockpit KB (cockpit-si-kb).
+    Per-user document ACL rides the x-ms-query-source-authorization header inside retrieve(). One
+    archetype (app/services/grounded.stream_grounded). See the 2026-07-01 spec.
+
+    (Interim duck-typed domain — Task 6 replaces this endpoint with a mount loop.)"""
+    from types import SimpleNamespace
+
     from app.agents.prompts import COCKPIT_INSTRUCTIONS
     from app.core.auth import current_user
-    from app.services.grounded import GroundedDomain, stream_grounded_agui
+    from app.services.grounded import stream_grounded
 
     cfg = tenant_config()
-    domain = GroundedDomain(
-        kb_name=cfg.cockpit_search_knowledge_base,
+    domain = SimpleNamespace(
+        kb_name=cfg.cockpit_searchindex_knowledge_base,  # cockpit-si-kb (native searchIndex retrieve)
+        ks_name=cfg.cockpit_searchindex_knowledge_source,  # cockpit-docbundles-si-ks
         instructions=COCKPIT_INSTRUCTIONS,
-        acl=True,
         search_endpoint=cfg.azure_search_endpoint,
-        search_index=cfg.cockpit_search_index,  # acl=True → direct-search this index (ACL trims here)
+        search_index=cfg.cockpit_search_index,  # direct-search fallback target (ACL trims here too)
     )
     # Capture the user HERE (contextvar is set by the auth dep); it's lost inside the stream generator.
     return StreamingResponse(
-        stream_grounded_agui(await request.json(), domain, current_user()),
+        stream_grounded(await request.json(), domain, current_user()),
         media_type="text/event-stream",
     )
 
 
 @router.post("/selfwiki", dependencies=_hosted_deps("selfwiki"))
 async def selfwiki(request: Request) -> StreamingResponse:
-    """Grounded Selfwiki expert with structured citations — same Responses+MCP path as /cockpit but
-    single-audience (acl=False → NO x-ms-query-source-authorization header; selfwiki-kb has no
-    permission metadata)."""
+    """Grounded Selfwiki expert with structured citations — same one-archetype path as /cockpit but
+    single-audience (no ACL: selfwiki-kb has no permission metadata, so retrieve() omits the header).
+
+    (Interim duck-typed domain — Task 6 replaces this endpoint with a mount loop.)"""
+    from types import SimpleNamespace
+
     from app.agents.prompts import SELFWIKI_INSTRUCTIONS
     from app.core.auth import current_user
-    from app.services.grounded import GroundedDomain, stream_grounded_agui
+    from app.services.grounded import stream_grounded
 
     cfg = tenant_config()
-    domain = GroundedDomain(
+    domain = SimpleNamespace(
         kb_name=cfg.selfwiki_search_knowledge_base,
         instructions=SELFWIKI_INSTRUCTIONS,
-        acl=False,
         search_endpoint=cfg.azure_search_endpoint,
+        search_index=None,  # no direct-search fallback target; native KB retrieve only
     )
     return StreamingResponse(
-        stream_grounded_agui(await request.json(), domain, current_user()),
+        stream_grounded(await request.json(), domain, current_user()),
         media_type="text/event-stream",
     )
 
