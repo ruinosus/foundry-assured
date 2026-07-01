@@ -27,6 +27,7 @@ async def cockpit(request: Request) -> StreamingResponse:
     AzureAISearchContextProvider mount (prose citations, empty annotations, MI 403). See
     app/services/grounded.py + the 2026-07-01 spec."""
     from app.agents.prompts import COCKPIT_INSTRUCTIONS
+    from app.core.auth import current_user
     from app.services.grounded import GroundedDomain, stream_grounded_agui
 
     cfg = tenant_config()
@@ -37,8 +38,10 @@ async def cockpit(request: Request) -> StreamingResponse:
         search_endpoint=cfg.azure_search_endpoint,
         search_index=cfg.cockpit_search_index,  # acl=True → direct-search this index (ACL trims here)
     )
+    # Capture the user HERE (contextvar is set by the auth dep); it's lost inside the stream generator.
     return StreamingResponse(
-        stream_grounded_agui(await request.json(), domain), media_type="text/event-stream"
+        stream_grounded_agui(await request.json(), domain, current_user()),
+        media_type="text/event-stream",
     )
 
 
@@ -48,6 +51,7 @@ async def selfwiki(request: Request) -> StreamingResponse:
     single-audience (acl=False → NO x-ms-query-source-authorization header; selfwiki-kb has no
     permission metadata)."""
     from app.agents.prompts import SELFWIKI_INSTRUCTIONS
+    from app.core.auth import current_user
     from app.services.grounded import GroundedDomain, stream_grounded_agui
 
     cfg = tenant_config()
@@ -58,7 +62,8 @@ async def selfwiki(request: Request) -> StreamingResponse:
         search_endpoint=cfg.azure_search_endpoint,
     )
     return StreamingResponse(
-        stream_grounded_agui(await request.json(), domain), media_type="text/event-stream"
+        stream_grounded_agui(await request.json(), domain, current_user()),
+        media_type="text/event-stream",
     )
 
 

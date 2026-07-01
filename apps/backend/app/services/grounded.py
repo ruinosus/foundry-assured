@@ -120,14 +120,14 @@ def _source_from_annotation(ann: object) -> dict | None:
     return {"source": url.rsplit("/", 1)[-1], "url": url}
 
 
-def _async_credential():
+def _async_credential(user):
     """Async credential AS THE SIGNED-IN USER (OBO), mirroring app.core.auth.credential_for_request.
-    Falls back to DefaultAzureCredential (aio) when auth is off (local dev)."""
+    The `user` MUST be captured in the endpoint and passed in — the `current_user()` contextvar is
+    LOST inside this StreamingResponse async generator (verified), so reading it here would return
+    None and silently fall back to the app MI, which 403s on raw inference (the service-principal gap).
+    Falls back to DefaultAzureCredential (aio) when auth is off (local dev) or no user."""
     from azure.identity.aio import DefaultAzureCredential, OnBehalfOfCredential
 
-    from app.core.auth import current_user
-
-    user = current_user()
     if settings.auth_enabled and user is not None:
         return OnBehalfOfCredential(
             tenant_id=settings.entra_tenant_id,
@@ -177,9 +177,12 @@ async def _direct_search_authorized(
     return docs
 
 
-async def stream_grounded_agui(body: dict, domain: GroundedDomain) -> AsyncGenerator[str]:
+async def stream_grounded_agui(body: dict, domain: GroundedDomain, user=None) -> AsyncGenerator[str]:
     """Stream a grounded answer (as the user) as AG-UI SSE: text deltas + a `sources` CUSTOM event.
-    acl=False → inline MCP tool (native citations); acl=True → direct-search+synthesize (per-user ACL)."""
+    acl=False → inline MCP tool (native citations); acl=True → direct-search+synthesize (per-user ACL).
+
+    `user` is the signed-in User, CAPTURED IN THE ENDPOINT and passed in (the current_user() contextvar
+    doesn't survive into this generator — see _async_credential). None → app identity (dev/no-auth)."""
     from ag_ui.core import (
         CustomEvent,
         RunErrorEvent,
@@ -204,7 +207,7 @@ async def stream_grounded_agui(body: dict, domain: GroundedDomain) -> AsyncGener
     yield enc.encode(TextMessageStartEvent(message_id=message_id, role="assistant"))
 
     cfg = tenant_config()
-    credential = _async_credential()
+    credential = _async_credential(user)
     proj = AIProjectClient(
         endpoint=cfg.foundry_project_endpoint, credential=credential, allow_preview=True
     )
@@ -225,11 +228,9 @@ async def stream_grounded_agui(body: dict, domain: GroundedDomain) -> AsyncGener
         if domain.acl:
             # Per-user ACL path: retrieve authorized docs via direct search (primary=app, ACL header=user),
             # then synthesize from ONLY those docs.
-            from app.core.auth import current_user
-
             user_search_token = (
                 (await credential.get_token(_SEARCH_SCOPE)).token
-                if (settings.auth_enabled and current_user() is not None)
+                if (settings.auth_enabled and user is not None)
                 else None
             )
             docs = await _direct_search_authorized(domain, user_text, app_search_token, user_search_token)
