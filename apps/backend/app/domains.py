@@ -86,8 +86,11 @@ def _domains() -> list[DomainSpec]:
             id="selfwiki",
             kind="grounded",
             instructions=SELFWIKI_INSTRUCTIONS,
-            kb_name=cfg.selfwiki_search_knowledge_base,
+            kb_name=cfg.selfwiki_searchindex_knowledge_base,  # selfwiki-si-kb (native searchIndex retrieve)
+            ks_name=cfg.selfwiki_searchindex_knowledge_source,  # selfwiki-docbundles-si-ks
+            search_index=cfg.selfwiki_search_index,  # direct-search fallback target (no ACL — single-audience)
             search_endpoint=cfg.azure_search_endpoint,
+            # selfwiki stays ACL-free (single-audience): no acl_group_map.
         ),
         DomainSpec(id="platform", kind="tool"),
     ]

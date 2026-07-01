@@ -387,9 +387,132 @@ def provision_searchindex_kb() -> None:
     )
 
 
+# ---------------------------------------------------------------------------
+# selfwiki — searchIndex-backed KB over the EXISTING selfwiki index.
+#
+# selfwiki is the dogfood domain: its corpus (this repo's own deep-wiki) is ingested by
+# REUSING this module's blob pipeline verbatim via env overrides (COCKPIT_STORAGE_CONTAINER=
+# selfwiki-corpus, KB_KNOWLEDGE_SOURCE=selfwiki-docbundles-ks, COCKPIT_SEARCH_KNOWLEDGE_BASE=
+# selfwiki-kb — see docs/CASE-STUDY-SELFWIKI-DOGFOOD.md). That left selfwiki-kb on an azureBlob
+# source, which the native retrieve (hardcoded kind:searchIndex) can't serve.
+#
+# This mirrors the cockpit Task 2b twin (create_searchindex_knowledge_source/_base above) for
+# selfwiki: a SEPARATE searchIndex KS + KB (selfwiki-si-kb over selfwiki-docbundles-si-ks) over
+# the SAME already-built selfwiki-docbundles-ks-index. selfwiki has NO per-user ACL, so this is a
+# functional/recall unification (get it onto the native path), not a security change. NON-
+# DESTRUCTIVE + REVERSIBLE: nothing about the legacy blob selfwiki-kb/source or the index changes;
+# cutover = the registry points at selfwiki_searchindex_knowledge_base (flip back to roll back).
+# ---------------------------------------------------------------------------
+
+_SELFWIKI_LABEL = "foundry-helpdesk selfwiki (this repo's own deep-wiki)"
+
+
+def create_selfwiki_searchindex_knowledge_source(index_client: SearchIndexClient) -> None:
+    """Create/update the selfwiki searchIndex knowledge source over the EXISTING selfwiki index.
+
+    Same SDK model calls as create_searchindex_knowledge_source (RULE #1), pointed at the selfwiki
+    names. Reads selfwiki-docbundles-ks-index (already built by the blob indexer); nothing rebuilt.
+    """
+    cfg = tenant_config()
+    ks_name = cfg.selfwiki_searchindex_knowledge_source
+    index_name = cfg.selfwiki_search_index
+    knowledge_source = SearchIndexKnowledgeSource(
+        name=ks_name,
+        description=(
+            f"{_SELFWIKI_LABEL} — searchIndex source over the EXISTING index "
+            f"'{index_name}'. Unifies selfwiki on the native agentic retrieve path "
+            "(kind:searchIndex). No per-user ACL (single-audience). Reads the same index the "
+            "blob indexer keeps fresh; nothing rebuilt."
+        ),
+        search_index_parameters=SearchIndexKnowledgeSourceParameters(
+            search_index_name=index_name,
+            source_data_fields=[
+                SearchIndexFieldReference(name="blob_url"),
+                SearchIndexFieldReference(name="snippet"),
+            ],
+        ),
+    )
+    _with_timeout(
+        f"create searchIndex knowledge source '{ks_name}'",
+        lambda: index_client.create_or_update_knowledge_source(knowledge_source),
+    )
+    print(f"searchIndex knowledge source '{ks_name}' created/updated (→ {index_name}).")
+
+
+def create_selfwiki_searchindex_knowledge_base(index_client: SearchIndexClient) -> None:
+    """Create/update the searchIndex-backed selfwiki KB alongside the legacy blob selfwiki-kb.
+
+    Mirrors create_searchindex_knowledge_base for the selfwiki names + label. Not the ACTIVE KB
+    until the registry points at selfwiki_searchindex_knowledge_base, so provisioning is safe.
+    """
+    cfg = tenant_config()
+    kb_name = cfg.selfwiki_searchindex_knowledge_base
+    ks_name = cfg.selfwiki_searchindex_knowledge_source
+    knowledge_base = KnowledgeBase(
+        name=kb_name,
+        description=(
+            f"{_SELFWIKI_LABEL} knowledge base (searchIndex source) — native agentic retrieve. "
+            "Cutover twin of the legacy blob selfwiki-kb (no ACL; single-audience)."
+        ),
+        knowledge_sources=[KnowledgeSourceReference(name=ks_name)],
+        models=[
+            KnowledgeBaseAzureOpenAIModel(
+                azure_open_ai_parameters=AzureOpenAIVectorizerParameters(
+                    resource_url=cfg.azure_ai_openai_endpoint,
+                    deployment_name=cfg.foundry_model,
+                    model_name=cfg.foundry_model,
+                )
+            )
+        ],
+        output_mode="answerSynthesis",
+        answer_instructions=(
+            f"Responda APENAS com base nos documentos de {_SELFWIKI_LABEL} recuperados. Cite o "
+            "componente e o documento-fonte de cada afirmação. Se a resposta não estiver na base, "
+            "diga que não sabe — nunca invente."
+        ),
+        retrieval_reasoning_effort=KnowledgeRetrievalMediumReasoningEffort(),
+    )
+    _with_timeout(
+        f"create searchIndex knowledge base '{kb_name}'",
+        lambda: index_client.create_or_update_knowledge_base(knowledge_base),
+    )
+    print(f"searchIndex knowledge base '{kb_name}' created/updated.")
+
+
+def provision_selfwiki_searchindex_kb() -> None:
+    """Provision ONLY the selfwiki searchIndex KB/KS over the existing selfwiki index.
+
+    Standalone entry point for the selfwiki cutover — the index already exists + is populated by a
+    prior full selfwiki ingest, so this just adds the searchIndex-backed twin:
+        uv run python -m app.knowledge.ingest_cockpit --selfwiki-searchindex-kb-only
+    """
+    _setup_logging()
+    _require("AZURE_SEARCH_ENDPOINT", tenant_config().azure_search_endpoint)
+    api_version = os.environ.get("SEARCH_API_VERSION", "2026-05-01-preview")
+    index_client = SearchIndexClient(
+        endpoint=tenant_config().azure_search_endpoint,
+        credential=DefaultAzureCredential(),
+        api_version=api_version,
+        logging_enable=True,
+        connection_timeout=20,
+        read_timeout=CALL_TIMEOUT_S,
+    )
+    print("== searchIndex selfwiki KB (over EXISTING selfwiki index — non-destructive) ==")
+    create_selfwiki_searchindex_knowledge_source(index_client)
+    create_selfwiki_searchindex_knowledge_base(index_client)
+    print(
+        "\nDone. The searchIndex selfwiki KB is provisioned ALONGSIDE the legacy blob selfwiki-kb.\n"
+        "The domain registry points selfwiki at "
+        f"'{tenant_config().selfwiki_searchindex_knowledge_base}' (reversible — repoint to roll back)."
+    )
+
+
 def main() -> None:
     if "--searchindex-kb-only" in sys.argv:
         provision_searchindex_kb()
+        return
+    if "--selfwiki-searchindex-kb-only" in sys.argv:
+        provision_selfwiki_searchindex_kb()
         return
     _setup_logging()
     _require("AZURE_SEARCH_ENDPOINT", tenant_config().azure_search_endpoint)
