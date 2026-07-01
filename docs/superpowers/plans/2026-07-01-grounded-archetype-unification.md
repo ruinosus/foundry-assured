@@ -4,7 +4,7 @@
 
 **Goal:** Collapse the two forked grounded paths (cockpit direct-search+ACL vs selfwiki inline-MCP) into ONE rich grounded archetype fronted by a single `retrieve()` seam, driven by a backend `DomainSpec` registry with dispatch-by-`kind`, keeping the native Microsoft retriever + single head + per-user ACL together.
 
-**Architecture:** A single `retrieve(query, user, domain) -> [{index,source,url,snippet}]` seam owns both retrieval identities (app-MI primary + per-user trim) and hides whether it uses the native retriever+filter (target) or the direct-search Plan B. One archetype (`stream_grounded`) runs the 4 stations (OBO → retrieve → synthesize → emit) for every grounded domain. A backend `DomainSpec` registry mirrors `apps/frontend/lib/domains.ts`; one mount loop dispatches by `kind` (grounded → archetype, workflow → helpdesk, tool → platform). A hard STEP-0 gate proves the native filter before anything is built on it.
+**Architecture:** A single `retrieve(query, user, domain) -> [{index,source,url,snippet}]` seam owns both retrieval identities (app-MI service credential + per-user ACL header) and hides the retrieval mechanism. STEP 0 + 0.5 RESOLVED the mechanism: **native agentic retrieve over a `searchIndex`-backed KB, per-user ACL via the `x-ms-query-source-authorization` header** (which searchIndex KBs honor — the #44454 gap was blob-specific); direct-search is the fallback behind the same seam. One archetype (`stream_grounded`) runs the 4 stations (OBO → retrieve → synthesize → emit) for every grounded domain. A backend `DomainSpec` registry mirrors `apps/frontend/lib/domains.ts`; one mount loop dispatches by `kind` (grounded → archetype, workflow → helpdesk, tool → platform). A prerequisite migrates `cockpit-kb` from `azureBlob` to `searchIndex`.
 
 **Tech Stack:** Python 3.12, `azure-ai-projects` (Responses API, `.aio`), `azure-identity` OBO, FastAPI, `agent-framework-ag-ui`, `httpx`. Tests: runnable `def main()->int` modules in `apps/backend/eval/` (NO pytest), run `uv run python -m eval.<name>` from `apps/backend/`.
 
@@ -27,7 +27,8 @@
 | File | Responsibility | Action |
 |------|----------------|--------|
 | `apps/backend/eval/step0_native_filter_probe.py` | STEP-0 gate: does the native retriever trim by a caller-supplied group filter? Capture shape + api-version. | Create |
-| `apps/backend/app/services/retrieval.py` | The `retrieve()` seam. Owns both identities. Native-filter path (from STEP 0) OR Plan B (`_direct_search_authorized`). Returns `[{index,source,url,snippet}]`. | Create |
+| `apps/backend/app/services/retrieval.py` | The `retrieve()` seam. Owns both identities. Primary: native agentic retrieve + ACL header over a searchIndex KB (STEP 0.5). Fallback: `_direct_search_authorized`. Returns `[{index,source,url,snippet}]`. | Create |
+| `apps/backend/app/knowledge/ingest_cockpit.py` | Migrate `cockpit-kb` from an `azureBlob` to a `searchIndex` knowledge source over the existing ACL-stamped `cockpit-docbundles-ks-index` (Task 2b — unblocks the native ACL header). | Modify |
 | `apps/backend/app/services/grounded.py` | Collapses to the single archetype `stream_grounded(body, domain, user)` (4 stations) using `retrieve()`. Drop the `acl` fork + `build_responses_kwargs`. Keep `_async_credential`, `build_synthesis_kwargs`, emit invariants. | Modify |
 | `apps/backend/app/domains.py` | Backend `DomainSpec` registry (mirrors `domains.ts`) + `mount_domains(app)` loop dispatching by `kind`. **Owns `_domain_deps`** (moved from `main.py`) to break the `main↔domains` cycle and de-dupe `chat.py::_hosted_deps`. | Create |
 | `apps/backend/app/api/chat.py` | Remove the grounded `/cockpit` + `/selfwiki` router endpoints (moved into the mount loop) and the two redundant grounded hosted twins. Drop the local `_hosted_deps`; import `_domain_deps` from `app.domains`. | Modify |
@@ -44,9 +45,9 @@
 
 ---
 
-## Chunk 1: STEP 0 — the native-filter gate
+## Chunk 1: STEP 0 — the retrieval gate ✅ RESOLVED
 
-**This gate precedes everything. Do not start Chunk 2 until this task reports ✅ or ❌ with the captured shape.** The result decides whether `retrieve()`'s body is the native filter or Plan B — either way it lands in the same interface, so Chunks 3–6 are unaffected.
+**This gate precedes everything.** It ran as TWO probes (Task 1 = `azureBlob` filter probe; Task 1b/STEP 0.5 = `searchIndex` re-probe), both committed. **Outcome:** the caller-supplied `filterAddOn` is NOT the ACL lever (inert under `permissionFilterOption`); instead the **native agentic retrieve over a `searchIndex`-backed KB honors the `x-ms-query-source-authorization` header** → all three (native + single head + ACL) coexist. `retrieve()`'s primary body is the native-header path; direct-search is the fallback. Full record: `docs/superpowers/plans/2026-07-01-grounded-archetype-unification-STEP0-findings.md`. Tasks 1 and 1b below are **DONE** (kept for provenance); proceed to Chunk 2 + the new Task 2b (KB migration).
 
 ### Task 1: STEP-0 native-filter probe
 
@@ -120,33 +121,35 @@ async def _run() -> int:
 Run: `cd apps/backend && uv run python -m eval.retrieval_shape_test`
 Expected: FAIL (`ModuleNotFoundError: app.services.retrieval` or `AttributeError`).
 
-- [ ] **Step 3: Implement `retrieve()`**
+- [ ] **Step 3: Implement `retrieve()` — STEP-0 outcome: native agentic retrieve + header over a `searchIndex` KB**
 
-Author the body per the STEP-0 gate decision. The signature and identity-ownership are fixed regardless:
+STEP 0 + 0.5 RESOLVED the gate (findings: `docs/superpowers/plans/2026-07-01-grounded-archetype-unification-STEP0-findings.md`, and the runnable probe `eval/step0_searchindex_filter_probe.py` — READ BOTH; author this body from their captured shape, not from guesses; rule #1). Verdict: **the native agentic retriever over a `searchIndex`-backed KB honors the `x-ms-query-source-authorization` header** → primary path. `filterAddOn` is NOT the ACL lever. The signature + identity-ownership are fixed:
 
 ```python
 # app/services/retrieval.py
 """The single grounded retrieval seam. Owns BOTH retrieval identities so the archetype
 (stations 1/3/4) never touches search credentials:
-  - primary search auth = the APP managed identity (Search Index Data Reader). End users have no
-    search RBAC, so the user token can NEVER be the primary.
-  - per-user trim      = the signed-in user (the native filter's group values [STEP 0] OR the
-    x-ms-query-source-authorization header in Plan B — grounded._direct_search_authorized).
-Returns authorized docs as [{index, source, url, snippet}] — deduped by URL, 1-based index.
-Fail-closed: a source with no declared access never enters the result (rule #6)."""
+  - service credential = the APP managed identity (Search Index Data Reader). End users have no
+    search RBAC, so the user token is NEVER the service credential.
+  - per-user ACL       = the x-ms-query-source-authorization: Bearer <end-user search token> header.
+    The native agentic retrieve over a searchIndex-backed KB HONORS it (STEP 0.5). Without it, an
+    ACL index (permissionFilterOption=enabled) returns ZERO docs — fail-closed (rule #6).
+Returns authorized docs as [{index, source, url, snippet}] — deduped by URL, 1-based index."""
 from __future__ import annotations
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
+_KB_API = "2026-05-01-preview"   # verified in STEP 0.5
 
 async def retrieve(query: str, user, domain, *, top: int = 8) -> list[dict]:
     from azure.identity.aio import DefaultAzureCredential as _AppCredential
     app_cred = _AppCredential()
     try:
-        primary = (await app_cred.get_token(_SEARCH_SCOPE)).token   # app MI
-        user_token = await _user_search_token(user)                 # OBO, or None (dev/no-auth)
-        # --- body per STEP 0 ---
-        # ✅ native filter:   rows = await _native_retrieve(domain, query, primary, _groups(user), top)
-        # ❌ plan B:          rows = await _direct_search_authorized(domain, query, primary, user_token, top=top)
+        primary = (await app_cred.get_token(_SEARCH_SCOPE)).token   # app MI (service credential)
+        user_token = await _user_search_token(user)                 # OBO, or None (dev/no-auth/public domain)
+        if domain.kb_name:                                          # PRIMARY: native agentic retrieve
+            rows = await _native_retrieve(domain, query, primary, user_token, top=top)
+        else:                                                        # FALLBACK (Plan B): direct-search-as-user
+            rows = await _direct_search_authorized(domain, query, primary, user_token, top=top)
         return _project(rows)   # -> [{index,source,url,snippet}], deduped by URL, 1-based
     finally:
         import contextlib
@@ -154,11 +157,11 @@ async def retrieve(query: str, user, domain, *, top: int = 8) -> list[dict]:
             await app_cred.close()
 ```
 
-`_project()` centralizes the dedup+index invariant (moved out of `stream_grounded_agui`). For Plan B, `_direct_search_authorized` already returns the right shape — `_project` is a passthrough/dedupe. `_user_search_token(user)` mirrors the OBO logic in `grounded._async_credential` (returns `None` when `not settings.auth_enabled or user is None`).
+`_native_retrieve(domain, query, primary, user_token, top)` calls the KB retrieve on `domain.kb_name` over `domain.search_endpoint` at `_KB_API`, service auth = `primary`, and attaches `x-ms-query-source-authorization: Bearer {user_token}` **when `user_token` is not None** (ACL domains). Parse the response per the findings: `references[].docKey` → base64-decode the middle `<base64(blob_url)>` segment → `blob_url`; `source` = filename, `url` = blob_url, `snippet` = the `response[0].content[0].text` chunk matched by `[ref_id:N]`. Copy the exact request/parse shape from `eval/step0_searchindex_filter_probe.py` — do NOT re-derive it.
 
-**Plan B reads endpoint + index off the domain.** `_direct_search_authorized` dereferences `domain.search_endpoint` (grounded.py:158) and `domain.search_index`. Move `_direct_search_authorized` into `retrieval.py` (or import it) and confirm the `DomainSpec` passed to `retrieve()` carries both `search_endpoint` (from `cfg.azure_search_endpoint`) and `search_index` — Task 5 adds `search_endpoint` to `DomainSpec` for exactly this. The shape test's `_fake_domain()` must therefore be a `DomainSpec` (or a stub exposing `.search_endpoint`/`.search_index`), even though the low-level fetch is patched.
+`_project()` centralizes the dedup+index invariant (moved out of `stream_grounded_agui`). `_user_search_token(user)` mirrors the OBO logic in `grounded._async_credential` (returns `None` when `not settings.auth_enabled or user is None`).
 
-If STEP 0 was ❌, `_native_retrieve` is NOT written (YAGNI) — only Plan B. If ✅, `_native_retrieve` is authored from the STEP-0 findings shape (api-version + filter field verbatim). Leave `# TODO: verify signature` on any field STEP 0 didn't nail.
+**Fallback (Plan B) reads endpoint + index off the domain.** `_direct_search_authorized` dereferences `domain.search_endpoint` (grounded.py:158) and `domain.search_index`. Move it into `retrieval.py`; the `DomainSpec` carries `search_endpoint` (from `cfg.azure_search_endpoint`) + `search_index` (Task 5). The shape test's `_fake_domain()` is a `DomainSpec` (or stub exposing `.kb_name`/`.search_endpoint`/`.search_index`); patch `_native_retrieve`'s low-level fetch so no network/creds. **Note:** the primary path keys on `domain.kb_name` being set — cockpit/selfwiki both have one; Plan B is only reached for a (hypothetical) KB-less grounded domain.
 
 - [ ] **Step 4: Run to verify it passes**
 
@@ -169,7 +172,35 @@ Expected: PASS (`✅ retrieve() contract holds`).
 
 ```bash
 git add apps/backend/app/services/retrieval.py apps/backend/eval/retrieval_shape_test.py
-git commit -m "feat(retrieval): single retrieve() seam owning both identities (native-filter|planB per STEP0)"
+git commit -m "feat(retrieval): single retrieve() seam — native agentic retrieve + ACL header over searchIndex KB"
+```
+
+### Task 2b: Migrate `cockpit-kb` to a `searchIndex` knowledge source (infra prerequisite)
+
+**Why:** `retrieve()`'s native path (Task 2) only honors the ACL header when the KB's knowledge source is `kind: searchIndex` (STEP 0.5). The production `cockpit-kb` is `azureBlob` today. This task makes the searchIndex-backed KB real, non-destructively.
+
+**Files:**
+- Modify: `apps/backend/app/knowledge/ingest_cockpit.py` (and/or `ingest.py` / `acl_setup.py` — wherever the cockpit KB + knowledge source are provisioned).
+- Reference: `apps/backend/eval/step0_searchindex_filter_probe.py` (the verified `SearchIndexKnowledgeSource` / `SearchIndexKnowledgeSourceParameters` creation over `cockpit-docbundles-ks-index`), the STEP-0 findings file.
+
+- [ ] **Step 1: Locate the current cockpit KB provisioning**
+
+Read `ingest_cockpit.py`/`ingest.py` to find where `cockpit-kb` + its `azureBlob` knowledge source (`cockpit-docbundles-ks`) are created. Note: `cockpit-docbundles-ks-index` already exists, ACL-stamped (`groups` filterable, `permissionFilterOption=enabled`) — the index is NOT rebuilt, only the KB's knowledge source changes.
+
+- [ ] **Step 2: Add/point the KB at a `searchIndex` knowledge source**
+
+Update the provisioning to create the `cockpit-kb` knowledge source as `searchIndex` over the existing `cockpit-docbundles-ks-index` (mirror the exact SDK model calls proven in `step0_searchindex_filter_probe.py`). **Non-destructive cutover:** create the searchIndex-backed source alongside, verify (Step 3), then switch `cockpit-kb` to it. Keep the blob source until the A-vs-B check is green (spec §7 risk).
+
+- [ ] **Step 3: Verify the production KB with the A-vs-B probe**
+
+Run: `cd apps/backend && uv run python -m eval.step0_searchindex_filter_probe` (repointed at the real `cockpit-kb`, or a thin variant that targets `cfg.cockpit_search_knowledge_base`).
+Expected: User A (confidential group) retrieves + cites `COCKPIT_CONFIDENTIAL_SOURCE`; User B does not. If red → do NOT cut over; keep the blob source and report.
+
+- [ ] **Step 4: Commit**
+
+```bash
+git add apps/backend/app/knowledge/ingest_cockpit.py
+git commit -m "feat(kb): cockpit-kb on a searchIndex knowledge source (unlocks native agentic retrieve + ACL header)"
 ```
 
 ### Task 3: `retrieve()` ACL parity with the shipped path (infra-gated)
@@ -508,7 +539,8 @@ git commit -m "test(e2e): A-vs-B ACL round-trip over the unified grounded archet
 
 ## Done criteria
 
-- STEP 0 verdict recorded; `retrieve()` body matches it.
+- STEP 0 verdict recorded ✅; `retrieve()` body = native agentic retrieve + ACL header over a searchIndex KB (direct-search fallback behind the seam).
+- `cockpit-kb` migrated to a `searchIndex` knowledge source; A-vs-B probe green on the production KB before cutover.
 - One grounded archetype; `grounded.py` has no `acl`/MCP fork.
 - Backend `DomainSpec` registry + `mount_domains` dispatch by kind; `main.py`/`chat.py` no longer hand-wire grounded; the 2-file serving split is gone.
 - content-on-click works for **both** grounded domains (800-char cap + URL dedupe preserved).
@@ -518,4 +550,4 @@ git commit -m "test(e2e): A-vs-B ACL round-trip over the unified grounded archet
 
 ## Post-plan: selfwiki rollout note
 
-selfwiki used the MCP tool at runtime, but `selfwiki_search_index` already exists in config (`tenant.py:51,117`, defaults `selfwiki-docbundles-ks-index`). Confirm that index is actually populated/ingested before the selfwiki step (the cockpit path lands and proves everything first; selfwiki just points the same archetype at its own index with an empty group map).
+selfwiki has NO per-user ACL, so the native retrieve returns its docs **without** a header (no `permissionFilterOption` on its index). Under the unified archetype it uses the same native-retrieve path over `selfwiki-kb`. Two things to confirm at the selfwiki step (cockpit lands + proves everything first): (1) `selfwiki-kb`'s knowledge source is `searchIndex` (or migrate it, mirroring Task 2b) so the citation-parsing (`docKey` decode) is uniform with cockpit; (2) `selfwiki_search_index` (`tenant.py:51,117`, defaults `selfwiki-docbundles-ks-index`) is populated for the direct-search fallback. selfwiki keeps `acl_group_map=None` → no header attached.
