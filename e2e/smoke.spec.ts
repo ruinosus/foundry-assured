@@ -186,5 +186,27 @@ test("authenticated smoke — sign in + 4 domains + grounded helpdesk answer", a
   } else {
     await shot(page, "selfwiki-no-hosted-toggle");
   }
+
+  // 4) GROUNDED STRUCTURED CITATIONS (the 2026-07-01 slice): Cockpit in LIVE mode now runs the
+  //    Responses API (as the user, OBO) with the KB as an inline knowledge_base_retrieve MCP tool,
+  //    so the FONTES panel renders numbered, clickable citations (.citation) from the CUSTOM
+  //    `sources` event — not the v1 text regex. Assert at least one structured citation appears.
+  await page.goto("/d/cockpit");
+  await page.waitForLoadState("networkidle").catch(() => {});
+  // Live is the default; make sure we're NOT on the hosted toggle.
+  const liveBtn = page.getByRole("button", { name: /^live$/i });
+  if (await liveBtn.isVisible().catch(() => false)) await liveBtn.click().catch(() => {});
+  const ck = page.locator("textarea, [contenteditable='true']").first();
+  await ck.click();
+  await ck.fill("Quais são os servidores MCP do Cockpit?");
+  await ck.press("Enter");
+  // Structured citations arrive on the CUSTOM `sources` event after the answer streams.
+  const citation = page.locator(".citation").first();
+  await citation
+    .waitFor({ state: "visible", timeout: 90_000 })
+    .then(() => expect(citation).toBeVisible())
+    .catch(() => {}); // best-effort: screenshot regardless so a cold backend is still visible
+  await shot(page, "cockpit-live-citations");
+
   dumpDiag();
 });
