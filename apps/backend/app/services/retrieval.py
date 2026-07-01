@@ -27,15 +27,16 @@ The native request shape is COPIED from the proven probe
 `docKey` → blob_url decode was VERIFIED LIVE against 38 real `cockpit-si-kb` docKeys (see `_decode_dockey`
 and `eval/dockey_decode_test.py`) — the probe's naïve `split("_")[1]` decode fell back to raw base64 for
 ~half the keys; the current decode strips the prefix/`_pages_` suffix by regex and uses standard base64. The
-`references[].id` ↔ chunk `ref_id` join used to attach a snippet is an EXTRAPOLATION the probe never
-exercised (the probe only decoded docKeys for a substring check) — it is best-effort and flagged
-`# TODO: verify signature` at the join site; a miss yields an empty snippet, never a wrong one.
+per-citation `snippet` is read from `references[].sourceData.snippet`, populated by
+`includeReferenceSourceData=true` on the ksp — VERIFIED LIVE against `cockpit-si-kb` (every reference came
+back with a non-empty snippet, ACL trim intact; see `_native_retrieve`, `_sourcedata_snippet`, and
+`eval/native_snippet_test.py`). This REPLACES the old `references[].id` ↔ `response`-chunk `ref_id` join,
+which never fired on the `answerSynthesis` KB (there `response` is the prose answer, not a chunk array).
 """
 
 from __future__ import annotations
 
 import base64
-import json
 import re
 
 from app.core.settings import settings
@@ -122,7 +123,18 @@ async def _native_retrieve(
     ks = getattr(domain, "ks_name", None) or kb
 
     url = f"{search}/knowledgebases/{kb}/retrieve?api-version={_KB_API}"
-    ksp: dict = {"knowledgeSourceName": ks, "kind": "searchIndex"}
+    # includeReferenceSourceData=true → each references[] entry carries its own sourceData
+    # ({uid, blob_url, snippet}) populated from the KS's source_data_fields. VERIFIED LIVE against
+    # `cockpit-si-kb` (eval/native_snippet_test.py fixture): 39/39 (User A) and 37/37 (User B) references
+    # came back with a non-empty `snippet`, and the per-user ACL trim held (A reaches the confidential
+    # doc, B does not). This is the single-call source of the per-citation snippet — the old
+    # response[].ref_id join never fired because this KB runs `answerSynthesis`, so `response` is the
+    # prose answer (not a JSON chunk array) and, without this flag, `sourceData` came back null.
+    ksp: dict = {
+        "knowledgeSourceName": ks,
+        "kind": "searchIndex",
+        "includeReferenceSourceData": True,
+    }
     payload = {
         "messages": [
             {
@@ -193,41 +205,31 @@ def _decode_dockey(dockey: str) -> str:
     return dockey  # readable fallback — only if no plausible blob URL decodes
 
 
-def _snippets_by_ref(body: dict) -> dict[str, str]:
-    """Map ref_id → grounding chunk text from `response[0].content[0].text` (a JSON array of ranked
-    chunks, each `{ref_id, title, terms, content}` — per the probe / STEP 0.5 findings). Best-effort:
-    returns {} if the text isn't the expected JSON array."""
-    by_ref: dict[str, str] = {}
-    for msg in body.get("response", []) or []:
-        for c in msg.get("content", []) or []:
-            txt = c.get("text")
-            if not txt:
-                continue
-            try:
-                chunks = json.loads(txt)
-            except Exception:  # noqa: BLE001
-                continue
-            for ch in chunks if isinstance(chunks, list) else []:
-                if not isinstance(ch, dict):
-                    continue
-                rid = ch.get("ref_id")
-                content = ch.get("content") or ""
-                # First-non-empty wins: a ref_id may appear across ranked chunks; keep the first good
-                # snippet rather than letting a later chunk overwrite it.
-                if rid is not None and content and str(rid) not in by_ref:
-                    by_ref[str(rid)] = str(content)
-    return by_ref
+def _sourcedata_snippet(ref: dict) -> str:
+    """The per-reference snippet from `references[].sourceData` — the PRIMARY, VERIFIED-LIVE carrier.
+
+    With `includeReferenceSourceData=true` on the ksp (see `_native_retrieve`), every reference carries
+    `sourceData = {uid, blob_url, snippet}` populated from the KS's `source_data_fields`. `snippet` is the
+    verbatim grounding text for that citation — exactly what the UI shows on click. Verified live against
+    `cockpit-si-kb`: 39/39 (User A) and 37/37 (User B) references returned a non-empty `snippet`.
+
+    Fallback to `content` covers a KS whose source_data_fields expose the chunk under `content` instead of
+    `snippet` (the extractedData chunk key); empty string if neither is present (never a wrong snippet)."""
+    sd = ref.get("sourceData")
+    if not isinstance(sd, dict):
+        return ""
+    return str(sd.get("snippet") or sd.get("content") or "")
 
 
 def _parse_native(body: dict) -> list[dict]:
     """references[] → raw rows [{source, url, snippet}].
 
     `references[].docKey` decodes (see `_decode_dockey`, VERIFIED LIVE) to the blob_url → `source` =
-    filename, `url` = blob_url. The `snippet` join, however, keys the
-    reference's `id` against the response chunks' `ref_id` — an extrapolation the probe did NOT exercise
-    (best-effort; see the join-site TODO). `sourceData` is null on the answerSynthesis path — don't
-    rely on it."""
-    by_ref = _snippets_by_ref(body)
+    filename, `url` = blob_url. The `snippet` comes from `references[].sourceData.snippet` — the per-
+    reference grounding text populated by `includeReferenceSourceData=true` (see `_native_retrieve` and
+    `_sourcedata_snippet`), VERIFIED LIVE. This replaces the old `id`↔`response`-chunk `ref_id` join,
+    which never fired on the `answerSynthesis` KB (there `response` is the prose answer, not a JSON chunk
+    array, and — without the flag — `sourceData` came back null, so every snippet was empty)."""
     rows: list[dict] = []
     for ref in body.get("references", []) or []:
         dockey = ref.get("docKey")
@@ -235,9 +237,7 @@ def _parse_native(body: dict) -> list[dict]:
             continue
         blob_url = _decode_dockey(str(dockey))
         source = blob_url.rsplit("/", 1)[-1] if blob_url else str(dockey)
-        # TODO: verify signature — id↔ref_id join not proven by the probe (best-effort; empty snippet on miss)
-        ref_id = ref.get("id")
-        snippet = by_ref.get(str(ref_id), "") if ref_id is not None else ""
+        snippet = _sourcedata_snippet(ref)
         rows.append({"source": source, "url": blob_url, "snippet": snippet})
     return rows
 
