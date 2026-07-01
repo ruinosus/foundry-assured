@@ -48,3 +48,5 @@ e2e/node_modules/
 e2e/artifacts/
 e2e/.auth/
 e2e/test-results/
+apps/backend/.cockpit-acl-poc.json
+TEST-CREDENTIALS.local.md
