@@ -1,7 +1,7 @@
-"""Infra-free: grounded.build_responses_kwargs builds the correct Responses+MCP payload.
+"""Infra-free: grounded.py builds the correct payloads for both paths, without touching Azure.
 
-Asserts the STEP-0-verified shape (inline MCP tool, `authorization` primary auth, `model` required,
-conditional ACL header) WITHOUT touching Azure.
+- acl=False (selfwiki) → build_responses_kwargs: inline MCP tool + authorization.
+- acl=True  (cockpit)  → build_synthesis_kwargs: direct-search docs as the ONLY grounding context.
 
     cd apps/backend && uv run python -m eval.grounded_payload_test
 """
@@ -10,36 +10,47 @@ from __future__ import annotations
 
 import sys
 
-from app.services.grounded import CITATION_DIRECTIVE, GroundedDomain, build_responses_kwargs
+from app.services.grounded import (
+    CITATION_DIRECTIVE,
+    SYNTHESIS_DIRECTIVE,
+    GroundedDomain,
+    build_responses_kwargs,
+    build_synthesis_kwargs,
+)
 
 _EP = "https://srch.search.windows.net"
 
 
 def main() -> None:
-    # Cockpit — ACL domain: header present, authorization present, model set, tool shape correct.
-    ck = GroundedDomain(kb_name="cockpit-kb", instructions="INSTR", acl=True, search_endpoint=_EP)
-    kw = build_responses_kwargs("q", ck, model="gpt-5-mini", search_token="STOK")
-    assert kw["model"] == "gpt-5-mini", kw["model"]
-    assert kw["stream"] is True
-    assert kw["instructions"].startswith("INSTR")  # domain instructions preserved
-    assert CITATION_DIRECTIVE in kw["instructions"]  # + the annotation directive always appended
-    tool = kw["tools"][0]
-    assert tool["type"] == "mcp", tool
-    assert tool["allowed_tools"] == ["knowledge_base_retrieve"], tool
-    assert tool["require_approval"] == "never", tool
-    assert tool["authorization"] == "STOK", tool
-    assert tool["server_url"] == (
-        f"{_EP}/knowledgebases/cockpit-kb/mcp?api-version=2026-05-01-preview"
-    ), tool["server_url"]
-    assert tool["headers"]["x-ms-query-source-authorization"] == "STOK", tool
-
-    # Selfwiki — non-ACL domain: NO x-ms-query-source-authorization header.
+    # acl=False (selfwiki) — inline MCP tool, native citations.
     sw = GroundedDomain(kb_name="selfwiki-kb", instructions="Y", acl=False, search_endpoint=_EP)
-    sw_tool = build_responses_kwargs("q", sw, model="m", search_token="S")["tools"][0]
-    assert "headers" not in sw_tool, sw_tool
-    assert sw_tool["authorization"] == "S", sw_tool  # primary auth still present
+    kw = build_responses_kwargs("q", sw, model="gpt-5-mini", search_token="STOK")
+    assert kw["model"] == "gpt-5-mini" and kw["stream"] is True
+    tool = kw["tools"][0]
+    assert tool["type"] == "mcp" and tool["allowed_tools"] == ["knowledge_base_retrieve"], tool
+    assert tool["authorization"] == "STOK", tool
+    assert tool["server_url"].endswith("/knowledgebases/selfwiki-kb/mcp?api-version=2026-05-01-preview")
+    assert CITATION_DIRECTIVE in kw["instructions"]
 
-    print("PASS: grounded payload shape (inline MCP tool, authorization, conditional ACL header)")
+    # acl=True (cockpit) — direct-search synthesis: docs are the ONLY context, no MCP tool.
+    ck = GroundedDomain(
+        kb_name="cockpit-kb", instructions="X", acl=True, search_endpoint=_EP, search_index="cockpit-idx"
+    )
+    docs = [
+        {"index": 1, "source": "a.md", "url": f"{_EP}/a.md", "snippet": "conteudo A"},
+        {"index": 2, "source": "b.md", "url": f"{_EP}/b.md", "snippet": "conteudo B"},
+    ]
+    sk = build_synthesis_kwargs("qual a resposta?", ck, docs, model="m")
+    assert "tools" not in sk, sk  # no MCP tool on the ACL path (agentic retrieve doesn't trim)
+    assert sk["stream"] is True
+    assert SYNTHESIS_DIRECTIVE in sk["input"]
+    assert "[1] a.md" in sk["input"] and "conteudo A" in sk["input"]  # docs are the grounding context
+    assert "qual a resposta?" in sk["input"]
+    # empty authorized set → still asks, but with no docs (fail-closed to "não sei")
+    empty = build_synthesis_kwargs("q", ck, [], model="m")
+    assert "Nenhum documento autorizado" in empty["input"]
+
+    print("PASS: grounded payloads (acl=False MCP tool; acl=True direct-search synthesis)")
     sys.exit(0)
 
 

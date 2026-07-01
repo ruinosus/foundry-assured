@@ -35,6 +35,7 @@ async def cockpit(request: Request) -> StreamingResponse:
         instructions=COCKPIT_INSTRUCTIONS,
         acl=True,
         search_endpoint=cfg.azure_search_endpoint,
+        search_index=cfg.cockpit_search_index,  # acl=True → direct-search this index (ACL trims here)
     )
     return StreamingResponse(
         stream_grounded_agui(await request.json(), domain), media_type="text/event-stream"

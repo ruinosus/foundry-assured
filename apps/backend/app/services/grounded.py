@@ -1,22 +1,23 @@
-"""Grounded structured-citations bridge — Responses API (as the user, OBO) + Foundry IQ MCP tool.
+"""Grounded structured-citations bridge — Responses API (as the user, OBO) with structured citations.
 
-Replaces the AzureAISearchContextProvider path for the grounded domains (cockpit, selfwiki) with a
-direct Responses call that attaches the KB as an inline `knowledge_base_retrieve` MCP tool, so the
-answer carries STRUCTURED `url_citation` annotations (not prose). It runs the call **as the signed-in
-user** (OBO for `https://ai.azure.com/.default` → no service-principal 403), streams the Responses
-events, and re-emits them as AG-UI SSE (text deltas + a `sources` CUSTOM event) for the same
-CopilotChat the hosted twins use.
+Two paths, chosen by whether the domain needs per-user document ACL:
 
-Verified live in STEP 0 (docs/superpowers/plans/2026-07-01-grounded-obo-citations-STEP0-findings.md):
-  • A1 inline — NO project connection; the MCP server's primary auth is the tool `authorization`
-    field (a search-scoped bearer, `https://search.azure.com/.default` = Search Index Data Reader).
-  • `model` is REQUIRED on the inline Responses path (no agent to bind it).
-  • citations arrive as `response.output_text.annotation.added` events whose `.annotation` is
-    `{type:"url_citation", title, url, start_index, end_index}` (real blob URLs; `mcp://…` synthesis
-    pseudo-cites are dropped). Text arrives as `response.output_text.delta`.
-  • per-user document ACL (cockpit) = the `x-ms-query-source-authorization` header (conditional on
-    domain.acl); selfwiki is single-audience → no header. ACL trimming on our service version is
-    tracked as unverified (see the STEP 0 findings); attaching the header is harmless when inert.
+- **acl=False (Selfwiki, single-audience):** attach the KB as an inline Foundry IQ MCP tool
+  (`knowledge_base_retrieve`). The agentic retrieve gives high-quality recall + native `url_citation`
+  annotations. No ACL needed, so the (inert-on-the-agentic-path) header is irrelevant.
+
+- **acl=True (Cockpit, per-user ACL):** the agentic `knowledge_base_retrieve` path does NOT honor the
+  `x-ms-query-source-authorization` header on this service version (verified empirically; a known gap —
+  azure-sdk-for-python#44454; the Microsoft ADLS-ACL tutorial only proves trimming on DIRECT search).
+  So we can't let the model retrieve confidential content it isn't allowed to see. Instead we do
+  **app-side retrieval + trim**: a DIRECT search over the index AS THE USER (the `x-ms-query-source-
+  authorization` header DOES trim there, via the stamped `groups` field), which returns only the
+  documents the user may read; then we synthesize the answer from ONLY those documents and emit their
+  sources as citations. Fail-closed: the model never sees unauthorized content.
+
+Both run the Responses API as the signed-in user (OBO for `https://ai.azure.com/.default` → no 403)
+and re-emit AG-UI SSE (text deltas + a `sources` CUSTOM event) for the same CopilotChat.
+Verified live in the STEP 0 findings (docs/superpowers/plans/2026-07-01-grounded-obo-citations-STEP0-findings.md).
 """
 
 from __future__ import annotations
@@ -32,13 +33,20 @@ from app.core.tenant import tenant_config
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _KB_API = "2026-05-01-preview"
 
-# Appended to every grounded domain's instructions. STEP 0 confirmed the KB MCP tool emits structured
-# url_citation annotations when the model is told to cite in this exact marker format (Microsoft's
-# format from the Foundry IQ docs). Without it the answer grounds but may not annotate.
+# Appended for the MCP-tool (acl=False) path — the KB tool emits url_citation annotations when told to
+# cite in this Microsoft-format marker.
 CITATION_DIRECTIVE = (
     "Use SEMPRE a ferramenta da base de conhecimento para responder e cite as fontes. "
     "Toda afirmação fundamentada deve trazer anotações da ferramenta, renderizadas exatamente como "
     "【message_idx:search_idx†source_name】. Se a resposta não estiver na base, diga que não sabe."
+)
+
+# Prepended for the direct-search-synthesis (acl=True) path — the model answers ONLY from the
+# authorized documents we retrieved and cites them by their [n] number.
+SYNTHESIS_DIRECTIVE = (
+    "Responda APENAS com base nos DOCUMENTOS fornecidos abaixo — nunca use conhecimento próprio. "
+    "Cite a fonte de cada afirmação pelo seu número entre colchetes, ex.: [1]. Se os documentos não "
+    "contiverem a resposta, diga que não sabe."
 )
 
 
@@ -48,8 +56,9 @@ class GroundedDomain:
 
     kb_name: str
     instructions: str
-    acl: bool  # True → attach x-ms-query-source-authorization (cockpit); False → omit (selfwiki)
+    acl: bool  # True → per-user ACL via direct-search+synthesize (cockpit); False → inline MCP tool (selfwiki)
     search_endpoint: str
+    search_index: str | None = None  # required when acl=True (the index to direct-search)
 
 
 def _server_url(domain: GroundedDomain) -> str:
@@ -59,25 +68,41 @@ def _server_url(domain: GroundedDomain) -> str:
 def build_responses_kwargs(
     user_text: str, domain: GroundedDomain, *, model: str, search_token: str
 ) -> dict:
-    """The exact `responses.create(**kwargs)` payload (pure — no I/O, keeps the test infra-free).
-
-    The MCP tool's `authorization` is the primary auth to the Search KB endpoint; the ACL header is
-    added only for ACL domains. Both use the caller's search-scoped token in this slice."""
+    """The inline-MCP-tool `responses.create(**kwargs)` payload (acl=False path). Pure — no I/O."""
     tool: dict = {
         "type": "mcp",
         "server_label": "knowledge-base",
         "server_url": _server_url(domain),
         "allowed_tools": ["knowledge_base_retrieve"],
         "require_approval": "never",
-        "authorization": search_token,
+        "authorization": search_token,  # primary auth to the Search MCP server (STEP 0)
     }
-    if domain.acl:
-        tool["headers"] = {"x-ms-query-source-authorization": search_token}
     return {
         "model": model,
         "input": user_text,
         "instructions": f"{domain.instructions}\n\n{CITATION_DIRECTIVE}",
         "tools": [tool],
+        "stream": True,
+    }
+
+
+def build_synthesis_kwargs(
+    user_text: str, domain: GroundedDomain, docs: list[dict], *, model: str
+) -> dict:
+    """The direct-search-synthesis `responses.create(**kwargs)` payload (acl=True path). Pure — no I/O.
+
+    `docs` is the list of authorized documents (already ACL-trimmed by the direct search), each
+    `{index, source, url, snippet}`. The snippets become the model's ONLY grounding context."""
+    context = "\n\n".join(f"[{d['index']}] {d['source']}:\n{d.get('snippet', '')}" for d in docs)
+    body = (
+        f"{SYNTHESIS_DIRECTIVE}\n\n=== DOCUMENTOS ===\n{context}\n\n=== PERGUNTA ===\n{user_text}"
+        if docs
+        else f"{SYNTHESIS_DIRECTIVE}\n\n(Nenhum documento autorizado foi encontrado.)\n\n=== PERGUNTA ===\n{user_text}"
+    )
+    return {
+        "model": model,
+        "input": body,
+        "instructions": domain.instructions,
         "stream": True,
     }
 
@@ -113,9 +138,48 @@ def _async_credential():
     return DefaultAzureCredential()
 
 
+async def _direct_search_authorized(
+    domain: GroundedDomain, query: str, primary_token: str, user_token: str | None, *, top: int = 8
+) -> list[dict]:
+    """DIRECT search over the index AS THE USER — the service trims by the stamped `groups` field
+    (permissionFilterOption enabled), so the result contains ONLY documents the user may read.
+    Returns authorized docs as [{index, source, url, snippet}]. This is where per-user ACL actually
+    works (the agentic knowledge_base_retrieve path does not — see the module docstring)."""
+    import httpx
+
+    headers = {"Authorization": f"Bearer {primary_token}", "Content-Type": "application/json"}
+    if user_token:
+        headers["x-ms-query-source-authorization"] = user_token  # the ACL trim (real per-user)
+    else:
+        # Dev / auth-off: no caller identity. Elevated-read returns all docs so local dev isn't
+        # fail-closed to public-only. Best-effort — if the identity lacks the elevated permission,
+        # the query still runs (returns whatever the primary identity is entitled to).
+        headers["x-ms-enable-elevated-read"] = "true"
+    url = f"{domain.search_endpoint.rstrip('/')}/indexes/{domain.search_index}/docs/search?api-version={_KB_API}"
+    body = {"search": query, "select": "snippet,blob_url", "top": top}
+    async with httpx.AsyncClient(timeout=30) as http:
+        resp = await http.post(url, headers=headers, json=body)
+        resp.raise_for_status()
+        rows = resp.json().get("value", [])
+    docs: list[dict] = []
+    seen: set[str] = set()
+    for r in rows:
+        blob = r.get("blob_url") or ""
+        if not blob or blob in seen:
+            continue
+        seen.add(blob)
+        docs.append({
+            "index": len(docs) + 1,
+            "source": blob.rsplit("/", 1)[-1],
+            "url": blob,
+            "snippet": r.get("snippet") or "",
+        })
+    return docs
+
+
 async def stream_grounded_agui(body: dict, domain: GroundedDomain) -> AsyncGenerator[str]:
-    """Stream a grounded Responses answer (as the user) as AG-UI SSE: text deltas + a `sources`
-    CUSTOM event carrying the structured citations. Mirrors hosted.stream_agui's framing."""
+    """Stream a grounded answer (as the user) as AG-UI SSE: text deltas + a `sources` CUSTOM event.
+    acl=False → inline MCP tool (native citations); acl=True → direct-search+synthesize (per-user ACL)."""
     from ag_ui.core import (
         CustomEvent,
         RunErrorEvent,
@@ -150,9 +214,19 @@ async def stream_grounded_agui(body: dict, domain: GroundedDomain) -> AsyncGener
         search_token = (await credential.get_token(_SEARCH_SCOPE)).token
         client = proj.get_openai_client()
         client = await client if inspect.isawaitable(client) else client
-        kwargs = build_responses_kwargs(
-            user_text, domain, model=cfg.foundry_model, search_token=search_token
-        )
+
+        if domain.acl:
+            # Per-user ACL path: retrieve authorized docs via direct search, then synthesize from them.
+            from app.core.auth import current_user
+
+            user_token = search_token if (settings.auth_enabled and current_user() is not None) else None
+            docs = await _direct_search_authorized(domain, user_text, search_token, user_token)
+            sources = [{"index": d["index"], "source": d["source"], "url": d["url"]} for d in docs]
+            kwargs = build_synthesis_kwargs(user_text, domain, docs, model=cfg.foundry_model)
+        else:
+            # Single-audience path: inline MCP tool (native url_citation annotations, collected below).
+            kwargs = build_responses_kwargs(user_text, domain, model=cfg.foundry_model, search_token=search_token)
+
         stream = await client.responses.create(**kwargs)
         async for ev in stream:
             etype = getattr(ev, "type", "")
@@ -160,7 +234,7 @@ async def stream_grounded_agui(body: dict, domain: GroundedDomain) -> AsyncGener
                 delta = getattr(ev, "delta", "") or ""
                 if delta:
                     yield enc.encode(TextMessageContentEvent(message_id=message_id, delta=delta))
-            elif etype == "response.output_text.annotation.added":
+            elif etype == "response.output_text.annotation.added":  # acl=False (MCP) citations
                 s = _source_from_annotation(getattr(ev, "annotation", None))
                 if s and s["url"] not in seen:
                     seen.add(s["url"])
