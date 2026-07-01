@@ -84,7 +84,7 @@ git add apps/backend/eval/step0_native_filter_probe.py docs/superpowers/plans/20
 git commit -m "test(step0): probe native-retriever group-filter trim + api-version (unification gate)"
 ```
 
-**Gate decision:** ✅ → Task 2 implements the native-filter body. ❌ → Task 2 implements Plan B (`_direct_search_authorized`) as the body and the native path is deferred behind the same interface. Everything downstream is identical.
+**Gate decision (RESOLVED — see the banner above):** Task 2's body = **native agentic retrieve + ACL header over a searchIndex KB** (NOT `filterAddOn`, which STEP 0.5 proved inert as an ACL lever); `_direct_search_authorized` is the fallback behind the same interface. Everything downstream is identical either way.
 
 ---
 
@@ -339,7 +339,7 @@ def mount_domains(app) -> None:
 
 **Circular-import resolution (firm):** `_domain_deps` **moves into `app/domains.py`** (it belongs with the mount loop). `app/main.py` imports it from `app.domains` (not the reverse), and `app/api/chat.py` drops its duplicate `_hosted_deps` and imports the same `_domain_deps` from `app.domains`. This removes the `main ↔ domains` cycle and de-duplicates the gate. `_domains()` reads `tenant_config()` **lazily inside the function** (not at import), so importing `app.domains` has no import-time side effects.
 
-**`acl_group_map` semantics (rule #6, fail-closed):** `cfg.acl_group_map` is the property (`tenant.py:84`) returning **group NAME → object-ID** — the SOURCE-side declaration of which groups may read. The native filter (STEP 0) needs the intersection with the **user's** authorized groups (from their token claims), computed inside `retrieve()`/`_native_retrieve`. `DomainSpec` only carries the source-side map as DATA; the per-user computation is not in the spec.
+**`acl_group_map` semantics (rule #6, fail-closed):** `cfg.acl_group_map` is the property (`tenant.py:84`) returning **group NAME → object-ID** — the SOURCE-side declaration of which groups may read, carried by `DomainSpec` as DATA. The native searchIndex path does per-user ACL via the **header token's group membership**, trimmed server-side — NOT via a caller-computed group filter (STEP 0.5 proved `filterAddOn` inert as an ACL lever). The map is consumed by the ingest/ACL-stamp (`acl_setup.py`) and by Plan B's direct-search; `retrieve()`/`_native_retrieve` do not compute a group intersection.
 
 `_mount_grounded` registers a POST `/{d.id}` that captures `current_user()` in the endpoint and streams the archetype:
 
@@ -356,7 +356,7 @@ def _mount_grounded(app, d: DomainSpec) -> None:
     app.add_api_route(f"/{d.id}", endpoint, methods=["POST"], dependencies=_domain_deps(d.id))
 ```
 
-**Config fields already exist — do NOT add duplicates.** Verify (don't re-add): `cockpit_acl_group_map` (`tenant.py:55,119`, raw comma-str; consume via the `acl_group_map` property `:84`), `selfwiki_search_index` (`:51,117`, already defaults `selfwiki-docbundles-ks-index`), `hosted_agent_name` (`:69,127`), `azure_search_endpoint`. Only add a field if STEP 0's native filter needs a genuinely new one — name that one specifically then.
+**Config fields already exist — do NOT add duplicates.** Verify (don't re-add): `cockpit_acl_group_map` (`tenant.py:55,119`, raw comma-str; consume via the `acl_group_map` property `:84`), `selfwiki_search_index` (`:51,117`, already defaults `selfwiki-docbundles-ks-index`), `hosted_agent_name` (`:69,127`), `azure_search_endpoint`. The native-header path needs no new filter field (STEP 0.5 identified none); `search_endpoint` on `DomainSpec` is added in Task 5 for Plan B.
 
 - [ ] **Step 4: Run to verify it passes**
 

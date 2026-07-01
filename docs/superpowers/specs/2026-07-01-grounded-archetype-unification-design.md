@@ -60,9 +60,9 @@ async def retrieve(
     ...
 ```
 
-**`retrieve()` owns BOTH retrieval identities internally** — this is deliberate, so the credential lifecycle does not leak into stations 1/3/4. Retrieval needs two distinct tokens (preserved from the shipped code, `grounded.py:216–224`): the **primary** search auth = the **app MI** (holds Search Index Data Reader; end users have no search RBAC), and the **per-user** trim = the user's token (the native filter's group values, or the `x-ms-query-source-authorization` header in Plan B). `retrieve()` acquires the app search token itself (via app credential) and derives the user dimension from the `user` argument — so the `(query, user, domain, *, top)` signature is sufficient and stations 1/3/4 stay ignorant of search credentials.
+**`retrieve()` owns BOTH retrieval identities internally** — this is deliberate, so the credential lifecycle does not leak into stations 1/3/4. Retrieval needs two distinct tokens (preserved from the shipped code, `grounded.py:216–224`): the **service credential** = the **app MI** (holds Search Index Data Reader; end users have no search RBAC), and the **per-user** trim = the user's search token, sent as `x-ms-query-source-authorization` — honored by the native searchIndex retrieve (primary, §4.1) and reused by direct-search (Plan B). `retrieve()` acquires the app search token itself (via app credential) and derives the user dimension from the `user` argument — so the `(query, user, domain, *, top)` signature is sufficient and stations 1/3/4 stay ignorant of search credentials.
 
-Stations 1/3/4 never change regardless of how `retrieve()` is implemented. If STEP 0 proves the native filter works, `retrieve()` calls the native retriever with the filter. If not, `retrieve()`'s body swaps to **Plan B** (§4.2) — **without touching stations 1/3/4**.
+Stations 1/3/4 never change regardless of how `retrieve()` is implemented. Its primary body is the native agentic retrieve + the ACL header over a searchIndex KB (§4.1); direct-search (Plan B, §4.2) is the fallback behind the same seam — swapping it never touches stations 1/3/4.
 
 Error handling: a retrieval/synthesis failure surfaces as a clean `RunErrorEvent(message=str(exc), code=type(exc).__name__)` (no stack leak), mirroring `hosted.stream_agui`.
 
