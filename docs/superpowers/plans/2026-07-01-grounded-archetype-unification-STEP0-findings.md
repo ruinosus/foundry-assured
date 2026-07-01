@@ -113,3 +113,135 @@ cd apps/backend && uv run python -m eval.step0_native_filter_probe
 ```
 Exit codes: `0` ✅ trim confirmed / SKIP · `1` filter ignored (leak) · `2` filter rejected on all versions
 (**this run**) · `3` inconclusive. Skips cleanly (SKIP:, rc 0) when infra/ACL-group env is absent.
+
+---
+---
+
+# STEP 0.5 — searchIndex re-probe (the unification HARD GATE)
+
+**Date:** 2026-07-01
+**Probe:** `apps/backend/eval/step0_searchindex_filter_probe.py` (throwaway verification spike, run live)
+**Gate question:** Does the native retriever's `filterAddOn` actually trim per-user (A vs B) when the KB's
+knowledge source is `kind: "searchIndex"` over the EXISTING ACL-stamped `cockpit-docbundles-ks-index`?
+STEP 0 left this open because the production `cockpit-kb` source is `azureBlob` (filterAddOn rejected there).
+
+---
+
+## VERDICT: ❌ for the LITERAL question (filterAddOn is NOT the per-user ACL lever) — but ✅ for the GOAL:
+
+**native agentic retrieval + per-user ACL + a single head IS achievable on a `searchIndex`-backed KB — via
+the `x-ms-query-source-authorization` HEADER, which the searchIndex retrieve path HONORS (unlike azureBlob
+in STEP 0).** `filterAddOn` over the `groups` field is *accepted and applied* on `kind:searchIndex`, but it
+is **inert as an ACL mechanism** on this index and must NOT be relied on for per-user trimming.
+
+All observations below are **empirically observed live**, not inferred.
+
+### The three empirical facts (from the probe run)
+
+1. **`filterAddOn` IS accepted + applied on `kind:"searchIndex"`** (the STEP 0 `azureBlob` 400 "Property
+   'filterAddOn' is not allowed" is gone). The filter is echoed verbatim into
+   `activity[].searchIndexArguments.filter`, so the docs-inferred syntax is correct.
+2. **The index's `permissionFilterOption=enabled` DOMINATES and makes `filterAddOn`-over-`groups` useless
+   as ACL.** CONTRARY to the docs' claim ("Without the identity token, results from permission-enabled
+   knowledge sources are returned **unfiltered**"), with **no** `x-ms-query-source-authorization` header the
+   permission trim treats the caller as belonging to **no groups** and returns **ZERO** docs (`count:[0,0,…]`,
+   fully fail-closed). So a `groups` filterAddOn can never surface a permission-gated doc — the permission
+   trim zeroes the candidate set *before* the filter narrows it. (Verified independently via direct
+   `/docs/search`: no header → 0 docs; `search=*` + any `groups` filter → still 0.)
+3. **The searchIndex retrieve HONORS `x-ms-query-source-authorization`** (the key difference from STEP 0's
+   azureBlob, where the agentic path ignored it — azure-sdk-for-python#44454). With the header, subqueries
+   return docs (`count:[50,50]`), **including the confidential source `cockpit-mcp-telemetry`**, and the
+   confidential doc IS reachable + cited. `filterAddOn` composes AND-wise *on top of* the header trim
+   (header alone `[50,50]` → header + `groups eq confidential` `[24]`), i.e. it can only NARROW — never widen
+   past the permission boundary. So per-user ACL = the header token's group membership, exactly as the
+   direct-search path does today, but now with native agentic recall and a single head.
+
+### Exact working KB-creation payload (SDK idiom — mirrors `app.knowledge.ingest_cockpit`, RULE #1)
+
+Uses `azure.search.documents.indexes` models (`api_version=2026-05-01-preview`), non-destructively creating a
+SEPARATE probe KS + KB over the **existing** index. Verified against the live SDK surface (not invented):
+
+```python
+from azure.search.documents.indexes.models import (
+    SearchIndexKnowledgeSource, SearchIndexKnowledgeSourceParameters, SearchIndexFieldReference,
+    KnowledgeBase, KnowledgeBaseAzureOpenAIModel, KnowledgeSourceReference,
+    KnowledgeRetrievalMediumReasoningEffort, AzureOpenAIVectorizerParameters,
+)
+ks = SearchIndexKnowledgeSource(
+    name="cockpit-si-probe-ks",
+    search_index_parameters=SearchIndexKnowledgeSourceParameters(
+        search_index_name="cockpit-docbundles-ks-index",              # the EXISTING ACL-stamped index
+        source_data_fields=[SearchIndexFieldReference(name="blob_url"),
+                            SearchIndexFieldReference(name="snippet")],
+    ),
+)
+kb = KnowledgeBase(
+    name="cockpit-si-probe-kb",
+    knowledge_sources=[KnowledgeSourceReference(name="cockpit-si-probe-ks")],
+    models=[KnowledgeBaseAzureOpenAIModel(azure_open_ai_parameters=AzureOpenAIVectorizerParameters(
+        resource_url=<AZURE_AI_OPENAI_ENDPOINT>, deployment_name="gpt-5-mini", model_name="gpt-5-mini"))],
+    output_mode="answerSynthesis",
+    retrieval_reasoning_effort=KnowledgeRetrievalMediumReasoningEffort(),
+)
+client.create_or_update_knowledge_source(ks); client.create_or_update_knowledge_base(kb)
+```
+
+The app/dev identity (`DefaultAzureCredential`) **could** create + delete the probe KB/KS — **no BLOCKED**,
+no extra role needed beyond what the dev already holds on the search service.
+
+### The `filterAddOn` field + syntax that IS accepted (but is NOT the ACL lever — see fact 2)
+
+- **api-version:** `2026-05-01-preview` (the `messages`-schema retrieve; the GA `2026-04-01` uses the older
+  `intents` schema).
+- **Request:** `POST {search}/knowledgebases/{kb}/retrieve?api-version=2026-05-01-preview`,
+  `knowledgeSourceParams:[{ knowledgeSourceName, kind:"searchIndex", filterAddOn:"<OData>" }]`.
+- **Syntax that was accepted + applied** (echoed into the subquery filter):
+  `groups/any(g: search.in(g, '<comma-separated-object-ids>', ','))` — an OData ANY over the
+  `Collection(Edm.String)` `groups` field. Confirmed correct; simply not sufficient for ACL here.
+
+### The ACL lever that WORKS (use this for the next task)
+
+Same request, **no** filterAddOn needed for ACL; add the header:
+`x-ms-query-source-authorization: Bearer <the END USER's search-scoped token>` (service credential in the
+`Authorization` header stays the APP identity, Search Index Data Reader). The user token carries the group
+membership; the permission-enabled index trims to it. (In the non-interactive probe shell only the app/dev
+token was available; it happens to be a member of the confidential group, so the probe confirmed the
+confidential doc IS reachable via the header — a public-only User B token would trim it out, the same trim
+the direct-search path relies on today.)
+
+### Annotation → `{source, url, snippet}` mapping for the native searchIndex path
+
+`response.output_text.annotation.added` won't fire on this raw retrieve; the citation carriers are:
+- **`references[].docKey`** — a `<12hex>_<base64(blob_url)>N_pages_M` string. **`sourceData` is `null`** on
+  the `answerSynthesis` output even with `source_data_fields` set (those fields feed the model, not the
+  reference echo). Recover the source by **base64-decoding the middle segment**: e.g. docKey
+  `24eef70b7e4d_aHR0cHM6…X19wYWdlLTEubWQ1_pages_0` → `https://…/cockpit-corpus/cockpit-mcp-telemetry-v1.2.0__page-1.md5`.
+  → `source` = the blob filename; `url` = the (private) blob_url; `snippet` = the matching
+  `response[0].content[0].text` chunk keyed by the answer's inline `[ref_id:N]` markers.
+- **`response[0].content[0].text`** — the synthesized answer, grounded in the authorized docs, citing
+  `[ref_id:N]` that cross-reference `references[].id`.
+
+### Probe KB disposition
+
+**Torn down** at the end (default). The probe is idempotent and re-creatable in seconds; `KEEP_PROBE_KB=1`
+leaves it in place. Verified post-run: `cockpit-si-probe-kb`/`-ks` return 404, and production `cockpit-kb`
+is untouched (still one source `cockpit-docbundles-ks`, `kind:azureBlob`).
+
+### Implication for the next task (updated from STEP 0)
+
+The **acl=True (cockpit)** path CAN move onto native agentic retrieval + a single head **if** the KB is
+rebuilt on a **`searchIndex`** knowledge source over the ACL-stamped index, and the retrieve is called with
+the **end-user's** search token as `x-ms-query-source-authorization` (service credential = app identity).
+This replaces the direct-search-+-synthesize Plan B (a second, non-agentic retrieval head) with the native
+agentic retrieve, while preserving the exact same per-user permission trim. **Do NOT** rely on `filterAddOn`
+for the ACL — it's accepted but inert against a permission-enabled index. (The direct-search Plan B remains a
+valid fallback and needs no index change; the index is already correctly armed.)
+
+### Reproduce
+
+```
+cd apps/backend && uv run python -m eval.step0_searchindex_filter_probe   # KEEP_PROBE_KB=1 to keep the KB
+```
+Exit codes: `0` ✅ per-user ACL works on searchIndex via header / SKIP · `2` create/retrieve rejected ·
+`3` inconclusive (confidential doc unreachable even with the header) · `4` BLOCKED (KB creation needs a
+role the app lacks). Skips cleanly (SKIP:, rc 0) when infra/ACL-group env is absent.
