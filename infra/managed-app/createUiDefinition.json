@@ -1,0 +1,91 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "basics": [
+      {
+        "name": "modelDeploymentName",
+        "type": "Microsoft.Common.TextBox",
+        "label": "Chat model deployment name",
+        "defaultValue": "gpt-5-mini",
+        "toolTip": "Foundry chat model deployment name, surfaced to the app as FOUNDRY_MODEL. Keep the secure default unless your subscription requires a different deployment.",
+        "constraints": {
+          "required": true,
+          "regex": "^[a-zA-Z0-9._-]{1,64}$",
+          "validationMessage": "1-64 characters: letters, numbers, dot, underscore or hyphen."
+        }
+      }
+    ],
+    "steps": [
+      {
+        "name": "entraObo",
+        "label": "Entra OBO (optional)",
+        "subLabel": {
+          "preValidation": "Configure backend On-Behalf-Of identity",
+          "postValidation": "Done"
+        },
+        "bladeTitle": "Entra On-Behalf-Of",
+        "elements": [
+          {
+            "name": "oboInfo",
+            "type": "Microsoft.Common.InfoBox",
+            "visible": true,
+            "options": {
+              "icon": "Info",
+              "text": "Optional. Provide an Entra tenant + backend API app registration if you want the backend to call downstream APIs On-Behalf-Of the signed-in user. Leave blank to deploy without OBO."
+            }
+          },
+          {
+            "name": "entraTenantId",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Entra tenant ID",
+            "defaultValue": "",
+            "toolTip": "Directory (tenant) ID used for backend OBO. Leave blank to disable OBO.",
+            "constraints": {
+              "required": false,
+              "regex": "^$|^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$",
+              "validationMessage": "Must be a GUID, or blank."
+            }
+          },
+          {
+            "name": "entraApiClientId",
+            "type": "Microsoft.Common.TextBox",
+            "label": "Backend API client ID",
+            "defaultValue": "",
+            "toolTip": "App registration (client) ID of the backend API used for OBO. Leave blank to disable OBO.",
+            "constraints": {
+              "required": false,
+              "regex": "^$|^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$",
+              "validationMessage": "Must be a GUID, or blank."
+            }
+          },
+          {
+            "name": "entraApiClientSecret",
+            "type": "Microsoft.Common.PasswordBox",
+            "label": {
+              "password": "Backend API client secret",
+              "confirmPassword": "Confirm secret"
+            },
+            "toolTip": "Client secret for the backend API app registration (OBO). Leave blank to disable OBO.",
+            "constraints": {
+              "required": false,
+              "regex": "",
+              "validationMessage": ""
+            },
+            "options": {
+              "hideConfirmation": true
+            }
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "location": "[location()]",
+      "modelDeploymentName": "[basics('modelDeploymentName')]",
+      "entraTenantId": "[steps('entraObo').entraTenantId]",
+      "entraApiClientId": "[steps('entraObo').entraApiClientId]",
+      "entraApiClientSecret": "[steps('entraObo').entraApiClientSecret]"
+    }
+  }
+}

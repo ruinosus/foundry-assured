@@ -1,0 +1,75 @@
+{
+  "key": "foundry-helpdesk-docs-v0.3.0",
+  "title": "foundry-helpdesk-docs v0.3.0",
+  "source": {
+    "type": "repo",
+    "ref": "docs",
+    "commit": "46f10bb827fa76a8cfd2699df4fac8fcef938074"
+  },
+  "language": "pt-br",
+  "model": "local-agent",
+  "generatedAt": "2026-07-02T11:38:14+00:00",
+  "kind": "element",
+  "component": "foundry-helpdesk-docs",
+  "componentVersion": "v0.3.0",
+  "releaseVersion": null,
+  "pages": [
+    {
+      "id": "page-1",
+      "title": "Visão geral do conjunto de documentação",
+      "order": 1,
+      "file": "pages/page-1.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-2",
+      "title": "O mecanismo de assurance",
+      "order": 2,
+      "file": "pages/page-2.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-3",
+      "title": "Arquitetura SaaS multi-tenant",
+      "order": 3,
+      "file": "pages/page-3.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-4",
+      "title": "Decisões de arquitetura (ADRs 001–011)",
+      "order": 4,
+      "file": "pages/page-4.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-5",
+      "title": "Sub-projetos SaaS e o runbook de D-packaging",
+      "order": 5,
+      "file": "pages/page-5.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-6",
+      "title": "Deploy, branching e custo",
+      "order": 6,
+      "file": "pages/page-6.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-7",
+      "title": "Customização e expansão de domínio",
+      "order": 7,
+      "file": "pages/page-7.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-8",
+      "title": "Estudos de caso e dogfood",
+      "order": 8,
+      "file": "pages/page-8.md",
+      "audience": "base"
+    }
+  ],
+  "groups": []
+}

@@ -1,0 +1,36 @@
+%% Foundry Assured — SaaS target architecture · Fig 3: Deployment stamps (one codebase, three modes)
+flowchart TB
+    CODE[["ONE CODEBASE<br/>deployment mode = config, not a fork"]]
+
+    subgraph SH["SHARED STAMP — our cloud (default / SMB)"]
+        SHCP["Multi-tenant control plane<br/>(1 instance, N tenants)"]
+        SHDP1["Data plane — Tenant A"]
+        SHDP2["Data plane — Tenant B"]
+        SHCP -. Lighthouse .-> SHDP1
+        SHCP -. Lighthouse .-> SHDP2
+    end
+
+    subgraph DED["DEDICATED STAMP — customer cloud (enterprise)"]
+        DEDCP["Single-tenant control plane<br/>via Azure Managed Application<br/>(managed RG, customer can't touch)"]
+        DEDDP["Customer data plane"]
+        DEDCP --> DEDDP
+    end
+
+    subgraph SHOST["SELF-HOSTED — customer cloud (today)"]
+        SHOSTCP["Single-tenant control plane<br/>azd up (customer operates all)"]
+        SHOSTDP["Customer data plane"]
+        SHOSTCP --> SHOSTDP
+    end
+
+    CODE -.-> SHCP
+    CODE -.-> DEDCP
+    CODE -.-> SHOSTCP
+
+    classDef shared fill:#cfe3ff,stroke:#2b6cb0,color:#1a202c;
+    classDef dedicated fill:#eadcff,stroke:#6b46c1,color:#1a202c;
+    classDef selfhost fill:#edf2f7,stroke:#4a5568,color:#1a202c;
+    classDef dp fill:#d8f0dd,stroke:#2f855a,color:#1a202c;
+    class SHCP shared;
+    class DEDCP dedicated;
+    class SHOSTCP selfhost;
+    class SHDP1,SHDP2,DEDDP,SHOSTDP dp;

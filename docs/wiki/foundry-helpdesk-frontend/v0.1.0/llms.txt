@@ -1,9 +1,0 @@
-# foundry-helpdesk-frontend v0.1.0
-
-- [Visão Geral do Componente](pages/page-1.md)
-- [Arquitetura e Stack Tecnológico](pages/page-2.md)
-- [API / Endpoints (rotas do Next.js)](pages/page-3.md)
-- [Componentes e Fluxos de UI](pages/page-4.md)
-- [Configuração e Autenticação](pages/page-5.md)
-- [Execução local e Deploy (incl. Docker)](pages/page-6.md)
-- [Demo, Fixtures e Teste Local](pages/page-7.md)

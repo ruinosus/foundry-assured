@@ -13,11 +13,23 @@
 //
 // Verified against the captured AG-UI event stream + @ag-ui/client
 // (AbstractAgent.runAgent / ResumeEntry).
+//
+// The same tap also (best-effort) handles the platform agent's native MCP
+// write-tool approval (agent-framework ToolApprovalRequestContent). The exact
+// AG-UI shape of that native tool-approval is pending live verification (see the
+// #3199 note on the discriminator below); we resume it via the identical
+// runAgent({ resume }) mechanism.
 
 import { useAgent } from "@copilotkit/react-core/v2";
 import { useEffect, useState } from "react";
 
-type Pending = { id: string; summary: string };
+// Two shapes of interrupt arrive over the SAME request_info/CUSTOM-event tap:
+//   - "ticket": the helpdesk workflow's create_ticket HITL -> { data: { summary } }
+//   - "tool":   the platform agent's native MCP write-tool approval
+//               (agent-framework ToolApprovalRequestContent) -> tool name + args
+type Pending =
+  | { kind: "ticket"; id: string; summary: string }
+  | { kind: "tool"; id: string; toolName: string; args: unknown };
 
 const card: React.CSSProperties = {
   border: "1px solid #2563eb33",
@@ -52,8 +64,25 @@ export function TicketApproval() {
         if (event?.type === "CUSTOM" && event?.name === "request_info") {
           const v = event.value ?? {};
           const id = v.request_id ?? v.id;
-          const summary = v.data?.summary ?? v.summary ?? "(no summary)";
-          if (id) setPending({ id, summary });
+          if (!id) return;
+          const data = v.data ?? v;
+
+          // Discriminate on payload shape: a ToolApprovalRequestContent carries a
+          // tool name (+ call arguments) rather than the create_ticket `summary`.
+          // NOTE: ToolApprovalRequestContent event shape is unverified vs #3199 —
+          // confirm in the E2E and adjust the discriminator/payload mapping if it
+          // surfaces differently.
+          const toolName =
+            data.tool_name ?? data.name ?? data.function_name ?? data.toolName;
+          const args =
+            data.arguments ?? data.args ?? data.tool_arguments ?? data.parameters;
+
+          if (toolName) {
+            setPending({ kind: "tool", id, toolName, args });
+          } else {
+            const summary = data.summary ?? v.summary ?? "(no summary)";
+            setPending({ kind: "ticket", id, summary });
+          }
         }
       },
     });
@@ -80,10 +109,28 @@ export function TicketApproval() {
 
   return (
     <div style={card}>
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>Open a support ticket?</div>
-      <div style={{ fontSize: 13, marginBottom: 10 }}>
-        <b>Summary:</b> {pending.summary}
-      </div>
+      {pending.kind === "tool" ? (
+        <>
+          <div style={{ fontWeight: 600, marginBottom: 6 }}>
+            Run write tool <code>{pending.toolName}</code>?
+          </div>
+          <div style={{ fontSize: 13, marginBottom: 10 }}>
+            <b>Arguments:</b>{" "}
+            <code style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+              {typeof pending.args === "string"
+                ? pending.args
+                : JSON.stringify(pending.args ?? {}, null, 2)}
+            </code>
+          </div>
+        </>
+      ) : (
+        <>
+          <div style={{ fontWeight: 600, marginBottom: 6 }}>Open a support ticket?</div>
+          <div style={{ fontSize: 13, marginBottom: 10 }}>
+            <b>Summary:</b> {pending.summary}
+          </div>
+        </>
+      )}
       <div style={{ display: "flex", gap: 8 }}>
         <button style={btn("#16a34a")} disabled={busy} onClick={() => respond(true)}>
           Approve

@@ -1,0 +1,35 @@
+%% Foundry Assured — SaaS target architecture · Fig 1: Control plane × Data plane
+%% Blue = control plane (us, orchestrator). Green = data plane (customer, BYO).
+flowchart TB
+    USER["Customer user<br/>(signs into THEIR tenant)"]
+
+    subgraph CP["CONTROL PLANE — us (orchestrator)"]
+        direction TB
+        WEB["Next.js — multi-tenant UI<br/>(Assurance Console)"]
+        API["FastAPI — orchestrator<br/>workflow / agents / RBAC / assurance gates"]
+        CFG[("Control-plane store<br/>per-tenant config + connection metadata<br/>NO secrets / NO customer data")]
+        ENTRA["Multi-tenant Entra app<br/>resolves tenant from the tid claim"]
+        WEB --> API --> CFG
+        API --> ENTRA
+    end
+
+    subgraph DP["DATA PLANE — customer (BYO, per-tenant)"]
+        direction TB
+        FND["Customer Foundry project<br/>(agents / model / memory)"]
+        KB["Customer AI Search / KB"]
+        STO["Customer storage<br/>(corpus / tickets)"]
+        KV["Customer Key Vault / CMK<br/>(secrets live here)"]
+        MCP["Customer MCP connections<br/>(GitHub / ADO / ...)"]
+        FND --> STO
+        FND --> KV
+    end
+
+    USER --> WEB
+    API -. "OBO / OAuth passthrough (runtime token, nothing persisted)" .-> FND
+    API -. token .-> KB
+    API -. token .-> MCP
+
+    classDef cp fill:#cfe3ff,stroke:#2b6cb0,color:#1a202c;
+    classDef dp fill:#d8f0dd,stroke:#2f855a,color:#1a202c;
+    class WEB,API,CFG,ENTRA cp;
+    class FND,KB,STO,KV,MCP dp;

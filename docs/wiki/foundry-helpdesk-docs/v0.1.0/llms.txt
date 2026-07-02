@@ -1,9 +1,0 @@
-# foundry-helpdesk-docs v0.1.0
-
-- [Visão Geral do Componente](pages/page-1.md)
-- [Arquitetura e Método](pages/page-2.md)
-- [Padrões e Template de Documentação](pages/page-3.md)
-- [Customização e Expansão de Domínio](pages/page-4.md)
-- [Execução, Deploy e Automação](pages/page-5.md)
-- [Casos de Uso e Estudos de Caso](pages/page-6.md)
-- [Qualidade, Assurance e Governança](pages/page-7.md)

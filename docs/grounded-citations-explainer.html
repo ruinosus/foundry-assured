@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Foundry Assured — Citações fundamentadas + ACL por-usuário</title>
+<style>
+  :root {
+    --bg: #0b1020; --bg2: #0e1530;
+    --card: rgba(255,255,255,.04); --card-border: rgba(255,255,255,.10);
+    --text: #e8edf7; --muted: #93a0bd;
+    --blue: #3b82f6; --indigo: #6366f1; --violet: #8b5cf6;
+    --green: #34d399; --amber: #fbbf24; --pink: #f472b6; --red: #f87171;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); scroll-snap-type: y proximity; overflow-x: hidden; }
+  section.slide {
+    min-height: 100vh; width: 100%; scroll-snap-align: start;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 7vh 8vw; position: relative; border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .kicker { font-size: 13px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  h1 { font-size: clamp(32px, 5.6vw, 68px); line-height: 1.05; letter-spacing: -.02em; }
+  h2 { font-size: clamp(24px, 3.4vw, 40px); line-height: 1.12; letter-spacing: -.01em; margin-bottom: 10px; }
+  h3 { font-size: 18px; margin-bottom: 6px; }
+  p { line-height: 1.55; }
+  .lead { font-size: clamp(16px, 1.6vw, 20px); color: var(--muted); max-width: 68ch; line-height: 1.55; margin-top: 8px; }
+  .grad { background: linear-gradient(100deg, #60a5fa 0%, #818cf8 45%, #c084fc 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .grad-g { background: linear-gradient(100deg, #34d399, #60a5fa); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
+  .badge { border: 1px solid var(--card-border); background: var(--card); border-radius: 999px; padding: 7px 14px; font-size: 13px; color: var(--muted); }
+  .badge b { color: var(--text); font-weight: 600; }
+  .dot { color: var(--green); }
+  .footer { position: absolute; bottom: 20px; left: 8vw; right: 8vw; display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+  .nav-dots { position: fixed; right: 20px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 9px; z-index: 50; }
+  .nav-dots a { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.18); display: block; transition: .2s; }
+  .nav-dots a:hover, .nav-dots a.on { background: linear-gradient(var(--blue), var(--violet)); transform: scale(1.3); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 26px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-top: 26px; }
+  @media (max-width: 860px){ .grid2,.grid3{ grid-template-columns:1fr; } }
+  .card { border: 1px solid var(--card-border); background: var(--card); border-radius: 16px; padding: 20px 22px; }
+  .card .ic { font-size: 22px; }
+  .card h3 { margin-top: 8px; }
+  .card p { font-size: 14px; color: var(--muted); margin-top: 6px; }
+  .card.hl { border-color: rgba(139,92,246,.5); box-shadow: 0 0 0 1px rgba(139,92,246,.15), 0 20px 60px -30px rgba(139,92,246,.5); }
+  .card.ok { border-color: rgba(52,211,153,.4); }
+  .card.no { border-color: rgba(248,113,113,.35); }
+
+  .flow { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; margin-top: 26px; }
+  .step { border: 1px solid var(--card-border); background: var(--card); border-radius: 14px; padding: 14px 16px; min-width: 150px; flex: 1; }
+  .step .n { font-size: 11px; letter-spacing:.1em; color: var(--muted); text-transform: uppercase; }
+  .step .t { font-weight: 700; margin-top: 5px; font-size: 15px; }
+  .step .d { font-size: 12.5px; color: var(--muted); margin-top: 5px; line-height:1.4; }
+  .arrow { color: var(--muted); font-size: 20px; align-self: center; }
+
+  table { border-collapse: collapse; width: 100%; margin-top: 22px; font-size: 14px; }
+  th, td { text-align: left; padding: 11px 14px; border-bottom: 1px solid var(--card-border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 12px; letter-spacing:.06em; text-transform: uppercase; }
+  td b { color: var(--text); }
+  .ms { color: #7bb0ff; font-weight: 600; }
+  .yes { color: var(--green); } .nope { color: var(--red); }
+
+  pre { background: #060a17; border: 1px solid var(--card-border); border-radius: 12px; padding: 16px 18px; margin-top: 18px; overflow-x: auto; font-size: 12.5px; line-height: 1.6; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  pre code { color: #cdd7ee; }
+  .c-key { color: #c084fc; } .c-str { color: #86efac; } .c-com { color: #6b7a99; } .c-fn { color: #7bb0ff; }
+
+  .callout { margin-top: 22px; border-left: 3px solid var(--amber); background: rgba(251,191,36,.06); border-radius: 0 12px 12px 0; padding: 14px 18px; font-size: 14px; color: #e9dcbf; max-width: 92ch; }
+  .callout.g { border-left-color: var(--green); background: rgba(52,211,153,.06); color: #cdeede; }
+  .callout.r { border-left-color: var(--red); background: rgba(248,113,113,.07); color: #f3d3d3; }
+  .callout b { color: #fff; }
+  .pill { display:inline-block; border:1px solid var(--card-border); border-radius:999px; padding:2px 10px; font-size:12px; color:var(--muted); }
+  .tag-ms { background: rgba(59,130,246,.12); border-color: rgba(59,130,246,.4); color:#9cc4ff; }
+  ul.clean { list-style:none; margin-top:14px; display:flex; flex-direction:column; gap:9px; }
+  ul.clean li { font-size:14.5px; color:var(--muted); padding-left:22px; position:relative; line-height:1.5; }
+  ul.clean li::before { content:"›"; position:absolute; left:4px; color:var(--violet); font-weight:700; }
+  ul.clean li b { color: var(--text); }
+  .mini { font-size:12.5px; color:var(--muted); margin-top:8px; }
+</style>
+</head>
+<body>
+
+<div class="nav-dots" id="dots"></div>
+
+<!-- 1 · HERO -->
+<section class="slide" id="s1">
+  <div class="kicker">Foundry Assured · Feature técnica</div>
+  <h1>Respostas <span class="grad">fundamentadas</span>, citações <span class="grad">clicáveis</span><br/>e acesso <span class="grad-g">por-usuário</span>.</h1>
+  <p class="lead">Como o assistente responde só com base na fonte, mostra <b>de onde tirou cada afirmação</b> (clicável), e — no domínio sensível — garante que <b>cada pessoa só vê os documentos que tem permissão de ler</b>. Do funcional aos mínimos detalhes técnicos, e onde isso é <span class="ms">100% Microsoft</span>.</p>
+  <div class="badges">
+    <span class="badge">🧩 <b>Microsoft Foundry</b> + Responses API</span>
+    <span class="badge">🔎 <b>Azure AI Search</b> (Foundry IQ)</span>
+    <span class="badge">🔐 <b>Entra ID</b> OBO + ACL por documento</span>
+    <span class="badge">🖥️ <b>AG-UI</b> + CopilotKit</span>
+    <span class="badge">☁️ <b>azd</b> + Bicep (IaC)</span>
+  </div>
+  <div class="footer"><span>docs/grounded-citations-explainer.html</span><span>role para baixo ↓</span></div>
+</section>
+
+<!-- 2 · O FUNCIONAL -->
+<section class="slide" id="s2">
+  <div class="kicker">1 · O funcional — o que a pessoa vê</div>
+  <h2>Pergunta → resposta <span class="grad">com fontes</span> → clico e vejo a fonte.</h2>
+  <p class="lead">Nenhuma "alucinação": toda afirmação é ancorada num documento real da base de conhecimento, e o painel lateral lista as fontes citadas. Clicar numa fonte revela o documento de origem.</p>
+  <div class="flow">
+    <div class="step"><div class="n">Passo 1</div><div class="t">Dev pergunta</div><div class="d">"Como funciona a telemetria do Cockpit?" no chat.</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">Passo 2</div><div class="t">Sistema busca</div><div class="d">Recupera os trechos relevantes da base — só os que <b>aquele usuário</b> pode ler.</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">Passo 3</div><div class="t">Redige fundamentado</div><div class="d">Responde só com base nos trechos, citando cada fonte com [1], [2]…</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">Passo 4</div><div class="t">Painel de Fontes</div><div class="d">Lista numerada, clicável → abre/mostra o documento citado.</div></div>
+  </div>
+  <div class="callout g"><b>A prova de acesso (ACL por-usuário):</b> a mesma pergunta, dois usuários — <b>A (autorizado)</b> recebe <b>7</b> documentos, <b>incluindo</b> o confidencial de telemetria e o cita; <b>B (só público)</b> recebe <b>5</b> documentos e <b>nunca vê</b> o confidencial. Verificado ao vivo. Fail-closed: sem permissão declarada, o documento não aparece.</div>
+</section>
+
+<!-- 3 · OS DOIS CAMINHOS -->
+<section class="slide" id="s3">
+  <div class="kicker">2 · A ideia-chave — dois caminhos, um por necessidade</div>
+  <h2>Nem todo domínio precisa de ACL. <span class="grad">Cada um usa o caminho certo.</span></h2>
+  <p class="lead">O sistema é domain-swappable. Dois domínios "grounded" com necessidades diferentes → duas estratégias de recuperação, ambas rodando como o usuário via OBO e emitindo citações estruturadas para o mesmo painel.</p>
+  <div class="grid2">
+    <div class="card ok">
+      <div class="ic">📖</div>
+      <h3>Selfwiki — <span class="pill">acl=false</span> audiência única</h3>
+      <p>A wiki do próprio repositório é pública internamente — não há o que aparar por pessoa. Usa o caminho <b>nativo</b> da Microsoft: anexa a KB como <b>MCP tool <code>knowledge_base_retrieve</code></b> inline na Responses API. A recuperação agentic (planejamento de query) dá ótima cobertura e devolve <b>annotations <code>url_citation</code> nativas</b>.</p>
+      <p class="mini">Caminho: Responses API + Foundry IQ MCP tool → citações nativas.</p>
+    </div>
+    <div class="card hl">
+      <div class="ic">🛰️</div>
+      <h3>Cockpit — <span class="pill">acl=true</span> por-usuário</h3>
+      <p>A base do Cockpit tem documentos confidenciais. Cada pessoa só pode ver os seus. Usa <b>recuperação + aparo do lado da app</b>: uma <b>busca direta como o usuário</b> (onde a ACL <b>funciona de verdade</b>), que devolve só os documentos autorizados; a resposta é sintetizada <b>apenas</b> a partir desses documentos, e as fontes deles viram as citações.</p>
+      <p class="mini">Caminho: direct search (ACL trima) → síntese via Responses → citações dos docs autorizados.</p>
+    </div>
+  </div>
+  <div class="callout">Os dois entregam a <b>mesma experiência</b> (resposta fundamentada + painel de fontes clicável). A diferença é interna e existe por um motivo técnico concreto — o próximo slide.</div>
+</section>
+
+<!-- 4 · A DECISÃO / POR QUE -->
+<section class="slide" id="s4">
+  <div class="kicker">3 · Por que dois caminhos — a descoberta técnica</div>
+  <h2>A ACL por-usuário <span class="grad-g">funciona</span> na busca direta, mas <span style="color:var(--red)">não</span> no caminho agentic.</h2>
+  <p class="lead">Investigamos a fundo (e testamos ao vivo). O header de identidade do usuário só é honrado num dos caminhos de recuperação — e é isso que decide a arquitetura.</p>
+  <table>
+    <tr><th>Caminho de recuperação</th><th>Dá citações "bonitas"?</th><th>Respeita ACL por-usuário?</th><th>Evidência</th></tr>
+    <tr><td><b>Agentic</b> <code>knowledge_base_retrieve</code> (MCP)</td><td class="yes">Sim — url_citation nativas</td><td class="nope">✗ Não trima</td><td>Nossos testes (B via confidential) + <span class="ms">issue Azure/azure-sdk-for-python #44454</span></td></tr>
+    <tr><td><b>Busca direta</b> <code>/docs/search</code></td><td>Sem annotations — mas temos blob_url por doc</td><td class="yes">✓ Trima (header <code>x-ms-query-source-authorization</code>)</td><td>Nossos testes (A=7 / B=5) + <span class="ms">Tutorial oficial ADLS ACL</span></td></tr>
+  </table>
+  <div class="callout r"><b>Consequência:</b> as citações nativas vêm do caminho agentic — que é justamente o que <b>não</b> respeita ACL. Então, para um domínio com ACL, não dá para usar o MCP tool: o modelo veria conteúdo confidencial. A solução correta é <b>recuperar+aparar nós mesmos</b> pela busca direta (onde a ACL funciona) e sintetizar só com o autorizado — <b>fail-closed by design</b>.</div>
+  <div class="mini">Investigamos até o caminho ADLS Gen2 + ACLs POSIX (ingestionPermissionOptions). Conclusão documentada: ele popula o metadado de grupo, mas <b>não</b> muda o fato de o retrieve agentic não trimar — a limitação está no <i>retrieve path</i>, não na ingestão. Por isso revertemos o ADLS e ficamos com o caminho de busca direta.</div>
+</section>
+
+<!-- 5 · ARQUITETURA -->
+<section class="slide" id="s5">
+  <div class="kicker">4 · Arquitetura — as três camadas</div>
+  <h2>Frontend → Backend → <span class="grad">Foundry na nuvem</span>.</h2>
+  <div class="grid3">
+    <div class="card">
+      <div class="ic">🖥️</div><h3>Frontend · Next.js 15</h3>
+      <p><b>CopilotKit</b> renderiza o chat; <b>MSAL</b> faz o login Entra. O <code>EvidencePanel</code> escuta o stream <b>AG-UI</b> e mostra as fontes clicáveis. Fala com o backend via <b>AG-UI sobre SSE</b>.</p>
+    </div>
+    <div class="card">
+      <div class="ic">⚙️</div><h3>Backend · FastAPI (Python 3.12)</h3>
+      <p>Endpoints <code>/cockpit</code> e <code>/selfwiki</code> chamam <code>stream_grounded_agui</code>. Resolve a identidade do usuário (<b>OBO</b>), recupera, sintetiza pela <b>Responses API</b> e re-emite eventos <b>AG-UI</b>.</p>
+    </div>
+    <div class="card">
+      <div class="ic">☁️</div><h3>Foundry + Azure AI Search</h3>
+      <p><b>Microsoft Foundry</b> hospeda o modelo (gpt-5-mini) e a Responses API. <b>Azure AI Search</b> (Foundry IQ) guarda a base + o campo de permissão <code>groups</code> que faz o trim por documento.</p>
+    </div>
+  </div>
+  <div class="callout">Tudo <b>keyless</b>: autenticação sempre via <b>Entra ID / DefaultAzureCredential</b> (nenhuma API key). Provisionado por <b>azd + Bicep</b> — um <code>azd up</code> do zero reproduz a stack inteira (é um repo-template).</div>
+</section>
+
+<!-- 6 · FLUXO TÉCNICO (COCKPIT / ACL) -->
+<section class="slide" id="s6">
+  <div class="kicker">5 · O fluxo técnico detalhado — cockpit (com ACL)</div>
+  <h2>Passo a passo, do request ao token, ao trim, à citação.</h2>
+  <div class="flow" style="margin-top:20px">
+    <div class="step"><div class="n">A</div><div class="t">Request chega</div><div class="d">Frontend manda o AG-UI run com o <b>token do usuário</b> (audiência = API app).</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">B</div><div class="t">OBO — 2 tokens</div><div class="d"><code>OnBehalfOfCredential</code> troca o token do usuário por um de <b>search</b> (<code>search.azure.com</code>) e um de <b>modelo</b> (<code>ai.azure.com</code>).</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">C</div><div class="t">Busca direta como o usuário</div><div class="d"><code>POST /docs/search</code> com header <code>x-ms-query-source-authorization</code> = token do usuário → só docs autorizados.</div></div>
+  </div>
+  <div class="flow">
+    <div class="step"><div class="n">D</div><div class="t">Trim do serviço</div><div class="d">O AI Search casa os grupos do usuário (via Graph) com o campo <code>groups</code> de cada doc. Sem match → doc fora.</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">E</div><div class="t">Síntese fundamentada</div><div class="d"><code>responses.create</code> como o usuário (sem 403), recebendo <b>só</b> os trechos autorizados como contexto. Cita [1],[2]…</div></div>
+    <div class="arrow">→</div>
+    <div class="step"><div class="n">F</div><div class="t">AG-UI + Fontes</div><div class="d">Stream de texto + evento <b>CUSTOM <code>sources</code></b> com os docs autorizados → <code>EvidencePanel</code> renderiza.</div></div>
+  </div>
+  <pre><code><span class="c-com"># app/services/grounded.py — o coração do caminho acl=True</span>
+<span class="c-com"># 1) busca direta COMO O USUÁRIO — o header trima por documento</span>
+headers[<span class="c-str">"x-ms-query-source-authorization"</span>] = user_obo_search_token
+docs = <span class="c-fn">POST</span> {search}/indexes/{idx}/docs/search  <span class="c-com"># → só docs autorizados (fail-closed)</span>
+
+<span class="c-com"># 2) sintetiza SÓ com os docs autorizados (nenhum MCP tool → modelo não vê o proibido)</span>
+kwargs = build_synthesis_kwargs(pergunta, dominio, docs, model=<span class="c-str">"gpt-5-mini"</span>)
+stream = <span class="c-key">await</span> client.responses.<span class="c-fn">create</span>(**kwargs, stream=<span class="c-key">True</span>)
+
+<span class="c-com"># 3) emite as fontes autorizadas como evento AG-UI CUSTOM</span>
+<span class="c-key">yield</span> enc.<span class="c-fn">encode</span>(<span class="c-fn">CustomEvent</span>(name=<span class="c-str">"sources"</span>, value=sources))</code></pre>
+</section>
+
+<!-- 7 · FLUXO TÉCNICO (SELFWIKI / NATIVO) -->
+<section class="slide" id="s7">
+  <div class="kicker">6 · O outro caminho — selfwiki (nativo, sem ACL)</div>
+  <h2>Quando não há ACL, usamos o padrão <span class="grad">nativo da Microsoft</span>.</h2>
+  <p class="lead">A KB é anexada como MCP tool inline na Responses API. A Microsoft indica exatamente isso; a resposta já volta com as annotations <code>url_citation</code> — nós só as re-emitimos como o evento <code>sources</code>.</p>
+  <pre><code><span class="c-com"># build_responses_kwargs — o caminho acl=False</span>
+tools = [{
+  <span class="c-key">"type"</span>: <span class="c-str">"mcp"</span>,
+  <span class="c-key">"server_label"</span>: <span class="c-str">"knowledge-base"</span>,
+  <span class="c-key">"server_url"</span>: <span class="c-str">f"{search}/knowledgebases/{kb}/mcp?api-version=2026-05-01-preview"</span>,
+  <span class="c-key">"allowed_tools"</span>: [<span class="c-str">"knowledge_base_retrieve"</span>],   <span class="c-com"># o único tool suportado</span>
+  <span class="c-key">"require_approval"</span>: <span class="c-str">"never"</span>,
+  <span class="c-key">"authorization"</span>: search_token,                 <span class="c-com"># auth primária ao MCP server</span>
+}]
+<span class="c-com"># instruções pedem citar como 【message_idx:search_idx†source_name】 (formato Microsoft)</span>
+<span class="c-com"># resposta traz References + url_citation → viram o evento CUSTOM sources</span></code></pre>
+  <div class="callout g">Esse caminho foi <b>verificado ao vivo</b>: o selfwiki respondeu fundamentado com <b>3 citações reais</b> (url_citation com blob_urls de verdade). É o "jeito Microsoft" para grounding com citações — usado onde a ACL por-usuário não é requisito.</div>
+</section>
+
+<!-- 8 · FULL MICROSOFT -->
+<section class="slide" id="s8">
+  <div class="kicker">7 · Onde é "full Microsoft"</div>
+  <h2>Cada peça é um serviço/padrão <span class="ms">Microsoft indicado</span>.</h2>
+  <table>
+    <tr><th>Camada</th><th>Peça Microsoft</th><th>O que faz aqui</th></tr>
+    <tr><td>Modelo + inferência</td><td class="ms">Microsoft Foundry · Responses API</td><td>Hospeda gpt-5-mini; roda a síntese como o usuário (OBO → sem 403 de service principal)</td></tr>
+    <tr><td>Recuperação / KB</td><td class="ms">Azure AI Search · Foundry IQ</td><td>Base de conhecimento; MCP tool <code>knowledge_base_retrieve</code> (selfwiki) e busca direta (cockpit)</td></tr>
+    <tr><td>ACL por documento</td><td class="ms">Query-time ACL · <code>x-ms-query-source-authorization</code></td><td>Trima resultados pelo campo de permissão <code>groups</code> casado à identidade Entra do usuário</td></tr>
+    <tr><td>Identidade</td><td class="ms">Microsoft Entra ID · OBO flow</td><td>Login (MSAL) + On-Behalf-Of para agir como o usuário no Foundry e no Search. Keyless.</td></tr>
+    <tr><td>Grupos / ACL data</td><td class="ms">Entra Security Groups + Microsoft Graph</td><td>Grupos de leitura (public/internal/confidential); o AI Search resolve o membership via Graph</td></tr>
+    <tr><td>Protocolo de UI</td><td class="ms">AG-UI (Agent Framework) + CopilotKit</td><td>Streaming de passos + o evento CUSTOM <code>sources</code> chegam ao chat/painel</td></tr>
+    <tr><td>Infra / deploy</td><td class="ms">Azure Developer CLI (azd) + Bicep</td><td>Provisiona Foundry, Search, Storage, Container Apps, roles — reproduzível do zero</td></tr>
+  </table>
+  <div class="callout">Conformidade rastreável em <code>docs/MICROSOFT-ALIGNMENT.md</code> (matriz "padrão Microsoft → onde fazemos → link da doc") e nas ADRs. Cada desvio é registrado — inclusive a razão de o cockpit usar busca direta (a limitação de ACL no caminho agentic, com a issue #44454 como prova).</div>
+</section>
+
+<!-- 9 · A PROVA -->
+<section class="slide" id="s9">
+  <div class="kicker">8 · A prova — ao vivo, A vs B</div>
+  <h2>Mesma pergunta, <span class="grad-g">acesso diferente</span>.</h2>
+  <p class="lead">Pergunta: <i>"telemetria e observabilidade do Cockpit"</i>. O documento <code>cockpit-mcp-telemetry</code> é confidencial (só o grupo <b>confidential</b> lê). O usuário A pertence a ele; o B não.</p>
+  <div class="grid2">
+    <div class="card ok">
+      <h3>👤 Usuário A — autorizado</h3>
+      <p><b class="yes">7 documentos</b> autorizados retornados.<br/>Cita <code>cockpit-mcp-telemetry-v1.2.0__page-1.md</code> e <code>…page-6.md</code>.<br/>Recebe a resposta completa sobre telemetria.</p>
+    </div>
+    <div class="card no">
+      <h3>👤 Usuário B — só público</h3>
+      <p><b class="nope">5 documentos</b> autorizados retornados.<br/><b>Nenhum</b> deles é o de telemetria confidencial.<br/>Não vê nem cita o conteúdo restrito. Fail-closed.</p>
+    </div>
+  </div>
+  <div class="callout g">O modelo do B <b>nunca recebe</b> o trecho confidencial no contexto — o aparo acontece <b>antes</b> da síntese. Não é "esconder a citação"; é o conteúdo nunca entrar. Essa é a garantia de acesso do mecanismo (regra: <b>acesso é dado, não lógica no código</b>).</div>
+</section>
+
+<!-- 10 · ESTADO -->
+<section class="slide" id="s10">
+  <div class="kicker">9 · Estado + próximos passos</div>
+  <h2>O que está <span class="grad-g">pronto</span> e o que vem.</h2>
+  <ul class="clean">
+    <li><b>Backend</b> — <code>stream_grounded_agui</code> com os dois caminhos; <code>/cockpit</code> e <code>/selfwiki</code> como router endpoints. Verificado ao vivo (A-vs-B + citações). <span class="pill">✓</span></li>
+    <li><b>Frontend</b> — <code>EvidencePanel</code> lê o evento <code>sources</code> (mesmo padrão do <code>TicketApproval</code>) e renderiza notas de rodapé numeradas clicáveis; fallback gracioso pro heurístico v1. <span class="pill">✓</span></li>
+    <li><b>ACL data</b> — grupos Entra + stamping do campo <code>groups</code> no índice (acesso segue a fonte, via manifesto). Fail-closed. <span class="pill">✓</span></li>
+    <li><b>Infra</b> — fix no Bicep (deploying user ganha <i>Search Index Data Contributor</i> para o stamping funcionar num <code>azd up</code> do zero). <span class="pill">✓</span></li>
+    <li><b>Próximo</b> — E2E Playwright do round-trip A-vs-B no browser; retirar os hosted twins quando o caminho live estiver 100% assentado; avaliar url→conteúdo inline no clique (hoje mostra caminho + link). <span class="pill">□</span></li>
+  </ul>
+  <div class="badges" style="margin-top:30px">
+    <span class="badge dot">● Fundamentado</span>
+    <span class="badge dot">● Citações clicáveis</span>
+    <span class="badge dot">● ACL por-usuário fail-closed</span>
+    <span class="badge dot">● Keyless / OBO</span>
+    <span class="badge dot">● Full Microsoft</span>
+  </div>
+  <div class="footer"><span>Foundry Assured</span><span>fim ·  role para o topo ↑</span></div>
+</section>
+
+<script>
+  // nav dots
+  const secs = [...document.querySelectorAll('section.slide')];
+  const dots = document.getElementById('dots');
+  secs.forEach((s,i)=>{ const a=document.createElement('a'); a.href='#'+s.id; a.title=s.querySelector('.kicker')?.textContent||''; dots.appendChild(a); });
+  const links=[...dots.children];
+  const io=new IntersectionObserver((es)=>{ es.forEach(e=>{ if(e.isIntersecting){ const i=secs.indexOf(e.target); links.forEach(l=>l.classList.remove('on')); links[i]?.classList.add('on'); } }); },{threshold:.5});
+  secs.forEach(s=>io.observe(s));
+</script>
+</body>
+</html>

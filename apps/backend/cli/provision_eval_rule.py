@@ -31,6 +31,7 @@ from azure.ai.projects.models import (
 from azure.identity import DefaultAzureCredential
 
 from app.core.settings import settings
+from app.core.tenant import tenant_config
 
 _RULE_ID = "helpdesk-online-eval"
 
@@ -44,7 +45,7 @@ def main() -> None:
     args = parser.parse_args()
 
     project = AIProjectClient(
-        endpoint=settings.foundry_project_endpoint,
+        endpoint=tenant_config().foundry_project_endpoint,
         credential=DefaultAzureCredential(),
         allow_preview=True,
     )
@@ -61,14 +62,14 @@ def main() -> None:
         display_name="Helpdesk online evaluation",
         description="Scores each hosted-agent response against the eval, continuously.",
         event_type=EvaluationRuleEventType.RESPONSE_COMPLETED,
-        filter=EvaluationRuleFilter(agent_name=settings.hosted_agent_name),
+        filter=EvaluationRuleFilter(agent_name=tenant_config().hosted_agent_name),
         action=ContinuousEvaluationRuleAction(eval_id=args.eval_id, max_hourly_runs=args.max_hourly),
         enabled=True,
     )
     project.evaluation_rules.create_or_update(id=args.rule_id, evaluation_rule=rule)
     print(
         f"✅ Continuous eval rule '{args.rule_id}' created — scoring every response from "
-        f"'{settings.hosted_agent_name}' against eval {args.eval_id} (≤{args.max_hourly}/h)."
+        f"'{tenant_config().hosted_agent_name}' against eval {args.eval_id} (≤{args.max_hourly}/h)."
     )
 
 

@@ -27,7 +27,10 @@ import contextvars
 from azure.core.credentials import TokenCredential
 from azure.identity import DefaultAzureCredential, OnBehalfOfCredential
 from fastapi import Depends, HTTPException, Security, status
-from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
+from fastapi_azure_auth import (
+    MultiTenantAzureAuthorizationCodeBearer,
+    SingleTenantAzureAuthorizationCodeBearer,
+)
 from fastapi_azure_auth.user import User
 
 from app.core.settings import settings
@@ -40,24 +43,89 @@ _current_user: contextvars.ContextVar[User | None] = contextvars.ContextVar(
     "current_user", default=None
 )
 
+def _iss_callable(tid: str) -> str:
+    """Per-tenant issuer for MultiTenant token validation. Parameter MUST be named `tid`
+    (fastapi_azure_auth introspects the name)."""
+    return f"https://login.microsoftonline.com/{tid}/v2.0"
+
+
 # The bearer scheme validates incoming JWTs against the API app registration.
-azure_scheme: SingleTenantAzureAuthorizationCodeBearer | None = None
+# self_hosted/dedicated → SingleTenant (one Entra tenant); shared → MultiTenant.
+azure_scheme = None
 if settings.auth_enabled:
-    azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
-        app_client_id=settings.entra_api_client_id,
-        tenant_id=settings.entra_tenant_id,
-        scopes={settings.entra_api_scope: "access_as_user"},
-        # The dev account is a guest (personal MS account invited to the tenant);
-        # allow guests so it can sign in. Tighten for a production tenant.
-        allow_guest_users=True,
+    if settings.deployment_mode in ("self_hosted", "dedicated"):
+        azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
+            app_client_id=settings.entra_api_client_id,
+            tenant_id=settings.entra_tenant_id,
+            scopes={settings.entra_api_scope: "access_as_user"},
+            # The dev account is a guest (personal MS account invited to the tenant);
+            # allow guests so it can sign in. Tighten for a production tenant.
+            allow_guest_users=True,
+        )
+    else:  # shared
+        azure_scheme = MultiTenantAzureAuthorizationCodeBearer(
+            app_client_id=settings.entra_api_client_id,
+            scopes={settings.entra_api_scope: "access_as_user"},
+            validate_iss=True,
+            # Per-tenant issuer validation; fastapi_azure_auth requires iss_callable when
+            # validate_iss=True. The callable's parameter must be named exactly `tid`.
+            iss_callable=_iss_callable,
+            allow_guest_users=True,
+        )
+
+
+def _make_tenant_store():
+    """Build the shared-mode store at boot. Uses the PLATFORM-global control-plane Storage
+    account (settings.tenant_store_account_url) — NOT per-tenant, since no tenant is resolved
+    at boot yet.
+
+    settings.tenant_store_backend selects the impl: "table" (default, production — fail-fast if
+    no account URL) or "memory" (DEV/CI only — an ephemeral in-memory store so shared mode can
+    boot offline; NEVER use in production: it doesn't persist and isn't shared across instances).
+    """
+    if settings.tenant_store_backend == "memory":
+        from app.core.tenant_store import InMemoryTenantStore  # dev/CI: no Azure needed
+        return InMemoryTenantStore()
+    from app.core.tenant_store import TableStorageTenantStore  # lazy: shared mode only
+    if not settings.tenant_store_account_url:
+        raise RuntimeError("DEPLOYMENT_MODE=shared requires TENANT_STORE_ACCOUNT_URL")
+    return TableStorageTenantStore(
+        settings.tenant_store_account_url, settings.tenant_store_table, DefaultAzureCredential()
     )
 
 
-if settings.auth_enabled:
+def resolve_tenant(user, store) -> None:
+    """Authorization choke point: onboarded+active tid → set _current_tenant, else 403."""
+    from app.core.tenant import set_current_tenant
+    rec = store.get(getattr(user, "tid", None))
+    if rec is None or rec.status != "active":
+        raise HTTPException(status_code=403, detail="tenant not onboarded")
+    set_current_tenant(rec)
 
-    async def require_user(user: User = Security(azure_scheme)) -> User:  # type: ignore[arg-type]
-        _current_user.set(user)
-        return user
+
+# In shared mode only, switch the active config provider to MultiTenant and build the tenant
+# store once at boot (fail-fast if misconfigured). self_hosted/dedicated and auth-off NEVER
+# touch either — the default SingleTenant provider stays and no store is constructed.
+_tenant_store = None
+if settings.auth_enabled and settings.deployment_mode == "shared":
+    from app.core.tenant import MultiTenantConfigProvider, set_provider
+    set_provider(MultiTenantConfigProvider())
+    _tenant_store = _make_tenant_store()  # fail-fast at boot if misconfigured
+
+
+if settings.auth_enabled:
+    if settings.deployment_mode == "shared":
+
+        async def require_user(user: User = Security(azure_scheme)) -> User:  # type: ignore[arg-type]
+            _current_user.set(user)
+            resolve_tenant(user, _tenant_store)
+            return user
+
+    else:
+
+        async def require_user(user: User = Security(azure_scheme)) -> User:  # type: ignore[arg-type]
+            _current_user.set(user)
+            return user
 
 else:
 
@@ -129,8 +197,13 @@ def credential_for_request() -> TokenCredential:
 
 
 def memory_scope() -> str:
-    """Per-user memory namespace — the user's object id (isolation = poisoning defense)."""
+    """Per-user memory namespace, tenant-prefixed in multi-tenant mode.
+
+    SingleTenant keeps the bare user.oid (memory keys are persisted — prefixing would orphan
+    existing memories). Only MultiTenant prefixes by tid.
+    """
+    from app.core.tenant import current_tenant_id  # local import avoids a cycle
     user = current_user()
-    if user is not None and user.oid:
-        return user.oid
-    return "dev-local"
+    base = user.oid if (user is not None and user.oid) else "dev-local"
+    tid = current_tenant_id()
+    return f"{tid}:{base}" if tid else base

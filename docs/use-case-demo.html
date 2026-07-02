@@ -84,9 +84,13 @@
 
   <div class="panel" style="border-color:rgba(139,123,255,.4);background:rgba(139,123,255,.06)">
     <p class="sub" style="margin:0">Caso de uso parte do projeto maior <b>Foundry Assured</b> — hoje com
-       <b>3 domínios</b> (helpdesk · cockpit · selfwiki, a própria deep-wiki do repo) servidos pela
-       <b>Assurance Console</b> (<code>/d/[domain]</code>), e <b>RBAC</b> via Entra App Roles
-       (Admin/Author/Approver/Reader) + portal <code>/admin/users</code>. Modelo <code>gpt-5-mini</code>.
+       <b>4 domínios</b> (helpdesk · cockpit · selfwiki, a própria deep-wiki do repo, · <b>platform</b>,
+       ops sobre os MCP first-party da Microsoft) servidos pela <b>Assurance Console</b>
+       (<code>/d/[domain]</code>), e <b>RBAC</b> via Entra App Roles (Admin/Author/Approver/Reader) +
+       portal <code>/admin/users</code>. Modelo <code>gpt-5-mini</code>. O projeto evoluiu ainda para
+       <b>SaaS multi-tenant híbrido</b> (modos <code>self_hosted · dedicated · shared</code>) —
+       arquitetura em
+       <a href="./saas-architecture.html" style="color:var(--plat)">saas-architecture.html</a>.
        Estado atual nos decks novos:
        <a href="./deep-wiki-presentation.html" style="color:var(--plat)">deep-wiki-presentation.html</a> ·
        <a href="./fluxo-deepwiki.html" style="color:var(--plat)">fluxo-deepwiki.html</a> ·

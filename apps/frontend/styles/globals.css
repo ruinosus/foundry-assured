@@ -527,6 +527,10 @@ table.evals tr:last-child td {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* Contained scroll box: many sources scroll here instead of pushing "Garantias" off-screen. */
+  max-height: 42vh;
+  overflow-y: auto;
+  padding-right: 4px;
 }
 .source-chip {
   display: inline-flex;
@@ -547,6 +551,71 @@ table.evals tr:last-child td {
 .source-ico {
   font-family: system-ui;
   flex: 0 0 auto;
+}
+/* Structured citations (grounded stream): numbered, clickable footnotes. */
+.evidence-citations {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 42vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.citation-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  font: inherit;
+}
+.citation-btn:hover {
+  border-color: #c7d2fe;
+  background: #f5f3ff;
+}
+.citation-idx {
+  flex: 0 0 auto;
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #ede9fe;
+  color: #5b21b6;
+  font-size: 11px;
+  font-weight: 700;
+}
+.citation-src {
+  font-size: 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  word-break: break-all;
+}
+.citation-detail {
+  padding: 6px 9px 2px 35px;
+}
+.citation-link {
+  font-size: 11.5px;
+  word-break: break-all;
+  color: #4f46e5;
+}
+.citation-content {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-height: 180px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  border-left: 2px solid var(--border);
+  padding-left: 10px;
 }
 .evidence-empty {
   font-size: 12.5px;
