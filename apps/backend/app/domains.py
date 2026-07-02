@@ -88,9 +88,12 @@ def _domains() -> list[DomainSpec]:
             instructions=SELFWIKI_INSTRUCTIONS,
             kb_name=cfg.selfwiki_searchindex_knowledge_base,  # selfwiki-si-kb (native searchIndex retrieve)
             ks_name=cfg.selfwiki_searchindex_knowledge_source,  # selfwiki-docbundles-si-ks
-            search_index=cfg.selfwiki_search_index,  # direct-search fallback target (no ACL — single-audience)
+            search_index=cfg.selfwiki_search_index,  # direct-search fallback target (ACL trims here too)
             search_endpoint=cfg.azure_search_endpoint,
-            # selfwiki stays ACL-free (single-audience): no acl_group_map.
+            # Single private audience = the app-users group (everyone with app access). Intentional
+            # ACL (ADR/spec 2026-07-02): the self-wiki is stamped with this group; retrieval sends the
+            # OBO header because this map is truthy. Empty APP_USERS_GROUP_ID → no map (dev/single-user).
+            acl_group_map=({"app-users": cfg.app_users_group_id} if cfg.app_users_group_id else None),
         ),
         DomainSpec(id="platform", kind="tool"),
     ]

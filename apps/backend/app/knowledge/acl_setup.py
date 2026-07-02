@@ -88,21 +88,29 @@ def _req(token: str, method: str, path: str, body: dict | None = None) -> dict |
         return None
 
 
-def _set_option(token: str, index: dict, state: str) -> None:
-    _index = tenant_config().cockpit_search_index
+def _set_option(token: str, index_name: str, index: dict, state: str) -> None:
     index = {k: v for k, v in index.items() if not k.startswith("@odata")}
     index["permissionFilterOption"] = state  # "enabled" | "disabled"
-    _req(token, "PUT", f"indexes/{_index}?api-version={_API}", index)
+    _req(token, "PUT", f"indexes/{index_name}?api-version={_API}", index)
 
 
-def setup_acl(component_groups: dict[str, list[str]] | None = None) -> None:
+def setup_acl(
+    component_groups: dict[str, list[str]] | None = None,
+    *,
+    index: str | None = None,
+    default_groups: list[str] | None = None,
+) -> None:
     """Stamp each document's access groups and enable query-time trimming.
 
     component_groups: { component-key : [group-name-or-id,…] }, typically built from the
-    bundle manifests by the ingest. When None, falls back to the external map."""
-    _index = tenant_config().cockpit_search_index
+    bundle manifests by the ingest. When None, falls back to the external map; pass `{}` to stamp
+    EVERY doc with `default_groups` (no per-doc map — e.g. the single-audience selfwiki).
+    `index` / `default_groups` override the cockpit defaults so a second corpus (selfwiki) can be
+    stamped on ITS index with ITS audience group (access is still DATA — RULE #6)."""
+    _index = index or tenant_config().cockpit_search_index
     access = component_groups if component_groups is not None else _load_external()
-    default_groups = [g for g in tenant_config().cockpit_acl_default_groups.split(",") if g.strip()]
+    if default_groups is None:
+        default_groups = [g for g in tenant_config().cockpit_acl_default_groups.split(",") if g.strip()]
     if not access:
         print(f"⚠️  no access map — every doc → default {default_groups or '[] (fail-closed)'}.")
 
@@ -116,7 +124,7 @@ def setup_acl(component_groups: dict[str, list[str]] | None = None) -> None:
             "filterable": True, "retrievable": True, "searchable": False,
             "permissionFilter": "groupIds",
         })
-        _set_option(token, index, "enabled")
+        _set_option(token, _index, index, "enabled")
         index = _req(token, "GET", f"indexes/{_index}?api-version={_API}")
         assert index is not None
         print("✓ permission field 'groups' added")
@@ -124,7 +132,7 @@ def setup_acl(component_groups: dict[str, list[str]] | None = None) -> None:
     # Populate under a disabled window (docs with no group are invisible when enforced).
     # The window is a deliberate maintenance step — re-trim is ENABLED again in `finally`
     # even on error, so a transient failure never leaves the index untrimmed/open.
-    _set_option(token, index, "disabled")
+    _set_option(token, _index, index, "disabled")
     try:
         docs, skip = [], 0
         while True:
@@ -155,7 +163,7 @@ def setup_acl(component_groups: dict[str, list[str]] | None = None) -> None:
         if batch:
             _req(token, "POST", f"indexes/{_index}/docs/index?api-version={_API}", {"value": batch})
     finally:
-        _set_option(token, index, "enabled")  # re-arm trimming no matter what
+        _set_option(token, _index, index, "enabled")  # re-arm trimming no matter what
 
     note = f" ({fail_closed} fail-closed — no resolvable group)" if fail_closed else ""
     print(f"✓ stamped {len(docs)} docs by source access {dict(tally)}{note}; trimming ENABLED")
