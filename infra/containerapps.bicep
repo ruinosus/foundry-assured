@@ -36,6 +36,11 @@ param entraApiClientSecret string = ''
 @description('Entra group of app users — the private read audience of the selfwiki KB. When set, retrieval sends the per-user OBO ACL header for /selfwiki; empty leaves selfwiki fail-closed.')
 param appUsersGroupId string = ''
 
+@description('ACL classification group object-IDs for the grounded domains (cockpit). Populate acl_group_map so retrieval sends the per-user OBO ACL header; empty leaves ACL trim off (fail-closed on an ACL index).')
+param aclPublicGroup string = ''
+param aclInternalGroup string = ''
+param aclConfidentialGroup string = ''
+
 @description('Storage account backing the Azure Files share for persisted app data.')
 param storageAccountName string
 
@@ -144,6 +149,11 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             // selfwiki audience: the app-users group is the self-wiki's private read audience;
             // retrieval sends the OBO ACL header only when this is set (else /selfwiki fails closed).
             { name: 'APP_USERS_GROUP_ID', value: appUsersGroupId }
+            // cockpit ACL classification groups: populate acl_group_map so retrieval sends the
+            // per-user OBO header on the cockpit ACL index (else it fails closed → "não sei").
+            { name: 'ACL_PUBLIC_GROUP', value: aclPublicGroup }
+            { name: 'ACL_INTERNAL_GROUP', value: aclInternalGroup }
+            { name: 'ACL_CONFIDENTIAL_GROUP', value: aclConfidentialGroup }
           ]
           volumeMounts: [
             { volumeName: 'data', mountPath: '/app/data' } // tickets.jsonl persists here

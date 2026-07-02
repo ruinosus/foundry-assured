@@ -23,6 +23,11 @@ param principalId string = ''
 @description('Entra group of app users, granted Foundry User so they can run inference as themselves (OBO). azd maps APP_USERS_GROUP_ID. Empty skips.')
 param appUsersGroupId string = ''
 
+@description('ACL classification group object-IDs (name→objectID) for the grounded domains (cockpit/selfwiki). Wired into the backend so acl_group_map is populated and retrieval sends the per-user OBO ACL header; empty leaves ACL domains fail-closed. azd maps ACL_PUBLIC_GROUP / ACL_INTERNAL_GROUP / ACL_CONFIDENTIAL_GROUP.')
+param aclPublicGroup string = ''
+param aclInternalGroup string = ''
+param aclConfidentialGroup string = ''
+
 @description('Type of principalId: User locally, ServicePrincipal in CI/CD (azd maps AZURE_PRINCIPAL_TYPE).')
 param principalType string = 'User'
 
@@ -89,6 +94,9 @@ module apps 'containerapps.bicep' = {
     entraApiClientId: entraApiClientId
     entraApiClientSecret: entraApiClientSecret
     appUsersGroupId: appUsersGroupId
+    aclPublicGroup: aclPublicGroup
+    aclInternalGroup: aclInternalGroup
+    aclConfidentialGroup: aclConfidentialGroup
   }
 }
 
