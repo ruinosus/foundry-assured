@@ -31,7 +31,7 @@ jobs:
     steps:
       # Mint a short-lived GitHub App token when the App is configured; skipped
       # otherwise (the token expression below falls back to GITHUB_TOKEN).
-      - uses: actions/create-github-app-token@v2
+      - uses: actions/create-github-app-token@v3
         id: app-token
         if: ${{ vars.RELEASE_APP_ID != '' }}
         with:
