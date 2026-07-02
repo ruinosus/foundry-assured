@@ -212,10 +212,10 @@ async def _run() -> int:  # noqa: C901 — one linear probe; readability over de
     search = (cfg.azure_search_endpoint or "").rstrip("/")
     kb = cfg.cockpit_search_knowledge_base
     conf = env.cockpit_confidential_source
-    conf_gid = tc.cockpit_acl_confidential_group
-    pub_gid = tc.cockpit_acl_public_group
-    internal_gid = tc.cockpit_acl_internal_group
-    default_groups = [g for g in tc.cockpit_acl_default_groups.split(",") if g.strip()]
+    conf_gid = tc.acl_confidential_group
+    pub_gid = tc.acl_public_group
+    internal_gid = tc.acl_internal_group
+    default_groups = [g for g in tc.acl_default_groups.split(",") if g.strip()]
 
     if not (search and kb and conf and conf_gid and pub_gid):
         print("SKIP: native-filter probe needs live Search+KB, COCKPIT_CONFIDENTIAL_SOURCE and the ACL "

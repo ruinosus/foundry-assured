@@ -55,9 +55,9 @@ for g in "$PUB" "$INT" "$CONF"; do az ad group member add --group "$g" --member-
 az ad group member add --group "$PUB" --member-id "$B" 2>/dev/null || true
 
 echo ""
-echo "# Cole no backend/.env (e no COCKPIT_ACL_GROUPS do ingest):"
-echo "COCKPIT_ACL_PUBLIC_GROUP=$PUB"
-echo "COCKPIT_ACL_INTERNAL_GROUP=$INT"
-echo "COCKPIT_ACL_CONFIDENTIAL_GROUP=$CONF"
+echo "# Cole no backend/.env (e no ACL_GROUPS do ingest):"
+echo "ACL_PUBLIC_GROUP=$PUB"
+echo "ACL_INTERNAL_GROUP=$INT"
+echo "ACL_CONFIDENTIAL_GROUP=$CONF"
 echo "COCKPIT_TEST_USER_A=$A   # public+internal+confidential"
 echo "COCKPIT_TEST_USER_B=$B   # public only"

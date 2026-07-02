@@ -13,7 +13,7 @@ is never copied into this (public) repo.
 Run (after the helpdesk infra exists):
     cd apps/backend
     COCKPIT_DOCBUNDLES=/path/to/aap-kb/apps/agent/docbundles \
-      uv run python -m app.knowledge.ingest_cockpit
+      uv run python -m app.knowledge.ingest_docbundles
 
 SDK surface mirrors app/knowledge/ingest.py (azure-search-documents 11.7.0b2).
 """
@@ -407,7 +407,7 @@ def provision_searchindex_kb() -> None:
 
     Standalone entry point for the Task 2b cutover — the index already exists and is
     ACL-stamped by a prior full ingest, so this just adds the searchIndex-backed twin:
-        uv run python -m app.knowledge.ingest_cockpit --searchindex-kb-only
+        uv run python -m app.knowledge.ingest_docbundles --searchindex-kb-only
     """
     _setup_logging()
     _require("AZURE_SEARCH_ENDPOINT", tenant_config().azure_search_endpoint)
@@ -527,7 +527,7 @@ def provision_selfwiki_searchindex_kb() -> None:
 
     Standalone entry point for the selfwiki cutover — the index already exists + is populated by a
     prior full selfwiki ingest, so this just adds the searchIndex-backed twin:
-        uv run python -m app.knowledge.ingest_cockpit --selfwiki-searchindex-kb-only
+        uv run python -m app.knowledge.ingest_docbundles --selfwiki-searchindex-kb-only
     """
     _setup_logging()
     _require("AZURE_SEARCH_ENDPOINT", tenant_config().azure_search_endpoint)
@@ -575,7 +575,7 @@ def ingest_selfwiki() -> None:
     """Full CONTENT ingest for the **selfwiki** domain (this repo's own deep-wiki), steered to the
     selfwiki names — no COCKPIT_* env overrides, no risk of touching the cockpit searchIndex twin.
 
-        uv run python -m app.knowledge.ingest_cockpit --selfwiki
+        uv run python -m app.knowledge.ingest_docbundles --selfwiki
 
     selfwiki is a PRIVATE single-audience KB: readable by everyone with app access = the app-users
     group (APP_USERS_GROUP_ID). Bundles default to this repo's docs/wiki (override COCKPIT_DOCBUNDLES).

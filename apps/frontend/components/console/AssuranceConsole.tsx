@@ -21,6 +21,7 @@ import { branding } from "@/lib/branding";
 import { getDomain, type Domain } from "@/lib/domains";
 import { TicketApproval } from "@/components/chat/TicketApproval";
 import { EvidencePanel } from "@/components/console/EvidencePanel";
+import { MermaidZoom } from "@/components/console/MermaidZoom";
 import { SuggestedPrompts } from "@/components/console/SuggestedPrompts";
 
 const WorkflowSteps = dynamic(
@@ -89,6 +90,7 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
 
           <div className="console-chat copilotkit-chat-host">
             <CopilotChat agentId={activeAgentId} />
+            <MermaidZoom />
           </div>
         </div>
 
