@@ -132,7 +132,7 @@ def setup_acl(
     # Populate under a disabled window (docs with no group are invisible when enforced).
     # The window is a deliberate maintenance step — re-trim is ENABLED again in `finally`
     # even on error, so a transient failure never leaves the index untrimmed/open.
-    _set_option(token, index, "disabled")
+    _set_option(token, _index, index, "disabled")
     try:
         docs, skip = [], 0
         while True:

@@ -116,27 +116,50 @@ def purge_orphans(credential, container: str, *, index_name: str | None = None) 
     blobs are deleted but their chunks linger in the index and keep being retrieved.
     We reconcile the index against the container. (Requires Search Index Data
     Contributor on the search service — Reader cannot delete documents.)
+
+    On an **ACL-enabled** index a plain `search=*` is permission-trimmed to ZERO (no header →
+    no group), which would silently purge nothing. We list the docs with
+    `x-ms-enable-elevated-read` (bypasses the permission filter) so every chunk's source blob is
+    seen; deletion is by key (`uid`) and isn't permission-filtered.
     """
+    import urllib.request
+
     from azure.storage.blob import BlobServiceClient
 
+    idx = index_name or INDEX_NAME
+    api = os.environ.get("SEARCH_API_VERSION", "2026-05-01-preview")
+    endpoint = tenant_config().azure_search_endpoint.rstrip("/")
     account = _require("AZURE_STORAGE_ACCOUNT", tenant_config().azure_storage_account)
     cc = BlobServiceClient(
         account_url=f"https://{account}.blob.core.windows.net", credential=credential
     ).get_container_client(container)
     live = {b.name for b in cc.list_blobs()}
 
-    search = SearchClient(
-        endpoint=tenant_config().azure_search_endpoint, index_name=index_name or INDEX_NAME,
-        credential=credential, api_version=os.environ.get("SEARCH_API_VERSION", "2026-05-01-preview"),
-    )
-    orphans, seen = [], set()
-    for d in search.search(search_text="*", select=["uid", "blob_url"]):
-        blob = str(d.get("blob_url", "")).rsplit("/", 1)[-1]
-        if blob and blob not in live and d["uid"] not in seen:
-            orphans.append({"uid": d["uid"]})
-            seen.add(d["uid"])
+    token = DefaultAzureCredential().get_token("https://search.azure.com/.default").token
+    orphans, seen, skip = [], set(), 0
+    while True:
+        req = urllib.request.Request(
+            f"{endpoint}/indexes/{idx}/docs/search?api-version={api}", method="POST",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json",
+                     "x-ms-enable-elevated-read": "true"},
+            data=json.dumps({"search": "*", "select": "uid,blob_url", "top": 1000, "skip": skip}).encode(),
+        )
+        rows = json.load(urllib.request.urlopen(req, timeout=90)).get("value", [])
+        if not rows:
+            break
+        for d in rows:
+            blob = str(d.get("blob_url", "")).rsplit("/", 1)[-1]
+            if blob and blob not in live and d["uid"] not in seen:
+                orphans.append({"uid": d["uid"]})
+                seen.add(d["uid"])
+        skip += len(rows)
+        if len(rows) < 1000:
+            break
     if orphans:
-        search.delete_documents(documents=orphans)
+        SearchClient(
+            endpoint=tenant_config().azure_search_endpoint, index_name=idx,
+            credential=credential, api_version=api,
+        ).delete_documents(documents=orphans)
         print(f"  purged {len(orphans)} orphan chunks (source blob no longer in '{container}')")
     else:
         print("  no orphan chunks to purge")
@@ -598,8 +621,7 @@ def ingest_selfwiki() -> None:
     create_selfwiki_searchindex_knowledge_source(index_client)
     create_selfwiki_searchindex_knowledge_base(index_client)
 
-    print("== selfwiki 4/5: reconcile deletions + run indexer ==")
-    purge_orphans(credential, cfg.selfwiki_storage_container, index_name=cfg.selfwiki_search_index)
+    print("== selfwiki 4/5: run indexer ==")
     indexer_client = SearchIndexerClient(
         endpoint=cfg.azure_search_endpoint, credential=credential, api_version=api_version,
         connection_timeout=20, read_timeout=CALL_TIMEOUT_S,
@@ -611,12 +633,14 @@ def ingest_selfwiki() -> None:
             "existing groups. Set APP_USERS_GROUP_ID to enforce the app-users audience."
         )
         return
-    # selfwiki IS ACL'd to the app-users group: block on the indexer so stamping sees every doc, then
-    # stamp. Access is DATA (RULE #6) — pass {} (no per-doc map) so EVERY doc gets the single audience.
+    # selfwiki IS ACL'd to the app-users group. Block on the indexer so the index has the new docs,
+    # THEN reconcile deletions (prior-version chunks) and stamp — both after the index is populated.
     trigger_indexer(indexer_client, indexer_name=indexer_name, wait_s=900)
+    purge_orphans(credential, cfg.selfwiki_storage_container, index_name=cfg.selfwiki_search_index)
     print("== selfwiki 5/5: stamp the app-users audience (permissionFilter trim) ==")
     from app.knowledge.acl_setup import setup_acl
 
+    # Access is DATA (RULE #6) — pass {} (no per-doc map) so EVERY doc gets the single audience.
     setup_acl({}, index=cfg.selfwiki_search_index, default_groups=[audience])
     print(
         f"\nDone — selfwiki indexed + stamped to the app-users group ({audience}); trimming ENABLED. "
