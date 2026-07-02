@@ -33,6 +33,9 @@ param entraApiClientId string = ''
 @secure()
 param entraApiClientSecret string = ''
 
+@description('Entra group of app users — the private read audience of the selfwiki KB. When set, retrieval sends the per-user OBO ACL header for /selfwiki; empty leaves selfwiki fail-closed.')
+param appUsersGroupId string = ''
+
 @description('Storage account backing the Azure Files share for persisted app data.')
 param storageAccountName string
 
@@ -138,6 +141,9 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'ENTRA_TENANT_ID', value: entraTenantId }
             { name: 'ENTRA_API_CLIENT_ID', value: entraApiClientId }
             { name: 'ENTRA_API_CLIENT_SECRET', secretRef: 'entra-api-secret' }
+            // selfwiki audience: the app-users group is the self-wiki's private read audience;
+            // retrieval sends the OBO ACL header only when this is set (else /selfwiki fails closed).
+            { name: 'APP_USERS_GROUP_ID', value: appUsersGroupId }
           ]
           volumeMounts: [
             { volumeName: 'data', mountPath: '/app/data' } // tickets.jsonl persists here

@@ -88,6 +88,7 @@ module apps 'containerapps.bicep' = {
     entraTenantId: entraTenantId
     entraApiClientId: entraApiClientId
     entraApiClientSecret: entraApiClientSecret
+    appUsersGroupId: appUsersGroupId
   }
 }
 

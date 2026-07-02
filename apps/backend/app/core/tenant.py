@@ -79,6 +79,10 @@ class TenantConfig:
     # Path to the aap-kb docbundles/ dir (internal Cockpit corpus).
     cockpit_docbundles_path: str = ""
 
+    # Entra group of app users (granted Foundry User to use the app, infra/resources.bicep). Doubles
+    # as the selfwiki AUDIENCE: the self-wiki is readable by everyone with app access. Env APP_USERS_GROUP_ID.
+    app_users_group_id: str = ""
+
     # --- Phase 3: Foundry memory store ---
     foundry_memory_store: str = "helpdesk-memory"
 
@@ -144,6 +148,7 @@ class _TenantEnv(BaseSettings):
     cockpit_acl_internal_group: str = ""
     cockpit_acl_confidential_group: str = ""
     cockpit_docbundles_path: str = ""
+    app_users_group_id: str = ""
     foundry_memory_store: str = "helpdesk-memory"
     hosted_agent_name: str = "helpdesk-concierge"
     platform_hosted_agent_name: str = "platform-concierge"

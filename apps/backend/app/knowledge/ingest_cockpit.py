@@ -26,7 +26,7 @@ import sys
 import time
 from pathlib import Path
 
-from azure.core.exceptions import HttpResponseError
+from azure.core.exceptions import HttpResponseError, ResourceNotFoundError
 from azure.identity import DefaultAzureCredential
 from azure.search.documents import SearchClient
 from azure.search.documents.indexes import SearchIndexClient, SearchIndexerClient
@@ -209,6 +209,17 @@ def create_knowledge_source(
     ks = ks_name or KNOWLEDGE_SOURCE_NAME
     cont = container or tenant_config().cockpit_storage_container
     lbl = label or DOMAIN_LABEL
+    # ACL-SAFE: if the KS already exists, DO NOT re-create it. create_or_update_knowledge_source
+    # regenerates the index schema WITHOUT the out-of-band `groups` permissionFilter field (added by
+    # setup_acl), and Azure refuses to drop it ("Existing field(s) 'groups' cannot be deleted"). The
+    # KS/index/indexer are one-time provisioning; a content refresh reuses them (upload + indexer).
+    try:
+        index_client.get_knowledge_source(ks)
+    except ResourceNotFoundError:
+        pass  # not provisioned yet → create below
+    else:
+        print(f"Knowledge source '{ks}' already exists — skipping create (preserves the ACL index).")
+        return
     openai_endpoint = _require("AZURE_AI_OPENAI_ENDPOINT", tenant_config().azure_ai_openai_endpoint)
     storage_id = _require("AZURE_STORAGE_RESOURCE_ID", tenant_config().azure_storage_resource_id)
     _validate_storage_resource_id(storage_id)
@@ -539,17 +550,16 @@ def _prune_stale_blobs(credential, container: str, *, keep: set[str]) -> None:
 
 def ingest_selfwiki() -> None:
     """Full CONTENT ingest for the **selfwiki** domain (this repo's own deep-wiki), steered to the
-    selfwiki names — no COCKPIT_* env overrides, no risk of touching the cockpit searchIndex twin,
-    and no ACL (selfwiki is single-audience). This is the safe replacement for the old
-    reuse-the-cockpit-path-via-env recipe.
+    selfwiki names — no COCKPIT_* env overrides, no risk of touching the cockpit searchIndex twin.
 
         uv run python -m app.knowledge.ingest_cockpit --selfwiki
 
-    Bundles default to this repo's docs/wiki (override with COCKPIT_DOCBUNDLES). Uploads to
-    selfwiki-corpus, refreshes the blob knowledge source that drives selfwiki-docbundles-ks-index,
-    (re)provisions the ACTIVE searchIndex KB (selfwiki-si-kb) over that index, prunes prior-version
-    blobs + reconciles the index, and triggers the indexer async. No redeploy needed — the
-    /selfwiki agent reads the KB live.
+    selfwiki is a PRIVATE single-audience KB: readable by everyone with app access = the app-users
+    group (APP_USERS_GROUP_ID). Bundles default to this repo's docs/wiki (override COCKPIT_DOCBUNDLES).
+    Uploads to selfwiki-corpus, ensures the blob KS that drives selfwiki-docbundles-ks-index (created
+    once; skipped if it exists — ACL-safe), (re)provisions the ACTIVE searchIndex KB (selfwiki-si-kb),
+    prunes prior-version blobs + reconciles the index, runs the indexer, then STAMPS every doc with the
+    app-users group (permissionFilter trim ON). No redeploy — the /selfwiki agent reads the KB live.
     """
     _setup_logging()
     cfg = tenant_config()
@@ -562,6 +572,7 @@ def ingest_selfwiki() -> None:
     # (…-index) so the searchIndex KB reads exactly what this indexer fills.
     ks_name = cfg.selfwiki_search_index.removesuffix("-index")
     indexer_name = f"{ks_name}-indexer"
+    audience = cfg.app_users_group_id  # the single private audience = everyone with app access
 
     api_version = os.environ.get("SEARCH_API_VERSION", "2026-05-01-preview")
     credential = DefaultAzureCredential()
@@ -570,34 +581,46 @@ def ingest_selfwiki() -> None:
         logging_enable=True, connection_timeout=20, read_timeout=CALL_TIMEOUT_S,
     )
 
-    print("== selfwiki 1/4: collect + upload deep-wiki bundles ==")
-    items, _ = collect_pages(docbundles)  # selfwiki has no ACL → component_groups ignored
+    print("== selfwiki 1/5: collect + upload deep-wiki bundles ==")
+    items, _ = collect_pages(docbundles)  # single-audience → per-doc manifest groups not used
     if not items:
         sys.exit(f"No pages found under {docbundles}")
     print(f"Collected {len(items)} pages from {docbundles}")
     upload(credential, cfg.selfwiki_storage_container, items)
     _prune_stale_blobs(credential, cfg.selfwiki_storage_container, keep={n for n, _ in items})
 
-    print("== selfwiki 2/4: blob knowledge source (drives the index + indexer) ==")
+    print("== selfwiki 2/5: blob knowledge source (created once; skipped if it exists) ==")
     create_knowledge_source(
         index_client, ks_name=ks_name, container=cfg.selfwiki_storage_container, label=_SELFWIKI_LABEL
     )
 
-    print("== selfwiki 3/4: searchIndex KS + KB (the ACTIVE native-path KB) ==")
+    print("== selfwiki 3/5: searchIndex KS + KB (the ACTIVE native-path KB) ==")
     create_selfwiki_searchindex_knowledge_source(index_client)
     create_selfwiki_searchindex_knowledge_base(index_client)
 
-    print("== selfwiki 4/4: reconcile deletions + trigger indexer (async) ==")
+    print("== selfwiki 4/5: reconcile deletions + run indexer ==")
     purge_orphans(credential, cfg.selfwiki_storage_container, index_name=cfg.selfwiki_search_index)
     indexer_client = SearchIndexerClient(
         endpoint=cfg.azure_search_endpoint, credential=credential, api_version=api_version,
         connection_timeout=20, read_timeout=CALL_TIMEOUT_S,
     )
-    trigger_indexer(indexer_client, indexer_name=indexer_name)  # non-blocking; selfwiki has no ACL
+    if not audience:
+        trigger_indexer(indexer_client, indexer_name=indexer_name)  # non-blocking
+        print(
+            "\n⚠️  APP_USERS_GROUP_ID unset — indexed but docs NOT re-stamped; the index keeps its "
+            "existing groups. Set APP_USERS_GROUP_ID to enforce the app-users audience."
+        )
+        return
+    # selfwiki IS ACL'd to the app-users group: block on the indexer so stamping sees every doc, then
+    # stamp. Access is DATA (RULE #6) — pass {} (no per-doc map) so EVERY doc gets the single audience.
+    trigger_indexer(indexer_client, indexer_name=indexer_name, wait_s=900)
+    print("== selfwiki 5/5: stamp the app-users audience (permissionFilter trim) ==")
+    from app.knowledge.acl_setup import setup_acl
+
+    setup_acl({}, index=cfg.selfwiki_search_index, default_groups=[audience])
     print(
-        f"\nDone (selfwiki uploads + deletions reconciled). The indexer is running async — new pages "
-        f"appear in '{cfg.selfwiki_searchindex_knowledge_base}' incrementally over the next few "
-        "minutes. No redeploy needed (the /selfwiki agent reads the KB live)."
+        f"\nDone — selfwiki indexed + stamped to the app-users group ({audience}); trimming ENABLED. "
+        f"Live in '{cfg.selfwiki_searchindex_knowledge_base}'. No redeploy needed."
     )
 
 

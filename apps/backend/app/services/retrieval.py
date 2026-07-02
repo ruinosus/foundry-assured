@@ -62,7 +62,10 @@ async def retrieve(query: str, user, domain, *, top: int = 8) -> list[dict]:
     app_cred = _AppCredential()
     try:
         primary = (await app_cred.get_token(_SEARCH_SCOPE)).token  # app MI (service credential)
-        user_token = await _user_search_token(user)  # OBO, or None (dev / no-auth / public)
+        # The per-user ACL header is attached ONLY on ACL'd domains (truthy acl_group_map) — RULE #6.
+        # A genuinely public domain (no acl_group_map) omits it and runs as the app identity; an ACL'd
+        # domain sends the user's OBO token so the index trims to what the user may read.
+        user_token = await _user_search_token(user) if getattr(domain, "acl_group_map", None) else None
         if getattr(domain, "kb_name", None):  # PRIMARY: native agentic retrieve
             rows = await _native_retrieve(domain, query, primary, user_token)
         else:  # FALLBACK: direct-search-as-user (the engine lives here now)
