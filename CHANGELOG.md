@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.7.1](https://github.com/ruinosus/foundry-assured/compare/v0.7.0...v0.7.1) (2026-07-02)
+
+
+### Bug Fixes
+
+* **deploy:** set APP_USERS_GROUP_ID in the deploy env (selfwiki ACL header) ([#92](https://github.com/ruinosus/foundry-assured/issues/92)) ([86d4b53](https://github.com/ruinosus/foundry-assured/commit/86d4b534472505daac9be252adbf919d36148425))
+
 ## [0.7.0](https://github.com/ruinosus/foundry-assured/compare/v0.6.0...v0.7.0) (2026-07-02)
 
 
