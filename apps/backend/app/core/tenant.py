@@ -11,6 +11,7 @@ import contextvars
 from dataclasses import dataclass
 from typing import Protocol
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -68,13 +69,15 @@ class TenantConfig:
     selfwiki_searchindex_knowledge_base: str = "selfwiki-si-kb"
     selfwiki_searchindex_knowledge_source: str = "selfwiki-docbundles-si-ks"
 
-    # --- Phase 4: document-level access control (access follows the source) ---
-    cockpit_acl_group_map: str = ""
-    cockpit_acl_classification: str = ""
-    cockpit_acl_default_groups: str = ""
-    cockpit_acl_public_group: str = ""
-    cockpit_acl_internal_group: str = ""
-    cockpit_acl_confidential_group: str = ""
+    # --- Phase 4: document-level access control (access follows the source) — GENERIC (all domains) ---
+    # Neutral names (renamed off the cockpit product name). _TenantEnv aliases the old COCKPIT_ACL_*
+    # env names so existing deployments keep working. See the generic-config-naming-rename spec.
+    acl_extra_group_map: str = ""   # extra "name:objectId,..." pairs beyond the named trio (env ACL_GROUP_MAP)
+    acl_classification: str = ""
+    acl_default_groups: str = ""
+    acl_public_group: str = ""
+    acl_internal_group: str = ""
+    acl_confidential_group: str = ""
 
     # Path to the aap-kb docbundles/ dir (internal Cockpit corpus).
     cockpit_docbundles_path: str = ""
@@ -103,16 +106,16 @@ class TenantConfig:
 
     @property
     def acl_group_map(self) -> dict[str, str]:
-        """Group NAME → Entra object-ID. cockpit_acl_group_map, plus the demo trio."""
+        """Group NAME → Entra object-ID. The named trio + acl_extra_group_map pairs."""
         mapping: dict[str, str] = {}
         for name, gid in (
-            ("public", self.cockpit_acl_public_group),
-            ("internal", self.cockpit_acl_internal_group),
-            ("confidential", self.cockpit_acl_confidential_group),
+            ("public", self.acl_public_group),
+            ("internal", self.acl_internal_group),
+            ("confidential", self.acl_confidential_group),
         ):
             if gid:
                 mapping[name] = gid
-        for pair in self.cockpit_acl_group_map.split(","):
+        for pair in self.acl_extra_group_map.split(","):
             if ":" in pair:
                 name, gid = pair.split(":", 1)
                 mapping[name.strip()] = gid.strip()
@@ -141,12 +144,14 @@ class _TenantEnv(BaseSettings):
     selfwiki_storage_container: str = "selfwiki-corpus"
     selfwiki_searchindex_knowledge_base: str = "selfwiki-si-kb"
     selfwiki_searchindex_knowledge_source: str = "selfwiki-docbundles-si-ks"
-    cockpit_acl_group_map: str = ""
-    cockpit_acl_classification: str = ""
-    cockpit_acl_default_groups: str = ""
-    cockpit_acl_public_group: str = ""
-    cockpit_acl_internal_group: str = ""
-    cockpit_acl_confidential_group: str = ""
+    # ACL config — GENERIC. New ACL_* env names preferred; the old COCKPIT_ACL_* still work (alias),
+    # so existing deployments don't break (non-breaking rename — see the naming-rename spec).
+    acl_extra_group_map: str = Field("", validation_alias=AliasChoices("acl_group_map", "cockpit_acl_group_map"))
+    acl_classification: str = Field("", validation_alias=AliasChoices("acl_classification", "cockpit_acl_classification"))
+    acl_default_groups: str = Field("", validation_alias=AliasChoices("acl_default_groups", "cockpit_acl_default_groups"))
+    acl_public_group: str = Field("", validation_alias=AliasChoices("acl_public_group", "cockpit_acl_public_group"))
+    acl_internal_group: str = Field("", validation_alias=AliasChoices("acl_internal_group", "cockpit_acl_internal_group"))
+    acl_confidential_group: str = Field("", validation_alias=AliasChoices("acl_confidential_group", "cockpit_acl_confidential_group"))
     cockpit_docbundles_path: str = ""
     app_users_group_id: str = ""
     foundry_memory_store: str = "helpdesk-memory"

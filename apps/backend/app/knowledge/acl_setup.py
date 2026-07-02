@@ -70,7 +70,11 @@ def _resolve(names: list[str]) -> list[str]:
 
 def _load_external() -> dict[str, list[str]]:
     """Owner-provided { document-key : [group-name,…] }. External + gitignored."""
-    path = os.environ.get("COCKPIT_ACL_CLASSIFICATION", tenant_config().cockpit_acl_classification)
+    path = (
+        os.environ.get("ACL_CLASSIFICATION")
+        or os.environ.get("COCKPIT_ACL_CLASSIFICATION")  # deprecated alias
+        or tenant_config().acl_classification
+    )
     if not path:
         return {}
     return json.loads(Path(path).expanduser().read_text(encoding="utf-8"))
@@ -110,7 +114,7 @@ def setup_acl(
     _index = index or tenant_config().cockpit_search_index
     access = component_groups if component_groups is not None else _load_external()
     if default_groups is None:
-        default_groups = [g for g in tenant_config().cockpit_acl_default_groups.split(",") if g.strip()]
+        default_groups = [g for g in tenant_config().acl_default_groups.split(",") if g.strip()]
     if not access:
         print(f"⚠️  no access map — every doc → default {default_groups or '[] (fail-closed)'}.")
 
