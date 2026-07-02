@@ -4,11 +4,11 @@
   "source": {
     "type": "repo",
     "ref": "docs",
-    "commit": "3333d60d0e9c02b64a532f2c9bad94692cf50075"
+    "commit": "46f10bb827fa76a8cfd2699df4fac8fcef938074"
   },
   "language": "pt-br",
   "model": "local-agent",
-  "generatedAt": "2026-07-02T09:51:48+00:00",
+  "generatedAt": "2026-07-02T11:38:14+00:00",
   "kind": "element",
   "component": "foundry-helpdesk-docs",
   "componentVersion": "v0.3.0",

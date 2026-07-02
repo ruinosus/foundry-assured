@@ -1,9 +1,9 @@
 ---
-title: "Decisões de arquitetura (ADRs 001–011)"
+title: "Decisões de arquitetura (ADRs 001–012)"
 description: "As 11 ADRs MADR-style que sustentam a evolução SaaS — tenancy, identidade, segredos, config tenant-scoped, entitlement por domínio e passthrough de Toolbox."
 ---
 
-# Decisões de arquitetura (ADRs 001–011)
+# Decisões de arquitetura (ADRs 001–012)
 
 ## O que são e por que existem
 
@@ -17,7 +17,8 @@ rodada de design SaaS.
 O mapeamento spec↔ADR (footer do índice): **ADRs 001–007** pertencem à arquitetura-alvo
 SaaS; **ADR-008** refina conexão/segredo para o sub-projeto B; **ADR-009** o credential
 brokering + write approval para C; **ADR-010** o entitlement por domínio para D-runtime;
-**ADR-011** o passthrough de Toolbox para D-packaging
+**ADR-011** o passthrough de Toolbox para D-packaging; **ADR-012** a reutilização do plugin
+deep-wiki upstream (`microsoft/skills`) para a geração da self-wiki
 ([docs/adr/README.md:22](https://github.com/ruinosus/foundry-assured/blob/3333d60d0e9c02b64a532f2c9bad94692cf50075/docs/adr/README.md#L22)).
 
 > **Nota da v0.3.0.** As duas specs grounded de 2026-07-01
@@ -212,6 +213,16 @@ protocolo Invocations passa o stream AG-UI intocado, então o write-approval sob
 Escolheu o protocolo **Invocations** (não Responses) porque o platform agent carrega
 HITL de write-approval que o Responses não consegue round-tripar
 ([ADR-011:8-19](https://github.com/ruinosus/foundry-assured/blob/3333d60d0e9c02b64a532f2c9bad94692cf50075/docs/adr/ADR-011-hosted-per-tenant-foundry-toolbox-passthrough.md#L8-L19)).
+
+### ADR-012 — Reutilizar o tooling deep-wiki upstream (não reinventar o gerador)
+
+A geração da self-wiki reusa o plugin **`deep-wiki` do `microsoft/skills`** (MIT), vendorizado
+(pinado) em **`.github/skills/deep-wiki/`** — local nativo de descoberta de skills do GitHub, então
+o **Copilot cloud agent / CLI / VS Code agent mode** (e o Claude Code) enxergam as 10 skills, não só
+`wiki-architect`/`wiki-page-writer`. Mantém-se como fosso apenas a **camada de assurance** (formato de
+bundle, gate de fidelity, gate de freshness, ingest na KB + ACL, `--selfwiki`); o padrão de
+**freshness→regen** é emprestado do **OpenWiki** (git-diff → PR)
+([ADR-012:19-45](https://github.com/ruinosus/foundry-assured/blob/46f10bb827fa76a8cfd2699df4fac8fcef938074/docs/adr/ADR-012-reuse-upstream-deep-wiki-tooling.md#L19-L45)).
 
 ## Related Pages
 

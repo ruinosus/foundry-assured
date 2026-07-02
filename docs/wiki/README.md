@@ -82,11 +82,21 @@ uv run python -m app.knowledge.wiki_builder \
 # …repeat for ../../apps/frontend, ../../infra, ../../docs
 ```
 
-**B — Local Agent-Skills path** (the Microsoft `wiki-architect` + `wiki-page-writer` skills in
-[`apps/backend/app/knowledge/skills/`](../../apps/backend/app/knowledge/skills/), run by a coding
-agent — **VS Code Copilot, GitHub Copilot CLI, or Claude Code — NO Foundry/Azure infra**). Open the
-repo in the agent and ask it to *"regenerate the deep-wiki for area X following the wiki-page-writer
-skill, with linked citations and the ≥80% build-fidelity gate."* This is how `v0.3.0` was produced.
+**B — Local Agent-Skills path** (**how `v0.3.0` was produced** — **NO Foundry/Azure infra**). The
+generator is the upstream Microsoft [`deep-wiki` plugin](https://github.com/microsoft/skills/tree/main/.github/plugins/deep-wiki)
+(MIT), **vendored (pinned) at [`.github/skills/deep-wiki/`](../../.github/skills/deep-wiki/)** so any
+coding agent that reads `.github/skills` — **GitHub Copilot cloud agent / CLI / VS Code agent mode, or
+Claude Code** — discovers it (see [ADR-012](../adr/ADR-012-reuse-upstream-deep-wiki-tooling.md)). Open
+the repo in the agent and ask it to *"regenerate the deep-wiki for area X following the
+`wiki-page-writer` skill, with linked citations and the ≥80% build-fidelity gate."* Copilot CLI can
+also install upstream directly: `/plugin marketplace add microsoft/skills` → `/plugin install
+deep-wiki@skills`. (The legacy copy in [`apps/backend/app/knowledge/skills/`](../../apps/backend/app/knowledge/skills/)
+is kept for back-compat until callers repoint at the vendored plugin.)
+
+> **Keeping it fresh (roadmap).** The `wiki-freshness` gate only *detects* drift. ADR-012 adds an
+> OpenWiki-style regen — [`.github/workflows/wiki-regen.yml`](../../.github/workflows/wiki-regen.yml),
+> a manual template — to *close* the loop (drift → regenerate via the skill → PR) once a CI coding
+> agent + model credential are wired.
 
 ## Ingest into the selfwiki knowledge base
 
