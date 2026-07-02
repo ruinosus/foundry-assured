@@ -1,0 +1,3 @@
+# Generated marketplace artifact (rebuild with build.sh). mainTemplate.json is
+# committed (the compiled root template); the zip is a build output.
+managed-app.zip

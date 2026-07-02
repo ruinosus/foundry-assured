@@ -43,6 +43,10 @@ def _token() -> str:
 def _graph(method: str, path: str, body: dict | None = None) -> dict | None:
     """One Graph REST call. Raises GraphError(status, message) on failure."""
     url = path if path.startswith("http") else f"{_GRAPH}{path}"
+    # OData $filter clauses contain literal spaces (e.g. "appId eq '…'"); urllib rejects raw
+    # spaces in a URL with InvalidURL ("control characters"). Percent-encode them (and the
+    # single quotes) so the request is built — otherwise a non-GraphError escapes _guard → 500.
+    url = url.replace(" ", "%20").replace("'", "%27")
     data = json.dumps(body).encode() if body is not None else None
     req = urllib.request.Request(
         url, method=method, data=data,

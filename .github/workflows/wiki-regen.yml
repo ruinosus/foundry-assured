@@ -1,0 +1,57 @@
+name: Wiki regen (template)
+
+# TEMPLATE — closes the loop the `wiki-freshness` gate only opens (ADR-012, OpenWiki-style).
+# `wiki-freshness` DETECTS drift (source newer than its bundle); this WOULD regenerate the stale
+# area via the vendored deep-wiki skill (.github/skills/deep-wiki/skills/wiki-page-writer) and open
+# a PR. Manual (workflow_dispatch) ONLY — it is NOT scheduled, and the regen step is GUARDED behind
+# a model credential so nothing runs (or spends) until an org wires a coding-agent action + secret.
+#
+# To activate: (1) add an ANTHROPIC_API_KEY secret (or swap in GitHub Copilot cloud agent / another
+# coding-agent action), (2) fill in the guarded step below per that action's docs, (3) optionally add
+# a `schedule:` trigger. Until then this workflow only reports which bundles are stale.
+
+on:
+  workflow_dispatch:
+    inputs:
+      area:
+        description: Area to regenerate
+        type: choice
+        default: all
+        options: [all, backend, frontend, infra, docs]
+
+permissions:
+  contents: read
+
+jobs:
+  regen:
+    name: detect stale → (guarded) regenerate
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --frozen
+
+      # Deterministic + free: report which bundles are stale (same check as wiki-freshness).
+      - name: Detect drift
+        run: uv run python -m eval.wiki_freshness_test || true
+
+      # GUARDED regen — no-ops unless a model credential is present. Fill in per your chosen
+      # coding-agent action (e.g. anthropics/claude-code-action or the GitHub Copilot cloud agent);
+      # the prompt below is the same one docs/wiki/README.md § Regenerate documents.
+      - name: Regenerate stale area(s) via the deep-wiki skill
+        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AREA: ${{ inputs.area }}
+        run: |
+          echo "TODO(ADR-012): invoke a coding agent here with the prompt:"
+          echo "  'Regenerate the deep-wiki for area $AREA following"
+          echo "   .github/skills/deep-wiki/skills/wiki-page-writer/SKILL.md,"
+          echo "   with linked citations and the >=80% build-fidelity gate; bump the bundle version"
+          echo "   and re-stamp generatedAt.' Then open a PR with the refreshed docs/wiki bundle."
+          echo "Guarded placeholder — wire your coding-agent action to make this real."

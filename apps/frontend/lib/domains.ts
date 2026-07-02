@@ -5,14 +5,15 @@
 // sidebar nav, the generic console route (/d/[domain]), the landing role-cards, and the
 // per-domain starter prompts. Adding a domain = one entry here (+ a backend agent).
 
-export type DomainKind = "workflow" | "grounded";
+export type DomainKind = "workflow" | "grounded" | "tool";
 
 export interface Domain {
   /** Stable id — matches the backend agentId + the AG-UI endpoint path segment. */
   id: string;
   icon: string;
   label: string;
-  /** "workflow" = triage→retrieve→resolve→escalate with steps + HITL; "grounded" = pure cited Q&A. */
+  /** "workflow" = triage→retrieve→resolve→escalate with steps + HITL; "grounded" = pure cited
+   * Q&A; "tool" = tool-driven (Microsoft MCP servers) with HITL on write actions. */
   kind: DomainKind;
   /** One line for the switcher + landing card. */
   blurb: string;
@@ -20,6 +21,8 @@ export interface Domain {
   suggested: string[];
   /** Backend AG-UI path (default; per-domain env override resolved in the runtime route). */
   endpoint: string;
+  /** Optional Foundry hosted twin agent id (enables the live-vs-hosted toggle). */
+  hostedAgentId?: string;
 }
 
 export const DOMAINS: Domain[] = [
@@ -36,6 +39,10 @@ export const DOMAINS: Domain[] = [
       "Meu pod está em CrashLoopBackOff, por onde começo?",
     ],
     endpoint: "/helpdesk",
+    // Foundry hosted twin (backend /helpdesk-hosted). The hosted agent runs inside Foundry, so the
+    // backend invokes it via the agent endpoint (/agents/<name>/.../responses) — a path the MI IS
+    // authorized for, unlike raw model inference (/openai/v1/responses) which 403s on this project.
+    hostedAgentId: "helpdesk-hosted",
   },
   {
     id: "cockpit",
@@ -50,6 +57,7 @@ export const DOMAINS: Domain[] = [
       "Como funciona a hierarquia de multi-tenancy?",
     ],
     endpoint: "/cockpit",
+    // Grounded runs live via OBO — no hosted twin needed.
   },
   {
     id: "selfwiki",
@@ -64,6 +72,22 @@ export const DOMAINS: Domain[] = [
       "Quais são as fases de implementação do projeto?",
     ],
     endpoint: "/selfwiki",
+    // Grounded runs live via OBO — no hosted twin needed.
+  },
+  {
+    id: "platform",
+    icon: "🛠️",
+    label: "Platform ops",
+    kind: "tool",
+    blurb:
+      "Concierge de plataforma sobre as ferramentas Microsoft (Learn, Azure, Entra, DevOps, GitHub) — com aprovação humana antes de qualquer ação de escrita.",
+    suggested: [
+      "O que é o Azure AI Foundry Agent Service? (via Microsoft Learn)",
+      "Liste os recursos do meu resource group.",
+      "Quanto gastei em AI Search neste mês?",
+    ],
+    endpoint: "/platform",
+    hostedAgentId: "platform-hosted",
   },
 ];
 

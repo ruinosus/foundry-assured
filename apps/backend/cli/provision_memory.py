@@ -20,17 +20,18 @@ from azure.core.exceptions import ResourceNotFoundError
 from azure.identity.aio import DefaultAzureCredential
 
 from app.core.settings import settings
+from app.core.tenant import tenant_config
 
 
 async def main() -> None:
-    if not settings.foundry_project_endpoint:
+    if not tenant_config().foundry_project_endpoint:
         raise SystemExit("FOUNDRY_PROJECT_ENDPOINT is not set (see backend/.env).")
 
-    name = settings.foundry_memory_store
+    name = tenant_config().foundry_memory_store
     async with (
         DefaultAzureCredential() as credential,
         AIProjectClient(
-            endpoint=settings.foundry_project_endpoint, credential=credential
+            endpoint=tenant_config().foundry_project_endpoint, credential=credential
         ) as client,
     ):
         try:
@@ -43,8 +44,8 @@ async def main() -> None:
         store = await client.beta.memory_stores.create(
             name=name,
             definition=MemoryStoreDefaultDefinition(
-                chat_model=settings.foundry_model,
-                embedding_model=settings.foundry_embedding_model,
+                chat_model=tenant_config().foundry_model,
+                embedding_model=tenant_config().foundry_embedding_model,
             ),
             description="Helpdesk per-user memory (developer preferences + recurring resolutions).",
         )

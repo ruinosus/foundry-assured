@@ -34,6 +34,7 @@ from azure.identity import DefaultAzureCredential
 
 from app.agents.secure_search import _chunk_component, authorized_components, trim_agentic_content
 from app.core.settings import settings
+from app.core.tenant import tenant_config
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _ROPC_CLIENT = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
@@ -82,7 +83,7 @@ async def _run() -> int:
 
     token = _ropc_token(upn_b, password)
     provider = AzureAISearchContextProvider(
-        endpoint=settings.azure_search_endpoint, knowledge_base_name=settings.cockpit_search_knowledge_base,
+        endpoint=tenant_config().azure_search_endpoint, knowledge_base_name=tenant_config().cockpit_search_knowledge_base,
         credential=DefaultAzureCredential(), mode="agentic", retrieval_reasoning_effort="medium",
     )
     await provider._ensure_knowledge_base()

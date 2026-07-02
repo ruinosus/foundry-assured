@@ -32,10 +32,9 @@ from pathlib import Path
 
 from agent_framework import EvalItem, EvalNotPassedError, LocalEvaluator, Message
 
-from app.agents.cockpit import build_cockpit_agent
 from app.agents.concierge import build_concierge_agent
-from app.agents.selfwiki import build_selfwiki_agent
-from app.core.settings import settings
+from app.core.tenant import tenant_config
+from app.domains import _domains
 from eval.assertions import (
     _TITLE_PREFIX,
     check_cites_a_source,
@@ -55,6 +54,93 @@ _ADVERSARIAL = _DATASETS / "adversarial.jsonl"
 _CORPUS = Path(__file__).resolve().parent.parent / "app" / "knowledge" / "corpus"
 _RUNS = Path(__file__).resolve().parent / "runs.jsonl"
 _ASSURANCE = Path(__file__).resolve().parent / "assurance.yaml"
+
+
+async def _synthesize_text(kwargs: dict) -> str:
+    """Non-streaming synthesis over the production Responses payload → the answer text.
+
+    Same `build_synthesis_kwargs` payload the live `stream_grounded` archetype uses (RULE #4:
+    the retrieved docs are the ONLY grounding context, cited inline by [n]). We flip `stream`
+    to False and read `.output_text` (the proven non-streaming shape — see
+    eval/step0_grounded_citations_spike.py:76–84) so the harness gets one `.text` string.
+    Runs as the app identity (DefaultAzureCredential) — the eval is headless."""
+    import inspect
+
+    from azure.ai.projects.aio import AIProjectClient
+    from azure.identity.aio import DefaultAzureCredential
+
+    cred = DefaultAzureCredential()
+    proj = AIProjectClient(
+        endpoint=tenant_config().foundry_project_endpoint, credential=cred, allow_preview=True
+    )
+    try:
+        client = proj.get_openai_client()
+        client = await client if inspect.isawaitable(client) else client
+        resp = await client.responses.create(**{**kwargs, "stream": False})
+        return getattr(resp, "output_text", None) or ""
+    finally:
+        import contextlib
+
+        for obj in (proj, cred):
+            with contextlib.suppress(Exception):
+                await obj.close()
+
+
+class _RetrieveAgent:
+    """Adapter that makes the production `retrieve()` seam + grounded synthesis look like the
+    agent the golden harness drives (`async with factory() as a: (await a.run(q)).text`).
+
+    This is what rewires the golden eval OFF the (soon-deleted) agent builders and ONTO the
+    real grounded path: `retrieve()` → `build_synthesis_kwargs()` → non-streaming Responses.
+    The synthesized answer carries the citations inline, which is what `cites_source` scores.
+
+    IDENTITY (headless eval, no signed-in user): `retrieve(user=None, ...)`. On the cockpit
+    domain the native searchIndex path is fail-closed for a no-token user (ACL index →
+    permissionFilterOption=enabled → ZERO docs) — which is CORRECT for production but would
+    starve a groundedness/rubric measurement. So the eval spec (`_eval_spec`, below) routes
+    cockpit to the direct-search FALLBACK, whose `_direct_search_authorized` sends
+    `x-ms-enable-elevated-read: true` when there's no user token → the full doc set, headless.
+    That is an EVAL AFFORDANCE, built only here — `retrieve()`/`_native_retrieve` production
+    behavior is UNCHANGED (a real no-token user still gets fail-closed via the native path).
+    The native+ACL trim is proven separately by retrieval_acl_parity_test."""
+
+    def __init__(self, domain) -> None:
+        self._d = domain
+
+    async def __aenter__(self) -> _RetrieveAgent:
+        return self
+
+    async def __aexit__(self, *exc) -> bool:
+        return False
+
+    async def run(self, query: str):
+        from app.services.grounded import build_synthesis_kwargs
+        from app.services.retrieval import retrieve
+
+        docs = await retrieve(query, user=None, domain=self._d)  # headless: no signed-in user
+        kwargs = build_synthesis_kwargs(query, self._d, docs, model=tenant_config().foundry_model)
+        text = await _synthesize_text(kwargs)
+        return type("R", (), {"text": text})()
+
+
+def _eval_spec(domain_id: str):
+    """The DomainSpec the headless golden eval retrieves against — picked by id from the
+    production registry (`app.domains._domains()`), then adapted for headless retrieval.
+
+    For cockpit we drop `kb_name` (and `ks_name`) so `retrieve()` takes the direct-search
+    FALLBACK over `search_index` instead of the native+ACL path — the fallback's elevated-read
+    returns the full doc set with no signed-in user (see `_RetrieveAgent`). This is an
+    eval-only construction (dataclasses.replace on a frozen spec); the production spec is
+    untouched. Domains that are already fallback-routed (e.g. selfwiki: empty `kb_name`) pass
+    through unchanged."""
+    import dataclasses
+
+    spec = next(d for d in _domains() if d.id == domain_id)
+    if getattr(spec, "kb_name", None) and getattr(spec, "search_index", None):
+        # ACL/native domain with a fallback index available → route the eval to the fallback so
+        # elevated-read yields docs headless (production native path stays fail-closed — untouched).
+        return dataclasses.replace(spec, kb_name=None, ks_name=None)
+    return spec
 
 
 def _load_assurance() -> dict:
@@ -235,7 +321,7 @@ async def _run(cloud: bool, safety: bool, domain: str) -> int:
         rows = _load_dataset(_COCKPIT_GOLDEN)
         eval_name = "cockpit-golden"
         local = LocalEvaluator(cockpit_cites_source, no_secret_leaked)
-        agent_factory = build_cockpit_agent
+        agent_factory = lambda: _RetrieveAgent(_eval_spec("cockpit"))  # noqa: E731
         build_kwargs = {"use_context": False, "expected_field": "expected", "pace_s": 3.0}
         label = "cockpit golden"
     elif domain == "selfwiki":
@@ -246,7 +332,7 @@ async def _run(cloud: bool, safety: bool, domain: str) -> int:
         rows = _load_dataset(_SELFWIKI_GOLDEN)
         eval_name = "selfwiki-golden"
         local = LocalEvaluator(selfwiki_cites_source, no_secret_leaked)
-        agent_factory = build_selfwiki_agent
+        agent_factory = lambda: _RetrieveAgent(_eval_spec("selfwiki"))  # noqa: E731
         build_kwargs = {"use_context": False, "expected_field": "expected", "pace_s": 3.0}
         label = "selfwiki golden"
     else:
@@ -265,7 +351,7 @@ async def _run(cloud: bool, safety: bool, domain: str) -> int:
 
         cred = DefaultAzureCredential()
         project = AIProjectClient(
-            endpoint=settings.foundry_project_endpoint, credential=cred
+            endpoint=tenant_config().foundry_project_endpoint, credential=cred
         )
         if domain in ("cockpit", "selfwiki"):
             # SIMILARITY is the reference-based correctness score (answer vs the
@@ -288,7 +374,7 @@ async def _run(cloud: bool, safety: bool, domain: str) -> int:
         else:
             evaluators = [FoundryEvals.GROUNDEDNESS, FoundryEvals.RELEVANCE, FoundryEvals.COHERENCE]
         foundry = FoundryEvals(
-            project_client=project, model=settings.foundry_model, evaluators=evaluators
+            project_client=project, model=tenant_config().foundry_model, evaluators=evaluators
         )
 
     where = "local policy gate" + (" + Foundry cloud judges" if cloud else "")

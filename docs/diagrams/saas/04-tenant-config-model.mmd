@@ -1,0 +1,35 @@
+%% Foundry Assured — SaaS target architecture · Fig 4: Per-tenant config & connection model
+%% The control-plane store holds pointers + metadata only — never secrets, never customer data.
+classDiagram
+    class Tenant {
+        +tid : string (PK = tid claim)
+        +name : string
+        +tier : shared | dedicated | self_hosted
+        +status : active | suspended
+    }
+    class DataPlaneConfig {
+        +foundry_project_endpoint
+        +foundry_model
+        +embedding_model
+        +search_endpoint
+        +knowledge_bases : list
+        +storage_refs
+        note: pointers to CUSTOMER resources
+    }
+    class Connection {
+        +id
+        +kind : mcp_github | mcp_ado | ...
+        +endpoint
+        +auth_method : obo | oauth_passthrough | keyvault_ref
+        +secret_ref : KeyVault URI | Foundry conn_id | null
+        +min_role_read
+        +min_role_write
+        note: secret_ref is NEVER the secret
+    }
+    class DomainAssignment {
+        +domain_id : helpdesk | platform | ...
+        +enabled : bool
+    }
+    Tenant "1" --> "1" DataPlaneConfig
+    Tenant "1" --> "N" Connection
+    Tenant "1" --> "N" DomainAssignment

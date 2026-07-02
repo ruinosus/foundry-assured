@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Foundry Assured — Arquitetura SaaS multi-tenant</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --bg2: #0e1530;
+    --card: rgba(255,255,255,.04);
+    --card-border: rgba(255,255,255,.10);
+    --text: #e8edf7;
+    --muted: #93a0bd;
+    --blue: #3b82f6;
+    --indigo: #6366f1;
+    --violet: #8b5cf6;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --pink: #f472b6;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    scroll-snap-type: y mandatory;
+    overflow-x: hidden;
+  }
+  section.slide {
+    min-height: 100vh;
+    width: 100%;
+    scroll-snap-align: start;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 6vh 8vw;
+    position: relative;
+    border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .kicker {
+    font-size: 13px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+  h1 { font-size: clamp(34px, 6vw, 76px); line-height: 1.04; letter-spacing: -.02em; }
+  h2 { font-size: clamp(26px, 3.6vw, 44px); line-height: 1.1; letter-spacing: -.01em; margin-bottom: 8px; }
+  .lead { font-size: clamp(16px, 1.6vw, 21px); color: var(--muted); max-width: 64ch; line-height: 1.5; }
+  .grad {
+    background: linear-gradient(100deg, #60a5fa 0%, #818cf8 45%, #c084fc 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .badge {
+    border: 1px solid var(--card-border); background: var(--card);
+    border-radius: 999px; padding: 7px 14px; font-size: 13px; color: var(--muted);
+  }
+  .dot { color: var(--green); }
+
+  .footer {
+    position: absolute; bottom: 22px; left: 8vw; right: 8vw;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 12px; color: var(--muted);
+  }
+  .nav-dots { position: fixed; right: 22px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 50; }
+  .nav-dots a { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.18); display: block; transition: .2s; }
+  .nav-dots a.on { background: linear-gradient(var(--blue), var(--violet)); transform: scale(1.35); }
+
+  /* flow */
+  .flow { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 30px; }
+  .step {
+    border: 1px solid var(--card-border); background: var(--card);
+    border-radius: 14px; padding: 16px 18px; min-width: 132px;
+  }
+  .step .n { font-size: 12px; color: var(--muted); }
+  .step .t { font-weight: 700; margin-top: 4px; }
+  .step .d { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+  .arrow { color: var(--muted); font-size: 22px; }
+  .under {
+    margin-top: 18px; display: inline-flex; gap: 10px; align-items: center;
+    font-size: 13px; color: var(--muted);
+    border: 1px dashed var(--card-border); border-radius: 12px; padding: 10px 14px; max-width: 900px;
+  }
+
+  /* architecture diagram */
+  .arch { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 28px; max-width: 1100px; }
+  .layer {
+    border: 1px solid var(--card-border); border-radius: 16px; padding: 18px 20px;
+    background: var(--card); position: relative;
+  }
+  .layer h3 { font-size: 15px; margin-bottom: 6px; }
+  .layer p { font-size: 13.5px; color: var(--muted); }
+  .layer .tag { position: absolute; right: 16px; top: 16px; font-size: 11px; color: var(--muted); }
+  .conn { text-align: center; color: var(--muted); font-size: 18px; }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px){ .split { grid-template-columns: 1fr; } }
+
+  /* cards grid */
+  .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 28px; max-width: 1140px; }
+  @media (max-width: 980px){ .cards { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px){ .cards { grid-template-columns: 1fr; } }
+  .cards.c3 { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 860px){ .cards.c3 { grid-template-columns: 1fr; } }
+  .card {
+    border: 1px solid var(--card-border); background: var(--card);
+    border-radius: 16px; padding: 18px; }
+  .card .ico { font-size: 22px; }
+  .card h3 { font-size: 16px; margin: 10px 0 6px; }
+  .card p { font-size: 13px; color: var(--muted); line-height: 1.45; }
+  .card .ph { display:inline-block; margin-top:12px; font-size:11px; font-weight:700; color: var(--green);
+    border:1px solid rgba(52,211,153,.3); background: rgba(52,211,153,.08); padding:3px 9px; border-radius:999px; }
+  .card .ph.tool { color:#c4b5fd; border-color:rgba(139,92,246,.3); background:rgba(139,92,246,.08); }
+
+  /* comparison table */
+  .cmp { width: 100%; border-collapse: collapse; margin-top: 26px; max-width: 1080px; font-size: 14px; }
+  .cmp th, .cmp td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--card-border); vertical-align: top; }
+  .cmp thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .cmp .self { color: #93c5fd; font-weight: 700; }
+  .cmp .ded { color: #fbbf24; font-weight: 700; }
+  .cmp .shr { color: #c4b5fd; font-weight: 700; }
+  .cmp td .y { color: var(--green); } .cmp td .n { color: var(--muted); }
+  .cmp tbody tr td:first-child { color: var(--text); font-weight: 600; }
+  .callout { margin-top: 22px; border-left: 3px solid var(--violet); background: var(--card);
+    border-radius: 0 12px 12px 0; padding: 14px 18px; font-size: 14px; color: var(--text); max-width: 940px; }
+  .callout b { color: #c4b5fd; }
+
+  ul.clean { list-style: none; margin-top: 22px; display: grid; gap: 12px; max-width: 880px; }
+  ul.clean li { display: flex; gap: 12px; font-size: 15px; color: var(--text); }
+  ul.clean li .mk { color: var(--green); }
+  ul.clean li small { color: var(--muted); }
+
+  code { color:#c4b5fd; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+
+  /* evolution rail */
+  .rail { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 28px; max-width: 1140px; }
+  @media (max-width: 860px){ .rail { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 520px){ .rail { grid-template-columns: 1fr; } }
+  .stage { border: 1px solid var(--card-border); background: var(--card); border-radius: 16px; padding: 18px; position: relative; }
+  .stage .lt { font-size: 30px; font-weight: 800; line-height: 1; background: linear-gradient(120deg,#60a5fa,#c084fc); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  .stage h3 { font-size: 15px; margin: 8px 0 6px; }
+  .stage p { font-size: 12.8px; color: var(--muted); line-height: 1.45; }
+  .stage .adr { margin-top: 10px; font-size: 11px; color: var(--muted); }
+
+  /* embedded diagram panel — the saas SVGs use a light mermaid theme, so frame them on white */
+  .figure { margin-top: 26px; max-width: 1100px; }
+  .figure .frame { background: #f7f9fc; border: 1px solid var(--card-border); border-radius: 16px; padding: 16px; }
+  .figure .frame img, .figure .frame object { width: 100%; height: auto; display: block; }
+  .figure figcaption { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
+
+  .hint { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--muted); z-index: 50; }
+
+  .pillrow { display:flex; flex-wrap:wrap; gap:8px; margin-top: 16px; }
+  .pill { font-size:12px; color:var(--muted); border:1px solid var(--card-border); background:var(--card); border-radius:999px; padding:5px 11px; }
+  .pill b { color:#c4b5fd; }
+</style>
+</head>
+<body>
+<div class="nav-dots" id="dots"></div>
+<div class="hint">↑ ↓ / espaço para navegar</div>
+
+<div style="position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;max-width:min(94vw,860px);border:1px solid var(--card-border);background:rgba(14,21,48,.92);backdrop-filter:blur(6px);border-radius:12px;padding:10px 16px;font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;">
+  Deck <b style="color:var(--text)">de arquitetura</b> — a evolução do Foundry Assured para <b style="color:var(--text)">SaaS multi-tenant híbrido</b> (modos <code>self_hosted</code> · <code>dedicated</code> · <code>shared</code>), os <b style="color:var(--text)">4 domínios</b> e o brokering de credenciais. Decks irmãos:
+  <a href="./presentation.html" style="color:#93c5fd;">presentation.html</a> ·
+  <a href="./deep-wiki-presentation.html" style="color:#93c5fd;">deep-wiki</a> ·
+  <a href="./use-case-demo.html" style="color:#93c5fd;">use-case</a>
+</div>
+
+<div class="deck">
+
+  <!-- 1 — HERO -->
+  <section class="slide" id="s1" style="background:radial-gradient(1200px 600px at 15% 0%, #16224a 0%, var(--bg) 55%);">
+    <div class="kicker">Microsoft Foundry · Arquitetura</div>
+    <h1>Foundry <span class="grad">Assured</span><br/>como SaaS multi-tenant</h1>
+    <p class="lead" style="margin-top:22px;">
+      O mesmo concierge, agora um <b>SaaS híbrido</b>: <b>nós orquestramos</b> (control plane),
+      mas <b>dados, compute e credenciais ficam na nuvem do cliente</b> (BYO). Um só código, <b>três
+      modos de entrega</b> — <code>self_hosted</code>, <code>dedicated</code>, <code>shared</code> —
+      e <b>quatro domínios</b>. Tudo seguindo a orientação Microsoft, registrado em <b>11 ADRs</b>.
+    </p>
+    <div class="badges">
+      <span class="badge">Deployment Stamps</span>
+      <span class="badge">Managed App + Lighthouse</span>
+      <span class="badge">Entra OBO · OAuth passthrough</span>
+      <span class="badge">Foundry connections (sem segredos)</span>
+      <span class="badge">Foundry Toolbox</span>
+      <span class="badge"><span class="dot">●</span> A → B → C → D · construído</span>
+    </div>
+    <div class="footer"><span>Arquitetura SaaS</span><span>01 / 08</span></div>
+  </section>
+
+  <!-- 2 — CONTROL PLANE × DATA PLANE -->
+  <section class="slide" id="s2">
+    <div class="kicker">A ideia central</div>
+    <h2>Nós orquestramos · os dados ficam com o cliente</h2>
+    <p class="lead">Operamos o <b>control plane</b> (UI + orquestrador + RBAC + gates de assurance).
+      <b>Todos os dados, compute, segredos e conexões</b> vivem no <b>data plane</b> do cliente. O
+      store do control plane guarda <b>só config + metadados de conexão por tenant — nunca segredo,
+      nunca dado do cliente</b>.</p>
+    <div class="split" style="margin-top:30px;max-width:1100px;">
+      <div class="layer" style="border-color:rgba(99,102,241,.35)">
+        <span class="tag">nós operamos</span>
+        <h3>Control plane</h3>
+        <p>Next.js + FastAPI + RBAC + assurance. Resolve o tenant pelo <code>tid</code> do token, carrega
+          a config daquele tenant, gera um token <i>brokered</i> (OBO / passthrough) e chama o data plane
+          do cliente. Guarda <b>apenas referências</b>.</p>
+      </div>
+      <div class="layer" style="border-color:rgba(52,211,153,.35)">
+        <span class="tag">na nuvem do cliente</span>
+        <h3>Data plane (BYO)</h3>
+        <p>O <b>Foundry project do cliente</b> é a fronteira natural de isolamento: KB / Azure AI Search,
+          memory store, storage, conexões. O agente chama <i>o Foundry deles</i> com o token brokered —
+          o isolamento é, em boa parte, <b>automático</b>.</p>
+      </div>
+    </div>
+    <div class="under">🔒 Único <b style="color:var(--text)">choke point</b> de tenant-scoping (auditável) · tudo <b style="color:var(--text)">fail-closed</b>: tenant não onboarded → erro claro, <b style="color:var(--text)">nunca</b> cai em outro tenant.</div>
+    <div class="footer"><span>Control plane × data plane</span><span>02 / 08</span></div>
+  </section>
+
+  <!-- 3 — TRÊS MODOS -->
+  <section class="slide" id="s3">
+    <div class="kicker">Um código · três modos de entrega</div>
+    <h2>self_hosted &nbsp;·&nbsp; dedicated &nbsp;·&nbsp; shared</h2>
+    <p class="lead">O mesmo código roda em três configurações, variando só <b>onde o control plane roda</b>
+      e <b>quantos tenants ele serve</b>. O único ponto de variação é a seam <code>DEPLOYMENT_MODE</code> +
+      <code>TenantConfigProvider</code> (Single ⇄ Multi). O resto é idêntico.</p>
+    <table class="cmp">
+      <thead><tr><th>Dimensão</th><th class="self">self_hosted</th><th class="ded">dedicated</th><th class="shr">shared</th></tr></thead>
+      <tbody>
+        <tr><td>Tenancy</td><td>1 (single)</td><td>1 (single)</td><td>N (multi)</td></tr>
+        <tr><td>Onde roda o control plane</td><td>nuvem do cliente</td><td>nuvem do cliente</td><td>nossa nuvem</td></tr>
+        <tr><td>Quem opera</td><td>o cliente</td><td><b>nós</b> (publisher)</td><td><b>nós</b></td></tr>
+        <tr><td>Veículo de entrega</td><td><code>azd up</code></td><td>Azure <b>Managed Application</b></td><td>control plane multi-tenant + <b>Lighthouse</b> p/ o data plane</td></tr>
+        <tr><td>Tenant resolvido por</td><td>config global (<code>.env</code>)</td><td>config global do stamp</td><td><code>tid</code> do token, por request</td></tr>
+        <tr><td>Provider de config</td><td><code>SingleTenant</code></td><td><code>SingleTenant</code></td><td><code>MultiTenant</code></td></tr>
+        <tr><td>Perfil-alvo</td><td>hoje · byte-idêntico</td><td>enterprise (isolamento total)</td><td>SMB / default</td></tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <b>Isolamento é uma escolha de deployment, não um rewrite.</b> O produto self-hosted de hoje vira
+      uma <b>variante de stamp</b> — sem fork. O dedicated é o self-hosted que <b>nós operamos</b>;
+      o shared é o multi-tenant de verdade. <span style="color:var(--muted)">(ADR-001 · ADR-007)</span>
+    </div>
+    <div class="footer"><span>Três modos</span><span>03 / 08</span></div>
+  </section>
+
+  <!-- 4 — STAMPS (diagrama) -->
+  <section class="slide" id="s4">
+    <div class="kicker">Deployment Stamps · os veículos</div>
+    <h2>Managed Application + Azure Lighthouse</h2>
+    <div class="split" style="margin-top:26px;max-width:1100px;">
+      <div class="layer" style="border-color:rgba(251,191,36,.35)">
+        <span class="tag">dedicated</span>
+        <h3>Managed Application</h3>
+        <p>Publicamos o control plane como <b>Managed App</b>: ele instala num resource group <b>da
+          assinatura do cliente</b> que o cliente <b>não modifica diretamente</b> — e <b>nós operamos</b>.
+          "Tudo é do cliente", inclusive o control plane, com a gente como operador.</p>
+        <p style="margin-top:8px;color:var(--muted)">Artefato: Bicep que <b>compõe os módulos <code>infra/</code> existentes</b> → <code>mainTemplate.json</code> + <code>createUiDefinition.json</code>. Re-parametrização, não duplicata.</p>
+      </div>
+      <div class="layer" style="border-color:rgba(139,92,246,.35)">
+        <span class="tag">shared</span>
+        <h3>Azure Lighthouse</h3>
+        <p>O cliente <b>delega escopos específicos</b> à nossa tenant; gerenciamos os recursos do data
+          plane <b>cross-tenant</b> sem nunca possuir os dados. <b>Least-privilege</b> (Reader +
+          Monitoring Contributor + Log Analytics Reader — sem Owner/Contributor), <b>revogável</b> e
+          <b>auditável</b> a qualquer momento.</p>
+      </div>
+    </div>
+    <div class="pillrow">
+      <span class="pill">ambos <b>marketplace-publishable</b></span>
+      <span class="pill">fronteiras de propriedade claras</span>
+      <span class="pill">validado offline: <b>bicep build</b> + ARM-TTK + CreateUiDefinition sandbox</span>
+      <span class="pill">publish + delegação real = <b>infra-gated</b> (runbook)</span>
+    </div>
+    <div class="under" style="margin-top:18px;">🧩 Veja o diagrama dos stamps em <code>docs/diagrams/saas/03-deployment-stamps.svg</code> · decisões: <b style="color:var(--text)">ADR-001 / ADR-002</b>.</div>
+    <div class="footer"><span>Stamps · veículos</span><span>04 / 08</span></div>
+  </section>
+
+  <!-- 5 — EVOLUÇÃO A→B→C→D -->
+  <section class="slide" id="s5">
+    <div class="kicker">A evolução · todos os sub-projetos construídos</div>
+    <h2>A → B → C → D</h2>
+    <p class="lead">Quatro sub-projetos, cada um com uma <b>seam clara</b> e um <b>mecanismo
+      sancionado pela Microsoft</b> — é isso que torna o alvo viável, não invenção.</p>
+    <div class="rail">
+      <div class="stage">
+        <div class="lt">A</div>
+        <h3>Fundação multi-tenant</h3>
+        <p>A espinha: seam <code>TenantConfigProvider</code> (Single/Multi) + <code>DEPLOYMENT_MODE</code>,
+          Entra multi-tenant, resolução por <code>tid</code> + OBO, memória com namespace por tenant,
+          store de tenant trocável. De-risk: <code>SingleTenant</code> primeiro = <b>zero mudança de
+          comportamento</b>.</p>
+        <div class="adr">ADR-003 · 006 · 007</div>
+      </div>
+      <div class="stage">
+        <div class="lt">B</div>
+        <h3>Conexões</h3>
+        <p>Records de <code>Connection</code> por tenant que <b>referenciam conexões do Foundry</b>
+          (nunca guardam segredo) + API admin <code>/tenant</code> e a página de Conexões. Store =
+          Table Storage agora, <b>Azure App Configuration</b> em produção.</p>
+        <div class="adr">ADR-005 · 008</div>
+      </div>
+      <div class="stage">
+        <div class="lt">C</div>
+        <h3>Brokering + governança de escrita</h3>
+        <p>As tools MCP do agente de plataforma dirigidas pelas Connections do tenant; credenciais
+          resolvidas de forma <b>nativa Microsoft</b> (OBO p/ audience Microsoft, Foundry connections
+          senão). RBAC por tool; tools de <b>escrita</b> com tool-approval nativo (Approver/Admin).</p>
+        <div class="adr">ADR-009</div>
+      </div>
+      <div class="stage">
+        <div class="lt">D</div>
+        <h3>Shared-mode + packaging</h3>
+        <p>Domínios montam <b>globalmente</b> + gate por tenant; <b>DomainAssignment</b> = entitlement
+          por licença. O <b>hosted agent de plataforma</b> (Invocations + Toolbox) e o <b>stamp dedicated</b>
+          (Managed App + Lighthouse); tier→domínios.</p>
+        <div class="adr">ADR-010 · 011</div>
+      </div>
+    </div>
+    <div class="under" style="margin-top:20px;">🔁 <b style="color:var(--text)">Convergência:</b> dedicated/self-hosted ponta-a-ponta = A→B→C. Shared ponta-a-ponta = C ∩ D (o OBO multi-tenant de C brokeia sobre a assinatura delegada por Lighthouse que D provisiona).</div>
+    <div class="footer"><span>Evolução A→B→C→D</span><span>05 / 08</span></div>
+  </section>
+
+  <!-- 6 — IDENTIDADE & BROKERING -->
+  <section class="slide" id="s6">
+    <div class="kicker">Identidade & credenciais · "nunca guardamos um segredo"</div>
+    <h2>O control plane resolve a credencial · nunca a lê</h2>
+    <p class="lead">Onboarding uma vez por tenant: o admin do cliente faz <b>admin-consent</b> do app
+      multi-tenant (cria um service principal na tenant dele) e delega os recursos do data plane
+      (Lighthouse). Guardamos <b>config + referências de conexão</b>, só isso.</p>
+    <div class="flow">
+      <div class="step"><div class="n">request</div><div class="t">tid do token</div><div class="d">resolve o tenant</div></div>
+      <span class="arrow">→</span>
+      <div class="step"><div class="n">config</div><div class="t">Connections</div><div class="d">referências, não segredos</div></div>
+      <span class="arrow">→</span>
+      <div class="step"><div class="n">broker</div><div class="t">OBO / passthrough</div><div class="d">token brokered</div></div>
+      <span class="arrow">→</span>
+      <div class="step"><div class="n">call</div><div class="t">data plane do cliente</div><div class="d">como o usuário</div></div>
+    </div>
+    <ul class="clean" style="margin-top:24px;">
+      <li><span class="mk">▰</span><div><b>Audience Microsoft (Foundry, Azure DevOps)</b> → <b>OBO</b>: trocamos o token do usuário e agimos <i>como ele</i>, sem passo extra.</div></li>
+      <li><span class="mk">▰</span><div><b>Terceiros (GitHub)</b> → <b>OAuth identity passthrough</b>: consentimento por usuário; o token de terceiro fica no Foundry Agent Service do cliente — o store guarda só a referência.</div></li>
+      <li><span class="mk">▰</span><div><b>Segredos em repouso</b> → <b>Key Vault / CMK do cliente</b>, referenciados por <code>secret_ref</code>, resolvidos em runtime. <small>O boundary do segredo nunca é cruzado — nem no caminho hosted.</small></div></li>
+    </ul>
+    <div class="under" style="margin-top:18px;">🧩 Fluxo completo em <code>docs/diagrams/saas/02-identity-credential-flow.svg</code> · decisões: <b style="color:var(--text)">ADR-003 / ADR-005 / ADR-008</b>.</div>
+    <div class="footer"><span>Identidade & brokering</span><span>06 / 08</span></div>
+  </section>
+
+  <!-- 7 — OS 4 DOMÍNIOS -->
+  <section class="slide" id="s7">
+    <div class="kicker">Os quatro domínios · um registry, uma rota genérica</div>
+    <h2>helpdesk · cockpit · selfwiki · <span class="grad">platform</span></h2>
+    <p class="lead">A Assurance Console é dirigida por um registry (<code>lib/domains.ts</code>) sobre a rota
+      genérica <code>/d/[domain]</code> — <b>adicionar domínio = 1 entrada + 1 agente</b>. Em shared mode
+      cada domínio é uma <b>licença por tenant</b> (<code>enabled_domains</code>), não um feature-flag.</p>
+    <div class="cards">
+      <div class="card"><div class="ico">💬</div><h3>Helpdesk</h3><p>Workflow triagem → fundamenta → resolve → escala, com <b>HITL</b> antes de abrir um chamado.</p><span class="ph">workflow</span></div>
+      <div class="card"><div class="ico">🛰️</div><h3>Cockpit</h3><p>Q&amp;A fundamentado na base da plataforma Cockpit — cita componente e documento.</p><span class="ph">grounded</span></div>
+      <div class="card"><div class="ico">📖</div><h3>Selfwiki</h3><p>Pergunte sobre <b>este repositório</b> — a deep-wiki gerada do código real do monorepo.</p><span class="ph">grounded</span></div>
+      <div class="card"><div class="ico">🛠️</div><h3>Platform <span style="font-size:11px;color:#c4b5fd;">(novo)</span></h3><p>Concierge de ops sobre os <b>MCP first-party da Microsoft</b> (Learn, Azure, Entra, DevOps, GitHub) — HITL nas escritas, toggle live/hosted.</p><span class="ph tool">tool</span></div>
+    </div>
+    <div class="callout">
+      <b>DomainAssignment = entitlement por licença</b> (ADR-010), guardado no record do tenant —
+      lido em request time por um gate <code>require_domain()</code>, <b>fail-closed</b> (sem record /
+      domínio fora do set → 403). Não é feature-flag: "licenciado para o domínio" ≠ "feature nova ligada".
+    </div>
+    <div class="footer"><span>Os 4 domínios</span><span>07 / 08</span></div>
+  </section>
+
+  <!-- 8 — HOSTED PLATFORM AGENT -->
+  <section class="slide" id="s8" style="background:radial-gradient(1200px 600px at 85% 100%, #1a1640 0%, var(--bg) 55%);">
+    <div class="kicker">O domínio platform, hosted · per-tenant</div>
+    <h2 class="grad" style="font-size:clamp(28px,4.6vw,54px);">O agente hosted resolve tools por tenant — sem tocar credencial</h2>
+    <p class="lead" style="margin-top:16px;">O twin <code>/platform-hosted</code> é o agente de plataforma
+      empacotado como <b>hosted agent do Foundry</b>. Carrega <b>write-approval HITL</b>, então usa o protocolo
+      <b>Invocations</b> (não Responses) — o stream AG-UI atravessa o Foundry <b>intacto</b>, e o interrupt de
+      aprovação sobrevive ponta-a-ponta.</p>
+    <div class="cards c3" style="margin-top:22px;">
+      <div class="card"><div class="ico">📦</div><h3>Container protocol-only</h3><p><code>InvocationsHostServer</code> serve o <b>mesmo agente AG-UI</b> do <code>/platform</code>. Tool-auth não é trabalho do container.</p></div>
+      <div class="card"><div class="ico">🧰</div><h3>Foundry Toolbox</h3><p>As tools resolvem por um <b>Toolbox MCP</b> provisionado no project — o broker central de auth. É onde aterrissa o <code>build_hosted_from_connections</code> de C, como <b>config</b>, não código.</p></div>
+      <div class="card"><div class="ico">🔑</div><h3>OAuth passthrough</h3><p>Identidade por tenant via <b>OBO</b>: as tools rodam <b>como o usuário logado</b>, consentimento na primeira vez. A definição do agente só guarda <b>referências</b>.</p></div>
+    </div>
+    <div class="under" style="margin-top:20px;">🚧 O hosted agent + o stamp são <b style="color:var(--text)">authored / infra-gated</b> — o modelo de entrega <b style="color:var(--text)">desenhado e deployável</b> via o <code>D-PACKAGING-RUNBOOK.md</code> (Partner Center / Lighthouse / Toolbox são contra infra real, fora do CI). · ADR-011.</div>
+    <div class="badges" style="margin-top:26px;">
+      <span class="badge">Invocations protocol</span>
+      <span class="badge">Foundry Toolbox</span>
+      <span class="badge">OAuth identity passthrough</span>
+      <span class="badge">Managed App + Lighthouse</span>
+      <span class="badge">11 ADRs · orientação Microsoft</span>
+    </div>
+    <div class="footer"><span>Hosted platform agent</span><span>08 / 08</span></div>
+  </section>
+
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('section.slide'));
+  const dotsWrap = document.getElementById('dots');
+  slides.forEach((s, i) => {
+    const a = document.createElement('a');
+    a.href = '#' + s.id; if (i === 0) a.className = 'on';
+    dotsWrap.appendChild(a);
+  });
+  const dots = Array.from(dotsWrap.children);
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        const i = slides.indexOf(e.target);
+        dots.forEach((d, j) => d.classList.toggle('on', j === i));
+      }
+    });
+  }, { threshold: 0.5 });
+  slides.forEach(s => io.observe(s));
+
+  let idx = 0;
+  function go(n) { idx = Math.max(0, Math.min(slides.length - 1, n)); slides[idx].scrollIntoView({ behavior: 'smooth' }); }
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(idx + 1); }
+    if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(idx - 1); }
+    if (e.key === 'Home') go(0);
+    if (e.key === 'End') go(slides.length - 1);
+  });
+  const io2 = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) idx = slides.indexOf(e.target); });
+  }, { threshold: 0.6 });
+  slides.forEach(s => io2.observe(s));
+</script>
+</body>
+</html>

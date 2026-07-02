@@ -33,6 +33,9 @@ param entraApiClientId string = ''
 @secure()
 param entraApiClientSecret string = ''
 
+@description('Entra group of app users — the private read audience of the selfwiki KB. When set, retrieval sends the per-user OBO ACL header for /selfwiki; empty leaves selfwiki fail-closed.')
+param appUsersGroupId string = ''
+
 @description('Storage account backing the Azure Files share for persisted app data.')
 param storageAccountName string
 
@@ -44,7 +47,7 @@ var backendAppName = 'ca-backend-${resourceToken}'
 var webAppName = 'ca-web-${resourceToken}'
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
-  name: 'log-helpdesk-${resourceToken}'
+  name: 'log-assured-${resourceToken}'
   location: location
   tags: tags
   properties: {
@@ -54,7 +57,7 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
 }
 
 resource env 'Microsoft.App/managedEnvironments@2024-03-01' = {
-  name: 'cae-helpdesk-${resourceToken}'
+  name: 'cae-assured-${resourceToken}'
   location: location
   tags: tags
   properties: {
@@ -127,11 +130,20 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'FOUNDRY_MODEL', value: foundryModel }
             { name: 'AZURE_SEARCH_ENDPOINT', value: azureSearchEndpoint }
             { name: 'AZURE_SEARCH_KNOWLEDGE_BASE', value: azureSearchKnowledgeBase }
+            // selfwiki domain (grounded on this repo's deep-wiki). Setting this mounts /selfwiki;
+            // ingest selfwiki-kb so retrieval has data (build_selfwiki_agent tolerates a missing KB at boot).
+            { name: 'SELFWIKI_SEARCH_KNOWLEDGE_BASE', value: 'selfwiki-kb' }
+            // platform domain (tool-driven, MCP). mcp_enabled defaults false in code, so /platform only
+            // mounts when this is true. The first-party MS MCP servers (Learn, etc.) need no extra infra.
+            { name: 'MCP_ENABLED', value: 'true' }
             { name: 'FRONTEND_ORIGIN', value: 'https://${webFqdn}' }
             { name: 'AZURE_CLIENT_ID', value: appIdentityClientId }
             { name: 'ENTRA_TENANT_ID', value: entraTenantId }
             { name: 'ENTRA_API_CLIENT_ID', value: entraApiClientId }
             { name: 'ENTRA_API_CLIENT_SECRET', secretRef: 'entra-api-secret' }
+            // selfwiki audience: the app-users group is the self-wiki's private read audience;
+            // retrieval sends the OBO ACL header only when this is set (else /selfwiki fails closed).
+            { name: 'APP_USERS_GROUP_ID', value: appUsersGroupId }
           ]
           volumeMounts: [
             { volumeName: 'data', mountPath: '/app/data' } // tickets.jsonl persists here
