@@ -63,6 +63,11 @@ jobs:
           # selfwiki's private read audience = the app-users group. Without this the deployed backend
           # leaves APP_USERS_GROUP_ID empty → the /selfwiki ACL header isn't sent → retrieve returns 0.
           azd env set APP_USERS_GROUP_ID              "${{ vars.APP_USERS_GROUP_ID }}"
+          # cockpit ACL classification groups. Without these the backend's acl_group_map is empty →
+          # the /cockpit OBO ACL header isn't sent → the ACL index returns 0 authorized docs → "não sei".
+          azd env set ACL_PUBLIC_GROUP                "${{ vars.ACL_PUBLIC_GROUP }}"
+          azd env set ACL_INTERNAL_GROUP             "${{ vars.ACL_INTERNAL_GROUP }}"
+          azd env set ACL_CONFIDENTIAL_GROUP         "${{ vars.ACL_CONFIDENTIAL_GROUP }}"
           azd env set NEXT_PUBLIC_ENTRA_TENANT_ID     "${{ vars.NEXT_PUBLIC_ENTRA_TENANT_ID }}"
           azd env set NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID "${{ vars.NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID }}"
           azd env set NEXT_PUBLIC_ENTRA_API_CLIENT_ID "${{ vars.NEXT_PUBLIC_ENTRA_API_CLIENT_ID }}"

@@ -10,6 +10,9 @@
     "entraTenantId": { "value": "${ENTRA_TENANT_ID}" },
     "entraApiClientId": { "value": "${ENTRA_API_CLIENT_ID}" },
     "entraApiClientSecret": { "value": "${ENTRA_API_CLIENT_SECRET}" },
-    "appUsersGroupId": { "value": "${APP_USERS_GROUP_ID}" }
+    "appUsersGroupId": { "value": "${APP_USERS_GROUP_ID}" },
+    "aclPublicGroup": { "value": "${ACL_PUBLIC_GROUP}" },
+    "aclInternalGroup": { "value": "${ACL_INTERNAL_GROUP}" },
+    "aclConfidentialGroup": { "value": "${ACL_CONFIDENTIAL_GROUP}" }
   }
 }
