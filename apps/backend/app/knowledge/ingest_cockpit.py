@@ -66,7 +66,9 @@ INDEXER_NAME = f"{KNOWLEDGE_SOURCE_NAME}-indexer"
 INDEX_NAME = f"{KNOWLEDGE_SOURCE_NAME}-index"
 
 
-def trigger_indexer(indexer_client: SearchIndexerClient, *, wait_s: int = 0, poll_s: int = 8) -> None:
+def trigger_indexer(
+    indexer_client: SearchIndexerClient, *, indexer_name: str | None = None, wait_s: int = 0, poll_s: int = 8
+) -> None:
     """Kick a fresh indexer run. **Non-blocking by default** (`wait_s=0`).
 
     The blob data source has NO change/deletion detection, and create_or_update of
@@ -80,8 +82,9 @@ def trigger_indexer(indexer_client: SearchIndexerClient, *, wait_s: int = 0, pol
     take 10-20 min server-side and waiting for it just stalls the caller. Pass
     `wait_s > 0` only when you must confirm completion synchronously.
     """
+    name = indexer_name or INDEXER_NAME
     try:
-        indexer_client.run_indexer(INDEXER_NAME)
+        indexer_client.run_indexer(name)
     except HttpResponseError as e:
         if "already" not in str(e).lower():  # already in progress → fine
             raise
@@ -90,7 +93,7 @@ def trigger_indexer(indexer_client: SearchIndexerClient, *, wait_s: int = 0, pol
         return
     waited = 0
     while waited < wait_s:
-        st = indexer_client.get_indexer_status(INDEXER_NAME)
+        st = indexer_client.get_indexer_status(name)
         running = st.status == "running" or (st.last_result and st.last_result.status == "inProgress")
         if not running and st.last_result:
             r = st.last_result
@@ -105,7 +108,7 @@ def trigger_indexer(indexer_client: SearchIndexerClient, *, wait_s: int = 0, pol
 run_and_wait_indexer = trigger_indexer
 
 
-def purge_orphans(credential, container: str) -> None:
+def purge_orphans(credential, container: str, *, index_name: str | None = None) -> None:
     """Delete index chunks whose source blob no longer exists.
 
     The indexer adds/updates from existing blobs but NEVER removes docs for deleted
@@ -123,7 +126,7 @@ def purge_orphans(credential, container: str) -> None:
     live = {b.name for b in cc.list_blobs()}
 
     search = SearchClient(
-        endpoint=tenant_config().azure_search_endpoint, index_name=INDEX_NAME,
+        endpoint=tenant_config().azure_search_endpoint, index_name=index_name or INDEX_NAME,
         credential=credential, api_version=os.environ.get("SEARCH_API_VERSION", "2026-05-01-preview"),
     )
     orphans, seen = [], set()
@@ -199,16 +202,22 @@ def upload(credential, container: str, items: list[tuple[str, bytes]]) -> int:
     return len(items)
 
 
-def create_knowledge_source(index_client: SearchIndexClient) -> None:
+def create_knowledge_source(
+    index_client: SearchIndexClient, *, ks_name: str | None = None, container: str | None = None, label: str | None = None
+) -> None:
+    # Defaults keep the cockpit path byte-identical; overrides steer a second domain (selfwiki).
+    ks = ks_name or KNOWLEDGE_SOURCE_NAME
+    cont = container or tenant_config().cockpit_storage_container
+    lbl = label or DOMAIN_LABEL
     openai_endpoint = _require("AZURE_AI_OPENAI_ENDPOINT", tenant_config().azure_ai_openai_endpoint)
     storage_id = _require("AZURE_STORAGE_RESOURCE_ID", tenant_config().azure_storage_resource_id)
     _validate_storage_resource_id(storage_id)
     knowledge_source = AzureBlobKnowledgeSource(
-        name=KNOWLEDGE_SOURCE_NAME,
-        description=f"{DOMAIN_LABEL} documentation (components + release).",
+        name=ks,
+        description=f"{lbl} documentation (components + release).",
         azure_blob_parameters=AzureBlobKnowledgeSourceParameters(
             connection_string=f"ResourceId={storage_id};",
-            container_name=tenant_config().cockpit_storage_container,
+            container_name=cont,
             ingestion_parameters=KnowledgeSourceIngestionParameters(
                 embedding_model=KnowledgeSourceAzureOpenAIVectorizer(
                     azure_open_ai_parameters=AzureOpenAIVectorizerParameters(
@@ -221,10 +230,10 @@ def create_knowledge_source(index_client: SearchIndexClient) -> None:
         ),
     )
     _with_timeout(
-        f"create knowledge source '{KNOWLEDGE_SOURCE_NAME}'",
+        f"create knowledge source '{ks}'",
         lambda: index_client.create_or_update_knowledge_source(knowledge_source),
     )
-    print(f"Knowledge source '{KNOWLEDGE_SOURCE_NAME}' created/updated.")
+    print(f"Knowledge source '{ks}' created/updated.")
 
 
 def create_knowledge_base(index_client: SearchIndexClient) -> None:
@@ -507,12 +516,100 @@ def provision_selfwiki_searchindex_kb() -> None:
     )
 
 
+def _prune_stale_blobs(credential, container: str, *, keep: set[str]) -> None:
+    """Delete blobs not in the current upload set (e.g. a prior version's pages).
+
+    A version bump (v0.2.0 → v0.3.0) writes NEW blob names (the key embeds the version), so the
+    old-version blobs linger in the container; the indexer would keep re-crawling them and the KB
+    would serve stale + current side by side. Pruning them lets purge_orphans then reconcile the
+    index. Safe for a single-domain container (selfwiki-corpus holds only selfwiki bundles).
+    """
+    account = _require("AZURE_STORAGE_ACCOUNT", tenant_config().azure_storage_account)
+    cc = BlobServiceClient(
+        account_url=f"https://{account}.blob.core.windows.net", credential=credential
+    ).get_container_client(container)
+    if not cc.exists():
+        return
+    stale = [b.name for b in cc.list_blobs() if b.name not in keep]
+    for name in stale:
+        cc.delete_blob(name)
+    print(f"  pruned {len(stale)} stale blob(s) from '{container}'" if stale
+          else f"  no stale blobs in '{container}'")
+
+
+def ingest_selfwiki() -> None:
+    """Full CONTENT ingest for the **selfwiki** domain (this repo's own deep-wiki), steered to the
+    selfwiki names — no COCKPIT_* env overrides, no risk of touching the cockpit searchIndex twin,
+    and no ACL (selfwiki is single-audience). This is the safe replacement for the old
+    reuse-the-cockpit-path-via-env recipe.
+
+        uv run python -m app.knowledge.ingest_cockpit --selfwiki
+
+    Bundles default to this repo's docs/wiki (override with COCKPIT_DOCBUNDLES). Uploads to
+    selfwiki-corpus, refreshes the blob knowledge source that drives selfwiki-docbundles-ks-index,
+    (re)provisions the ACTIVE searchIndex KB (selfwiki-si-kb) over that index, prunes prior-version
+    blobs + reconciles the index, and triggers the indexer async. No redeploy needed — the
+    /selfwiki agent reads the KB live.
+    """
+    _setup_logging()
+    cfg = tenant_config()
+    _require("AZURE_SEARCH_ENDPOINT", cfg.azure_search_endpoint)
+    default_bundles = Path(__file__).resolve().parents[4] / "docs" / "wiki"
+    docbundles = Path(os.environ.get("COCKPIT_DOCBUNDLES", str(default_bundles))).expanduser()
+    if not docbundles.is_dir():
+        sys.exit(f"selfwiki docbundles dir not found: {docbundles}")
+    # The blob KS name derives the index + indexer; keep it in lock-step with cfg.selfwiki_search_index
+    # (…-index) so the searchIndex KB reads exactly what this indexer fills.
+    ks_name = cfg.selfwiki_search_index.removesuffix("-index")
+    indexer_name = f"{ks_name}-indexer"
+
+    api_version = os.environ.get("SEARCH_API_VERSION", "2026-05-01-preview")
+    credential = DefaultAzureCredential()
+    index_client = SearchIndexClient(
+        endpoint=cfg.azure_search_endpoint, credential=credential, api_version=api_version,
+        logging_enable=True, connection_timeout=20, read_timeout=CALL_TIMEOUT_S,
+    )
+
+    print("== selfwiki 1/4: collect + upload deep-wiki bundles ==")
+    items, _ = collect_pages(docbundles)  # selfwiki has no ACL → component_groups ignored
+    if not items:
+        sys.exit(f"No pages found under {docbundles}")
+    print(f"Collected {len(items)} pages from {docbundles}")
+    upload(credential, cfg.selfwiki_storage_container, items)
+    _prune_stale_blobs(credential, cfg.selfwiki_storage_container, keep={n for n, _ in items})
+
+    print("== selfwiki 2/4: blob knowledge source (drives the index + indexer) ==")
+    create_knowledge_source(
+        index_client, ks_name=ks_name, container=cfg.selfwiki_storage_container, label=_SELFWIKI_LABEL
+    )
+
+    print("== selfwiki 3/4: searchIndex KS + KB (the ACTIVE native-path KB) ==")
+    create_selfwiki_searchindex_knowledge_source(index_client)
+    create_selfwiki_searchindex_knowledge_base(index_client)
+
+    print("== selfwiki 4/4: reconcile deletions + trigger indexer (async) ==")
+    purge_orphans(credential, cfg.selfwiki_storage_container, index_name=cfg.selfwiki_search_index)
+    indexer_client = SearchIndexerClient(
+        endpoint=cfg.azure_search_endpoint, credential=credential, api_version=api_version,
+        connection_timeout=20, read_timeout=CALL_TIMEOUT_S,
+    )
+    trigger_indexer(indexer_client, indexer_name=indexer_name)  # non-blocking; selfwiki has no ACL
+    print(
+        f"\nDone (selfwiki uploads + deletions reconciled). The indexer is running async — new pages "
+        f"appear in '{cfg.selfwiki_searchindex_knowledge_base}' incrementally over the next few "
+        "minutes. No redeploy needed (the /selfwiki agent reads the KB live)."
+    )
+
+
 def main() -> None:
     if "--searchindex-kb-only" in sys.argv:
         provision_searchindex_kb()
         return
     if "--selfwiki-searchindex-kb-only" in sys.argv:
         provision_selfwiki_searchindex_kb()
+        return
+    if "--selfwiki" in sys.argv:
+        ingest_selfwiki()
         return
     _setup_logging()
     _require("AZURE_SEARCH_ENDPOINT", tenant_config().azure_search_endpoint)
