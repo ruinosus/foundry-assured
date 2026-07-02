@@ -193,16 +193,16 @@ uv run python -m app.knowledge.ingest
 
 # Cockpit KB — point at a folder of Cockpit doc bundles
 COCKPIT_DOCBUNDLES=/path/to/cockpit/docbundles \
-  uv run python -m app.knowledge.ingest_cockpit
+  uv run python -m app.knowledge.ingest_docbundles
 
-# Selfwiki KB — this repo's own deep-wiki (docs/wiki); reuses ingest_cockpit via ENV override
+# Selfwiki KB — this repo's own deep-wiki (docs/wiki); reuses ingest_docbundles via ENV override
 KB_KNOWLEDGE_SOURCE=selfwiki-docbundles-ks \
 KB_DOMAIN_LABEL="o projeto foundry-assured" \
 COCKPIT_STORAGE_CONTAINER=selfwiki-corpus \
 COCKPIT_SEARCH_KNOWLEDGE_BASE=selfwiki-kb \
 COCKPIT_SEARCH_INDEX=selfwiki-docbundles-ks-index \
 COCKPIT_DOCBUNDLES=../../docs/wiki \
-  uv run python -m app.knowledge.ingest_cockpit
+  uv run python -m app.knowledge.ingest_docbundles
 ```
 
 Each ingest uploads its corpus → knowledge source → Foundry IQ knowledge base, stamps

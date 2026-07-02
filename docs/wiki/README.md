@@ -108,7 +108,7 @@ Contributor**):
 
 ```bash
 cd apps/backend
-uv run python -m app.knowledge.ingest_cockpit --selfwiki
+uv run python -m app.knowledge.ingest_docbundles --selfwiki
 ```
 
 `--selfwiki` uploads `docs/wiki` to `selfwiki-corpus`, refreshes the blob knowledge source that

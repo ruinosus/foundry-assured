@@ -359,7 +359,7 @@ resource userSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-
 
 // Caller -> query (retrieve) the KB AND write index docs. The data-plane ingest writes documents
 // directly as the caller: document-level ACL stamping (app/knowledge/acl_setup.py) and orphan
-// reconciliation (ingest_cockpit.purge_orphans) both need Search Index Data Contributor — Reader
+// reconciliation (ingest_docbundles.purge_orphans) both need Search Index Data Contributor — Reader
 // can only query, so a from-scratch `azd up` would 403 on ACL stamping without this. Contributor
 // is a superset of Data Reader, so it also covers retrieval from the local backend.
 resource userSearchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {

@@ -8,14 +8,14 @@ group(s) that can read its *source*, exactly like the corpus is the owner's data
     inheriting each source repo's access — or, for sources with NATIVE ACLs (SharePoint,
     ADLS Gen2), Foundry IQ ingests the ACL automatically and this step isn't needed.
   • For plain-blob sources without manifests, an external map
-    (``COCKPIT_ACL_CLASSIFICATION`` → ``{document-key: [group-name,…]}``, gitignored).
+    (``ACL_CLASSIFICATION`` → ``{document-key: [group-name,…]}``, gitignored).
   • Group NAMES resolve to Entra object-IDs via ``tenant_config().acl_group_map`` (the tenant's
     own groups). Documents with no declared access **fail-closed** (no group → nobody).
 
 Groups are arbitrary (a GitHub team, an ADLS group), never a fixed tier. `_component()`
 is deterministic identity extraction (the key to look up), not classification.
 
-    COCKPIT_ACL_CLASSIFICATION=/path/to/access.json uv run python -m app.knowledge.acl_setup
+    ACL_CLASSIFICATION=/path/to/access.json uv run python -m app.knowledge.acl_setup
 """
 
 from __future__ import annotations
@@ -70,11 +70,7 @@ def _resolve(names: list[str]) -> list[str]:
 
 def _load_external() -> dict[str, list[str]]:
     """Owner-provided { document-key : [group-name,…] }. External + gitignored."""
-    path = (
-        os.environ.get("ACL_CLASSIFICATION")
-        or os.environ.get("COCKPIT_ACL_CLASSIFICATION")  # deprecated alias
-        or tenant_config().acl_classification
-    )
+    path = os.environ.get("ACL_CLASSIFICATION") or tenant_config().acl_classification
     if not path:
         return {}
     return json.loads(Path(path).expanduser().read_text(encoding="utf-8"))

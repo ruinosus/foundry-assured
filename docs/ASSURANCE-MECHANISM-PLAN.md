@@ -48,7 +48,7 @@ and a red-team Attack-Success-Rate kept under a ceiling. "100%" expressed as con
 | Asset | Pillar it serves |
 | --- | --- |
 | `app/knowledge/wiki_builder.py` — generate→verify→ingest, claims cited to real files | 1 (build right) |
-| `app/knowledge/ingest_cockpit.py` — indexer + `purge_orphans` reconciliation | 1 |
+| `app/knowledge/ingest_docbundles.py` — indexer + `purge_orphans` reconciliation | 1 |
 | `AzureAISearchContextProvider` (agentic) + `cockpit-kb` knowledge agent | 2 (retrieve) |
 | `eval/run_eval.py` + `eval/assertions.py` + source-verified golden (gitignored) | 3 (eval) |
 | Entra OBO on `/helpdesk` (per-user identity) | 4 (secure access) — identity half only |

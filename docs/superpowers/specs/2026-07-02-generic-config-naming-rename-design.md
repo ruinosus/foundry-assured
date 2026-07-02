@@ -54,39 +54,36 @@ generic ingest. Minor.
   from code. (Note: `SEC-cockpit-kb-public` currently doubles as `APP_USERS_GROUP_ID` — see the
   selfwiki-acl spec; a dedicated `SEC-<product>-app-users` group would be cleaner but is tenant-side.)
 
-## Migration — NON-breaking (alias, then deprecate)
+## Migration — DIRECT rename, no back-compat (decided 2026-07-02)
 
-A flat rename of env vars is a breaking flag-day across `.env`, **repo variables**, **azd env**,
-the **container env** (`containerapps.bicep` + `main.parameters.json`), `infra/main.bicep`, the
-tenant store defaults, tests, and docs. Instead:
+The initial plan kept the old names via `AliasChoices` + a module shim (a deprecation window). On
+review we chose a **direct rename instead** — remove the old names outright — because they were set in
+only a few places, none of them the running app:
 
-1. **Config reads BOTH names (new preferred, old fallback).** `_TenantEnv` is pydantic-settings, so
-   use `Field(validation_alias=AliasChoices("acl_public_group", "cockpit_acl_public_group"))` (verify
-   the exact pydantic-settings API — RULE #1) so `ACL_PUBLIC_GROUP` wins and `COCKPIT_ACL_PUBLIC_GROUP`
-   still works. **No deployment breaks.**
-2. **Module rename with a shim.** Move the code to `ingest_docbundles.py`; keep
-   `ingest_cockpit.py` as a thin re-export (`from .ingest_docbundles import *  # deprecated`) for one
-   release so any scripts/CI/docs (`python -m app.knowledge.ingest_cockpit`) keep working; update
-   in-repo callers to the new module.
-3. **Update surfaces to the NEW names** (non-breaking, since aliases cover the old): `.env.example`,
-   `infra/*` env wiring, repo variables (add new, keep old until step 5), docs, the wiki bundles.
-4. **Deprecation window** — one release with both names + a log warning when an old-name env is read.
-5. **Drop the old names** in a later release once no deployment sets them.
+- the developer's local `.env` (updated in this change),
+- three **dormant repo variables** (`COCKPIT_ACL_*`) that `deploy.yml` never wires into the deploy env,
+- `infra/entra/create-acl-identities.sh` (which just *prints* `.env` lines — updated here),
 
-## Blast radius
+and the **deployed backend never set `COCKPIT_ACL_*`** (they're not in the container env). So dropping
+them breaks nothing in production.
 
-~18 files touch `cockpit` today (backend `app/core/tenant.py`, `app/knowledge/{acl_setup,ingest_cockpit}.py`,
-`app/domains.py`, tests under `eval/`; infra `containerapps.bicep`/`main.bicep`/`main.parameters.json`;
-docs). With the alias approach the code change is mechanical and covered by the existing **cockpit
-A-vs-B ACL round-trip E2E** (must stay green) + the ingest smoke.
+Done in this change:
+1. **Config** — `_TenantEnv` fields are plain `acl_*` (env `ACL_PUBLIC_GROUP`, `ACL_INTERNAL_GROUP`,
+   `ACL_CONFIDENTIAL_GROUP`, `ACL_DEFAULT_GROUPS`, `ACL_CLASSIFICATION`). `acl_extra_group_map` keeps a
+   single `validation_alias="acl_group_map"` (its env is `ACL_GROUP_MAP`; the field name differs to avoid
+   the `acl_group_map` **property**). **No `COCKPIT_ACL_*` fallback.**
+2. **Module** — `ingest_cockpit.py` → `ingest_docbundles.py`; the compat shim was **removed** (callers
+   use `python -m app.knowledge.ingest_docbundles`).
+3. **Surfaces** — `.env.example`, `infra/entra/*` (script + bicep comment), the dev `.env`, docs, and the
+   eval probes updated to `ACL_*`. The three dormant `COCKPIT_ACL_*` repo variables are renamed to `ACL_*`.
 
-## Verification
+## Verification (done)
 
-- Backend imports + `setup_acl`/ingest unit paths pass with **only new** names set, and with **only
-  old** names set (alias fallback), and with **both**.
-- Cockpit ACL round-trip E2E green (unchanged behavior).
-- `python -m app.knowledge.ingest_cockpit --selfwiki` still runs (shim) and `--selfwiki` via the new
-  module runs.
+- Backend compiles + imports; `setup_acl`/ingest paths use `acl_*`; no `cockpit_acl_<field>` residue in code.
+- 3-way env probe: `ACL_PUBLIC_GROUP` (new) → used; `COCKPIT_ACL_PUBLIC_GROUP` (old, `_env_file=None`) →
+  **ignored** (no alias) — confirmed.
+- `python -m app.knowledge.ingest_docbundles [--selfwiki]` runs.
+- The cockpit A-vs-B ACL round-trip E2E is the behavioral guard (must stay green in CI).
 
 ## Sequencing
 

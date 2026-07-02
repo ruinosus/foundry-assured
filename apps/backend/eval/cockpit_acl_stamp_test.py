@@ -6,8 +6,8 @@ Asserts the deterministic post-stamp schema; the per-document A-vs-B proof is in
 `eval.grounded_acl_roundtrip_test`. Skips cleanly when AZURE_SEARCH_ENDPOINT isn't configured.
 
 Prereq (runbook): re-ingest with the minimal PoC classification —
-  COCKPIT_DOCBUNDLES=… COCKPIT_ACL_CLASSIFICATION=…/.cockpit-acl-poc.json \
-    uv run python -m app.knowledge.ingest_cockpit
+  COCKPIT_DOCBUNDLES=… ACL_CLASSIFICATION=…/.cockpit-acl-poc.json \
+    uv run python -m app.knowledge.ingest_docbundles
 (needs tenant_config().acl_group_map to resolve `confidential` + `public` → object-ids).
 
     cd apps/backend && uv run python -m eval.cockpit_acl_stamp_test
@@ -49,7 +49,7 @@ def main() -> None:
     groups = fields.get("groups")
     if not groups:
         print("❌ FAIL: no 'groups' field — cockpit-kb was not re-ingested with ACL "
-              "(set COCKPIT_ACL_CLASSIFICATION + acl_group_map, then run ingest_cockpit).")
+              "(set ACL_CLASSIFICATION + acl_group_map, then run ingest_docbundles).")
         sys.exit(1)
     if groups.get("permissionFilter") != "groupIds" or not groups.get("filterable"):
         print(f"❌ FAIL: 'groups' field misconfigured: {groups}")

@@ -11,7 +11,7 @@ import contextvars
 from dataclasses import dataclass
 from typing import Protocol
 
-from pydantic import AliasChoices, Field
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -51,7 +51,7 @@ class TenantConfig:
     cockpit_search_index: str = "cockpit-docbundles-ks-index"
     cockpit_storage_container: str = "cockpit-corpus"
     # searchIndex-backed cockpit KB + its knowledge source (over the EXISTING ACL index).
-    # Provisioned alongside the blob KB by ingest_cockpit; cutover = point
+    # Provisioned alongside the blob KB by ingest_docbundles; cutover = point
     # cockpit_search_knowledge_base at cockpit_searchindex_knowledge_base (fully reversible).
     cockpit_searchindex_knowledge_base: str = "cockpit-si-kb"
     cockpit_searchindex_knowledge_source: str = "cockpit-docbundles-si-ks"
@@ -70,8 +70,8 @@ class TenantConfig:
     selfwiki_searchindex_knowledge_source: str = "selfwiki-docbundles-si-ks"
 
     # --- Phase 4: document-level access control (access follows the source) — GENERIC (all domains) ---
-    # Neutral names (renamed off the cockpit product name). _TenantEnv aliases the old COCKPIT_ACL_*
-    # env names so existing deployments keep working. See the generic-config-naming-rename spec.
+    # Neutral ACL_* names (renamed off the cockpit product name — the old COCKPIT_ACL_* env names
+    # are gone). See the generic-config-naming-rename spec.
     acl_extra_group_map: str = ""   # extra "name:objectId,..." pairs beyond the named trio (env ACL_GROUP_MAP)
     acl_classification: str = ""
     acl_default_groups: str = ""
@@ -144,14 +144,14 @@ class _TenantEnv(BaseSettings):
     selfwiki_storage_container: str = "selfwiki-corpus"
     selfwiki_searchindex_knowledge_base: str = "selfwiki-si-kb"
     selfwiki_searchindex_knowledge_source: str = "selfwiki-docbundles-si-ks"
-    # ACL config — GENERIC. New ACL_* env names preferred; the old COCKPIT_ACL_* still work (alias),
-    # so existing deployments don't break (non-breaking rename — see the naming-rename spec).
-    acl_extra_group_map: str = Field("", validation_alias=AliasChoices("acl_group_map", "cockpit_acl_group_map"))
-    acl_classification: str = Field("", validation_alias=AliasChoices("acl_classification", "cockpit_acl_classification"))
-    acl_default_groups: str = Field("", validation_alias=AliasChoices("acl_default_groups", "cockpit_acl_default_groups"))
-    acl_public_group: str = Field("", validation_alias=AliasChoices("acl_public_group", "cockpit_acl_public_group"))
-    acl_internal_group: str = Field("", validation_alias=AliasChoices("acl_internal_group", "cockpit_acl_internal_group"))
-    acl_confidential_group: str = Field("", validation_alias=AliasChoices("acl_confidential_group", "cockpit_acl_confidential_group"))
+    # ACL config — GENERIC (all domains). Env: ACL_PUBLIC_GROUP / ACL_INTERNAL_GROUP /
+    # ACL_CONFIDENTIAL_GROUP / ACL_DEFAULT_GROUPS / ACL_CLASSIFICATION / ACL_GROUP_MAP.
+    acl_extra_group_map: str = Field("", validation_alias="acl_group_map")  # env ACL_GROUP_MAP (raw "name:oid,..." pairs)
+    acl_classification: str = ""
+    acl_default_groups: str = ""
+    acl_public_group: str = ""
+    acl_internal_group: str = ""
+    acl_confidential_group: str = ""
     cockpit_docbundles_path: str = ""
     app_users_group_id: str = ""
     foundry_memory_store: str = "helpdesk-memory"

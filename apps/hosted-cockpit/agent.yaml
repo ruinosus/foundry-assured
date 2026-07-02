@@ -13,7 +13,7 @@ environment_variables:
     value: ${FOUNDRY_MODEL}
   - name: AZURE_SEARCH_ENDPOINT
     value: ${AZURE_SEARCH_ENDPOINT}
-  # The second-domain KB (created data-plane by app.knowledge.ingest_cockpit),
+  # The second-domain KB (created data-plane by app.knowledge.ingest_docbundles),
   # not the helpdesk one — a fixed name, not an azd output.
   - name: AZURE_SEARCH_KNOWLEDGE_BASE
     value: cockpit-kb
