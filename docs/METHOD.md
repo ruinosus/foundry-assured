@@ -19,6 +19,14 @@ the company brings the data.
 > Worked example: [`USE-CASE-WALKTHROUGH.md`](./USE-CASE-WALKTHROUGH.md) (and the visual
 > [`use-case-demo.html`](./use-case-demo.html)).
 
+> **Multi-tenant note.** This mechanism now runs inside a **hybrid multi-tenant SaaS** —
+> one codebase, three deployment modes (`self_hosted` / `dedicated` / `shared`), with the
+> tenant resolved per-request and config + memory + access-control isolated per tenant. The
+> guarantees below are unchanged; they simply hold **per tenant**. The single-tenant
+> `self_hosted` mode (shown in the diagrams here) is the default. Target architecture:
+> [`superpowers/specs/2026-06-29-saas-target-architecture-design.md`](./superpowers/specs/2026-06-29-saas-target-architecture-design.md);
+> decisions in [`adr/README.md`](./adr/README.md).
+
 ## The shape — three layers
 
 The frontend talks to the backend over AG-UI; the backend runs the workflow against Foundry.

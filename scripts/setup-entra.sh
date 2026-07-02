@@ -99,6 +99,16 @@ az rest --method PATCH --url "$GRAPH/$SPA_OBJID" --headers "Content-Type=applica
 echo "  ✔ SPA redirect $REDIRECT"
 az ad app permission add --id "$SPA_APPID" --api "$API_APPID" --api-permissions "$SCOPE_ID=Scope" 2>/dev/null && echo "  ✔ SPA → access_as_user"
 
+# Register the SPA as a KNOWN CLIENT of the API app. This is what makes the multi-tier On-Behalf-Of
+# chain work in the browser: SPA token → API (audience) → OBO → ai.azure.com (Foundry inference) /
+# search.azure.com. Without it, the OBO of a SPA-issued token to the downstream resource fails/returns
+# a token that 403s on inference — even though the API app already holds the delegated permission and
+# admin consent (verified: a direct API-app token OBO's fine; only the SPA-originated chain breaks).
+# Consent granted to the SPA then cascades to the API's downstream permissions (combined consent).
+az rest --method PATCH --url "$GRAPH/$API_OBJID" --headers "Content-Type=application/json" \
+  --body "{\"api\":{\"knownClientApplications\":[\"$SPA_APPID\"]}}" 2>/dev/null \
+  && echo "  ✔ SPA registered as known client of the API (enables SPA→API→downstream OBO)"
+
 # ---- Admin consent (needs a privileged role; non-fatal if it fails) --------
 echo "▸ Granting admin consent…"
 az ad app permission admin-consent --id "$API_APPID" 2>/dev/null && echo "  ✔ API consented" \

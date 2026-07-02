@@ -1,0 +1,18 @@
+kind: hosted
+name: platform-concierge
+protocols:
+  - protocol: invocations
+    version: 1.0.0
+resources:
+  cpu: "0.5"
+  memory: 1Gi
+environment_variables:
+  # FOUNDRY_PROJECT_ENDPOINT and APPLICATIONINSIGHTS_CONNECTION_STRING are injected
+  # by the platform. These resolve from the azd environment at deploy time.
+  - name: AZURE_AI_MODEL_DEPLOYMENT_NAME
+    value: ${FOUNDRY_MODEL}
+  # The Foundry Toolbox this agent resolves its MCP tools through (ADR-011) is configured at
+  # DEPLOY time (D-PACKAGING-RUNBOOK), passed in as a NON-reserved env var named TOOLBOX_NAME.
+  # NOT declared here: the hosted-agent platform RESERVES every FOUNDRY_*/AGENT_* env name and
+  # rejects the agent version (invalid_payload) if you declare one. Add it at deploy time, e.g.:
+  #   azd env set TOOLBOX_NAME <toolbox>   then re-add a `- name: TOOLBOX_NAME` entry here.

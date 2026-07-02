@@ -20,6 +20,9 @@ param location string
 @description('Object ID granted data-plane access. azd sets this from AZURE_PRINCIPAL_ID.')
 param principalId string = ''
 
+@description('Entra group of app users, granted Foundry User so they can run inference as themselves (OBO). azd maps APP_USERS_GROUP_ID. Empty skips.')
+param appUsersGroupId string = ''
+
 @description('Type of principalId: User locally, ServicePrincipal in CI/CD (azd maps AZURE_PRINCIPAL_TYPE).')
 param principalType string = 'User'
 
@@ -58,6 +61,7 @@ module resources 'resources.bicep' = {
     resourceToken: resourceToken
     principalId: principalId
     principalType: principalType // 'User' locally, 'ServicePrincipal' in CI/CD
+    appUsersGroupId: appUsersGroupId
     modelDeploymentName: modelDeploymentName
     searchLocation: effectiveSearchLocation // region override for AI Search capacity
   }
@@ -84,6 +88,7 @@ module apps 'containerapps.bicep' = {
     entraTenantId: entraTenantId
     entraApiClientId: entraApiClientId
     entraApiClientSecret: entraApiClientSecret
+    appUsersGroupId: appUsersGroupId
   }
 }
 
@@ -92,6 +97,9 @@ output WEB_URL string = apps.outputs.WEB_URL
 
 // Surfaced into .azure/<env>/.env by azd — feed these to the backend / ingestion.
 output FOUNDRY_PROJECT_ENDPOINT string = resources.outputs.FOUNDRY_PROJECT_ENDPOINT
+output AZURE_AI_PROJECT_ID string = resources.outputs.AZURE_AI_PROJECT_ID   // azd uses this to deploy hosted agents
+output AZURE_AI_ACCOUNT_ID string = resources.outputs.AZURE_AI_ACCOUNT_ID   // postdeploy hook: agent RBAC scope
+output AZURE_SEARCH_ID string = resources.outputs.AZURE_SEARCH_ID           // postdeploy hook: agent RBAC scope
 output FOUNDRY_MODEL string = resources.outputs.FOUNDRY_MODEL
 output FOUNDRY_EMBEDDING_MODEL string = resources.outputs.FOUNDRY_EMBEDDING_MODEL
 output AZURE_AI_ACCOUNT_ENDPOINT string = resources.outputs.AZURE_AI_ACCOUNT_ENDPOINT

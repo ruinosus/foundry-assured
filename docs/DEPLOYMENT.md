@@ -17,8 +17,17 @@ cloud-published Foundry Assured. Read top to bottom the first time.
 
 ## Quickstart (the short path)
 
-Two scripts collapse most of the manual steps below. From the repo root, after
-`azd auth login && az login`:
+**One command** — [`scripts/up-all.sh`](../scripts/up-all.sh) chains preflight (tools + sign-in) →
+`azd up` → (optional auth) → `bootstrap.sh`, then prints the remaining steps. From the repo root,
+after `azd auth login && az login`:
+
+```bash
+./scripts/up-all.sh                # provision + bootstrap (no sign-in; single identity)
+./scripts/up-all.sh --with-auth    # also create the Entra apps + the 4 app roles (sign-in + HITL)
+./scripts/up-all.sh -h             # help / flags (--provision-only, etc.)
+```
+
+Or run the same stages by hand (what `up-all.sh` calls):
 
 ```bash
 azd up                      # provision all Azure infra (Step 1)
@@ -67,7 +76,7 @@ azd up        # prompts for an environment name + region
 ```
 
 This runs `infra/` and creates, in a `rg-<env>` resource group:
-a Foundry account `aif-helpdesk-<token>` + project **`helpdesk-concierge`**,
+a Foundry account `aif-assured-<token>` + project **`foundry-assured`**,
 `gpt-5-mini` + `text-embedding-3-small` deployments, **Azure AI Search (Basic)**,
 a Storage account, an **ACR**, a **Container Apps environment**, a shared managed
 identity, and all keyless role assignments.
@@ -244,7 +253,7 @@ Open <http://localhost:3000> — Overview, **/chat** (Live ⇄ Hosted toggle),
 ## Step 6 — Deploy the hosted agent (Foundry Agent Service)
 
 ```bash
-azd env set AZURE_AI_PROJECT_ID "<project ARM id, ends in /projects/helpdesk-concierge>"
+azd env set AZURE_AI_PROJECT_ID "<project ARM id, ends in /projects/foundry-assured>"
 azd deploy helpdesk-concierge
 azd ai agent show helpdesk-concierge        # status + endpoint + portal playground
 azd ai agent invoke helpdesk-concierge "How do I roll back a bad deploy?"
@@ -256,8 +265,8 @@ the agent at deploy time, so it can't be pre-assigned in Bicep. Grant the agent'
 
 ```bash
 AID=<instance-identity-principal-id>
-ACC=<account ARM id .../accounts/aif-helpdesk-...>
-SRCH=<search ARM id .../searchServices/srch-helpdesk-...>
+ACC=<account ARM id .../accounts/aif-assured-...>
+SRCH=<search ARM id .../searchServices/srch-assured-...>
 az role assignment create --assignee-object-id $AID --assignee-principal-type ServicePrincipal \
   --role 53ca6127-db72-4b80-b1b0-d745d6d5456d --scope $ACC      # Azure AI User (call the model)
 az role assignment create --assignee-object-id $AID --assignee-principal-type ServicePrincipal \
@@ -329,16 +338,17 @@ gh workflow run agent-evals.yml -f version=3 -f baseline=helpdesk-concierge:2
 
 ## Cost & teardown
 
-Pay-as-you-go, East US 2, USD. The numbers are order-of-magnitude — check the
-[Azure pricing calculator](https://azure.microsoft.com/pricing/calculator/) for
-your region/agreement. The table separates **fixed meters** (billed 24/7 whether
-or not anyone uses the app) from **usage meters** (≈\$0 when idle).
+Pay-as-you-go, East US 2, USD. Prices below are pulled **live from the Azure Retail
+Prices API**; for the full derivation (the Microsoft-indicated method + how to
+reproduce it with the Azure Cost Estimator), see **[COST.md](./COST.md)**. The table
+separates **fixed meters** (billed 24/7 whether or not anyone uses the app) from
+**usage meters** (≈\$0 when idle).
 
 | Resource | SKU | Cost | Kind |
 | --- | --- | --- | --- |
 | **Azure AI Search** | Basic | **~\$0.10/hr ≈ \$74/mo** | 🔴 fixed — runs 24/7, **the meter to watch** |
 | Azure Container Registry | Basic | ~\$0.17/day ≈ **\$5/mo** | 🔴 fixed (already provisioned for the hosted agent) |
-| Log Analytics | PerGB2018 | ~\$2.76/GB ingested · **\$0–3/mo** | 🟡 usage — demo telemetry is <1 GB/mo; 30-day retention free |
+| Log Analytics | PerGB2018 | \$2.30/GB analyzed · **\$0/mo demo** | 🟡 usage — first 5 GB/mo free; demo telemetry is well under it |
 | Container Apps (backend + web) | Consumption, 0.5 vCPU / 1 GiB, **scale-to-zero** | **\$0 idle** · ~cents under demo load | 🟢 usage — within the monthly free grant (180k vCPU-s / 360k GiB-s / 2M req) |
 | Hosted agent compute | — | **\$0 idle** | 🟢 deprovisions ~15 min after last call |
 | Azure AI Foundry | Cognitive Services S0 | no fixed fee | 🟢 pay per token (below) |

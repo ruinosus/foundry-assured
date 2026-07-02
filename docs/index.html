@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Foundry Assured — apresentações & docs</title>
+    <meta
+      name="description"
+      content="Landing das apresentações e documentação do Foundry Assured — showcase do Microsoft Foundry: KB fundamentada, ACL por-usuário, workflow multi-agente, eval e SaaS multi-tenant."
+    />
+    <style>
+      :root {
+        --bg: #0d1117;
+        --panel: #161b22;
+        --border: #30363d;
+        --text: #e6edf3;
+        --muted: #8b949e;
+        --accent: #6d5dfc;
+        --accent-2: #2d333b;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.55;
+      }
+      .wrap { max-width: 960px; margin: 0 auto; padding: 3rem 1.25rem 4rem; }
+      header { border-bottom: 1px solid var(--border); padding-bottom: 1.5rem; margin-bottom: 2rem; }
+      h1 { font-size: 2rem; margin: 0 0 .35rem; letter-spacing: -0.02em; }
+      .tagline { color: var(--muted); margin: 0; }
+      .cta {
+        display: inline-block; margin-top: 1rem; padding: .55rem 1rem;
+        background: var(--accent); color: #fff; text-decoration: none;
+        border-radius: 8px; font-weight: 600; font-size: .95rem;
+      }
+      .cta.secondary { background: var(--accent-2); color: var(--text); border: 1px solid var(--border); margin-left: .5rem; }
+      h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin: 2.25rem 0 .75rem; }
+      .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: .75rem; }
+      a.card {
+        display: block; padding: .9rem 1rem; background: var(--panel);
+        border: 1px solid var(--border); border-radius: 10px; text-decoration: none; color: var(--text);
+        transition: border-color .15s ease, transform .15s ease;
+      }
+      a.card:hover { border-color: var(--accent); transform: translateY(-1px); }
+      a.card .t { font-weight: 600; display: block; }
+      a.card .d { color: var(--muted); font-size: .88rem; margin-top: .15rem; display: block; }
+      footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; }
+      footer a { color: var(--accent); }
+      code { background: var(--accent-2); padding: .1rem .35rem; border-radius: 5px; font-size: .85em; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Foundry Assured</h1>
+        <p class="tagline">
+          Showcase do <strong>Microsoft Foundry</strong> — concierge de suporte de engenharia:
+          pergunte → fundamente com citações → resolva com aprovação humana → lembre. Tudo avaliado,
+          rastreável, e com <strong>controle de acesso por documento</strong>.
+        </p>
+        <a class="cta" href="https://ca-web-s3vvlng2zilqy.whitecliff-a55615e6.eastus2.azurecontainerapps.io"
+          >Abrir o app ↗</a
+        >
+        <a class="cta secondary" href="https://github.com/ruinosus/foundry-assured">Repositório ↗</a>
+      </header>
+
+      <h2>Apresentação</h2>
+      <div class="grid">
+        <a class="card" href="presentation.html"><span class="t">Apresentação geral</span><span class="d">O que é, arquitetura e as fases do showcase.</span></a>
+        <a class="card" href="use-case-demo.html"><span class="t">Caso de uso — Meridian Freight</span><span class="d">Mecanismo KB → Agente, ponta a ponta.</span></a>
+      </div>
+
+      <h2>Deep-wiki</h2>
+      <div class="grid">
+        <a class="card" href="deep-wiki-presentation.html"><span class="t">Como é feita, ingerida e quanto custa</span><span class="d">O pipeline do deep-wiki do projeto.</span></a>
+        <a class="card" href="fluxo-deepwiki.html"><span class="t">Fluxo completo — do repo à resposta</span><span class="d">Do código-fonte à resposta fundamentada.</span></a>
+        <a class="card" href="quadro-comparativo-deepwiki.html"><span class="t">Quadro comparativo — engines</span><span class="d">deep-wiki vs OpenWiki vs DeepWiki.</span></a>
+      </div>
+
+      <h2>Grounded + ACL</h2>
+      <div class="grid">
+        <a class="card" href="grounded-citations-explainer.html"><span class="t">Citações fundamentadas + ACL por-usuário</span><span class="d">Do funcional ao técnico ao Microsoft-native.</span></a>
+      </div>
+
+      <h2>SaaS multi-tenant</h2>
+      <div class="grid">
+        <a class="card" href="saas-architecture.html"><span class="t">Arquitetura SaaS multi-tenant</span><span class="d">Os três deployment modes sobre um codebase.</span></a>
+        <a class="card" href="saas-request-flow.html"><span class="t">Fluxo multi-tenant & modelo de config</span><span class="d">Resolução de tenant por request + OBO.</span></a>
+      </div>
+
+      <footer>
+        Páginas geradas e mantidas no repositório sob <code>docs/</code>, publicadas via GitHub Pages.
+        A documentação técnica viva está no <a href="https://github.com/ruinosus/foundry-assured/tree/main/docs">repositório</a>
+        (incluindo o <a href="https://github.com/ruinosus/foundry-assured/tree/main/docs/wiki">deep-wiki gerado</a> e as
+        <a href="https://github.com/ruinosus/foundry-assured/tree/main/docs/adr">ADRs</a>).
+      </footer>
+    </div>
+  </body>
+</html>

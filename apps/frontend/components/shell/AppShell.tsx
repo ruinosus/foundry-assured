@@ -22,13 +22,17 @@ const WORKSPACE_NAV = [
   { href: "/evals", label: "Evaluations", icon: "✓" },
 ];
 
-const ADMIN_NAV = { href: "/admin/users", label: "Admin", icon: "🛡️" };
+const ADMIN_NAV = [
+  { href: "/admin/users", label: "Admin", icon: "🛡️" },
+  { href: "/admin/connections", label: "Connections", icon: "🔌" },
+];
 
 const TITLES: Record<string, string> = {
   "/": "Overview",
   "/tickets": "Tickets",
   "/evals": "Evaluations",
   "/admin/users": "Admin",
+  "/admin/connections": "Connections",
   ...Object.fromEntries(DOMAINS.map((d) => [`/d/${d.id}`, d.label])),
 };
 
@@ -95,7 +99,7 @@ export function AppShell({
   const title = TITLES[pathname] ?? "";
   const roles = useMyRoles();
   // Show Admin in the nav only to Admins (the page + every endpoint re-check server-side).
-  const workspace = isAdmin(roles) ? [...WORKSPACE_NAV, ADMIN_NAV] : WORKSPACE_NAV;
+  const workspace = isAdmin(roles) ? [...WORKSPACE_NAV, ...ADMIN_NAV] : WORKSPACE_NAV;
 
   return (
     <div className="shell">

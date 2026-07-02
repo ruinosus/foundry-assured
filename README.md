@@ -33,21 +33,62 @@ from the runbook knowledge base → **resolves** with a grounded, cited answer �
 **escalates** with human approval when an action is needed → and the whole thing
 is **evaluated** and **traceable**.
 
-## Three domains (config-driven)
+## Deployment modes — multi-tenant SaaS
 
-The frontend is an **Assurance Console** that fronts three agents, all sharing the
-same grounded/assured plumbing:
+On top of the showcase + assurance mechanism, the repo has evolved into a **hybrid
+multi-tenant SaaS** — one codebase, three deployment modes, selected by a
+**deployment-mode seam** ([ADR-007](./docs/adr/ADR-007-coexistence-deployment-mode.md)).
+A `TenantConfigProvider` (Single/Multi impl) is the single point of variation; everything
+else is identical across modes. All data, compute, and credentials stay in the customer's
+cloud (BYO) — the control plane stores **per-tenant config + connection references only,
+never secrets, never customer data** ([ADR-005](./docs/adr/ADR-005-never-store-secrets.md)).
+
+| Mode | Tenancy | Where | Vehicle |
+| --- | --- | --- | --- |
+| **self_hosted** (today, default) | 1 | customer cloud, customer operates | `azd up` (byte-identical to before) |
+| **dedicated** (enterprise) | 1 | customer cloud, we operate | Azure **Managed Application** + **Lighthouse** |
+| **shared** (SMB/default SaaS) | N | our cloud | multi-tenant control plane; tenant resolved per-request from the Entra `tid` |
+
+In **shared** mode each request resolves its tenant from the token's `tid`, loads that
+tenant's config + `Connection` records, mints a brokered token (OBO for Microsoft-audience
+servers; OAuth identity passthrough / Foundry connections otherwise — **we never read a
+secret**), and calls the customer's own data plane. Memory is namespaced by tenant. The
+**dedicated** stamp is deployed into the customer's own subscription as an Azure **Managed
+Application** ([`infra/managed-app/`](./infra/managed-app)) with cross-tenant management via
+Azure **Lighthouse** ([`infra/lighthouse/`](./infra/lighthouse), [ADR-002](./docs/adr/ADR-002-dedicated-stamp-managed-app-lighthouse.md)).
+
+> Target architecture: [`docs/superpowers/specs/2026-06-29-saas-target-architecture-design.md`](./docs/superpowers/specs/2026-06-29-saas-target-architecture-design.md) ·
+> tenancy model: [ADR-001](./docs/adr/ADR-001-tenancy-deployment-stamps.md) ·
+> the full ADR index (001–011): [`docs/adr/README.md`](./docs/adr/README.md) ·
+> packaging the dedicated stamp + hosted platform agent: [`docs/D-PACKAGING-RUNBOOK.md`](./docs/D-PACKAGING-RUNBOOK.md).
+
+The single-tenant `self_hosted` mode below is the **default**, byte-identical to the
+pre-SaaS product — everything in this README runs unchanged in that mode unless a section
+says otherwise.
+
+## Four domains (config-driven)
+
+The frontend is an **Assurance Console** that fronts four agents. Three are
+**grounded/workflow** domains sharing the same grounded/assured plumbing; the fourth is
+a **tool-driven** ops concierge:
 
 - **helpdesk** — the multi-agent workflow above (triage → retrieve → resolve →
   escalate, with HITL).
 - **cockpit** — grounded, cited Q&A over the `cockpit-kb` corpus.
 - **selfwiki** — grounded, cited Q&A over a deep-wiki generated from **this repo's
   own source** (the dogfood).
+- **platform** — a **tool-driven** ops concierge over Microsoft first-party MCP servers
+  (Learn, Azure, Entra, Azure DevOps, GitHub), with **HITL approval on write actions**.
+  Unlike the three grounded domains it resolves answers by *calling tools*, not by
+  retrieving a corpus; it also has the **live-vs-hosted toggle** (its hosted twin is the
+  deployed **platform** agent — see [Deployment modes](#deployment-modes--multi-tenant-saas)).
 
 Domains are **config-driven**: a single registry, [`apps/frontend/lib/domains.ts`](./apps/frontend/lib/domains.ts),
 drives the agent map, the nav, the generic console route, and the per-domain
 suggested prompts. Adding a domain = **one entry there + a backend agent**; deploy
-any subset (cockpit and selfwiki only register once their KB is ingested).
+any subset (cockpit and selfwiki only register once their KB is ingested). In **shared**
+mode, domains mount globally but are gated per-tenant by a **license entitlement**
+(`DomainAssignment`, [ADR-010](./docs/adr/ADR-010-per-tenant-domain-entitlement.md)).
 
 ### Two wiki-generation paths
 
@@ -136,6 +177,10 @@ Three layers. The Next.js frontend talks to the Python backend over **AG-UI (SSE
 the backend runs a **multi-agent workflow** against Foundry in the cloud. Phase 6
 adds a second, parallel delivery model: the same workflow packaged as a **managed
 hosted agent** (Responses protocol) on Foundry Agent Service.
+
+The diagram below shows the **self_hosted** (single-tenant) topology. In **shared** mode
+the same backend resolves the tenant per-request from the Entra `tid` and calls *that
+tenant's* Foundry/KB/memory; see [Deployment modes](#deployment-modes--multi-tenant-saas).
 
 The three layers — frontend, backend, and Foundry:
 
