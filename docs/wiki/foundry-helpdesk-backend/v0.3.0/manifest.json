@@ -1,0 +1,75 @@
+{
+  "key": "foundry-helpdesk-backend-v0.3.0",
+  "title": "foundry-helpdesk-backend v0.3.0",
+  "source": {
+    "type": "repo",
+    "ref": "apps/backend",
+    "commit": "3333d60d0e9c02b64a532f2c9bad94692cf50075"
+  },
+  "language": "pt-br",
+  "model": "local-agent",
+  "generatedAt": "2026-07-02T09:51:29+00:00",
+  "kind": "element",
+  "component": "foundry-helpdesk-backend",
+  "componentVersion": "v0.3.0",
+  "releaseVersion": null,
+  "pages": [
+    {
+      "id": "page-1",
+      "title": "Visão Geral do Backend (SaaS Híbrido + Arquétipo Grounded Unificado)",
+      "order": 1,
+      "file": "pages/page-1.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-2",
+      "title": "Modos de Implantação e o Seam de Tenant",
+      "order": 2,
+      "file": "pages/page-2.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-3",
+      "title": "Autenticação, OBO e RBAC Multi-Tenant",
+      "order": 3,
+      "file": "pages/page-3.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-4",
+      "title": "Registry de Domínios, Endpoints e o Wiring do mount_domains",
+      "order": 4,
+      "file": "pages/page-4.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-5",
+      "title": "Domínios de Agente e o Workflow Helpdesk",
+      "order": 5,
+      "file": "pages/page-5.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-6",
+      "title": "O Quarto Domínio: Platform e Integração MCP",
+      "order": 6,
+      "file": "pages/page-6.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-7",
+      "title": "Conhecimento, ACL e o retrieve() Unificado",
+      "order": 7,
+      "file": "pages/page-7.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-8",
+      "title": "Avaliação, Garantia (Assurance) e Testes",
+      "order": 8,
+      "file": "pages/page-8.md",
+      "audience": "base"
+    }
+  ],
+  "groups": []
+}
