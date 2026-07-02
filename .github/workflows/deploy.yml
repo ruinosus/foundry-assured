@@ -60,6 +60,9 @@ jobs:
           # this, bicep defaults it to AZURE_LOCATION and the idempotent re-provision
           # fails: "resource already exists in location eastus ... cannot be created in eastus2".
           azd env set AZURE_SEARCH_LOCATION           "${{ vars.AZURE_SEARCH_LOCATION }}"
+          # selfwiki's private read audience = the app-users group. Without this the deployed backend
+          # leaves APP_USERS_GROUP_ID empty → the /selfwiki ACL header isn't sent → retrieve returns 0.
+          azd env set APP_USERS_GROUP_ID              "${{ vars.APP_USERS_GROUP_ID }}"
           azd env set NEXT_PUBLIC_ENTRA_TENANT_ID     "${{ vars.NEXT_PUBLIC_ENTRA_TENANT_ID }}"
           azd env set NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID "${{ vars.NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID }}"
           azd env set NEXT_PUBLIC_ENTRA_API_CLIENT_ID "${{ vars.NEXT_PUBLIC_ENTRA_API_CLIENT_ID }}"
