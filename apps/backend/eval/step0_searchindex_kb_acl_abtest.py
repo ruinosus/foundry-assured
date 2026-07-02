@@ -10,7 +10,7 @@ searchIndex KB with each token as `x-ms-query-source-authorization`. It asserts 
 confidential source and B does NOT — the exact per-user trim the header carries, now on the native
 agentic path over the searchIndex KB.
 
-It does NOT create or tear down any KB — it targets the KB that ingest_cockpit provisioned (default
+It does NOT create or tear down any KB — it targets the KB that ingest_docbundles provisioned (default
 cfg.cockpit_searchindex_knowledge_base / _knowledge_source). Reuses the probe's proven native-retrieve
 helpers (RULE #1). Read-only against live infra.
 

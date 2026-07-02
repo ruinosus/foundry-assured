@@ -183,11 +183,11 @@ No green on (a)+(b)+(c)+(frontend) → no build. (Mirrors the D-packaging "Task 
 ### ACL prerequisite (dependency; Cockpit only)
 For `x-ms-query-source-authorization` to trim, the KB's index must carry **permission metadata fields**
 in **`filterable` string fields**, holding POSIX-style ACLs / group IDs (§8). **`cockpit-kb` was
-ingested WITHOUT them** (the aap-kb manifests have `groups: None`; `ingest_cockpit` only stamps ACL when
+ingested WITHOUT them** (the aap-kb manifests have `groups: None`; `ingest_docbundles` only stamps ACL when
 `acl_group_map` is set). So the ACL requirement adds a **prerequisite task: re-ingest cockpit-kb with
 permission metadata fields** + a **minimal classification** — for the PoC, enough to make the A-vs-B
 test meaningful (below); a full 23-component classification is a rollout concern.
-See `app/knowledge/acl_setup.py`, `ingest_cockpit.py`, and the [document-level access docs](https://learn.microsoft.com/en-us/azure/search/search-document-level-access-overview).
+See `app/knowledge/acl_setup.py`, `ingest_docbundles.py`, and the [document-level access docs](https://learn.microsoft.com/en-us/azure/search/search-document-level-access-overview).
 
 ### Testing
 - **The ACL round-trip fixture must be concrete (issue #4).** Classify so that **one specific document

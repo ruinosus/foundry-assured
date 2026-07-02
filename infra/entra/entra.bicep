@@ -16,7 +16,7 @@
 //     --template-file infra/entra/entra.bicep
 //
 // Outputs are the group object-IDs — feed them to the ingest ACL mapping
-// (COCKPIT_ACL_GROUPS) and the backend, so docs get stamped and queries get trimmed.
+// (ACL_GROUPS) and the backend, so docs get stamped and queries get trimmed.
 // Test users + memberships are created by ./create-test-users.sh (users with passwords
 // don't belong in IaC).
 

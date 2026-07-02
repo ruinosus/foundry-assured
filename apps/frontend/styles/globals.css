@@ -727,3 +727,61 @@ table.evals tr:last-child td {
   color: var(--primary);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
 }
+
+/* --- Mermaid pan/zoom viewer (components/console/MermaidZoom.tsx) ---
+   The app has no Tailwind, so streamdown's built-in mermaid viewport is unstyled/broken.
+   MermaidZoom takes over the block: fixed viewport + drag-pan + wheel-zoom + a control bar. */
+[data-streamdown="mermaid-block"].mz-block {
+  height: clamp(240px, 52vh, 520px);
+  overflow: hidden;
+  position: relative;
+  padding: 0;
+  margin: 12px 0;
+  cursor: grab;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  touch-action: none;
+  user-select: none;
+}
+[data-streamdown="mermaid-block"].mz-block svg {
+  display: block;
+  will-change: transform;
+}
+[data-streamdown="mermaid-block"].mz-block:fullscreen {
+  height: 100vh;
+  border: 0;
+  border-radius: 0;
+}
+.mz-ctrl {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+}
+.mz-ctrl button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.mz-ctrl button:hover {
+  background: var(--primary-tint);
+  color: var(--primary);
+}

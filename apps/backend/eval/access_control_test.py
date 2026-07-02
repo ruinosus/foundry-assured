@@ -9,7 +9,7 @@ security.access_control_violations_max, default 0).
 
 Test creds are secrets (gitignored .env / CI), never committed:
   ENTRA_TENANT_ID, COCKPIT_TEST_USER_A, COCKPIT_TEST_USER_B, COCKPIT_TEST_PASSWORD,
-  COCKPIT_ACL_* groups, AZURE_SEARCH_ENDPOINT, COCKPIT_ACL_CLASSIFICATION
+  ACL_* groups, AZURE_SEARCH_ENDPOINT, ACL_CLASSIFICATION
 
   uv run python -m eval.access_control_test
 """

@@ -16,7 +16,7 @@ the repo root. This adapter maps that into the same bundle our ingestion already
 into the SAME Foundry IQ `cockpit-kb`. Generator is recorded in the manifest `model`
 field so the two paths are distinguishable.
 
-Output structure (per ingest_cockpit.collect_pages):
+Output structure (per ingest_docbundles.collect_pages):
     <out>/<component>/<version>/{manifest.json, pages/page-N.md, llms.txt}
 
 NOTE: the deep-wiki output layout (wiki/**/*.md + root llms.txt) is taken from the
