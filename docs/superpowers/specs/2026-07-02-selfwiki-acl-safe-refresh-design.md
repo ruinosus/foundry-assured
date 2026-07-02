@@ -27,7 +27,7 @@ cannot be deleted`. Investigating (all read-only, zero mutation) surfaced the re
    same object-ID as `APP_USERS_GROUP_ID`** (the group granted *Foundry User* to use the app,
    `infra/resources.bicep:400` `appUsersToFoundry`). So today **selfwiki is readable by exactly
    "everyone with app access"** — the intended model — but by *accident*: it fell to the ingest
-   default (`cockpit_acl_default_groups='public'`, `acl_setup.py:105`), which merely *happens* to
+   default (`acl_default_groups='public'`, `acl_setup.py:105`), which merely *happens* to
    equal the app-users group in this tenant.
 3. **Content is stale.** All 109 indexed chunks are **v0.2.0**; the `--selfwiki` run uploaded the
    v0.3.0 blobs but crashed before triggering the indexer, so the KB still serves v0.2.0.
@@ -39,7 +39,7 @@ cannot be deleted`. Investigating (all read-only, zero mutation) surfaced the re
    whenever the token is present (`retrieval.py:155`) — it never checks whether the domain is ACL'd.
    The comment claims "ACL domains only"; the code doesn't enforce it. Harmless once selfwiki *is*
    intentionally ACL'd, but wrong for any future public domain.
-6. **The re-ingest is unsafe.** `create_knowledge_source` (`ingest_cockpit.py`) re-issues
+6. **The re-ingest is unsafe.** `create_knowledge_source` (`ingest_docbundles.py`) re-issues
    `create_or_update_knowledge_source`, which regenerates the index schema **without** `groups` →
    Azure refuses to drop the ACL field. The same call is in the **cockpit** full-ingest path → the
    same latent risk on any re-run over an ACL-stamped index.

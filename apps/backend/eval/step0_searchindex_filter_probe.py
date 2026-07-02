@@ -67,7 +67,7 @@ _SEARCH_SCOPE = "https://search.azure.com/.default"
 
 # Docs-verified retrieve api-version that uses the `messages` schema + accepts filterAddOn on searchIndex.
 _RETRIEVE_API = "2026-05-01-preview"
-# create_or_update_knowledge_source / _base use the mgmt api-version the repo pins in ingest_cockpit.
+# create_or_update_knowledge_source / _base use the mgmt api-version the repo pins in ingest_docbundles.
 _MGMT_API = "2026-05-01-preview"
 
 # Clearly-named probe resources — SEPARATE from cockpit-kb / cockpit-docbundles-ks (never touched).
@@ -120,7 +120,7 @@ def _group_filter(group_ids: list[str]) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Non-destructive probe-KB creation (SDK idiom, mirrors app.knowledge.ingest_cockpit).
+# Non-destructive probe-KB creation (SDK idiom, mirrors app.knowledge.ingest_docbundles).
 # ---------------------------------------------------------------------------
 
 
@@ -307,10 +307,10 @@ async def _run() -> int:  # noqa: C901 — one linear probe; readability over de
     search = (cfg.azure_search_endpoint or "").rstrip("/")
     index = cfg.cockpit_search_index
     conf = env.cockpit_confidential_source
-    conf_gid = tc.cockpit_acl_confidential_group
-    pub_gid = tc.cockpit_acl_public_group
-    internal_gid = tc.cockpit_acl_internal_group
-    default_groups = [g for g in tc.cockpit_acl_default_groups.split(",") if g.strip()]
+    conf_gid = tc.acl_confidential_group
+    pub_gid = tc.acl_public_group
+    internal_gid = tc.acl_internal_group
+    default_groups = [g for g in tc.acl_default_groups.split(",") if g.strip()]
 
     if not (search and index and conf and conf_gid and pub_gid):
         print("SKIP: searchIndex-filter probe needs live Search+index, COCKPIT_CONFIDENTIAL_SOURCE and "

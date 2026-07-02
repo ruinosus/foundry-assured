@@ -1,7 +1,7 @@
 """Cockpit expert agent — a second domain alongside the helpdesk.
 
 Same Foundry IQ pattern as the concierge, pointed at the **cockpit-kb** (the Cockpit
-platform docs ingested by app/knowledge/ingest_cockpit.py). Pure grounded Q&A — no
+platform docs ingested by app/knowledge/ingest_docbundles.py). Pure grounded Q&A — no
 workflow steps or ticket escalation; the Cockpit corpus is reference knowledge.
 
 Grounding is Microsoft's documented Foundry IQ pattern: the AzureAISearchContextProvider

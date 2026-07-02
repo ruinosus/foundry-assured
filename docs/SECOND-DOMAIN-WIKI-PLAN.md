@@ -142,7 +142,7 @@ Generic via `--repo/--component/--model` → the reusable protocol for any multi
 ## Key files
 
 ```
-apps/backend/app/knowledge/ingest_cockpit.py   # Phase A: corpus → cockpit-kb (reads external COCKPIT_DOCBUNDLES)
+apps/backend/app/knowledge/ingest_docbundles.py   # Phase A: corpus → cockpit-kb (reads external COCKPIT_DOCBUNDLES)
 apps/backend/app/agents/cockpit.py             # Cockpit agent (AzureAISearchContextProvider, Foundry IQ agentic)
 apps/backend/app/agents/prompts.py             # COCKPIT_INSTRUCTIONS (identity + grounding/citation discipline)
 apps/backend/app/knowledge/skills/             # deep-wiki GENERATION skills (wiki-architect, wiki-page-writer)

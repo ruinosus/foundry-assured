@@ -66,8 +66,8 @@ Meridian already has `eng-platform`, `eng-pricing`, `sec-fraud`, etc. They map e
 with real IDs:
 
 ```
-# COCKPIT_ACL_GROUP_MAP — comma-separated name:object-id pairs
-COCKPIT_ACL_GROUP_MAP=all-employees:<oid>,eng-platform:<oid>,eng-pricing:<oid>,sec-fraud:<oid>
+# ACL_GROUP_MAP — comma-separated name:object-id pairs
+ACL_GROUP_MAP=all-employees:<oid>,eng-platform:<oid>,eng-pricing:<oid>,sec-fraud:<oid>
 ```
 
 > If they *didn't* have groups, `infra/entra/entra.bicep` / `create-acl-identities.sh`
@@ -103,7 +103,7 @@ If the access can't be auto-inherited, the data owner provides one external file
 it; the code stays generic:
 
 ```jsonc
-// meridian-acl.json   (path → COCKPIT_ACL_CLASSIFICATION; gitignored)
+// meridian-acl.json   (path → ACL_CLASSIFICATION; gitignored)
 {
   "mf-developer-portal": ["all-employees"],
   "mf-public-sdk":       ["all-employees"],
@@ -114,17 +114,17 @@ it; the code stays generic:
 }
 ```
 
-Anything **not** listed (no declared access) falls to `cockpit_acl_default_groups` — and
+Anything **not** listed (no declared access) falls to `acl_default_groups` — and
 if that's empty it's **fail-closed**, so an undeclared doc never leaks by omission.
 
 ### 5. Ingest — the mechanism just reads the declared groups and stamps
 
 ```bash
-COCKPIT_ACL_CLASSIFICATION=./meridian-acl.json uv run python -m app.knowledge.ingest_cockpit
+ACL_CLASSIFICATION=./meridian-acl.json uv run python -m app.knowledge.ingest_docbundles
 ```
 
 For every document it reads the **owner-declared groups** (manifest or the file), resolves
-each group **name → object-ID** via `COCKPIT_ACL_GROUP_MAP`, and stamps the index `groups`
+each group **name → object-ID** via `ACL_GROUP_MAP`, and stamps the index `groups`
 field + enables query-time trimming. **`acl_setup.py` (which ingest calls) contains zero
 classification logic** — it's pure read-the-data-and-enforce.
 
@@ -164,8 +164,8 @@ Attack-Success-Rate gate (`redteam_asr_max`) keeps merges honest.
 
 | Generic code (in the template repo) | Meridian's data (external, gitignored) |
 | --- | --- |
-| `wiki_builder.py`, `ingest_cockpit.py`, `acl_setup.py`, `secure_search.py`, the eval/red-team harness | the **corpus** (their wikis) |
-| group-name **→ object-ID map mechanism** (reads `COCKPIT_ACL_GROUP_MAP`) | the **access** of each source (SharePoint/ADLS native; repos inherited from origin) + the **group object-IDs** (`.env`) |
+| `wiki_builder.py`, `ingest_docbundles.py`, `acl_setup.py`, `secure_search.py`, the eval/red-team harness | the **corpus** (their wikis) |
+| group-name **→ object-ID map mechanism** (reads `ACL_GROUP_MAP`) | the **access** of each source (SharePoint/ADLS native; repos inherited from origin) + the **group object-IDs** (`.env`) |
 | read-the-groups-and-enforce | the **groups** themselves (manifest `groups` / `meridian-acl.json`) |
 | the agent, prompts, gates | their **golden set** + thresholds |
 

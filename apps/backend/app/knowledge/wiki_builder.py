@@ -5,7 +5,7 @@ a Foundry agent reads the REAL source and writes a cited, bundle-format wiki
 (manifest.json + pages/*.md + llms.txt), driven by the depth rules of Microsoft's
 deep-wiki **wiki-page-writer** Agent Skill (MIT) — "trace actual code paths, every
 claim cites a real file, no guessing". That faithfulness fixes the gaps of
-LLM-summarized docs, automatically. Output = the format ingest_cockpit consumes.
+LLM-summarized docs, automatically. Output = the format ingest_docbundles consumes.
 
 Paced + bounded (read deterministically; one planner call + one call per page with a
 small delay) so it stays under the model deployment's rate limit — agentic tool loops
@@ -380,7 +380,7 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
             if i < len(plan):
                 await asyncio.sleep(_PAGE_DELAY_S)
 
-    # 3) Assemble the bundle (the format ingest_cockpit consumes).
+    # 3) Assemble the bundle (the format ingest_docbundles consumes).
     bundle = out_dir / component / version
     (bundle / "pages").mkdir(parents=True, exist_ok=True)
     manifest_pages, llms = [], [f"# {component} {version}\n"]
