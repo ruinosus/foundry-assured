@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.7.0](https://github.com/ruinosus/foundry-assured/compare/v0.6.0...v0.7.0) (2026-07-02)
+
+
+### Features
+
+* app RBAC + user management; rebrand to Foundry Assured; wiki-freshness gate; doc refresh ([#73](https://github.com/ruinosus/foundry-assured/issues/73)) ([d89dd2a](https://github.com/ruinosus/foundry-assured/commit/d89dd2ab932d6c54f5bf98c97289609c37b0ee23))
+* **assurance:** Phase 5 — red-team gate (the ACL trim is injection-proof) ([#60](https://github.com/ruinosus/foundry-assured/issues/60)) ([6a29510](https://github.com/ruinosus/foundry-assured/commit/6a2951004c1a8ece4c9633d1ab971714f32c89ac))
+* **assurance:** Phase 6 — package the mechanism (CI gates + METHOD + template) ([#62](https://github.com/ruinosus/foundry-assured/issues/62)) ([283fa6e](https://github.com/ruinosus/foundry-assured/commit/283fa6e52250d7afb21703738579f079286fe740))
+* selfwiki deep-wiki domain + Assurance Console frontend ([#67](https://github.com/ruinosus/foundry-assured/issues/67)) ([1aec474](https://github.com/ruinosus/foundry-assured/commit/1aec474aecbce16a04602be7da38fe8c09e59d8f))
+
+
+### Bug Fixes
+
+* **assurance:** review fixes — attribution bug + robustness (wave 1: code/CI) ([#63](https://github.com/ruinosus/foundry-assured/issues/63)) ([4a4a78f](https://github.com/ruinosus/foundry-assured/commit/4a4a78f78714f99c25bbf6caac656f1adfceb16a))
+* **wiki:** fidelity gate normalizes blob + external URLs (scores both generation paths) ([#74](https://github.com/ruinosus/foundry-assured/issues/74)) ([4e705ac](https://github.com/ruinosus/foundry-assured/commit/4e705ac67063bf19d0c8f4188ae23f38c0d65473))
+
+
+### Documentation
+
+* add identity & access setup map (what azd creates vs manual app regs) ([#70](https://github.com/ruinosus/foundry-assured/issues/70)) ([474772e](https://github.com/ruinosus/foundry-assured/commit/474772e9db48e6921d8c619752747e3353954292))
+* adopt a documentation standard (Diátaxis + MS Learn) + Mermaid diagrams ([#65](https://github.com/ruinosus/foundry-assured/issues/65)) ([b1cfa58](https://github.com/ruinosus/foundry-assured/commit/b1cfa588a220b01426a26b6a874ba2ff6fc42f28))
+* English consistency for markdown + add setup (azd-vs-manual) section to the deck ([#71](https://github.com/ruinosus/foundry-assured/issues/71)) ([d2bd49a](https://github.com/ruinosus/foundry-assured/commit/d2bd49a5c279b274ea0063dcdf6a5f45ef102fef))
+* fix fidelity range + add flow & comparison pages with back-nav ([#68](https://github.com/ruinosus/foundry-assured/issues/68)) ([4cd8a40](https://github.com/ruinosus/foundry-assured/commit/4cd8a40f2ddafc6709c388bbc11b573e52eb4b05))
+* fix Pages URLs after repo rename to foundry-assured ([#69](https://github.com/ruinosus/foundry-assured/issues/69)) ([7af8eeb](https://github.com/ruinosus/foundry-assured/commit/7af8eebf6a3d4875b32eaf6d55f456a423b009f9))
+* RBAC + user-management plan (Entra App Roles, via the portal) ([#72](https://github.com/ruinosus/foundry-assured/issues/72)) ([ddb15fa](https://github.com/ruinosus/foundry-assured/commit/ddb15fa079917c0f2619e313f760dc727bf4c0f9))
+* review fixes — align all docs with the as-built model (wave 2) ([#64](https://github.com/ruinosus/foundry-assured/issues/64)) ([0e6c461](https://github.com/ruinosus/foundry-assured/commit/0e6c4618a2fd63b148519045476c30866bae9ddd))
+
 ## [Unreleased]
 
 The **multi-tenant SaaS evolution** (sub-projects A→B→C→D) built on top of the shipped
