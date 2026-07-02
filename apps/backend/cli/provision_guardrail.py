@@ -34,6 +34,7 @@ from azure.ai.projects.models import (
 from azure.identity import DefaultAzureCredential
 
 from app.core.settings import settings
+from app.core.tenant import tenant_config
 
 
 def _as_dict(obj) -> dict:
@@ -57,9 +58,9 @@ def main() -> None:
     )
     args = parser.parse_args()
 
-    agent = settings.hosted_agent_name
+    agent = tenant_config().hosted_agent_name
     project = AIProjectClient(
-        endpoint=settings.foundry_project_endpoint,
+        endpoint=tenant_config().foundry_project_endpoint,
         credential=DefaultAzureCredential(),
         allow_preview=True,
     )

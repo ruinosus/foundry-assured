@@ -2,7 +2,9 @@ from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 
 from app.core.auth import auth_dependencies
-from app.services.hosted import stream_agui
+from app.core.tenant import tenant_config
+from app.domains import _domain_deps
+from app.services.hosted import stream_agui, stream_platform_agui
 
 router = APIRouter()
 
@@ -19,4 +21,14 @@ async def helpdesk_hosted(request: Request) -> StreamingResponse:
     (app/main.py) via add_agent_framework_fastapi_endpoint — it isn't a router.
     """
     body = await request.json()
-    return StreamingResponse(stream_agui(body), media_type="text/event-stream")
+    return StreamingResponse(
+        stream_agui(body, tenant_config().hosted_agent_name), media_type="text/event-stream"
+    )
+
+
+@router.post("/platform-hosted", dependencies=_domain_deps("platform"))
+async def platform_hosted(request: Request) -> StreamingResponse:
+    """AG-UI twin of /platform — the deployed platform hosted agent over the Invocations
+    protocol, streamed as AG-UI. Same Entra gate (+ shared-mode domain entitlement)."""
+    body = await request.json()
+    return StreamingResponse(stream_platform_agui(body), media_type="text/event-stream")

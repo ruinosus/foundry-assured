@@ -21,6 +21,9 @@ param resourceToken string
 @description('Principal granted data-plane roles (the deploying user). Empty skips assignments.')
 param principalId string = ''
 
+@description('Entra group whose members USE the app. Granted Foundry User on the Foundry account so end users can run inference AS THEMSELVES (OBO) — the grounded synthesis calls the model with the user token, which 403s without data-plane access. Empty skips (single-user/dev). ')
+param appUsersGroupId string = ''
+
 @description('Type of principalId: User for a person (default), ServicePrincipal for CI/CD. ARM rejects a mismatch.')
 param principalType string = 'User'
 var effectivePrincipalType = empty(principalType) ? 'User' : principalType
@@ -49,19 +52,20 @@ param searchSkuName string = 'basic'
 @description('Region for Azure AI Search. Empty falls back to the main location; override if a region is out of Search capacity.')
 param searchLocation string = ''
 
-var accountName = 'aif-helpdesk-${resourceToken}'
-var projectName = 'helpdesk-concierge'
-var searchName = 'srch-helpdesk-${resourceToken}'
-var registryName = 'acrhelpdesk${resourceToken}'
-var storageName = 'sthelpdesk${resourceToken}'
+var accountName = 'aif-assured-${resourceToken}'
+var projectName = 'foundry-assured'
+var searchName = 'srch-assured-${resourceToken}'
+var registryName = 'acrassured${resourceToken}'
+var storageName = 'stassured${resourceToken}'
 var corpusContainerName = 'corpus'
-var dataShareName = 'helpdesk-data'
+var dataShareName = 'assured-data'
 
 // Built-in role definition GUIDs (stable Azure identifiers).
 var roleAzureAiUser = '53ca6127-db72-4b80-b1b0-d745d6d5456d' // Azure AI User / Foundry User (Foundry data plane)
 var roleCognitiveServicesUser = 'a97b65f3-24c7-4388-baec-2e87135dc908' // Cognitive Services User (call model deployments)
 var roleSearchServiceContributor = '7ca78c08-252a-4471-8644-bb5ff32d4ba0' // create knowledge bases/sources
 var roleSearchIndexDataReader = '1407120a-92aa-4202-b7e9-c0e197c71c8f' // query (retrieve) indexes
+var roleSearchIndexDataContributor = '8ebe5a00-799e-43f5-93ac-243d3dce84a7' // write index docs: ACL stamping (acl_setup) + purge_orphans (superset of Data Reader)
 var roleStorageBlobDataReader = '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1' // search MI reads corpus blobs
 var roleStorageBlobDataContributor = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe' // caller uploads corpus blobs
 var roleAcrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d' // project MI pulls the hosted-agent image
@@ -134,7 +138,7 @@ resource embeddingDeployment 'Microsoft.CognitiveServices/accounts/deployments@2
 // ---------------------------------------------------------------------------
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
-  name: 'log-helpdesk-${resourceToken}'
+  name: 'log-assured-${resourceToken}'
   location: location
   tags: tags
   properties: {
@@ -144,7 +148,7 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
 }
 
 resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
-  name: 'appi-helpdesk-${resourceToken}'
+  name: 'appi-assured-${resourceToken}'
   location: location
   tags: tags
   kind: 'web'
@@ -256,7 +260,7 @@ resource registry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = 
 // publishing to Azure. Pulls images from ACR and (for the backend) calls Foundry
 // + the search KB as itself. Created here so all its RBAC lives with the targets.
 resource appIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: 'id-helpdesk-app-${resourceToken}'
+  name: 'id-assured-app-${resourceToken}'
   location: location
   tags: tags
 }
@@ -353,12 +357,16 @@ resource userSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-
   }
 }
 
-// Caller -> query (retrieve) the knowledge base from the local backend.
-resource userSearchReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
-  name: guid(search.id, principalId, roleSearchIndexDataReader)
+// Caller -> query (retrieve) the KB AND write index docs. The data-plane ingest writes documents
+// directly as the caller: document-level ACL stamping (app/knowledge/acl_setup.py) and orphan
+// reconciliation (ingest_cockpit.purge_orphans) both need Search Index Data Contributor — Reader
+// can only query, so a from-scratch `azd up` would 403 on ACL stamping without this. Contributor
+// is a superset of Data Reader, so it also covers retrieval from the local backend.
+resource userSearchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
+  name: guid(search.id, principalId, roleSearchIndexDataContributor)
   scope: search
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchIndexDataReader)
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchIndexDataContributor)
     principalId: principalId
     principalType: effectivePrincipalType
   }
@@ -386,11 +394,33 @@ resource userAiUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!
   }
 }
 
+// App users (a group) -> Foundry data plane. The grounded synthesis runs the model AS THE USER (OBO)
+// so answers are attributable and per-user ACL works; without Foundry User the user's token 403s on
+// inference. Group-scoped so every app user is covered by one assignment. Empty skips (single-user/dev).
+resource appUsersToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(appUsersGroupId)) {
+  name: guid(account.id, appUsersGroupId, roleAzureAiUser)
+  scope: account
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAzureAiUser)
+    principalId: appUsersGroupId
+    principalType: 'Group'
+  }
+}
+
 // ---------------------------------------------------------------------------
 // Outputs (surfaced by azd into .azure/<env>/.env)
 // ---------------------------------------------------------------------------
 
 output FOUNDRY_PROJECT_ENDPOINT string = 'https://${accountName}.services.ai.azure.com/api/projects/${projectName}'
+// ARM resource id of the Foundry project — azd reads this (AZURE_AI_PROJECT_ID) to resolve the
+// target project when deploying hosted agents (azure.ai.agent). Surfacing it as an output keeps it
+// in lockstep with the account/project names — so a rename never leaves a stale manually-set value.
+output AZURE_AI_PROJECT_ID string = project.id
+// ARM ids of the account + search — read by the postdeploy hook (scripts/hook-postdeploy.sh) to
+// grant each hosted agent's deploy-time instance identity its runtime roles (Azure AI User on the
+// account, Search Index Data Reader on search), which Bicep can't pre-assign (identity is minted at deploy).
+output AZURE_AI_ACCOUNT_ID string = account.id
+output AZURE_SEARCH_ID string = search.id
 output AZURE_AI_ACCOUNT_ENDPOINT string = account.properties.endpoint
 output AZURE_AI_OPENAI_ENDPOINT string = 'https://${accountName}.openai.azure.com'
 output FOUNDRY_MODEL string = modelDeploymentName

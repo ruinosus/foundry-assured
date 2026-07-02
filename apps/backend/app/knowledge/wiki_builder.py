@@ -32,7 +32,7 @@ from pathlib import Path
 from agent_framework.foundry import FoundryChatClient
 from azure.identity import DefaultAzureCredential
 
-from app.core.settings import settings
+from app.core.tenant import tenant_config
 
 logger = logging.getLogger(__name__)
 
@@ -246,7 +246,7 @@ def _maybe_setup_observability() -> bool:
         try:
             from azure.ai.projects import AIProjectClient
             project = AIProjectClient(
-                endpoint=settings.foundry_project_endpoint, credential=DefaultAzureCredential()
+                endpoint=tenant_config().foundry_project_endpoint, credential=DefaultAzureCredential()
             )
             conn = project.telemetry.get_application_insights_connection_string()
         except Exception:
@@ -294,14 +294,14 @@ async def _run_resilient(agent, prompt: str, *, label: str, retries: int = 7, ba
 
 async def build_component_wiki(repo: Path, component: str, version: str, out_dir: Path, model: str | None = None, verify: bool = True, groups: list[str] | None = None, fidelity_root: Path | None = None) -> Path:
     credential = DefaultAzureCredential()
-    resolved_model = model or settings.foundry_model
+    resolved_model = model or tenant_config().foundry_model
     meter = _CostMeter(resolved_model)
     _maybe_setup_observability()
 
     def _agent(name: str, instructions: str):
         return FoundryChatClient(
-            project_endpoint=settings.foundry_project_endpoint or None,
-            model=model or settings.foundry_model,
+            project_endpoint=tenant_config().foundry_project_endpoint or None,
+            model=model or tenant_config().foundry_model,
             credential=credential,
         ).as_agent(name=name, instructions=instructions)
 

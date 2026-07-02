@@ -18,7 +18,7 @@ import logging
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
 
-from app.core.settings import settings
+from app.core.tenant import tenant_config
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 def _openai_client():
     # The app's own identity (not OBO): eval results are project-wide, not per-user.
     project = AIProjectClient(
-        endpoint=settings.foundry_project_endpoint,
+        endpoint=tenant_config().foundry_project_endpoint,
         credential=DefaultAzureCredential(),
     )
     return project.get_openai_client()
@@ -39,7 +39,7 @@ def list_eval_runs(limit: int = 8) -> list[dict]:
     Returns [] when Foundry isn't configured or unreachable — the page degrades to
     a "view in portal" prompt rather than erroring.
     """
-    if not settings.foundry_project_endpoint:
+    if not tenant_config().foundry_project_endpoint:
         return []
     try:
         oai = _openai_client()

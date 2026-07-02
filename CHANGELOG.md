@@ -1,5 +1,26 @@
 # Changelog
 
+## [Unreleased]
+
+The **multi-tenant SaaS evolution** (sub-projects A→B→C→D) built on top of the shipped
+v0.6.0 showcase + assurance mechanism. One codebase, three deployment modes
+(`self_hosted` / `dedicated` / `shared`); decisions captured in **ADRs 001–011**
+(`docs/adr/`), target architecture in
+`docs/superpowers/specs/2026-06-29-saas-target-architecture-design.md`.
+
+### Features
+
+* **saas/A:** multi-tenant foundation — `TenantConfigProvider` seam (Single/Multi) behind a `DEPLOYMENT_MODE` switch, per-request tenant resolution from the Entra `tid` + OBO downstream, memory namespaced by tenant, swappable tenant store (Azure Table / in-memory) (ADR-003, ADR-006, ADR-007)
+* **saas/B:** per-tenant connections — `TenantRecord` + `Connection` records that **reference** Foundry connections (never store a secret), an Admin `/tenant` API + a Connections admin page (ADR-005, ADR-008)
+* **saas/C:** credential brokering + write governance — the **platform** agent's MCP tools driven by the tenant's Connection records; credentials resolved Microsoft-natively (OBO for Microsoft-audience servers, Foundry connections otherwise — never reads a secret); per-tool RBAC (stricter-of-both); WRITE tools gated by the framework's native tool-approval (Approver/Admin) (ADR-009)
+* **saas/D-runtime:** shared-mode enablement — domains mount globally and are gated per-tenant by **DomainAssignment** (a per-tenant license entitlement, `enabled_domains`), seeded at onboarding and managed via `/tenant/domains`; the `/platform-hosted` twin endpoint (ADR-010)
+* **saas/D-packaging:** the deployable **platform hosted agent** (Invocations protocol + Foundry Toolbox + OAuth identity passthrough); the **dedicated stamp** as an Azure **Managed Application** (`infra/managed-app/`) + Azure **Lighthouse** (`infra/lighthouse/`); a tier→domains entitlement map (ADR-002, ADR-011)
+* **domains:** add a fourth, **tool-driven** domain — `platform`, an ops concierge over Microsoft first-party MCP servers (Learn, Azure, Entra, Azure DevOps, GitHub) with HITL approval on write actions and a live-vs-hosted toggle
+
+### Documentation
+
+* SaaS target architecture design + ADRs 001–011 (`docs/adr/`), sub-project specs/plans (`docs/superpowers/`), the `docs/D-PACKAGING-RUNBOOK.md` packaging runbook, `docs/COST.md`, and `docs/BRANCHING.md` (Git Flow)
+
 ## [0.6.0](https://github.com/ruinosus/foundry-helpdesk/compare/v0.5.0...v0.6.0) (2026-06-27)
 
 

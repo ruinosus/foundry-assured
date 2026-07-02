@@ -1,0 +1,11 @@
+# foundry-helpdesk-infra v0.3.0
+
+- [Visão Geral da Infraestrutura](pages/page-1.md)
+- [O Stack azd (main.bicep → resources + containerapps)](pages/page-2.md)
+- [Recursos Compartilhados (resources.bicep)](pages/page-3.md)
+- [Container Apps (backend + web)](pages/page-4.md)
+- [O Stamp Dedicado — Azure Managed Application](pages/page-5.md)
+- [Azure Lighthouse — Delegação Cross-Tenant](pages/page-6.md)
+- [Hosted Agents (azure.ai.agent) e o twin selfwiki órfão](pages/page-7.md)
+- [Identidades Entra, ACL e Usuários de Teste](pages/page-8.md)
+- [Custo, Parâmetros e Referência de Scripts (up-all + hooks azd)](pages/page-9.md)

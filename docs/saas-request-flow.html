@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Foundry Assured — Fluxo multi-tenant & modelo de config</title>
+<style>
+  :root {
+    --bg: #0b1020;
+    --bg2: #0e1530;
+    --card: rgba(255,255,255,.04);
+    --card-border: rgba(255,255,255,.10);
+    --text: #e8edf7;
+    --muted: #93a0bd;
+    --blue: #3b82f6;
+    --indigo: #6366f1;
+    --violet: #8b5cf6;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --pink: #f472b6;
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); scroll-snap-type: y mandatory; overflow-x: hidden; }
+  section.slide {
+    min-height: 100vh; width: 100%; scroll-snap-align: start;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 6vh 8vw; position: relative; border-bottom: 1px solid rgba(255,255,255,.05);
+  }
+  .kicker { font-size: 13px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+  h1 { font-size: clamp(34px, 6vw, 76px); line-height: 1.04; letter-spacing: -.02em; }
+  h2 { font-size: clamp(26px, 3.6vw, 44px); line-height: 1.1; letter-spacing: -.01em; margin-bottom: 8px; }
+  .lead { font-size: clamp(16px, 1.6vw, 21px); color: var(--muted); max-width: 64ch; line-height: 1.5; }
+  .grad { background: linear-gradient(100deg, #60a5fa 0%, #818cf8 45%, #c084fc 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .badge { border: 1px solid var(--card-border); background: var(--card); border-radius: 999px; padding: 7px 14px; font-size: 13px; color: var(--muted); }
+  .dot { color: var(--green); }
+  .footer { position: absolute; bottom: 22px; left: 8vw; right: 8vw; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); }
+  .nav-dots { position: fixed; right: 22px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 50; }
+  .nav-dots a { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.18); display: block; transition: .2s; }
+  .nav-dots a.on { background: linear-gradient(var(--blue), var(--violet)); transform: scale(1.35); }
+  .under { margin-top: 18px; display: inline-flex; gap: 10px; align-items: center; font-size: 13px; color: var(--muted); border: 1px dashed var(--card-border); border-radius: 12px; padding: 10px 14px; max-width: 940px; }
+  code { color:#c4b5fd; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+
+  /* embedded diagram — the saas SVGs render on a light mermaid theme, frame on near-white */
+  .figure { margin-top: 22px; max-width: 1080px; width: 100%; }
+  .figure .frame { background: #f7f9fc; border: 1px solid var(--card-border); border-radius: 16px; padding: 14px; max-height: 64vh; overflow: auto; }
+  .figure .frame img { width: 100%; height: auto; display: block; }
+  .figure figcaption { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
+  .figure figcaption code { color:#93c5fd; }
+
+  /* seam table */
+  .cmp { width: 100%; border-collapse: collapse; margin-top: 26px; max-width: 1040px; font-size: 14px; }
+  .cmp th, .cmp td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--card-border); vertical-align: top; }
+  .cmp thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+  .cmp .a { color: #93c5fd; font-weight: 700; } .cmp .b { color: #c4b5fd; font-weight: 700; }
+  .cmp tbody tr td:first-child { color: var(--text); font-weight: 600; }
+  .callout { margin-top: 22px; border-left: 3px solid var(--violet); background: var(--card); border-radius: 0 12px 12px 0; padding: 14px 18px; font-size: 14px; color: var(--text); max-width: 940px; }
+  .callout b { color: #c4b5fd; }
+
+  ul.clean { list-style: none; margin-top: 22px; display: grid; gap: 12px; max-width: 900px; }
+  ul.clean li { display: flex; gap: 12px; font-size: 15px; color: var(--text); }
+  ul.clean li .mk { color: var(--amber); }
+  ul.clean li small { color: var(--muted); }
+  .hint { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--muted); z-index: 50; }
+</style>
+</head>
+<body>
+<div class="nav-dots" id="dots"></div>
+<div class="hint">↑ ↓ / espaço para navegar</div>
+
+<div style="position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;max-width:min(94vw,860px);border:1px solid var(--card-border);background:rgba(14,21,48,.92);backdrop-filter:blur(6px);border-radius:12px;padding:10px 16px;font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;">
+  Anexo técnico — os <b style="color:var(--text)">diagramas as-built</b> do SaaS (control-plane × data-plane, fluxo de identidade, modelo de config por tenant). Companheiro de
+  <a href="./saas-architecture.html" style="color:#93c5fd;">saas-architecture.html</a>.
+</div>
+
+<div class="deck">
+
+  <!-- 1 — HERO -->
+  <section class="slide" id="s1" style="background:radial-gradient(1200px 600px at 15% 0%, #16224a 0%, var(--bg) 55%);">
+    <div class="kicker">Microsoft Foundry · Arquitetura · anexo</div>
+    <h1>Fluxo <span class="grad">multi-tenant</span><br/>& modelo de config</h1>
+    <p class="lead" style="margin-top:22px;">
+      Os diagramas <b>as-built</b> por trás do deck de arquitetura: como o request resolve o tenant e
+      brokeia a credencial, e o que o store por-tenant guarda (config + referências — <b>nunca
+      segredo, nunca dado</b>). Fonte: <code>docs/diagrams/saas/*.svg</code>, gerados do Mermaid.
+    </p>
+    <div class="badges">
+      <span class="badge">control-plane × data-plane</span>
+      <span class="badge">fluxo de identidade · OBO</span>
+      <span class="badge">3 seams · resto intocado</span>
+      <span class="badge"><span class="dot">●</span> diagramas renderizados</span>
+    </div>
+    <div class="footer"><span>Fluxo & config</span><span>01 / 05</span></div>
+  </section>
+
+  <!-- 2 — CONTROL PLANE × DATA PLANE (SVG) -->
+  <section class="slide" id="s2">
+    <div class="kicker">Big picture</div>
+    <h2>Control plane (nós) × data plane (cliente)</h2>
+    <figure class="figure">
+      <div class="frame"><img src="./diagrams/saas/01-control-plane-vs-data-plane.svg" alt="Control plane versus data plane: operamos UI+orquestrador+RBAC; dados/compute/segredos ficam no Foundry project do cliente." loading="lazy" /></div>
+      <figcaption>Operamos o control plane; o data plane (o <code>Foundry project</code> do cliente) é a fronteira de isolamento. Fonte: <code>01-control-plane-vs-data-plane.mmd</code>.</figcaption>
+    </figure>
+    <div class="footer"><span>Control × data plane</span><span>02 / 05</span></div>
+  </section>
+
+  <!-- 3 — IDENTITY FLOW (SVG) -->
+  <section class="slide" id="s3">
+    <div class="kicker">Identidade & credenciais</div>
+    <h2>Onboarding uma vez · OBO + passthrough em runtime</h2>
+    <figure class="figure">
+      <div class="frame"><img src="./diagrams/saas/02-identity-credential-flow.svg" alt="Fluxo de identidade: admin-consent no onboarding; em runtime OBO para audience Microsoft e OAuth passthrough para terceiros; segredos via Key Vault/CMK do cliente." loading="lazy" /></div>
+      <figcaption>Audience Microsoft → <b style="color:var(--text)">OBO</b>; terceiros (GitHub) → <b style="color:var(--text)">OAuth passthrough</b>; segredos → <b style="color:var(--text)">Key Vault/CMK do cliente</b> via <code>secret_ref</code>. Fonte: <code>02-identity-credential-flow.mmd</code> · ADR-003/005.</figcaption>
+    </figure>
+    <div class="footer"><span>Fluxo de identidade</span><span>03 / 05</span></div>
+  </section>
+
+  <!-- 4 — TENANT CONFIG MODEL (SVG + 3 seams) -->
+  <section class="slide" id="s4">
+    <div class="kicker">Modelo de config por tenant</div>
+    <h2>Três seams mudam · o resto fica intocado</h2>
+    <figure class="figure">
+      <div class="frame"><img src="./diagrams/saas/04-tenant-config-model.svg" alt="Modelo de config por tenant: Tenant, DataPlaneConfig, Connection (auth_method + secret_ref), DomainAssignment." loading="lazy" /></div>
+      <figcaption>Por tenant: <code>Tenant</code> (tier/status) · <code>DataPlaneConfig</code> (ponteiros p/ Foundry/Search/storage) · <code>Connection</code> (<code>auth_method</code> + <code>secret_ref</code> que <b style="color:var(--text)">nunca</b> é o segredo) · <code>DomainAssignment</code>. Fonte: <code>04-tenant-config-model.mmd</code> · ADR-006.</figcaption>
+    </figure>
+    <table class="cmp">
+      <thead><tr><th>Hoje (single-tenant)</th><th class="b">Alvo (multi-tenant)</th></tr></thead>
+      <tbody>
+        <tr><td><code>settings = Settings()</code> global</td><td><code>TenantConfigProvider.current()</code> → config do tenant atual</td></tr>
+        <tr><td><code>memory_scope()</code> = <code>user.oid</code></td><td><code>f"{tid}:{user.oid}"</code> (namespace por tenant)</td></tr>
+        <tr><td><code>SERVERS</code> MCP estáticos no código</td><td>registry estático = catálogo; <b>conexões + endpoints habilitados vêm do store por tenant</b></td></tr>
+      </tbody>
+    </table>
+    <div class="footer"><span>Modelo de config</span><span>04 / 05</span></div>
+  </section>
+
+  <!-- 5 — FAIL-CLOSED / FECHAMENTO -->
+  <section class="slide" id="s5" style="background:radial-gradient(1200px 600px at 85% 100%, #1a1640 0%, var(--bg) 55%);">
+    <div class="kicker">Tudo fail-closed</div>
+    <h2 class="grad" style="font-size:clamp(28px,4.6vw,54px);">Erros fecham · vazamento é impossível por construção</h2>
+    <ul class="clean">
+      <li><span class="mk">▰</span><div><b>Tenant não onboarded / config faltando</b> → erro claro, <b>nunca</b> cai em outro tenant.</div></li>
+      <li><span class="mk">▰</span><div><b>Falha de token / consent</b> → fecha por conexão (o padrão MCP já entregue).</div></li>
+      <li><span class="mk">▰</span><div><b>Vazamento cross-tenant</b> → queries com tenant-scope forçado num <b>único choke point</b> (auditável).</div></li>
+      <li><span class="mk">▰</span><div><b>Domínio sem licença</b> → <code>require_domain()</code> retorna <b>403</b> (entitlement, não feature-flag · ADR-010).</div></li>
+    </ul>
+    <div class="callout">
+      O maior risco era o refactor de auth/config — mitigado pela seam <b>SingleTenant primeiro = zero
+      mudança de comportamento</b>, provada pela suíte de evals existente verde antes de ligar o MultiTenant.
+    </div>
+    <div class="badges" style="margin-top:26px;">
+      <span class="badge">fail-closed em todo caminho</span>
+      <span class="badge">um choke point auditável</span>
+      <span class="badge">evals verdes = a prova</span>
+    </div>
+    <div class="footer"><span>Fail-closed</span><span>05 / 05</span></div>
+  </section>
+
+</div>
+
+<script>
+  const slides = Array.from(document.querySelectorAll('section.slide'));
+  const dotsWrap = document.getElementById('dots');
+  slides.forEach((s, i) => { const a = document.createElement('a'); a.href = '#' + s.id; if (i === 0) a.className = 'on'; dotsWrap.appendChild(a); });
+  const dots = Array.from(dotsWrap.children);
+  const io = new IntersectionObserver((entries) => { entries.forEach(e => { if (e.isIntersecting) { const i = slides.indexOf(e.target); dots.forEach((d, j) => d.classList.toggle('on', j === i)); } }); }, { threshold: 0.5 });
+  slides.forEach(s => io.observe(s));
+  let idx = 0;
+  function go(n) { idx = Math.max(0, Math.min(slides.length - 1, n)); slides[idx].scrollIntoView({ behavior: 'smooth' }); }
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); go(idx + 1); }
+    if (['ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); go(idx - 1); }
+    if (e.key === 'Home') go(0); if (e.key === 'End') go(slides.length - 1);
+  });
+  const io2 = new IntersectionObserver((entries) => { entries.forEach(e => { if (e.isIntersecting) idx = slides.indexOf(e.target); }); }, { threshold: 0.6 });
+  slides.forEach(s => io2.observe(s));
+</script>
+</body>
+</html>
