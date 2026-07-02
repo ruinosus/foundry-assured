@@ -90,19 +90,29 @@ skill, with linked citations and the ≥80% build-fidelity gate."* This is how `
 
 ## Ingest into the selfwiki knowledge base
 
-The ingest reuses [`ingest_cockpit.py`](../../apps/backend/app/knowledge/ingest_cockpit.py)
-verbatim — only the env points it at the selfwiki names (the mechanism is domain-generic).
-No ACL group map → non-blocking ingest, single-audience (this repo is public):
+Getting the committed bundles into the Foundry `selfwiki-si-kb` is a **separate manual step** —
+merging to `develop` does not ingest anything. Run the dedicated selfwiki entrypoint from
+`apps/backend/` (needs Azure sign-in — `az login` / `azd auth login` — with the data-plane roles
+**Storage Blob Data Contributor** + **Search Index Data Contributor** + **Search Service
+Contributor**):
 
 ```bash
-KB_KNOWLEDGE_SOURCE=selfwiki-docbundles-ks \
-KB_DOMAIN_LABEL="o projeto foundry-helpdesk" \
-COCKPIT_STORAGE_CONTAINER=selfwiki-corpus \
-COCKPIT_SEARCH_KNOWLEDGE_BASE=selfwiki-kb \
-COCKPIT_SEARCH_INDEX=selfwiki-docbundles-ks-index \
-COCKPIT_DOCBUNDLES=../../docs/wiki \
-  uv run python -m app.knowledge.ingest_cockpit
+cd apps/backend
+uv run python -m app.knowledge.ingest_cockpit --selfwiki
 ```
+
+`--selfwiki` uploads `docs/wiki` to `selfwiki-corpus`, refreshes the blob knowledge source that
+drives `selfwiki-docbundles-ks-index`, (re)provisions the ACTIVE searchIndex KB `selfwiki-si-kb`
+over that index, **prunes prior-version blobs** + reconciles the index, and triggers the indexer
+async. It steers only the selfwiki names (**no `COCKPIT_*` env overrides**) and stamps **no ACL**
+(single-audience). New pages appear in the KB incrementally over a few minutes — **no redeploy**
+(the `/selfwiki` agent reads the KB live). Override the bundle dir with `COCKPIT_DOCBUNDLES` if
+needed; it defaults to this repo's `docs/wiki`.
+
+> The old recipe — reusing the cockpit path via `KB_KNOWLEDGE_SOURCE` / `COCKPIT_STORAGE_CONTAINER` /
+> `COCKPIT_SEARCH_*` env overrides — is **retired**: post-unification the cockpit path also
+> (re)creates the cockpit searchIndex twin, so a partial override set would silently repoint
+> `cockpit-docbundles-si-ks` at the selfwiki index (corrupting the cockpit KB). Use `--selfwiki`.
 
 The `/selfwiki` agent ([`selfwiki.py`](../../apps/backend/app/agents/selfwiki.py)) then
 answers questions about this project grounded in this wiki.
