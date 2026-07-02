@@ -42,14 +42,31 @@ class TenantConfig:
     azure_storage_container: str = "corpus"
 
     # --- Second domain: Cockpit expert (its own KB over the cockpit docbundles) ---
+    # cockpit_search_knowledge_base is the ACTIVE cockpit KB — flip this to cut the
+    # domain over between the legacy azureBlob KB and the searchIndex KB below.
+    # Task 2b: the searchIndex KB (cockpit-si-kb over cockpit-si-ks) is what lets the
+    # native agentic retrieve honor the per-user ACL header (x-ms-query-source-authorization).
     cockpit_search_knowledge_base: str = "cockpit-kb"
     cockpit_search_index: str = "cockpit-docbundles-ks-index"
     cockpit_storage_container: str = "cockpit-corpus"
+    # searchIndex-backed cockpit KB + its knowledge source (over the EXISTING ACL index).
+    # Provisioned alongside the blob KB by ingest_cockpit; cutover = point
+    # cockpit_search_knowledge_base at cockpit_searchindex_knowledge_base (fully reversible).
+    cockpit_searchindex_knowledge_base: str = "cockpit-si-kb"
+    cockpit_searchindex_knowledge_source: str = "cockpit-docbundles-si-ks"
 
     # --- Third domain: selfwiki (this repo's own deep-wiki — dogfood) ---
+    # selfwiki_search_knowledge_base is the LEGACY azureBlob KB (selfwiki-kb). selfwiki has NO
+    # per-user ACL (single-audience), so the searchIndex migration below is purely to unify it on
+    # the native retrieve path (which hardcodes kind:searchIndex) — not a security concern.
     selfwiki_search_knowledge_base: str = ""
     selfwiki_search_index: str = "selfwiki-docbundles-ks-index"
     selfwiki_storage_container: str = "selfwiki-corpus"
+    # searchIndex-backed selfwiki KB + its knowledge source (over the EXISTING selfwiki index).
+    # Provisioned alongside the legacy blob KB (mirrors cockpit-si-kb); the registry points here so
+    # the native retrieve's hardcoded kind:searchIndex matches. Reversible: repoint the registry back.
+    selfwiki_searchindex_knowledge_base: str = "selfwiki-si-kb"
+    selfwiki_searchindex_knowledge_source: str = "selfwiki-docbundles-si-ks"
 
     # --- Phase 4: document-level access control (access follows the source) ---
     cockpit_acl_group_map: str = ""
@@ -113,9 +130,13 @@ class _TenantEnv(BaseSettings):
     cockpit_search_knowledge_base: str = "cockpit-kb"
     cockpit_search_index: str = "cockpit-docbundles-ks-index"
     cockpit_storage_container: str = "cockpit-corpus"
+    cockpit_searchindex_knowledge_base: str = "cockpit-si-kb"
+    cockpit_searchindex_knowledge_source: str = "cockpit-docbundles-si-ks"
     selfwiki_search_knowledge_base: str = ""
     selfwiki_search_index: str = "selfwiki-docbundles-ks-index"
     selfwiki_storage_container: str = "selfwiki-corpus"
+    selfwiki_searchindex_knowledge_base: str = "selfwiki-si-kb"
+    selfwiki_searchindex_knowledge_source: str = "selfwiki-docbundles-si-ks"
     cockpit_acl_group_map: str = ""
     cockpit_acl_classification: str = ""
     cockpit_acl_default_groups: str = ""

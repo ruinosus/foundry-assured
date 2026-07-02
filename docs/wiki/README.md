@@ -19,21 +19,44 @@ It's also the input the selfwiki ingest ships to the cloud knowledge base.
 ## What's here
 
 One bundle per monorepo area, in the format the ingest consumes
-(`manifest.json` + `pages/page-N.md` + `llms.txt`). **Current bundles are `v0.2.0`** — regenerated
-to reflect the **multi-tenant SaaS evolution** (sub-projects A→B→C→D: deployment modes, connections +
-credential brokering, DomainAssignment, the 4th `platform` domain, the hosted platform agent, and the
-Managed App + Lighthouse stamp). `v0.2.0` was produced via the **local Microsoft Agent-Skills path**
-(`wiki-architect` + `wiki-page-writer`, run by the coding agent — **no Foundry infra**), so the
-manifests read `model: local-agent` (the `wiki_builder.py` Foundry pipeline remains the other path).
+(`manifest.json` + `pages/page-N.md` + `llms.txt`). **Current bundles are `v0.3.0`** — regenerated
+from the code at commit `3333d60` to reflect the **grounded-archetype unification** (the single
+`retrieve()` seam — native agentic retrieve + the `x-ms-query-source-authorization` ACL header over a
+`searchIndex` KB; the `DomainSpec` registry + `mount_domains` dispatch-by-kind replacing the
+main.py/chat.py split; **grounded hosted twins dropped** so grounded runs live-OBO) on top of the
+multi-tenant SaaS evolution (A→B→C→D) already captured before. `v0.3.0` was produced via the **local
+Microsoft Agent-Skills path** (`wiki-architect` + `wiki-page-writer`, run by the coding agent — **no
+Foundry infra**), so the manifests read `model: local-agent` (the `wiki_builder.py` Foundry pipeline
+remains the other path). The superseded `v0.2.0` bundles were dropped.
 
-| Bundle (`v0.2.0`) | Source area | Pages | Fidelity (cited paths → real file) |
+| Bundle (`v0.3.0`) | Source area | Pages | Fidelity (cited paths → real file) |
 | --- | --- | --- | --- |
-| `foundry-helpdesk-backend/`  | `apps/backend`  | 8 | 98% (40/41 — the 1 non-file is an intentional `eval/` dir link) |
-| `foundry-helpdesk-frontend/` | `apps/frontend` | 8 | 100% (33/33) |
-| `foundry-helpdesk-infra/`    | `infra` (+ `azure.yaml`, `apps/hosted-*`) | 9 | 100% (33/33) |
-| `foundry-helpdesk-docs/`     | `docs`          | 8 | 100% (53/53, whole-monorepo denominator)¹ |
+| `foundry-helpdesk-backend/`  | `apps/backend`  | 8 | 100% (249/249) |
+| `foundry-helpdesk-frontend/` | `apps/frontend` | 8 | 100% (170/170) |
+| `foundry-helpdesk-infra/`    | `infra` (+ `azure.yaml`, `apps/hosted-*`, `scripts/`) | 9 | 100% (317/317) |
+| `foundry-helpdesk-docs/`     | `docs`          | 8 | 100% (274/274, whole-monorepo denominator)¹ |
 
-> **Two gate bugs this dogfood surfaced** (the mechanism finding faults in itself):
+### What this dogfood surfaced (v0.3.0)
+
+The mechanism found faults in itself again — each is grounded and flagged on the relevant page:
+
+- **Orphaned hosted agents:** `azure.yaml` still declares `selfwiki-expert` **and** `cockpit-expert`
+  (`azure.ai.agent`) — azd builds/deploys/RBAC-grants them (`scripts/hook-postdeploy.sh`) — but the
+  grounded twins were retired, so **nothing invokes them** (no `/selfwiki-hosted` or `/cockpit-hosted`
+  route; `chat.py` serves only `helpdesk`/`platform`). `COST.md` still counts 3 hosted agents vs 4 declared.
+- **Vestigial backend code:** `app/agents/cockpit.py` + `selfwiki.py` (only `*_configured()` over legacy
+  fields, never mounted) and `app/agents/secure_search.py` (app-side ACL trim, now out of the production
+  `retrieve()` path — kept alive only by tests).
+- **Version lag:** `apps/backend/pyproject.toml`, `apps/frontend/package.json` and `app/main.py` all still
+  read `0.1.0` (and `title="Foundry Assured"`) while the wiki is `v0.3.0`.
+- **azd wiring gap:** `main.parameters.json` doesn't map `appUsersGroupId`, so a plain `azd up` skips the
+  `appUsersToFoundry` grant. **api-version skew:** `retrieve()` uses `2026-05-01-preview` vs
+  `2025-08-01-preview` in `acl_setup.py`/`secure_search.py`.
+- **Doc drift:** `docs/README.md` index omits the new specs/ADRs/plans; `PRESENTATIONS-PORTAL-PLAN.md` is
+  cited but still untracked; `lighthouse.bicep` missed the `helpdesk`→`assured` rename.
+
+> **Two gate bugs an earlier dogfood (v0.2.0) surfaced** (the mechanism finding faults in itself);
+> both fixed, kept here as history — the v0.3.0 run above scored 100% on all four bundles:
 > 1. An extension-alternation regex matched `.js` inside `.json` (`js` sorted before
 >    `json`), silently failing every `.json`/`.tsx` citation — unfairly failing the
 >    config/frontend-heavy bundles (frontend 37%, infra 50% before the fix). Fixed
@@ -54,7 +77,7 @@ Azure). From `apps/backend/`, one run per area:
 
 ```bash
 uv run python -m app.knowledge.wiki_builder \
-  --repo ../../apps/backend --component foundry-helpdesk-backend --version v0.2.0 \
+  --repo ../../apps/backend --component foundry-helpdesk-backend --version v0.3.0 \
   --out ../../docs/wiki
 # …repeat for ../../apps/frontend, ../../infra, ../../docs
 ```
@@ -63,7 +86,7 @@ uv run python -m app.knowledge.wiki_builder \
 [`apps/backend/app/knowledge/skills/`](../../apps/backend/app/knowledge/skills/), run by a coding
 agent — **VS Code Copilot, GitHub Copilot CLI, or Claude Code — NO Foundry/Azure infra**). Open the
 repo in the agent and ask it to *"regenerate the deep-wiki for area X following the wiki-page-writer
-skill, with linked citations and the ≥80% build-fidelity gate."* This is how `v0.2.0` was produced.
+skill, with linked citations and the ≥80% build-fidelity gate."* This is how `v0.3.0` was produced.
 
 ## Ingest into the selfwiki knowledge base
 

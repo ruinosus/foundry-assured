@@ -57,9 +57,7 @@ export const DOMAINS: Domain[] = [
       "Como funciona a hierarquia de multi-tenancy?",
     ],
     endpoint: "/cockpit",
-    // Foundry hosted twin (backend /cockpit-hosted). The hosted cockpit-expert agent runs inside
-    // Foundry — the MI can invoke it (unlike the live /cockpit raw inference, which 403s).
-    hostedAgentId: "cockpit-hosted",
+    // Grounded runs live via OBO — no hosted twin needed.
   },
   {
     id: "selfwiki",
@@ -74,8 +72,7 @@ export const DOMAINS: Domain[] = [
       "Quais são as fases de implementação do projeto?",
     ],
     endpoint: "/selfwiki",
-    // Foundry hosted twin (backend /selfwiki-hosted) — the MI can invoke it (unlike raw inference).
-    hostedAgentId: "selfwiki-hosted",
+    // Grounded runs live via OBO — no hosted twin needed.
   },
   {
     id: "platform",
