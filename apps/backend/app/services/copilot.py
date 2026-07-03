@@ -238,6 +238,9 @@ EXTRACT_STREAM_INSTRUCTIONS = (
     "Extraia até 6 itens NOVOS e relevantes da transcrição como nós. Escreva UM nó por linha, no "
     "formato EXATO: type|label|detail  (separado por barra vertical). "
     "type ∈ topico,pergunta,acao,ideia. label ≤6 palavras. detail ≤8 palavras. "
+    "A transcrição tem ERROS de reconhecimento de fala em termos técnicos em inglês — CORRIJA-os no "
+    "label (ex.: 'dot net'→'.NET', 'reacting'→'React', 'footen'→'front-end', 'age Andy python'→"
+    "'agents e Python', 'Havanadia'→'Avanade', 'bff'→'BFF'). Use o termo técnico correto. "
     "NÃO repita nós que já existem. Sem cabeçalho, sem numeração, sem texto extra — só as linhas."
 )
 
