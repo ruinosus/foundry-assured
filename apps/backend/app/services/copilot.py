@@ -256,9 +256,10 @@ def _parse_node_line(line: str) -> dict | None:
 
 
 EDGES_INSTRUCTIONS = (
-    "Você recebe uma lista de nós de uma reunião (id, type, label). Proponha conexões (arestas) entre "
-    "nós que se relacionam conceitualmente — INCLUSIVE entre momentos diferentes da conversa. Use os "
-    "ids EXATOS fornecidos. Não conecte um nó a si mesmo. No máximo 8 arestas. "
+    "Você recebe uma lista de nós de uma reunião (id, type, label). Proponha SÓ as conexões mais "
+    "fortes e ÓBVIAS entre nós que se relacionam de verdade (ex.: uma pergunta sobre um tópico, uma "
+    "ação que vem de uma ideia). NÃO conecte tudo com tudo — seja seletivo. NO MÁXIMO 4 arestas, e "
+    "menos se não houver relações claras. Use os ids EXATOS. Não conecte um nó a si mesmo. "
     'Responda APENAS JSON, sem texto ao redor: {"edges":[{"from":"<id>","to":"<id>"}]}'
 )
 
