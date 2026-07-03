@@ -12,8 +12,10 @@ Verified against foundry-helpdesk:
 """
 from __future__ import annotations
 
+import asyncio
 import contextlib
 import inspect
+import time
 
 from app.core.tenant import tenant_config
 from app.domains import get_domain
@@ -22,6 +24,11 @@ from app.services.retrieval import retrieve
 
 # The two grounded KBs the copilot searches. cockpit-si-kb + selfwiki-si-kb are already indexed.
 COPILOT_DOMAINS = ("cockpit", "selfwiki")
+
+# Cap the docs fed to synthesis. The native KB retrieve returns the KB's full default set (~31 for
+# cockpit) — passing all of them makes a huge prompt (slow + expensive). The top few (already in
+# relevance order) are plenty for a 2–4 sentence answer, and keep the card's source list readable.
+MAX_DOCS = 8
 
 
 class _CopilotDomain:
@@ -87,16 +94,27 @@ async def answer_question(
 
     Returns {answer, sources:[{index, kb, source, url, content}]}.
     """
-    docs: list[dict] = []
-    for dom_id in COPILOT_DOMAINS:
-        dom = get_domain(dom_id)
-        rows = await retrieve(question, user, dom)
+    t0 = time.monotonic()
+
+    async def _one(dom_id: str) -> list[dict]:
+        rows = await retrieve(question, user, get_domain(dom_id))
         for r in rows:
             r["kb"] = dom_id
-        docs.extend(rows)
+        return rows
 
-    # retrieve() reindexes 1..N PER CALL, so the merged list has duplicate indexes.
-    # Reindex globally 1..M so the [n] citations in the synthesized answer map to `sources`.
+    # Fan the two KB retrieves out CONCURRENTLY (was sequential → ~2× slower). Fail-soft per KB.
+    results = await asyncio.gather(
+        *[_one(d) for d in COPILOT_DOMAINS], return_exceptions=True
+    )
+    docs: list[dict] = []
+    for r in results:
+        if isinstance(r, list):
+            docs.extend(r)
+    t1 = time.monotonic()
+
+    # Cap to the top MAX_DOCS (relevance order) BEFORE synthesis, then reindex 1..N so the [n]
+    # citations map to `sources`.
+    docs = docs[:MAX_DOCS]
     for i, d in enumerate(docs, start=1):
         d["index"] = i
 
@@ -107,6 +125,10 @@ async def answer_question(
         }
 
     answer = await _synthesize(question, docs, _instructions_for(meeting_type), user)
+    t2 = time.monotonic()
+    print(
+        f"[copilot] retrieve={t1 - t0:.1f}s synth={t2 - t1:.1f}s docs={len(docs)} q={question[:50]!r}"
+    )
     sources = [
         {
             "index": d["index"],
