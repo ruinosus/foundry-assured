@@ -2,15 +2,20 @@
 
 The Foundry synthesis is mocked so the test is offline-safe."""
 
+from dataclasses import dataclass
+
 import pytest
 from unittest.mock import AsyncMock, patch
 
 from app.services import copilot
 
 
+@dataclass
 class _Dom:
-    def __init__(self, id):
-        self.id = id
+    # dataclass so app.services.copilot's `dataclasses.replace(dom, kb_name=None)` works.
+    id: str
+    kb_name: str | None = "kb"
+    search_index: str | None = "idx"
 
 
 @pytest.mark.asyncio

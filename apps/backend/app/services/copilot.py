@@ -16,6 +16,7 @@ import asyncio
 import contextlib
 import inspect
 import time
+from dataclasses import replace
 
 from app.core.tenant import tenant_config
 from app.domains import get_domain
@@ -97,7 +98,12 @@ async def answer_question(
     t0 = time.monotonic()
 
     async def _one(dom_id: str) -> list[dict]:
-        rows = await retrieve(question, user, get_domain(dom_id))
+        # Force the FAST direct-search path: the domains have `kb_name`, which routes retrieve()
+        # through the Foundry IQ *agentic* KB retrieve — an LLM-powered op that took ~27s. Dropping
+        # kb_name makes retrieve() do a plain ACL-trimmed Azure AI Search over `search_index`
+        # (~1s), returning the same {source,url,snippet}; WE synthesize once on top (no double-LLM).
+        dom = replace(get_domain(dom_id), kb_name=None)
+        rows = await retrieve(question, user, dom, top=MAX_DOCS)
         for r in rows:
             r["kb"] = dom_id
         return rows
