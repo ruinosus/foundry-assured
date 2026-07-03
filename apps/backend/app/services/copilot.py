@@ -57,8 +57,12 @@ def _instructions_for(meeting_type: str) -> str:
     return base + tone
 
 
-async def _responses(instructions: str, input_text: str, user) -> str:
+async def _responses(instructions: str, input_text: str, user, *, reasoning_effort: str | None = None) -> str:
     """One non-streaming Foundry Responses call AS THE USER (OBO) / app identity (dev). Returns text.
+
+    `reasoning_effort` (verified against the installed openai SDK: ReasoningEffort ∈
+    none|minimal|low|medium|high|xhigh) lowers GPT-5's internal reasoning for simple tasks — extraction
+    took ~12s at the default; "minimal" cuts that sharply. Omit for tasks that need quality (synthesis).
 
     RULE #1: the non-streaming output field is read via `getattr(resp, "output_text", "")`. Confirm
     against the installed azure-ai-projects / openai SDK before relying on it — don't guess another.
@@ -68,6 +72,7 @@ async def _responses(instructions: str, input_text: str, user) -> str:
     from app.services.grounded import _async_credential
 
     cfg = tenant_config()
+    _t0 = time.monotonic()
     credential = _async_credential(user)
     proj = AIProjectClient(
         endpoint=cfg.foundry_project_endpoint, credential=credential, allow_preview=True
@@ -75,9 +80,13 @@ async def _responses(instructions: str, input_text: str, user) -> str:
     try:
         client = proj.get_openai_client()
         client = await client if inspect.isawaitable(client) else client
-        resp = await client.responses.create(
-            model=cfg.foundry_model, instructions=instructions, input=input_text, stream=False
-        )
+        kwargs = dict(model=cfg.foundry_model, instructions=instructions, input=input_text, stream=False)
+        if reasoning_effort:
+            kwargs["reasoning"] = {"effort": reasoning_effort}
+        _t1 = time.monotonic()
+        resp = await client.responses.create(**kwargs)
+        _t2 = time.monotonic()
+        print(f"[copilot] _responses setup={_t1 - _t0:.1f}s gen={_t2 - _t1:.1f}s effort={reasoning_effort} in={len(input_text)}c")
         return getattr(resp, "output_text", "") or ""
     finally:
         for obj in (proj, credential):
@@ -173,16 +182,13 @@ async def answer_question(
 # ── Meeting Board: node extraction ───────────────────────────────────────────
 VALID_NODE_TYPES = {"topico", "pergunta", "acao", "ideia"}  # NEVER "kb" — KB is click-only
 
+# P1 = nodes only. We deliberately do NOT ask for edges/suggestedQuestion here (P1 ignores them) —
+# generating them is wasted latency. Edges come back with a richer prompt in P2.
 EXTRACT_INSTRUCTIONS = (
-    "Você observa um trecho de transcrição de uma call (pode ter erros de fala). Extraia os itens "
-    "NOVOS e relevantes como nós de um mapa. Cada nó tem: type ∈ [topico, pergunta, acao, ideia], "
-    "label (curto, ≤6 palavras) e detail (uma frase). Também proponha arestas ligando nós — cada "
-    "aresta tem from e to, referenciando um nó existente pelo seu \"id\" (string) OU um nó novo por "
-    "{\"newIndex\": N} (índice no array nodes). NÃO invente nós que já existem (veja a lista). "
-    "Responda APENAS um JSON com esta forma, sem texto ao redor:\n"
-    '{"nodes":[{"type":"...","label":"...","detail":"..."}],'
-    '"edges":[{"from":"id-ou-{newIndex}","to":"..."}],'
-    '"suggestedQuestion":"..."}'
+    "Você observa um trecho de transcrição de uma call (pode ter erros de fala). Extraia até 6 itens "
+    "NOVOS e relevantes como nós. Cada nó: type ∈ [topico, pergunta, acao, ideia], label (≤6 palavras), "
+    "detail (no máximo 8 palavras). NÃO repita nós que já existem (veja a lista). "
+    'Responda APENAS JSON, sem texto ao redor: {"nodes":[{"type":"...","label":"...","detail":"..."}]}'
 )
 
 
@@ -209,10 +215,12 @@ async def extract_nodes(transcript_window: list[dict], existing_nodes: list[dict
     if not convo.strip():
         return empty
     body = f"=== NÓS EXISTENTES ===\n{nodes_summary}\n\n=== TRECHO NOVO ===\n{convo}"
-    raw = await _responses(EXTRACT_INSTRUCTIONS, body, user)
+    # Extraction is a simple structured task — use the lowest reasoning the model allows ("minimal";
+    # gpt-5-mini rejects "none"). Fail-soft on ANY model/parse error so extract never 500s.
     try:
+        raw = await _responses(EXTRACT_INSTRUCTIONS, body, user, reasoning_effort="minimal")
         data = json.loads(_strip_json(raw))
-    except Exception:  # noqa: BLE001 — malformed model output must never 500
+    except Exception:  # noqa: BLE001 — bad model call OR malformed output must never 500
         return empty
     if not isinstance(data, dict):
         return empty
@@ -223,3 +231,73 @@ async def extract_nodes(transcript_window: list[dict], existing_nodes: list[dict
     edges = data.get("edges") if isinstance(data.get("edges"), list) else []
     sq = data.get("suggestedQuestion")
     return {"nodes": nodes, "edges": edges, "suggestedQuestion": sq if isinstance(sq, str) else None}
+
+
+# ── Streaming extraction (nodes ping in as generated) ────────────────────────
+EXTRACT_STREAM_INSTRUCTIONS = (
+    "Extraia até 6 itens NOVOS e relevantes da transcrição como nós. Escreva UM nó por linha, no "
+    "formato EXATO: type|label|detail  (separado por barra vertical). "
+    "type ∈ topico,pergunta,acao,ideia. label ≤6 palavras. detail ≤8 palavras. "
+    "NÃO repita nós que já existem. Sem cabeçalho, sem numeração, sem texto extra — só as linhas."
+)
+
+
+def _parse_node_line(line: str) -> dict | None:
+    parts = [p.strip() for p in (line or "").split("|")]
+    if len(parts) < 2:
+        return None
+    typ, label = parts[0].lower(), parts[1]
+    if typ not in VALID_NODE_TYPES or not label:
+        return None
+    return {"type": typ, "label": label, "detail": parts[2] if len(parts) > 2 else ""}
+
+
+async def extract_nodes_stream(transcript_window: list[dict], existing_nodes: list[dict], user=None):
+    """Async generator: yields node dicts as the model streams them (one per line). Fail-soft:
+    stops silently on any error. P1 nodes-only."""
+    from azure.ai.projects.aio import AIProjectClient
+
+    from app.services.grounded import _async_credential
+
+    convo = "\n".join(f'{u.get("speaker","?")}: {u.get("text","")}' for u in (transcript_window or []))
+    if not convo.strip():
+        return
+    nodes_summary = json.dumps(
+        [{"id": n.get("id"), "type": n.get("type"), "label": n.get("label")} for n in (existing_nodes or [])],
+        ensure_ascii=False,
+    )
+    body = f"=== NÓS EXISTENTES ===\n{nodes_summary}\n\n=== TRECHO NOVO ===\n{convo}"
+
+    cfg = tenant_config()
+    credential = _async_credential(user)
+    proj = AIProjectClient(endpoint=cfg.foundry_project_endpoint, credential=credential, allow_preview=True)
+    _t0 = time.monotonic()
+    try:
+        client = proj.get_openai_client()
+        client = await client if inspect.isawaitable(client) else client
+        stream = await client.responses.create(
+            model=cfg.foundry_model, instructions=EXTRACT_STREAM_INSTRUCTIONS, input=body,
+            stream=True, reasoning={"effort": "minimal"},
+        )
+        buffer = ""
+        first = True
+        async for ev in stream:
+            if getattr(ev, "type", "") == "response.output_text.delta":
+                if first:
+                    print(f"[copilot] extract-stream first-token={time.monotonic() - _t0:.1f}s")
+                    first = False
+                buffer += getattr(ev, "delta", "") or ""
+                while "\n" in buffer:
+                    line, buffer = buffer.split("\n", 1)
+                    node = _parse_node_line(line)
+                    if node:
+                        yield node
+        node = _parse_node_line(buffer)  # flush the last (unterminated) line
+        if node:
+            yield node
+    except Exception as e:  # noqa: BLE001 — fail-soft, never break the Board
+        print(f"[copilot] extract-stream error: {e}")
+    finally:
+        for obj in (proj, credential):
+            with contextlib.suppress(Exception):
+                await obj.close()

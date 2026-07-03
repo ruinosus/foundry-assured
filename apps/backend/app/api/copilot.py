@@ -11,12 +11,20 @@ to the router (Mode B in the design doc) so `current_user()` is populated → OB
 """
 from __future__ import annotations
 
+import json
+
 from fastapi import APIRouter
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from app.agents.detector import detect_question
 from app.core.auth import auth_dependencies, current_user
-from app.services.copilot import answer_question, extract_nodes, refine_question
+from app.services.copilot import (
+    answer_question,
+    extract_nodes,
+    extract_nodes_stream,
+    refine_question,
+)
 
 router = APIRouter(prefix="/copilot", tags=["copilot"])
 
@@ -76,3 +84,19 @@ async def refine(body: RefineBody) -> dict:
 async def extract(body: ExtractBody) -> dict:
     """Propose conversation nodes (+ raw edges) from a transcript window (Meeting Board)."""
     return await extract_nodes(body.transcript_window, body.existing_nodes, user=current_user())
+
+
+@router.post("/extract-stream", dependencies=_auth)
+async def extract_stream(body: ExtractBody) -> StreamingResponse:
+    """Stream proposed nodes one-per-SSE-event as the model generates them (Meeting Board)."""
+    user = current_user()  # capture in the endpoint (contextvar is lost inside the generator)
+
+    async def gen():
+        try:
+            async for node in extract_nodes_stream(body.transcript_window, body.existing_nodes, user):
+                yield f"data: {json.dumps(node, ensure_ascii=False)}\n\n"
+        except Exception:  # noqa: BLE001 — fail-soft
+            pass
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(gen(), media_type="text/event-stream")
