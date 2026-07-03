@@ -21,6 +21,7 @@ BACK_ENV="$ROOT/apps/backend/.env"
 FRONT_ENV="$ROOT/apps/frontend/.env.local"
 API_NAME="${API_NAME:-foundry-helpdesk-api}"
 SPA_NAME="${SPA_NAME:-foundry-helpdesk-spa}"
+DESKTOP_NAME="${DESKTOP_NAME:-coach-overlay-desktop}"
 REDIRECT="${REDIRECT:-http://localhost:3000}"
 
 # Well-known first-party resource the Foundry data plane is fronted by (ai.azure.com).
@@ -105,9 +106,28 @@ az ad app permission add --id "$SPA_APPID" --api "$API_APPID" --api-permissions 
 # a token that 403s on inference — even though the API app already holds the delegated permission and
 # admin consent (verified: a direct API-app token OBO's fine; only the SPA-originated chain breaks).
 # Consent granted to the SPA then cascades to the API's downstream permissions (combined consent).
+# ---- Desktop app (Coach Overlay — Tech Copilot "Mode B") -------------------
+# A NATIVE / public client for the Electron overlay: interactive loopback sign-in with PKCE and
+# NO client secret. Kept SEPARATE from the SPA on purpose — a desktop redirect + public-client
+# flows do not belong on the browser app, and mixing them would loosen the SPA's posture.
+echo "▸ Desktop app ($DESKTOP_NAME)…"
+read -r DESK_OBJID DESK_APPID < <(ensure_app "$DESKTOP_NAME")
+echo "  appId: $DESK_APPID"
+# publicClient.redirectUris = the "Mobile and desktop applications" loopback; isFallbackPublicClient
+# = "Allow public client flows" (required for the loopback auth-code+PKCE token exchange, else
+# AADSTS7000218 "must contain client_assertion or client_secret").
+az rest --method PATCH --url "$GRAPH/$DESK_OBJID" --headers "Content-Type=application/json" \
+  --body '{"isFallbackPublicClient":true,"publicClient":{"redirectUris":["http://localhost"]}}'
+echo "  ✔ public client + loopback redirect http://localhost"
+az ad app permission add --id "$DESK_APPID" --api "$API_APPID" --api-permissions "$SCOPE_ID=Scope" 2>/dev/null \
+  && echo "  ✔ desktop → access_as_user"
+
+# Register BOTH the SPA and the desktop app as known clients of the API app. This is what makes the
+# multi-tier On-Behalf-Of chain work (client token → API audience → OBO → ai.azure.com / search.azure.com).
+# One PATCH with both ids so neither is dropped.
 az rest --method PATCH --url "$GRAPH/$API_OBJID" --headers "Content-Type=application/json" \
-  --body "{\"api\":{\"knownClientApplications\":[\"$SPA_APPID\"]}}" 2>/dev/null \
-  && echo "  ✔ SPA registered as known client of the API (enables SPA→API→downstream OBO)"
+  --body "{\"api\":{\"knownClientApplications\":[\"$SPA_APPID\",\"$DESK_APPID\"]}}" 2>/dev/null \
+  && echo "  ✔ SPA + desktop registered as known clients of the API (enables client→API→downstream OBO)"
 
 # ---- Admin consent (needs a privileged role; non-fatal if it fails) --------
 echo "▸ Granting admin consent…"
@@ -115,6 +135,8 @@ az ad app permission admin-consent --id "$API_APPID" 2>/dev/null && echo "  ✔ 
   || echo "  ⚠ consent the API app in the portal (Entra → $API_NAME → API permissions → Grant admin consent)"
 az ad app permission admin-consent --id "$SPA_APPID" 2>/dev/null && echo "  ✔ SPA consented" \
   || echo "  ⚠ consent the SPA app in the portal (Entra → $SPA_NAME → API permissions → Grant admin consent)"
+az ad app permission admin-consent --id "$DESK_APPID" 2>/dev/null && echo "  ✔ desktop consented" \
+  || echo "  ⚠ consent the desktop app in the portal (Entra → $DESKTOP_NAME → API permissions → Grant admin consent)"
 
 # ---- Write env -------------------------------------------------------------
 echo "▸ Writing env files…"
@@ -134,4 +156,13 @@ cat <<EOF
        az rest --method PATCH --url "$GRAPH/$SPA_OBJID" \\
          --headers "Content-Type=application/json" \\
          --body '{"spa":{"redirectUris":["$REDIRECT","https://<your-web-fqdn>"]}}'
+
+── Coach Overlay Tech Copilot (Mode B) ──────────────────────────────────────
+   Put these in the overlay .env (~/Library/Application Support/coach-overlay/.env):
+       COPILOT_AUTH=1
+       COPILOT_ENTRA_TENANT_ID=$TENANT
+       COPILOT_ENTRA_CLIENT_ID=$DESK_APPID
+       COPILOT_ENTRA_API_CLIENT_ID=$API_APPID
+   (Retrieval still ACL-trims by the signed-in user's groups: to read cockpit docs the account
+    must be a member of SEC-cockpit-kb-{public|internal|confidential} — see infra/entra/.)
 EOF
