@@ -15,10 +15,16 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 
 from app.agents.detector import detect_question
-from app.core.auth import current_user
+from app.core.auth import auth_dependencies, current_user
 from app.services.copilot import answer_question
 
 router = APIRouter(prefix="/copilot", tags=["copilot"])
+
+# Mirror the grounded endpoints: when auth is ON, /detect and /ask require a validated
+# bearer token (→ current_user() populated → OBO → per-user ACL, Mode B). When auth is OFF
+# (local dev, Mode A) auth_dependencies() is empty, so they run open as DefaultAzureCredential.
+# /ping stays open in both modes (pure health check, no Azure calls).
+_auth = auth_dependencies()
 
 
 class DetectBody(BaseModel):
@@ -36,13 +42,13 @@ async def ping() -> dict:
     return {"status": "ok", "kbs": ["cockpit", "selfwiki"], "version": "0.1.0"}
 
 
-@router.post("/detect")
+@router.post("/detect", dependencies=_auth)
 async def detect(body: DetectBody) -> dict:
     """Stateless question detection over a transcript window (the window lives in the overlay)."""
     return detect_question(body.transcript_window)
 
 
-@router.post("/ask")
+@router.post("/ask", dependencies=_auth)
 async def ask(body: AskBody) -> dict:
     """Answer a technical question from cockpit + selfwiki with cited sources."""
     result = await answer_question(
