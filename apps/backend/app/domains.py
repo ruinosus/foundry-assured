@@ -99,6 +99,17 @@ def _domains() -> list[DomainSpec]:
     ]
 
 
+def get_domain(domain_id: str) -> DomainSpec:
+    """Public accessor: the DomainSpec for `domain_id` (built from the current tenant config).
+
+    Used by the copilot service to reach the cockpit/selfwiki specs without touching the
+    underscore-private `_domains()`. Raises KeyError if the id is unknown."""
+    for d in _domains():
+        if d.id == domain_id:
+            return d
+    raise KeyError(f"unknown domain: {domain_id}")
+
+
 def _domain_deps(domain_id: str) -> list:
     """Auth deps, plus (shared mode only) the per-tenant entitlement gate. In self_hosted/
     dedicated this is exactly auth_dependencies() — byte-identical to today."""
