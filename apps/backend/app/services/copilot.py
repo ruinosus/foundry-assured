@@ -56,13 +56,11 @@ def _instructions_for(meeting_type: str) -> str:
     return base + tone
 
 
-async def _synthesize(user_text: str, docs: list[dict], instructions: str, user) -> str:
-    """Run the Foundry Responses synthesis AS THE USER (OBO) or app identity (dev), collecting
-    the full (non-streamed) answer text.
+async def _responses(instructions: str, input_text: str, user) -> str:
+    """One non-streaming Foundry Responses call AS THE USER (OBO) / app identity (dev). Returns text.
 
-    RULE #1: the non-streaming output field of `responses.create` is read via `getattr(resp,
-    "output_text", "")`. Confirm this against the installed azure-ai-projects / openai SDK before
-    relying on it in production — do NOT silently swap in a guessed attribute.
+    RULE #1: the non-streaming output field is read via `getattr(resp, "output_text", "")`. Confirm
+    against the installed azure-ai-projects / openai SDK before relying on it — don't guess another.
     """
     from azure.ai.projects.aio import AIProjectClient
 
@@ -76,16 +74,39 @@ async def _synthesize(user_text: str, docs: list[dict], instructions: str, user)
     try:
         client = proj.get_openai_client()
         client = await client if inspect.isawaitable(client) else client
-        kwargs = build_synthesis_kwargs(
-            user_text, _CopilotDomain(instructions), docs, model=cfg.foundry_model
+        resp = await client.responses.create(
+            model=cfg.foundry_model, instructions=instructions, input=input_text, stream=False
         )
-        kwargs["stream"] = False
-        resp = await client.responses.create(**kwargs)
         return getattr(resp, "output_text", "") or ""
     finally:
         for obj in (proj, credential):
             with contextlib.suppress(Exception):
                 await obj.close()
+
+
+async def _synthesize(user_text: str, docs: list[dict], instructions: str, user) -> str:
+    """Grounded synthesis: build the docs+directive input via build_synthesis_kwargs, run it."""
+    kwargs = build_synthesis_kwargs(
+        user_text, _CopilotDomain(instructions), docs, model=tenant_config().foundry_model
+    )
+    return await _responses(kwargs["instructions"], kwargs["input"], user)
+
+
+# Consolidate a messy transcript slice (STT errors, fragments) into ONE clean technical question.
+REFINE_INSTRUCTIONS = (
+    "Você recebe um trecho de transcrição de uma call, que pode conter erros de reconhecimento de "
+    "fala, repetições e fragmentos. Consolide em UMA pergunta técnica clara e concisa, em português. "
+    "Responda APENAS com a pergunta reformulada — sem preâmbulo, sem aspas, sem explicação."
+)
+
+
+async def refine_question(raw_text: str, user=None) -> str:
+    """Turn a raw/garbled transcript slice into a clean question (optional 'run another agent' step)."""
+    text = (raw_text or "").strip()
+    if not text:
+        return ""
+    refined = (await _responses(REFINE_INSTRUCTIONS, text, user)).strip()
+    return refined or text
 
 
 async def answer_question(
