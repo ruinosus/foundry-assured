@@ -15,6 +15,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import inspect
+import json
 import time
 from dataclasses import replace
 
@@ -167,3 +168,58 @@ async def answer_question(
         for d in docs
     ]
     return {"answer": answer, "sources": sources}
+
+
+# ── Meeting Board: node extraction ───────────────────────────────────────────
+VALID_NODE_TYPES = {"topico", "pergunta", "acao", "ideia"}  # NEVER "kb" — KB is click-only
+
+EXTRACT_INSTRUCTIONS = (
+    "Você observa um trecho de transcrição de uma call (pode ter erros de fala). Extraia os itens "
+    "NOVOS e relevantes como nós de um mapa. Cada nó tem: type ∈ [topico, pergunta, acao, ideia], "
+    "label (curto, ≤6 palavras) e detail (uma frase). Também proponha arestas ligando nós — cada "
+    "aresta tem from e to, referenciando um nó existente pelo seu \"id\" (string) OU um nó novo por "
+    "{\"newIndex\": N} (índice no array nodes). NÃO invente nós que já existem (veja a lista). "
+    "Responda APENAS um JSON com esta forma, sem texto ao redor:\n"
+    '{"nodes":[{"type":"...","label":"...","detail":"..."}],'
+    '"edges":[{"from":"id-ou-{newIndex}","to":"..."}],'
+    '"suggestedQuestion":"..."}'
+)
+
+
+def _strip_json(text: str) -> str:
+    """Best-effort: pull the JSON object out of the model text (handles ```json fences / prose)."""
+    t = (text or "").strip()
+    if t.startswith("```"):
+        t = t.strip("`")
+        if t.lower().startswith("json"):
+            t = t[4:]
+    start, end = t.find("{"), t.rfind("}")
+    return t[start : end + 1] if start != -1 and end != -1 and end > start else t
+
+
+async def extract_nodes(transcript_window: list[dict], existing_nodes: list[dict], user=None) -> dict:
+    """Propose conversation nodes (+ raw edges) from a transcript window. Fail-soft: any parse/shape
+    problem returns empty. P1 consumes only `nodes`; `edges` are passed through for P2."""
+    empty = {"nodes": [], "edges": [], "suggestedQuestion": None}
+    convo = "\n".join(f'{u.get("speaker","?")}: {u.get("text","")}' for u in (transcript_window or []))
+    nodes_summary = json.dumps(
+        [{"id": n.get("id"), "type": n.get("type"), "label": n.get("label")} for n in (existing_nodes or [])],
+        ensure_ascii=False,
+    )
+    if not convo.strip():
+        return empty
+    body = f"=== NÓS EXISTENTES ===\n{nodes_summary}\n\n=== TRECHO NOVO ===\n{convo}"
+    raw = await _responses(EXTRACT_INSTRUCTIONS, body, user)
+    try:
+        data = json.loads(_strip_json(raw))
+    except Exception:  # noqa: BLE001 — malformed model output must never 500
+        return empty
+    if not isinstance(data, dict):
+        return empty
+    nodes = []
+    for n in data.get("nodes") or []:
+        if isinstance(n, dict) and n.get("type") in VALID_NODE_TYPES and (n.get("label") or "").strip():
+            nodes.append({"type": n["type"], "label": n["label"].strip(), "detail": (n.get("detail") or "").strip()})
+    edges = data.get("edges") if isinstance(data.get("edges"), list) else []
+    sq = data.get("suggestedQuestion")
+    return {"nodes": nodes, "edges": edges, "suggestedQuestion": sq if isinstance(sq, str) else None}
