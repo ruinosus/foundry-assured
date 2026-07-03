@@ -42,11 +42,12 @@ ensure_app() { # DISPLAY_NAME -> echoes "objectId appId"
   local name="$1" objid appid
   objid="$(az ad app list --display-name "$name" --query "[0].id" -o tsv 2>/dev/null)"
   if [ -z "$objid" ]; then
-    # list projection (not a hash) so the two columns keep their order in tsv
-    read -r objid appid < <(az ad app create --display-name "$name" --query "[id,appId]" -o tsv)
-  else
-    appid="$(az ad app show --id "$objid" --query appId -o tsv)"
+    objid="$(az ad app create --display-name "$name" --query id -o tsv)"
   fi
+  # ALWAYS resolve appId via `show` — the `create` response's appId can come back empty on the
+  # first read (eventual consistency), which left DESK_APPID blank and silently broke the
+  # desktop app's perm/known-client/consent steps. `show` is reliable for both new + existing apps.
+  appid="$(az ad app show --id "$objid" --query appId -o tsv)"
   echo "$objid $appid"
 }
 # user_impersonation delegated scope id of a resource app (resolved, not hardcoded).
