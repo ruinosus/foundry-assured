@@ -23,6 +23,7 @@ from app.services.copilot import (
     answer_question,
     extract_nodes,
     extract_nodes_stream,
+    kb_fetch,
     propose_edges,
     refine_question,
 )
@@ -111,3 +112,13 @@ async def extract_stream(body: ExtractBody) -> StreamingResponse:
 async def edges(body: EdgesBody) -> dict:
     """Propose edges (by id) among existing Board nodes (Meeting Board P2)."""
     return await propose_edges(body.nodes, user=current_user())
+
+
+class KbFetchBody(BaseModel):
+    query: str
+
+
+@router.post("/kb-fetch", dependencies=_auth)
+async def kb_fetch_route(body: KbFetchBody) -> dict:
+    """Fetch full KB doc content for a Board node (markdown/mermaid + enrichment source)."""
+    return await kb_fetch(body.query, user=current_user())

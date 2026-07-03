@@ -255,6 +255,30 @@ def _parse_node_line(line: str) -> dict | None:
     return {"type": typ, "label": label, "detail": parts[2] if len(parts) > 2 else ""}
 
 
+async def kb_fetch(query: str, user=None, *, top: int = 3) -> dict:
+    """Fetch the FULL content of the top KB docs for `query` (not the 800-char snippet the card uses).
+    Used by the Board's 'trazer KB' to SHOW the doc (markdown/mermaid) + later enrich the graph."""
+    docs: list[dict] = []
+    for dom_id in COPILOT_DOMAINS:
+        dom = replace(get_domain(dom_id), kb_name=None)  # fast direct-search path
+        try:
+            rows = await retrieve(query, user, dom, top=top)
+        except Exception:  # noqa: BLE001 — one KB failing shouldn't break the fetch
+            rows = []
+        for r in rows:
+            r["kb"] = dom_id
+        docs.extend(rows)
+    docs = docs[:top]
+    return {
+        "query": query,
+        "docs": [
+            {"kb": d.get("kb"), "source": d.get("source"), "url": d.get("url"),
+             "content": d.get("snippet") or ""}  # full content (uncapped)
+            for d in docs
+        ],
+    }
+
+
 EDGES_INSTRUCTIONS = (
     "Você recebe uma lista de nós de uma reunião (id, type, label). Proponha SÓ as conexões mais "
     "fortes e ÓBVIAS entre nós que se relacionam de verdade (ex.: uma pergunta sobre um tópico, uma "
