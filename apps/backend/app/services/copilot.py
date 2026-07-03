@@ -252,6 +252,37 @@ def _parse_node_line(line: str) -> dict | None:
     return {"type": typ, "label": label, "detail": parts[2] if len(parts) > 2 else ""}
 
 
+EDGES_INSTRUCTIONS = (
+    "Você recebe uma lista de nós de uma reunião (id, type, label). Proponha conexões (arestas) entre "
+    "nós que se relacionam conceitualmente — INCLUSIVE entre momentos diferentes da conversa. Use os "
+    "ids EXATOS fornecidos. Não conecte um nó a si mesmo. No máximo 8 arestas. "
+    'Responda APENAS JSON, sem texto ao redor: {"edges":[{"from":"<id>","to":"<id>"}]}'
+)
+
+
+async def propose_edges(existing_nodes: list[dict], user=None) -> dict:
+    """Propose edges (by node id) among existing board nodes. Fail-soft → {edges:[]}. Drops any edge
+    referencing an id not in the input (orphan guard mirrors the board-state guard)."""
+    empty: dict = {"edges": []}
+    ids = {n.get("id") for n in (existing_nodes or []) if n.get("id")}
+    if len(ids) < 2:
+        return empty
+    body = json.dumps(
+        [{"id": n.get("id"), "type": n.get("type"), "label": n.get("label")} for n in existing_nodes],
+        ensure_ascii=False,
+    )
+    try:
+        raw = await _responses(EDGES_INSTRUCTIONS, body, user, reasoning_effort="minimal")
+        data = json.loads(_strip_json(raw))
+    except Exception:  # noqa: BLE001
+        return empty
+    out = []
+    for e in (data.get("edges") if isinstance(data, dict) else None) or []:
+        if isinstance(e, dict) and e.get("from") in ids and e.get("to") in ids and e["from"] != e["to"]:
+            out.append({"from": e["from"], "to": e["to"]})
+    return {"edges": out}
+
+
 async def extract_nodes_stream(transcript_window: list[dict], existing_nodes: list[dict], user=None):
     """Async generator: yields node dicts as the model streams them (one per line). Fail-soft:
     stops silently on any error. P1 nodes-only."""

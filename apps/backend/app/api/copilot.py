@@ -23,6 +23,7 @@ from app.services.copilot import (
     answer_question,
     extract_nodes,
     extract_nodes_stream,
+    propose_edges,
     refine_question,
 )
 
@@ -51,6 +52,10 @@ class RefineBody(BaseModel):
 class ExtractBody(BaseModel):
     transcript_window: list[dict]
     existing_nodes: list[dict] = []
+
+
+class EdgesBody(BaseModel):
+    nodes: list[dict]
 
 
 @router.get("/ping")
@@ -100,3 +105,9 @@ async def extract_stream(body: ExtractBody) -> StreamingResponse:
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(gen(), media_type="text/event-stream")
+
+
+@router.post("/edges", dependencies=_auth)
+async def edges(body: EdgesBody) -> dict:
+    """Propose edges (by id) among existing Board nodes (Meeting Board P2)."""
+    return await propose_edges(body.nodes, user=current_user())
