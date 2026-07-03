@@ -16,7 +16,7 @@ from pydantic import BaseModel
 
 from app.agents.detector import detect_question
 from app.core.auth import auth_dependencies, current_user
-from app.services.copilot import answer_question, refine_question
+from app.services.copilot import answer_question, extract_nodes, refine_question
 
 router = APIRouter(prefix="/copilot", tags=["copilot"])
 
@@ -38,6 +38,11 @@ class AskBody(BaseModel):
 
 class RefineBody(BaseModel):
     text: str
+
+
+class ExtractBody(BaseModel):
+    transcript_window: list[dict]
+    existing_nodes: list[dict] = []
 
 
 @router.get("/ping")
@@ -65,3 +70,9 @@ async def ask(body: AskBody) -> dict:
 async def refine(body: RefineBody) -> dict:
     """Consolidate a messy transcript slice into one clean question (optional pre-ask agent)."""
     return {"question": await refine_question(body.text, user=current_user())}
+
+
+@router.post("/extract", dependencies=_auth)
+async def extract(body: ExtractBody) -> dict:
+    """Propose conversation nodes (+ raw edges) from a transcript window (Meeting Board)."""
+    return await extract_nodes(body.transcript_window, body.existing_nodes, user=current_user())
