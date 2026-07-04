@@ -20,6 +20,7 @@ from pydantic import BaseModel
 from app.agents.detector import detect_question
 from app.core.auth import auth_dependencies, current_user
 from app.services.copilot import (
+    answer_direct,
     answer_question,
     extract_nodes,
     extract_nodes_stream,
@@ -48,6 +49,11 @@ class AskBody(BaseModel):
 
 class RefineBody(BaseModel):
     text: str
+
+
+class AnswerDirectBody(BaseModel):
+    text: str
+    prompt: str = "responder"
 
 
 class ExtractBody(BaseModel):
@@ -84,6 +90,12 @@ async def ask(body: AskBody) -> dict:
 async def refine(body: RefineBody) -> dict:
     """Consolidate a messy transcript slice into one clean question (optional pre-ask agent)."""
     return {"question": await refine_question(body.text, user=current_user())}
+
+
+@router.post("/answer-direct", dependencies=_auth)
+async def answer_direct_route(body: AnswerDirectBody) -> dict:
+    """Sabatina: LLM-direct answer from selected transcript lines (no KB, no sources)."""
+    return await answer_direct(body.text, body.prompt, user=current_user())
 
 
 @router.post("/extract", dependencies=_auth)
