@@ -51,3 +51,44 @@ async def test_answer_question_empty_retrieval_short_circuits():
     assert out["sources"] == []
     assert "Não encontrei" in out["answer"]
     synth.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_answer_direct_uses_prompt_instruction_and_returns_answer():
+    captured = {}
+
+    async def fake_responses(instructions, input_text, user, **kw):
+        captured["instr"] = instructions
+        captured["input"] = input_text
+        return "resposta direta"
+
+    with patch.object(copilot, "_responses", new=fake_responses):
+        out = await copilot.answer_direct("o que é SOLID?", "explicar", user=None)
+
+    assert out == {"answer": "resposta direta"}
+    assert "sources" not in out
+    assert captured["instr"] == copilot.SABATINA_PROMPTS["explicar"]
+    assert captured["input"] == "o que é SOLID?"
+
+
+@pytest.mark.asyncio
+async def test_answer_direct_unknown_prompt_falls_back_to_responder():
+    captured = {}
+
+    async def fake_responses(instructions, input_text, user, **kw):
+        captured["instr"] = instructions
+        return "x"
+
+    with patch.object(copilot, "_responses", new=fake_responses):
+        await copilot.answer_direct("txt", "bogus-prompt", user=None)
+
+    assert captured["instr"] == copilot.SABATINA_PROMPTS["responder"]
+
+
+@pytest.mark.asyncio
+async def test_answer_direct_empty_text_skips_model():
+    resp = AsyncMock(return_value="should not be called")
+    with patch.object(copilot, "_responses", new=resp):
+        out = await copilot.answer_direct("   ", "responder", user=None)
+    assert out == {"answer": ""}
+    resp.assert_not_awaited()

@@ -119,6 +119,41 @@ async def refine_question(raw_text: str, user=None) -> str:
     return refined or text
 
 
+
+# ── Sabatina: LLM-direct answers from selected transcript lines (NO retrieval) ──────────────
+# Mirrors refine_question: one _responses call. The prompt key shapes a short, spoken pt-BR answer
+# to help the user respond in a live interview. KB grounding is a future toggle (see answer_question).
+SABATINA_PROMPTS: dict[str, str] = {
+    "responder": (
+        "Você ajuda o entrevistado a responder. Com base no trecho da transcrição (a pergunta que "
+        "fizeram), escreva uma resposta direta e natural, em português, pronta pra falar em voz alta "
+        "(3–5 frases). Sem preâmbulo."
+    ),
+    "explicar": (
+        "Explique de forma didática e concisa (2–4 frases, em português) o conceito citado no trecho "
+        "da transcrição. Sem preâmbulo."
+    ),
+    "exemplo": (
+        "Dê UM exemplo concreto e curto, em português, que ilustre o que foi perguntado no trecho da "
+        "transcrição. Sem preâmbulo."
+    ),
+    "tradeoffs": (
+        "Aponte os principais trade-offs (quando usar vs. evitar) sobre o tema do trecho da "
+        "transcrição, em bullets curtos, em português. Sem preâmbulo."
+    ),
+}
+
+
+async def answer_direct(text: str, prompt: str, user=None) -> dict:
+    """LLM-direct answer (no retrieval, no sources) for the Sabatina flow. Fail-soft."""
+    text = (text or "").strip()
+    if not text:
+        return {"answer": ""}
+    instructions = SABATINA_PROMPTS.get(prompt, SABATINA_PROMPTS["responder"])
+    answer = (await _responses(instructions, text, user)).strip()
+    return {"answer": answer}
+
+
 async def answer_question(
     question: str, user=None, *, meeting_type: str = "presentation"
 ) -> dict:
