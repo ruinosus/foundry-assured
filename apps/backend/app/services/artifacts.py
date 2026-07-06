@@ -5,6 +5,8 @@ can override `_store` / `_content` with in-memory fakes.
 """
 from __future__ import annotations
 
+import contextlib
+import inspect
 from dataclasses import replace
 from datetime import datetime, timezone
 
@@ -143,3 +145,51 @@ def archive(tenant_id: str, artifact_id: str, *, user) -> ArtifactRecord:
     if rec.status not in (ArtifactStatus.PUBLISHED, ArtifactStatus.DRAFT):
         raise ValueError("only draft/published artifacts can be archived")
     return _save(replace(rec, status=ArtifactStatus.ARCHIVED, updated_at=_now()))
+
+
+_HTML_SYSTEM = (
+    "You are an expert front-end engineer. Produce a SINGLE self-contained, "
+    "responsive HTML document (all CSS and JS inline, no external requests, no "
+    "external assets). Return ONLY the HTML, starting with <!doctype html>. "
+    "The document must be safe to render inside a sandboxed iframe."
+)
+
+
+async def _generate_html(prompt: str, artifact_type: str, user=None) -> str:
+    """LLM boundary — patched in tests. Mirrors app/services/copilot.py::_responses."""
+    from azure.ai.projects.aio import AIProjectClient
+
+    from app.core.tenant import tenant_config
+    from app.services.grounded import _async_credential
+
+    cfg = tenant_config()
+    credential = _async_credential(user)
+    proj = AIProjectClient(
+        endpoint=cfg.foundry_project_endpoint, credential=credential,
+        allow_preview=True,
+    )
+    try:
+        client = proj.get_openai_client()
+        client = await client if inspect.isawaitable(client) else client
+        instructions = f"{_HTML_SYSTEM}\nArtifact type: {artifact_type}."
+        resp = await client.responses.create(
+            model=cfg.foundry_model, instructions=instructions,
+            input=prompt, stream=False,
+        )
+        return getattr(resp, "output_text", "") or ""
+    finally:
+        for obj in (proj, credential):
+            with contextlib.suppress(Exception):
+                await obj.close()
+
+
+async def generate(*, tenant_id: str, title: str, description: str, type: str,
+                   prompt: str, user) -> ArtifactRecord:
+    if type not in ALLOWED_TYPES:
+        raise ValueError(f"invalid artifact type: {type}")
+    html = await _generate_html(prompt, type, user=user)
+    # create_draft re-validates (size + shape) before persisting.
+    return create_draft(
+        tenant_id=tenant_id, title=title, description=description, type=type,
+        html=html, user=user,
+    )

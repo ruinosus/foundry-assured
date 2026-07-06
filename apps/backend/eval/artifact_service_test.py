@@ -81,6 +81,21 @@ def main() -> int:
     rej = svc.reject("t1", r3.id, user=A())
     check("rejected returns to draft", rej.status == "draft")
 
+    # generation — patch the LLM boundary, never call Azure
+    import asyncio
+
+    async def fake_llm(prompt: str, artifact_type: str, user=None) -> str:
+        return "<!doctype html><html><body><h1>gen</h1></body></html>"
+
+    svc._generate_html = fake_llm  # patch the LLM boundary
+
+    out = asyncio.run(svc.generate(
+        tenant_id="t1", title="G", description="", type="report",
+        prompt="make a report", user=U()))
+    check("generate creates draft", out.status == "draft")
+    check("generated content stored",
+          "gen" in svc.get_content("t1", out.id, user=U()))
+
     print("PASS" if not failures else f"FAIL ({len(failures)})")
     return 1 if failures else 0
 
