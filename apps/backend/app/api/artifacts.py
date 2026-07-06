@@ -83,3 +83,32 @@ def content_route(artifact_id: str) -> Response:
             "X-Content-Type-Options": "nosniff",
         },
     )
+
+
+def _act(fn, artifact_id: str):
+    try:
+        return _dto(fn(artifact_tenant_id(), artifact_id, user=current_user()))
+    except svc.Forbidden:
+        raise HTTPException(status_code=404, detail="not found")
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
+
+@router.post("/html/{artifact_id}/request-approval", dependencies=[_author])
+def request_approval_route(artifact_id: str) -> dict:
+    return _act(svc.request_approval, artifact_id)
+
+
+@router.post("/html/{artifact_id}/approve", dependencies=[_approver])
+def approve_route(artifact_id: str) -> dict:
+    return _act(svc.approve, artifact_id)
+
+
+@router.post("/html/{artifact_id}/reject", dependencies=[_approver])
+def reject_route(artifact_id: str) -> dict:
+    return _act(svc.reject, artifact_id)
+
+
+@router.post("/html/{artifact_id}/archive", dependencies=[_author])
+def archive_route(artifact_id: str) -> dict:
+    return _act(svc.archive, artifact_id)
