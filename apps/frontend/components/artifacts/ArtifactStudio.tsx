@@ -25,6 +25,15 @@
 // boolean: the backend continuation parses a `confirm_changes` tool-result body shaped
 // { accepted: bool, steps: [...] } (_agent_run.py:309-336, _is_confirm_changes_response). See the
 // TODO(verify-live) at the call site below.
+//
+// TITLE/TYPE/SKILL AUTO-FILL (Skills Chunk 4, "option c") — VERIFIED LIVE against the installed
+// agent_framework_ag_ui rc5 (see app/agents/artifacts_studio.py, commit "studio state — verified-
+// live title/type/skill via approval args"): a state_schema key with NO predict_state_config
+// entry stays an empty {} — it is NEVER auto-populated. So title/type/skill are NOT read from
+// agent state (only `html` is, via STATE_SNAPSHOT/STATE_DELTA above). Their values instead arrive
+// fully parsed in the SAME function_approval_request event this file already taps for the
+// approval card, under value.function_call.arguments = { html, title, type, skill }. The onEvent
+// handler below reads them from there.
 
 import { CopilotChat, CopilotKitProvider, useAgent } from "@copilotkit/react-core/v2";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
@@ -35,7 +44,10 @@ import { authedFetch } from "@/lib/auth/api";
 import { LivePreview } from "./LivePreview";
 
 const MAX_TITLE = 200;
-const ARTIFACT_TYPES = ["report", "presentation", "walkthrough"] as const;
+// Kept as the allowed-set for displaying/normalizing the agent-filled `type` — the manual
+// Type <select> is gone (Skills Chunk 4): the agent now produces type as part of update_artifact.
+const ARTIFACT_TYPES = ["report", "presentation", "walkthrough", "dashboard"] as const;
+const SKILLS = ["auto", "slides", "report", "dashboard", "walkthrough"] as const;
 
 type PendingApproval = {
   id: string;
@@ -87,7 +99,9 @@ function StudioCanvas() {
   const [pending, setPending] = useState<PendingApproval | null>(null);
   const [approving, setApproving] = useState(false);
   const [title, setTitle] = useState("");
-  const [type, setType] = useState<string>(ARTIFACT_TYPES[0]);
+  const [type, setType] = useState<string>("");
+  const [skill, setSkill] = useState<string>("auto");
+  const [usedSkill, setUsedSkill] = useState<string>("");
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const router = useRouter();
@@ -133,6 +147,25 @@ function StudioCanvas() {
           const id: string | undefined = v.id ?? v.request_id ?? fc.call_id;
           if (!id) return;
           setPending({ id, toolName: fc.name });
+
+          // Auto-fill title/type/skill (option c — see the header comment). fc.arguments is the
+          // parsed update_artifact call args in the normal shape, but defend against a raw JSON
+          // string (some adapter versions/paths deliver tool args unparsed).
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          let args: any = fc.arguments ?? {};
+          if (typeof args === "string") {
+            try {
+              args = JSON.parse(args);
+            } catch {
+              args = {};
+            }
+          }
+          if (args.title) setTitle(args.title);
+          if (args.type) setType(args.type);
+          if (args.skill) setUsedSkill(args.skill);
+          // The approval event carries the COMPLETE html too — take it as authoritative so the
+          // preview reflects the final document even if a STATE_DELTA token was missed.
+          if (typeof args.html === "string" && args.html) scheduleSetHtml(args.html);
         }
       },
     });
@@ -179,7 +212,12 @@ function StudioCanvas() {
       const r = await authedFetch("/api/artifacts/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, type, html }),
+        body: JSON.stringify({
+          title,
+          type,
+          html,
+          skill: usedSkill || (skill === "auto" ? undefined : skill),
+        }),
       });
       if (!r.ok) {
         setSaveError(`save failed (${r.status})`);
@@ -194,8 +232,31 @@ function StudioCanvas() {
     }
   }
 
+  // Pin a skill + regenerate: send a chat turn telling the agent which skill to use, then run it
+  // — the SAME addMessage+runAgent send mechanism this repo already uses to program-send a chat
+  // message (see components/console/SuggestedPrompts.tsx: agent.addMessage(...) + agent.runAgent()),
+  // not a guessed API. Disabled while a run/approval is in flight so it can't race the pending
+  // approval card.
+  async function regenerate() {
+    if (!agent || approving || pending) return;
+    const id =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+    const content =
+      skill === "auto"
+        ? "Regenerate the artifact."
+        : `Use the ${skill} skill and regenerate the artifact.`;
+    agent.addMessage({ id, role: "user", content });
+    await agent.runAgent();
+  }
+
   const titleOk = title.length > 0 && title.length <= MAX_TITLE;
   const canSave = titleOk && Boolean(type) && Boolean(html) && !saving;
+  const typeLabel =
+    type && (ARTIFACT_TYPES as readonly string[]).includes(type)
+      ? type[0].toUpperCase() + type.slice(1)
+      : type || "—";
 
   return (
     <div style={{ display: "flex", gap: 16, minHeight: "70vh" }}>
@@ -233,16 +294,43 @@ function StudioCanvas() {
               Title must be 1–{MAX_TITLE} characters.
             </span>
           )}
+
           <label className="muted" style={{ fontSize: 12 }}>
-            Type
+            Type <span style={{ fontWeight: 400 }}>(set by the agent)</span>
           </label>
-          <select className="acct-btn" value={type} onChange={(e) => setType(e.target.value)}>
-            {ARTIFACT_TYPES.map((t) => (
-              <option key={t} value={t}>
-                {t[0].toUpperCase() + t.slice(1)}
-              </option>
-            ))}
-          </select>
+          <div className="acct-btn" style={{ cursor: "default" }}>
+            {typeLabel}
+          </div>
+
+          <label className="muted" style={{ fontSize: 12 }}>
+            Skill
+          </label>
+          <div style={{ display: "flex", gap: 8 }}>
+            <select
+              className="acct-btn"
+              style={{ flex: 1 }}
+              value={skill}
+              onChange={(e) => setSkill(e.target.value)}
+            >
+              {SKILLS.map((s) => (
+                <option key={s} value={s}>
+                  {s === "auto" ? "Auto" : s[0].toUpperCase() + s.slice(1)}
+                </option>
+              ))}
+            </select>
+            <button
+              className="acct-btn"
+              disabled={!agent || approving || Boolean(pending)}
+              onClick={regenerate}
+            >
+              Regenerate
+            </button>
+          </div>
+          {usedSkill && (
+            <span className="muted" style={{ fontSize: 12 }}>
+              Generated with: {usedSkill}
+            </span>
+          )}
         </div>
 
         {pending && (
