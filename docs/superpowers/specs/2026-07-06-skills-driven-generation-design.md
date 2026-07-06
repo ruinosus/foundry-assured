@@ -33,8 +33,14 @@ HTML, not the surrounding metadata.
   `context_providers=[...]` and `tools=[...]`.
   ([MS Learn — Agent Skills](https://learn.microsoft.com/en-us/agent-framework/agents/skills))
 - **Progressive disclosure is native:** the provider advertises each skill (~100 tokens) in the system
-  prompt and auto-registers `load_skill` / `read_skill_resource` tools (and `run_skill_script` only if a
-  `script_runner` is passed). The agent pulls full `SKILL.md` + resources only when relevant.
+  prompt and auto-registers `load_skill` / `read_skill_resource` (and `run_skill_script`) tools when ≥1
+  skill is loaded. The agent pulls full `SKILL.md` + resources only when relevant.
+  - **Note (verified):** `run_skill_script` is registered regardless of `script_runner`; with no
+    `script_runner` and no vendored `scripts/`, any call to it safely returns a "script not found" error
+    instead of executing — so the no-shell guarantee (§12) holds in effect, but the tool is still visible.
+- **`SkillsProvider` is marked Experimental** in `agent-framework 1.9.0` (`ExperimentalWarning [SKILLS]`).
+  The API is present and used as designed; per CLAUDE.md rule #1, pin behavior against the installed
+  version during implementation and don't rely on unverified surface.
 - **The SKILL.md format is the open Anthropic Agent Skills standard** (frontmatter `name`/`description`
   + markdown body + resource files), so `frontend-slides` and other community skills drop in.
   ([anthropics/skills](https://github.com/anthropics/skills))
@@ -80,10 +86,11 @@ Artifacts Studio agent  (Microsoft Agent Framework, per-request)
 
 ## 5. Backend: agent construction (`app/agents/artifacts_studio.py`)
 
-- Switch `build_studio_agent()` from `client.as_agent(...)` to
-  `Agent(client=FoundryChatClient(..., credential=credential_for_request()), instructions=_STUDIO_INSTRUCTIONS,
+- Keep the repo convention `client.as_agent(...)` (verified: `FoundryChatClient.as_agent` is a pure
+  wrapper that returns `Agent(self, **kwargs)` and already accepts `context_providers` + `tools`
+  together). Extend the existing call:
+  `client.as_agent(name=..., description=..., instructions=_STUDIO_INSTRUCTIONS,
   context_providers=[skills_provider], tools=[update_artifact, *build_artifact_mcp_reads()])`.
-  (Confirm `Agent(client=...)` behaves equivalently to `as_agent`; both are used in-repo.)
 - `skills_provider = SkillsProvider.from_paths(<artifact-skills dir>)` — **no `script_runner`** (scripts disabled).
 - **`update_artifact` becomes 4-arg:** `update_artifact(html: str, title: str, type: str, skill: str)`,
   keeping `@tool(approval_mode="always_require")` (the edit-confirmation still gates each version).
@@ -124,18 +131,29 @@ The **live preview** still streams `html` char-by-char (predictive `STATE_DELTA`
 
 > **VERIFY-LIVE (highest-risk mechanism, like the canvas approval wiring):** the exact way to surface all
 > four fields is confirmed during implementation. Two candidate mechanisms: (a) **multi-field predictive** —
-> `predict_state_config` maps each of the four state keys to its `update_artifact` argument, so all stream
-> (html char-by-char; the short fields quickly); or (b) **html predictive + the rest from the final
-> `STATE_SNAPSHOT`** (title/type/skill appear when the tool completes — fine, they need not stream). The
-> plan's E2E chunk probes `/artifacts-studio` directly (as we did for the approval event) and picks the
-> mechanism that actually works; the frontend reads whichever the backend populates. Keep `html`
-> predictive either way.
+> `predict_state_config` maps each of the four state keys to its `update_artifact` argument; or (b) **html
+> predictive + title/type/skill from the final `STATE_SNAPSHOT`** (they appear when the tool completes —
+> fine, they need not stream). The plan's E2E chunk probes `/artifacts-studio` directly (as we did for the
+> approval event) and picks the mechanism that actually works; the frontend reads whichever the backend populates.
+>
+> **Honest note on "live" (verified against the installed adapter):** the shipped single-field `html`
+> predictive path is NOT true char-by-char — `_predictive_state.py::_emit_partial_deltas` uses a
+> JSON-escaping-unaware regex `"{arg}":\s*"([^"]*)` that freezes the partial at the FIRST literal `"` in the
+> streamed value, then jumps to the complete document only when the whole tool-call JSON parses. So today's
+> preview shows the head of the doc forming, then jumps to the finished HTML. Going to 4 fields does NOT
+> worsen this (it's pre-existing). The E2E must treat "partial-head → jump-to-complete" as the expected
+> baseline (not a regression), and a truly char-by-char preview would need a different mechanism (out of scope).
 
 ## 9. MCP read-only grounding (`app/agents/mcp/`)
 
 - New `build_artifact_mcp_reads()` (in `app/agents/mcp/tools.py`) mirrors `build_mcp_tools()` but builds
   each `MCPStreamableHTTPTool` with **only the server's `reads`** as `allowed_tools` (drop `writes`). Same
-  role/OBO/tenant filtering, same `MCP_ENABLED` gate. Returns `[]` when MCP is off (default).
+  role/OBO/tenant filtering.
+  - **IMPORTANT (verified):** `build_mcp_tools()` does NOT itself check `settings.mcp_enabled` — that gate
+    lives at the mount layer (`platform_configured()`), and the `learn` server is `enabled=True`/public with
+    a hardcoded URL. So `build_artifact_mcp_reads()` MUST add its own explicit
+    `if not settings.mcp_enabled: return []` at the top (otherwise the model would get a live `learn` read
+    tool in every deployment, including local dev). Returns `[]` when `MCP_ENABLED` is off (default).
 - Composed into the Studio agent's `tools=[...]`. The model calls a read tool only when the user asks for
   data-grounded content; a skill may instruct it (e.g., a future "release-notes" skill).
 - **Only `learn` is live out-of-the-box**; ADO/GitHub/Azure light up when their config/Connection exists.
@@ -189,8 +207,9 @@ the used skill is `slides`. (This is where the multi-field surfacing mechanism i
 - Modify `app/agents/artifacts_studio.py` — `Agent(...)` with `context_providers=[SkillsProvider…]`,
   4-arg `update_artifact`, MCP reads, new instructions, expanded `state_schema`/`predict_state_config`.
 - Modify `app/agents/mcp/tools.py` — add `build_artifact_mcp_reads()`.
-- Modify `app/services/artifacts.py` — `ALLOWED_TYPES` += `dashboard`; `create_draft` accepts `skill`.
-- Modify `app/artifacts/models.py` — `ArtifactRecord.skill` + store (de)serialization.
+- Modify `app/artifacts/models.py` — `ArtifactRecord.skill` field; `ALLOWED_TYPES` += `dashboard` (it lives here).
+- Modify `app/artifacts/store.py` — add `skill` to `_FIELDS` tuple + `_record_from_entity` (Table (de)serialization; without this `skill` silently drops against `TableArtifactStore`).
+- Modify `app/services/artifacts.py` — `create_draft` accepts + stores `skill`.
 - Modify `app/api/artifacts.py` — `CreateBody.skill`; `_dto` includes skill.
 - Modify `eval/artifact_studio_test.py` + `eval/artifact_service_test.py` + a new `eval/artifact_skills_test.py`.
 
@@ -204,9 +223,11 @@ the used skill is `slides`. (This is where the multi-field surfacing mechanism i
 ## 15. Risks & open questions
 
 - **Multi-field predictive streaming (highest risk)** — see §8 VERIFY-LIVE. Mitigation: html stays
-  predictive; title/type/skill fall back to the snapshot if per-field deltas don't stream cleanly.
-- **`Agent(client=...)` vs `as_agent(...)`** — confirm equivalence for FoundryChatClient during
-  implementation (both patterns exist in-repo).
+  predictive; title/type/skill fall back to the snapshot if per-field deltas don't stream cleanly. Note the
+  shipped "live" preview is already "partial-head → jump-to-complete" (§8), not char-by-char.
+- **Plan should chunk the work** — skill-content authoring (4 SKILL.md folders + vendoring/trimming
+  `frontend-slides` with attribution) is largely independent from the streaming/tool-signature wiring and the
+  MCP-read composition; the implementation plan slices these (mirroring the canvas build's Chunk1/2/3 pattern).
 - **Skill instruction discipline** — the model must always call `update_artifact` with a valid `type`
   from the enum; instructions + `create_draft` validation enforce it (invalid → 422, UI normalizes).
 - **Vendoring `frontend-slides`** — trim to the HTML-generation parts (no scripts); keep attribution;
