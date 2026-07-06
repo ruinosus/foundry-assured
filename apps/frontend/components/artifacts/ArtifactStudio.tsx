@@ -40,7 +40,6 @@ const ARTIFACT_TYPES = ["report", "presentation", "walkthrough"] as const;
 type PendingApproval = {
   id: string;
   toolName?: string;
-  args?: unknown;
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -128,9 +127,12 @@ function StudioCanvas() {
         ) {
           const v = event.value ?? {};
           const fc = v.function_call ?? {};
-          const id: string | undefined = v.id ?? fc.call_id;
+          // Cover both shapes: function_approval_request -> { id, function_call: { call_id } };
+          // request_info (the TicketApproval.tsx fallback) -> { request_id, data: {...} } (no id/
+          // function_call). Without request_id the fallback would drop the event and hang the run.
+          const id: string | undefined = v.id ?? v.request_id ?? fc.call_id;
           if (!id) return;
-          setPending({ id, toolName: fc.name, args: fc.arguments });
+          setPending({ id, toolName: fc.name });
         }
       },
     });
@@ -252,10 +254,10 @@ function StudioCanvas() {
               </div>
             )}
             <div style={{ display: "flex", gap: 8 }}>
-              <button style={btn("#16a34a")} disabled={approving} onClick={() => respond(true)}>
+              <button style={btn("#16a34a")} onClick={() => respond(true)}>
                 Approve
               </button>
-              <button style={btn("#dc2626")} disabled={approving} onClick={() => respond(false)}>
+              <button style={btn("#dc2626")} onClick={() => respond(false)}>
                 Reject
               </button>
             </div>
