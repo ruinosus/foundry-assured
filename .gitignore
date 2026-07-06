@@ -50,3 +50,6 @@ e2e/.auth/
 e2e/test-results/
 apps/backend/.cockpit-acl-poc.json
 TEST-CREDENTIALS.local.md
+
+# Superpowers local tooling/session state (brainstorm scratch, server pids/logs) — never commit
+.superpowers/
