@@ -21,6 +21,10 @@ from app.core.settings import settings
 from app.core.tenant import tenant_config
 
 _SKILLS_DIR = Path(__file__).resolve().parents[2] / "artifact-skills"  # apps/backend/artifact-skills
+# Built ONCE at module load: SkillsProvider is static file discovery over the 4 SKILL.md files —
+# it holds no per-request/tenant state, so sharing across turns is safe. build_studio_agent() runs
+# on every AG-UI turn, so constructing it per-call would re-read the skills each request for nothing.
+_SKILLS_PROVIDER = SkillsProvider.from_paths(str(_SKILLS_DIR))
 
 _STUDIO_INSTRUCTIONS = (
     "You are an expert front-end engineer authoring a SINGLE self-contained HTML document. "
@@ -61,7 +65,7 @@ def build_studio_agent():
         name="ArtifactsStudio",
         description="Conversationally generates and refines a self-contained HTML artifact.",
         instructions=_STUDIO_INSTRUCTIONS,
-        context_providers=[SkillsProvider.from_paths(str(_SKILLS_DIR))],  # no script_runner (no shell)
+        context_providers=[_SKILLS_PROVIDER],  # built once at module scope; no script_runner (no shell)
         tools=[update_artifact, *build_artifact_mcp_reads()],
     )
 

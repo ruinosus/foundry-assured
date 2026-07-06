@@ -29,6 +29,23 @@ def main() -> int:
     props = set(schema.get("properties", {}).keys())
     check("update_artifact takes html/title/type/skill", {"html", "title", "type", "skill"} <= props)
 
+    # --- build_studio_agent wires the SkillsProvider + tools ---
+    # Capture as_agent's kwargs (auth off → credential_for_request() is DefaultAzureCredential, so
+    # build_studio_agent() is construction-only: no network). as_agent is inherited from
+    # BaseChatClient; patch it on FoundryChatClient and restore in finally.
+    import app.agents.artifacts_studio as sm
+    from agent_framework import SkillsProvider
+    captured: dict = {}
+    orig_as_agent = sm.FoundryChatClient.as_agent
+    sm.FoundryChatClient.as_agent = lambda self, **kw: captured.update(kw) or object()
+    try:
+        sm.build_studio_agent()
+    finally:
+        sm.FoundryChatClient.as_agent = orig_as_agent
+    cps = captured.get("context_providers", [])
+    check("studio wires a SkillsProvider", any(isinstance(c, SkillsProvider) for c in cps))
+    check("studio tools include update_artifact", sm.update_artifact in (captured.get("tools") or []))
+
     # --- mount introspection: /artifacts-studio gated Author/Admin ---
     import app.agents.artifacts_studio as studio_mod
     import app.core.settings as settings_mod
