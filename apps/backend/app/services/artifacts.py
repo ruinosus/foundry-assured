@@ -24,6 +24,9 @@ from app.core.settings import settings
 _store = None
 _content = None
 
+MAX_TITLE_LEN = 200
+MAX_DESCRIPTION_LEN = 1000
+
 
 class Forbidden(Exception):
     """Caller may not act on this artifact (tenant or role mismatch)."""
@@ -59,10 +62,10 @@ def create_draft(*, tenant_id: str, title: str, description: str, type: str,
                  html: str, user) -> ArtifactRecord:
     if type not in ALLOWED_TYPES:
         raise ValueError(f"invalid artifact type: {type}")
-    if len(title) > 200:
-        raise ValueError("title exceeds 200 characters")
-    if len(description) > 1000:
-        raise ValueError("description exceeds 1000 characters")
+    if len(title) > MAX_TITLE_LEN:
+        raise ValueError(f"title exceeds {MAX_TITLE_LEN} characters")
+    if len(description) > MAX_DESCRIPTION_LEN:
+        raise ValueError(f"description exceeds {MAX_DESCRIPTION_LEN} characters")
     html = validate_html(html, max_bytes=settings.artifact_max_html_bytes)
     store, content = _stores()
     aid = new_artifact_id()
