@@ -35,6 +35,12 @@ jobs:
         run: uv run python -m eval.run_eval --self-test
       - name: ACL attribution round-trip (chunk key == blob key)
         run: uv run python -m eval.test_attribution
+      - name: Artifact store tests
+        working-directory: apps/backend
+        run: |
+          uv run python -m eval.artifact_store_test
+          uv run python -m eval.artifact_service_test
+          uv run python -m eval.artifact_rbac_test
 
   frontend:
     name: Frontend · typecheck + build
