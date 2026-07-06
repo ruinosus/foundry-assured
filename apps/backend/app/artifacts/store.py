@@ -88,3 +88,52 @@ class TableArtifactStore:
             "PartitionKey eq @t", parameters={"t": tenant_id}
         )
         return [_record_from_entity(e) for e in rows]
+
+
+class ArtifactContentStore(Protocol):
+    def put(self, path: str, html: str) -> None: ...
+    def get(self, path: str) -> str | None: ...
+
+
+class InMemoryContentStore:
+    """Test/dev fake."""
+
+    def __init__(self) -> None:
+        self._blobs: dict[str, str] = {}
+
+    def put(self, path: str, html: str) -> None:
+        self._blobs[path] = html
+
+    def get(self, path: str) -> str | None:
+        return self._blobs.get(path)
+
+
+class BlobContentStore:
+    """Azure Blob. One blob per artifact version at {tenant}/{id}/v{n}/index.html."""
+
+    def __init__(self, account_url: str, container: str, credential) -> None:
+        from azure.storage.blob import BlobServiceClient  # lazy, construction-time
+
+        from azure.core.exceptions import ResourceExistsError  # lazy, construction-time
+
+        svc = BlobServiceClient(account_url=account_url, credential=credential)
+        self._container = svc.get_container_client(container)
+        try:
+            self._container.create_container()
+        except ResourceExistsError:
+            pass  # already exists
+
+    def put(self, path: str, html: str) -> None:
+        self._container.upload_blob(
+            name=path, data=html.encode("utf-8"), overwrite=True,
+            content_type="text/html",
+        )
+
+    def get(self, path: str) -> str | None:
+        from azure.core.exceptions import ResourceNotFoundError
+
+        try:
+            blob = self._container.download_blob(path)
+        except ResourceNotFoundError:
+            return None
+        return blob.readall().decode("utf-8")

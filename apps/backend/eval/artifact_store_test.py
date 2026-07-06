@@ -47,6 +47,14 @@ def main() -> int:
     # tenant isolation: a get with the wrong tenant must not return the record
     check("get is tenant-scoped", store.get("other", aid) is None)
 
+    from app.artifacts.store import InMemoryContentStore
+
+    content = InMemoryContentStore()
+    path = f"default/{aid}/v1/index.html"
+    content.put(path, "<html>hi</html>")
+    check("content round-trips", content.get(path) == "<html>hi</html>")
+    check("missing content is None", content.get("nope") is None)
+
     print("PASS" if not failures else f"FAIL ({len(failures)})")
     return 1 if failures else 0
 
