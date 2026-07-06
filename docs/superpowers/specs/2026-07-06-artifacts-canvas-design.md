@@ -37,9 +37,19 @@ Framework AG-UI shared-state / predictive-state** feature, which our stack alrea
   `predict_state_config` maps the tool argument to the state field, so the framework streams
   `STATE_DELTA` (JSON-Patch) events as the LLM generates the tool arguments — optimistic, live UI.
   `require_confirmation=True` emits a `FUNCTION_APPROVAL_REQUEST` before applying the change.
-- **Frontend pattern** ([CopilotKit × Microsoft Agent Framework](https://docs.copilotkit.ai/microsoft-agent-framework)):
-  bind to shared state with `useCoAgent({ name })`; render approval prompts with the same
-  `useCopilotAction`/`renderAndWaitForResponse` pattern we already use for `create_ticket`.
+- **Frontend pattern — grounded in this repo's ACTUAL CopilotKit v2 usage (NOT the v1 hooks the MS/CopilotKit blogs show).**
+  This app imports from `@copilotkit/react-core/v2` and does **not** use `useCoAgent`/`useCopilotAction`
+  (those aren't exported from `/v2`, and importing them from `/v2/headless` hits a separate-context bug
+  the repo already documented in `components/chat/WorkflowSteps.tsx:9-14`). The real pattern:
+  `<CopilotKitProvider runtimeUrl=... headers=...>` + `useAgent({ agentId })` from `/v2`, plus a **manual
+  event tap** `agent.subscribe({ onEvent, onStateSnapshotEvent, onStateDeltaEvent })` to read the streamed
+  `artifact.html` and to catch the approval event, resolved with `agent.runAgent({ resume: [...] })`. This
+  is exactly how `components/chat/TicketApproval.tsx` handles the agent-framework interrupt today (it notes
+  CopilotKit's `useInterrupt` "doesn't pick up the agent-framework workflow interrupt" because the adapter
+  emits a `CUSTOM` event). Verified in the installed `agent_framework_ag_ui==1.0.0rc5`: `require_confirmation=True`
+  emits a `CustomEvent(name="function_approval_request", ...)` + a synthetic `confirm_changes` tool sequence,
+  resolved through the same interrupt/resume machinery — so the Studio extends `TicketApproval.tsx`'s tap,
+  it does not get a free higher-level hook.
 - **Reference implementation to mirror for wiring** ([`jspoelstra/ag-ui-foundry`](https://github.com/jspoelstra/ag-ui-foundry), MIT):
   Foundry v2 + agent-framework + FastAPI backend with `update_*` tools mapped via `predict_state_config`;
   Next.js + CopilotKit frontend using `useCoAgent()` to render a live-updating card. We edit an HTML
@@ -72,11 +82,11 @@ governance gate on *publishing* is unchanged.
 ┌──────────────────────────────────────────────┐        ┌────────────────────────────┐
 │ /artifacts/new  (Next.js, AppShell)           │        │ FastAPI backend            │
 │  ┌───────────── ArtifactStudio ────────────┐  │        │                            │
-│  │ <CopilotChat agent="artifacts-studio">  │  │  AG-UI │  /artifacts-studio         │
+│  │ <CopilotChat agentId="artifacts-studio">│  │  AG-UI │  /artifacts-studio         │
 │  │   describe / refine …                   │──┼───SSE──┼─▶ AgentFrameworkAgent(      │
 │  │   [approval card: Apply this version?]  │◀─┼────────┼─   state_schema, predict_,  │
 │  │                                         │  │ STATE_ │    require_confirmation)     │
-│  │ useCoAgent(state.artifact.html) ───────▶│  │ DELTA/ │      └─ update_artifact tool │
+│  │ agent.subscribe → artifact.html ───────▶│  │ DELTA/ │      └─ update_artifact tool │
 │  │   → <SandboxViewer html> (LIVE)         │  │ SNAPSHOT│                            │
 │  │ [ Save as draft ]───────────────────────┼──┼──POST──┼─▶ POST /artifacts/html      │
 │  └─────────────────────────────────────────┘  │        │    → validate + create_draft│
@@ -134,10 +144,12 @@ studio = AgentFrameworkAgent(
   `mount_domains` (or a sibling mount in `app/main.py`). It is a **bespoke** endpoint, NOT a
   `/d/[domain]` registry domain — the Studio is its own canvas page, so we don't add it to
   `apps/frontend/lib/domains.ts` (that would put an artifacts chat in the generic domain console).
-- **Auth:** the endpoint must be gated to **Author/Admin**, consistent with `POST /artifacts/html/generate`.
-  Confirm how the existing AG-UI domain endpoints attach auth during implementation and apply the same
-  (the frontend proxy forwards the bearer). If AG-UI-endpoint-level role gating isn't straightforward,
-  gate at the CopilotKit proxy / a dependency wrapper — the plan resolves the exact mechanism.
+- **Auth (resolved — not an open risk):** `add_agent_framework_fastapi_endpoint` accepts a
+  `dependencies=` sequence (verified in the installed package), and `app/domains.py::_mount_helpdesk`/`_mount_platform`
+  already pass `dependencies=_domain_deps(d.id)` to gate the live `/helpdesk`/`/platform` AG-UI endpoints.
+  So the Studio mount is simply:
+  `add_agent_framework_fastapi_endpoint(app, agent=studio, path="/artifacts-studio", dependencies=[*auth_dependencies(), Depends(require_role("Author","Admin"))])`
+  — reusing the exact `require_role("Author","Admin")` pair already declared in `app/api/artifacts.py:17`. No new mechanism.
 
 ### 6.4 Create-from-HTML endpoint (`app/api/artifacts.py`)
 
@@ -158,19 +170,31 @@ POST /artifacts/html      (dependencies=[require_role("Author","Admin")])
 
 Thin AppShell wrapper around `<ArtifactStudio />` (client component).
 
-### 7.2 `components/artifacts/ArtifactStudio.tsx` (new)
+### 7.2 `components/artifacts/ArtifactStudio.tsx` (new) — **built on the repo's v2 pattern**
 
-- Wrap in CopilotKit pointed at the studio agent: `<CopilotKit runtimeUrl="/api/copilotkit" agent="artifacts-studio" headers={authHeader}>` (mirror `HelpdeskApp.tsx`).
-- Layout: two columns — `<CopilotChat>` (left), live preview + metadata + Save (right).
-- **Live preview:** `const { state } = useCoAgent<{ artifact?: { html?: string } }>({ name: "artifacts-studio" })`
-  → feed `state?.artifact?.html` into a preview iframe (reuse the `SandboxViewer` iframe: `sandbox="allow-scripts"`,
-  no `allow-same-origin`, `srcDoc`). During streaming, `html` updates via STATE_DELTA → iframe re-renders
-  live (throttle `srcDoc` writes with `requestAnimationFrame` to avoid flicker on partial HTML).
-- **Edit confirmation:** render the AG-UI `FUNCTION_APPROVAL_REQUEST` with `useCopilotAction({ renderAndWaitForResponse })`,
-  exactly like the existing `TicketApproval` card — "Apply this version? [Approve] [Reject]".
+Mirror `components/chat/HelpdeskApp.tsx` (provider) + `WorkflowSteps.tsx` (`useAgent` + `agent.subscribe`)
++ `TicketApproval.tsx` (interrupt tap + `runAgent({resume})`). Do NOT use `useCoAgent`/`useCopilotAction`.
+
+- **Provider:** `<CopilotKitProvider runtimeUrl="/api/copilotkit" headers={authorization ? { Authorization: authorization } : undefined}>`
+  (token from `acquireTokenSilent`, exactly as `HelpdeskApp.tsx:28-30`).
+- **Chat + agent handle:** `<CopilotChat agentId="artifacts-studio" />` for the conversation; get the agent
+  handle with `const agent = useAgent({ agentId: "artifacts-studio" })` (from `@copilotkit/react-core/v2`).
+- **Layout:** two columns — chat (left), live preview + metadata + Save (right).
+- **Live preview (shared state):** subscribe once — `agent.subscribe({ onStateSnapshotEvent, onStateDeltaEvent })`
+  — accumulate the `artifact.html` field (snapshot = full state; delta = JSON-Patch on `/artifact`) into a
+  React state string, and feed it to the sandbox iframe (reuse the `SandboxViewer` iframe: `sandbox="allow-scripts"`,
+  no `allow-same-origin`, `srcDoc`). Throttle `srcDoc` writes with `requestAnimationFrame` to avoid flicker on
+  partial HTML. (If reading `agent.state` directly is simpler/reliable in v2, that is an acceptable equivalent —
+  the plan verifies which the installed version exposes; the subscribe tap is the fallback that definitely works.)
+- **Edit confirmation (interrupt tap):** in `agent.subscribe({ onEvent })`, detect the
+  `function_approval_request` CUSTOM event (same tap `TicketApproval.tsx` uses for the platform write-tool
+  approval), render an approval card ("Apply this version? [Approve] [Reject]"), and resolve with
+  `agent.runAgent({ resume: [{ /* approvalId/interruptId + status + payload */ }] })`. The exact event field
+  names + resume payload shape are verified live during implementation (TicketApproval.tsx itself flags this
+  as "pending live verification").
 - **Metadata + Save:** Title input + Type select (report/presentation/walkthrough). **Save as draft**
-  button → `POST /api/artifacts/html { title, type, html: state.artifact.html }` → on success redirect to
-  `/artifacts/[id]`.
+  button → `POST /api/artifacts/html { title, type, html }` (html = the accumulated confirmed artifact) →
+  on success redirect to `/artifacts/[id]`.
 
 ### 7.3 `app/api/artifacts/route.ts` (extend)
 
@@ -258,10 +282,14 @@ preview changes, approve, set Title, **Save as draft** → lands on `/artifacts/
 - **Model discipline:** the tool contract requires the **complete** document every turn. If the model
   emits partial/diff HTML, refines could drop content. The system prompt must be emphatic (mirror the
   recipe example's "NEVER delete existing data"). Covered by E2E refine assertion.
-- **Auth on the AG-UI endpoint:** confirm the exact role-gating mechanism for `/artifacts-studio` during
-  implementation (see §6.3).
-- **CopilotKit version:** we run `@copilotkit/*` v1.62 and `agent-framework-ag-ui` 1.0.0rc5 — both verified
-  to expose the hooks/params used here. Do not assume v2 APIs (e.g. OpenGenerativeUI's `useComponent`).
+- **AG-UI interrupt/state event shapes:** the exact field names of the `function_approval_request` /
+  `confirm_changes` events and the `runAgent({resume})` payload must be verified live during implementation
+  (as `TicketApproval.tsx` already notes for the platform write-approval). The mechanism is proven (workflow
+  HITL + platform tool-approval both use it); only the artifact-specific field wiring is to confirm.
+- **CopilotKit version:** we run `@copilotkit/react-core` **v1.62.1 consumed via the `/v2` entrypoint** and
+  `agent-framework-ag-ui` 1.0.0rc5. The design uses `useAgent` + `agent.subscribe`/`runAgent` from `/v2`
+  (verified in-repo usage) — NOT `useCoAgent`/`useCopilotAction` (not exported from `/v2`) and NOT
+  OpenGenerativeUI's v2 `useComponent`.
 
 ## 13. Reference wiring (from `jspoelstra/ag-ui-foundry`, MIT)
 
