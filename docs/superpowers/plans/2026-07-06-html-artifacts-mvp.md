@@ -1908,6 +1908,78 @@ git commit -m "feat(artifacts): add Artifacts to workspace nav"
 
 ---
 
+## Chunk 7: Wiki regeneration (closing step — run LAST)
+
+The `deep-wiki tracks the code` gate (`eval.wiki_freshness_test`) compares each bundle's
+`generatedAt` against the latest git commit touching that area (excluding `docs/wiki`). This
+feature touches **backend, frontend, infra, and docs** — all four areas — so the committed
+`docs/wiki/` bundles go stale the moment this work lands. Regenerate them as the **final step**,
+against the fully-integrated code, so the gate goes green once with no rework.
+
+> **MUST run after every other task is complete and merged-ready.** Regenerating earlier just
+> re-stales the moment the next commit lands. This is why it is Chunk 7, not Chunk 1.
+
+**Path: local Agent-Skills only — never Foundry.** Use the vendored deep-wiki plugin at
+`.github/skills/deep-wiki/` (`agents/wiki-architect`, `wiki-writer`, `wiki-researcher`;
+`commands/generate`, `build`, `page`). This is how `v0.3.0` was produced (`model: local-agent`)
+and matches the standing preference (see `docs/wiki/README.md` §Regenerate, path B; ADR-012). Do
+**not** use the `wiki_builder.py` Foundry pipeline.
+
+### Task 18: Regenerate all four deep-wiki bundles → v0.4.0
+
+**Files:**
+- Regenerate: `docs/wiki/foundry-helpdesk-backend/v0.4.0/` (manifest.json + pages/*.md + llms.txt)
+- Regenerate: `docs/wiki/foundry-helpdesk-frontend/v0.4.0/`
+- Regenerate: `docs/wiki/foundry-helpdesk-infra/v0.4.0/`
+- Regenerate: `docs/wiki/foundry-helpdesk-docs/v0.4.0/`
+- Remove: the superseded `v0.3.0/` bundles (v0.2.0 → v0.3.0 dropped the prior version; follow that convention)
+- Verify: `apps/backend/eval/wiki_freshness_test.py` (gate) + the build-fidelity gate
+
+- [ ] **Step 1: Confirm this is truly the last step** — all of Tasks 1–17 committed, the branch
+  is at the final integrated state. Regenerating against anything less will re-stale.
+
+- [ ] **Step 2: Regenerate each area via the deep-wiki local skill** (one faithful pass per area,
+  parallelizable). For each of the 4 areas, invoke the vendored deep-wiki generator to read the
+  real source and write a cited bundle, e.g.:
+
+  > "Regenerate the deep-wiki for area `apps/backend` following the `.github/skills/deep-wiki`
+  > `wiki-architect` + `wiki-writer` skills, in the ingest bundle format (`manifest.json` +
+  > `pages/page-N.md` + `llms.txt`), version **v0.4.0**, `model: local-agent`, language `pt-br`,
+  > with linked citations and the **≥80% build-fidelity gate** (every cited path must resolve to a
+  > real source file). Cover the new HTML Artifacts feature: the `/artifacts` router + service,
+  > `ArtifactStore`/`ArtifactContentStore`, the srcDoc sandbox viewer, and the Bicep additions."
+
+  Areas + their source roots (from `eval/wiki_freshness_test.py` `_AREA`):
+  `apps/backend`, `apps/frontend`, `infra`, `docs`. For the cross-cutting `docs` bundle, resolve
+  citations against the repo root (the `--fidelity-root` behavior noted in `docs/wiki/README.md`).
+
+- [ ] **Step 3: Stamp `generatedAt` and `componentVersion`** — each `manifest.json` must have
+  `componentVersion: "v0.4.0"`, `model: "local-agent"`, and a fresh `generatedAt` (current UTC,
+  newer than the latest source commit). Update the bundle table + "What this dogfood surfaced"
+  section in `docs/wiki/README.md` to v0.4.0.
+
+- [ ] **Step 4: Verify the freshness gate passes**
+
+  Run: `cd apps/backend && uv run python -m eval.wiki_freshness_test`
+  Expected: `✅ Wiki fresh — all 4 bundle(s) newer than their source.`
+
+- [ ] **Step 5: Verify build-fidelity** (≥80% of cited paths resolve to real files) per
+  `eval/assurance.yaml` — the same gate that guards generation. Fix any dangling citations.
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add docs/wiki/ docs/wiki/README.md
+git commit -m "docs(wiki): regenerate deep-wiki v0.4.0 (HTML Artifacts feature; local-agent path)"
+```
+
+> **Ingest is separate and manual** (not part of this gate): getting the bundles into the Foundry
+> `selfwiki-si-kb` is `uv run python -m app.knowledge.ingest_docbundles --selfwiki` (needs Azure
+> sign-in + data-plane roles). Note it in the PR so a maintainer can run it; the freshness gate
+> and merge do **not** require it.
+
+---
+
 ## Definition of done
 
 - [ ] All three backend test modules pass: `uv run python -m eval.artifact_store_test && uv run python -m eval.artifact_service_test && uv run python -m eval.artifact_rbac_test`.
@@ -1917,6 +1989,7 @@ git commit -m "feat(artifacts): add Artifacts to workspace nav"
 - [ ] The sandbox iframe uses `allow-scripts` **without** `allow-same-origin` (verified by inspection).
 - [ ] A write route left ungated would fail `artifact_rbac_test` (the guard works — verify by temporarily removing a gate and seeing red, then restore).
 - [ ] Security review: run @security-review on the branch before merge (untrusted-HTML feature).
+- [ ] **Wiki regenerated (Task 18)** — `uv run python -m eval.wiki_freshness_test` prints `✅ Wiki fresh`; all four v0.4.0 bundles committed via the local deep-wiki path.
 
 ## Notes for the executor
 
