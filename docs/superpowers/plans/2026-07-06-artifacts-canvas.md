@@ -479,7 +479,10 @@ Key wiring:
 - Provider: `<CopilotKitProvider runtimeUrl="/api/copilotkit" headers={authorization ? { Authorization: authorization } : undefined}>` — get `authorization` via `acquireTokenSilent` exactly as `HelpdeskApp.tsx` does (or `undefined` locally when auth is off).
 - `const { agent } = useAgent({ agentId: "artifacts-studio" })` from `@copilotkit/react-core/v2`.
 - **Live HTML:** `agent.subscribe({ onStateSnapshotEvent, onStateDeltaEvent })` → maintain an `html` React state. Snapshot: read `event.snapshot.artifact.html`. Delta: apply the JSON-Patch on `/artifact` (the value replaces `artifact`; read `.html`). If the installed version also exposes `agent.state`, reading `agent.state.artifact?.html` on each `onEvent` is an acceptable simpler equivalent — verify which is populated and use it; keep the subscribe tap as the guaranteed path. Throttle `setHtml` with `requestAnimationFrame`.
-- **Edit approval:** in `agent.subscribe({ onEvent })`, detect the confirmation event. Per `agent_framework_ag_ui` rc5, `require_confirmation` emits a `CustomEvent(name="function_approval_request")` (the workflow HITL uses `request_info`). **Handle BOTH names** and, like `TicketApproval.tsx`, resolve with `agent.runAgent({ resume: [{ interruptId: id, status: "resolved", payload: approved }] })`. The exact event field names + payload are **verified live in the E2E** (Task 11) — capture the real event and adjust the discriminator (mirror TicketApproval's `#3199` note).
+- **Edit approval (HIGHEST-RISK WIRING — read carefully):** in `agent.subscribe({ onEvent })`, detect the confirmation event. Per the installed `agent_framework_ag_ui` rc5 (`_run_common.py:431-444`), `require_confirmation` emits `CustomEvent(name="function_approval_request", value={ id, function_call: { call_id, name, arguments } })`, and the registered interrupt id is `func_call_id or content.id`. Resolve like `TicketApproval.tsx` via `agent.runAgent({ resume: [{ interruptId: id, status: "resolved" | "cancelled", payload: <see next> }] })`.
+  - **The payload is NOT a bare boolean** (unlike the `request_info`/ticket case). The backend's continuation parses a `confirm_changes` tool-result whose JSON body is `{ "accepted": <bool>, "steps": [...] }` (`_agent_run.py:309-336`, `_is_confirm_changes_response`). So the resume `payload` is very likely `{ accepted: approved, steps: [] }` (or the model-provided steps), NOT `approved`. **Start with `payload: { accepted: approved, steps: [] }`**, and if the run doesn't resume, capture the real request in the E2E and adjust to match `_is_confirm_changes_response`.
+  - **Handle both event names** (`function_approval_request` and, defensively, `request_info`). Reuse `TicketApproval.tsx`'s tap structure; this is a superset of it, not a copy.
+  - The exact field/payload shapes are **verified live in the E2E** (Task 11). This is the single most likely thing to need adjustment — budget for one capture-and-fix cycle.
 - Layout: two columns — `<CopilotChat agentId="artifacts-studio" />` left; right = Title input + Type select + `<LivePreview html={html} />` + an inline approval card (reuse `TicketApproval`'s card styles) + **Save as draft**.
 - **Save:** `authedFetch("/api/artifacts/create", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ title, type, html }) })` → on `ok`, `router.push(\`/artifacts/${(await r.json()).id}\`)`.
 
@@ -607,9 +610,9 @@ git commit -m "feat(artifacts): list page opens the Studio (＋ New artifact) in
 ### Task 11: Playwright E2E — Studio flow
 
 **Files:**
-- Create: `apps/frontend/e2e/artifacts-studio.spec.ts`
+- Create: `e2e/artifacts-studio.spec.ts`  (the Playwright suite is the top-level `e2e/` package — sibling of `apps/`, same dir as `e2e/artifacts.spec.ts`; there is NO `apps/frontend/e2e/`).
 
-Local auth-off, real Foundry generation. This is also where the **live event-shape verification** happens: if the approval card never appears, capture the AG-UI events and fix the discriminator in `ArtifactStudio.tsx` (Task 7), then re-run.
+Local auth-off, real Foundry generation. This is also where the **live event-shape verification** happens: if the approval card never appears OR approving doesn't resume the run, capture the AG-UI events and fix the discriminator + **resume payload** in `ArtifactStudio.tsx` (Task 7), then re-run.
 
 - [ ] **Step 1: Write the spec** (mirror `e2e/artifacts.spec.ts` structure — screenshots to `artifacts/steps-studio/`):
 
@@ -647,13 +650,13 @@ test("studio: describe → live preview → confirm edit → save → draft", as
 
 - [ ] **Step 2: Run it** against the running local servers (start them per the MVP runbook if needed: backend `:8010` auth-off + `ARTIFACT_STORE_BACKEND=memory`, frontend `:3010` with `BACKEND_URL=http://localhost:8010` and `ARTIFACTS_STUDIO_AGUI_URL=http://localhost:8010/artifacts-studio`):
 
-Run: `cd apps/frontend/e2e && E2E_BASE_URL=http://localhost:3010 npx playwright test artifacts-studio.spec.ts --reporter=list`
-Expected: 1 passed. If the approval step hangs, inspect the captured trace/events, fix the event discriminator in `ArtifactStudio.tsx`, re-run.
+Run: `cd e2e && E2E_BASE_URL=http://localhost:3010 npx playwright test artifacts-studio.spec.ts --reporter=list`
+Expected: 1 passed. If the approval step hangs, inspect the captured trace/events, fix the event discriminator + resume payload in `ArtifactStudio.tsx`, re-run.
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add apps/frontend/e2e/artifacts-studio.spec.ts
+git add e2e/artifacts-studio.spec.ts
 git commit -m "test(artifacts): Playwright E2E for the Studio (generate → confirm → save → draft)"
 ```
 
