@@ -56,6 +56,14 @@ def main() -> int:
         tenant_id="t1", title="x", description="", type="bogus",
         html="<html></html>", user=U())))
 
+    # length caps
+    check("title over 200 rejected", _raises_value(lambda: svc.create_draft(
+        tenant_id="t1", title="x" * 201, description="", type="report",
+        html="<html><body>ok</body></html>", user=U())))
+    check("description over 1000 rejected", _raises_value(lambda: svc.create_draft(
+        tenant_id="t1", title="ok", description="y" * 1001, type="report",
+        html="<html><body>ok</body></html>", user=U())))
+
     # lifecycle
     r2 = svc.create_draft(tenant_id="t1", title="L", description="", type="report",
                           html="<html><body>v</body></html>", user=U())

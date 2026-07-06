@@ -59,6 +59,10 @@ def create_draft(*, tenant_id: str, title: str, description: str, type: str,
                  html: str, user) -> ArtifactRecord:
     if type not in ALLOWED_TYPES:
         raise ValueError(f"invalid artifact type: {type}")
+    if len(title) > 200:
+        raise ValueError("title exceeds 200 characters")
+    if len(description) > 1000:
+        raise ValueError("description exceeds 1000 characters")
     html = validate_html(html, max_bytes=settings.artifact_max_html_bytes)
     store, content = _stores()
     aid = new_artifact_id()
