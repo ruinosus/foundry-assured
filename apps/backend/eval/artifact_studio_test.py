@@ -35,9 +35,17 @@ def main() -> int:
     # BaseChatClient; patch it on FoundryChatClient and restore in finally.
     import app.agents.artifacts_studio as sm
     from agent_framework import SkillsProvider
+    from app.core.tenant import TenantConfig
     captured: dict = {}
     orig_as_agent = sm.FoundryChatClient.as_agent
     sm.FoundryChatClient.as_agent = lambda self, **kw: captured.update(kw) or object()
+    # Both build_studio_agent (FoundryChatClient needs a non-empty project_endpoint) and
+    # mount_artifacts_studio (studio_configured() gates on the endpoint in self_hosted mode) read
+    # tenant_config; CI has no FOUNDRY_PROJECT_ENDPOINT. This test is construction-only (as_agent
+    # stubbed, adapter faked → no network), so patch tenant_config to a dummy endpoint for BOTH
+    # sections — same pattern as platform_hosted_bridge_test. Restored after the mount section.
+    orig_tenant_config = sm.tenant_config
+    sm.tenant_config = lambda: TenantConfig(foundry_project_endpoint="https://studio-test.api.azureml.ms")
     try:
         sm.build_studio_agent()
     finally:
@@ -62,6 +70,7 @@ def main() -> int:
         studio_mod.mount_artifacts_studio(object())  # fake app; adapter is faked
     finally:
         studio_mod.add_agent_framework_fastapi_endpoint = orig
+        sm.tenant_config = orig_tenant_config  # restore the dummy-endpoint patch
 
     check("studio mounted at /artifacts-studio", any(c["path"] == "/artifacts-studio" for c in calls))
     roles = set()
