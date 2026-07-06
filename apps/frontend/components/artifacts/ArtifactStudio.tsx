@@ -157,11 +157,11 @@ function StudioCanvas() {
           {
             interruptId: id,
             status: approved ? "resolved" : "cancelled",
-            // TODO(verify-live): payload shape unverified against the live AG-UI stream.
-            // Best guess per agent_framework_ag_ui rc5's confirm_changes continuation
-            // (_agent_run.py _is_confirm_changes_response): { accepted: bool, steps: [...] }.
-            // If the run doesn't resume, capture the real resume request in the Studio E2E
-            // (Canvas Chunk 3) and adjust this shape to match.
+            // VERIFIED LIVE (Studio E2E): the backend's confirm_changes continuation
+            // (agent_framework_ag_ui _agent_run.py _is_confirm_changes_response) accepts a
+            // { accepted, steps } body. The resume bridge maps this to the backend's
+            // { interrupts: [{ id, value }] } form; interruptId is the update_artifact call_id
+            // (event.value.id). Confirmed end-to-end by e2e/artifacts-studio.spec.ts.
             payload: { accepted: approved, steps: [] },
           },
         ],
