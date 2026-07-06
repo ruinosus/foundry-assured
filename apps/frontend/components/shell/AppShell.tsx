@@ -98,7 +98,15 @@ export function AppShell({
   flush?: boolean;
 }) {
   const pathname = usePathname() || "/";
-  const title = TITLES[pathname] ?? "";
+  // Exact match first; then fall back to the longest base route that is a prefix of the
+  // current path, so nested workspace routes (e.g. /artifacts/<id>) inherit their base label
+  // — consistent with the sidebar's startsWith-based active state.
+  const title =
+    TITLES[pathname] ??
+    Object.entries(TITLES)
+      .filter(([href]) => href !== "/" && pathname.startsWith(`${href}/`))
+      .sort((a, b) => b[0].length - a[0].length)[0]?.[1] ??
+    "";
   const roles = useMyRoles();
   // Show Admin in the nav only to Admins (the page + every endpoint re-check server-side).
   const workspace = isAdmin(roles) ? [...WORKSPACE_NAV, ...ADMIN_NAV] : WORKSPACE_NAV;

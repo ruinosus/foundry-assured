@@ -63,16 +63,24 @@ export function ArtifactDetail({ id }: { id: string }) {
         return;
       }
       await load();
+    } catch (e) {
+      setError((e as Error).message);
     } finally {
       setBusy(false);
     }
   }
 
-  if (error) return <p className="muted">⚠️ {error}</p>;
-  if (!a) return <div className="empty">Loading…</div>;
+  // Initial-load failure (no artifact yet) is fatal → full-page error. Once the artifact is
+  // loaded, a failed lifecycle action shows an inline banner above the still-rendered content.
+  if (!a) return error ? <p className="muted">⚠️ {error}</p> : <div className="empty">Loading…</div>;
 
   return (
     <>
+      {error && (
+        <p className="muted" style={{ marginBottom: 12 }}>
+          ⚠️ {error}
+        </p>
+      )}
       <div>
         <h2 style={{ margin: "0 0 4px" }}>{a.title}</h2>
         <p className="muted" style={{ margin: 0, fontSize: 13 }}>{a.description}</p>
