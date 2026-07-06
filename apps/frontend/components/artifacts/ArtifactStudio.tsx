@@ -102,9 +102,16 @@ function StudioCanvas() {
   const [type, setType] = useState<string>("");
   const [skill, setSkill] = useState<string>("auto");
   const [usedSkill, setUsedSkill] = useState<string>("");
+  const [regenerating, setRegenerating] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const router = useRouter();
+
+  // Once the user hand-edits the Title, stop letting agent turns overwrite it. update_artifact is
+  // approval_mode="always_require", so a function_approval_request fires on EVERY turn — without
+  // this guard, "make the header blue" after a manual retitle would reset the Title. An explicit
+  // Regenerate clears the guard (the user asked for a fresh title).
+  const userEditedTitle = useRef(false);
 
   // rAF-throttle setHtml so a burst of STATE_DELTA tokens doesn't trigger a re-render each.
   const rafRef = useRef<number | null>(null);
@@ -147,6 +154,8 @@ function StudioCanvas() {
           const id: string | undefined = v.id ?? v.request_id ?? fc.call_id;
           if (!id) return;
           setPending({ id, toolName: fc.name });
+          // A new approval means the just-sent regenerate turn produced its artifact — re-enable.
+          setRegenerating(false);
 
           // Auto-fill title/type/skill (option c — see the header comment). fc.arguments is the
           // parsed update_artifact call args in the normal shape, but defend against a raw JSON
@@ -160,7 +169,7 @@ function StudioCanvas() {
               args = {};
             }
           }
-          if (args.title) setTitle(args.title);
+          if (args.title && !userEditedTitle.current) setTitle(args.title);
           if (args.type) setType(args.type);
           if (args.skill) setUsedSkill(args.skill);
           // The approval event carries the COMPLETE html too — take it as authoritative so the
@@ -238,7 +247,10 @@ function StudioCanvas() {
   // not a guessed API. Disabled while a run/approval is in flight so it can't race the pending
   // approval card.
   async function regenerate() {
-    if (!agent || approving || pending) return;
+    if (!agent || approving || pending || regenerating) return;
+    setRegenerating(true);
+    // Explicit Regenerate: the user wants a fresh title, so let the agent's next title through.
+    userEditedTitle.current = false;
     const id =
       typeof crypto !== "undefined" && crypto.randomUUID
         ? crypto.randomUUID()
@@ -248,7 +260,13 @@ function StudioCanvas() {
         ? "Regenerate the artifact."
         : `Use the ${skill} skill and regenerate the artifact.`;
     agent.addMessage({ id, role: "user", content });
-    await agent.runAgent();
+    try {
+      await agent.runAgent();
+    } finally {
+      // Belt-and-suspenders: onEvent clears this the moment the approval card appears; this covers
+      // a run that finishes/fails without emitting one.
+      setRegenerating(false);
+    }
   }
 
   const titleOk = title.length > 0 && title.length <= MAX_TITLE;
@@ -287,7 +305,10 @@ function StudioCanvas() {
             placeholder="Q3 status report"
             value={title}
             maxLength={MAX_TITLE}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => {
+              userEditedTitle.current = true;
+              setTitle(e.target.value);
+            }}
           />
           {!titleOk && title.length > 0 && (
             <span className="muted" style={{ fontSize: 12 }}>
@@ -320,10 +341,10 @@ function StudioCanvas() {
             </select>
             <button
               className="acct-btn"
-              disabled={!agent || approving || Boolean(pending)}
+              disabled={!agent || approving || Boolean(pending) || regenerating}
               onClick={regenerate}
             >
-              Regenerate
+              {regenerating ? "Regenerating…" : "Regenerate"}
             </button>
           </div>
           {usedSkill && (
