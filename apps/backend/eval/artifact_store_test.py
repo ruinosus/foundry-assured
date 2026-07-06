@@ -55,6 +55,15 @@ def main() -> int:
     check("content round-trips", content.get(path) == "<html>hi</html>")
     check("missing content is None", content.get("nope") is None)
 
+    import app.core.settings as settings_mod
+    from app.artifacts import factory
+
+    settings_mod.settings.artifact_store_backend = "memory"
+    ms = factory.make_artifact_store()
+    cs = factory.make_content_store()
+    check("factory metadata=memory", type(ms).__name__ == "InMemoryArtifactStore")
+    check("factory content=memory", type(cs).__name__ == "InMemoryContentStore")
+
     print("PASS" if not failures else f"FAIL ({len(failures)})")
     return 1 if failures else 0
 
