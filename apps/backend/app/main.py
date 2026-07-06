@@ -16,6 +16,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.agents.artifacts_studio import mount_artifacts_studio
 from app.api import api_router
 from app.core.auth import azure_scheme
 from app.core.settings import settings
@@ -47,6 +48,7 @@ app.include_router(api_router)
 # (workflow → helpdesk AG-UI; grounded → cockpit/selfwiki cited Q&A; tool → platform
 # AG-UI). The hosted twins stay in app/api/chat.py.
 mount_domains(app)
+mount_artifacts_studio(app)
 
 
 if __name__ == "__main__":

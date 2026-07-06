@@ -9,11 +9,12 @@ from __future__ import annotations
 
 from agent_framework import tool
 from agent_framework.foundry import FoundryChatClient
-from agent_framework_ag_ui import AgentFrameworkAgent
+from agent_framework_ag_ui import AgentFrameworkAgent, add_agent_framework_fastapi_endpoint
+from fastapi import Depends, FastAPI
 from pydantic import BaseModel, Field
 
 from app.agents.per_request import PerRequestAgent
-from app.core.auth import credential_for_request
+from app.core.auth import auth_dependencies, credential_for_request, require_role
 from app.core.tenant import tenant_config
 
 _STUDIO_INSTRUCTIONS = (
@@ -67,3 +68,14 @@ studio_agent = AgentFrameworkAgent(
     predict_state_config={"artifact": {"tool": "update_artifact", "tool_argument": "artifact"}},
     require_confirmation=True,
 )
+
+
+def mount_artifacts_studio(app: FastAPI) -> None:
+    """POST /artifacts-studio — the AG-UI shared-state canvas agent, gated Author/Admin
+    (mirror app/domains.py::_mount_platform's dependencies=... shape)."""
+    add_agent_framework_fastapi_endpoint(
+        app,
+        agent=studio_agent,
+        path="/artifacts-studio",
+        dependencies=[*auth_dependencies(), Depends(require_role("Author", "Admin"))],
+    )
