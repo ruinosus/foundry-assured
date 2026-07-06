@@ -22,6 +22,13 @@ def main() -> int:
     check("update_artifact is a FunctionTool named update_artifact",
           isinstance(update_artifact, FunctionTool) and update_artifact.name == "update_artifact")
 
+    # FunctionTool.parameters() is a METHOD returning a JSON-schema dict (verified against the
+    # installed SDK); the arg names live under ["properties"] — NOT top-level (which also has a
+    # "type" key that would false-pass). Call it and read properties.
+    schema = update_artifact.parameters()
+    props = set(schema.get("properties", {}).keys())
+    check("update_artifact takes html/title/type/skill", {"html", "title", "type", "skill"} <= props)
+
     # --- mount introspection: /artifacts-studio gated Author/Admin ---
     import app.agents.artifacts_studio as studio_mod
     import app.core.settings as settings_mod

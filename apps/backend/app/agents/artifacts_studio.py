@@ -7,30 +7,40 @@ state_schema/predict_state_config/require_confirmation — see docs/.../ag-ui/st
 """
 from __future__ import annotations
 
-from agent_framework import tool
+from pathlib import Path
+
+from agent_framework import SkillsProvider, tool
 from agent_framework.foundry import FoundryChatClient
 from agent_framework_ag_ui import AgentFrameworkAgent, add_agent_framework_fastapi_endpoint
 from fastapi import Depends, FastAPI
 
+from app.agents.mcp.tools import build_artifact_mcp_reads
 from app.agents.per_request import PerRequestAgent
 from app.core.auth import auth_dependencies, credential_for_request, require_role
 from app.core.settings import settings
 from app.core.tenant import tenant_config
 
+_SKILLS_DIR = Path(__file__).resolve().parents[2] / "artifact-skills"  # apps/backend/artifact-skills
+
 _STUDIO_INSTRUCTIONS = (
     "You are an expert front-end engineer authoring a SINGLE self-contained HTML document. "
-    "To create or change the artifact you MUST call the `update_artifact` tool and pass the "
-    "COMPLETE updated document in `html`, starting with <!doctype html>, with all CSS "
-    "and JS inline and NO external requests — safe to render inside a sandboxed iframe. When the "
-    "user asks for a change, include the ENTIRE document with the change applied; never return a "
-    "diff or a partial, and never drop existing content. After calling the tool, reply with a "
+    "Choose the skill that best matches the requested artifact; if the user pinned a skill, use "
+    "it. Follow its SKILL.md via load_skill/read_skill_resource. To create or change the artifact "
+    "you MUST call the `update_artifact` tool and pass the COMPLETE updated document in `html`, "
+    "starting with <!doctype html>, with all CSS and JS inline and NO external requests — safe to "
+    "render inside a sandboxed iframe. When the user asks for a change, include the ENTIRE "
+    "document with the change applied; never return a diff or a partial, and never drop existing "
+    "content. Call `update_artifact` with the complete `html`, a concise `title`, a `type` from "
+    "{report,presentation,walkthrough,dashboard}, and the `skill` you used. Use the read-only data "
+    "tools only when the user asks for data-grounded content. After calling the tool, reply with a "
     "one-sentence summary of what you did."
 )
 
 
 @tool(approval_mode="always_require")
-def update_artifact(html: str) -> str:
-    """Write the COMPLETE updated HTML document (never a diff/partial; keep all existing content).
+def update_artifact(html: str, title: str, type: str, skill: str) -> str:
+    """Write the COMPLETE artifact: the full HTML document (html), a concise title, a type
+    (one of report|presentation|walkthrough|dashboard), and the skill name you used.
 
     `approval_mode="always_require"` makes the agent emit a `function_approval_request` content
     for each call, which the AG-UI adapter surfaces as the in-loop edit-confirmation event (paired
@@ -51,7 +61,8 @@ def build_studio_agent():
         name="ArtifactsStudio",
         description="Conversationally generates and refines a self-contained HTML artifact.",
         instructions=_STUDIO_INSTRUCTIONS,
-        tools=[update_artifact],
+        context_providers=[SkillsProvider.from_paths(str(_SKILLS_DIR))],  # no script_runner (no shell)
+        tools=[update_artifact, *build_artifact_mcp_reads()],
     )
 
 
@@ -69,7 +80,18 @@ studio_agent = AgentFrameworkAgent(
     ),
     name="ArtifactsStudio",
     description="Conversationally generates and refines a self-contained HTML artifact.",
-    state_schema={"html": {"type": "string", "description": "The current HTML artifact document"}},
+    state_schema={
+        "html": {"type": "string", "description": "The current HTML artifact document"},
+        "title": {"type": "string", "description": "Concise artifact title"},
+        "type": {"type": "string", "description": "report|presentation|walkthrough|dashboard"},
+        "skill": {"type": "string", "description": "The skill used to generate it"},
+    },
+    # PROVISIONAL — html only for now (predictive streaming, unchanged). A state_schema key with
+    # NO predict_state_config entry is never auto-populated by the AG-UI adapter, so title/type/
+    # skill do NOT yet surface via state. TODO(verify-live, Step 4b): probe the live SSE stream to
+    # decide whether to (a) add title/type/skill here too (each {tool:"update_artifact",
+    # tool_argument:"<key>"}) or (c) read them from the function_approval_request event's
+    # arguments in the frontend instead — do NOT assume without the live probe.
     predict_state_config={"html": {"tool": "update_artifact", "tool_argument": "html"}},
     require_confirmation=True,
 )
