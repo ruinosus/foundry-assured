@@ -144,7 +144,14 @@ git commit -m "feat(artifacts): add skill field end-to-end + dashboard type"
 
 **Files:** Create `apps/backend/artifact-skills/{slides,report,dashboard,walkthrough}/SKILL.md` (+ slides resources); create `apps/backend/eval/artifact_skills_test.py`.
 
-Format: Anthropic Agent Skills `SKILL.md` — YAML frontmatter (`name`, `description`) + markdown body. Add a `type:` frontmatter key so the agent knows the category (report/presentation/walkthrough/dashboard). Keep each SKILL.md ≤ ~500 lines; move long reference to resource files loaded on demand.
+Format: Anthropic Agent Skills `SKILL.md` — YAML frontmatter (`name`, `description`) + markdown body. Keep each SKILL.md ≤ ~500 lines; move long reference to resource files loaded on demand.
+
+> **On the artifact `type`:** the installed `SkillsProvider` frontmatter parser only recognizes top-level
+> `name`/`description`/`license`/`compatibility`/`allowed-tools` + a nested `metadata:` block — a top-level
+> `type:` key is silently dropped and is NOT advertised to the model. The model actually gets the `type`
+> enum from `_STUDIO_INSTRUCTIONS` (Task 4) and reports it as an `update_artifact` argument. So put the
+> category under `metadata:` (`metadata:\n  type: report`) for documentation/SDK-visibility, and rely on
+> the instructions for the enforced enum. The discovery test below checks the category as bookkeeping only.
 
 - [ ] **Step 1: Write the failing test** (`eval/artifact_skills_test.py`):
 
@@ -178,7 +185,9 @@ def main() -> int:
         text = (skills_dir / name / "SKILL.md").read_text(encoding="utf-8")
         check(f"{name}: has frontmatter", text.startswith("---"))
         check(f"{name}: declares name", "name:" in text.split("---")[1])
-        check(f"{name}: declares a valid type", any(f"type: {t}" in text for t in ALLOWED_TYPES))
+        # Bookkeeping only: the category under metadata (SDK ignores top-level type; model gets the
+        # enum from instructions). Grep the raw text for any allowed type token.
+        check(f"{name}: declares a valid type (bookkeeping)", any(t in text for t in ALLOWED_TYPES))
 
     # SkillsProvider discovers them (Experimental API — verify it imports + from_paths works).
     from agent_framework import SkillsProvider
@@ -313,18 +322,12 @@ def build_artifact_mcp_reads() -> list[MCPStreamableHTTPTool]:
     if not settings.mcp_enabled:
         return []
     roles = current_roles() if settings.auth_enabled else {"Admin"}
-    if settings.deployment_mode == "shared":
-        # Reuse the connection path but keep reads only: filter each built tool is overkill; simplest
-        # is to build via the self-hosted read-only path over enabled_servers when a shared MCP story
-        # isn't needed for artifacts yet. Keep parity with build_mcp_tools's shared branch ONLY if
-        # artifacts need per-tenant MCP; for the MVP, self-hosted registry path is sufficient.
-        tools = [_build_one_read_only(s, roles) for s in enabled_servers()]
-        return [t for t in tools if t is not None]
+    # MVP: artifacts use the registry read path in ALL deployment modes (no per-tenant MCP
+    # Connections for artifacts yet). TODO: if shared-mode per-tenant MCP grounding is wanted later,
+    # mirror build_from_connections reads-only. Either way, no write tools are ever exposed.
     tools = [_build_one_read_only(s, roles) for s in enabled_servers()]
     return [t for t in tools if t is not None]
 ```
-
-> NOTE: the shared-vs-self_hosted branch is collapsed for the MVP (artifacts use the registry read path in both). If per-tenant MCP Connections are wanted for artifacts later, mirror `build_from_connections` reads-only. Confirm this simplification is acceptable during review; it does not expose writes either way.
 
 - [ ] **Step 4: Run to verify it passes**
 
@@ -349,17 +352,13 @@ The agent gains skills (context provider) + MCP reads (tools) and produces the w
 - [ ] **Step 1: Extend `eval/artifact_studio_test.py`** — assert the tool now takes 4 args and the provider/tools are wired:
 
 ```python
-    import inspect as _inspect
-    params = list(_inspect.signature(update_artifact.func if hasattr(update_artifact, "func") else update_artifact).parameters) \
-        if False else None  # NOTE: FunctionTool wraps the fn; assert via its schema instead
-    # The FunctionTool exposes its parameter names; assert html/title/type/skill are all present.
-    schema_params = set(getattr(update_artifact, "parameters", {}) or {})
-    # Fallback: check the underlying callable if the schema isn't introspectable.
-    check("update_artifact takes html/title/type/skill",
-          {"html", "title", "type", "skill"} <= (schema_params or set(
-              _inspect.signature(getattr(update_artifact, "_func", lambda html, title, type, skill: None)).parameters)))
+    # FunctionTool.parameters() is a METHOD returning a JSON-schema dict (verified against the
+    # installed SDK); the arg names live under ["properties"] — NOT top-level (which also has a
+    # "type" key that would false-pass). Call it and read properties.
+    schema = update_artifact.parameters()
+    props = set(schema.get("properties", {}).keys())
+    check("update_artifact takes html/title/type/skill", {"html", "title", "type", "skill"} <= props)
 ```
-> The exact way to read a `FunctionTool`'s parameter names varies — during implementation, print `dir(update_artifact)` / its schema and assert the four names robustly (mirror how `artifact_studio_test.py` already does the tolerant `FunctionTool` check).
 
 - [ ] **Step 2: Run to verify it fails**
 
@@ -412,10 +411,10 @@ Expected: FAIL (tool has only `html`).
 Run: `cd apps/backend && uv run python -m eval.artifact_studio_test && uv run python -m eval.artifact_skills_test && uv run python -m eval.artifact_mcp_reads_test && uv run python -m eval.artifact_service_test`
 Expected: all PASS.
 
-- [ ] **Step 4b: VERIFY-LIVE the multi-field surfacing** — with the local backend running (`:8010`, `--reload`, auth off, `ARTIFACT_STORE_BACKEND=memory`), probe `/artifacts-studio` directly (reuse/adapt `scratchpad/probe_studio.py` from the canvas build) sending a "make a report titled X" message, and inspect the SSE events for how `title`/`type`/`skill` arrive:
-  - If they appear in `STATE_SNAPSHOT.snapshot` (and/or `STATE_DELTA` on `/title` etc.) → the state-schema approach works; keep it. Add them to `predict_state_config` too if you want them to stream.
-  - If they do NOT surface in state (only `html` does) → read `title`/`type`/`skill` from the `function_approval_request` event's `value.function_call.arguments` (which carries ALL tool args) in the frontend instead. Document which mechanism won in a code comment (mirror the canvas `VERIFIED LIVE` note).
-  Record the finding; the frontend (Chunk 4) consumes whichever the backend populates.
+- [ ] **Step 4b: VERIFY-LIVE the multi-field surfacing** — with the local backend running (`:8010`, `--reload`, auth off, `ARTIFACT_STORE_BACKEND=memory`), probe `/artifacts-studio` directly (reuse/adapt `scratchpad/probe_studio.py` from the canvas build) sending a "make a report titled X" message, and inspect the SSE events. **Important (verified against the installed adapter):** a `state_schema` key with NO `predict_state_config` entry is NEVER auto-populated — so the two mechanisms that actually work are:
+  - **(a)** add all four keys to `predict_state_config` (each `{tool:"update_artifact", tool_argument:"<key>"}`); the partial/complete delta emitters iterate every configured key, so `title`/`type`/`skill` surface in `STATE_SNAPSHOT`/`STATE_DELTA` (html predictive as before). **Prefer this if the probe shows the 4 fields in state.**
+  - **(c)** read `title`/`type`/`skill` from the `function_approval_request` event's `value.function_call.arguments` (confirmed to carry the complete parsed args dict for all 4) in the frontend `onEvent` tap.
+  Pick (a) or (c) based on the probe (do NOT rely on bare `state_schema`). Update `predict_state_config` accordingly and document the choice in a code comment (mirror the canvas `VERIFIED LIVE` note). The frontend (Chunk 4) consumes whichever the backend populates.
 
 - [ ] **Step 5: Commit**
 
@@ -435,7 +434,7 @@ git commit -m "feat(artifacts): studio agent is skill-driven — SkillsProvider 
 Read the file first. Apply per the Chunk-3 Step-4b finding (state fields vs approval-event args).
 
 - [ ] **Step 1: Add the skill list + state + selector.**
-  - Constants: `const SKILLS = ["auto", "slides", "report", "dashboard", "walkthrough"] as const;` and extend `ARTIFACT_TYPES` to include `"dashboard"`.
+  - Constants: `const SKILLS = ["auto", "slides", "report", "dashboard", "walkthrough"] as const;` and extend `ARTIFACT_TYPES` to include `"dashboard"` (its remaining consumer post-reshape is the read-only Type **display/normalization** — the manual `<select>` is gone; keep the constant as the allowed-set for showing/validating the agent-filled `type`).
   - State: add `const [skill, setSkill] = useState<string>("auto");` and `const [usedSkill, setUsedSkill] = useState<string>("");`.
   - **Auto-fill from agent state:** extend the `agent.subscribe` tap — mirror `htmlFromSnapshot`/`htmlFromDelta` to also read `snap.title`/`snap.type`/`snap.skill` (and `/title`,`/type`,`/skill` delta ops), calling `setTitle`/`setType`/`setUsedSkill` (only when the field is non-empty, so the user's manual edits aren't clobbered — track a "user touched title" ref if needed). **OR**, per Step-4b, read title/type/skill from the approval event's `function_call.arguments` in `onEvent` and set them there.
   - **Selector UI:** replace the manual Title/Type block's `<select>` for Type with a **Skill selector** (`Auto | slides | report | dashboard | walkthrough`) bound to `skill`/`setSkill`, plus a **Regenerate** button. Keep the Title `<input>` (now auto-filled + editable) and keep a Type display (auto-filled). Show `usedSkill` ("Generated with: {usedSkill}").
