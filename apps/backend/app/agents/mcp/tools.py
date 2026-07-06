@@ -109,6 +109,47 @@ def _build_one(server: McpServer, roles: set[str]) -> MCPStreamableHTTPTool | No
     return MCPStreamableHTTPTool(**kwargs)
 
 
+def _build_one_read_only(server: McpServer, roles: set[str]) -> MCPStreamableHTTPTool | None:
+    reads, _writes = visible_tools(server, roles)
+    if not reads:
+        return None
+    url = _resolve_url(server)
+    if not url:
+        return None
+    kwargs: dict = {
+        "name": f"mcp_{server.id}",
+        "url": url,
+        "allowed_tools": reads,            # READ tools only — never writes
+        "approval_mode": "never_require",
+    }
+    if server.auth == "public":
+        pass
+    elif server.auth == "obo" and server.obo_scope:
+        kwargs["header_provider"] = _obo_header_provider(server.obo_scope)
+    elif server.auth == "github_pat":
+        pat = tenant_config().mcp_github_pat
+        if not pat:
+            return None
+        kwargs["header_provider"] = _static_header_provider(pat)
+    else:
+        return None
+    return MCPStreamableHTTPTool(**kwargs)
+
+
+def build_artifact_mcp_reads() -> list[MCPStreamableHTTPTool]:
+    """Read-only MCP tools for grounding artifact generation. Unlike build_mcp_tools(), this gates
+    on settings.mcp_enabled itself (that gate normally lives in the caller, platform_configured())
+    and drops ALL write tools — artifact generation must never write to external systems."""
+    if not settings.mcp_enabled:
+        return []
+    roles = current_roles() if settings.auth_enabled else {"Admin"}
+    # MVP: artifacts use the registry read path in ALL deployment modes (no per-tenant MCP
+    # Connections for artifacts yet). TODO: if shared-mode per-tenant MCP grounding is wanted later,
+    # mirror build_from_connections reads-only. Either way, no write tools are ever exposed.
+    tools = [_build_one_read_only(s, roles) for s in enabled_servers()]
+    return [t for t in tools if t is not None]
+
+
 def _resolve_connection_url(server: McpServer, conn) -> str | None:
     """Shared-mode URL resolution — from the CONNECTION, not the flat mcp_* settings.
 
