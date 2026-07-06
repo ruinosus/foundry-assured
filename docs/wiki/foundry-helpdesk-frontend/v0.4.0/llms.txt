@@ -1,0 +1,11 @@
+# foundry-helpdesk-frontend v0.4.0
+
+- [Visão Geral — Frontend de 4 Domínios + Artifacts Studio](pages/page-1.md)
+- [Arquitetura e Stack (Next.js 16 + CopilotKit v2 + MSAL)](pages/page-2.md)
+- [O Registry de Domínios e o Runtime CopilotKit](pages/page-3.md)
+- [Assurance Console, Toggle Live/Hosted e EvidencePanel](pages/page-4.md)
+- [Human-in-the-loop — WorkflowSteps e TicketApproval](pages/page-5.md)
+- [HTML Artifacts UI e o Studio Canvas](pages/page-6.md)
+- [Admin e Multi-tenancy — Users e Connections](pages/page-7.md)
+- [Autenticação Entra (MSAL) e os Proxies de API](pages/page-8.md)
+- [Execução Local, Demo Mode e Deploy](pages/page-9.md)
