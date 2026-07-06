@@ -2,10 +2,10 @@ import { test, expect, Page } from "@playwright/test";
 import fs from "node:fs";
 import path from "node:path";
 
-// ── Artifacts Studio E2E (LOCAL, auth OFF) ───────────────────────────────────────────────────
-// Drives the CopilotKit + AG-UI canvas: describe → live sandboxed preview → in-loop edit
-// approval (require_confirmation) → Save as draft. This is where the approval resume payload is
-// verified live (the ArtifactStudio TODO(verify-live)).
+// ── Artifacts Studio E2E (LOCAL, auth OFF) — skill-driven ─────────────────────────────────────
+// Drives the reshaped CopilotKit + AG-UI canvas: describe → the agent picks a SKILL, streams the
+// HTML into the sandbox, and AUTO-FILLS Title/Type/Skill (from the function_approval_request args,
+// option c) → in-loop edit approval → Save as draft. Case B pins a skill via the selector.
 //   E2E_BASE_URL=http://localhost:3010 npx playwright test artifacts-studio.spec.ts
 const STEPS_DIR = path.join(__dirname, "artifacts", "steps-studio");
 fs.mkdirSync(STEPS_DIR, { recursive: true });
@@ -16,53 +16,71 @@ async function shot(page: Page, name: string) {
   console.log(`  📸 ${path.relative(process.cwd(), f)}`);
 }
 
-test("studio: describe → live preview → confirm edit → save → draft", async ({ page }) => {
-  // Tap the CopilotKit SSE so we can SEE the AG-UI events (state deltas + the approval event).
-  page.on("console", (m) => {
-    const t = m.text();
-    if (/approval|confirm_changes|interrupt|STATE_|request_info|function_call/i.test(t)) {
-      console.log("  [console] " + t.slice(0, 300));
-    }
-  });
-
-  await page.goto("/artifacts/new");
+async function send(page: Page, text: string) {
   const composer = page.locator("textarea, [contenteditable='true']").first();
   await expect(composer).toBeVisible({ timeout: 30_000 });
+  await composer.fill(text);
+  await composer.press("Enter");
+}
+
+test("studio (auto skill): describe → agent fills title/type/skill → approve → save → draft", async ({ page }) => {
+  await page.goto("/artifacts/new");
   await shot(page, "studio-open");
 
-  await composer.fill(
-    "Create a one-page HTML report titled 'Studio Smoke' with an <h1> heading that says " +
-      "'Studio Smoke' and one short paragraph. Self-contained, starting with <!doctype html>.",
-  );
-  await composer.press("Enter");
+  await send(page, "Create a one-page HTML report titled 'Studio Smoke' with an <h1> that says 'Studio Smoke' and one short paragraph. Self-contained, starting with <!doctype html>.");
   await shot(page, "prompt-sent");
 
-  // The in-loop edit-approval card appears once the model finishes the update_artifact tool call
-  // (require_confirmation). This is the key signal the shared-state + confirmation flow works.
+  // Approval card appears once the agent completes update_artifact (require_confirmation).
   const approve = page.getByRole("button", { name: /^Approve$/ });
-  await expect(approve).toBeVisible({ timeout: 150_000 });
-  await shot(page, "approval-card");
+  await expect(approve).toBeVisible({ timeout: 180_000 });
 
-  // The live preview should already show streamed HTML (predictive STATE_DELTA) before we approve.
+  // AUTO-FILL (option c): Title populated from the approval args; a skill is shown as used.
+  const titleInput = page.getByPlaceholder("Q3 status report");
+  await expect(titleInput).not.toHaveValue("", { timeout: 10_000 });
+  await expect(page.getByText(/Generated with:/i)).toBeVisible();
+  await shot(page, "approval-card-autofilled");
+
+  // Sandbox invariant.
   const iframe = page.locator('iframe[title="artifact-preview"]');
   await expect(iframe).toBeVisible();
   expect(await iframe.getAttribute("sandbox")).toBe("allow-scripts");
 
   await approve.click();
-  await shot(page, "approved");
-
-  // After approval the run resumes and the final STATE_SNAPSHOT lands; the preview heading renders.
   const frame = await iframe.elementHandle().then((h) => h!.contentFrame());
   await expect(frame!.locator("h1")).toBeVisible({ timeout: 30_000 });
   await shot(page, "preview-rendered");
 
-  // Save as draft.
-  await page.getByPlaceholder("Q3 status report").fill("Studio Smoke " + Date.now());
+  // Save (title is already agent-filled).
   const save = page.getByRole("button", { name: /save as draft/i });
   await expect(save).toBeEnabled();
   await save.click();
 
-  // Landed on the detail page as a draft.
   await expect(page.locator(".pill", { hasText: "draft" })).toBeVisible({ timeout: 30_000 });
+  // The detail page shows which skill generated it.
+  await expect(page.locator(".muted", { hasText: /report|slides|dashboard|walkthrough/ }).first()).toBeVisible();
   await shot(page, "saved-draft");
+});
+
+test("studio (skill override): approve → pin 'slides' → regenerate → used skill is slides", async ({ page }) => {
+  await page.goto("/artifacts/new");
+  await send(page, "Make something about the Foundry platform.");
+
+  // First approval → accept it (Regenerate is intentionally disabled while an approval is pending).
+  const approve = page.getByRole("button", { name: /^Approve$/ });
+  await expect(approve).toBeVisible({ timeout: 180_000 });
+  await approve.click();
+  // The preview settles (run resumed) — now Regenerate is enabled.
+  const iframe = page.locator('iframe[title="artifact-preview"]');
+  await expect(iframe).toBeVisible();
+
+  // Pin the slides skill via the selector (the only <select> in the reshaped panel) + regenerate.
+  await page.locator("select").selectOption("slides");
+  const regen = page.getByRole("button", { name: /^Regenerate$/ });
+  await expect(regen).toBeEnabled({ timeout: 20_000 });
+  await regen.click();
+
+  // A fresh approval lands and the "Generated with" indicator reflects the slides skill.
+  await expect(approve).toBeVisible({ timeout: 180_000 });
+  await expect(page.getByText(/Generated with:\s*slides/i)).toBeVisible({ timeout: 20_000 });
+  await shot(page, "override-slides");
 });
