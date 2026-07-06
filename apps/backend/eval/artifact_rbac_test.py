@@ -41,6 +41,10 @@ def main() -> int:
           _roles_for("/artifacts/html/{artifact_id}/approve", "POST") == {"Approver", "Admin"})
     check("list requires a role (any authenticated)",
           _roles_for("/artifacts/html", "GET") != set())
+    check("get requires a role (any authenticated)",
+          _roles_for("/artifacts/html/{artifact_id}", "GET") != set())
+    check("content requires a role (any authenticated)",
+          _roles_for("/artifacts/html/{artifact_id}/content", "GET") != set())
     check("request-approval requires Author/Admin",
           _roles_for("/artifacts/html/{artifact_id}/request-approval", "POST") == {"Author", "Admin"})
     check("reject requires Approver/Admin",
