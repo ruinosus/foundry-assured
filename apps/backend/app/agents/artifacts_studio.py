@@ -80,18 +80,16 @@ studio_agent = AgentFrameworkAgent(
     ),
     name="ArtifactsStudio",
     description="Conversationally generates and refines a self-contained HTML artifact.",
-    state_schema={
-        "html": {"type": "string", "description": "The current HTML artifact document"},
-        "title": {"type": "string", "description": "Concise artifact title"},
-        "type": {"type": "string", "description": "report|presentation|walkthrough|dashboard"},
-        "skill": {"type": "string", "description": "The skill used to generate it"},
-    },
-    # PROVISIONAL — html only for now (predictive streaming, unchanged). A state_schema key with
-    # NO predict_state_config entry is never auto-populated by the AG-UI adapter, so title/type/
-    # skill do NOT yet surface via state. TODO(verify-live, Step 4b): probe the live SSE stream to
-    # decide whether to (a) add title/type/skill here too (each {tool:"update_artifact",
-    # tool_argument:"<key>"}) or (c) read them from the function_approval_request event's
-    # arguments in the frontend instead — do NOT assume without the live probe.
+    # Only `html` is shared state (predictive live preview). title/type/skill are NOT state —
+    # they're read from the function_approval_request arguments in the frontend (see the comment
+    # on predict_state_config below; verified live in Step 4b).
+    state_schema={"html": {"type": "string", "description": "The current HTML artifact document"}},
+    # html only — predictive streaming for the live preview. VERIFIED LIVE (Step 4b probe):
+    # a state_schema key WITHOUT a predict_state_config entry stays an empty {} in state (title/
+    # type/skill are NOT populated via state). Their values DO arrive in the
+    # function_approval_request event's function_call.arguments ({html,title,type,skill}), so the
+    # frontend reads title/type/skill from that approval event (option c) — no backend change.
+    # Keeping html-only here avoids partial-streaming the short fields for no benefit.
     predict_state_config={"html": {"tool": "update_artifact", "tool_argument": "html"}},
     require_confirmation=True,
 )
