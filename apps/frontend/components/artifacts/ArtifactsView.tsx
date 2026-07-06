@@ -15,6 +15,7 @@ type Artifact = {
   status: string;
   createdBy: string;
   updatedAt: string;
+  skill?: string | null;
 };
 
 const STATUS: Record<string, string> = {
@@ -85,6 +86,7 @@ export function ArtifactsView() {
               <tr>
                 <th>Title</th>
                 <th>Type</th>
+                <th>Skill</th>
                 <th>Status</th>
                 <th>Updated</th>
               </tr>
@@ -96,6 +98,7 @@ export function ArtifactsView() {
                     <Link className="link-out" href={`/artifacts/${a.id}`}>{a.title}</Link>
                   </td>
                   <td>{a.type}</td>
+                  <td>{a.skill ?? "—"}</td>
                   <td>
                     <span className={`pill ${STATUS[a.status] ?? "neutral"}`}>{a.status}</span>
                   </td>

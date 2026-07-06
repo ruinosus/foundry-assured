@@ -20,6 +20,7 @@ type Artifact = {
   version: number;
   contentHash: string | null;
   updatedAt: string;
+  skill?: string | null;
 };
 
 const STATUS: Record<string, string> = {
@@ -92,6 +93,7 @@ export function ArtifactDetail({ id }: { id: string }) {
         {a.contentHash && (
           <span className="muted">· <code>{a.contentHash.slice(0, 12)}…</code></span>
         )}
+        {a.skill && <span className="muted">· {a.skill}</span>}
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
