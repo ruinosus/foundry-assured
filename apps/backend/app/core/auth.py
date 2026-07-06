@@ -162,6 +162,7 @@ def require_role(*roles: str):
             )
         return user
 
+    _check._required_roles = set(roles)  # for introspection/tests
     return _check
 
 
