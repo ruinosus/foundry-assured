@@ -21,6 +21,14 @@ class PlatformSettings(BaseSettings):
     # offline; never use in production).
     tenant_store_backend: str = "table"
 
+    # Artifacts (HTML artifacts feature)
+    artifact_store_backend: str = "table"       # "table" | "memory"
+    artifact_store_account_url: str = ""         # ARTIFACT_STORE_ACCOUNT_URL
+    artifact_table: str = "artifacts"            # ARTIFACT_TABLE
+    artifact_blob_account_url: str = ""          # ARTIFACT_BLOB_ACCOUNT_URL
+    artifact_container: str = "artifacts"        # ARTIFACT_CONTAINER
+    artifact_max_html_bytes: int = 2_000_000     # 2 MB cap (defense-in-depth)
+
     # --- Phase 3: Entra ID + On-Behalf-Of (per-user identity) ---
     # Backend API app registration (the audience of incoming tokens).
     entra_tenant_id: str = ""

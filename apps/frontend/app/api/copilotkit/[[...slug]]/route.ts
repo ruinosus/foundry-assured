@@ -29,6 +29,11 @@ const HOSTED_AGUI_URL = process.env.HOSTED_AGUI_URL ?? `${BACKEND}/helpdesk-host
 // over Invocations), so it goes through the resume bridge — not a bare HttpAgent.
 const PLATFORM_HOSTED_AGUI_URL =
   process.env.PLATFORM_HOSTED_AGUI_URL ?? `${BACKEND}/platform-hosted`;
+// Artifacts Studio: a bespoke (non-registry) canvas agent — not a /d/[domain] domain, so it
+// isn't in lib/domains.ts. Carries a require_confirmation edit interrupt, so it goes through
+// the resume bridge like the workflow/tool agents.
+const ARTIFACTS_STUDIO_AGUI_URL =
+  process.env.ARTIFACTS_STUDIO_AGUI_URL ?? `${BACKEND}/artifacts-studio`;
 
 // Resume-format bridge (AG-UI `resume` array → agent-framework `{interrupts:[…]}` dict),
 // needed by any domain with HITL interrupts (workflow + tool).
@@ -60,6 +65,8 @@ function withResumeBridge(url: string): HttpAgent {
 const helpdeskHosted = new HttpAgent({ url: HOSTED_AGUI_URL });
 // Resume bridge (not a bare HttpAgent): platform-hosted has a write-approval interrupt.
 const platformHosted = withResumeBridge(PLATFORM_HOSTED_AGUI_URL);
+// Resume bridge: the Studio's edit confirmation (require_confirmation=True) is an interrupt too.
+const artifactsStudio = withResumeBridge(ARTIFACTS_STUDIO_AGUI_URL);
 
 const urlFor = (d: { id: string; endpoint: string }) =>
   process.env[`${d.id.toUpperCase()}_AGUI_URL`] ?? `${BACKEND}${d.endpoint}`;
@@ -90,6 +97,7 @@ const runtime = new CopilotRuntime({
     ...registryAgents,
     "helpdesk-hosted": helpdeskHosted,
     "platform-hosted": platformHosted,
+    "artifacts-studio": artifactsStudio,
   },
 });
 

@@ -19,24 +19,39 @@ It's also the input the selfwiki ingest ships to the cloud knowledge base.
 ## What's here
 
 One bundle per monorepo area, in the format the ingest consumes
-(`manifest.json` + `pages/page-N.md` + `llms.txt`). **Current bundles are `v0.3.0`** — regenerated
-from the code at commit `3333d60` to reflect the **grounded-archetype unification** (the single
-`retrieve()` seam — native agentic retrieve + the `x-ms-query-source-authorization` ACL header over a
-`searchIndex` KB; the `DomainSpec` registry + `mount_domains` dispatch-by-kind replacing the
-main.py/chat.py split; **grounded hosted twins dropped** so grounded runs live-OBO) on top of the
-multi-tenant SaaS evolution (A→B→C→D) already captured before. `v0.3.0` was produced via the **local
-Microsoft Agent-Skills path** (`wiki-architect` + `wiki-page-writer`, run by the coding agent — **no
-Foundry infra**), so the manifests read `model: local-agent` (the `wiki_builder.py` Foundry pipeline
-remains the other path). The superseded `v0.2.0` bundles were dropped.
+(`manifest.json` + `pages/page-N.md` + `llms.txt`). **Current bundles are `v0.4.0`** — regenerated
+from the code at commit `39fb347` to reflect the **HTML Artifacts feature** (a governed
+generate→approve→publish lifecycle with a swappable Table+Blob store and a `sandbox="allow-scripts"`
+viewer → the **Artifacts Studio** canvas over CopilotKit v2 + AG-UI with live predictive HTML
+streaming + in-loop edit approval → **skill-driven generation** via the native `SkillsProvider`
+over a `SKILL.md` library + read-only MCP grounding), on top of the grounded-archetype unification +
+multi-tenant SaaS evolution already captured. `v0.4.0` was produced via the **local Microsoft
+Agent-Skills path** (`.github/skills/deep-wiki` — `wiki-architect` + `wiki-writer`, run by the coding
+agent — **no Foundry infra**), so the manifests read `model: local-agent`, with **local citations**
+`(path:line)` (v0.3.0 used remote GitHub links). The superseded `v0.3.0` bundles were dropped.
 
-| Bundle (`v0.3.0`) | Source area | Pages | Fidelity (cited paths → real file) |
+| Bundle (`v0.4.0`) | Source area | Pages | Fidelity (cited paths → real file) |
 | --- | --- | --- | --- |
-| `foundry-helpdesk-backend/`  | `apps/backend`  | 8 | 100% (249/249) |
-| `foundry-helpdesk-frontend/` | `apps/frontend` | 8 | 100% (170/170) |
-| `foundry-helpdesk-infra/`    | `infra` (+ `azure.yaml`, `apps/hosted-*`, `scripts/`) | 9 | 100% (317/317) |
-| `foundry-helpdesk-docs/`     | `docs`          | 8 | 100% (274/274, whole-monorepo denominator)¹ |
+| `foundry-helpdesk-backend/`  | `apps/backend`  | 9 | 100% (351/351) |
+| `foundry-helpdesk-frontend/` | `apps/frontend` | 9 | ~99% (500/506; the 6 are `Next.js` prose false-positives) |
+| `foundry-helpdesk-infra/`    | `infra` (+ `azure.yaml`, `apps/hosted-*`, `scripts/`) | 7 | 100% (249/249) |
+| `foundry-helpdesk-docs/`     | `docs`          | 9 | ~97% (359/371, whole-monorepo denominator)¹ |
 
-### What this dogfood surfaced (v0.3.0)
+### What this dogfood surfaced (v0.4.0)
+
+The mechanism found faults in itself again while regenerating — each is grounded and flagged on the relevant page:
+
+- **Dedicated-stamp gap:** `containerapps.bicep` made `artifactBlobAccountUrl`/`artifactStoreAccountUrl`
+  required params with no default (`infra/containerapps.bicep:50-54`), but `infra/managed-app/managedApp.bicep`'s
+  `apps` module doesn't pass them — so the dedicated stamp won't validate against the current `containerapps.bicep`
+  until updated (the primary `main.bicep` path already threads them at `:93-94`).
+- **env-example drift:** the new `ARTIFACTS_STUDIO_AGUI_URL` override consumed by the copilotkit route isn't
+  listed in `apps/frontend/.env.example`.
+- **Version lag persists:** `apps/backend/pyproject.toml`, `apps/frontend/package.json` and `app/main.py` still
+  read `0.1.0` while the wiki is `v0.4.0`.
+- **Doc drift persists:** `docs/PRESENTATIONS-PORTAL-PLAN.md` is still cited but untracked/absent.
+
+### What the earlier dogfood (v0.3.0) surfaced
 
 The mechanism found faults in itself again — each is grounded and flagged on the relevant page:
 

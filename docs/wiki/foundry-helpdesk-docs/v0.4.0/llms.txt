@@ -1,0 +1,11 @@
+# foundry-helpdesk-docs v0.4.0
+
+- [Visão geral do conjunto de documentação](pages/page-1.md)
+- [O mecanismo de assurance](pages/page-2.md)
+- [Arquitetura SaaS multi-tenant](pages/page-3.md)
+- [Decisões de arquitetura (ADRs 001–011)](pages/page-4.md)
+- [Sub-projetos SaaS e o runbook de D-packaging](pages/page-5.md)
+- [Deploy, branching e custo](pages/page-6.md)
+- [Customização e expansão de domínio](pages/page-7.md)
+- [Estudos de caso e dogfood](pages/page-8.md)
+- [HTML Artifacts — estratégia, specs e planos](pages/page-9.md)

@@ -213,6 +213,12 @@ def current_tenant_id() -> str | None:
     return getattr(rec, "tid", None) if rec is not None else None
 
 
+def artifact_tenant_id() -> str:
+    """Tenant partition for artifacts. In shared mode this is the resolved tid;
+    in self_hosted/dedicated there is no per-request tenant, so use 'default'."""
+    return current_tenant_id() or "default"
+
+
 # The registered agent domains (shared mode mounts all; entitlement gates per tenant).
 DOMAIN_IDS: tuple[str, ...] = ("helpdesk", "cockpit", "selfwiki", "platform")
 
