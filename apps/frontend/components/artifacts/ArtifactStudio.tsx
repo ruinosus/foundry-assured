@@ -329,7 +329,10 @@ function StudioCanvas() {
           <div style={{ display: "flex", gap: 8 }}>
             <select
               className="acct-btn"
-              style={{ flex: 1 }}
+              // flex:1 + minWidth:0 so the select fills the row and its selected value stays visible;
+              // .acct-btn's width:100% alone lost the flex fight with the Regenerate button, which
+              // squeezed the select down to just its dropdown arrow (the value looked "empty").
+              style={{ flex: 1, minWidth: 0 }}
               value={skill}
               onChange={(e) => setSkill(e.target.value)}
             >
@@ -341,6 +344,8 @@ function StudioCanvas() {
             </select>
             <button
               className="acct-btn"
+              // Natural width (override .acct-btn's width:100%) so it doesn't squeeze the select.
+              style={{ flex: "0 0 auto", width: "auto" }}
               disabled={!agent || approving || Boolean(pending) || regenerating}
               onClick={regenerate}
             >
