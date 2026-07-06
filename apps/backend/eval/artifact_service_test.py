@@ -104,6 +104,16 @@ def main() -> int:
     check("generated content stored",
           "gen" in svc.get_content("t1", out.id, user=U()))
 
+    # skill field round-trips + dashboard is a valid type
+    rskill = svc.create_draft(
+        tenant_id="t1", title="S", description="", type="dashboard",
+        html="<html><body>ok</body></html>", user=U(), skill="dashboard",
+    )
+    check("dashboard type accepted", rskill.type == "dashboard")
+    check("skill stored on record", rskill.skill == "dashboard")
+    got = svc.get_artifact("t1", rskill.id, user=U())
+    check("skill round-trips via store", got.skill == "dashboard")
+
     print("PASS" if not failures else f"FAIL ({len(failures)})")
     return 1 if failures else 0
 

@@ -18,10 +18,11 @@ class ArtifactType:
     PRESENTATION = "presentation"
     REPORT = "report"
     WALKTHROUGH = "walkthrough"
+    DASHBOARD = "dashboard"
 
 
 ALLOWED_TYPES = frozenset(
-    {ArtifactType.PRESENTATION, ArtifactType.REPORT, ArtifactType.WALKTHROUGH}
+    {ArtifactType.PRESENTATION, ArtifactType.REPORT, ArtifactType.WALKTHROUGH, ArtifactType.DASHBOARD}
 )
 
 
@@ -49,3 +50,4 @@ class ArtifactRecord:
     approved_by: str | None = None
     approved_at: str | None = None
     content_hash: str | None = None
+    skill: str | None = None

@@ -35,7 +35,7 @@ class InMemoryArtifactStore:
 _FIELDS = (
     "title", "description", "type", "status", "created_by", "created_at",
     "updated_at", "blob_path", "version", "approved_by", "approved_at",
-    "content_hash",
+    "content_hash", "skill",
 )
 
 
@@ -55,6 +55,7 @@ def _record_from_entity(e) -> ArtifactRecord:
         approved_by=e.get("approved_by") or None,
         approved_at=e.get("approved_at") or None,
         content_hash=e.get("content_hash") or None,
+        skill=e.get("skill") or None,
     )
 
 

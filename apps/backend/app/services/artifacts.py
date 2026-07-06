@@ -59,7 +59,7 @@ def _load_scoped(tenant_id: str, artifact_id: str) -> ArtifactRecord:
 
 
 def create_draft(*, tenant_id: str, title: str, description: str, type: str,
-                 html: str, user) -> ArtifactRecord:
+                 html: str, user, skill: str | None = None) -> ArtifactRecord:
     if type not in ALLOWED_TYPES:
         raise ValueError(f"invalid artifact type: {type}")
     if len(title) > MAX_TITLE_LEN:
@@ -75,6 +75,7 @@ def create_draft(*, tenant_id: str, title: str, description: str, type: str,
         id=aid, tenant_id=tenant_id, title=title, description=description,
         type=type, status=ArtifactStatus.DRAFT, created_by=_actor(user),
         created_at=now, updated_at=now, blob_path=blob_path, version=1,
+        skill=skill,
     )
     content.put(blob_path, html)
     store.put(rec)

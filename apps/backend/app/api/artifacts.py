@@ -31,6 +31,7 @@ class CreateBody(BaseModel):
     description: str = ""
     type: str = "report"
     html: str
+    skill: str | None = None
 
 
 def _dto(rec) -> dict:
@@ -40,6 +41,7 @@ def _dto(rec) -> dict:
         "createdAt": rec.created_at, "updatedAt": rec.updated_at,
         "approvedBy": rec.approved_by, "approvedAt": rec.approved_at,
         "version": rec.version, "contentHash": rec.content_hash,
+        "skill": rec.skill,
     }
 
 
@@ -61,7 +63,7 @@ def create_route(body: CreateBody) -> dict:
     try:
         rec = svc.create_draft(
             tenant_id=artifact_tenant_id(), title=body.title, description=body.description,
-            type=body.type, html=body.html, user=current_user(),
+            type=body.type, html=body.html, user=current_user(), skill=body.skill,
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))
