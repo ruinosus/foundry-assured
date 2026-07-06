@@ -26,6 +26,13 @@ class GenerateBody(BaseModel):
     prompt: str
 
 
+class CreateBody(BaseModel):
+    title: str
+    description: str = ""
+    type: str = "report"
+    html: str
+
+
 def _dto(rec) -> dict:
     return {
         "id": rec.id, "title": rec.title, "description": rec.description,
@@ -43,6 +50,18 @@ async def generate_route(body: GenerateBody) -> dict:
             tenant_id=artifact_tenant_id(), title=body.title,
             description=body.description, type=body.type, prompt=body.prompt,
             user=current_user(),
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=422, detail=str(e))
+    return _dto(rec)
+
+
+@router.post("/html", dependencies=[_author])
+def create_route(body: CreateBody) -> dict:
+    try:
+        rec = svc.create_draft(
+            tenant_id=artifact_tenant_id(), title=body.title, description=body.description,
+            type=body.type, html=body.html, user=current_user(),
         )
     except ValueError as e:
         raise HTTPException(status_code=422, detail=str(e))

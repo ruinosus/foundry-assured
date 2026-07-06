@@ -37,6 +37,8 @@ def main() -> int:
 
     check("generate requires Author/Admin",
           _roles_for("/artifacts/html/generate", "POST") == {"Author", "Admin"})
+    check("create-from-html requires Author/Admin",
+          _roles_for("/artifacts/html", "POST") == {"Author", "Admin"})
     check("approve requires Approver/Admin",
           _roles_for("/artifacts/html/{artifact_id}/approve", "POST") == {"Approver", "Admin"})
     check("list requires a role (any authenticated)",
