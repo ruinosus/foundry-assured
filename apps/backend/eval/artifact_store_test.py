@@ -35,6 +35,18 @@ def main() -> int:
     check("record is frozen", _is_frozen(rec))
     check("blob_path default fallback", rec.blob_path.startswith("default/"))
 
+    from app.artifacts.store import InMemoryArtifactStore
+
+    store = InMemoryArtifactStore()
+    check("get on empty is None", store.get("default", "nope") is None)
+    store.put(rec)
+    got = store.get("default", aid)
+    check("put then get round-trips", got is not None and got.id == aid)
+    check("list scoped to tenant", [r.id for r in store.list("default")] == [aid])
+    check("list other tenant empty", store.list("other") == [])
+    # tenant isolation: a get with the wrong tenant must not return the record
+    check("get is tenant-scoped", store.get("other", aid) is None)
+
     print("PASS" if not failures else f"FAIL ({len(failures)})")
     return 1 if failures else 0
 
