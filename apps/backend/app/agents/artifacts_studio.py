@@ -28,9 +28,15 @@ _STUDIO_INSTRUCTIONS = (
 )
 
 
-@tool
+@tool(approval_mode="always_require")
 def update_artifact(html: str) -> str:
-    """Write the COMPLETE updated HTML document (never a diff/partial; keep all existing content)."""
+    """Write the COMPLETE updated HTML document (never a diff/partial; keep all existing content).
+
+    `approval_mode="always_require"` makes the agent emit a `function_approval_request` content
+    for each call, which the AG-UI adapter surfaces as the in-loop edit-confirmation event (paired
+    with the agent's `require_confirmation=True`). Without it the tool executes directly and no
+    approval interrupt is emitted (verified live — see docs/.../plans/2026-07-06-artifacts-canvas.md).
+    """
     return "Artifact updated."
 
 
