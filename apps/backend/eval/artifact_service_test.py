@@ -56,6 +56,31 @@ def main() -> int:
         tenant_id="t1", title="x", description="", type="bogus",
         html="<html></html>", user=U())))
 
+    # lifecycle
+    r2 = svc.create_draft(tenant_id="t1", title="L", description="", type="report",
+                          html="<html><body>v</body></html>", user=U())
+    svc.request_approval("t1", r2.id, user=U())
+    check("pending after request", svc.get_artifact("t1", r2.id, user=U()).status == "pending_approval")
+
+    class A:  # approver
+        oid = "appr-1"; upn = "a@x"; roles = ["Approver"]
+
+    pub = svc.approve("t1", r2.id, user=A())
+    check("published after approve", pub.status == "published")
+    check("hash recorded", pub.content_hash == svc._hash_of("t1", r2.id))
+    check("approved_by set", pub.approved_by == "appr-1")
+
+    # cannot edit content once published (freeze)
+    check("publish freezes content", _raises_value(
+        lambda: svc.replace_content("t1", r2.id, "<html>new</html>", user=U())))
+
+    # reject path
+    r3 = svc.create_draft(tenant_id="t1", title="R", description="", type="report",
+                          html="<html><body>x</body></html>", user=U())
+    svc.request_approval("t1", r3.id, user=U())
+    rej = svc.reject("t1", r3.id, user=A())
+    check("rejected returns to draft", rej.status == "draft")
+
     print("PASS" if not failures else f"FAIL ({len(failures)})")
     return 1 if failures else 0
 

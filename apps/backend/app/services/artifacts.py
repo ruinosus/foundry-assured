@@ -5,6 +5,7 @@ can override `_store` / `_content` with in-memory fakes.
 """
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, timezone
 
 from app.artifacts.factory import make_artifact_store, make_content_store
@@ -87,3 +88,58 @@ def get_content(tenant_id: str, artifact_id: str, *, user) -> str:
     if html is None:
         raise Forbidden("artifact content missing")
     return html
+
+
+def _save(rec: ArtifactRecord) -> ArtifactRecord:
+    store, _ = _stores()
+    store.put(rec)
+    return rec
+
+
+def _hash_of(tenant_id: str, artifact_id: str) -> str:
+    rec = _load_scoped(tenant_id, artifact_id)
+    _, content = _stores()
+    return sha256_hex(content.get(rec.blob_path) or "")
+
+
+def replace_content(tenant_id: str, artifact_id: str, html: str, *, user) -> ArtifactRecord:
+    rec = _load_scoped(tenant_id, artifact_id)
+    if rec.status != ArtifactStatus.DRAFT:
+        raise ValueError("content editable only while draft")
+    html = validate_html(html, max_bytes=settings.artifact_max_html_bytes)
+    _, content = _stores()
+    content.put(rec.blob_path, html)
+    return _save(replace(rec, updated_at=_now()))
+
+
+def request_approval(tenant_id: str, artifact_id: str, *, user) -> ArtifactRecord:
+    rec = _load_scoped(tenant_id, artifact_id)
+    if rec.status != ArtifactStatus.DRAFT:
+        raise ValueError("only a draft can be submitted for approval")
+    return _save(replace(rec, status=ArtifactStatus.PENDING_APPROVAL, updated_at=_now()))
+
+
+def approve(tenant_id: str, artifact_id: str, *, user) -> ArtifactRecord:
+    rec = _load_scoped(tenant_id, artifact_id)
+    if rec.status != ArtifactStatus.PENDING_APPROVAL:
+        raise ValueError("only a pending artifact can be approved")
+    now = _now()
+    return _save(replace(
+        rec, status=ArtifactStatus.PUBLISHED, approved_by=_actor(user),
+        approved_at=now, updated_at=now,
+        content_hash=_hash_of(tenant_id, artifact_id),
+    ))
+
+
+def reject(tenant_id: str, artifact_id: str, *, user) -> ArtifactRecord:
+    rec = _load_scoped(tenant_id, artifact_id)
+    if rec.status != ArtifactStatus.PENDING_APPROVAL:
+        raise ValueError("only a pending artifact can be rejected")
+    return _save(replace(rec, status=ArtifactStatus.DRAFT, updated_at=_now()))
+
+
+def archive(tenant_id: str, artifact_id: str, *, user) -> ArtifactRecord:
+    rec = _load_scoped(tenant_id, artifact_id)
+    if rec.status not in (ArtifactStatus.PUBLISHED, ArtifactStatus.DRAFT):
+        raise ValueError("only draft/published artifacts can be archived")
+    return _save(replace(rec, status=ArtifactStatus.ARCHIVED, updated_at=_now()))
