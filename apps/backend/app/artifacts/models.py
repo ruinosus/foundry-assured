@@ -10,7 +10,7 @@ class ArtifactStatus:
     DRAFT = "draft"
     PENDING_APPROVAL = "pending_approval"
     PUBLISHED = "published"
-    REJECTED = "rejected"
+    REJECTED = "rejected"  # currently unused — reject() returns to DRAFT; reserved for a future reject-audit trail
     ARCHIVED = "archived"
 
 

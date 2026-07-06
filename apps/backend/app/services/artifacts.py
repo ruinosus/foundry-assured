@@ -114,6 +114,10 @@ def replace_content(tenant_id: str, artifact_id: str, html: str, *, user) -> Art
     return _save(replace(rec, updated_at=_now()))
 
 
+# NOTE (MVP accepted risk): lifecycle transitions are read-check-write with no
+# optimistic concurrency (store.put is an unconditional upsert). Concurrent calls
+# on the same record are last-write-wins — acceptable for human-paced HITL approvals;
+# revisit with an ETag-conditional put if this ever becomes automated/high-volume.
 def request_approval(tenant_id: str, artifact_id: str, *, user) -> ArtifactRecord:
     rec = _load_scoped(tenant_id, artifact_id)
     if rec.status != ArtifactStatus.DRAFT:
