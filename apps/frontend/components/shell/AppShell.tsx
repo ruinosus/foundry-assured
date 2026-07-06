@@ -20,6 +20,7 @@ const WORKSPACE_NAV = [
   { href: "/", label: "Overview", icon: "▦" },
   { href: "/tickets", label: "Tickets", icon: "🎫" },
   { href: "/evals", label: "Evaluations", icon: "✓" },
+  { href: "/artifacts", label: "Artifacts", icon: "📦" },
 ];
 
 const ADMIN_NAV = [
@@ -31,6 +32,7 @@ const TITLES: Record<string, string> = {
   "/": "Overview",
   "/tickets": "Tickets",
   "/evals": "Evaluations",
+  "/artifacts": "Artifacts",
   "/admin/users": "Admin",
   "/admin/connections": "Connections",
   ...Object.fromEntries(DOMAINS.map((d) => [`/d/${d.id}`, d.label])),
