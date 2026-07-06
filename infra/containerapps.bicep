@@ -47,6 +47,12 @@ param storageAccountName string
 @description('Azure Files share mounted into the backend at /app/data (tickets.jsonl).')
 param fileShareName string
 
+@description('Blob endpoint of the storage account backing the artifacts feature (AI-generated HTML content).')
+param artifactBlobAccountUrl string
+
+@description('Table endpoint of the storage account backing the artifacts feature (artifact metadata).')
+param artifactStoreAccountUrl string
+
 var placeholderImage = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
 var backendAppName = 'ca-backend-${resourceToken}'
 var webAppName = 'ca-web-${resourceToken}'
@@ -154,6 +160,12 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'ACL_PUBLIC_GROUP', value: aclPublicGroup }
             { name: 'ACL_INTERNAL_GROUP', value: aclInternalGroup }
             { name: 'ACL_CONFIDENTIAL_GROUP', value: aclConfidentialGroup }
+            // Artifacts feature: metadata in Table, immutable HTML content in Blob.
+            { name: 'ARTIFACT_STORE_BACKEND', value: 'table' }
+            { name: 'ARTIFACT_CONTAINER', value: 'artifacts' }
+            { name: 'ARTIFACT_TABLE', value: 'artifacts' }
+            { name: 'ARTIFACT_BLOB_ACCOUNT_URL', value: artifactBlobAccountUrl }
+            { name: 'ARTIFACT_STORE_ACCOUNT_URL', value: artifactStoreAccountUrl }
           ]
           volumeMounts: [
             { volumeName: 'data', mountPath: '/app/data' } // tickets.jsonl persists here

@@ -90,6 +90,8 @@ module apps 'containerapps.bicep' = {
     azureSearchKnowledgeBase: resources.outputs.AZURE_SEARCH_KNOWLEDGE_BASE
     storageAccountName: resources.outputs.AZURE_STORAGE_ACCOUNT
     fileShareName: resources.outputs.AZURE_FILE_SHARE
+    artifactBlobAccountUrl: resources.outputs.ARTIFACT_BLOB_ACCOUNT_URL
+    artifactStoreAccountUrl: resources.outputs.ARTIFACT_STORE_ACCOUNT_URL
     entraTenantId: entraTenantId
     entraApiClientId: entraApiClientId
     entraApiClientSecret: entraApiClientSecret
@@ -119,6 +121,11 @@ output AZURE_SEARCH_KNOWLEDGE_BASE string = resources.outputs.AZURE_SEARCH_KNOWL
 output AZURE_STORAGE_ACCOUNT string = resources.outputs.AZURE_STORAGE_ACCOUNT
 output AZURE_STORAGE_RESOURCE_ID string = resources.outputs.AZURE_STORAGE_RESOURCE_ID
 output AZURE_STORAGE_CONTAINER string = resources.outputs.AZURE_STORAGE_CONTAINER
+
+// Artifacts feature — surfaced into the backend .env (bootstrap.sh) so local dev
+// can reach the Blob (content) + Table (metadata) stores.
+output ARTIFACT_BLOB_ACCOUNT_URL string = resources.outputs.ARTIFACT_BLOB_ACCOUNT_URL
+output ARTIFACT_STORE_ACCOUNT_URL string = resources.outputs.ARTIFACT_STORE_ACCOUNT_URL
 
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = resources.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
 output AZURE_CONTAINER_REGISTRY_NAME string = resources.outputs.AZURE_CONTAINER_REGISTRY_NAME

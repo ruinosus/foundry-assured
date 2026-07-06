@@ -68,6 +68,7 @@ var roleSearchIndexDataReader = '1407120a-92aa-4202-b7e9-c0e197c71c8f' // query 
 var roleSearchIndexDataContributor = '8ebe5a00-799e-43f5-93ac-243d3dce84a7' // write index docs: ACL stamping (acl_setup) + purge_orphans (superset of Data Reader)
 var roleStorageBlobDataReader = '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1' // search MI reads corpus blobs
 var roleStorageBlobDataContributor = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe' // caller uploads corpus blobs
+var roleStorageTableDataContributor = '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // backend identity r/w artifact metadata table
 var roleAcrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d' // project MI pulls the hosted-agent image
 
 var searchRegion = empty(searchLocation) ? location : searchLocation
@@ -205,6 +206,25 @@ resource corpusContainer 'Microsoft.Storage/storageAccounts/blobServices/contain
   properties: { publicAccess: 'None' }
 }
 
+// Artifacts feature: private container for AI-generated HTML (never public).
+resource artifactsContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
+  parent: blobService
+  name: 'artifacts'
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
+resource tableService 'Microsoft.Storage/storageAccounts/tableServices@2023-05-01' = {
+  parent: storage
+  name: 'default'
+}
+
+resource artifactsTable 'Microsoft.Storage/storageAccounts/tableServices/tables@2023-05-01' = {
+  parent: tableService
+  name: 'artifacts'
+}
+
 // File share mounted by the backend container app (Azure Files) so app data written
 // to /app/data (tickets.jsonl) survives scale-to-zero / restarts. Small + cheap.
 resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {
@@ -290,6 +310,29 @@ resource appToSearch 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: search
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchIndexDataReader)
+    principalId: appIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Backend identity (appIdentity) needs to read/write artifact blobs + table entries.
+// Least privilege: scoped to the artifacts container/table only — NOT the whole
+// account (which also holds the corpus KB container).
+resource backendBlobContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(artifactsContainer.id, appIdentity.id, roleStorageBlobDataContributor)
+  scope: artifactsContainer
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageBlobDataContributor)
+    principalId: appIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource backendTableContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(artifactsTable.id, appIdentity.id, roleStorageTableDataContributor)
+  scope: artifactsTable
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageTableDataContributor)
     principalId: appIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
@@ -436,6 +479,10 @@ output AZURE_STORAGE_ACCOUNT string = storage.name
 output AZURE_STORAGE_RESOURCE_ID string = storage.id
 output AZURE_STORAGE_CONTAINER string = corpusContainerName
 output AZURE_FILE_SHARE string = dataShareName
+
+// Artifacts feature — Blob (content) + Table (metadata) account URLs for the backend.
+output ARTIFACT_BLOB_ACCOUNT_URL string = storage.properties.primaryEndpoints.blob
+output ARTIFACT_STORE_ACCOUNT_URL string = storage.properties.primaryEndpoints.table
 
 // Consumed by azd (and the agent extension) to build/push the hosted-agent image.
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer
