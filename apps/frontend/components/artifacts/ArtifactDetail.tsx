@@ -83,6 +83,9 @@ export function ArtifactDetail({ id }: { id: string }) {
         {a.skill && <span className="chip-type">🎨 {a.skill}</span>}
         <span data-testid="status-pill" className={`pill ${STATUS[a.status] ?? "neutral"}`}>{a.status}</span>
         <span className="muted">v{a.version}</span>
+        {a.contentHash && (
+          <span className="muted">· <code>{a.contentHash.slice(0, 12)}…</code></span>
+        )}
         <span style={{ flex: 1 }} />
         {a.status === "draft" && (
           <button data-testid="lifecycle-request-approval" className="btn btn-solid" disabled={busy}
