@@ -59,9 +59,9 @@ test("studio (auto skill): describe → agent fills title/type/skill → approve
   await expect(save).toBeEnabled();
   await save.click();
 
-  await expect(page.locator(".pill", { hasText: "draft" })).toBeVisible({ timeout: 30_000 });
-  // The detail page shows which skill generated it.
-  await expect(page.locator(".muted", { hasText: /report|slides|dashboard|walkthrough/ }).first()).toBeVisible();
+  await expect(page.getByTestId("status-pill")).toHaveText("draft", { timeout: 30_000 });
+  // The detail page shows which skill/type generated it (canvas chip, not a muted span).
+  await expect(page.locator(".chip-type", { hasText: /report|slides|dashboard|walkthrough/ }).first()).toBeVisible();
   await shot(page, "saved-draft");
 });
 

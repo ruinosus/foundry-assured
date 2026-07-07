@@ -804,9 +804,10 @@ table.evals tr:last-child td {
   border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
 .studio-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 14px; min-height: 70vh; }
 .preview-hero { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.chat-rail { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: flex; min-height: 70vh; }
-.chat-rail > * { flex: 1; min-height: 0; }
+.chat-rail { border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+  display: flex; flex-direction: column; height: 70vh; }
+.chat-rail > * { flex: 1; min-width: 0; min-height: 0; width: 100%; }
 .review-bar { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px;
-  background: var(--good-weak, #dcfce7); border: 1px solid var(--good, #16a34a); }
-.review-text { flex: 1; font-size: 13px; font-weight: 600; color: var(--good, #16a34a); }
+  background: var(--ok-tint); border: 1px solid var(--ok); }
+.review-text { flex: 1; font-size: 13px; font-weight: 600; color: var(--ok); }
 @media (max-width: 760px) { .studio-grid { grid-template-columns: 1fr; } .chat-rail { min-height: 380px; } }

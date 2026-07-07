@@ -78,7 +78,7 @@ export function ArtifactDetail({ id }: { id: string }) {
   return (
     <div className="studio-canvas">
       <div className="canvas-header">
-        <span className="canvas-title-input" style={{ pointerEvents: "none" }}>{a.title}</span>
+        <h1 className="canvas-title-input" style={{ margin: 0 }}>{a.title}</h1>
         <span className="chip-type">{a.type}</span>
         {a.skill && <span className="chip-type">🎨 {a.skill}</span>}
         <span data-testid="status-pill" className={`pill ${STATUS[a.status] ?? "neutral"}`}>{a.status}</span>
@@ -103,8 +103,6 @@ export function ArtifactDetail({ id }: { id: string }) {
           <button data-testid="lifecycle-archive" className="acct-btn" disabled={busy}
             onClick={() => act("archive")}>Archive</button>
         )}
-        <a data-testid="detail-open" className="acct-btn" style={{ width: "auto" }}
-          href={`/api/artifacts/${a.id}/content`} target="_blank" rel="noreferrer">Open</a>
       </div>
       {error && <p className="muted" style={{ margin: 0 }}>⚠️ {error}</p>}
       <div className="preview-hero">
