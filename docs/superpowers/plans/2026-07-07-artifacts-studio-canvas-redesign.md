@@ -43,7 +43,11 @@ NEXT_PUBLIC_ENTRA_TENANT_ID= NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID= NEXT_PUBLIC_ENTRA_
 # terminal 3 — E2E (from e2e/)
 npx playwright test artifacts-studio.spec.ts artifacts.spec.ts
 ```
-If servers can't be brought up in the implementer's environment, run `typecheck` + `build` and flag E2E for the controller to run.
+**E2E is a HARD gate, not optional.** The two new behaviors — "no stuck Running after approval" and
+"steps-strip shows the skill/inputs" — are only observable at runtime; `typecheck`/`build` prove
+nothing about them. If the implementer subagent cannot start the servers, it must **hand E2E to the
+controller to run** (do not mark the chunk done on typecheck/build alone). The redesign is not
+"working, testable software" until `artifacts-studio.spec.ts` (incl. the new assertions) is green.
 
 ## File structure
 
@@ -111,11 +115,12 @@ import { studioToolRenderers } from "./studioToolRenderers";
 - [ ] **Step 3: Typecheck**
 
 Run (from `apps/frontend/`): `npm run typecheck`
-Expected: PASS. If the prop rejects the array shape, import the type
-`import type { ReactToolCallRenderer } from "@copilotkit/react-core/v2"` and annotate
-`export const studioToolRenderers: ReactToolCallRenderer<any>[] = ...`; if the type isn't exported,
-cast the array `as ReactToolCallRenderer<any>[]` is not available → use `render: () => <></>` and
-annotate the array element type inline. Do NOT invent a different prop name (verified: `renderToolCalls`).
+Expected: PASS. If the `renderToolCalls` prop rejects the array shape, fix the element type in one
+of two ways: (a) if `ReactToolCallRenderer` is exported, `import type { ReactToolCallRenderer } from
+"@copilotkit/react-core/v2"` and annotate `export const studioToolRenderers: ReactToolCallRenderer<any>[]
+= ...`; (b) if it is not exported, annotate the element inline —
+`.map((name): { name: string; render: () => JSX.Element } => ({ name, render: () => <></> }))`.
+Do NOT invent a different prop name — `renderToolCalls` is verified.
 
 - [ ] **Step 4: Commit**
 
@@ -130,86 +135,90 @@ git commit -m "feat(artifacts): hide internal HITL/skill tool cards in the Studi
 - Create: `apps/frontend/components/artifacts/StudioSteps.tsx`
 - Reference: `apps/frontend/components/chat/WorkflowSteps.tsx` (subscribe pattern)
 
-- [ ] **Step 1: Create the component**
+- [ ] **Step 0 (SPIKE — de-risk before building): confirm which events fire for this agent**
+
+`update_artifact` is `approval_mode="always_require"`, so its inputs arrive on the **CUSTOM
+`function_approval_request`** event (this is how the existing `ArtifactStudio.onEvent` gets
+`title`/`type`/`skill`/`html`) — the client-visible `TOOL_CALL_START`/`ARGS` may never fire for it.
+So the strip's **primary** data source is that CUSTOM event (guaranteed), and `TOOL_CALL_START` is
+**bonus** enrichment (skill tools like `load_skill`, which run un-gated).
+
+Spike: temporarily add `console.log("EVT", event?.type, event?.name)` at the top of the existing
+`onEvent` in `ArtifactStudio.tsx`, run the Studio (Setup servers), generate one artifact, and record
+in this task which event types appear (expect at least `CUSTOM function_approval_request`; note
+whether any `TOOL_CALL_START` appears and for which tool names). Remove the log after. Build
+`StudioSteps` against what actually fires; the component below already defaults to the guaranteed path.
+
+- [ ] **Step 1: Create the component** (primary = CUSTOM approval payload; TOOL_CALL_START = bonus)
 
 ```tsx
 "use client";
 
-// Tool-activity strip for the Studio canvas. Reads the agent's tool-call events directly
-// (WorkflowSteps.tsx pattern) rather than the chat transcript, so it is decoupled from
-// CopilotChat and immune to the HITL non-terminal-status bug. Renders generically: any tool
-// call becomes a chip; update_artifact additionally shows the inputs it received. confirm_changes
-// is skipped (pure plumbing). Collapsible; collapsed by default.
+// Tool-activity strip for the Studio canvas. Reads agent events directly (WorkflowSteps.tsx
+// pattern), decoupled from the chat transcript and immune to the HITL non-terminal-status bug.
+// PRIMARY source: the CUSTOM function_approval_request event carries update_artifact's inputs
+// (title/type/skill) and always fires (it also drives the review bar) — same payload
+// ArtifactStudio.onEvent already consumes. BONUS: TOOL_CALL_START names surface un-gated skill
+// tools (load_skill, …). confirm_changes is never shown. Collapsible; collapsed by default.
 import { useAgent } from "@copilotkit/react-core/v2";
 import { useEffect, useState } from "react";
 
-type Step = { id: string; name: string; args: string };
-
-function short(argsJson: string): string {
-  // Best-effort: pull a few human-relevant fields from the streamed (possibly partial) JSON.
-  try {
-    const o = JSON.parse(argsJson);
-    if (typeof o.name === "string") return o.name; // skill tools carry { name }
-    const bits = [o.title, o.type, o.skill].filter(Boolean);
-    return bits.length ? bits.join(" · ") : "";
-  } catch {
-    return "";
-  }
-}
+type Gen = { title?: string; type?: string; skill?: string };
 
 export function StudioSteps() {
   const { agent } = useAgent({ agentId: "artifacts-studio" });
-  const [steps, setSteps] = useState<Step[]>([]);
+  const [gen, setGen] = useState<Gen | null>(null); // from the guaranteed CUSTOM approval event
+  const [tools, setTools] = useState<string[]>([]); // bonus: un-gated tool names, if they fire
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
     if (!agent) return;
     const sub = agent.subscribe({
-      onRunInitialized: () => setSteps([]),
+      onRunInitialized: () => { setGen(null); setTools([]); },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onEvent: ({ event }: any) => {
         const t = event?.type;
-        if (t === "TOOL_CALL_START") {
-          const id: string = event.toolCallId;
+        if (t === "CUSTOM" && (event?.name === "function_approval_request" || event?.name === "request_info")) {
+          const fc = event.value?.function_call ?? {};
+          let args: any = fc.arguments ?? {};
+          if (typeof args === "string") { try { args = JSON.parse(args); } catch { args = {}; } }
+          setGen({ title: args.title, type: args.type, skill: args.skill });
+        } else if (t === "TOOL_CALL_START") {
           const name: string = event.toolCallName;
-          if (!id || name === "confirm_changes") return;
-          setSteps((p) => (p.some((s) => s.id === id) ? p : [...p, { id, name, args: "" }]));
-        } else if (t === "TOOL_CALL_ARGS") {
-          const id: string = event.toolCallId;
-          const delta: string = event.delta ?? "";
-          setSteps((p) => p.map((s) => (s.id === id ? { ...s, args: s.args + delta } : s)));
+          if (name && name !== "confirm_changes" && name !== "update_artifact") {
+            setTools((p) => (p.includes(name) ? p : [...p, name]));
+          }
         }
       },
     });
     return () => sub.unsubscribe();
   }, [agent]);
 
-  if (steps.length === 0) return null;
+  const chips: React.ReactNode[] = [];
+  if (gen?.skill) chips.push(<span key="skill" className="step-chip">🎨 <b>skill: {gen.skill}</b></span>);
+  for (const name of tools) chips.push(<span key={`t-${name}`} className="step-chip">🎨 <b>{name}</b></span>);
+  if (gen) {
+    const detail = [gen.title, gen.type].filter(Boolean).join(" · ");
+    chips.push(
+      <span key="gen" className="step-chip"><b>generated the artifact</b>
+        {detail ? <span className="muted"> · {detail}</span> : null}</span>,
+    );
+  }
+  if (chips.length === 0) return null;
 
   return (
     <div data-testid="steps-strip" className="steps-strip">
       <button className="steps-summary" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
-        <span aria-hidden>{open ? "▾" : "▸"}</span> {steps.length} passo{steps.length > 1 ? "s" : ""} ✓
+        <span aria-hidden>{open ? "▾" : "▸"}</span> {chips.length} step{chips.length > 1 ? "s" : ""} ✓
       </button>
-      {open && (
-        <div className="steps-list">
-          {steps.map((s) => {
-            const label = s.name === "update_artifact" ? "gerou o artefato" : s.name;
-            const detail = short(s.args);
-            return (
-              <span key={s.id} className="step-chip">
-                {s.name.includes("skill") ? "🎨 " : ""}
-                <b>{label}</b>
-                {detail ? <span className="muted"> · {detail}</span> : null}
-              </span>
-            );
-          })}
-        </div>
-      )}
+      {open && <div className="steps-list">{chips}</div>}
     </div>
   );
 }
 ```
+
+Note: `event.value?.function_call?.arguments` mirrors `ArtifactStudio.onEvent` exactly (verified in
+the current file, lines ~149–171) — do not change that access path.
 
 - [ ] **Step 2: Add the strip's styles**
 
@@ -255,13 +264,17 @@ git commit -m "feat(artifacts): StudioSteps — tool-activity strip from agent e
 
 - [ ] **Step 1: Build the header** (inside `StudioCanvas`'s returned JSX, as the first child)
 
+Keep UI strings **English** to match the surrounding app ("Approve", "Save as draft", "Regenerate").
+Preserve the `usedSkill` "Generated with:" indicator — the existing E2E asserts on it (see Task 5).
+
 ```tsx
 <div className="canvas-header">
   <input
     data-testid="canvas-title"
     className="canvas-title-input"
     value={title}
-    placeholder="Título do artefato"
+    maxLength={MAX_TITLE}
+    placeholder="Artifact title"
     onChange={(e) => { userEditedTitle.current = true; setTitle(e.target.value); }}
   />
   <span className="chip-type">{typeLabel}</span>
@@ -289,9 +302,14 @@ git commit -m "feat(artifacts): StudioSteps — tool-activity strip from agent e
     {saving ? "Saving…" : "Save as draft"}
   </button>
 </div>
+{usedSkill && (
+  <span data-testid="used-skill" className="muted" style={{ fontSize: 12, margin: "0 2px" }}>
+    Generated with: {usedSkill}
+  </span>
+)}
 {!titleOk && title.length > 0 && (
   <p className="muted" style={{ margin: "4px 2px 0", fontSize: 12 }}>
-    Título deve ter entre 1 e {MAX_TITLE} caracteres.
+    Title must be between 1 and {MAX_TITLE} characters.
   </p>
 )}
 ```
@@ -331,24 +349,26 @@ git commit -m "feat(artifacts): Studio canvas header (title/type/skill/save)"
 import { StudioSteps } from "./StudioSteps";
 ```
 
-- [ ] **Step 2: New layout** (the `StudioCanvas` return)
+- [ ] **Step 2: New layout — the COMPLETE `StudioCanvas` return** (this folds in Task 3's header;
+  the two commits together replace the old two-column return, so between them the app still builds).
+  Paste the Task 3 header markup verbatim where indicated — do not leave it as a comment.
 
 ```tsx
 return (
   <div className="studio-canvas">
-    {/* header from Task 3 */}
-    {/* ...canvas-header... */}
+    {/* === Task 3 canvas-header block goes here, verbatim: the <div className="canvas-header">…</div>,
+           the used-skill <span>, and the title-length helper <p>. === */}
     <StudioSteps />
     <div className="studio-grid">
       <div className="preview-hero">
         {pending && (
           <div data-testid="review-bar" className="review-bar">
-            <span className="review-text">Revisar esta versão antes de aplicar</span>
+            <span className="review-text">Review this version before applying</span>
             <button data-testid="review-approve" className="btn btn-solid" onClick={() => respond(true)}>
-              ✓ Aprovar
+              Approve
             </button>
             <button data-testid="review-reject" className="acct-btn" onClick={() => respond(false)}>
-              Rejeitar
+              Reject
             </button>
           </div>
         )}
@@ -362,6 +382,10 @@ return (
   </div>
 );
 ```
+
+> Practical ordering: it is fine to do Task 3 and Task 4 as one edit of the return (header + grid
+> together) and commit once, if that reads cleaner than two commits — the goal is a single coherent
+> new return with no leftover old two-column markup.
 
 - [ ] **Step 3: Layout styles** (append to globals.css)
 
@@ -398,9 +422,13 @@ git commit -m "feat(artifacts): Studio canvas grid — preview hero + chat rail 
 
 - [ ] **Step 1: Update selectors** to the new `data-testid`s: approve via
   `getByTestId("review-approve")`, pin skill via `getByTestId("skill-select")` + `getByTestId("regenerate")`,
-  save via `getByTestId("save-draft")`. Add an assertion that after approval the chat transcript shows
-  no perpetual "Running" text (e.g. `await expect(page.getByText("Running")).toHaveCount(0)`), and that
-  `getByTestId("steps-strip")` is present after a generation.
+  save via `getByTestId("save-draft")`.
+  - **Preserve the skill-override check:** the current test asserts `Generated with: slides`
+    (spec's only verification of that case). Replace the old text locator with the testid'd element:
+    `await expect(page.getByTestId("used-skill")).toContainText(/slides/i)`.
+  - **New assertions:** after a generation, `await expect(page.getByTestId("steps-strip")).toBeVisible()`;
+    after approving, the transcript shows no stuck status —
+    `await expect(page.getByText("Running")).toHaveCount(0)`.
 - [ ] **Step 2: Run E2E** (servers up per Setup): `npx playwright test artifacts-studio.spec.ts`
   Expected: both cases (auto skill; slides override) PASS; the no-"Running" assertion PASS.
 - [ ] **Step 3: Commit**
