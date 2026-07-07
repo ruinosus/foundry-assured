@@ -785,3 +785,10 @@ table.evals tr:last-child td {
   background: var(--primary-tint);
   color: var(--primary);
 }
+
+.steps-strip { border: 1px solid var(--border); border-radius: 10px; background: var(--surface, #fff); }
+.steps-summary { all: unset; cursor: pointer; display: flex; gap: 8px; align-items: center;
+  padding: 8px 13px; font-size: 12.5px; font-weight: 600; width: 100%; box-sizing: border-box; }
+.steps-summary:focus-visible { outline: 2px solid var(--primary, #2563eb); outline-offset: 2px; }
+.steps-list { display: flex; gap: 12px; flex-wrap: wrap; padding: 0 13px 10px; }
+.step-chip { font-size: 12px; }
