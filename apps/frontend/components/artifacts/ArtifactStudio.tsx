@@ -85,6 +85,7 @@ function StudioCanvas() {
   const [skill, setSkill] = useState<string>("auto");
   const [usedSkill, setUsedSkill] = useState<string>("");
   const [regenerating, setRegenerating] = useState(false);
+  const [running, setRunning] = useState(false); // a generation turn is streaming
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const router = useRouter();
@@ -111,6 +112,11 @@ function StudioCanvas() {
   useEffect(() => {
     if (!agent) return;
     const sub = agent.subscribe({
+      // Drive the preview's loading state: a run is streaming until it finishes or pauses for
+      // approval (an interrupt finalizes the run — at which point the review bar takes over).
+      onRunInitialized: () => setRunning(true),
+      onRunFinalized: () => setRunning(false),
+      onRunFailed: () => setRunning(false),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onStateSnapshotEvent: ({ event }: any) => {
         const snap = htmlFromSnapshot(event);
@@ -253,6 +259,7 @@ function StudioCanvas() {
 
   const titleOk = title.length > 0 && title.length <= MAX_TITLE;
   const canSave = titleOk && Boolean(type) && Boolean(html) && !saving;
+  const hasContent = html.trim().length > 0;
   const typeLabel =
     type && (ARTIFACT_TYPES as readonly string[]).includes(type)
       ? type[0].toUpperCase() + type.slice(1)
@@ -319,7 +326,28 @@ function StudioCanvas() {
               </button>
             </div>
           )}
-          <LivePreview html={html || "<!doctype html><html><body></body></html>"} />
+          {!pending && hasContent && !running && (
+            <div data-testid="iterate-hint" className="iterate-hint">
+              ✓ Draft ready — describe a change in the chat to refine it
+              <span className="muted"> (e.g. “make the bars green”, “add a third KPI”)</span>, or Save as draft.
+            </div>
+          )}
+          <div className="preview-stage">
+            <LivePreview html={html || "<!doctype html><html><body></body></html>"} />
+            {running && (
+              <div className="preview-overlay" data-testid="preview-loading">
+                <span className="spinner" aria-hidden />
+                <span>{hasContent ? "Updating the artifact…" : "Generating your artifact…"}</span>
+              </div>
+            )}
+            {!running && !hasContent && (
+              <div className="preview-overlay empty" data-testid="preview-empty">
+                <span className="empty-glyph" aria-hidden>◈</span>
+                <b>Your artifact will render here</b>
+                <span className="muted">Describe what you want in the chat on the right →</span>
+              </div>
+            )}
+          </div>
           {saveError && <p className="muted" style={{ margin: "8px 0 0" }}>⚠️ {saveError}</p>}
         </div>
         <div className="chat-rail">

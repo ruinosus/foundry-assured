@@ -20,7 +20,9 @@ export function StudioSteps() {
   useEffect(() => {
     if (!agent) return;
     const sub = agent.subscribe({
-      onRunInitialized: () => { setGen(null); setTools([]); },
+      // Keep `gen` across runs so the "generated" record stays visible after approval (a new
+      // generation's CUSTOM event replaces it). Only reset the bonus tool list per run.
+      onRunInitialized: () => { setTools([]); },
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onEvent: ({ event }: any) => {
         const t = event?.type;
