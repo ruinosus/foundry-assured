@@ -42,6 +42,7 @@ import { useRouter } from "next/navigation";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { authedFetch } from "@/lib/auth/api";
 import { LivePreview } from "./LivePreview";
+import { studioToolRenderers } from "./studioToolRenderers";
 
 const MAX_TITLE = 200;
 // Kept as the allowed-set for displaying/normalizing the agent-filled `type` — the manual
@@ -401,6 +402,7 @@ function Studio({ authorization }: { authorization?: string }) {
     <CopilotKitProvider
       runtimeUrl="/api/copilotkit"
       headers={authorization ? { Authorization: authorization } : undefined}
+      renderToolCalls={studioToolRenderers}
     >
       <StudioCanvas />
     </CopilotKitProvider>
