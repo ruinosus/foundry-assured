@@ -167,11 +167,11 @@ Tests:
 ## Risks & mitigations
 
 - **Bigger relayout than options A/B, and the detail page is in scope.** Mitigated by reusing every
-  behavioral unit (LivePreview, respond/pending, save, act) and changing only JSX structure +
-  registering `renderToolCalls`.
+  behavioral unit (LivePreview, respond/pending, save, act). New logic is limited to the
+  subscribe-driven steps strip + the `renderToolCalls` hide entries; the rest is JSX restructure.
 - **`renderToolCalls` API drift.** Verify `defineToolCallRenderer` / `useRenderTool` /
   `ToolCallStatus` against the installed `@copilotkit/react-core` before wiring (rule #1). Fall back
-  to hiding via a wildcard `() => <></>` only for the two internal tools if the per-tool path differs.
+  to hiding via a wildcard `() => <></>` for all internal tools if the per-tool path differs.
 - **Responsive breakage** in the two-column canvas. Explicit stack breakpoint + `overflow-x:auto` on
   wide preview content; verify in the build.
 
