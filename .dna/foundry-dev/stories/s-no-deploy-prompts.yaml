@@ -11,7 +11,7 @@ spec:
     \ comp\xF5em no import \u2014 hot-reload in-process n\xE3o alcan\xE7aria agentes\
     \ j\xE1 constru\xEDdos). PG source (DNA_SOURCE_URL, adapter j\xE1 existe no dna-sdk\
     \ 0.1.0) fica documentado como evolu\xE7\xE3o multi-r\xE9plica, N\xC3O implementado."
-  status: review
+  status: done
   feature: f-dna-adoption
   owner: claude-code
   priority: high
@@ -21,26 +21,48 @@ spec:
   - docker
   reporter: claude-code
   acceptance_criteria:
-  - "Dado o compose local do backend, quando o stack sobe, ent\xE3o /app/.dna \xE9\
-    \ um bind mount de ./apps/backend/.dna (volume sobrep\xF5e o COPY) e a imagem\
-    \ continua self-contained sem o mount"
-  - "Dado um prompt editado em .dna/helpdesk no host, quando o processo reinicia (restart,\
-    \ sem docker build), ent\xE3o o prompt composto reflete a mudan\xE7a \u2014 evid\xEA\
-    ncia com diff do prompt composto antes/depois"
-  - "Dado o ADR-014, quando lido, ent\xE3o documenta o modelo: board dev-time (.dna/foundry-dev)\
-    \ vs scope runtime (apps/backend/.dna), volume no-deploy com restart como refresh\
-    \ honesto, e PG source como evolu\xE7\xE3o multi-r\xE9plica n\xE3o implementada"
+  - text: "Dado o compose local do backend, quando o stack sobe, ent\xE3o /app/.dna\
+      \ \xE9 um bind mount de ./apps/backend/.dna (volume sobrep\xF5e o COPY) e a\
+      \ imagem continua self-contained sem o mount"
+    done: true
+    done_at: '2026-07-10T19:36:05+00:00'
+    done_by: story-done-auto
+  - text: "Dado um prompt editado em .dna/helpdesk no host, quando o processo reinicia\
+      \ (restart, sem docker build), ent\xE3o o prompt composto reflete a mudan\xE7\
+      a \u2014 evid\xEAncia com diff do prompt composto antes/depois"
+    done: true
+    done_at: '2026-07-10T19:36:05+00:00'
+    done_by: story-done-auto
+  - text: "Dado o ADR-014, quando lido, ent\xE3o documenta o modelo: board dev-time\
+      \ (.dna/foundry-dev) vs scope runtime (apps/backend/.dna), volume no-deploy\
+      \ com restart como refresh honesto, e PG source como evolu\xE7\xE3o multi-r\xE9\
+      plica n\xE3o implementada"
+    done: true
+    done_at: '2026-07-10T19:36:05+00:00'
+    done_by: story-done-auto
   acceptance_criteria_source: cli-create
   definition_of_done:
-  - "compose.yaml do backend + coment\xE1rio no Dockerfile (COPY como fallback) +\
-    \ se\xE7\xE3o no README do backend"
-  - ADR-014 escrito e linkado do ADR-013
-  - Prova de produto registrada (diff composto antes/depois sem rebuild) + TestGuide
-    --product + TestRun
-  - CI verde no PR (stacked na s-official-packages)
+  - text: "compose.yaml do backend + coment\xE1rio no Dockerfile (COPY como fallback)\
+      \ + se\xE7\xE3o no README do backend"
+    done: true
+    done_at: '2026-07-10T19:36:05+00:00'
+    done_by: story-done-auto
+  - text: ADR-014 escrito e linkado do ADR-013
+    done: true
+    done_at: '2026-07-10T19:36:05+00:00'
+    done_by: story-done-auto
+  - text: Prova de produto registrada (diff composto antes/depois sem rebuild) + TestGuide
+      --product + TestRun
+    done: true
+    done_at: '2026-07-10T19:36:05+00:00'
+    done_by: story-done-auto
+  - text: CI verde no PR (stacked na s-official-packages)
+    done: true
+    done_at: '2026-07-10T19:36:05+00:00'
+    done_by: story-done-auto
   definition_of_done_source: cli-create
   created_at: '2026-07-10T19:19:34+00:00'
-  updated_at: '2026-07-10T19:25:06+00:00'
+  updated_at: '2026-07-10T19:36:06+00:00'
   timeline:
   - at: '2026-07-10T19:19:34+00:00'
     actor: claude-code
@@ -121,6 +143,19 @@ spec:
     source: cli
     from: in-progress
     to: review
+  - at: '2026-07-10T19:36:05+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #108 merged \u2014 volume .dna ro + ADR-014; loop edit\u2192restart\
+      \ sem rebuild"
+  - at: '2026-07-10T19:36:06+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: review
+    to: done
+    commit_ref: 0aca940a45134e658b7b6a0fcace48f8bd55bf7f
   produces:
   - kind: Plan
     name: plan-s-no-deploy-prompts
@@ -134,3 +169,4 @@ spec:
     name: tr-tg-s-no-deploy-prompts-20260710-192410
     role: test-run
     at: '2026-07-10T19:24:10+00:00'
+  closed_at: '2026-07-10T19:36:05+00:00'
