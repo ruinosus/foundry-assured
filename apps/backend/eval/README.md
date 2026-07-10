@@ -21,7 +21,13 @@ eval/
   access_control_test.py    # security gate: agentic retrieve + app-side trim, per identity → no cross-group leak (violations_max: 0)
   red_team_test.py          # security gate: injection/exfil corpus through the same trim → ASR ≤ redteam_asr_max
   test_attribution.py       # round-trip check: chunk→component attribution agrees across the trim's two derivations
+  prompts_equivalence_test.py  # DNA gate (ADR-013): composed prompt constants byte-equal the golden originals (offline)
 ```
+
+The declarative prompt layer (ADR-013) has a second, YAML-native guard next to the
+prompts themselves: `../.dna/helpdesk/eval-{cases,suites}/` — nine offline invariant
+cases run in CI via `dna eval run helpdesk-prompts` (TICKET/NO_MATCH sentinels,
+citation duty, HITL never-claim-a-write, …).
 
 All thresholds live in **`assurance.yaml`** (quality: groundedness / completeness /
 retrieval-recall / citation-floor; build: fidelity; security: access-control violations =

@@ -19,6 +19,9 @@ dependencies = [
     "azure-monitor-opentelemetry>=1.8.8",
     "azure-data-tables>=12.7.0",
     "httpx>=0.28.1",
+    # Declarative agent prompts (ADR-013) — pinned to a commit, not a branch:
+    # DNA is pre-release (no PyPI dist yet), so the pin IS the version.
+    "dna-sdk @ git+https://github.com/ruinosus/dna@3628a9ee0ccb17319f9f2e21605417ff8295ba2a#subdirectory=packages/sdk-py",
 ]
 
 [tool.uv]
@@ -27,6 +30,10 @@ prerelease = "allow"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+# Required for the dna-sdk git dependency (a "direct reference") above.
+allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["app"]

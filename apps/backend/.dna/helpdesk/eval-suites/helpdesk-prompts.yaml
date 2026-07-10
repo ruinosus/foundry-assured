@@ -1,0 +1,25 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalSuite
+metadata:
+  name: helpdesk-prompts
+  description: >-
+    Offline, deterministic invariants over the composed agent prompts
+    (ADR-013). Each case pins the key phrases / output contracts the backend
+    and its eval policies rely on — e.g. the RESOLVE TICKET sentinel the
+    workflow branches on, or the grounded citation duty ASSERT enforces.
+    Complements eval/prompts_equivalence_test.py: that gate proves the move
+    was byte-faithful; this suite keeps guarding the contracts once prompts
+    legitimately start evolving in .dna/.
+spec:
+  cases:
+  - triage-contract
+  - retrieve-contract
+  - resolve-contract
+  - concierge-base-identity
+  - concierge-grounded-citation
+  - concierge-ungrounded-humility
+  - cockpit-discipline
+  - selfwiki-discipline
+  - platform-write-safety
+  target:
+    type: prompt

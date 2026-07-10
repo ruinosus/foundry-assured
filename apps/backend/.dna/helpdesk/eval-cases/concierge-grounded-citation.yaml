@@ -1,0 +1,22 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: concierge-grounded-citation
+spec:
+  description: Grounded concierge carries the base persona plus the citation + don't-guess duties (repo rule 4 / eval policy)
+  target:
+    type: prompt
+    agent: concierge-grounded
+  checks:
+  - type: contains
+    value: Helpdesk Concierge
+  - type: contains
+    value: Cite the source document
+  - type: contains
+    value: say you don't know instead of guessing
+  - type: contains
+    value: never invent runbooks
+  - type: min_length
+    value: 300
+  expected: The grounded variant embeds the base persona and enforces cite-every-claim (the ASSERT policy's contract).
+  tags: [concierge, grounding, citation]

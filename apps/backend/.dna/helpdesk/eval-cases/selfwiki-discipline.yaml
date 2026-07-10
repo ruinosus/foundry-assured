@@ -1,0 +1,24 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: selfwiki-discipline
+spec:
+  description: Selfwiki expert grounds exclusively on the project deep-wiki, cites area+doc, degrades gracefully on gaps
+  target:
+    type: prompt
+    agent: selfwiki
+  checks:
+  - type: contains
+    value: foundry-assured
+  - type: contains
+    value: português (pt-BR)
+  - type: contains
+    value: '**exclusivamente**'
+  - type: contains
+    value: diga em 1–2 frases
+  - type: contains
+    value: Nunca invente módulos
+  - type: min_length
+    value: 1500
+  expected: The selfwiki prompt keeps the dogfood grounding discipline and the short honest-gap behavior.
+  tags: [selfwiki, grounding, citation]
