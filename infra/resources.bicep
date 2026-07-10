@@ -59,6 +59,7 @@ var registryName = 'acrassured${resourceToken}'
 var storageName = 'stassured${resourceToken}'
 var corpusContainerName = 'corpus'
 var dataShareName = 'assured-data'
+var promptsShareName = 'assured-prompts'
 
 // Built-in role definition GUIDs (stable Azure identifiers).
 var roleAzureAiUser = '53ca6127-db72-4b80-b1b0-d745d6d5456d' // Azure AI User / Foundry User (Foundry data plane)
@@ -216,6 +217,16 @@ resource dataShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-0
   parent: fileService
   name: dataShareName
   properties: { shareQuota: 1 } // GiB — jsonl records are tiny
+}
+
+// File share holding the runtime DNA prompt scope (ADR-014, production leg).
+// Mounted read-only into the backend at /mnt/dna; publishing prompts =
+// scripts/push-prompts.sh (upload + revision restart). Starts EMPTY on a fresh
+// provision — the backend then falls back to the scope baked into the image.
+resource promptsShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
+  parent: fileService
+  name: promptsShareName
+  properties: { shareQuota: 1 } // GiB — the scope is a handful of YAML/MD files
 }
 
 // ---------------------------------------------------------------------------
@@ -436,6 +447,7 @@ output AZURE_STORAGE_ACCOUNT string = storage.name
 output AZURE_STORAGE_RESOURCE_ID string = storage.id
 output AZURE_STORAGE_CONTAINER string = corpusContainerName
 output AZURE_FILE_SHARE string = dataShareName
+output AZURE_PROMPTS_FILE_SHARE string = promptsShareName
 
 // Consumed by azd (and the agent extension) to build/push the hosted-agent image.
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer

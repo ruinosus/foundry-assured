@@ -14,9 +14,10 @@ RUN uv sync --frozen --no-dev --no-install-project
 
 COPY app ./app
 # Declarative agent prompts (ADR-013) — composed by app/agents/prompts.py at import.
-# This baked-in copy keeps the image self-contained (azd/ACA); local compose
-# bind-mounts the working-tree .dna/ over it so prompt edits need a restart,
-# not a rebuild (ADR-014, compose.yaml).
+# This baked-in copy keeps the image self-contained AND is the fallback when the
+# external scope is absent. No-rebuild prompt edits (ADR-014): local compose
+# bind-mounts the working-tree .dna/ over this path; production (ACA) mounts an
+# Azure Files share at /mnt/dna selected via DNA_BASE_DIR (scripts/push-prompts.sh).
 COPY .dna ./.dna
 
 ENV PATH="/app/.venv/bin:$PATH"

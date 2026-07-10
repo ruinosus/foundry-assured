@@ -85,6 +85,7 @@ module apps 'containerapps.bicep' = {
     azureSearchKnowledgeBase: resources.outputs.AZURE_SEARCH_KNOWLEDGE_BASE
     storageAccountName: resources.outputs.AZURE_STORAGE_ACCOUNT
     fileShareName: resources.outputs.AZURE_FILE_SHARE
+    promptsShareName: resources.outputs.AZURE_PROMPTS_FILE_SHARE
     entraTenantId: entraTenantId
     entraApiClientId: entraApiClientId
     entraApiClientSecret: entraApiClientSecret
@@ -111,6 +112,7 @@ output AZURE_SEARCH_KNOWLEDGE_BASE string = resources.outputs.AZURE_SEARCH_KNOWL
 output AZURE_STORAGE_ACCOUNT string = resources.outputs.AZURE_STORAGE_ACCOUNT
 output AZURE_STORAGE_RESOURCE_ID string = resources.outputs.AZURE_STORAGE_RESOURCE_ID
 output AZURE_STORAGE_CONTAINER string = resources.outputs.AZURE_STORAGE_CONTAINER
+output AZURE_PROMPTS_FILE_SHARE string = resources.outputs.AZURE_PROMPTS_FILE_SHARE // push-prompts.sh reads this from the azd env
 
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = resources.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
 output AZURE_CONTAINER_REGISTRY_NAME string = resources.outputs.AZURE_CONTAINER_REGISTRY_NAME
