@@ -38,16 +38,14 @@ jobs:
       # Prompt-invariant eval suite over the declarative .dna scope — THE guard
       # of record for prompt contracts (ADR-013 phase 2; the byte-equivalence
       # gate retired when the prompts started evolving as Soul + Guardrails).
-      # dna-cli is installed straight from the pinned git commit (same pin as
-      # the dna-sdk dependency); its bare `dna-sdk` requirement is satisfied
-      # by the --with git ref. Offline + deterministic; exits 1 on any failed case.
+      # dna-cli comes from PyPI (it pins dna-sdk>=0.1,<0.2 itself — the same
+      # range the backend depends on). Offline + deterministic; exits 1 on any
+      # failed case.
       - name: DNA prompt eval suite (dna eval run)
         env:
           DNA_BASE_DIR: ${{ github.workspace }}/apps/backend/.dna
         run: >-
-          uvx
-          --from "dna-cli @ git+https://github.com/ruinosus/dna@3628a9ee0ccb17319f9f2e21605417ff8295ba2a#subdirectory=packages/cli"
-          --with "dna-sdk @ git+https://github.com/ruinosus/dna@3628a9ee0ccb17319f9f2e21605417ff8295ba2a#subdirectory=packages/sdk-py"
+          uvx --from "dna-cli>=0.1,<0.2"
           dna eval run helpdesk-prompts --scope helpdesk
 
   frontend:

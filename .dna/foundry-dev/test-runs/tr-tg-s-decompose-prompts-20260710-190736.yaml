@@ -1,0 +1,14 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestRun
+metadata:
+  name: tr-tg-s-decompose-prompts-20260710-190736
+spec:
+  guide_ref: tg-s-decompose-prompts
+  outcome: pass
+  verifies:
+  - Story/s-decompose-prompts
+  executed_by: claude-code
+  executed_at: '2026-07-10T19:07:36+00:00'
+  evidence:
+  - "ci:PR#106 (merge ac26436) \u2014 job backend: dna eval run helpdesk-prompts verde\
+    \ (9 casos, planted-violation exit 1 verificado na story timeline)"
