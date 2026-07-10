@@ -9,7 +9,7 @@ spec:
     into a Soul, extract cross-cutting rules (grounded citation duty, HITL never-claim-a-write)
     into Guardrail kinds wired on the agents, retire the byte-exact golden test, and
     move the guard duty to semantic invariants in the DNA eval suite.'
-  status: in-progress
+  status: review
   feature: f-dna-adoption
   priority: high
   labels:
@@ -88,7 +88,7 @@ spec:
       evidence on timeline
   definition_of_done_source: cli-create
   created_at: '2026-07-10T16:20:29+00:00'
-  updated_at: '2026-07-10T16:33:44+00:00'
+  updated_at: '2026-07-10T16:34:35+00:00'
   timeline:
   - at: '2026-07-10T16:20:29+00:00'
     actor: claude-code
@@ -198,6 +198,24 @@ spec:
     evidence: commit 9912961 (decomposition + retirement + eval cases + docs); gates
       evidence on timeline
     by: claude-code
+  - at: '2026-07-10T16:34:16+00:00'
+    actor: claude-code
+    type: pr_opened
+    source: cli
+    summary: 'PR aberto: https://github.com/ruinosus/foundry-assured/pull/106'
+    pr_url: https://github.com/ruinosus/foundry-assured/pull/106
+  - at: '2026-07-10T16:34:35+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #106 aberto via dna sdlc story pr (assinatura nativa, footer Work-Item).\
+      \ Aguardando review do Barna \u2014 done s\xF3 no merge."
+  - at: '2026-07-10T16:34:35+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: review
   produces:
   - kind: Plan
     name: plan-s-decompose-prompts
