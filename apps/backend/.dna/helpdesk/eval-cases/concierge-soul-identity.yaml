@@ -1,0 +1,20 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: concierge-soul-identity
+spec:
+  description: The shared concierge Soul names itself and its mission (the persona both variants compose)
+  target:
+    type: prompt
+    # A Soul is itself a prompt target — this composes souls/concierge alone
+    # (replaces the retired concierge-base agent, ADR-013 phase 2).
+    agent: concierge
+  checks:
+  - type: contains
+    value: Helpdesk Concierge
+  - type: contains
+    value: internal engineering support assistant
+  - type: min_length
+    value: 100
+  expected: The Soul introduces the Helpdesk Concierge identity shared by the grounded and ungrounded variants.
+  tags: [concierge, identity, soul]

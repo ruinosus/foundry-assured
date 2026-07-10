@@ -3,19 +3,22 @@ kind: EvalSuite
 metadata:
   name: helpdesk-prompts
   description: >-
-    Offline, deterministic invariants over the composed agent prompts
-    (ADR-013). Each case pins the key phrases / output contracts the backend
-    and its eval policies rely on — e.g. the RESOLVE TICKET sentinel the
-    workflow branches on, or the grounded citation duty ASSERT enforces.
-    Complements eval/prompts_equivalence_test.py: that gate proves the move
-    was byte-faithful; this suite keeps guarding the contracts once prompts
-    legitimately start evolving in .dna/.
+    Offline, deterministic invariants over the composed agent prompts — THE
+    guard of record since ADR-013 phase 2 (the byte-equivalence gate
+    eval/prompts_equivalence_test.py was retired once the prompts started
+    legitimately evolving: shared persona in souls/concierge, cross-cutting
+    rules in guardrails/). Each case pins a semantic contract the backend and
+    its eval policies rely on: the RESOLVE TICKET: and RETRIEVE NO_MATCH
+    sentinels the workflow branches on, the grounded citation duty (wired
+    Guardrail) that ASSERT enforces, the ungrounded variant FORBIDDING that
+    duty (not_contains), the platform HITL never-claim-a-write Guardrail, and
+    the pt-BR grounding discipline of cockpit/selfwiki.
 spec:
   cases:
   - triage-contract
   - retrieve-contract
   - resolve-contract
-  - concierge-base-identity
+  - concierge-soul-identity
   - concierge-grounded-citation
   - concierge-ungrounded-humility
   - cockpit-discipline

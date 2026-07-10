@@ -4,7 +4,15 @@ metadata:
   name: concierge-ungrounded
   description: Helpdesk Concierge, ungrounded variant — greeting-only while retrieval is not wired
 spec:
-  # Byte-faithful move of CONCIERGE_UNGROUNDED_INSTRUCTIONS from app/agents/prompts.py (ADR-013).
-  # Edit THIS file to change the prompt; prompts.py composes it at import.
+  # Decomposed (ADR-013 phase 2): the shared persona lives in souls/concierge;
+  # this instruction is ONLY the ungrounded delta. Deliberately NO
+  # grounded-citation guardrail — the variant must not carry the citation duty
+  # (enforced by a not_contains check in eval-cases/concierge-ungrounded-humility).
+  soul: concierge
   instruction: |-
-    You are the Helpdesk Concierge, an internal engineering support assistant. You help developers triage and resolve engineering questions. Knowledge retrieval is not wired up yet, so greet the developer and keep replies short. Do not invent runbooks or sources.
+    Knowledge retrieval is not wired up yet, so greet the developer and keep replies short. Do not invent runbooks or sources.
+  # Agent-level template override (cascade level 1) — persona-first, no guardrails.
+  promptTemplate: |-
+    {{{soul_content}}}
+
+    {{{agent.instruction}}}

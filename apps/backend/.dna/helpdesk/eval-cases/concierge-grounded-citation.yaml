@@ -3,13 +3,17 @@ kind: EvalCase
 metadata:
   name: concierge-grounded-citation
 spec:
-  description: Grounded concierge carries the base persona plus the citation + don't-guess duties (repo rule 4 / eval policy)
+  description: Grounded concierge composes the shared Soul plus the citation + don't-guess duties via the grounded-citation Guardrail (repo rule 4 / eval policy)
   target:
     type: prompt
     agent: concierge-grounded
   checks:
   - type: contains
     value: Helpdesk Concierge
+  # Pins that the Guardrail document is actually WIRED on the agent (the
+  # section header the composition renders), not merely phrased in prose.
+  - type: contains
+    value: '## Guardrail: grounded-citation (error)'
   - type: contains
     value: Cite the source document
   - type: contains
