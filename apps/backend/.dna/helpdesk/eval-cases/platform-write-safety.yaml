@@ -16,6 +16,9 @@ spec:
     value: let the approval step handle it
   - type: contains
     value: never claim you performed a write
+  # Pins that the HITL rule comes from the wired no-write-claims Guardrail.
+  - type: contains
+    value: '## Guardrail: no-write-claims (error)'
   - type: min_length
     value: 400
   expected: The platform prompt keeps tool-grounded answering and defers every state change to the HITL approval step.

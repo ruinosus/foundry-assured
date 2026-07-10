@@ -135,8 +135,37 @@ holds); authoring moves to `.dna/helpdesk/agents/`.
   restated as "prompts change only in `.dna/helpdesk/agents/`"; the file
   itself remains the only consumption point.
 
+## Addendum — Phase 2 (decomposition, the deferred follow-up)
+
+With the phase-1 move merged and the loop trusted, the deferred decomposition
+happened (tracked in-repo as `Story/s-decompose-prompts` on the
+`.dna/foundry-dev` board):
+
+- **Soul** — the shared concierge persona lives once in `souls/concierge/`
+  (soulspec bundle); `concierge-grounded`/`concierge-ungrounded` reference it
+  (`spec.soul`) and keep only their variant delta in `instruction`. The
+  `concierge-base` agent — and the `CONCIERGE_BASE_INSTRUCTIONS` constant —
+  died: nothing consumed them standalone; the persona IS the Soul now.
+- **Guardrails** — cross-cutting rules became `Guardrail` documents wired via
+  `spec.guardrails`: `grounded-citation` (cite-every-claim + cite-or-don't-
+  know, on the grounded variant) and `no-write-claims` (the HITL
+  never-claim-a-write rule, on the platform concierge). Both `severity: error`,
+  `scope: output`, rendered as `## Guardrail:` sections in the composed prompt.
+- **The guard changed nature** — the byte-equivalence gate
+  (`eval/prompts_equivalence_test.py`) retired: it existed to prove the *move*
+  was faithful, and by definition dies the moment prompts legitimately evolve.
+  The eval suite is now the guard of record, extended with **negative
+  invariants** the byte paradigm could not express (`not_contains`: the
+  ungrounded variant must NOT carry the citation duty), plus checks that the
+  guardrails are actually *wired* (the rendered section header), and
+  `concierge-soul-identity` targeting the Soul directly as a prompt target.
+  Planted-violation (guardrail unwired) → `dna eval run` exit 1, re-verified.
+- **Consumers unchanged** — `prompts.py` composes the same public constants
+  (minus the dead `CONCIERGE_BASE_INSTRUCTIONS`); the composed texts are now
+  multi-part prompts rather than byte-copies.
+
 ## References
 
 - [DNA — declarative agent DNA SDK](https://github.com/ruinosus/dna) · [docs](https://ruinosus.github.io/dna/)
 - [ADR-006](./ADR-006-tenant-scoped-config.md), [ADR-007](./ADR-007-coexistence-deployment-mode.md), [ADR-010](./ADR-010-per-tenant-domain-entitlement.md) — the tenant-scoped, data-driven direction this extends to prompts
-- [`eval/prompts_equivalence_test.py`](../../apps/backend/eval/prompts_equivalence_test.py) · [`.dna/helpdesk/eval-suites/helpdesk-prompts.yaml`](../../apps/backend/.dna/helpdesk/eval-suites/helpdesk-prompts.yaml)
+- [`.dna/helpdesk/eval-suites/helpdesk-prompts.yaml`](../../apps/backend/.dna/helpdesk/eval-suites/helpdesk-prompts.yaml) — the prompt-contract guard of record (phase 2 retired the byte-equivalence gate)

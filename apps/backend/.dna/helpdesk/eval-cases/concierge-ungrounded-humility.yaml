@@ -14,6 +14,13 @@ spec:
     value: not wired up yet
   - type: contains
     value: Do not invent runbooks or sources
+  # The variants' contracts must not bleed into each other: ungrounded FORBIDS
+  # the grounded citation duty and the KB-answering claim (negative invariants
+  # the retired byte-equality gate could never express).
+  - type: not_contains
+    value: Cite the source document
+  - type: not_contains
+    value: Answer using the runbook knowledge base
   - type: min_length
     value: 200
   expected: The ungrounded variant embeds the base persona and forbids invented runbooks while retrieval is off.

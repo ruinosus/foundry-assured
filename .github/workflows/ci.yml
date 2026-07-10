@@ -35,9 +35,9 @@ jobs:
         run: uv run python -m eval.run_eval --self-test
       - name: ACL attribution round-trip (chunk key == blob key)
         run: uv run python -m eval.test_attribution
-      - name: DNA prompt equivalence (composed constants == golden originals)
-        run: uv run python -m eval.prompts_equivalence_test
-      # Prompt-invariant eval suite over the declarative .dna scope (ADR-013).
+      # Prompt-invariant eval suite over the declarative .dna scope — THE guard
+      # of record for prompt contracts (ADR-013 phase 2; the byte-equivalence
+      # gate retired when the prompts started evolving as Soul + Guardrails).
       # dna-cli is installed straight from the pinned git commit (same pin as
       # the dna-sdk dependency); its bare `dna-sdk` requirement is satisfied
       # by the --with git ref. Offline + deterministic; exits 1 on any failed case.
