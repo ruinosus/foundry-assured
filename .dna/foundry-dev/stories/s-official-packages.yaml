@@ -39,7 +39,7 @@ spec:
   - TestGuide --product + TestRun registrados; PR aberto com story review
   definition_of_done_source: cli-create
   created_at: '2026-07-10T19:06:35+00:00'
-  updated_at: '2026-07-10T19:16:29+00:00'
+  updated_at: '2026-07-10T19:17:06+00:00'
   timeline:
   - at: '2026-07-10T19:06:35+00:00'
     actor: claude-code
@@ -93,8 +93,31 @@ spec:
       \ n\xE3o do change: o build chegou a completar o uv sync DENTRO da imagem sem\
       \ git instalado antes de falhar por I/O do daemon."
     commit_ref: ac2643666a83940852f00f1c2ffcea48b1bbb653
+  - at: '2026-07-10T19:17:05+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestGuide
+    name: tg-s-official-packages
+    summary: TestGuide tg-s-official-packages (smoke)
+  - at: '2026-07-10T19:17:06+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestRun
+    name: tr-tg-s-official-packages-20260710-191706
+    summary: "TestRun tr-tg-s-official-packages-20260710-191706 \u2192 pass"
+    outcome: pass
   produces:
   - kind: Plan
     name: plan-s-official-packages
     role: implementation
     at: '2026-07-10T19:08:08+00:00'
+  - kind: TestGuide
+    name: tg-s-official-packages
+    role: test-guide
+    at: '2026-07-10T19:17:05+00:00'
+  - kind: TestRun
+    name: tr-tg-s-official-packages-20260710-191706
+    role: test-run
+    at: '2026-07-10T19:17:06+00:00'
