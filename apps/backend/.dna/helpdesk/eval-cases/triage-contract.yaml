@@ -1,0 +1,22 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: triage-contract
+spec:
+  description: Triage classifies + restates, never answers, and emits the exact three-line output contract
+  target:
+    type: prompt
+    agent: triage
+  checks:
+  - type: contains
+    value: Do NOT answer the question
+  - type: contains
+    value: 'Intent: <one short phrase>'
+  - type: contains
+    value: 'Urgency: <low|medium|high>'
+  - type: contains
+    value: 'Restated: <the question in one clear sentence>'
+  - type: min_length
+    value: 200
+  expected: The TRIAGE prompt forbids answering and pins the Intent/Urgency/Restated output shape.
+  tags: [workflow, contract]

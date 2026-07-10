@@ -35,6 +35,20 @@ jobs:
         run: uv run python -m eval.run_eval --self-test
       - name: ACL attribution round-trip (chunk key == blob key)
         run: uv run python -m eval.test_attribution
+      - name: DNA prompt equivalence (composed constants == golden originals)
+        run: uv run python -m eval.prompts_equivalence_test
+      # Prompt-invariant eval suite over the declarative .dna scope (ADR-013).
+      # dna-cli is installed straight from the pinned git commit (same pin as
+      # the dna-sdk dependency); its bare `dna-sdk` requirement is satisfied
+      # by the --with git ref. Offline + deterministic; exits 1 on any failed case.
+      - name: DNA prompt eval suite (dna eval run)
+        env:
+          DNA_BASE_DIR: ${{ github.workspace }}/apps/backend/.dna
+        run: >-
+          uvx
+          --from "dna-cli @ git+https://github.com/ruinosus/dna@3628a9ee0ccb17319f9f2e21605417ff8295ba2a#subdirectory=packages/cli"
+          --with "dna-sdk @ git+https://github.com/ruinosus/dna@3628a9ee0ccb17319f9f2e21605417ff8295ba2a#subdirectory=packages/sdk-py"
+          dna eval run helpdesk-prompts --scope helpdesk
 
   frontend:
     name: Frontend · typecheck + build

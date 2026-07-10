@@ -42,7 +42,10 @@ Scopes: `backend`, `frontend`, `hosted-agent`, `infra`, `eval`, `auth`, `deps`, 
 
 - **Never invent SDK signatures.** Verify against the installed package / Microsoft
   docs before fixing any `azure-ai-projects` / `agent-framework` call.
-- **Agent prompts** change only in `apps/backend/app/agents/prompts.py` (single source).
+- **Agent prompts** change only in `apps/backend/.dna/helpdesk/agents/*.yaml` (the declarative
+  source, [ADR-013](./docs/adr/ADR-013-declarative-agent-prompts-dna.md)); `app/agents/prompts.py`
+  is the single consumption point and composes them at import. Update the golden fixture in
+  `eval/prompts_equivalence_test.py` in the same PR when a prompt legitimately changes.
 - Auth is **keyless** (`DefaultAzureCredential` / OBO) — no API keys in code.
 - Every resolver answer **must cite a source** (the eval policy gate enforces it).
 - Never commit secrets or `.env` values.

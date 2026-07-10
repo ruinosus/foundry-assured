@@ -5,14 +5,20 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-# uv for reproducible installs from the lockfile.
-RUN pip install --no-cache-dir uv
+# uv for reproducible installs from the lockfile. git is required to fetch
+# the dna-sdk git dependency (ADR-013) — slim images don't ship it.
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/* \
+    && pip install --no-cache-dir uv
 
 # Dependencies first (cached), then the app code.
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-install-project
 
 COPY app ./app
+# Declarative agent prompts (ADR-013) — composed by app/agents/prompts.py at import.
+COPY .dna ./.dna
 
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000

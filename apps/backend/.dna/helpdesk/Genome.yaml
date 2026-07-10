@@ -1,0 +1,10 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Genome
+metadata:
+  name: helpdesk
+  description: >-
+    Declarative agent instructions for the foundry-assured backend (ADR-013).
+    One Agent per instruction block formerly hardcoded in
+    app/agents/prompts.py; prompts.py now composes these at import time.
+spec:
+  default_agent: concierge-grounded

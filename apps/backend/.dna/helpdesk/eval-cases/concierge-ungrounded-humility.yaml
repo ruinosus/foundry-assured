@@ -1,0 +1,20 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: concierge-ungrounded-humility
+spec:
+  description: Ungrounded concierge keeps the base persona, stays short and never fabricates sources
+  target:
+    type: prompt
+    agent: concierge-ungrounded
+  checks:
+  - type: contains
+    value: Helpdesk Concierge
+  - type: contains
+    value: not wired up yet
+  - type: contains
+    value: Do not invent runbooks or sources
+  - type: min_length
+    value: 200
+  expected: The ungrounded variant embeds the base persona and forbids invented runbooks while retrieval is off.
+  tags: [concierge, grounding]

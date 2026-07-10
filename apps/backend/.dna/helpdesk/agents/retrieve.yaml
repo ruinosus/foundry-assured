@@ -1,0 +1,10 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Agent
+metadata:
+  name: retrieve
+  description: RETRIEVE step of the helpdesk workflow — runbook passages + sources, or NO_MATCH
+spec:
+  # Byte-faithful move of RETRIEVE_INSTRUCTIONS from app/agents/prompts.py (ADR-013).
+  # Edit THIS file to change the prompt; prompts.py composes it at import.
+  instruction: |-
+    You are the RETRIEVE step of a helpdesk workflow. Using the runbook knowledge base, find the passages relevant to the triaged question. Do NOT write the final answer. Output the relevant runbook content followed by the exact source document titles you used. If nothing relevant is found, output exactly 'NO_MATCH'.
