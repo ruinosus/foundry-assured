@@ -10,7 +10,7 @@ spec:
     \ (/mnt/dna) + env var DNA_BASE_DIR selecionando; COPY na imagem permanece como\
     \ fallback (share vazio/ausente \u2260 app quebrado). Loop de prod: editar YAML\
     \ \u2192 upload pro share \u2192 az containerapp revision restart."
-  status: review
+  status: done
   feature: f-dna-adoption
   owner: claude-code
   priority: high
@@ -21,39 +21,64 @@ spec:
   - aca
   reporter: claude-code
   acceptance_criteria:
-  - "Dado o bicep provisionado, quando o backend sobe no ACA, ent\xE3o um Azure Files\
-    \ share (assured-prompts) est\xE1 montado read-only em /mnt/dna e DNA_BASE_DIR=/mnt/dna\
-    \ aponta pra ele"
-  - "Dado um share vazio ou ausente (provision fresco, ningu\xE9m publicou), quando\
-    \ o backend boota, ent\xE3o ele comp\xF5e do scope cozido na imagem (/app/.dna)\
-    \ com log expl\xEDcito do fallback \u2014 boot N\xC3O quebra"
-  - "Dado um share seedado com o scope helpdesk, quando o backend (re)boota, ent\xE3\
-    o os prompts compostos v\xEAm do share; se o scope no share existir mas estiver\
-    \ quebrado, o boot falha ALTO (fail-loud do ADR-013, sem fallback silencioso)"
-  - "Dado o runbook/script de scripts/, quando o operador roda o fluxo editar \u2192\
-    \ upload-batch \u2192 revision restart, ent\xE3o o prompt novo est\xE1 em vigor\
-    \ sem build de imagem \u2014 restart \xE9 a unidade de refresh (ADR-014), sem\
-    \ promessa de hot-reload"
+  - text: "Dado o bicep provisionado, quando o backend sobe no ACA, ent\xE3o um Azure\
+      \ Files share (assured-prompts) est\xE1 montado read-only em /mnt/dna e DNA_BASE_DIR=/mnt/dna\
+      \ aponta pra ele"
+    done: true
+    done_at: '2026-07-10T21:02:56+00:00'
+    done_by: story-done-auto
+  - text: "Dado um share vazio ou ausente (provision fresco, ningu\xE9m publicou),\
+      \ quando o backend boota, ent\xE3o ele comp\xF5e do scope cozido na imagem (/app/.dna)\
+      \ com log expl\xEDcito do fallback \u2014 boot N\xC3O quebra"
+    done: true
+    done_at: '2026-07-10T21:02:56+00:00'
+    done_by: story-done-auto
+  - text: "Dado um share seedado com o scope helpdesk, quando o backend (re)boota,\
+      \ ent\xE3o os prompts compostos v\xEAm do share; se o scope no share existir\
+      \ mas estiver quebrado, o boot falha ALTO (fail-loud do ADR-013, sem fallback\
+      \ silencioso)"
+    done: true
+    done_at: '2026-07-10T21:02:56+00:00'
+    done_by: story-done-auto
+  - text: "Dado o runbook/script de scripts/, quando o operador roda o fluxo editar\
+      \ \u2192 upload-batch \u2192 revision restart, ent\xE3o o prompt novo est\xE1\
+      \ em vigor sem build de imagem \u2014 restart \xE9 a unidade de refresh (ADR-014),\
+      \ sem promessa de hot-reload"
+    done: true
+    done_at: '2026-07-10T21:02:56+00:00'
+    done_by: story-done-auto
   acceptance_criteria_source: claude-code
   definition_of_done:
-  - "Bicep: share em resources.bicep + storage link ReadOnly no environment + volume/mount\
-    \ + env var em containerapps.bicep; managedApp.bicep re-parametrizado; bicep build\
-    \ limpo em main.bicep E managedApp.bicep (job CI Infra \xB7 bicep build \xE9 o\
-    \ gate)"
-  - "Backend: prompts.py honra DNA_BASE_DIR com sem\xE2ntica ausente\u2192fallback-logado\
-    \ / presente-mas-quebrado\u2192fail-loud; comportamento local/compose byte-id\xEA\
-    ntico sem a env var; ruff limpo"
-  - "Script scripts/push-prompts.sh (upload-batch + revision restart via azd env)\
-    \ + runbook documentado; ADR-014 atualizado (se\xE7\xE3o produ\xE7\xE3o/ACA sai\
-    \ de follow-up pro design implementado, com justificativa do path alternativo\
-    \ vs mount-por-cima)"
-  - "TestGuide --product marcando o que foi validado offline + TestRun com o que rodou;\
-    \ passo de deploy real documentado como pend\xEAncia do dono no PR body; PR via\
-    \ story pr --base main com CI passed verde \u2014 N\xC3O mergear, N\xC3O marcar\
-    \ done"
+  - text: "Bicep: share em resources.bicep + storage link ReadOnly no environment\
+      \ + volume/mount + env var em containerapps.bicep; managedApp.bicep re-parametrizado;\
+      \ bicep build limpo em main.bicep E managedApp.bicep (job CI Infra \xB7 bicep\
+      \ build \xE9 o gate)"
+    done: true
+    done_at: '2026-07-10T21:02:56+00:00'
+    done_by: story-done-auto
+  - text: "Backend: prompts.py honra DNA_BASE_DIR com sem\xE2ntica ausente\u2192fallback-logado\
+      \ / presente-mas-quebrado\u2192fail-loud; comportamento local/compose byte-id\xEA\
+      ntico sem a env var; ruff limpo"
+    done: true
+    done_at: '2026-07-10T21:02:56+00:00'
+    done_by: story-done-auto
+  - text: "Script scripts/push-prompts.sh (upload-batch + revision restart via azd\
+      \ env) + runbook documentado; ADR-014 atualizado (se\xE7\xE3o produ\xE7\xE3\
+      o/ACA sai de follow-up pro design implementado, com justificativa do path alternativo\
+      \ vs mount-por-cima)"
+    done: true
+    done_at: '2026-07-10T21:02:56+00:00'
+    done_by: story-done-auto
+  - text: "TestGuide --product marcando o que foi validado offline + TestRun com o\
+      \ que rodou; passo de deploy real documentado como pend\xEAncia do dono no PR\
+      \ body; PR via story pr --base main com CI passed verde \u2014 N\xC3O mergear,\
+      \ N\xC3O marcar done"
+    done: true
+    done_at: '2026-07-10T21:02:56+00:00'
+    done_by: story-done-auto
   definition_of_done_source: claude-code
   created_at: '2026-07-10T20:06:58+00:00'
-  updated_at: '2026-07-10T20:21:21+00:00'
+  updated_at: '2026-07-10T21:04:47+00:00'
   timeline:
   - at: '2026-07-10T20:06:58+00:00'
     actor: claude-code
@@ -145,6 +170,27 @@ spec:
     source: cli
     from: in-progress
     to: review
+  - at: '2026-07-10T21:02:57+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #110 merged \u2014 Azure Files + DNA_BASE_DIR; deploy real = checklist\
+      \ do dono"
+  - at: '2026-07-10T21:04:46+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Fechada com exce\xE7\xE3o registrada: TestRun partial (valida\xE7\xE3\
+      o offline completa \u2014 bicep build, matriz do resolver, eval 9/9); o que\
+      \ s\xF3 deploy real prova virou s-aca-deploy-validation (dono executa). PR #110\
+      \ merged."
+  - at: '2026-07-10T21:04:47+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: review
+    to: done
+    commit_ref: c44083378f7525a68cf0f8c8309a0b370bab84d9
   produces:
   - kind: Plan
     name: plan-s-aca-azure-files-prompts
@@ -158,3 +204,4 @@ spec:
     name: tr-tg-s-aca-azure-files-prompts-20260710-201937
     role: test-run
     at: '2026-07-10T20:19:38+00:00'
+  closed_at: '2026-07-10T21:04:46+00:00'
