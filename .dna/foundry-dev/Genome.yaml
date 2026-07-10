@@ -1,0 +1,11 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Genome
+metadata:
+  name: foundry-dev
+  description: >-
+    Dev-time SDLC board for foundry-assured — Features/Stories/Issues tracked
+    via `dna sdlc` (see CONTRIBUTING.md § Work tracking). This scope is
+    DISTINCT from apps/backend/.dna (the runtime prompt scope the backend
+    composes at import): the root .dna/ is about how we WORK on the repo,
+    the backend .dna/ is about what the product RUNS.
+spec: {}

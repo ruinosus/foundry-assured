@@ -1,0 +1,42 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Plan
+metadata:
+  name: plan-s-decompose-prompts
+spec:
+  title: 'Plano: s-decompose-prompts'
+  date: '2026-07-10'
+  status: accepted
+  story_ref: s-decompose-prompts
+  journey_phase: plan
+  body: "## Plano de ataque \u2014 decomposi\xE7\xE3o p\xF3s-trava-byte (fase 2 do\
+    \ piloto DNA)\n\n### 0. Bootstrap do board (este commit)\n- Scope `.dna/foundry-dev`\
+    \ na raiz (dev-time board, separado do runtime `apps/backend/.dna`).\n- `dna sdlc\
+    \ hooks install` \u2192 scripts/git-hooks/prepare-commit-msg versionado + core.hooksPath.\n\
+    - Nota no CONTRIBUTING: como instalar o CLI (git-dep), onde o board vive, verbos\
+    \ b\xE1sicos.\n\n### 1. Soul \u2014 persona compartilhada\n- `souls/concierge/`\
+    \ (SOUL.md + soul.json): a identidade \"Helpdesk Concierge\" que hoje est\xE1\
+    \ duplicada\n  byte a byte em concierge-base / concierge-grounded / concierge-ungrounded.\n\
+    - Agents grounded/ungrounded passam a referenciar `soul: concierge` e mant\xEA\
+    m s\xF3 o delta da variante.\n- `concierge-base` (agent + constante CONCIERGE_BASE_INSTRUCTIONS)\
+    \ morre: nenhum consumidor standalone\n  no backend (verificado: s\xF3 o shim\
+    \ e o teste golden a exp\xF5em/checam).\n\n### 2. Guardrails \u2014 regras transversais\n\
+    - `guardrails/grounded-citation/` (severity: error, scope: output): dever-de-cita\xE7\
+    \xE3o + cite-or-don't-know\n  do grounded. Wired em concierge-grounded via spec.guardrails.\n\
+    - `guardrails/no-write-claims/` (severity: error, scope: output): o \"never claim\
+    \ you performed a write\"\n  do HITL. Wired em platform via spec.guardrails.\n\
+    - Ordem do prompt: promptTemplate por agent (cascata DNA n\xEDvel 1) pra manter\
+    \ persona-primeiro.\n\n### 3. A guarda muda de natureza\n- `eval/prompts_equivalence_test.py`\
+    \ (golden byte-exato) aposentado \u2014 cumpriu o papel na migra\xE7\xE3o (#104).\n\
+    - Quem guarda agora: a eval suite sem\xE2ntica (`dna eval run helpdesk-prompts`)\
+    \ expandida \u2014\n  grounded exige cita\xE7\xE3o, ungrounded PRO\xCDBE (not_contains,\
+    \ imposs\xEDvel no paradigma byte-copy),\n  HITL nunca afirma escrita, sentinelas\
+    \ TICKET:/NO_MATCH, disciplina pt-BR, guardrails wired.\n- Prova: viola\xE7\xE3\
+    o plantada \u2192 exit 1, registrada na timeline.\n\n### 4. Consumidores intactos\n\
+    - prompts.py continua expondo as constantes que o backend consome (base morre;\
+    \ grounded/ungrounded/\n  platform mudam de CONTE\xDADO \u2014 agora compostos\
+    \ \u2014 mas n\xE3o de superf\xEDcie).\n- Gates locais: run_eval --self-test,\
+    \ test_attribution, import do shim, dna eval suite.\n- CI: remover step do teste\
+    \ byte; manter step `dna eval run`."
+  created_at: '2026-07-10T16:20:55+00:00'
+  updated_at: '2026-07-10T16:20:55+00:00'
+  methodology: ad-hoc

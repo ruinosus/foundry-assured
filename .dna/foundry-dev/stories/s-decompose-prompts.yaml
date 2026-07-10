@@ -1,0 +1,74 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Story
+metadata:
+  name: s-decompose-prompts
+spec:
+  title: Decompose concierge prompts into Soul + Guardrails (post byte-lock)
+  description: 'Phase 2 of the DNA pilot: the byte-fidelity lock died with PR #104,
+    so the nine helpdesk prompts can now EVOLVE. Extract the shared concierge persona
+    into a Soul, extract cross-cutting rules (grounded citation duty, HITL never-claim-a-write)
+    into Guardrail kinds wired on the agents, retire the byte-exact golden test, and
+    move the guard duty to semantic invariants in the DNA eval suite.'
+  status: in-progress
+  feature: f-dna-adoption
+  priority: high
+  labels:
+  - dna
+  - prompts
+  - adr-013
+  acceptance_criteria:
+  - Given the helpdesk scope, when concierge-grounded and concierge-ungrounded compose,
+    then both embed one shared Soul (souls/concierge) and keep only their variant
+    delta in the agent instruction
+  - Given the composed prompts, when the citation duty (grounded) and the never-claim-a-write
+    rule (platform/HITL) apply, then they come from Guardrail documents wired via
+    the agents' guardrails field, visible as Guardrail sections in the prompt
+  - "Given the retired byte gate, when a semantic contract is violated (e.g. citation\
+    \ duty removed), then dna eval run helpdesk-prompts exits 1 \u2014 proven with\
+    \ a planted violation"
+  - Given the backend consumers (app/agents/concierge.py, workflow), when prompts.py
+    composes the new structure, then the public constant surface still satisfies them
+    and the backend eval gates stay green
+  acceptance_criteria_source: cli-create
+  definition_of_done:
+  - Soul + Guardrail documents exist in apps/backend/.dna/helpdesk and are referenced
+    by the agents
+  - eval/prompts_equivalence_test.py retired (removed with explanation); CI step replaced
+    by the expanded dna eval suite
+  - 'EvalCases updated: grounded requires citation, ungrounded forbids it (not_contains),
+    HITL never claims a write, TICKET:/NO_MATCH sentinels and pt-BR discipline intact'
+  - Backend policy gates green locally (run_eval --self-test, test_attribution); planted
+    violation exit-1 proof recorded on the story timeline
+  - 'Docs updated: ADR-013 addendum, eval/README, CONTRIBUTING project rule'
+  definition_of_done_source: cli-create
+  created_at: '2026-07-10T16:20:29+00:00'
+  updated_at: '2026-07-10T16:21:11+00:00'
+  timeline:
+  - at: '2026-07-10T16:20:29+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    to: todo
+  - at: '2026-07-10T16:20:55+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: todo
+    to: in-progress
+  - at: '2026-07-10T16:21:11+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Bootstrap do board conclu\xEDdo: scope .dna/foundry-dev criado na raiz\
+      \ (Genome m\xEDnimo, sem _lib \u2014 o kernel n\xE3o reclamou), dna sdlc hooks\
+      \ install rodou limpo (foundry n\xE3o tinha core.hooksPath pr\xF3prio; o hook\
+      \ prepare-commit-msg foi materializado da c\xF3pia empacotada do dna-cli e vai\
+      \ versionado em scripts/git-hooks/). Primeira vez que o trabalho do foundry\
+      \ \xE9 rastreado DENTRO do foundry \u2014 este pr\xF3prio coment\xE1rio \xE9\
+      \ a prova."
+    commit_ref: 5b0212b619f99932572fb8db9b384c7e8cab0a2a
+  produces:
+  - kind: Plan
+    name: plan-s-decompose-prompts
+    role: implementation
+    at: '2026-07-10T16:20:55+00:00'

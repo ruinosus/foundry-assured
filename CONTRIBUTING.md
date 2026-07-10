@@ -50,6 +50,20 @@ Scopes: `backend`, `frontend`, `hosted-agent`, `infra`, `eval`, `auth`, `deps`, 
 - Every resolver answer **must cite a source** (the eval policy gate enforces it).
 - Never commit secrets or `.env` values.
 
+## Work tracking — the in-repo DNA SDLC board
+
+Non-trivial work is tracked as versioned YAML in **`.dna/foundry-dev/`** (features/stories +
+timelines), driven by the [`dna` CLI](https://github.com/ruinosus/dna) — distinct from
+`apps/backend/.dna/` (the runtime prompt scope; root = how we WORK, backend = what the product RUNS).
+Install the CLI from the same pinned git ref CI uses (see `.github/workflows/ci.yml`):
+`uv tool install "dna-cli @ git+https://github.com/ruinosus/dna@<pin>#subdirectory=packages/cli" --with "dna-sdk @ git+https://github.com/ruinosus/dna@<pin>#subdirectory=packages/sdk-py"`.
+
+Basics, from the repo root with `DNA_BASE_DIR=$PWD/.dna`: `dna sdlc story create s-x --feature f-y
+--ac … --dod …` → `story start s-x --plan "…"` → narrate with `story comment` as you work →
+`story pr s-x --base main` → `story done s-x` on merge. One-time per clone: `dna sdlc hooks install`
+— commits made while a story is active get a `Work-Item: Story/<name>` trailer automatically.
+Full conventions live in the [DNA repo docs](https://github.com/ruinosus/dna/tree/main/docs).
+
 ## Code style
 
 - **Backend:** ruff (`uvx ruff check apps/backend`), thin routers → services → core.
