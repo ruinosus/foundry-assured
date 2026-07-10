@@ -125,6 +125,9 @@ holds); authoring moves to `.dna/helpdesk/agents/`.
   reload/refresh path is wired) no deploy. Today the composition still happens
   at import, so a restart picks up changes — already a strict improvement over
   rebuild+redeploy for config-only updates.
+  *Phase 3:* [ADR-014](./ADR-014-runtime-prompt-scope-no-rebuild.md) closes
+  the local half of this gap — the compose run bind-mounts the scope over the
+  image copy, so a prompt edit costs a restart, not a rebuild.
 - **+** Prompt contracts are now machine-checked in the required CI gate, in
   both directions: accidental drift (byte gate) and contract regressions
   (invariant suite).

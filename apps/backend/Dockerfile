@@ -14,6 +14,9 @@ RUN uv sync --frozen --no-dev --no-install-project
 
 COPY app ./app
 # Declarative agent prompts (ADR-013) — composed by app/agents/prompts.py at import.
+# This baked-in copy keeps the image self-contained (azd/ACA); local compose
+# bind-mounts the working-tree .dna/ over it so prompt edits need a restart,
+# not a rebuild (ADR-014, compose.yaml).
 COPY .dna ./.dna
 
 ENV PATH="/app/.venv/bin:$PATH"
