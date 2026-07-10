@@ -8,7 +8,7 @@ spec:
     \ commit-pinada do backend pelo range oficial dna-sdk>=0.1,<0.2, remover o aparato\
     \ que s\xF3 existia pela git-dep (allow-direct-references, git na imagem Docker,\
     \ pins git no CI/CONTRIBUTING) e atualizar o ADR-013."
-  status: review
+  status: done
   feature: f-dna-adoption
   owner: claude-code
   priority: high
@@ -18,28 +18,56 @@ spec:
   - docker
   reporter: claude-code
   acceptance_criteria:
-  - "Dado o pyproject do backend, quando as deps resolvem, ent\xE3o dna-sdk vem do\
-    \ PyPI como dna-sdk>=0.1,<0.2 (sem git-dep, sem allow-direct-references) e o uv.lock\
-    \ aponta pra files.pythonhosted.org"
-  - "Dado o Dockerfile do backend, quando a imagem builda, ent\xE3o ela N\xC3O instala\
-    \ git (nada mais no build precisa dele) e o docker build local passa"
-  - "Dado o CI, quando o job backend roda, ent\xE3o o passo 'dna eval run' instala\
-    \ dna-cli 0.1.0 do PyPI (sem ref git) e a suite helpdesk-prompts passa"
-  - "Dado o dna-sdk 0.1.0 do PyPI, quando os 8 prompts comp\xF5em, ent\xE3o s\xE3\
-    o byte-id\xEAnticos aos compostos pelo SHA pinado 3628a9ee (evid\xEAncia de equival\xEA\
-    ncia registrada)"
+  - text: "Dado o pyproject do backend, quando as deps resolvem, ent\xE3o dna-sdk\
+      \ vem do PyPI como dna-sdk>=0.1,<0.2 (sem git-dep, sem allow-direct-references)\
+      \ e o uv.lock aponta pra files.pythonhosted.org"
+    done: true
+    done_at: '2026-07-10T19:36:03+00:00'
+    done_by: story-done-auto
+  - text: "Dado o Dockerfile do backend, quando a imagem builda, ent\xE3o ela N\xC3\
+      O instala git (nada mais no build precisa dele) e o docker build local passa"
+    done: true
+    done_at: '2026-07-10T19:36:03+00:00'
+    done_by: story-done-auto
+  - text: "Dado o CI, quando o job backend roda, ent\xE3o o passo 'dna eval run' instala\
+      \ dna-cli 0.1.0 do PyPI (sem ref git) e a suite helpdesk-prompts passa"
+    done: true
+    done_at: '2026-07-10T19:36:03+00:00'
+    done_by: story-done-auto
+  - text: "Dado o dna-sdk 0.1.0 do PyPI, quando os 8 prompts comp\xF5em, ent\xE3o\
+      \ s\xE3o byte-id\xEAnticos aos compostos pelo SHA pinado 3628a9ee (evid\xEA\
+      ncia de equival\xEAncia registrada)"
+    done: true
+    done_at: '2026-07-10T19:36:03+00:00'
+    done_by: story-done-auto
   acceptance_criteria_source: cli-create
   definition_of_done:
-  - pyproject + uv.lock regenerado + Dockerfile sem git
-  - "ADR-013 atualizado: PyPI como caminho de install; git-dep vira nota hist\xF3\
-    rica"
-  - CONTRIBUTING + ci.yml sem pins git do dna
-  - "Testes do backend que o CI roda passam localmente (run_eval --self-test, test_attribution,\
-    \ dna eval run helpdesk-prompts) + evid\xEAncia de equival\xEAncia dos prompts"
-  - TestGuide --product + TestRun registrados; PR aberto com story review
+  - text: pyproject + uv.lock regenerado + Dockerfile sem git
+    done: true
+    done_at: '2026-07-10T19:36:03+00:00'
+    done_by: story-done-auto
+  - text: "ADR-013 atualizado: PyPI como caminho de install; git-dep vira nota hist\xF3\
+      rica"
+    done: true
+    done_at: '2026-07-10T19:36:03+00:00'
+    done_by: story-done-auto
+  - text: CONTRIBUTING + ci.yml sem pins git do dna
+    done: true
+    done_at: '2026-07-10T19:36:03+00:00'
+    done_by: story-done-auto
+  - text: "Testes do backend que o CI roda passam localmente (run_eval --self-test,\
+      \ test_attribution, dna eval run helpdesk-prompts) + evid\xEAncia de equival\xEA\
+      ncia dos prompts"
+    done: true
+    done_at: '2026-07-10T19:36:03+00:00'
+    done_by: story-done-auto
+  - text: TestGuide --product + TestRun registrados; PR aberto com story review
+    done: true
+    done_at: '2026-07-10T19:36:03+00:00'
+    done_by: story-done-auto
   definition_of_done_source: cli-create
   created_at: '2026-07-10T19:06:35+00:00'
-  updated_at: '2026-07-10T19:18:44+00:00'
+  updated_at: '2026-07-10T19:36:04+00:00'
   timeline:
   - at: '2026-07-10T19:06:35+00:00'
     actor: claude-code
@@ -128,6 +156,18 @@ spec:
     source: cli
     from: in-progress
     to: review
+  - at: '2026-07-10T19:36:04+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #107 merged \u2014 dna-sdk 0.1.0 do PyPI, prova byte-equal 8/8"
+  - at: '2026-07-10T19:36:04+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: review
+    to: done
+    commit_ref: 0aca940a45134e658b7b6a0fcace48f8bd55bf7f
   produces:
   - kind: Plan
     name: plan-s-official-packages
@@ -141,3 +181,4 @@ spec:
     name: tr-tg-s-official-packages-20260710-191706
     role: test-run
     at: '2026-07-10T19:17:06+00:00'
+  closed_at: '2026-07-10T19:36:03+00:00'
