@@ -10,7 +10,7 @@ spec:
     \ (/mnt/dna) + env var DNA_BASE_DIR selecionando; COPY na imagem permanece como\
     \ fallback (share vazio/ausente \u2260 app quebrado). Loop de prod: editar YAML\
     \ \u2192 upload pro share \u2192 az containerapp revision restart."
-  status: in-progress
+  status: review
   feature: f-dna-adoption
   owner: claude-code
   priority: high
@@ -53,7 +53,7 @@ spec:
     \ done"
   definition_of_done_source: claude-code
   created_at: '2026-07-10T20:06:58+00:00'
-  updated_at: '2026-07-10T20:19:38+00:00'
+  updated_at: '2026-07-10T20:21:21+00:00'
   timeline:
   - at: '2026-07-10T20:06:58+00:00'
     actor: claude-code
@@ -123,6 +123,28 @@ spec:
     name: tr-tg-s-aca-azure-files-prompts-20260710-201937
     summary: "TestRun tr-tg-s-aca-azure-files-prompts-20260710-201937 \u2192 partial"
     outcome: partial
+  - at: '2026-07-10T20:20:14+00:00'
+    actor: claude-code
+    type: pr_opened
+    source: cli
+    summary: 'PR aberto: https://github.com/ruinosus/foundry-assured/pull/110'
+    pr_url: https://github.com/ruinosus/foundry-assured/pull/110
+  - at: '2026-07-10T20:21:20+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #110 aberto (base main). Body editado com o bloco 'validado offline'\
+      \ + checklist do dono (o que S\xD3 deploy real prova: mount/listKeys de fato,\
+      \ boot com share vazio sem crash-loop, push-prompts.sh fim-a-fim, cold start\
+      \ no scale-to-zero). N\xC3O mergear nem marcar done \u2014 pend\xEAncia nomeada\
+      \ do dono."
+    commit_ref: 95382a0b38b27ea84cd56c931875d6bead59f072
+  - at: '2026-07-10T20:21:21+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: review
   produces:
   - kind: Plan
     name: plan-s-aca-azure-files-prompts
