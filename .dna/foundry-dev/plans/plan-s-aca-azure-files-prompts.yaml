@@ -1,0 +1,82 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Plan
+metadata:
+  name: plan-s-aca-azure-files-prompts
+spec:
+  title: "Azure Files mount no ACA \u2014 prompts sem redeploy em produ\xE7\xE3o"
+  date: '2026-07-10'
+  status: accepted
+  created_at: '2026-07-10T20:07:56+00:00'
+  updated_at: '2026-07-10T20:07:56+00:00'
+  story_ref: s-aca-azure-files-prompts
+  journey_phase: plan
+  methodology: ad-hoc
+  body: "# Plano \u2014 Prompts sem redeploy em produ\xE7\xE3o (Azure Files no ACA)\n\
+    \n## Contexto (descoberta)\n\n- PR #108 (ADR-014) entregou o loop local: compose\
+    \ bind-monta `./.dna` sobre\n  `/app/.dna`; refresh = restart. Em prod (azd \u2192\
+    \ ACA via `infra/`), o scope\n  `apps/backend/.dna/helpdesk` continua COZIDO na\
+    \ imagem (`COPY .dna ./.dna`).\n- **A m\xE1quina j\xE1 existe pela metade**: `resources.bicep`\
+    \ j\xE1 tem Storage Account\n  (`stassured<token>`, `allowSharedKeyAccess: true`)\
+    \ + file service + share\n  `assured-data`; `containerapps.bicep` j\xE1 tem o\
+    \ padr\xE3o completo\n  `managedEnvironments/storages` (link por account key via\
+    \ `listKeys`) +\n  volume/volumeMount no backend (`/app/data`, tickets.jsonl).\
+    \ O trabalho \xE9\n  instanciar o MESMO padr\xE3o para um segundo share, read-only.\n\
+    - `managedApp.bicep` (dedicated stamp, ADR-002) **comp\xF5e os mesmos m\xF3dulos**\n\
+    \  `../resources.bicep` + `../containerapps.bicep` \u2014 um param novo obrigat\xF3\
+    rio\n  em containerapps.bicep TEM que ser passado l\xE1 tamb\xE9m, sen\xE3o o\
+    \ stamp quebra\n  em compile (build.sh roda bicep build no managedApp.bicep; o\
+    \ CI s\xF3 compila\n  main.bicep \u2014 compilar os dois localmente).\n- Contrato\
+    \ do backend: `app/agents/prompts.py` fixa\n  `_DNA_BASE_DIR = Path(__file__).parents[2]/\"\
+    .dna\"` \u2014 **n\xE3o h\xE1 env var**.\n  O CI j\xE1 usa `DNA_BASE_DIR` como\
+    \ env do `dna` CLI com a mesma sem\xE2ntica\n  (\"onde os scopes moram\") \u2192\
+    \ \xE9 o nome certo para a env var do backend.\n\n## Decis\xE3o de design (a justificar\
+    \ no ADR-014)\n\n**Mount em path alternativo (`/mnt/dna`) + env var `DNA_BASE_DIR`\
+    \ selecionando \u2014\nN\xC3O mount por cima de `/app/.dna`.** No ACA, um volume\
+    \ Azure Files SOMBREIA\ncompletamente o diret\xF3rio da imagem (diferente do bind\
+    \ local, que monta um dir\ndo host que J\xC1 tem o conte\xFAdo): share vazio num\
+    \ provision fresco apagaria o\nscope cozido e o backend entraria em crash-loop\
+    \ at\xE9 algu\xE9m seedar \u2014 o\nprovisionamento passaria a depender de um\
+    \ passo out-of-band ordenado. Path\nalternativo mant\xE9m \"share vazio\" como\
+    \ n\xE3o-evento e torna a ado\xE7\xE3o expl\xEDcita.\n\nSem\xE2ntica do fallback\
+    \ (o ponto honesto):\n- `DNA_BASE_DIR` **n\xE3o setada** \u2192 comportamento\
+    \ de hoje, byte-id\xEAntico\n  (local dev, compose, imagem self-contained).\n\
+    - Setada e `<dir>/helpdesk` **ausente** (share vazio/n\xE3o-seedado) \u2192 log\
+    \ ALTO de\n  fallback + comp\xF5e do scope cozido. Ausente = \"ningu\xE9m publicou\
+    \ ainda\";\n  a imagem self-contained \xE9 a resposta correta.\n- Setada e scope\
+    \ **presente mas quebrado** \u2192 **fail-loud** (ADR-013). Presente =\n  operador\
+    \ publicou; mascarar com fallback silencioso rodaria prompts velhos\n  enquanto\
+    \ o operador acredita que os novos est\xE3o no ar.\n\nRefresh = restart de revision\
+    \ (`az containerapp revision restart`) \u2014 a MESMA\nunidade que o ADR-014 j\xE1\
+    \ estabelece; nenhuma promessa de hot-reload.\n\n## Passos\n\n1. **resources.bicep**\
+    \ \u2014 share `assured-prompts` (quota 1 GiB, scope YAML \xE9\n   min\xFAsculo)\
+    \ + output `AZURE_PROMPTS_FILE_SHARE`.\n2. **containerapps.bicep** \u2014 param\
+    \ `promptsShareName`; storage link `prompts`\n   com `accessMode: 'ReadOnly'`;\
+    \ volume + volumeMount `/mnt/dna` no backend;\n   env `DNA_BASE_DIR=/mnt/dna`.\n\
+    3. **main.bicep + managedApp.bicep** \u2014 passar o share novo pros m\xF3dulos;\n\
+    \   output no main pro azd env (o script l\xEA de l\xE1).\n4. **prompts.py** \u2014\
+    \ resolver base dir: env `DNA_BASE_DIR` com a sem\xE2ntica\n   acima; sem env\
+    \ \u2192 path cozido (inalterado).\n5. **scripts/push-prompts.sh** \u2014 upload-batch\
+    \ do `apps/backend/.dna` pro share\n   + `az containerapp revision restart`, lendo\
+    \ `azd env get-values` (conven\xE7\xE3o\n   dos hooks do repo). Documentar: upload-batch\
+    \ n\xE3o remove arquivos deletados\n   (remo\xE7\xE3o = `az storage file delete-batch`).\n\
+    6. **ADR-014** \u2014 se\xE7\xE3o produ\xE7\xE3o/ACA sai de \"follow-up\" para\
+    \ o design\n   implementado (Status: Accepted), com a justificativa path-alternativo\
+    \ vs\n   mount-por-cima; Dockerfile/compose comments e README do backend atualizados.\n\
+    7. **Valida\xE7\xE3o offline** \u2014 `bicep build` em main.bicep E managedApp.bicep;\n\
+    \   ruff no backend; teste de processo do prompts.py nos 3 modos (sem env /\n\
+    \   env+scope ausente / env+scope presente e quebrado); eval suite\n   `dna eval\
+    \ run helpdesk-prompts`. TestGuide --product + TestRun.\n8. **PR** via `dna sdlc\
+    \ story pr --base main`, body com checklist do que S\xD3\n   deploy real prova\
+    \ (mount de fato, listKeys no link, restart pega edit).\n   N\xC3O mergear; N\xC3\
+    O marcar done.\n\n## O que s\xF3 deploy real prova (vai no PR body)\n\n- O storage\
+    \ link do environment autentica (listKeys) e o mount aparece em\n  `/mnt/dna`\
+    \ no container.\n- Share seedado \u2192 prompts compostos v\xEAm do share (checar\
+    \ log de boot).\n- Loop completo: editar YAML \u2192 push-prompts.sh \u2192 restart\
+    \ \u2192 prompt novo no ar.\n- Share vazio em provision fresco \u2192 backend\
+    \ sobe no fallback cozido (log).\n"
+  timeline:
+  - at: '2026-07-10T20:07:56+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    to: accepted
