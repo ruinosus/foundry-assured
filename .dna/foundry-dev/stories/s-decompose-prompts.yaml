@@ -88,7 +88,7 @@ spec:
       evidence on timeline
   definition_of_done_source: cli-create
   created_at: '2026-07-10T16:20:29+00:00'
-  updated_at: '2026-07-10T16:34:35+00:00'
+  updated_at: '2026-07-10T16:38:07+00:00'
   timeline:
   - at: '2026-07-10T16:20:29+00:00'
     actor: claude-code
@@ -216,6 +216,17 @@ spec:
     source: cli
     from: in-progress
     to: review
+  - at: '2026-07-10T16:38:07+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #106: check requerido 'CI passed' VERDE (backend com a eval suite\
+      \ sem\xE2ntica sobre a nova estrutura + frontend + infra). O \xFAnico vermelho\
+      \ \xE9 'deep-wiki tracks the code' \u2014 workflow declaradamente advisory (n\xE3\
+      o \xE9 merge gate; regenera\xE7\xE3o exige o modelo Foundry, indispon\xEDvel\
+      \ no CI) e j\xE1 estava drifted pra frontend/infra desde 2026-07-02, pr\xE9\
+      -existente a este PR. Aguardando review humano; done no merge."
+    commit_ref: 5602190f4fdecee5b8da508876091dad8ec24e3c
   produces:
   - kind: Plan
     name: plan-s-decompose-prompts
