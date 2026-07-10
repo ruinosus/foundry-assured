@@ -17,32 +17,78 @@ spec:
   - prompts
   - adr-013
   acceptance_criteria:
-  - Given the helpdesk scope, when concierge-grounded and concierge-ungrounded compose,
-    then both embed one shared Soul (souls/concierge) and keep only their variant
-    delta in the agent instruction
-  - Given the composed prompts, when the citation duty (grounded) and the never-claim-a-write
-    rule (platform/HITL) apply, then they come from Guardrail documents wired via
-    the agents' guardrails field, visible as Guardrail sections in the prompt
-  - "Given the retired byte gate, when a semantic contract is violated (e.g. citation\
-    \ duty removed), then dna eval run helpdesk-prompts exits 1 \u2014 proven with\
-    \ a planted violation"
-  - Given the backend consumers (app/agents/concierge.py, workflow), when prompts.py
-    composes the new structure, then the public constant surface still satisfies them
-    and the backend eval gates stay green
+  - text: Given the helpdesk scope, when concierge-grounded and concierge-ungrounded
+      compose, then both embed one shared Soul (souls/concierge) and keep only their
+      variant delta in the agent instruction
+    done: true
+    done_at: '2026-07-10T16:33:43+00:00'
+    done_by: claude-code
+    evidence: 'commit 9912961: souls/concierge + guardrails/{grounded-citation,no-write-claims}
+      wired via spec.soul/spec.guardrails; agents keep only variant delta'
+  - text: Given the composed prompts, when the citation duty (grounded) and the never-claim-a-write
+      rule (platform/HITL) apply, then they come from Guardrail documents wired via
+      the agents' guardrails field, visible as Guardrail sections in the prompt
+    done: true
+    done_at: '2026-07-10T16:33:43+00:00'
+    done_by: claude-code
+    evidence: 'commit 9912961: souls/concierge + guardrails/{grounded-citation,no-write-claims}
+      wired via spec.soul/spec.guardrails; agents keep only variant delta'
+  - text: "Given the retired byte gate, when a semantic contract is violated (e.g.\
+      \ citation duty removed), then dna eval run helpdesk-prompts exits 1 \u2014\
+      \ proven with a planted violation"
+    done: true
+    done_at: '2026-07-10T16:33:43+00:00'
+    done_by: claude-code
+    evidence: "planted violation (guardrail unwired from concierge-grounded) \u2192\
+      \ dna eval run exit=1 with 5 failed checks; restored \u2192 exit=0; also green\
+      \ on the CI-pinned dna-cli 3628a9ee"
+  - text: Given the backend consumers (app/agents/concierge.py, workflow), when prompts.py
+      composes the new structure, then the public constant surface still satisfies
+      them and the backend eval gates stay green
+    done: true
+    done_at: '2026-07-10T16:33:44+00:00'
+    done_by: claude-code
+    evidence: shim exposes 8 constants; run_eval --self-test + test_attribution green;
+      consumers unchanged
   acceptance_criteria_source: cli-create
   definition_of_done:
-  - Soul + Guardrail documents exist in apps/backend/.dna/helpdesk and are referenced
-    by the agents
-  - eval/prompts_equivalence_test.py retired (removed with explanation); CI step replaced
-    by the expanded dna eval suite
-  - 'EvalCases updated: grounded requires citation, ungrounded forbids it (not_contains),
-    HITL never claims a write, TICKET:/NO_MATCH sentinels and pt-BR discipline intact'
-  - Backend policy gates green locally (run_eval --self-test, test_attribution); planted
-    violation exit-1 proof recorded on the story timeline
-  - 'Docs updated: ADR-013 addendum, eval/README, CONTRIBUTING project rule'
+  - text: Soul + Guardrail documents exist in apps/backend/.dna/helpdesk and are referenced
+      by the agents
+    done: true
+    done_at: '2026-07-10T16:33:44+00:00'
+    done_by: claude-code
+    evidence: commit 9912961 (decomposition + retirement + eval cases + docs); gates
+      evidence on timeline
+  - text: eval/prompts_equivalence_test.py retired (removed with explanation); CI
+      step replaced by the expanded dna eval suite
+    done: true
+    done_at: '2026-07-10T16:33:44+00:00'
+    done_by: claude-code
+    evidence: commit 9912961 (decomposition + retirement + eval cases + docs); gates
+      evidence on timeline
+  - text: 'EvalCases updated: grounded requires citation, ungrounded forbids it (not_contains),
+      HITL never claims a write, TICKET:/NO_MATCH sentinels and pt-BR discipline intact'
+    done: true
+    done_at: '2026-07-10T16:33:44+00:00'
+    done_by: claude-code
+    evidence: commit 9912961 (decomposition + retirement + eval cases + docs); gates
+      evidence on timeline
+  - text: Backend policy gates green locally (run_eval --self-test, test_attribution);
+      planted violation exit-1 proof recorded on the story timeline
+    done: true
+    done_at: '2026-07-10T16:33:44+00:00'
+    done_by: claude-code
+    evidence: commit 9912961 (decomposition + retirement + eval cases + docs); gates
+      evidence on timeline
+  - text: 'Docs updated: ADR-013 addendum, eval/README, CONTRIBUTING project rule'
+    done: true
+    done_at: '2026-07-10T16:33:44+00:00'
+    done_by: claude-code
+    evidence: commit 9912961 (decomposition + retirement + eval cases + docs); gates
+      evidence on timeline
   definition_of_done_source: cli-create
   created_at: '2026-07-10T16:20:29+00:00'
-  updated_at: '2026-07-10T16:21:11+00:00'
+  updated_at: '2026-07-10T16:33:44+00:00'
   timeline:
   - at: '2026-07-10T16:20:29+00:00'
     actor: claude-code
@@ -67,6 +113,91 @@ spec:
       \ \xE9 rastreado DENTRO do foundry \u2014 este pr\xF3prio coment\xE1rio \xE9\
       \ a prova."
     commit_ref: 5b0212b619f99932572fb8db9b384c7e8cab0a2a
+  - at: '2026-07-10T16:23:19+00:00'
+    actor: claude-code
+    type: decision
+    source: cli
+    summary: "Decis\xF5es de design da decomposi\xE7\xE3o: (1) persona compartilhada\
+      \ vira souls/concierge (SOUL.md, formato can\xF4nico do open-swe no repo DNA);\
+      \ (2) concierge-base morre \u2014 agent + constante CONCIERGE_BASE_INSTRUCTIONS:\
+      \ verificado que nenhum consumidor standalone existe no backend (s\xF3 o shim\
+      \ e o teste golden a expunham); (3) dever-de-cita\xE7\xE3o do grounded e never-claim-a-write\
+      \ do platform viram Guardrail kinds (severity error, scope output) wired via\
+      \ spec.guardrails; (4) uso promptTemplate por agent (n\xEDvel 1 da cascata)\
+      \ pra manter persona-primeiro no prompt composto \u2014 o template default p\xF5\
+      e instruction antes do soul; (5) o teste golden byte-exato \xE9 removido e a\
+      \ eval suite vira a guarda de registro, ganhando invariantes NEGATIVOS (not_contains)\
+      \ imposs\xEDveis no paradigma byte-copy \u2014 ungrounded PRO\xCDBE o dever\
+      \ de cita\xE7\xE3o."
+    commit_ref: 536414422d1b41248defa37d8d4b7ddffc114d76
+  - at: '2026-07-10T16:28:29+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Decomposi\xE7\xE3o declarativa pronta e provada: souls/concierge (persona\
+      \ compartilhada, SOUL.md+soul.json), guardrails/grounded-citation e guardrails/no-write-claims\
+      \ (severity error, scope output) wired via spec.guardrails; concierge-grounded/ungrounded\
+      \ mant\xEAm s\xF3 o delta e usam promptTemplate persona-first; agents/concierge-base.yaml\
+      \ morreu. Eval suite expandida: 9/9 verdes incluindo concierge-soul-identity\
+      \ (o Soul \xE9 prompt target direto) e os not_contains no ungrounded. Prova\
+      \ da guarda: viola\xE7\xE3o plantada (guardrail des-wired do grounded) \u2192\
+      \ 'dna eval run helpdesk-prompts' acusou 5 checks e saiu exit=1; restaurado\
+      \ \u2192 exit=0. Agora: aposentar o teste golden byte-exato, atualizar o shim\
+      \ prompts.py (CONCIERGE_BASE morre) e o CI."
+    commit_ref: 536414422d1b41248defa37d8d4b7ddffc114d76
+  - at: '2026-07-10T16:33:12+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Gates fechados: (1) dna eval run helpdesk-prompts 9/9 verdes TAMB\xC9\
+      M com o dna-cli do pin exato do CI (3628a9ee via uvx \u2014 souls/guardrails/promptTemplate/not_contains\
+      \ todos suportados no pin); (2) run_eval --self-test \u2705 (ambas viola\xE7\
+      \xF5es plantadas do policy gate pegas); (3) test_attribution \u2705; (4) shim\
+      \ prompts.py importa com 8 constantes (CONCIERGE_BASE morreu limpo \u2014 superf\xED\
+      cie dos consumidores intacta, concierge.py/domains.py/workflow sem mudan\xE7\
+      as); (5) ruff: 6 erros pr\xE9-existentes em cli/provision_*.py, nada nos arquivos\
+      \ tocados. Commits carimbados Work-Item: Story/s-decompose-prompts pelo hook.\
+      \ Docs: addendum Phase 2 no ADR-013, eval/README e regra do CONTRIBUTING atualizados\
+      \ (o golden fixture n\xE3o existe mais; a eval suite \xE9 a guarda de registro).\
+      \ Abrindo o PR via dna sdlc story pr."
+    commit_ref: 9912961c15b563662559bc92a2bc2b5b0692f32c
+  - at: '2026-07-10T16:33:43+00:00'
+    actor: claude-code
+    type: checklist_check
+    source: cli
+    marked_ac: 3
+    marked_dod: 0
+    evidence: 'commit 9912961: souls/concierge + guardrails/{grounded-citation,no-write-claims}
+      wired via spec.soul/spec.guardrails; agents keep only variant delta'
+    by: claude-code
+  - at: '2026-07-10T16:33:44+00:00'
+    actor: claude-code
+    type: checklist_check
+    source: cli
+    marked_ac: 1
+    marked_dod: 0
+    evidence: "planted violation (guardrail unwired from concierge-grounded) \u2192\
+      \ dna eval run exit=1 with 5 failed checks; restored \u2192 exit=0; also green\
+      \ on the CI-pinned dna-cli 3628a9ee"
+    by: claude-code
+  - at: '2026-07-10T16:33:44+00:00'
+    actor: claude-code
+    type: checklist_check
+    source: cli
+    marked_ac: 1
+    marked_dod: 0
+    evidence: shim exposes 8 constants; run_eval --self-test + test_attribution green;
+      consumers unchanged
+    by: claude-code
+  - at: '2026-07-10T16:33:44+00:00'
+    actor: claude-code
+    type: checklist_check
+    source: cli
+    marked_ac: 0
+    marked_dod: 5
+    evidence: commit 9912961 (decomposition + retirement + eval cases + docs); gates
+      evidence on timeline
+    by: claude-code
   produces:
   - kind: Plan
     name: plan-s-decompose-prompts
