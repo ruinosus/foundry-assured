@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.8.0](https://github.com/ruinosus/foundry-assured/compare/v0.7.1...v0.8.0) (2026-07-10)
+
+
+### Features
+
+* **backend:** compose agent prompts declaratively via DNA (ADR-013) ([#104](https://github.com/ruinosus/foundry-assured/issues/104)) ([5b0212b](https://github.com/ruinosus/foundry-assured/commit/5b0212b619f99932572fb8db9b384c7e8cab0a2a))
+* **dna:** Decompose concierge prompts into Soul + Guardrails (post byte-lock) (s-decompose-prompts) ([#106](https://github.com/ruinosus/foundry-assured/issues/106)) ([ac26436](https://github.com/ruinosus/foundry-assured/commit/ac2643666a83940852f00f1c2ffcea48b1bbb653))
+* **dna:** dna-sdk: git-dep → pacote oficial do PyPI (s-official-packages) ([#107](https://github.com/ruinosus/foundry-assured/issues/107)) ([ce22850](https://github.com/ruinosus/foundry-assured/commit/ce2285044adf54bc2346bdb70854883acd4307c5))
+* **dna:** Prompts sem rebuild: volume mount do .dna no container (s-no-deploy-prompts) ([#108](https://github.com/ruinosus/foundry-assured/issues/108)) ([0aca940](https://github.com/ruinosus/foundry-assured/commit/0aca940a45134e658b7b6a0fcace48f8bd55bf7f))
+* **dna:** Prompts sem redeploy em PRODUÇÃO: Azure Files mount no ACA (s-aca-azure-files-prompts) ([#110](https://github.com/ruinosus/foundry-assured/issues/110)) ([8a84b6c](https://github.com/ruinosus/foundry-assured/commit/8a84b6cb4e6dc14250f7ce0e402b6042cfe7bd0b))
+
 ## [0.7.1](https://github.com/ruinosus/foundry-assured/compare/v0.7.0...v0.7.1) (2026-07-02)
 
 
