@@ -31,8 +31,10 @@ Two adjacent pressures make this worse over time:
 [DNA](https://github.com/ruinosus/dna) is a microkernel SDK for exactly this
 externalization: agent behavior (instructions, skills, evals) lives as
 YAML/Markdown documents in a `.dna/<scope>/` directory, loaded and composed at
-runtime, with layer/tenant overlay machinery and an offline eval runner. It is
-pre-release (no PyPI dist), installable as a commit-pinned git dependency.
+runtime, with layer/tenant overlay machinery and an offline eval runner. It
+was pre-release (no PyPI dist) when this ADR landed — installable only as a
+commit-pinned git dependency; since then `dna-sdk`/`dna-cli` `0.1.0` shipped
+on PyPI and the backend consumes the official package (see Dependency below).
 This repo is its **first external consumer** — a deliberately small pilot:
 prove the loop (declare → compose → verify), do not redesign any prompt.
 
@@ -68,11 +70,17 @@ eval suite in CI.**
   `rstrip("\n")` (DNA pads empty composition sections with trailing newlines;
   the constants never carried one).
 - **Dependency** — `dna-sdk` is added to the backend's runtime dependencies
-  **pinned to a commit** (`3628a9ee…#subdirectory=packages/sdk-py`); since DNA
-  is pre-release, the pin *is* the version, and upgrades are explicit lockfile
-  diffs. Its transitive deps are light (pyyaml, chevron, aiofiles, jsonschema,
-  typing_extensions). The backend image gains `git` (uv needs it to fetch git
-  deps) and the `COPY .dna` line.
+  from **PyPI as `dna-sdk>=0.1,<0.2`** (official release); upgrades are
+  explicit lockfile diffs within the minor range. Its transitive deps are
+  light (pyyaml, chevron, aiofiles, jsonschema, typing_extensions). The
+  backend image gains the `COPY .dna` line.
+  *Historical note:* DNA was pre-release when this ADR landed, so the pilot
+  first consumed a commit-pinned git dependency
+  (`3628a9ee…#subdirectory=packages/sdk-py` — the pin *was* the version),
+  which also required hatch `allow-direct-references` and `git` inside the
+  slim image. With `dna-sdk 0.1.0` on PyPI all three artifacts of that
+  workaround were removed; the composed prompts were verified byte-identical
+  between the pinned SHA and the 0.1.0 release before switching.
 - **Evals as the guard, two layers, both in the required CI check:**
   1. `eval/prompts_equivalence_test.py` — pins the nine **original texts as a
      golden fixture** and proves each composed constant is byte-equal. A
@@ -81,9 +89,9 @@ eval suite in CI.**
   2. `.dna/helpdesk/eval-{cases,suites}/` — nine offline `EvalCase`s asserting
      the **contracts** each prompt carries (TICKET sentinel, `NO_MATCH`
      sentinel, cite-every-claim, pt-BR + KB-exclusive grounding, never-claim-a-
-     write). Run in CI via `dna eval run helpdesk-prompts` with the
-     commit-pinned `dna-cli` (exit 1 on any failing case; planted-violation
-     verified locally). Unlike the equivalence gate, this layer keeps guarding
+     write). Run in CI via `dna eval run helpdesk-prompts` with `dna-cli`
+     from PyPI (exit 1 on any failing case; planted-violation verified
+     locally). Unlike the equivalence gate, this layer keeps guarding
      once prompts legitimately start evolving in `.dna/`.
 
 `prompts.py` stays the single **consumption** point (the CONTRIBUTING rule
@@ -123,11 +131,13 @@ holds); authoring moves to `.dna/helpdesk/agents/`.
 - **+** A concrete path to per-tenant prompt overlays in the `shared`/
   `dedicated` modes via DNA's layer/tenant machinery — aligned with
   ADR-006/ADR-010 rather than a parallel mechanism.
-- **−** A new runtime dependency on a pre-release SDK. Mitigated: commit-
-  pinned, light transitive deps, fail-loud boot, and the shim keeps the public
+- **−** A new runtime dependency on a young SDK (now an official PyPI
+  release, `dna-sdk>=0.1,<0.2`). Mitigated: range-pinned via the lockfile,
+  light transitive deps, fail-loud boot, and the shim keeps the public
   surface — reverting is "inline the golden fixture back".
-- **−** The backend image needs `git` at build time (uv git dependency) and
-  must ship `.dna/` (a missed `COPY` fails loudly at boot, not silently).
+- **−** The backend image must ship `.dna/` (a missed `COPY` fails loudly at
+  boot, not silently). (The build-time `git` requirement died with the
+  git-dep — see the Dependency historical note.)
 - **−** The hosted-agent containers still mirror prompts by hand (unchanged by
   this ADR); the mirror-drift risk noted in `prompts.py`'s docstring remains a
   follow-up.

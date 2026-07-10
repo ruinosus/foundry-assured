@@ -1,0 +1,100 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Story
+metadata:
+  name: s-official-packages
+spec:
+  title: "dna-sdk: git-dep \u2192 pacote oficial do PyPI"
+  description: "O DNA publicou 0.1.0 no PyPI (dna-sdk + dna-cli). Trocar a git-dep\
+    \ commit-pinada do backend pelo range oficial dna-sdk>=0.1,<0.2, remover o aparato\
+    \ que s\xF3 existia pela git-dep (allow-direct-references, git na imagem Docker,\
+    \ pins git no CI/CONTRIBUTING) e atualizar o ADR-013."
+  status: in-progress
+  feature: f-dna-adoption
+  owner: claude-code
+  priority: high
+  labels:
+  - dna
+  - deps
+  - docker
+  reporter: claude-code
+  acceptance_criteria:
+  - "Dado o pyproject do backend, quando as deps resolvem, ent\xE3o dna-sdk vem do\
+    \ PyPI como dna-sdk>=0.1,<0.2 (sem git-dep, sem allow-direct-references) e o uv.lock\
+    \ aponta pra files.pythonhosted.org"
+  - "Dado o Dockerfile do backend, quando a imagem builda, ent\xE3o ela N\xC3O instala\
+    \ git (nada mais no build precisa dele) e o docker build local passa"
+  - "Dado o CI, quando o job backend roda, ent\xE3o o passo 'dna eval run' instala\
+    \ dna-cli 0.1.0 do PyPI (sem ref git) e a suite helpdesk-prompts passa"
+  - "Dado o dna-sdk 0.1.0 do PyPI, quando os 8 prompts comp\xF5em, ent\xE3o s\xE3\
+    o byte-id\xEAnticos aos compostos pelo SHA pinado 3628a9ee (evid\xEAncia de equival\xEA\
+    ncia registrada)"
+  acceptance_criteria_source: cli-create
+  definition_of_done:
+  - pyproject + uv.lock regenerado + Dockerfile sem git
+  - "ADR-013 atualizado: PyPI como caminho de install; git-dep vira nota hist\xF3\
+    rica"
+  - CONTRIBUTING + ci.yml sem pins git do dna
+  - "Testes do backend que o CI roda passam localmente (run_eval --self-test, test_attribution,\
+    \ dna eval run helpdesk-prompts) + evid\xEAncia de equival\xEAncia dos prompts"
+  - TestGuide --product + TestRun registrados; PR aberto com story review
+  definition_of_done_source: cli-create
+  created_at: '2026-07-10T19:06:35+00:00'
+  updated_at: '2026-07-10T19:16:29+00:00'
+  timeline:
+  - at: '2026-07-10T19:06:35+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    to: todo
+  - at: '2026-07-10T19:08:08+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: todo
+    to: in-progress
+  - at: '2026-07-10T19:16:28+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Pr\xE9-verifica\xE7\xE3o conclu\xEDda ANTES de trocar a dep: (1) PyPI\
+      \ live \u2014 dna-sdk 0.1.0 + dna-cli 0.1.0 (requires dna-sdk<0.2,>=0.1); (2)\
+      \ equival\xEAncia de composi\xE7\xE3o provada \u2014 os 8 prompts do helpdesk\
+      \ compostos pelo SHA pinado 3628a9ee (venv com direct_url.json apontando o commit,\
+      \ sem strip_prompt_block) s\xE3o BYTE-ID\xCANTICOS aos compostos pelo dna-sdk\
+      \ 0.1.0 do PyPI (diff vazio). O delta 3628a9ee\u2192v0.1.0 no sdk-py \xE9 o\
+      \ i-013 (strip de trailing whitespace na composi\xE7\xE3o) \u2014 neutro pros\
+      \ docs deste scope."
+    commit_ref: ac2643666a83940852f00f1c2ffcea48b1bbb653
+  - at: '2026-07-10T19:16:28+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Edi\xE7\xF5es feitas: pyproject dna-sdk>=0.1,<0.2 (git-dep + allow-direct-references\
+      \ removidos; [tool.uv] prerelease=allow FICA \u2014 azure-search-documents 11.7.0b2\
+      \ e agent-framework-ag-ui 1.0.0rc5 ainda s\xE3o pre-release); Dockerfile sem\
+      \ apt-get git (nada mais no build usa git \u2014 s\xF3 uv sync + COPYs); ci.yml\
+      \ passo dna eval agora uvx --from 'dna-cli>=0.1,<0.2' (sem refs git); CONTRIBUTING\
+      \ install = uv tool install dna-cli; ADR-013 atualizado (PyPI como caminho,\
+      \ git-dep vira nota hist\xF3rica). uv lock regenerado: dna-sdk agora source=registry\
+      \ pypi.org."
+    commit_ref: ac2643666a83940852f00f1c2ffcea48b1bbb653
+  - at: '2026-07-10T19:16:29+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Prova: uv sync --frozen re-resolveu dna-sdk 0.1.0 DO PYPI na venv do\
+      \ backend; suite do CI local 3/3 verde \u2014 run_eval --self-test (gate morde\
+      \ 2 viola\xE7\xF5es plantadas), test_attribution (round-trip ok), dna eval run\
+      \ helpdesk-prompts com dna-cli do PyPI via uvx = 9 passed/0 failed. docker build:\
+      \ tentado, mas o daemon local est\xE1 inoperante (disco do host 100% cheio +\
+      \ I/O errors no containerd do colima; a\xE7\xF5es de recovery negadas pelo permission\
+      \ system) \u2014 a task prev\xEA exatamente este fallback (venv resolvendo do\
+      \ PyPI + testes do CI). Registrando o build Docker como pend\xEAncia ambiental,\
+      \ n\xE3o do change: o build chegou a completar o uv sync DENTRO da imagem sem\
+      \ git instalado antes de falhar por I/O do daemon."
+    commit_ref: ac2643666a83940852f00f1c2ffcea48b1bbb653
+  produces:
+  - kind: Plan
+    name: plan-s-official-packages
+    role: implementation
+    at: '2026-07-10T19:08:08+00:00'

@@ -9,7 +9,7 @@ spec:
     into a Soul, extract cross-cutting rules (grounded citation duty, HITL never-claim-a-write)
     into Guardrail kinds wired on the agents, retire the byte-exact golden test, and
     move the guard duty to semantic invariants in the DNA eval suite.'
-  status: review
+  status: done
   feature: f-dna-adoption
   priority: high
   labels:
@@ -88,7 +88,7 @@ spec:
       evidence on timeline
   definition_of_done_source: cli-create
   created_at: '2026-07-10T16:20:29+00:00'
-  updated_at: '2026-07-10T16:38:07+00:00'
+  updated_at: '2026-07-10T19:07:38+00:00'
   timeline:
   - at: '2026-07-10T16:20:29+00:00'
     actor: claude-code
@@ -227,8 +227,53 @@ spec:
       \ no CI) e j\xE1 estava drifted pra frontend/infra desde 2026-07-02, pr\xE9\
       -existente a este PR. Aguardando review humano; done no merge."
     commit_ref: 5602190f4fdecee5b8da508876091dad8ec24e3c
+  - at: '2026-07-10T19:07:19+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Fechamento de higiene p\xF3s-merge: o PR #106 j\xE1 estava em main quando\
+      \ a sess\xE3o seguinte abriu; done p\xF3s-merge conforme disciplina."
+  - at: '2026-07-10T19:07:36+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestGuide
+    name: tg-s-decompose-prompts
+    summary: TestGuide tg-s-decompose-prompts (smoke)
+  - at: '2026-07-10T19:07:37+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestRun
+    name: tr-tg-s-decompose-prompts-20260710-190736
+    summary: "TestRun tr-tg-s-decompose-prompts-20260710-190736 \u2192 pass"
+    outcome: pass
+  - at: '2026-07-10T19:07:37+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Fechamento de higiene p\xF3s-merge (sess\xE3o seguinte); TestGuide/TestRun\
+      \ backfilled da evid\xEAncia do CI do PR."
+  - at: '2026-07-10T19:07:38+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: review
+    to: done
+    commit_ref: ac26436
+    summary: 'PR #106 squash-merged em main (ac26436); dna eval suite + CI verdes
+      no merge'
   produces:
   - kind: Plan
     name: plan-s-decompose-prompts
     role: implementation
     at: '2026-07-10T16:20:55+00:00'
+  - kind: TestGuide
+    name: tg-s-decompose-prompts
+    role: test-guide
+    at: '2026-07-10T19:07:36+00:00'
+  - kind: TestRun
+    name: tr-tg-s-decompose-prompts-20260710-190736
+    role: test-run
+    at: '2026-07-10T19:07:37+00:00'
+  closed_at: '2026-07-10T19:07:37+00:00'
