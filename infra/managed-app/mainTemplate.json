@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.44.1.10279",
-      "templateHash": "4577303647778696784"
+      "templateHash": "10516043900014748298"
     }
   },
   "parameters": {
@@ -95,7 +95,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.44.1.10279",
-              "templateHash": "5901273997973579292"
+              "templateHash": "9172497998785445463"
             }
           },
           "parameters": {
@@ -123,6 +123,13 @@
               "defaultValue": "",
               "metadata": {
                 "description": "Principal granted data-plane roles (the deploying user). Empty skips assignments."
+              }
+            },
+            "appUsersGroupId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Entra group whose members USE the app. Granted Foundry User on the Foundry account so end users can run inference AS THEMSELVES (OBO) — the grounded synthesis calls the model with the user token, which 403s without data-plane access. Empty skips (single-user/dev). "
               }
             },
             "principalType": {
@@ -198,10 +205,12 @@
             "storageName": "[format('stassured{0}', parameters('resourceToken'))]",
             "corpusContainerName": "corpus",
             "dataShareName": "assured-data",
+            "promptsShareName": "assured-prompts",
             "roleAzureAiUser": "53ca6127-db72-4b80-b1b0-d745d6d5456d",
             "roleCognitiveServicesUser": "a97b65f3-24c7-4388-baec-2e87135dc908",
             "roleSearchServiceContributor": "7ca78c08-252a-4471-8644-bb5ff32d4ba0",
             "roleSearchIndexDataReader": "1407120a-92aa-4202-b7e9-c0e197c71c8f",
+            "roleSearchIndexDataContributor": "8ebe5a00-799e-43f5-93ac-243d3dce84a7",
             "roleStorageBlobDataReader": "2a2b9908-6ea1-4ae2-8e65-a410df84e7d1",
             "roleStorageBlobDataContributor": "ba92f5b4-2d11-453d-a403-e96b0029c9fe",
             "roleAcrPull": "7f951dda-4ed3-4680-a7ca-43fe172d538d",
@@ -386,6 +395,17 @@
               ]
             },
             {
+              "type": "Microsoft.Storage/storageAccounts/fileServices/shares",
+              "apiVersion": "2023-05-01",
+              "name": "[format('{0}/{1}/{2}', variables('storageName'), 'default', variables('promptsShareName'))]",
+              "properties": {
+                "shareQuota": 1
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/fileServices', variables('storageName'), 'default')]"
+              ]
+            },
+            {
               "type": "Microsoft.Search/searchServices",
               "apiVersion": "2024-06-01-preview",
               "name": "[variables('searchName')]",
@@ -555,9 +575,9 @@
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
               "scope": "[resourceId('Microsoft.Search/searchServices', variables('searchName'))]",
-              "name": "[guid(resourceId('Microsoft.Search/searchServices', variables('searchName')), parameters('principalId'), variables('roleSearchIndexDataReader'))]",
+              "name": "[guid(resourceId('Microsoft.Search/searchServices', variables('searchName')), parameters('principalId'), variables('roleSearchIndexDataContributor'))]",
               "properties": {
-                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleSearchIndexDataReader'))]",
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleSearchIndexDataContributor'))]",
                 "principalId": "[parameters('principalId')]",
                 "principalType": "[variables('effectivePrincipalType')]"
               },
@@ -590,6 +610,21 @@
                 "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleAzureAiUser'))]",
                 "principalId": "[parameters('principalId')]",
                 "principalType": "[variables('effectivePrincipalType')]"
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.CognitiveServices/accounts', variables('accountName'))]"
+              ]
+            },
+            {
+              "condition": "[not(empty(parameters('appUsersGroupId')))]",
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[resourceId('Microsoft.CognitiveServices/accounts', variables('accountName'))]",
+              "name": "[guid(resourceId('Microsoft.CognitiveServices/accounts', variables('accountName')), parameters('appUsersGroupId'), variables('roleAzureAiUser'))]",
+              "properties": {
+                "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('roleAzureAiUser'))]",
+                "principalId": "[parameters('appUsersGroupId')]",
+                "principalType": "Group"
               },
               "dependsOn": [
                 "[resourceId('Microsoft.CognitiveServices/accounts', variables('accountName'))]"
@@ -657,6 +692,10 @@
               "type": "string",
               "value": "[variables('dataShareName')]"
             },
+            "AZURE_PROMPTS_FILE_SHARE": {
+              "type": "string",
+              "value": "[variables('promptsShareName')]"
+            },
             "AZURE_CONTAINER_REGISTRY_ENDPOINT": {
               "type": "string",
               "value": "[reference(resourceId('Microsoft.ContainerRegistry/registries', variables('registryName')), '2023-11-01-preview').loginServer]"
@@ -723,6 +762,9 @@
           "fileShareName": {
             "value": "[reference(resourceId('Microsoft.Resources/deployments', 'resources'), '2025-04-01').outputs.AZURE_FILE_SHARE.value]"
           },
+          "promptsShareName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'resources'), '2025-04-01').outputs.AZURE_PROMPTS_FILE_SHARE.value]"
+          },
           "entraTenantId": {
             "value": "[parameters('entraTenantId')]"
           },
@@ -740,7 +782,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.44.1.10279",
-              "templateHash": "10253370716609928025"
+              "templateHash": "8218843762941157404"
             }
           },
           "parameters": {
@@ -805,6 +847,13 @@
               "type": "securestring",
               "defaultValue": ""
             },
+            "appUsersGroupId": {
+              "type": "string",
+              "defaultValue": "",
+              "metadata": {
+                "description": "Entra group of app users — the private read audience of the selfwiki KB. When set, retrieval sends the per-user OBO ACL header for /selfwiki; empty leaves selfwiki fail-closed."
+              }
+            },
             "storageAccountName": {
               "type": "string",
               "metadata": {
@@ -815,6 +864,12 @@
               "type": "string",
               "metadata": {
                 "description": "Azure Files share mounted into the backend at /app/data (tickets.jsonl)."
+              }
+            },
+            "promptsShareName": {
+              "type": "string",
+              "metadata": {
+                "description": "Azure Files share holding the runtime DNA prompt scope, mounted read-only into the backend at /mnt/dna (ADR-014). Empty share = backend falls back to the scope baked into the image."
               }
             }
           },
@@ -866,6 +921,22 @@
                   "accountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-05-01').keys[0].value]",
                   "shareName": "[parameters('fileShareName')]",
                   "accessMode": "ReadWrite"
+                }
+              },
+              "dependsOn": [
+                "[resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken')))]"
+              ]
+            },
+            {
+              "type": "Microsoft.App/managedEnvironments/storages",
+              "apiVersion": "2024-03-01",
+              "name": "[format('{0}/{1}', format('cae-assured-{0}', parameters('resourceToken')), 'prompts')]",
+              "properties": {
+                "azureFile": {
+                  "accountName": "[parameters('storageAccountName')]",
+                  "accountKey": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-05-01').keys[0].value]",
+                  "shareName": "[parameters('promptsShareName')]",
+                  "accessMode": "ReadOnly"
                 }
               },
               "dependsOn": [
@@ -937,6 +1008,10 @@
                           "value": "selfwiki-kb"
                         },
                         {
+                          "name": "MCP_ENABLED",
+                          "value": "true"
+                        },
+                        {
                           "name": "FRONTEND_ORIGIN",
                           "value": "[format('https://{0}', format('{0}.{1}', variables('webAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
                         },
@@ -955,12 +1030,24 @@
                         {
                           "name": "ENTRA_API_CLIENT_SECRET",
                           "secretRef": "entra-api-secret"
+                        },
+                        {
+                          "name": "APP_USERS_GROUP_ID",
+                          "value": "[parameters('appUsersGroupId')]"
+                        },
+                        {
+                          "name": "DNA_BASE_DIR",
+                          "value": "/mnt/dna"
                         }
                       ],
                       "volumeMounts": [
                         {
                           "volumeName": "data",
                           "mountPath": "/app/data"
+                        },
+                        {
+                          "volumeName": "prompts",
+                          "mountPath": "/mnt/dna"
                         }
                       ]
                     }
@@ -970,6 +1057,11 @@
                       "name": "data",
                       "storageType": "AzureFile",
                       "storageName": "data"
+                    },
+                    {
+                      "name": "prompts",
+                      "storageType": "AzureFile",
+                      "storageName": "prompts"
                     }
                   ],
                   "scale": {
@@ -980,7 +1072,8 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken')))]",
-                "[resourceId('Microsoft.App/managedEnvironments/storages', format('cae-assured-{0}', parameters('resourceToken')), 'data')]"
+                "[resourceId('Microsoft.App/managedEnvironments/storages', format('cae-assured-{0}', parameters('resourceToken')), 'data')]",
+                "[resourceId('Microsoft.App/managedEnvironments/storages', format('cae-assured-{0}', parameters('resourceToken')), 'prompts')]"
               ]
             },
             {
