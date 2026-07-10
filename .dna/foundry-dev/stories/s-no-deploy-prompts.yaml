@@ -11,7 +11,7 @@ spec:
     \ comp\xF5em no import \u2014 hot-reload in-process n\xE3o alcan\xE7aria agentes\
     \ j\xE1 constru\xEDdos). PG source (DNA_SOURCE_URL, adapter j\xE1 existe no dna-sdk\
     \ 0.1.0) fica documentado como evolu\xE7\xE3o multi-r\xE9plica, N\xC3O implementado."
-  status: in-progress
+  status: review
   feature: f-dna-adoption
   owner: claude-code
   priority: high
@@ -40,7 +40,7 @@ spec:
   - CI verde no PR (stacked na s-official-packages)
   definition_of_done_source: cli-create
   created_at: '2026-07-10T19:19:34+00:00'
-  updated_at: '2026-07-10T19:24:10+00:00'
+  updated_at: '2026-07-10T19:25:06+00:00'
   timeline:
   - at: '2026-07-10T19:19:34+00:00'
     actor: claude-code
@@ -101,6 +101,26 @@ spec:
     name: tr-tg-s-no-deploy-prompts-20260710-192410
     summary: "TestRun tr-tg-s-no-deploy-prompts-20260710-192410 \u2192 pass"
     outcome: pass
+  - at: '2026-07-10T19:24:47+00:00'
+    actor: claude-code
+    type: pr_opened
+    source: cli
+    summary: 'PR aberto: https://github.com/ruinosus/foundry-assured/pull/108'
+    pr_url: https://github.com/ruinosus/foundry-assured/pull/108
+  - at: '2026-07-10T19:25:06+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #108 aberto STACKED na feat/s-official-packages (retarget pra main\
+      \ ap\xF3s merge do #107). Smoke dentro do container pendente por ambiente (docker\
+      \ local inoperante) \u2014 mecanismo provado no n\xEDvel do processo com o m\xF3\
+      dulo real do produto."
+  - at: '2026-07-10T19:25:06+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: review
   produces:
   - kind: Plan
     name: plan-s-no-deploy-prompts
