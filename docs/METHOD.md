@@ -99,7 +99,7 @@ There is **no classification logic in the code** — access *follows the source*
 3. **Generate** — produce the wiki bundle, two paths: (a) the **Foundry pipeline**
    `wiki_builder --repo <r> --component <c> --groups <repo read teams>` (automated, in-cloud,
    the fidelity gate rejects a low-fidelity bundle); or (b) the **Microsoft Agent Skills**
-   (`app/knowledge/skills/{wiki-architect,wiki-page-writer}`) run by VS Code Copilot / Claude
+   (`.dna/wiki/skills/{wiki-architect,wiki-page-writer}`) run by VS Code Copilot / Claude
    Code — open the repo, ask it to "create a wiki" — no cloud, no cost.
 4. **Ingest** — `ingest_docbundles` reads each manifest's `groups` and calls
    `app/knowledge/acl_setup.py`, which stamps the index `groups` field and enables

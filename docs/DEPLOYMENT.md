@@ -218,7 +218,7 @@ There are **two ways** to produce it:
    and the Foundry model (`gpt-5-mini`) deployed; it enforces the **build-fidelity gate**
    (rejects a low-fidelity bundle). This is the path that costs tokens.
 2. **Microsoft Agent Skills** — no cloud, no cost. The skills under
-   `apps/backend/app/knowledge/skills/{wiki-architect,wiki-page-writer}` are run by your
+   `apps/backend/.dna/wiki/skills/{wiki-architect,wiki-page-writer}` are run by your
    IDE agent (**VS Code Copilot** or **Claude Code**): open the repo and ask it to
    *"create a wiki"* — the agent follows the skill instructions to write the bundle
    locally. (There is no `copilot plugin install` / slash command; it's the skills the
