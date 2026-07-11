@@ -1,0 +1,33 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Plan
+metadata:
+  name: plan-migrate-copilot-prompts
+spec:
+  title: 'Plano: migrate-copilot-prompts'
+  date: '2026-07-11'
+  status: accepted
+  story_ref: migrate-copilot-prompts
+  journey_phase: plan
+  body: "# Plano \u2014 migrate-copilot-prompts (Fase 2 DNA)\n\n## Objetivo\nExternalizar\
+    \ prompts auxiliares hardcoded de copilot.py e artifacts.py para\no scope novo\
+    \ `apps/backend/.dna/copilot/`, espelhando a estrutura do piloto\nhelpdesk. Runtime-dynamic\
+    \ (inje\xE7\xE3o de dados) fica em Python; s\xF3 persona/regra/\ntemplate est\xE1\
+    tico vira Kind.\n\n## Scope novo `copilot` (espelha helpdesk verbatim)\n- Genome.yaml\
+    \ (default_agent: synthesis)\n- agents/: refine(B4), extract(B5), extract-stream(B6),\
+    \ edges(B7), synthesis(B3-base)\n- souls/extractor-coach (persona compartilhada\
+    \ extract/extract-stream)\n- skills/stt-correction (few-shot STT, reusado por\
+    \ extract + extract-stream)\n- prompt-templates/synthesis-tone (tom por meeting_type),\
+    \ html-artifact (B2, {{artifact_type}})\n- eval-cases/* + eval-suites/copilot-prompts\n\
+    \n## Consolidacao B5\u2248B6\nSoul extractor-coach compartilhado + Skill stt-correction\
+    \ referenciado por\nambos via `skills:` (dep_filter). promptTemplate custom cascateia\
+    \ o skill\n(default nao cascateia skills). Evolucao semantica intencional.\n\n\
+    ## Anti-padrao\nInjecao de dados por-request fica no Python. So o TEMPLATE com\
+    \ variaveis\nnomeadas (`{{artifact_type}}`, meeting_type) vira Kind.\n\n## Shim\n\
+    app/services/prompts.py (Kernel.quick copilot + build_prompt fail-loud +\nDNA_BASE_DIR\
+    \ override) expoe constantes compostas. copilot.py/artifacts.py\nviram thin wrappers.\n\
+    \n## Prova\ndna eval run copilot-prompts (sob 0.1 = CI/runtime) verde; testes\
+    \ existentes\nverdes; grep zero literal; ci.yml step novo; TestGuide+TestRun.\n\
+    \n## Versao\nRuntime+CI = dna-sdk 0.1.0. prompt_builder byte-identico 0.1<->0.3;\
+    \ valido sob 0.1.\n"
+  created_at: '2026-07-11T06:17:31+00:00'
+  updated_at: '2026-07-11T06:17:31+00:00'

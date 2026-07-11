@@ -1,0 +1,25 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalSuite
+metadata:
+  name: copilot-prompts
+  description: >-
+    Offline, deterministic invariants over the composed Coach-Overlay copilot
+    agent prompts — the guard of record for ADR-013 phase 2 (the copilot/
+    artifacts prompt migration). Each case pins a semantic contract the backend
+    branches on: the JSON node shape the P1 extractor parses, the one-node-per-
+    line pipe format + STT-correction few-shot the streaming reader relies on,
+    the ≤4-edge from/to JSON shape, the grounded pt-BR citation discipline of
+    the synthesis base (tone-free — the tone map is a separate PromptTemplate),
+    and the leak guard that refine/edges/synthesis do NOT inherit the shared
+    extractor Soul. The two PromptTemplate surfaces (synthesis-tone, html-
+    artifact) are Python-interpolated (not prompt targets), so their sentinels
+    are guarded by eval/copilot_prompts_compose_test.py instead.
+spec:
+  cases:
+  - refine-contract
+  - extract-json
+  - extract-stream-line
+  - edges-contract
+  - synthesis-base
+  target:
+    type: prompt

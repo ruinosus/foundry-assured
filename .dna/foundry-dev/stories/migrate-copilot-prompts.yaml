@@ -8,7 +8,7 @@ spec:
     \ + Coach-Overlay synthesis, pt-BR) e app/services/artifacts.py _HTML_SYSTEM (one-shot\
     \ HTML) pro scope DNA. Invent\xE1rio completo no relat\xF3rio da auditoria; dono\
     \ aprovou plano-primeiro, execu\xE7\xE3o story-a-story com aprova\xE7\xE3o dele."
-  status: todo
+  status: in-progress
   feature: dna-adoption
   priority: medium
   labels:
@@ -29,10 +29,54 @@ spec:
     \ e MEMORY_CONTEXT_PROMPT ficam FORA \u2014 auditoria marcou n\xE3o-migrar)"
   definition_of_done_source: claude-code
   created_at: '2026-07-11T05:53:38+00:00'
-  updated_at: '2026-07-11T05:53:38+00:00'
+  updated_at: '2026-07-11T06:33:35+00:00'
   timeline:
   - at: '2026-07-11T05:53:38+00:00'
     actor: claude-code
     type: status_change
     source: cli
     to: todo
+  - at: '2026-07-11T06:17:32+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: todo
+    to: in-progress
+  - at: '2026-07-11T06:17:48+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Iniciando: scope copilot criado espelhando helpdesk. Descoberta-chave\
+      \ \u2014 runtime+CI usam dna-sdk 0.1.0 (nao 0.3); prompt_builder e byte-identico\
+      \ 0.1<->0.3, entao vou validar a composicao sob 0.1. Skills NAO cascateiam no\
+      \ template default do Agent, entao extract/extract-stream usam promptTemplate\
+      \ custom pra compor o Skill stt-correction compartilhado."
+    commit_ref: 6220bbcf24107efbdd39a44dbd0f8d632f58aa09
+  - at: '2026-07-11T06:33:15+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestGuide
+    name: copilot-prompts-migration
+    summary: TestGuide copilot-prompts-migration (smoke)
+  - at: '2026-07-11T06:33:35+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestRun
+    name: tr-copilot-prompts-migration-20260711-063334
+    summary: "TestRun tr-copilot-prompts-migration-20260711-063334 \u2192 pass"
+    outcome: pass
+  produces:
+  - kind: Plan
+    name: plan-migrate-copilot-prompts
+    role: implementation
+    at: '2026-07-11T06:17:32+00:00'
+  - kind: TestGuide
+    name: copilot-prompts-migration
+    role: test-guide
+    at: '2026-07-11T06:33:15+00:00'
+  - kind: TestRun
+    name: tr-copilot-prompts-migration-20260711-063334
+    role: test-run
+    at: '2026-07-11T06:33:35+00:00'

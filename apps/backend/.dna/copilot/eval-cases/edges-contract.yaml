@@ -1,0 +1,20 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: edges-contract
+spec:
+  description: Edges proposes only the strongest links (≤4), by exact id, no self-loops, JSON shape — pt-BR, no extractor persona leak
+  target:
+    type: prompt
+    agent: edges
+  checks:
+  - type: contains
+    value: NO MÁXIMO 4 arestas
+  - type: contains
+    value: '"edges":[{"from":"<id>","to":"<id>"}]'
+  - type: not_contains
+    value: Extraia até 6 itens
+  - type: min_length
+    value: 200
+  expected: The EDGES prompt caps edges at 4, pins the from/to JSON shape, and stays free of the extractor Soul.
+  tags: [copilot, edges, contract]

@@ -1,0 +1,22 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: synthesis-base
+spec:
+  description: The synthesis base is grounded pt-BR with numbered [n] citations and an honest-gap fallback; the per-meeting tone is NOT baked in (it is appended in Python)
+  target:
+    type: prompt
+    agent: synthesis
+  checks:
+  - type: contains
+    value: APENAS com base nos documentos
+  - type: contains
+    value: entre colchetes
+  - type: contains
+    value: não há informação suficiente
+  - type: not_contains
+    value: Tom de negócio
+  - type: min_length
+    value: 200
+  expected: The SYNTHESIS base keeps grounded pt-BR citation discipline and carries no tone (the tone map is a separate PromptTemplate).
+  tags: [copilot, synthesis, contract]

@@ -1,0 +1,31 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestGuide
+metadata:
+  name: copilot-prompts-migration
+spec:
+  description: "Verifica que os prompts auxiliares de copilot.py/artifacts.py comp\xF5\
+    em do scope DNA copilot (refine/extract/extract-stream/edges/synthesis + tone\
+    \ map + HTML B2), sem literal inline, com sentinelas determin\xEDsticas verdes."
+  kind_of_test: smoke
+  status: active
+  steps:
+  - action: dna eval run copilot-prompts --scope copilot (DNA_BASE_DIR=apps/backend/.dna)
+    expected: "5 passed \xB7 0 failed \u2014 refine/extract/extract-stream/edges/synthesis\
+      \ comp\xF5em as sentinelas de contrato"
+  - action: uv run python -m eval.copilot_prompts_compose_test
+    expected: "OK \u2014 24 asserts verdes: 4 variantes de tom, B2 self-contained\
+      \ HTML, few-shot STT compartilhado byte-id\xEAntico pelos dois extratores, sem\
+      \ leak do Soul extractor em refine/edges/synthesis"
+  - action: uv run python -m eval.artifact_service_test
+    expected: "PASS \u2014 generate() ainda cria draft (HTML via html_artifact_instructions),\
+      \ comportamento preservado"
+  - action: pytest eval/test_extract.py eval/test_copilot_service.py
+    expected: "9 passed \u2014 extract/synthesis behavior preservado (mock em _responses)"
+  - action: grep de literal de prompt em copilot.py/artifacts.py
+    expected: "exit 1 (nenhum) \u2014 s\xF3 SABATINA_PROMPTS permanece (auditoria\
+      \ marcou n\xE3o-migrar)"
+  verifies:
+  - Story/migrate-copilot-prompts
+  created_at: '2026-07-11T06:33:15+00:00'
+  updated_at: '2026-07-11T06:33:15+00:00'
+  owner: claude-code

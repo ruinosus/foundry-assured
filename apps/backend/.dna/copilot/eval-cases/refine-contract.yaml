@@ -1,0 +1,20 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: refine-contract
+spec:
+  description: Refine consolidates a garbled transcript into ONE clean pt-BR question, answer-only, and does NOT inherit the extractor persona
+  target:
+    type: prompt
+    agent: refine
+  checks:
+  - type: contains
+    value: UMA pergunta técnica clara e concisa
+  - type: contains
+    value: sem preâmbulo, sem aspas, sem explicação
+  - type: not_contains
+    value: Extraia até 6 itens
+  - type: min_length
+    value: 200
+  expected: The REFINE prompt asks for one clean pt-BR question and stays free of the shared extractor Soul (leak guard).
+  tags: [copilot, refine, contract]

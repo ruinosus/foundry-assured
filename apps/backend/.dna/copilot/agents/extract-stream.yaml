@@ -1,0 +1,26 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Agent
+metadata:
+  name: extract-stream
+  description: Meeting Board node extractor (streaming) — one-node-per-line output variant of the shared extractor persona
+spec:
+  # Decomposed (ADR-013 phase 2): shares souls/extractor-coach AND
+  # skills/stt-correction with the `extract` agent (the STT-correction few-shot
+  # is authored ONCE as a Skill, referenced by both — never duplicated). This
+  # instruction is ONLY the line-format-output delta. Contract guard:
+  # eval-cases/extract-stream-line.
+  soul: extractor-coach
+  skills:
+  - stt-correction
+  instruction: |-
+    Escreva UM nó por linha, no formato EXATO: type|label|detail (separado por barra vertical). Sem cabeçalho, sem numeração, sem texto extra — só as linhas.
+  # Same composition as `extract` (persona → output delta → shared STT skill);
+  # the streaming reader parses one node per line, so the delta pins the pipe
+  # format instead of JSON.
+  promptTemplate: |-
+    {{{soul_content}}}
+
+    {{{agent.instruction}}}
+
+    {{#agentskills-skill}}{{{instruction}}}
+    {{/agentskills-skill}}

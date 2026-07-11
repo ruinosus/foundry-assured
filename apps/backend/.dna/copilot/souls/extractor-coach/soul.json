@@ -1,0 +1,11 @@
+{
+  "specVersion": "0.4",
+  "name": "extractor-coach",
+  "displayName": "Meeting Board Extractor Coach",
+  "description": "The shared Coach-Overlay extractor persona — observes a call transcript and proposes conversation nodes. Composed into the JSON (extract) and streaming (extract-stream) variants, which keep only their output-format delta.",
+  "version": "1.0.0",
+  "tags": ["copilot", "meeting-board", "extractor", "persona"],
+  "files": {
+    "soul": "SOUL.md"
+  }
+}

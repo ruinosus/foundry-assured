@@ -21,8 +21,18 @@ from dataclasses import replace
 
 from app.core.tenant import tenant_config
 from app.domains import get_domain
+from app.services import prompts as _prompts
 from app.services.grounded import build_synthesis_kwargs
 from app.services.retrieval import retrieve
+
+# Prompt SOURCE lives in the declarative DNA scope apps/backend/.dna/copilot/
+# (ADR-013 phase 2); app/services/prompts.py composes it at import. These names
+# stay as module attributes so the functions below (and any importer) are
+# unchanged — copilot.py is now a thin wrapper, zero inline prompt literals.
+REFINE_INSTRUCTIONS = _prompts.REFINE_INSTRUCTIONS
+EXTRACT_INSTRUCTIONS = _prompts.EXTRACT_INSTRUCTIONS
+EXTRACT_STREAM_INSTRUCTIONS = _prompts.EXTRACT_STREAM_INSTRUCTIONS
+EDGES_INSTRUCTIONS = _prompts.EDGES_INSTRUCTIONS
 
 # The two grounded KBs the copilot searches. cockpit-si-kb + selfwiki-si-kb are already indexed.
 COPILOT_DOMAINS = ("cockpit", "selfwiki")
@@ -41,20 +51,13 @@ class _CopilotDomain:
 
 
 def _instructions_for(meeting_type: str) -> str:
-    """Synthesis instructions with a tone adapted to the meeting type."""
-    base = (
-        "Você ajuda o apresentador a responder uma pergunta técnica feita numa call. "
-        "Responda de forma curta (2–4 frases), em português, APENAS com base nos documentos "
-        "fornecidos, citando cada afirmação pelo seu número entre colchetes, ex.: [1]. "
-        "Se os documentos não contiverem a resposta, diga que não há informação suficiente."
-    )
-    tone = {
-        "presentation": " Tom de negócio: foque benefícios e arquitetura de alto nível.",
-        "technical": " Tom técnico: pode citar detalhes de implementação.",
-        "sales": " Tom comercial: foque valor, segurança e escalabilidade.",
-        "interview": " Tom conceitual: foque trade-offs e o porquê das decisões.",
-    }.get(meeting_type, "")
-    return base + tone
+    """Synthesis instructions with a tone adapted to the meeting type.
+
+    The static base (Agent ``synthesis``) + tone map (PromptTemplate
+    ``synthesis-tone``) are declared in the DNA scope; the meeting_type LOOKUP
+    stays here (runtime-dynamic). See app/services/prompts.py.
+    """
+    return _prompts.synthesis_instructions(meeting_type)
 
 
 async def _responses(instructions: str, input_text: str, user, *, reasoning_effort: str | None = None) -> str:
@@ -102,14 +105,9 @@ async def _synthesize(user_text: str, docs: list[dict], instructions: str, user)
     return await _responses(kwargs["instructions"], kwargs["input"], user)
 
 
-# Consolidate a messy transcript slice (STT errors, fragments) into ONE clean technical question.
-REFINE_INSTRUCTIONS = (
-    "Você recebe um trecho de transcrição de uma call, que pode conter erros de reconhecimento de "
-    "fala, repetições e fragmentos. Consolide em UMA pergunta técnica clara e concisa, em português. "
-    "Responda APENAS com a pergunta reformulada — sem preâmbulo, sem aspas, sem explicação."
-)
-
-
+# REFINE_INSTRUCTIONS is composed from the DNA `refine` Agent (see the module
+# header + app/services/prompts.py). Consolidates a messy transcript slice
+# (STT errors, fragments) into ONE clean technical question.
 async def refine_question(raw_text: str, user=None) -> str:
     """Turn a raw/garbled transcript slice into a clean question (optional 'run another agent' step)."""
     text = (raw_text or "").strip()
@@ -219,14 +217,9 @@ VALID_NODE_TYPES = {"topico", "pergunta", "acao", "ideia"}  # NEVER "kb" — KB 
 
 # P1 = nodes only. We deliberately do NOT ask for edges/suggestedQuestion here (P1 ignores them) —
 # generating them is wasted latency. Edges come back with a richer prompt in P2.
-EXTRACT_INSTRUCTIONS = (
-    "Você observa um trecho de transcrição de uma call (pode ter erros de fala). Extraia até 6 itens "
-    "NOVOS e relevantes como nós. Cada nó: type ∈ [topico, pergunta, acao, ideia], label (≤6 palavras), "
-    "detail (no máximo 8 palavras). NÃO repita nós que já existem (veja a lista). "
-    'Responda APENAS JSON, sem texto ao redor: {"nodes":[{"type":"...","label":"...","detail":"..."}]}'
-)
-
-
+# EXTRACT_INSTRUCTIONS is composed from the DNA `extract` Agent (shared
+# souls/extractor-coach persona + skills/stt-correction few-shot + the JSON
+# output delta). See the module header + app/services/prompts.py.
 def _strip_json(text: str) -> str:
     """Best-effort: pull the JSON object out of the model text (handles ```json fences / prose)."""
     t = (text or "").strip()
@@ -269,17 +262,9 @@ async def extract_nodes(transcript_window: list[dict], existing_nodes: list[dict
 
 
 # ── Streaming extraction (nodes ping in as generated) ────────────────────────
-EXTRACT_STREAM_INSTRUCTIONS = (
-    "Extraia até 6 itens NOVOS e relevantes da transcrição como nós. Escreva UM nó por linha, no "
-    "formato EXATO: type|label|detail  (separado por barra vertical). "
-    "type ∈ topico,pergunta,acao,ideia. label ≤6 palavras. detail ≤8 palavras. "
-    "A transcrição tem ERROS de reconhecimento de fala em termos técnicos em inglês — CORRIJA-os no "
-    "label (ex.: 'dot net'→'.NET', 'reacting'→'React', 'footen'→'front-end', 'age Andy python'→"
-    "'agents e Python', 'Havanadia'→'Avanade', 'bff'→'BFF'). Use o termo técnico correto. "
-    "NÃO repita nós que já existem. Sem cabeçalho, sem numeração, sem texto extra — só as linhas."
-)
-
-
+# EXTRACT_STREAM_INSTRUCTIONS is composed from the DNA `extract-stream` Agent —
+# same shared souls/extractor-coach + skills/stt-correction as `extract`, with a
+# one-node-per-line output delta. See the module header + app/services/prompts.py.
 def _parse_node_line(line: str) -> dict | None:
     parts = [p.strip() for p in (line or "").split("|")]
     if len(parts) < 2:
@@ -314,15 +299,8 @@ async def kb_fetch(query: str, user=None, *, top: int = 3) -> dict:
     }
 
 
-EDGES_INSTRUCTIONS = (
-    "Você recebe uma lista de nós de uma reunião (id, type, label). Proponha SÓ as conexões mais "
-    "fortes e ÓBVIAS entre nós que se relacionam de verdade (ex.: uma pergunta sobre um tópico, uma "
-    "ação que vem de uma ideia). NÃO conecte tudo com tudo — seja seletivo. NO MÁXIMO 4 arestas, e "
-    "menos se não houver relações claras. Use os ids EXATOS. Não conecte um nó a si mesmo. "
-    'Responda APENAS JSON, sem texto ao redor: {"edges":[{"from":"<id>","to":"<id>"}]}'
-)
-
-
+# EDGES_INSTRUCTIONS is composed from the DNA `edges` Agent. See the module
+# header + app/services/prompts.py.
 async def propose_edges(existing_nodes: list[dict], user=None) -> dict:
     """Propose edges (by node id) among existing board nodes. Fail-soft → {edges:[]}. Drops any edge
     referencing an id not in the input (orphan guard mirrors the board-state guard)."""

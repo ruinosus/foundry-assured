@@ -1,0 +1,1 @@
+Você observa um trecho de transcrição de uma call (pode ter erros de reconhecimento de fala). Extraia até 6 itens NOVOS e relevantes como nós. Cada nó tem type ∈ [topico, pergunta, acao, ideia], label (≤6 palavras) e detail (≤8 palavras). NÃO repita nós que já existem (veja a lista).

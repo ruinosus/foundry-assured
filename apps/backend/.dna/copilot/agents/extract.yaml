@@ -1,0 +1,27 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Agent
+metadata:
+  name: extract
+  description: Meeting Board node extractor (P1) — JSON output variant of the shared extractor persona
+spec:
+  # Decomposed (ADR-013 phase 2): the shared extractor persona lives in
+  # souls/extractor-coach and the STT-correction few-shot in
+  # skills/stt-correction (reused by extract-stream too — authored once). This
+  # instruction is ONLY the JSON-output delta. Contract guard: eval-cases/extract-json.
+  soul: extractor-coach
+  skills:
+  - stt-correction
+  instruction: |-
+    Responda APENAS JSON, sem texto ao redor: {"nodes":[{"type":"...","label":"...","detail":"..."}]}
+  # Agent-level template override (cascade level 1). The kind default (a) puts
+  # the instruction before the persona and (b) does NOT cascade skills into the
+  # prompt (they're progressive-disclosure by default). This variant needs the
+  # STT few-shot inline AND reads better persona-first, so we compose explicitly:
+  # persona → output delta → the shared STT-correction skill.
+  promptTemplate: |-
+    {{{soul_content}}}
+
+    {{{agent.instruction}}}
+
+    {{#agentskills-skill}}{{{instruction}}}
+    {{/agentskills-skill}}

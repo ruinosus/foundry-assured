@@ -1,0 +1,13 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Agent
+metadata:
+  name: edges
+  description: Propose the strongest, most obvious edges between existing Meeting Board nodes (pt-BR)
+spec:
+  # Move of EDGES_INSTRUCTIONS from app/services/copilot.py (ADR-013 phase 2).
+  # instruction-only promptTemplate — see refine.yaml for why (leak-free from
+  # the scope's flatten_in_context Soul). Edit THIS file to change the prompt.
+  instruction: |-
+    Você recebe uma lista de nós de uma reunião (id, type, label). Proponha SÓ as conexões mais fortes e ÓBVIAS entre nós que se relacionam de verdade (ex.: uma pergunta sobre um tópico, uma ação que vem de uma ideia). NÃO conecte tudo com tudo — seja seletivo. NO MÁXIMO 4 arestas, e menos se não houver relações claras. Use os ids EXATOS. Não conecte um nó a si mesmo. Responda APENAS JSON, sem texto ao redor: {"edges":[{"from":"<id>","to":"<id>"}]}
+  promptTemplate: |-
+    {{{agent.instruction}}}
