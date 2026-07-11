@@ -1,0 +1,18 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Genome
+metadata:
+  name: wiki
+  description: >-
+    Declarative instructions for the LLM Wiki Builder pipeline (ADR-013 phase 3
+    — the tool-calling frontier). One Agent per pipeline stage
+    (wiki-planner / wiki-page-writer / wiki-verifier), carrying the STATIC pt-BR
+    persona formerly hardcoded in app/knowledge/wiki_builder.py;
+    app/knowledge/wiki_prompts.py composes them at import time. The Microsoft
+    deep-wiki Agent Skills (wiki-page-writer, wiki-architect, MIT) live under
+    skills/ as the single source of truth; the page-writer Agent composes the
+    wiki-page-writer skill body into its prompt (the former _writer_rules()
+    injection). Only the static persona/rules live here — the per-page runtime
+    context (the gathered source files) is injected in the USER turn in Python,
+    not declared.
+spec:
+  default_agent: wiki-page-writer

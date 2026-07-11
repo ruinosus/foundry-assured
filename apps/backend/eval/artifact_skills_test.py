@@ -3,7 +3,6 @@
 Run (from apps/backend/):  uv run python -m eval.artifact_skills_test
 """
 import sys
-from pathlib import Path
 
 
 def main() -> int:
@@ -14,8 +13,13 @@ def main() -> int:
         if not cond:
             failures.append(name)
 
-    skills_dir = Path(__file__).resolve().parents[1] / "artifact-skills"
-    check("artifact-skills dir exists", skills_dir.is_dir())
+    # Single source of truth (ADR-013 phase 3): the artifact skills live in the DNA
+    # scope at .dna/studio/skills/ (relocated from apps/backend/artifact-skills). The
+    # runtime SkillsProvider points at exactly this dir — import it from the shim so
+    # the test and the app never drift on the location.
+    from app.agents.studio_prompts import STUDIO_SKILLS_DIR
+    skills_dir = STUDIO_SKILLS_DIR
+    check("studio skills dir exists (.dna/studio/skills)", skills_dir.is_dir())
 
     expected = {"slides", "report", "dashboard", "walkthrough"}
     found = {p.parent.name for p in skills_dir.glob("*/SKILL.md")}

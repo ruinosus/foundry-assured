@@ -4,10 +4,16 @@ document into AG-UI shared state (predictive), gated by an in-loop edit confirma
 Mirrors app/agents/platform.py's per-request construction (FoundryChatClient.as_agent +
 PerRequestAgent), plus the AG-UI shared-state wrapper (AgentFrameworkAgent with
 state_schema/predict_state_config/require_confirmation — see docs/.../ag-ui/state-management).
+
+ADR-013 phase 3 (the tool-calling frontier): the STATIC persona/tool-calling prompt is
+declared in the DNA scope apps/backend/.dna/studio/ and composed by app/agents/studio_prompts.py
+(STUDIO_INSTRUCTIONS). This module keeps ONLY the imperative plumbing — the update_artifact
+@tool body + approval_mode, build_artifact_mcp_reads(), the SkillsProvider wiring, and the
+AG-UI shared-state adapter. The 4 artifact skills are the same DNA scope's single source of
+truth (.dna/studio/skills/), which the SkillsProvider discovers directly off disk at runtime
+(file discovery + read_skill_resource, NOT prompt composition) — mechanism intact, source relocated.
 """
 from __future__ import annotations
-
-from pathlib import Path
 
 from agent_framework import SkillsProvider, tool
 from agent_framework.foundry import FoundryChatClient
@@ -16,29 +22,16 @@ from fastapi import Depends, FastAPI
 
 from app.agents.mcp.tools import build_artifact_mcp_reads
 from app.agents.per_request import PerRequestAgent
+from app.agents.studio_prompts import STUDIO_INSTRUCTIONS, STUDIO_SKILLS_DIR
 from app.core.auth import auth_dependencies, credential_for_request, require_role
 from app.core.settings import settings
 from app.core.tenant import tenant_config
 
-_SKILLS_DIR = Path(__file__).resolve().parents[2] / "artifact-skills"  # apps/backend/artifact-skills
-# Built ONCE at module load: SkillsProvider is static file discovery over the 4 SKILL.md files —
-# it holds no per-request/tenant state, so sharing across turns is safe. build_studio_agent() runs
-# on every AG-UI turn, so constructing it per-call would re-read the skills each request for nothing.
-_SKILLS_PROVIDER = SkillsProvider.from_paths(str(_SKILLS_DIR))
-
-_STUDIO_INSTRUCTIONS = (
-    "You are an expert front-end engineer authoring a SINGLE self-contained HTML document. "
-    "Choose the skill that best matches the requested artifact; if the user pinned a skill, use "
-    "it. Follow its SKILL.md via load_skill/read_skill_resource. To create or change the artifact "
-    "you MUST call the `update_artifact` tool and pass the COMPLETE updated document in `html`, "
-    "starting with <!doctype html>, with all CSS and JS inline and NO external requests — safe to "
-    "render inside a sandboxed iframe. When the user asks for a change, include the ENTIRE "
-    "document with the change applied; never return a diff or a partial, and never drop existing "
-    "content. Call `update_artifact` with the complete `html`, a concise `title`, a `type` from "
-    "{report,presentation,walkthrough,dashboard}, and the `skill` you used. Use the read-only data "
-    "tools only when the user asks for data-grounded content. After calling the tool, reply with a "
-    "one-sentence summary of what you did."
-)
+# Built ONCE at module load: SkillsProvider is static file discovery over the 4 SKILL.md files
+# (single source in the DNA scope, .dna/studio/skills/ — see studio_prompts.py) — it holds no
+# per-request/tenant state, so sharing across turns is safe. build_studio_agent() runs on every
+# AG-UI turn, so constructing it per-call would re-read the skills each request for nothing.
+_SKILLS_PROVIDER = SkillsProvider.from_paths(str(STUDIO_SKILLS_DIR))
 
 
 @tool(approval_mode="always_require")
@@ -64,7 +57,7 @@ def build_studio_agent():
     return client.as_agent(
         name="ArtifactsStudio",
         description="Conversationally generates and refines a self-contained HTML artifact.",
-        instructions=_STUDIO_INSTRUCTIONS,
+        instructions=STUDIO_INSTRUCTIONS,
         context_providers=[_SKILLS_PROVIDER],  # built once at module scope; no script_runner (no shell)
         tools=[update_artifact, *build_artifact_mcp_reads()],
     )

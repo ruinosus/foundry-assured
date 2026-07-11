@@ -1,0 +1,33 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestGuide
+metadata:
+  name: tg-migrate-studio-wiki-prompts
+spec:
+  description: "Offline/deterministic guard that the Artifacts Studio agent + the\
+    \ wiki-builder pipeline prompts compose from the new DNA scopes (studio/wiki),\
+    \ the 4 artifact-skills + wiki skills are single-source in .dna, and the tool/context\
+    \ plumbing stays imperative \u2014 no regression to helpdesk/copilot."
+  kind_of_test: regression
+  status: active
+  steps:
+  - action: dna eval run studio-prompts --scope studio
+    expected: '1 passed (studio-contract): persona + update_artifact contract + 4
+      types'
+  - action: dna eval run wiki-prompts --scope wiki
+    expected: 3 passed (planner/writer/verifier contracts); writer composes the Microsoft
+      depth-rules Skill
+  - action: uv run python -m eval.studio_wiki_prompts_compose_test
+    expected: "OK \u2014 shims compose; artifacts_studio/wiki_builder wire the constants;\
+      \ wiki-architect does not leak; depth rules compose once"
+  - action: uv run python -m eval.artifact_studio_test && artifact_skills_test
+    expected: "PASS \u2014 SkillsProvider wired to .dna/studio/skills; update_artifact\
+      \ tool + Author/Admin mount intact"
+  - action: dna eval run helpdesk-prompts + copilot-prompts + copilot_prompts_compose_test
+    expected: "10/10 + 5/5 + OK \u2014 no regression from prior phases"
+  - action: grep _STUDIO_INSTRUCTIONS/persona in artifacts_studio.py + wiki_builder.py
+    expected: "CLEAN \u2014 zero inline prompt/skill-rules; _writer_rules() removed"
+  verifies:
+  - Story/migrate-studio-wiki-prompts
+  created_at: '2026-07-11T06:57:45+00:00'
+  updated_at: '2026-07-11T06:57:45+00:00'
+  owner: claude-code

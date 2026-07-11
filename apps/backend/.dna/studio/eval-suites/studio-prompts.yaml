@@ -1,0 +1,21 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalSuite
+metadata:
+  name: studio-prompts
+  description: >-
+    Offline, deterministic invariants over the composed HTML Artifacts Studio
+    agent prompt — the guard of record for ADR-013 phase 3 (the tool-calling
+    frontier: app/agents/artifacts_studio.py). The case pins the semantic
+    contract the generative-UI agent + frontend branch on: ONE self-contained
+    HTML document, the mandatory `update_artifact` tool call carrying the
+    COMPLETE document (never a diff), the choose-a-skill + follow-its-SKILL.md
+    discipline (the skills are discovered by SkillsProvider off .dna/studio/skills/,
+    their single source of truth), and the four artifact types. The @tool bodies,
+    the SkillsProvider wiring, and the AG-UI shared-state adapter are imperative
+    plumbing guarded by the behavioral tests (eval/artifact_studio_test.py,
+    eval/artifact_skills_test.py), not this prompt suite.
+spec:
+  cases:
+  - studio-contract
+  target:
+    type: prompt

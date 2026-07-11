@@ -1,0 +1,26 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: studio-contract
+spec:
+  description: The Artifacts Studio prompt pins the single-self-contained-HTML persona, the mandatory update_artifact tool call with the complete document, the skill-selection + follow-SKILL.md discipline, and the four artifact types the frontend branches on
+  target:
+    type: prompt
+    agent: artifacts-studio
+  checks:
+  - type: contains
+    value: SINGLE self-contained HTML document
+  - type: contains
+    value: you MUST call the `update_artifact` tool
+  - type: contains
+    value: starting with <!doctype html>
+  - type: contains
+    value: load_skill/read_skill_resource
+  - type: contains
+    value: never return a diff or a partial
+  - type: contains
+    value: '{report,presentation,walkthrough,dashboard}'
+  - type: min_length
+    value: 500
+  expected: The STUDIO prompt carries the generative-UI persona, the mandatory complete-document update_artifact contract, the skill-following discipline, and the four artifact types.
+  tags: [studio, artifacts, contract]

@@ -1,0 +1,26 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: wiki-writer-contract
+spec:
+  description: The page writer composes the pt-BR source-anchored persona + the Microsoft wiki-page-writer depth rules (Skill) + the pipeline adaptations that OVERRIDE them (no git/tools; markdown only, no VitePress frontmatter)
+  target:
+    type: prompt
+    agent: wiki-page-writer
+  checks:
+  - type: contains
+    value: ancorada no código real fornecido
+  - type: contains
+    value: TRACE ACTUAL CODE PATHS
+  - type: contains
+    value: EVERY CLAIM NEEDS A SOURCE
+  - type: contains
+    value: Dark-mode colors
+  - type: contains
+    value: não use git/tools
+  - type: contains
+    value: sem frontmatter VitePress
+  - type: min_length
+    value: 2000
+  expected: The WRITER prompt carries the source-anchored pt-BR persona, the composed Microsoft depth rules (single-source Skill), and the pipeline adaptations that override the skill's git/interactive steps.
+  tags: [wiki, writer, contract, skill]

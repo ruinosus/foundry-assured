@@ -1,0 +1,29 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Agent
+metadata:
+  name: wiki-page-writer
+  description: Wiki Builder — page writer stage (one call per page) — writes ONE pt-BR technical page anchored in the provided source, following Microsoft's wiki-page-writer depth rules
+spec:
+  # Move of the STATIC WikiPageWriter instruction from app/knowledge/wiki_builder.py
+  # (ADR-013 phase 3). The former _writer_rules() injection — a raw read of the
+  # Microsoft wiki-page-writer SKILL.md concatenated into the instruction — becomes
+  # a proper Skill composition: the skill is the single source of truth under
+  # skills/wiki-page-writer, referenced here and rendered between the persona
+  # preamble and the adaptations that OVERRIDE it (no git/tools; source is the
+  # files in the prompt). Only the static persona/rules live here — the per-page
+  # source context is injected in the USER turn in Python.
+  # Contract guard: eval-cases/wiki-writer-contract.
+  skills:
+  - wiki-page-writer
+  instruction: |-
+    Você escreve UMA página de wiki técnica em pt-BR, **ancorada no código real fornecido**. Siga estas regras (skill wiki-page-writer da Microsoft):
+  # persona preamble → the Microsoft depth rules (composed Skill) → the adaptations
+  # that override the skill for this Foundry pipeline (the skill says "run git / ask
+  # the user"; here the source is the files handed in the prompt). The adaptations
+  # MUST follow the skill so they take precedence.
+  promptTemplate: |-
+    {{{agent.instruction}}}
+
+    {{#agentskills-skill}}{{{instruction}}}
+    {{/agentskills-skill}}
+    Adaptações: a fonte são os ARQUIVOS fornecidos no prompt (não use git/tools). Cite caminhos reais `(caminho)` e nomes de classes/funções. NÃO invente; se algo é incerto/ausente, diga. Saída: só o markdown da página (H2/H3), sem frontmatter VitePress.

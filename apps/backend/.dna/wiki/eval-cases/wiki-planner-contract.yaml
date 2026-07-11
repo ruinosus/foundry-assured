@@ -1,0 +1,20 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: wiki-planner-contract
+spec:
+  description: The planner is a documentation architect that plans 5-8 stack-adapted pages and returns ONLY the JSON pages shape the builder parses
+  target:
+    type: prompt
+    agent: wiki-planner
+  checks:
+  - type: contains
+    value: arquiteto de documentação
+  - type: contains
+    value: planeje 5-8 páginas
+  - type: contains
+    value: Responda APENAS um JSON
+  - type: contains
+    value: '{"pages":[{"title":"...","files":["caminho1","caminho2"]}]}'
+  expected: The PLANNER prompt pins the documentation-architect persona, the 5-8 stack-adapted pages, and the exact JSON pages shape the builder parses.
+  tags: [wiki, planner, contract]

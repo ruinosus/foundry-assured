@@ -1,0 +1,22 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: wiki-verifier-contract
+spec:
+  description: The verifier is a strict fidelity checker that rewrites a page removing/correcting every claim not explicitly supported by the source, adds nothing new, and emits ONLY the corrected markdown
+  target:
+    type: prompt
+    agent: wiki-verifier
+  checks:
+  - type: contains
+    value: verificador de FIDELIDADE rigoroso
+  - type: contains
+    value: removendo ou corrigindo TODA afirmação que NÃO tenha suporte explícito
+  - type: contains
+    value: Não adicione informação nova
+  - type: contains
+    value: APENAS a página corrigida em markdown
+  - type: not_contains
+    value: TRACE ACTUAL CODE PATHS
+  expected: The VERIFIER prompt pins the strict fidelity-checker persona (remove/correct unsupported claims, add nothing) and does NOT inherit the writer's depth rules.
+  tags: [wiki, verifier, contract]
