@@ -7,7 +7,7 @@ spec:
     \ nativo"
   description: 'Prova o modelo Terraform no consumidor: autora em DNA, emite o PromptAgent
     nativo do agent-framework em build-time, runtime carrega o nativo (sem dna-sdk).'
-  status: in-progress
+  status: review
   feature: f-dna-adoption
   owner: claude-code
   priority: high
@@ -35,7 +35,7 @@ spec:
     \ PROT\xD3TIPO \u2014 avaliar"
   definition_of_done_source: claude-code
   created_at: '2026-07-11T13:40:18+00:00'
-  updated_at: '2026-07-11T13:42:02+00:00'
+  updated_at: '2026-07-11T13:45:23+00:00'
   timeline:
   - at: '2026-07-11T13:40:18+00:00'
     actor: claude-code
@@ -69,6 +69,38 @@ spec:
       \ PromptAgent sem model block \u2192 AgentFactory usa chat client injetado (stub),\
       \ constr\xF3i offline."
     commit_ref: 88257fe1d895998195f3014ac6a755ca14cb39ff
+  - at: '2026-07-11T13:44:47+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Writeup completo: README.md contrasta os dois modelos (runtime-compose\
+      \ vs build-emit) com tabela de trade-offs + de-para do emit, e contrast.html\
+      \ \xE9 a vers\xE3o visual pro dono. Conex\xE3o-chave documentada: build-emit\
+      \ ELIMINA o gap de empacotamento Docker que o dono criticou (o COPY .dna/ +\
+      \ parents[2] fr\xE1gil + mount /mnt/dna) porque o runtime consome s\xF3 o *.agent.yaml\
+      \ nativo \u2014 nada de scope DNA na imagem, dna-sdk fora do requirements. Recomenda\xE7\
+      \xE3o: h\xEDbrido, emitir no build por default, load_prompts s\xF3 onde no-deploy/tenant-overlay\
+      \ \xE9 o produto. Territ\xF3rio isolado, produ\xE7\xE3o intocada. Commit b3c38c0,\
+      \ branch spike/emit-adoption pushada."
+    commit_ref: b3c38c0d4da32160532dba3bbbab24d376db8033
+  - at: '2026-07-11T13:45:08+00:00'
+    actor: claude-code
+    type: pr_opened
+    source: cli
+    summary: 'PR aberto: https://github.com/ruinosus/foundry-assured/pull/124'
+    pr_url: https://github.com/ruinosus/foundry-assured/pull/124
+  - at: '2026-07-11T13:45:22+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #124 aberta pra avalia\xE7\xE3o (base develop) \u2014 PROT\xD3TIPO,\
+      \ n\xE3o mergear"
+  - at: '2026-07-11T13:45:23+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: review
   produces:
   - kind: Plan
     name: plan-s-foundry-emit-prototype
