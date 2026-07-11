@@ -17,7 +17,7 @@ spec:
     conceptual portability to Bedrock/Vertex/OpenAI plus competitive honesty vs
     Open Agent Spec / Google OKF. Output = the report + verdict + spike/comparison.html,
     not production code.
-  status: in-progress
+  status: review
   reporter: claude-code
   priority: high
   labels:
@@ -33,14 +33,14 @@ spec:
   - text: A DNA -> agent-framework emitter is prototyped and round-trips (emitted == composed)
     done: true
   - text: Per-axis comparison table with real numbers + honest verdict, incl. "retire DNA" if warranted
-    done: false
+    done: true
   definition_of_done:
   - text: spike/ dir with both implementations + emitter + a runnable compare harness (PASS)
     done: true
   - text: spike/comparison.html self-contained visual with the scorecard + verdict
-    done: false
+    done: true
   - text: Report delivered; production untouched; worktree preserved
-    done: false
+    done: true
   created_at: '2026-07-11T11:10:00+00:00'
   updated_at: '2026-07-11T11:10:00+00:00'
   timeline:
@@ -75,4 +75,29 @@ spec:
       Agent. Equivalence gate PASS: emitted instructions byte-equal the DNA-composed
       prompt. De-para works and is cheap (~20 LOC/target) because DNA composition
       already yields a clean artifact.
+  - at: '2026-07-11T11:20:00+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: >-
+      Verdict delivered (spike/comparison.html + report). CONDITIONAL — the runtime
+      count decides. As a prompt-manager for a single agent-framework app, DNA does
+      NOT justify itself (AF's own declarative YAML is cleaner + already a dep). DNA
+      earns its keep ONLY as a neutral author-once->emit-to-each-runtime layer: the
+      emitter is proven (byte-equal round-trip, ~20 LOC/target) and the 2026 niche is
+      open (only Oracle Agent Spec, partial; OKF=wrong layer; A2A/MCP=interop;
+      AgentCore=hosting). One runtime -> retire to AF-native + Langfuse. Many runtimes
+      -> keep DNA, pivot to de-para (and emit THROUGH Oracle Agent Spec, not reinvent).
+  - at: '2026-07-11T11:20:00+00:00'
+    actor: claude-code
+    type: pr_opened
+    source: cli
+    summary: 'SPIKE PR (draft, NOT for merge): https://github.com/ruinosus/foundry-assured/pull/123'
+    pr_url: https://github.com/ruinosus/foundry-assured/pull/123
+  - at: '2026-07-11T11:20:00+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: review
   produces: []
