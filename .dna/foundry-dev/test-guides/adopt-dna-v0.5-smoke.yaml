@@ -1,0 +1,30 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestGuide
+metadata:
+  name: adopt-dna-v0.5-smoke
+spec:
+  description: 'Product smoke: under dna-sdk 0.5 the collapsed load_prompts shims
+    compose a non-empty prompt for one agent of each scope, and the app + hosted containers
+    boot.'
+  kind_of_test: smoke
+  status: active
+  steps:
+  - action: Import app.agents.prompts and read TRIAGE_INSTRUCTIONS/PLATFORM_INSTRUCTIONS
+      (helpdesk scope via load_prompts)
+    expected: both non-empty; triage len=397, platform len=677
+  - action: Import app.services.prompts; read REFINE_INSTRUCTIONS + call synthesis_instructions('interview')
+      + html_artifact_instructions('report') (copilot scope + PromptTemplate bodies)
+    expected: all non-empty; templates render
+  - action: Import app.agents.studio_prompts; read STUDIO_INSTRUCTIONS + assert STUDIO_SKILLS_DIR.is_dir()
+      (studio scope + preserved skills-dir export)
+    expected: prompt len=948; skills dir exists
+  - action: Import app.knowledge.wiki_prompts; read WIKI_PAGE_WRITER_INSTRUCTIONS
+      (wiki scope, composed Skill)
+    expected: non-empty len=5848
+  - action: Import each apps/hosted-*/prompts.py with DNA_BASE_DIR=apps/backend/.dna
+    expected: 4 containers compose their constants non-empty from the single source
+  verifies:
+  - adopt-dna-v0.5
+  created_at: '2026-07-11T10:38:47+00:00'
+  updated_at: '2026-07-11T10:38:47+00:00'
+  owner: claude-code

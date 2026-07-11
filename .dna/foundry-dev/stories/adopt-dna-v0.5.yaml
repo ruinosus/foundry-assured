@@ -1,0 +1,110 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Story
+metadata:
+  name: adopt-dna-v0.5
+spec:
+  title: "Adopt dna-sdk v0.5 \u2014 collapse prompt shims onto load_prompts"
+  description: "Bump dna-sdk 0.1/0.3 \u2192 0.5 and replace Kernel.quick+build_prompt+manual-guards\
+    \ shims with dna.load_prompts across backend + hosted apps"
+  status: review
+  feature: f-dna-adoption
+  priority: high
+  labels:
+  - dna
+  - refactor
+  reporter: claude-code
+  acceptance_criteria:
+  - Given the foundry backend + 4 hosted apps, When dna-sdk is bumped to >=0.5,<0.6
+    (pyproject + requirements + CI), Then uv.lock regenerates and all eval suites
+    (helpdesk/copilot/studio/wiki) + compose-tests pass under 0.5
+  - Given each prompt shim, When refactored to dna.load_prompts(scope, base_dir=<resolved>),
+    Then the composed prompt is byte-identical (same eval sentinels) and the ADR-014
+    _resolve_base_dir policy is preserved
+  acceptance_criteria_source: cli-create
+  definition_of_done:
+  - 'Code: 8 shims collapsed onto load_prompts; ADR-014 base_dir resolution preserved;
+    template/skills-dir extras kept'
+  - 'Tests: helpdesk(10)+copilot(5)+studio(1)+wiki(3) eval suites + hosted/copilot/studio-wiki
+    compose-tests green under 0.5; backend pytest green; backend boots'
+  - 'CI: ''CI passed'' green on PR opened via story pr --base develop'
+  - "Docs: line-count before\u2192after per shim reported as the DX proof"
+  definition_of_done_source: cli-create
+  created_at: '2026-07-11T10:31:46+00:00'
+  updated_at: '2026-07-11T10:40:40+00:00'
+  timeline:
+  - at: '2026-07-11T10:31:46+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    to: todo
+  - at: '2026-07-11T10:32:02+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: todo
+    to: in-progress
+  - at: '2026-07-11T10:36:51+00:00'
+    actor: claude-code
+    type: decision
+    source: cli
+    summary: "Bump done (pyproject 0.1\u21920.5.0 in uv.lock; 4 hosted requirements\
+      \ 0.3\u21920.5; CI uvx dna-cli 0.1\u21920.5, 4 steps + stale comments). All\
+      \ 8 shims collapsed onto dna.load_prompts, preserving the ADR-014 _resolve_base_dir\
+      \ policy (passed as base_dir=) and the extras (services keeps PromptTemplate\
+      \ bodies via _prompts.mi; studio keeps STUDIO_SKILLS_DIR; hosted keep the 3-tier\
+      \ baked/sibling resolution). Verified byte-identical to the old build_prompt().rstrip\
+      \ mechanism for all 19 agents under 0.5. copilot + studio-wiki compose-tests\
+      \ GREEN. One hosted compose-test assertion (hosted_prompts_compose_test.py:66)\
+      \ reached into the now-removed _AGENT_FOR_CONSTANT internal \u2014 decided to\
+      \ replace that single line with a mechanism-agnostic behavioral check (RESOLVE\
+      \ == resolve-hosted composition, \u2260 resolve), which is strictly stronger;\
+      \ the no-TICKET/HITL contract at :61-64 already stands."
+    commit_ref: d0de999db7da9e5c47cb2663aca2ff7c496a667d
+  - at: '2026-07-11T10:38:48+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestGuide
+    name: adopt-dna-v0.5-smoke
+    summary: TestGuide adopt-dna-v0.5-smoke (smoke)
+  - at: '2026-07-11T10:39:14+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestRun
+    name: tr-adopt-dna-v0.5-smoke-20260711-103913
+    summary: "TestRun tr-adopt-dna-v0.5-smoke-20260711-103913 \u2192 pass"
+    outcome: pass
+  - at: '2026-07-11T10:40:15+00:00'
+    actor: claude-code
+    type: pr_opened
+    source: cli
+    summary: 'PR aberto: https://github.com/ruinosus/foundry-assured/pull/122'
+    pr_url: https://github.com/ruinosus/foundry-assured/pull/122
+  - at: '2026-07-11T10:40:39+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: 'PR #122 open against develop (ruinosus/foundry-assured#122). All local
+      gates green under dna-sdk 0.5: 19 eval cases (helpdesk 10/copilot 5/studio 1/wiki
+      3) + hosted/copilot/studio-wiki compose-tests + backend eval suite (policy/attribution/artifacts)
+      + import boot smoke for backend + 4 hosted containers. Awaiting ''CI passed''.'
+  - at: '2026-07-11T10:40:40+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: review
+  produces:
+  - kind: Plan
+    name: plan-adopt-dna-v0.5
+    role: implementation
+    at: '2026-07-11T10:32:02+00:00'
+  - kind: TestGuide
+    name: adopt-dna-v0.5-smoke
+    role: test-guide
+    at: '2026-07-11T10:38:48+00:00'
+  - kind: TestRun
+    name: tr-adopt-dna-v0.5-smoke-20260711-103913
+    role: test-run
+    at: '2026-07-11T10:39:14+00:00'

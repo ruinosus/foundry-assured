@@ -46,7 +46,7 @@ jobs:
       # Prompt-invariant eval suite over the declarative .dna scope — THE guard
       # of record for prompt contracts (ADR-013 phase 2; the byte-equivalence
       # gate retired when the prompts started evolving as Soul + Guardrails).
-      # dna-cli comes from PyPI (it pins dna-sdk>=0.1,<0.2 itself — the same
+      # dna-cli comes from PyPI (it pins dna-sdk>=0.5,<0.6 itself — the same
       # range the backend depends on). Offline + deterministic; exits 1 on any
       # failed case.
       # Copilot + artifact prompt composition (ADR-013 phase 2): the two
@@ -66,23 +66,23 @@ jobs:
       # Prompt-invariant eval suites over the declarative .dna scopes — THE guard
       # of record for prompt contracts (ADR-013 phase 2; the byte-equivalence
       # gate retired when the prompts started evolving as Soul + Guardrails).
-      # dna-cli comes from PyPI (it pins dna-sdk>=0.1,<0.2 itself — the same
+      # dna-cli comes from PyPI (it pins dna-sdk>=0.5,<0.6 itself — the same
       # range the backend depends on). Offline + deterministic; exits 1 on any
       # failed case.
       - name: DNA prompt eval suites (dna eval run)
         env:
           DNA_BASE_DIR: ${{ github.workspace }}/apps/backend/.dna
         run: >-
-          uvx --from "dna-cli>=0.1,<0.2"
+          uvx --from "dna-cli>=0.5,<0.6"
           dna eval run helpdesk-prompts --scope helpdesk
           &&
-          uvx --from "dna-cli>=0.1,<0.2"
+          uvx --from "dna-cli>=0.5,<0.6"
           dna eval run copilot-prompts --scope copilot
           &&
-          uvx --from "dna-cli>=0.1,<0.2"
+          uvx --from "dna-cli>=0.5,<0.6"
           dna eval run studio-prompts --scope studio
           &&
-          uvx --from "dna-cli>=0.1,<0.2"
+          uvx --from "dna-cli>=0.5,<0.6"
           dna eval run wiki-prompts --scope wiki
 
   frontend:

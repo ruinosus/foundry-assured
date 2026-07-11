@@ -62,8 +62,15 @@ def main() -> int:
           "TICKET:" not in agent.RESOLVE_INSTRUCTIONS
           and "STEP 1" not in agent.RESOLVE_INSTRUCTIONS
           and "STEP 2" not in agent.RESOLVE_INSTRUCTIONS)
-    check("hosted-agent RESOLVE maps to the resolve-hosted Agent (not resolve)",
-          agent._AGENT_FOR_CONSTANT["RESOLVE_INSTRUCTIONS"] == "resolve-hosted")
+    # Behavioral contract (mechanism-agnostic): the hosted RESOLVE constant IS
+    # the composed resolve-hosted Agent and is NOT the backend resolve. Stronger
+    # than the old ``_AGENT_FOR_CONSTANT`` map check, which coupled to the shim's
+    # (now collapsed onto dna.load_prompts) internals.
+    from dna import load_prompts
+    _hp = load_prompts("helpdesk", base_dir=str(_SCOPE_DIR))
+    check("hosted-agent RESOLVE composes the resolve-hosted Agent (not resolve)",
+          agent.RESOLVE_INSTRUCTIONS == _hp["resolve-hosted"]
+          and agent.RESOLVE_INSTRUCTIONS != _hp["resolve"])
 
     # --- hosted-cockpit -----------------------------------------------------
     cockpit = _load_shim("cockpit")
