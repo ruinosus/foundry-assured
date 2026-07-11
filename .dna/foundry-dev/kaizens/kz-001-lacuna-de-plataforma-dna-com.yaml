@@ -1,0 +1,20 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Kaizen
+metadata:
+  name: kz-001-lacuna-de-plataforma-dna-com
+spec:
+  body: "Lacuna de plataforma DNA: composi\xE7\xE3o cross-scope de _lib para slots\
+    \ manifest-plane (Guardrail/Soul/Skill) \xE9 assim\xE9trica entre runtime e ferramentas.\
+    \ 'dna eval run' (e o CLI em geral) boota via Kernel.auto()+source SEM registrar\
+    \ LocalResolver, ent\xE3o depend\xEAncias 'local:_lib' n\xE3o resolvem no CLI\
+    \ \u2014 enquanto Kernel.quick (runtime) registra o resolver e comp\xF5e. Some-se\
+    \ a isso que Guardrail/Soul/Skill n\xE3o s\xE3o query-inheritable (parent-chain\
+    \ traz _lib no chain mas o slot comp\xF5e do scan por-scope). Efeito: qualquer\
+    \ padr\xE3o '_lib compartilhado + consumidor referencia' passa no runtime/compose-test\
+    \ mas FALHA no gate 'dna eval run'. Corre\xE7\xE3o candidata: o CLI registrar\
+    \ LocalResolver(base_dir) igual ao Kernel.quick, OU tornar esses Kinds record-plane\
+    \ herd\xE1veis. Reproduzido em 0.1.x e 0.3.1."
+  work_item: Story/extract-lib-guardrails
+  status: observed
+  actor: claude-code
+  created_at: '2026-07-11T07:27:04+00:00'
