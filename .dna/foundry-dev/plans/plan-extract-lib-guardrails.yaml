@@ -1,0 +1,18 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Plan
+metadata:
+  name: plan-extract-lib-guardrails
+spec:
+  title: 'Plano: extract-lib-guardrails'
+  date: '2026-07-11'
+  status: accepted
+  story_ref: extract-lib-guardrails
+  journey_phase: plan
+  body: "Verificar no c\xF3digo a recorr\xEAncia real das 2 regras (grounded-citation\
+    \ e HTML self-contained) e PROVAR a viabilidade da refer\xEAncia cross-scope _lib\
+    \ sob a dna-sdk 0.1.x (runtime+CI) ANTES de extrair. Extrair s\xF3 o que comp\xF5\
+    e id\xEAntico em runtime e em 'dna eval run' sem regredir sentinela. Se cross-scope\
+    \ _lib n\xE3o compuser sob o gate, reportar com evid\xEAncia (plano-primeiro)."
+  created_at: '2026-07-11T07:25:37+00:00'
+  updated_at: '2026-07-11T07:25:37+00:00'
+  methodology: ad-hoc

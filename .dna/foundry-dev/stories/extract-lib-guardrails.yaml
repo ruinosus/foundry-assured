@@ -8,7 +8,7 @@ spec:
     \ 'cite-ou-abst\xE9m' (grounded citation) e 'HTML self-contained sandboxed'. Scopes\
     \ consumidores passam a referenciar o _lib. Invent\xE1rio completo no relat\xF3\
     rio da auditoria; dono aprovou plano-primeiro."
-  status: todo
+  status: blocked
   feature: dna-adoption
   priority: low
   labels:
@@ -24,10 +24,117 @@ spec:
     \xE3o de prosa de guardrail; Tests: composi\xE7\xE3o dos consumidores verde"
   definition_of_done_source: claude-code
   created_at: '2026-07-11T05:54:01+00:00'
-  updated_at: '2026-07-11T05:54:01+00:00'
+  updated_at: '2026-07-11T07:27:05+00:00'
   timeline:
   - at: '2026-07-11T05:54:01+00:00'
     actor: claude-code
     type: status_change
     source: cli
     to: todo
+  - at: '2026-07-11T07:25:38+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: todo
+    to: in-progress
+  - at: '2026-07-11T07:25:51+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Invent\xE1rio verificado no c\xF3digo (apps/backend/.dna). Regra 1 'cite-ou-abst\xE9\
+      m/grounding': aparece em helpdesk/guardrails/grounded-citation (EN, j\xE1 Guardrail,\
+      \ usado por concierge-grounded), inline EN em resolve.yaml + resolve-hosted.yaml\
+      \ (tecida no fluxo NO_MATCH), inline pt-BR em cockpit.yaml + selfwiki.yaml (com\
+      \ specifics DIVERGENTES: cita\xE7\xE3o componente+doc vs \xE1rea+doc; gap OPOSTO\
+      \ \u2014 cockpit 'aponte o que falta' vs selfwiki 'N\xC3O liste faltantes'),\
+      \ parcial em concierge-ungrounded, e variantes por-scope em copilot/synthesis\
+      \ ([n] numerado) e wiki/verifier. \xC9 um TEMA divergente (EN vs pt-BR + specifics\
+      \ opostos), N\xC3O uma string duplicada \u2014 quase tudo dentro do scope helpdesk.\
+      \ Regra 2 'HTML self-contained sandboxed': studio/agents/artifacts-studio (Agent\
+      \ EN, tecida no contrato de tool-calling update_artifact) + copilot/prompts/html-artifact\
+      \ (PromptTemplate EN). S\xF3 2 ocorr\xEAncias, em scopes diferentes, e em KINDS\
+      \ diferentes."
+    commit_ref: ee1bac96d67713dec1ce0c98f82d3f550e4fd7e7
+  - at: '2026-07-11T07:26:12+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "BLOQUEIO PROVADO (spike, depois removido). Baseline: 19/19 evals verdes\
+      \ sob dna 0.1.x (helpdesk 10, copilot 5, studio 1, wiki 3). Premissa da task\
+      \ \xC9 FALSA neste repo: _lib est\xE1 VAZIO (s\xF3 .gitkeep), nenhum Genome\
+      \ declara depend\xEAncia de _lib, e grep '_lib' no backend = zero \u2014 o helpdesk\
+      \ N\xC3O referencia _lib. Testei os 3 ve\xEDculos (Guardrail/Soul/Skill) num\
+      \ scope consumidor apontando pro _lib: (a) via depend\xEAncia 'local:_lib' \u2192\
+      \ comp\xF5e no RUNTIME (Kernel.quick, que registra LocalResolver) mas N\xC3\
+      O em 'dna eval run' (o CLI boota via Kernel.auto()+source, SEM LocalResolver\
+      \ \u2192 dep local n\xE3o resolve); (b) via parent-chain puro (sem dep) \u2192\
+      \ _lib EST\xC1 no chain de studio [('studio',None),('_lib',None)], mas kernel.query\
+      \ origin=all retorna [] pra Guardrail e o slot de composi\xE7\xE3o (soul/guardrail/skill)\
+      \ \xE9 MANIFEST-PLANE (scan por-scope), n\xE3o query-inheritable. Resultado:\
+      \ _lib guardrail/soul/skill s\xF3 comp\xF5e se fisicamente importado pelo resolver\
+      \ \u2014 ausente no 'dna eval run'. Confirmado id\xEAntico em 0.1.x E 0.3.1\
+      \ (n\xE3o \xE9 quest\xE3o de bump de vers\xE3o). Logo: mover qualquer regra\
+      \ pro _lib + consumidor referenciar QUEBRA a sentinela do consumidor no gate\
+      \ 'dna eval run' (regress\xE3o dura). O smoke Kernel.quick passaria enquanto\
+      \ o eval CLI falharia \u2014 os dois caminhos DIVERGEM."
+    commit_ref: ee1bac96d67713dec1ce0c98f82d3f550e4fd7e7
+  - at: '2026-07-11T07:26:30+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "RECOMENDA\xC7\xC3O (plano-primeiro, aguardando decis\xE3o do Barna).\
+      \ Nenhuma das 2 regras vale extrair pro _lib SOB o toolchain atual sem regredir\
+      \ o gate: (1) HTML self-contained \u2014 duplica\xE7\xE3o cross-scope genu\xED\
+      na (studio+copilot) MAS os 2 consumidores s\xE3o Kinds diferentes (Agent vs\
+      \ PromptTemplate) e PromptTemplate estruturalmente N\xC3O referencia Guardrail/Soul;\
+      \ al\xE9m do bloqueio _lib no 'dna eval run'. (2) Grounding/cite \u2014 \xE9\
+      \ tema divergente, majoritariamente intra-helpdesk; a forma can\xF4nica compartilh\xE1\
+      vel j\xE1 existe como o Guardrail same-scope grounded-citation. Caminhos poss\xED\
+      veis p/ desbloquear, nenhum trivial: (A) fazer 'dna eval run' bootar com LocalResolver\
+      \ (patch no dna-cli, upstream) p/ deps local: resolverem no CLI; (B) tornar\
+      \ Guardrail/Soul/Skill query-inheritable (record-plane) p/ heran\xE7a cross-scope\
+      \ real via parent-chain \u2014 mudan\xE7a no dna-sdk; (C) dedup SAME-SCOPE (resolve/resolve-hosted\
+      \ referenciarem o grounded-citation dentro de helpdesk) \u2014 comp\xF5e sob\
+      \ 0.1.x, mas mexe em variantes intencionais e n\xE3o \xE9 '_lib'. N\xE3o shippei\
+      \ c\xF3digo pra n\xE3o regredir 'dna eval run' (gate nomeado). Kaizen aberto\
+      \ p/ registrar a lacuna de plataforma."
+    commit_ref: ee1bac96d67713dec1ce0c98f82d3f550e4fd7e7
+  - at: '2026-07-11T07:26:39+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: blocked
+  - type: kaizen
+    summary: "Lacuna de plataforma DNA: composi\xE7\xE3o cross-scope de _lib para\
+      \ slots manifest-plane (Guardrail/Soul/Skill) \xE9 assim\xE9trica entre runtime\
+      \ e ferramentas. 'dna eval run' (e o CLI em geral) boota via Kernel.auto()+source\
+      \ SEM registrar LocalResolver, ent\xE3o depend\xEAncias 'local:_lib' n\xE3o\
+      \ resolvem no CLI \u2014 enquanto Kernel.quick (runtime) registra o resolver\
+      \ e comp\xF5e. Some-se a isso que Guardrail/Soul/Skill n\xE3o s\xE3o query-inheritable\
+      \ (parent-chain traz _lib no chain mas o slot comp\xF5e do scan por-scope).\
+      \ Efeito: qualquer padr\xE3o '_lib compartilhado + consumidor referencia' passa\
+      \ no runtime/compose-test mas FALHA no gate 'dna eval run'. Corre\xE7\xE3o candidata:\
+      \ o CLI registrar LocalResolver(base_dir) igual ao Kernel.quick, OU tornar esses\
+      \ Kinds record-plane herd\xE1veis. Reproduzido em 0.1.x e 0.3.1."
+    actor: claude-code
+    at: '2026-07-11T07:27:04+00:00'
+    source: cli
+    kaizen_doc: kz-001-lacuna-de-plataforma-dna-com
+  - at: '2026-07-11T07:28:06+00:00'
+    actor: claude-code
+    type: pr_opened
+    source: cli
+    summary: 'PR aberto: https://github.com/ruinosus/foundry-assured/pull/120'
+    pr_url: https://github.com/ruinosus/foundry-assured/pull/120
+  produces:
+  - kind: Plan
+    name: plan-extract-lib-guardrails
+    role: implementation
+    at: '2026-07-11T07:25:38+00:00'
+  blocked_reason: "Refer\xEAncia cross-scope _lib (Guardrail/Soul/Skill) N\xC3O comp\xF5\
+    e sob 'dna eval run' (gate CI) em dna 0.1.x nem 0.3.1 \u2014 CLI boota sem LocalResolver\
+    \ e slots de composi\xE7\xE3o s\xE3o manifest-plane. Extrair pro _lib regrediria\
+    \ as sentinelas do consumidor. Premissa da task (helpdesk j\xE1 referencia _lib)\
+    \ \xE9 falsa: _lib vazio. Precisa de decis\xE3o do Barna entre patch de plataforma\
+    \ (A/B) ou dedup same-scope (C)."
