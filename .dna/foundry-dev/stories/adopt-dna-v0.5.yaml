@@ -6,7 +6,7 @@ spec:
   title: "Adopt dna-sdk v0.5 \u2014 collapse prompt shims onto load_prompts"
   description: "Bump dna-sdk 0.1/0.3 \u2192 0.5 and replace Kernel.quick+build_prompt+manual-guards\
     \ shims with dna.load_prompts across backend + hosted apps"
-  status: in-progress
+  status: review
   feature: f-dna-adoption
   priority: high
   labels:
@@ -30,7 +30,7 @@ spec:
   - "Docs: line-count before\u2192after per shim reported as the DX proof"
   definition_of_done_source: cli-create
   created_at: '2026-07-11T10:31:46+00:00'
-  updated_at: '2026-07-11T10:39:14+00:00'
+  updated_at: '2026-07-11T10:40:40+00:00'
   timeline:
   - at: '2026-07-11T10:31:46+00:00'
     actor: claude-code
@@ -75,6 +75,26 @@ spec:
     name: tr-adopt-dna-v0.5-smoke-20260711-103913
     summary: "TestRun tr-adopt-dna-v0.5-smoke-20260711-103913 \u2192 pass"
     outcome: pass
+  - at: '2026-07-11T10:40:15+00:00'
+    actor: claude-code
+    type: pr_opened
+    source: cli
+    summary: 'PR aberto: https://github.com/ruinosus/foundry-assured/pull/122'
+    pr_url: https://github.com/ruinosus/foundry-assured/pull/122
+  - at: '2026-07-11T10:40:39+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: 'PR #122 open against develop (ruinosus/foundry-assured#122). All local
+      gates green under dna-sdk 0.5: 19 eval cases (helpdesk 10/copilot 5/studio 1/wiki
+      3) + hosted/copilot/studio-wiki compose-tests + backend eval suite (policy/attribution/artifacts)
+      + import boot smoke for backend + 4 hosted containers. Awaiting ''CI passed''.'
+  - at: '2026-07-11T10:40:40+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: review
   produces:
   - kind: Plan
     name: plan-adopt-dna-v0.5
