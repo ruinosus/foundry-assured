@@ -1,0 +1,103 @@
+# Docs CI — build the MkDocs site strictly, link-check it, and (on main)
+# publish it to GitHub Pages (s-foundry-agent-ready-docs).
+#
+# This workflow is DELIBERATELY SEPARATE from ci.yml: it is NOT one of the jobs
+# behind the required `CI passed` check, so a docs issue never blocks a product
+# PR, and a product change never waits on the docs build. Product gates
+# (backend / frontend / infra) stay in ci.yml.
+#
+# Jobs:
+#   docs-build — install mkdocs-material (requirements-docs.txt) and run
+#                `mkdocs build --strict`, so a dead anchor or a broken nav fails
+#                the PR. Uploads the built site as the Pages artifact.
+#   docs-links — lychee link-check over README.md + docs/, OFFLINE: only local
+#                file links are validated (external 429/timeouts can never red a
+#                PR), while a broken internal link still fails.
+#   deploy     — GitHub Pages, push-to-main only. Tolerant: it never runs on a
+#                PR, and Pages on a PRIVATE repo needs a paid plan, so it is
+#                allowed to fail without failing the run until the repo goes
+#                public / Pages is enabled.
+
+name: docs
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "requirements-docs.txt"
+      - ".github/workflows/docs.yml"
+      - "README.md"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "mkdocs.yml"
+      - "requirements-docs.txt"
+      - ".github/workflows/docs.yml"
+      - "README.md"
+
+permissions:
+  contents: read
+
+jobs:
+  docs-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install docs deps
+        run: pip install -r requirements-docs.txt
+      - name: Build (strict)
+        run: mkdocs build --strict
+      - name: Upload Pages artifact
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  docs-links:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Link check (lychee, offline)
+        uses: lycheeverse/lychee-action@v2
+        with:
+          # --offline: never touch the network — only local file links are
+          #   validated, so external 429/timeouts can't fail CI, but a broken
+          #   internal link does. The generated wiki + design specs are excluded
+          #   to match the site's curated scope (they live for GitHub browsing).
+          args: >-
+            --offline
+            --no-progress
+            --exclude-path docs/wiki
+            --exclude-path docs/superpowers
+            README.md
+            'docs/**/*.md'
+          fail: true
+          jobSummary: true
+
+  # GitHub Pages deploy — main branch only.
+  #
+  # NOTE: GitHub Pages on a PRIVATE repository requires GitHub Pro / Team /
+  # Enterprise. Until this repo is public (or on a paid plan) with Pages enabled
+  # (Settings → Pages → Source: GitHub Actions), this job fails at deploy-pages.
+  # It is gated to push-on-main and marked continue-on-error so it CANNOT block
+  # merges in the meantime. Once Pages is enabled, drop `continue-on-error`.
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: docs-build
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

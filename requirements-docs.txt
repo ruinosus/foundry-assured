@@ -1,0 +1,18 @@
+# Documentation site dependencies (s-foundry-agent-ready-docs).
+#
+# The Foundry Assured docs site is built with MkDocs + the Material theme,
+# organized by the Diátaxis framework (tutorials / how-to / reference /
+# explanation). This is a PRODUCT site — architecture, deploy runbooks, ADRs
+# and operations — so there is no generated API reference (no mkdocstrings /
+# TypeDoc); every page is hand-written prose living next to the code it
+# describes (docs-as-code, per docs/DOCS-STANDARD.md).
+#
+#   pip install -r requirements-docs.txt
+#   mkdocs serve            # live preview at http://127.0.0.1:8000
+#   mkdocs build --strict   # the CI gate — a broken internal link fails the build
+#
+# pymdown-extensions powers the Mermaid custom fence (diagrams-as-code, the
+# repo's standard) plus admonitions, content tabs and the landing grid cards.
+
+mkdocs-material>=9.5,<10
+pymdown-extensions>=10,<11

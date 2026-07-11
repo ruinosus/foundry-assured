@@ -23,10 +23,15 @@ evaluation, and a managed hosted-agent deployment. The frontend is **CopilotKit*
 > KB→agent guarantee (built faithfully · retrieves completely · secure per-caller access ·
 > red-teamed), with a worked example in [`docs/use-case-demo.html`](./docs/use-case-demo.html)
 > / [`docs/USE-CASE-WALKTHROUGH.md`](./docs/USE-CASE-WALKTHROUGH.md).
+> **Docs site:** [ruinosus.github.io/foundry-assured](https://ruinosus.github.io/foundry-assured/) —
+> the navigable docs, organized by [Diátaxis](https://diataxis.fr/) (tutorials · how-to ·
+> reference · explanation), built from [`docs/`](./docs/) with MkDocs Material.
+> **Working with an AI coding agent?** [`AGENTS.md`](./AGENTS.md) is the canonical onboarding
+> surface (an `agents.md/v1` instance read by 28+ tools); [`CLAUDE.md`](./CLAUDE.md) has the deep
+> working rules. Work is tracked in-repo on the `.dna/foundry-dev` SDLC board via the `dna` CLI.
 > Contributing & CI/CD: [`CONTRIBUTING.md`](./CONTRIBUTING.md) · security:
 > [`SECURITY.md`](./SECURITY.md) · full build spec:
-> [`foundry-helpdesk-spec.md`](./foundry-helpdesk-spec.md) · working rules:
-> [`CLAUDE.md`](./CLAUDE.md)
+> [`foundry-helpdesk-spec.md`](./foundry-helpdesk-spec.md)
 
 A developer asks in chat → the system **triages** intent/urgency → **retrieves**
 from the runbook knowledge base → **resolves** with a grounded, cited answer →
@@ -339,7 +344,7 @@ The **LocalEvaluator** policies (every answer cites a runbook or declines; never
 leak a secret) are the hard CI gate — a violation exits non-zero. **FoundryEvals**
 adds cloud LLM-judge scores, viewable per-run in the Foundry portal. CI runs the
 offline `--self-test` (`.github/workflows/eval-gate.yml`). See
-[`apps/backend/eval/README.md`](./backend/eval/README.md).
+[`apps/backend/eval/README.md`](./apps/backend/eval/README.md).
 
 ## Hosted agent (Phase 6)
 

@@ -58,3 +58,6 @@ TEST-CREDENTIALS.local.md
 
 # DNA CLI dogfood venv (agent-ready onboarding — s-foundry-agent-ready-docs)
 .venv-dna/
+
+# MkDocs build output (docs site — s-foundry-agent-ready-docs)
+site/
