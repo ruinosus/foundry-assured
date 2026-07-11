@@ -53,3 +53,5 @@ TEST-CREDENTIALS.local.md
 
 # Superpowers local tooling/session state (brainstorm scratch, server pids/logs) — never commit
 .superpowers/
+# DNA SDLC board — per-workstation pointer (written by `dna sdlc story start`)
+.dna/active-story.txt

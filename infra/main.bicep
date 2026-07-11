@@ -92,6 +92,7 @@ module apps 'containerapps.bicep' = {
     fileShareName: resources.outputs.AZURE_FILE_SHARE
     artifactBlobAccountUrl: resources.outputs.ARTIFACT_BLOB_ACCOUNT_URL
     artifactStoreAccountUrl: resources.outputs.ARTIFACT_STORE_ACCOUNT_URL
+    promptsShareName: resources.outputs.AZURE_PROMPTS_FILE_SHARE
     entraTenantId: entraTenantId
     entraApiClientId: entraApiClientId
     entraApiClientSecret: entraApiClientSecret
@@ -121,6 +122,7 @@ output AZURE_SEARCH_KNOWLEDGE_BASE string = resources.outputs.AZURE_SEARCH_KNOWL
 output AZURE_STORAGE_ACCOUNT string = resources.outputs.AZURE_STORAGE_ACCOUNT
 output AZURE_STORAGE_RESOURCE_ID string = resources.outputs.AZURE_STORAGE_RESOURCE_ID
 output AZURE_STORAGE_CONTAINER string = resources.outputs.AZURE_STORAGE_CONTAINER
+output AZURE_PROMPTS_FILE_SHARE string = resources.outputs.AZURE_PROMPTS_FILE_SHARE // push-prompts.sh reads this from the azd env
 
 // Artifacts feature — surfaced into the backend .env (bootstrap.sh) so local dev
 // can reach the Blob (content) + Table (metadata) stores.
