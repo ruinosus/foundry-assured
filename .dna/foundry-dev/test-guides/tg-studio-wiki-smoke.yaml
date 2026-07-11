@@ -1,0 +1,25 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestGuide
+metadata:
+  name: tg-studio-wiki-smoke
+spec:
+  description: Roteiro de teste de migrate-studio-wiki-prompts (derivado das acceptance_criteria).
+  kind_of_test: smoke
+  status: active
+  steps:
+  - action: "No Studio, valide: Given o Artifacts Studio agent e os 3 agentes do wiki-builder,\
+      \ when migrados, then instru\xE7\xE3o+skills ficam declaradas no scope e o tool/context\
+      \ plumbing permanece em c\xF3digo"
+    where: "<rota/tela \u2014 ex. /scopes/:scope/...>"
+    expected: "<o que voc\xEA V\xCA quando est\xE1 certo (marque \u2717 S\xD3 se estiver\
+      \ quebrado)>"
+  - action: "No Studio, valide: Given as 4 artifact-skills, when migradas, then viram\
+      \ Skill Kinds referenciados pelos agentes (sem c\xF3pia inline)"
+    where: "<rota/tela \u2014 ex. /scopes/:scope/...>"
+    expected: "<o que voc\xEA V\xCA quando est\xE1 certo (marque \u2717 S\xD3 se estiver\
+      \ quebrado)>"
+  verifies:
+  - Story/migrate-studio-wiki-prompts
+  created_at: '2026-07-11T07:05:28+00:00'
+  updated_at: '2026-07-11T07:05:28+00:00'
+  owner: claude-code

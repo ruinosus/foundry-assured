@@ -1,0 +1,15 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestRun
+metadata:
+  name: tr-tg-studio-wiki-smoke-20260711-070529
+spec:
+  guide_ref: tg-studio-wiki-smoke
+  outcome: pass
+  verifies:
+  - Story/migrate-studio-wiki-prompts
+  executed_by: claude-code
+  executed_at: '2026-07-11T07:05:29+00:00'
+  evidence:
+  - "smoke manual: Kernel.quick comp\xF4s studio/artifacts-studio (948c) + wiki/wiki-page-writer\
+    \ (5848c) dos scopes .dna, prompts n\xE3o-vazios; eval studio 1/1 + wiki 3/3 no\
+    \ CI"
