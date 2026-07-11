@@ -1,0 +1,11 @@
+{
+  "specVersion": "0.4",
+  "name": "concierge",
+  "displayName": "Acme Concierge",
+  "description": "ACME Corp tenant overlay of the Helpdesk Concierge persona — premium, on-brand tone. Shadows the shared base persona for tenant=acme only.",
+  "version": "1.0.0",
+  "tags": ["helpdesk", "concierge", "persona", "tenant:acme"],
+  "files": {
+    "soul": "SOUL.md"
+  }
+}
