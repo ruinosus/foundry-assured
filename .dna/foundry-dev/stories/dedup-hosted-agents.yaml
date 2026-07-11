@@ -6,7 +6,7 @@ spec:
   title: "Dedup hosted agents \u2014 compose prompts from the DNA scope"
   description: The 4 apps/hosted-* stop shipping byte-copies of the prompts and compose
     from apps/backend/.dna via build_prompt (kills real drift)
-  status: in-progress
+  status: review
   feature: dna-adoption
   priority: high
   labels:
@@ -34,7 +34,7 @@ spec:
   - 'CI: ''CI passed'' green on the PR (the dna eval step picks up the new cases automatically)'
   definition_of_done_source: claude-code
   created_at: '2026-07-11T05:43:00+00:00'
-  updated_at: '2026-07-11T05:55:37+00:00'
+  updated_at: '2026-07-11T05:57:47+00:00'
   timeline:
   - at: '2026-07-11T05:43:00+00:00'
     actor: claude-code
@@ -98,6 +98,37 @@ spec:
     name: tr-tg-dedup-hosted-agents-20260711-055536
     summary: "TestRun tr-tg-dedup-hosted-agents-20260711-055536 \u2192 pass"
     outcome: pass
+  - at: '2026-07-11T05:56:46+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Passo 6/6: implementa\xE7\xE3o completa e commitada (0ff37bf). Prova:\
+      \ dna eval helpdesk-prompts 10/10 (incl resolve-hosted) em dna 0.3.1 E no pin\
+      \ 0.1.x do CI; hosted_prompts_compose_test 14/14; hosted_build_test + hosted_platform_smoke_test\
+      \ verdes; grep confirma zero prompt inline nos 4 main.py. TestGuide tg-dedup-hosted-agents\
+      \ + TestRun pass registrados. Tamb\xE9m filei o plano faseado no board (todo):\
+      \ s-migrate-copilot-prompts, s-migrate-studio-wiki-prompts, s-extract-lib-guardrails.\
+      \ Abrindo PR base develop."
+    commit_ref: 0ff37bf7b449e99eacc98cc6946607f3083eb333
+  - at: '2026-07-11T05:57:22+00:00'
+    actor: claude-code
+    type: pr_opened
+    source: cli
+    summary: 'PR aberto: https://github.com/ruinosus/foundry-assured/pull/117'
+    pr_url: https://github.com/ruinosus/foundry-assured/pull/117
+  - at: '2026-07-11T05:57:47+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #117 aberto contra develop; implementa\xE7\xE3o + provas completas.\
+      \ Aguardando CI (o step dna eval helpdesk-prompts pega o resolve-hosted sozinho)\
+      \ e revis\xE3o do dono."
+  - at: '2026-07-11T05:57:47+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: review
   produces:
   - kind: Plan
     name: plan-dedup-hosted-agents
