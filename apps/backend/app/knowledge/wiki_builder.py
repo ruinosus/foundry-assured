@@ -33,10 +33,14 @@ from agent_framework.foundry import FoundryChatClient
 from azure.identity import DefaultAzureCredential
 
 from app.core.tenant import tenant_config
+from app.knowledge.wiki_prompts import (
+    WIKI_PAGE_WRITER_INSTRUCTIONS,
+    WIKI_PLANNER_INSTRUCTIONS,
+    WIKI_VERIFIER_INSTRUCTIONS,
+)
 
 logger = logging.getLogger(__name__)
 
-_SKILLS_DIR = Path(__file__).parent / "skills"
 _IGNORE = {
     "node_modules", "bin", "obj", "packages", ".vs", "target", "vendor",
     ".terraform", "dist", "build", ".venv", "__pycache__", ".git", ".idea",
@@ -143,12 +147,6 @@ def gather_source(repo: Path) -> dict[str, str]:
         text = f.read_text(encoding="utf-8", errors="ignore")
         files[rel] = text[:_MAX_FILE_CHARS]
     return files
-
-
-def _writer_rules() -> str:
-    """The depth rules from the installed Microsoft wiki-page-writer skill."""
-    skill = _SKILLS_DIR / "wiki-page-writer" / "SKILL.md"
-    return skill.read_text(encoding="utf-8") if skill.exists() else ""
 
 
 _CTX_BUDGET = 40_000  # chars of source per page call — keep the prompt under the model limit
@@ -312,14 +310,8 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
     print(f"  read {len(files)} source files from {repo.name}", flush=True)
 
     # 1) Planner — one call: pick the pages + which files each needs.
-    planner = _agent(
-        "WikiPlanner",
-        "Você é um arquiteto de documentação. Dado o componente e a lista de arquivos do "
-        "repositório, planeje 5-8 páginas de wiki adaptadas ao stack real (ex.: Visão Geral, "
-        "Arquitetura, API/Endpoints, Configuração, Integrações, Execução/Deploy). Para cada "
-        "página, escolha os arquivos relevantes. Responda APENAS um JSON: "
-        '{"pages":[{"title":"...","files":["caminho1","caminho2"]}]}',
-    )
+    # Instruction composed from the DNA scope (.dna/wiki/agents/wiki-planner) — ADR-013 phase 3.
+    planner = _agent("WikiPlanner", WIKI_PLANNER_INSTRUCTIONS)
     async with planner:
         plan_resp = await _run_resilient(
             planner,
@@ -334,25 +326,14 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
     print(f"  planned {len(plan)} pages", flush=True)
 
     # 2) Page writer — one call per page, paced, grounded in the assigned files.
-    rules = _writer_rules()
-    writer = _agent(
-        "WikiPageWriter",
-        "Você escreve UMA página de wiki técnica em pt-BR, **ancorada no código real fornecido**. "
-        "Siga estas regras (skill wiki-page-writer da Microsoft):\n\n" + rules + "\n\n"
-        "Adaptações: a fonte são os ARQUIVOS fornecidos no prompt (não use git/tools). Cite caminhos "
-        "reais `(caminho)` e nomes de classes/funções. NÃO invente; se algo é incerto/ausente, diga. "
-        "Saída: só o markdown da página (H2/H3), sem frontmatter VitePress.",
-    )
+    # Instruction composed from the DNA scope (.dna/wiki/agents/wiki-page-writer): the persona
+    # preamble + the Microsoft wiki-page-writer Skill (formerly _writer_rules()) + the pipeline
+    # adaptations that override it — ADR-013 phase 3.
+    writer = _agent("WikiPageWriter", WIKI_PAGE_WRITER_INSTRUCTIONS)
     # Verifier — the fidelity step: re-grounds each page against the source, removing
     # or correcting any claim not explicitly supported (the wiki-page-writer "Validate").
-    verifier = _agent(
-        "WikiVerifier",
-        "Você é um verificador de FIDELIDADE rigoroso. Dado os ARQUIVOS-FONTE e uma PÁGINA, "
-        "reescreva a página removendo ou corrigindo TODA afirmação que NÃO tenha suporte explícito "
-        "no código fornecido. Mantenha apenas o que é fato do fonte, com a citação do arquivo. "
-        "Se uma seção inteira não tem suporte, remova-a. Não adicione informação nova. "
-        "Saída: APENAS a página corrigida em markdown, nada mais.",
-    )
+    # Instruction composed from the DNA scope (.dna/wiki/agents/wiki-verifier).
+    verifier = _agent("WikiVerifier", WIKI_VERIFIER_INSTRUCTIONS)
 
     pages: list[dict] = []
     async with writer, verifier:

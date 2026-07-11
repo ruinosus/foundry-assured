@@ -1,0 +1,17 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Genome
+metadata:
+  name: studio
+  description: >-
+    Declarative instruction for the HTML Artifacts Studio agent (ADR-013 phase 3
+    — the tool-calling frontier). The one Agent document carries the STATIC
+    persona/tool-calling contract formerly hardcoded as _STUDIO_INSTRUCTIONS in
+    app/agents/artifacts_studio.py; app/agents/studio_prompts.py composes it at
+    import time. Only the static prompt lives here — the @tool bodies
+    (update_artifact, MCP reads), the SkillsProvider wiring, and the AG-UI
+    shared-state composition stay imperative in Python. The 4 artifact skills
+    (report/slides/dashboard/walkthrough) live under skills/ as the single
+    source of truth the runtime SkillsProvider.from_paths discovers directly
+    (file discovery + read_skill_resource, NOT prompt composition).
+spec:
+  default_agent: artifacts-studio

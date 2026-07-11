@@ -55,6 +55,14 @@ jobs:
       # rather than the dna eval suite below.
       - name: Copilot prompt composition test
         run: uv run python -m eval.copilot_prompts_compose_test
+      # Studio + wiki prompt composition (ADR-013 phase 3, the tool-calling
+      # frontier): exercises the Python composition shims (studio_prompts /
+      # wiki_prompts) and proves artifacts_studio / wiki_builder wire the composed
+      # constants — plus the single-source-Skill frontier invariants (the
+      # wiki-page-writer depth rules compose once; wiki-architect does not leak).
+      # Offline + deterministic; complements the dna eval suites below.
+      - name: Studio + wiki prompt composition test
+        run: uv run python -m eval.studio_wiki_prompts_compose_test
       # Prompt-invariant eval suites over the declarative .dna scopes — THE guard
       # of record for prompt contracts (ADR-013 phase 2; the byte-equivalence
       # gate retired when the prompts started evolving as Soul + Guardrails).
@@ -70,6 +78,12 @@ jobs:
           &&
           uvx --from "dna-cli>=0.1,<0.2"
           dna eval run copilot-prompts --scope copilot
+          &&
+          uvx --from "dna-cli>=0.1,<0.2"
+          dna eval run studio-prompts --scope studio
+          &&
+          uvx --from "dna-cli>=0.1,<0.2"
+          dna eval run wiki-prompts --scope wiki
 
   frontend:
     name: Frontend · typecheck + build

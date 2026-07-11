@@ -9,7 +9,7 @@ spec:
     \ Tool/context plumbing FICA em c\xF3digo. Invent\xE1rio completo no relat\xF3\
     rio da auditoria; dono aprovou plano-primeiro, execu\xE7\xE3o story-a-story com\
     \ aprova\xE7\xE3o dele."
-  status: todo
+  status: in-progress
   feature: dna-adoption
   priority: medium
   labels:
@@ -29,10 +29,61 @@ spec:
     \ etc.) passam"
   definition_of_done_source: claude-code
   created_at: '2026-07-11T05:54:00+00:00'
-  updated_at: '2026-07-11T05:54:00+00:00'
+  updated_at: '2026-07-11T06:58:10+00:00'
   timeline:
   - at: '2026-07-11T05:54:00+00:00'
     actor: claude-code
     type: status_change
     source: cli
     to: todo
+  - at: '2026-07-11T06:45:58+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: todo
+    to: in-progress
+  - at: '2026-07-11T06:49:25+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: 'Passo 1/4 (B1 Artifacts Studio) FEITO. Scope novo apps/backend/.dna/studio/:
+      Agent/artifacts-studio carrega o _STUDIO_INSTRUCTIONS estatico (persona + contrato
+      tool-calling). FRONTEIRA tracada: (a) o @tool update_artifact (approval_mode)
+      + build_artifact_mcp_reads() + o adapter AG-UI shared-state FICAM imperativos
+      no artifacts_studio.py; (b) as 4 artifact-skills foram RELOCADAS (git mv) pra
+      .dna/studio/skills/ como fonte unica, e o SkillsProvider.from_paths passou a
+      apontar pra la via STUDIO_SKILLS_DIR (mecanismo de discovery/read_skill_resource
+      intacto, NAO composto no prompt). Shim novo app/agents/studio_prompts.py espelha
+      o do backend (Kernel.quick+build_prompt, fail-loud, ADR-014 base-dir). Prova:
+      dna eval run studio-prompts verde no pin 0.1.x do CI; artifact_studio_test 6/6
+      e artifact_skills_test 15/15 verdes (repontados pro novo dir via STUDIO_SKILLS_DIR).
+      Zero prompt inline sobrando em artifacts_studio.py.'
+    commit_ref: f65535f175e7e62923668088605093ffaa15d30e
+  - at: '2026-07-11T06:57:46+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestGuide
+    name: tg-migrate-studio-wiki-prompts
+    summary: TestGuide tg-migrate-studio-wiki-prompts (regression)
+  - at: '2026-07-11T06:58:10+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestRun
+    name: tr-tg-migrate-studio-wiki-prompts-20260711-065810
+    summary: "TestRun tr-tg-migrate-studio-wiki-prompts-20260711-065810 \u2192 pass"
+    outcome: pass
+  produces:
+  - kind: Plan
+    name: plan-migrate-studio-wiki-prompts
+    role: implementation
+    at: '2026-07-11T06:45:58+00:00'
+  - kind: TestGuide
+    name: tg-migrate-studio-wiki-prompts
+    role: test-guide
+    at: '2026-07-11T06:57:46+00:00'
+  - kind: TestRun
+    name: tr-tg-migrate-studio-wiki-prompts-20260711-065810
+    role: test-run
+    at: '2026-07-11T06:58:10+00:00'

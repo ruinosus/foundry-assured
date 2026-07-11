@@ -1,0 +1,23 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalSuite
+metadata:
+  name: wiki-prompts
+  description: >-
+    Offline, deterministic invariants over the composed LLM Wiki Builder
+    pipeline prompts — the guard of record for ADR-013 phase 3 (the tool-calling
+    frontier: app/knowledge/wiki_builder.py). Each case pins a stage contract:
+    the planner's documentation-architect persona + the exact JSON pages shape
+    the builder parses; the page writer's source-anchored pt-BR persona composed
+    with the Microsoft wiki-page-writer depth rules (a single-source Skill, the
+    former _writer_rules() injection) plus the pipeline adaptations that override
+    the skill's git/interactive steps; and the verifier's strict fidelity
+    discipline (which must NOT inherit the writer's depth rules). The pipeline
+    plumbing — source gathering, pacing, retries, the fidelity gate, the cost
+    meter — is imperative and stays out of this suite.
+spec:
+  cases:
+  - wiki-planner-contract
+  - wiki-writer-contract
+  - wiki-verifier-contract
+  target:
+    type: prompt

@@ -1,0 +1,45 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Plan
+metadata:
+  name: plan-migrate-studio-wiki-prompts
+spec:
+  title: 'Plano: migrate-studio-wiki-prompts'
+  date: '2026-07-11'
+  status: accepted
+  story_ref: migrate-studio-wiki-prompts
+  journey_phase: plan
+  body: "# Plan \u2014 Fase 3: migrar prompts do Artifacts Studio + wiki-builder (a\
+    \ fronteira)\n\nFase final da migra\xE7\xE3o de prompts pro DNA. \xC9 a fase que\
+    \ mistura prompt declarativo\ncom tools/contexto imperativos \u2014 a disciplina\
+    \ de fronteira \xE9 o ponto. Espelha o shim\nexistente (app/agents/prompts.py,\
+    \ app/services/prompts.py): Kernel.quick(scope) +\nbuild_prompt, fail-loud.\n\n\
+    ## Alvos\n- B1 Artifacts Studio (app/agents/artifacts_studio.py): _STUDIO_INSTRUCTIONS\
+    \ + SkillsProvider\n  sobre 4 artifact-skills/{report,slides,dashboard,walkthrough}/SKILL.md.\n\
+    - C1 wiki-builder (app/knowledge/wiki_builder.py): 3 agentes (WikiPlanner/WikiPageWriter/\n\
+    \  WikiVerifier) pt-BR; writer injeta _writer_rules() (leitura crua de wiki-page-writer/SKILL.md).\n\
+    \n## Destino + FRONTEIRA\nScopes novos apps/backend/.dna/studio/ e .dna/wiki/\
+    \ (estrutura verbatim do helpdesk/copilot).\nMigra: instrucao estatica de cada\
+    \ agente -> Agent Kind. Os SKILL.md -> fonte unica no .dna.\nFICA IMPERATIVO em\
+    \ Python: corpos de @tool (update_artifact, MCP reads) + wiring do\nSkillsProvider;\
+    \ injecao de contexto runtime (writer concatena FONTE no PROMPT, nao na instrucao).\n\
+    \n## Mecanismo (fronteira honesta)\n- B1 skills: SkillsProvider.from_paths = discovery\
+    \ de arquivo runtime (nao e composicao) +\n  read_skill_resource sobre slides/references/*.\
+    \ -> RELOCAR fonte pro .dna/studio/skills/ e\n  apontar _SKILLS_DIR. Single source,\
+    \ mecanismo intacto.\n- B1 instrucao: _STUDIO_INSTRUCTIONS -> Agent/artifacts-studio\
+    \ via shim novo studio_prompts.py.\n- C1 writer: _writer_rules() injeta SKILL.md\
+    \ no instruction (composicao) -> migrar SKILL.md pro\n  .dna/wiki/skills/ + compor\
+    \ via Agent/wiki-page-writer (skill ref). Instrucao do writer e toda\n  estatica\
+    \ -> Agent Kind. _writer_rules() morre.\n- C1 planner/verifier: pt-BR 100% estatico\
+    \ -> Agent/wiki-planner, Agent/wiki-verifier.\n- wiki-architect: sem consumidor\
+    \ Python -> Skill Kind em .dna/wiki (fonte unica), remove copia.\n\n## Equivalencia\n\
+    - Deterministica: eval-cases contains/not_contains em suites studio-prompts +\
+    \ wiki-prompts (dna\n  eval run). Compose-test Python (espelha copilot_prompts_compose_test)\
+    \ cobre skill-compose + fonte unica.\n- Comportamental: artifact_studio_test,\
+    \ artifact_skills_test, wiki tests EXISTENTES verdes\n  (repontar paths). Byte-igualdade\
+    \ -> semantica.\n\n## Validacao (matching CI)\nCompose/behavioral sob venv backend\
+    \ (dna-sdk 0.1.x). dna eval run via uvx dna-cli 0.1.x. Step\naditivo no ci.yml.\
+    \ grep = zero prompt/skill inline em artifacts_studio.py/wiki_builder.py.\n\n\
+    ## Fora de escopo (consciente)\nanswer_instructions, MEMORY_CONTEXT, SABATINA_PROMPTS.\n"
+  created_at: '2026-07-11T06:45:57+00:00'
+  updated_at: '2026-07-11T06:45:57+00:00'
+  methodology: ad-hoc

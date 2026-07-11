@@ -1,0 +1,17 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestRun
+metadata:
+  name: tr-tg-migrate-studio-wiki-prompts-20260711-065810
+spec:
+  guide_ref: tg-migrate-studio-wiki-prompts
+  outcome: pass
+  verifies:
+  - Story/migrate-studio-wiki-prompts
+  executed_by: claude-code
+  executed_at: '2026-07-11T06:58:10+00:00'
+  notes: "Todos os 6 passos verdes sob o pin do CI (dna-cli 0.1.x) + a venv do backend\
+    \ (dna-sdk 0.1.0, = runtime/CI). studio-prompts 1/1; wiki-prompts 3/3; studio_wiki_prompts_compose_test\
+    \ 18/18; artifact_studio_test 6/6 + artifact_skills_test 15/15; helpdesk 10/10\
+    \ + copilot 5/5 + copilot_compose OK (sem regress\xE3o); grep CLEAN. app.main\
+    \ import falha s\xF3 por falta de .env FOUNDRY no worktree fresco (concierge.py,\
+    \ pr\xE9-existente, fora do CI)."
