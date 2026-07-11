@@ -1,0 +1,31 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestGuide
+metadata:
+  name: tg-dedup-hosted-agents
+spec:
+  description: Deterministic proof that the 4 hosted containers compose their prompts
+    from the DNA scope (no inline copies) and that the intentional resolve drift is
+    now versioned data.
+  kind_of_test: smoke
+  status: active
+  steps:
+  - action: DNA_BASE_DIR=apps/backend/.dna dna eval run helpdesk-prompts --scope helpdesk
+    expected: 10 passed 0 failed, including the new resolve-hosted case (not_contains
+      TICKET/STEP, contains grounded+cite+never-invent)
+  - action: cd apps/backend && uv run python -m eval.hosted_prompts_compose_test
+    expected: "14/14 assertions OK \u2014 each hosted composes the right agent; hosted\
+      \ RESOLVE maps to resolve-hosted with no TICKET; platform carries the wired\
+      \ '## Guardrail: no-write-claims' section; backend resolve still has TICKET"
+  - action: cd apps/backend && uv run python -m eval.hosted_build_test && uv run python
+      -m eval.hosted_platform_smoke_test
+    expected: "both green \u2014 composition did not break the hosted build/scaffold"
+  - action: "grep -RIn 'You are the TRIAGE step\\|Voc\xEA \xE9 um especialista na\
+      \ plataforma\\|engineering-platform concierge. You answer' apps/hosted-*/main.py"
+    expected: "no matches \u2014 no inline prompt constant remains in any hosted main.py"
+  - action: uvx --from 'dna-cli>=0.1,<0.2' dna eval run helpdesk-prompts (CI's pin)
+    expected: "10 passed \u2014 the CI gate picks up the new case unchanged"
+  verifies:
+  - Story/dedup-hosted-agents
+  created_at: '2026-07-11T05:54:49+00:00'
+  updated_at: '2026-07-11T05:54:49+00:00'
+  owner: claude-code

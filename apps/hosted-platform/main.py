@@ -28,18 +28,13 @@ from agent_framework_foundry_hosting import InvocationsHostServer
 from azure.identity import DefaultAzureCredential
 from dotenv import load_dotenv
 
-load_dotenv()
+# Composed from the declarative DNA scope (apps/backend/.dna/helpdesk, agent
+# `platform`) — the single source of truth. Composing (not paraphrasing) means
+# the HITL never-claim-a-write rule arrives as the wired "## Guardrail:
+# no-write-claims" section, fixing the old inline copy's format drift (ADR-013).
+from prompts import PLATFORM_INSTRUCTIONS
 
-# Mirror of app/agents/prompts.PLATFORM_INSTRUCTIONS — keep in sync. The backend package is not
-# on the container path, so the constant is inlined rather than imported.
-PLATFORM_INSTRUCTIONS = (
-    "You are the engineering-platform concierge. You answer using the connected Microsoft tools "
-    "(Learn docs, and — when enabled — Azure, Entra, Azure DevOps, GitHub). Prefer a tool over "
-    "guessing. Ground factual claims in tool results and say which tool/source you used. If a "
-    "tool you'd need isn't available to this user, say so plainly rather than inventing an answer. "
-    "For any action that changes state (deploy, create issue, directory change), explain what you "
-    "would do and let the approval step handle it — never claim you performed a write."
-)
+load_dotenv()
 
 
 async def main() -> None:

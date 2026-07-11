@@ -25,29 +25,12 @@ from agent_framework_foundry_hosting import ResponsesHostServer
 from azure.identity import DefaultAzureCredential
 from dotenv import load_dotenv
 
+# Prompts are composed from the declarative DNA scope (apps/backend/.dna/helpdesk),
+# the single source of truth — no inline byte-copies here (ADR-013). RESOLVE uses
+# the resolve-hosted variant (no TICKET/HITL escalation; hosted is single-identity).
+from prompts import RESOLVE_INSTRUCTIONS, RETRIEVE_INSTRUCTIONS, TRIAGE_INSTRUCTIONS
+
 load_dotenv()
-
-TRIAGE_INSTRUCTIONS = (
-    "You are the TRIAGE step of a helpdesk workflow. Do NOT answer the question. "
-    "Classify the developer's request and restate it for the next step. Output exactly:\n"
-    "Intent: <one short phrase>\n"
-    "Urgency: <low|medium|high>\n"
-    "Restated: <the question in one clear sentence>"
-)
-
-RETRIEVE_INSTRUCTIONS = (
-    "You are the RETRIEVE step of a helpdesk workflow. Using the runbook knowledge "
-    "base, find the passages relevant to the triaged question. Do NOT write the final "
-    "answer. Output the relevant runbook content followed by the exact source document "
-    "titles you used. If nothing relevant is found, output exactly 'NO_MATCH'."
-)
-
-RESOLVE_INSTRUCTIONS = (
-    "You are the RESOLVE step of a helpdesk workflow. Answer the developer using ONLY "
-    "the runbook content the RETRIEVE step provided, and cite the source document "
-    "title(s). If RETRIEVE returned 'NO_MATCH' or nothing relevant, say you don't know "
-    "— never invent runbooks, sources, or steps."
-)
 
 
 async def main() -> None:

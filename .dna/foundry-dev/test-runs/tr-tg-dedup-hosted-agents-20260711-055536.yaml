@@ -1,0 +1,17 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestRun
+metadata:
+  name: tr-tg-dedup-hosted-agents-20260711-055536
+spec:
+  guide_ref: tg-dedup-hosted-agents
+  outcome: pass
+  verifies:
+  - Story/dedup-hosted-agents
+  executed_by: claude-code
+  executed_at: '2026-07-11T05:55:36+00:00'
+  notes: 'All 5 steps green. dna eval helpdesk-prompts 10/10 (incl resolve-hosted)
+    on both dna 0.3.1 and CI''s 0.1.x pin. hosted_prompts_compose_test 14/14. hosted_build_test
+    + hosted_platform_smoke_test green. grep confirms zero inline prompt constants
+    left in any hosted main.py; all 4 now ''from prompts import ...''. platform gains
+    the composed ''## Guardrail: no-write-claims (error)'' section (format-drift fixed);
+    resolve-hosted has no TICKET while backend resolve keeps it.'

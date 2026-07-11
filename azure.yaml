@@ -71,6 +71,14 @@ services:
                 - NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID=${NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID}
                 - NEXT_PUBLIC_ENTRA_API_CLIENT_ID=${NEXT_PUBLIC_ENTRA_API_CLIENT_ID}
 hooks:
+    prepackage:
+        # Bake the helpdesk DNA scope (single source: apps/backend/.dna) into each
+        # hosted container's build context before the remote image build — the
+        # hosted shims compose their prompts from it (ADR-013). Copies are
+        # gitignored build artifacts; no-op-safe to re-run.
+        shell: sh
+        run: ./scripts/sync-hosted-scope.sh
+        continueOnError: false
     postdeploy:
         shell: sh
         run: ./scripts/hook-postdeploy.sh

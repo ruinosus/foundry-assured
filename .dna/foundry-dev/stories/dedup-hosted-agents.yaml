@@ -1,0 +1,144 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Story
+metadata:
+  name: dedup-hosted-agents
+spec:
+  title: "Dedup hosted agents \u2014 compose prompts from the DNA scope"
+  description: The 4 apps/hosted-* stop shipping byte-copies of the prompts and compose
+    from apps/backend/.dna via build_prompt (kills real drift)
+  status: review
+  feature: dna-adoption
+  priority: high
+  labels:
+  - dna
+  - refactor
+  reporter: claude-code
+  acceptance_criteria:
+  - Given the 4 hosted containers, when they boot, then each composes its instruction
+    from the DNA scope via build_prompt (no inline prompt string constant remains)
+  - Given resolve drifted intentionally (hosted has no HITL), when hosted-agent composes
+    RESOLVE, then it uses a new resolve-hosted Agent variant WITHOUT the TICKET/STEP
+    logic, while the backend keeps resolve WITH it
+  - Given the composed prompts, when the helpdesk-prompts eval suite runs, then new/existing
+    cases assert the right sentinels per hosted (resolve-hosted !TICKET, platform
+    Guardrail section, pt-BR, triage/retrieve contracts)
+  acceptance_criteria_source: claude-code
+  definition_of_done:
+  - 'Code: 4 hosted main.py compose via a prompts.py shim mirroring apps/backend/app/agents/prompts.py;
+    dna-sdk added to each requirements.txt'
+  - 'Data: apps/backend/.dna/helpdesk/agents/resolve-hosted.yaml created; resolve-hosted
+    eval-case added to the helpdesk-prompts suite'
+  - 'Tests: dna eval run helpdesk-prompts green with new cases; hosted_build_test
+    + hosted_platform_smoke_test still pass; a composition test proves each hosted
+    shim composes the right agent'
+  - 'CI: ''CI passed'' green on the PR (the dna eval step picks up the new cases automatically)'
+  definition_of_done_source: claude-code
+  created_at: '2026-07-11T05:43:00+00:00'
+  updated_at: '2026-07-11T05:57:47+00:00'
+  timeline:
+  - at: '2026-07-11T05:43:00+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    to: todo
+  - at: '2026-07-11T05:44:07+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: todo
+    to: in-progress
+  - at: '2026-07-11T05:44:22+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Passo 1/6: criando o Agent variante resolve-hosted.yaml no scope helpdesk.\
+      \ \xC9 o move byte-fiel do RESOLVE_INSTRUCTIONS inline do hosted-agent \u2014\
+      \ grounded-only + citation + never-invent, SEM a l\xF3gica TICKET/STEP-1/STEP-2\
+      \ (hosted n\xE3o tem HITL) e sem a linha de remembered-preferences (hosted n\xE3\
+      o tem mem\xF3ria per-user). O backend segue com resolve (com TICKET). A diverg\xEA\
+      ncia intencional vira dado versionado."
+    commit_ref: 68412e3bc4be4673c8fa3667fbb985d9c5b93dd2
+  - at: '2026-07-11T05:45:45+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Passo 2/6: criei eval-case resolve-hosted (not_contains TICKET/STEP-1/STEP-2\
+      \ + contains grounded/cite/never-invent) e adicionei \xE0 suite EXISTENTE helpdesk-prompts.\
+      \ dna eval run agora 10/10 verde (era 9). O step de CI 'dna eval run helpdesk-prompts'\
+      \ pega o caso novo sozinho \u2014 ci.yml n\xE3o muda. Composi\xE7\xE3o validada\
+      \ ao vivo: platform ganha a se\xE7\xE3o '## Guardrail: no-write-claims' (conserta\
+      \ o format-drift), resolve-hosted sem TICKET, backend resolve com TICKET."
+    commit_ref: 68412e3bc4be4673c8fa3667fbb985d9c5b93dd2
+  - at: '2026-07-11T05:51:18+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Passo 3/6: mecanismo escolhido = BAKED por container. Cada apps/hosted-*/prompts.py\
+      \ comp\xF5e do scope via Kernel.quick+build_prompt (espelha o shim do backend),\
+      \ com resolu\xE7\xE3o de base-dir: DNA_BASE_DIR (mount ADR-014, prod) > ./.dna\
+      \ baked na imagem > sibling apps/backend/.dna (source tree). Os 4 main.py trocaram\
+      \ a constante inline por 'from prompts import ...'. dna-sdk>=0.3,<0.4 em cada\
+      \ requirements.txt. As c\xF3pias .dna por-hosted s\xE3o build-artifacts gitignored,\
+      \ materializadas por scripts/sync-hosted-scope.sh (wired como hook azd prepackage).\
+      \ Local/CI/testes N\xC3O precisam de c\xF3pia \u2014 o shim cai no sibling.\
+      \ ci.yml N\xC3O tocado."
+    commit_ref: 68412e3bc4be4673c8fa3667fbb985d9c5b93dd2
+  - at: '2026-07-11T05:54:50+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestGuide
+    name: tg-dedup-hosted-agents
+    summary: TestGuide tg-dedup-hosted-agents (smoke)
+  - at: '2026-07-11T05:55:37+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestRun
+    name: tr-tg-dedup-hosted-agents-20260711-055536
+    summary: "TestRun tr-tg-dedup-hosted-agents-20260711-055536 \u2192 pass"
+    outcome: pass
+  - at: '2026-07-11T05:56:46+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Passo 6/6: implementa\xE7\xE3o completa e commitada (0ff37bf). Prova:\
+      \ dna eval helpdesk-prompts 10/10 (incl resolve-hosted) em dna 0.3.1 E no pin\
+      \ 0.1.x do CI; hosted_prompts_compose_test 14/14; hosted_build_test + hosted_platform_smoke_test\
+      \ verdes; grep confirma zero prompt inline nos 4 main.py. TestGuide tg-dedup-hosted-agents\
+      \ + TestRun pass registrados. Tamb\xE9m filei o plano faseado no board (todo):\
+      \ s-migrate-copilot-prompts, s-migrate-studio-wiki-prompts, s-extract-lib-guardrails.\
+      \ Abrindo PR base develop."
+    commit_ref: 0ff37bf7b449e99eacc98cc6946607f3083eb333
+  - at: '2026-07-11T05:57:22+00:00'
+    actor: claude-code
+    type: pr_opened
+    source: cli
+    summary: 'PR aberto: https://github.com/ruinosus/foundry-assured/pull/117'
+    pr_url: https://github.com/ruinosus/foundry-assured/pull/117
+  - at: '2026-07-11T05:57:47+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #117 aberto contra develop; implementa\xE7\xE3o + provas completas.\
+      \ Aguardando CI (o step dna eval helpdesk-prompts pega o resolve-hosted sozinho)\
+      \ e revis\xE3o do dono."
+  - at: '2026-07-11T05:57:47+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: review
+  produces:
+  - kind: Plan
+    name: plan-dedup-hosted-agents
+    role: implementation
+    at: '2026-07-11T05:44:07+00:00'
+  - kind: TestGuide
+    name: tg-dedup-hosted-agents
+    role: test-guide
+    at: '2026-07-11T05:54:50+00:00'
+  - kind: TestRun
+    name: tr-tg-dedup-hosted-agents-20260711-055536
+    role: test-run
+    at: '2026-07-11T05:55:37+00:00'

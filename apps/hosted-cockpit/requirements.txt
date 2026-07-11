@@ -1,4 +1,5 @@
 agent-framework
 agent-framework-azure-ai-search
 agent-framework-foundry-hosting
+dna-sdk>=0.3,<0.4
 python-dotenv

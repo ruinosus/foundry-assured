@@ -5,6 +5,10 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# NOTE: the build context includes the baked helpdesk DNA scope at ./.dna
+# (a gitignored build artifact synced from apps/backend/.dna by the azd
+# prepackage hook, scripts/sync-hosted-scope.sh). prompts.py composes the
+# agent instruction from it at import — no inline prompt copy (ADR-013).
 COPY . user_agent/
 WORKDIR /app/user_agent
 

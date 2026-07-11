@@ -18,6 +18,7 @@ spec:
   - triage-contract
   - retrieve-contract
   - resolve-contract
+  - resolve-hosted
   - concierge-soul-identity
   - concierge-grounded-citation
   - concierge-ungrounded-humility
