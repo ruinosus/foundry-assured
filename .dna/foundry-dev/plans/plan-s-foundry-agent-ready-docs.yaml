@@ -1,0 +1,53 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Plan
+metadata:
+  name: plan-s-foundry-agent-ready-docs
+spec:
+  title: 'Plano: s-foundry-agent-ready-docs'
+  date: '2026-07-11'
+  status: accepted
+  story_ref: s-foundry-agent-ready-docs
+  journey_phase: plan
+  body: "# Plan \u2014 s-foundry-agent-ready-docs\n\nElevate foundry-assured to the\
+    \ owner's cross-repo standard: **agent-ready + Di\xE1taxis docs**.\nPreserve the\
+    \ product nature (Azure/FastAPI/React SaaS). Form of DNA, content of foundry.\n\
+    \n## Phase 1 \u2014 Agent-ready (`dna init`)\n1. Run `dna init --scope foundry-dev\
+    \ --tools claude,copilot,cursor` (idempotent over the\n   existing board; NEVER\
+    \ a new board). It writes AGENTS.md (embedded boilerplate), projects\n   the `dna-sdlc-cli`\
+    \ skill into `.claude/skills`, `.github/skills`, `.cursor/skills`, and\n   wires\
+    \ hooks (already installed).\n2. **AGENTS.md \u2190 reality.** Rewrite the generated\
+    \ AGENTS.md so it reflects foundry's real\n   layout (apps/backend, apps/frontend,\
+    \ hosted-agent, infra, .dna board vs runtime scope),\n   build/test/deploy commands,\
+    \ the gitflow (develop \u2192 main), the SDLC discipline via `.dna`,\n   and where\
+    \ declarative prompts live (`apps/backend/.dna/helpdesk` per ADR-013/014). Distil\n\
+    \   from CLAUDE.md + README; keep it a tight one-screen surface, not a copy.\n\
+    3. **CLAUDE.md \u2194 AGENTS.md relationship.** CLAUDE.md is rich (11k, working\
+    \ rules, phases,\n   non-negoci\xE1veis). Decision: AGENTS.md is the canonical\
+    \ *onboarding* surface (agents.md/v1,\n   read by 28+ tools); CLAUDE.md stays\
+    \ as the deep working-rules doc but gets a short header\n   pointing at AGENTS.md\
+    \ for the quick orientation, so the two don't duplicate. Document the\n   split\
+    \ in both files.\n\n## Phase 2 \u2014 Di\xE1taxis docs site\n1. Audit: docs/ already\
+    \ has front-matter typed by Di\xE1taxis (DOCS-STANDARD.md) + an index.\n   Map\
+    \ every doc to a quadrant. The repo is already ~90% there conceptually \u2014\
+    \ the gap is a\n   *navigable built site* (MkDocs Material) + a landing page +\
+    \ guards + Pages.\n2. `mkdocs.yml` (Material, product-adapted \u2014 NO mkdocstrings/API\
+    \ autogen), `requirements-docs.txt`,\n   `docs/index.md` grid-card landing. Di\xE1\
+    taxis nav:\n   - Tutorials: Getting started (local stack + first helpdesk flow).\n\
+    \   - How-to: DEPLOYMENT, USE-THIS-TEMPLATE, CUSTOMIZE, RELEASE-AUTOMATION, update\
+    \ prompts\n     without redeploy (ADR-014 + push-prompts.sh), run evals, operate\
+    \ the SDLC board.\n   - Reference: METHOD (assurance), architecture (domains/agents/flow),\
+    \ config/env, ADR index,\n     the `.dna` scopes, DOCS-STANDARD.\n   - Explanation:\
+    \ the ADRs, SaaS multitenant model, DNA integration, case studies, use-case walkthrough.\n\
+    \   Reuse existing docs in place (link from nav); add only the missing tutorial\
+    \ + reference/architecture\n   glue pages. Keep the HTML presentations reachable.\
+    \ Preserve wiki (generated) as-is.\n3. Guards + CI: `.github/workflows/docs.yml`\
+    \ \u2014 build --strict + lychee offline link-check +\n   Pages deploy (main-only,\
+    \ continue-on-error). SEPARATE from ci.yml \u2014 must NOT feed `CI passed`.\n\
+    \   No SDK-style drift/coverage guards (justified: product, no generated API reference).\n\
+    4. README: add a short \"Docs\" pointer + note DNA integration; no bloat.\n\n\
+    ## Gates\n- `mkdocs build --strict` green.\n- AGENTS.md parseable by dna-sdk agents.md/v1\
+    \ reader (prove).\n- Existing `CI passed` unaffected (docs is a separate workflow).\n\
+    - No content lost \u2014 git diff shows moves/links, not deletes.\n- TestGuide\
+    \ --product + TestRun.\n- PR via `dna sdlc story pr --base develop`. Do NOT merge.\n"
+  created_at: '2026-07-11T05:35:12+00:00'
+  updated_at: '2026-07-11T05:35:12+00:00'

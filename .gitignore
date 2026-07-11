@@ -55,3 +55,6 @@ TEST-CREDENTIALS.local.md
 .superpowers/
 # DNA SDLC board — per-workstation pointer (written by `dna sdlc story start`)
 .dna/active-story.txt
+
+# DNA CLI dogfood venv (agent-ready onboarding — s-foundry-agent-ready-docs)
+.venv-dna/
