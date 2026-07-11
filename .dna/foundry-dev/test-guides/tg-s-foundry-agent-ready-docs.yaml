@@ -1,0 +1,28 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestGuide
+metadata:
+  name: tg-s-foundry-agent-ready-docs
+spec:
+  description: "Product smoke for the agent-ready surface + Di\xE1taxis docs site:\
+    \ the site builds strictly, links resolve, AGENTS.md parses as agents.md/v1, the\
+    \ required CI is untouched, and no content was lost."
+  kind_of_test: smoke
+  status: active
+  steps:
+  - action: pip install -r requirements-docs.txt && mkdocs build --strict
+    expected: "exits 0 \u2014 no dead anchor, no broken nav; the Di\xE1taxis site\
+      \ renders"
+  - action: offline link-check over README.md + docs/**/*.md (excl wiki/superpowers)
+    expected: 0 broken local file links
+  - action: dna-sdk AgentDefinitionReader on repo-root AGENTS.md
+    expected: detect=True, apiVersion=agents.md/v1, kind=AgentDefinition (parseable)
+  - action: git diff develop -- .github/workflows/ci.yml
+    expected: "empty \u2014 required 'CI passed' unchanged; docs is a separate workflow"
+  - action: ls site/{getting-started,how-to,reference,explanation} + grep id=cost--teardown
+    expected: four quadrants built; GitHub-style anchors resolve; HTML decks preserved
+  - action: git diff develop --stat
+    expected: adds/moves + 1 link fix, zero blind deletes of existing docs
+  verifies:
+  - Story/s-foundry-agent-ready-docs
+  created_at: '2026-07-11T05:54:01+00:00'
+  updated_at: '2026-07-11T05:54:01+00:00'

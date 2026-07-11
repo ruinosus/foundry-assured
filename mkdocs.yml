@@ -1,0 +1,162 @@
+site_name: Foundry Assured
+site_description: >-
+  A Microsoft Foundry showcase with measured, CI-gated assurance guarantees —
+  a grounded multi-agent concierge, an assurance mechanism, and a hybrid
+  multi-tenant SaaS on Azure + FastAPI + Next.js.
+site_url: https://ruinosus.github.io/foundry-assured/
+repo_url: https://github.com/ruinosus/foundry-assured
+repo_name: ruinosus/foundry-assured
+edit_uri: edit/develop/docs/
+copyright: Foundry Assured — a Microsoft Foundry assurance showcase.
+
+# The prose docs live flat under docs/ and are Diátaxis-typed in their own
+# front-matter (docs/DOCS-STANDARD.md); this nav imposes the Diátaxis SHAPE
+# (tutorials / how-to / reference / explanation) over them without relocating
+# files — every existing cross-link, ADR reference and CI path stays valid.
+docs_dir: docs
+
+theme:
+  name: material
+  icon:
+    repo: fontawesome/brands/github
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - search.suggest
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: blue
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - Tutorials:
+      - getting-started/index.md
+  - How-to guides:
+      - how-to/index.md
+      - Deploy from zero: DEPLOYMENT.md
+      - Use this as a template: USE-THIS-TEMPLATE.md
+      - Swap in your own domain: CUSTOMIZE.md
+      - Update prompts without a redeploy: how-to/update-prompts.md
+      - Run the evals: how-to/run-evals.md
+      - Operate the SDLC board: how-to/operate-sdlc.md
+      - Release & gated deploy: RELEASE-AUTOMATION.md
+      - Package the dedicated stamp: D-PACKAGING-RUNBOOK.md
+  - Reference:
+      - reference/index.md
+      - The assurance mechanism: METHOD.md
+      - Architecture: reference/architecture.md
+      - Configuration: reference/configuration.md
+      - The .dna scopes: reference/dna-scopes.md
+      - Identity & access: IDENTITY-AND-ACCESS-SETUP.md
+      - Branching model: BRANCHING.md
+      - Cost: COST.md
+      - Documentation standard: DOCS-STANDARD.md
+  - Explanation:
+      - explanation/index.md
+      - Architecture decisions (ADRs): adr/README.md
+      - Microsoft alignment: MICROSOFT-ALIGNMENT.md
+      - Use-case walkthrough: USE-CASE-WALKTHROUGH.md
+      - "Case study: the LLM wiki loop": CASE-STUDY-LLM-WIKI-LOOP.md
+      - "Case study: self-wiki dogfood": CASE-STUDY-SELFWIKI-DOGFOOD.md
+      - Assurance mechanism (design): ASSURANCE-MECHANISM-PLAN.md
+      - RBAC & user management (plan): RBAC-AND-USER-MANAGEMENT-PLAN.md
+      - Second-domain wiki (plan): SECOND-DOMAIN-WIKI-PLAN.md
+      - MCP integration (plan): MCP-INTEGRATION-PLAN.md
+
+# Built but intentionally not hand-listed in the nav: the ADR bodies (reached
+# from adr/README.md), the docs folder-index, and the standalone HTML decks.
+# They stay in the built site so cross-links from the prose resolve under
+# `--strict`, without bloating the sidebar. (gitignore-style globs.)
+not_in_nav: |
+  /README.md
+  /adr/ADR-*.md
+  /*.html
+
+# Kept in the repo (browsable on GitHub) but NOT rendered into the curated
+# docs site: the machine-generated deep-wiki corpus (the `selfwiki` domain —
+# generated, exempt from the docs standard, and full of source-path links) and
+# the design specs/plans + diagram sources. A product docs SITE curates; the
+# raw artifacts live next to the code. Curated pages that reference them link
+# to the GitHub tree (absolute URLs), so `--strict` link-checking stays honest
+# over the pages the site actually owns.
+exclude_docs: |
+  wiki/
+  superpowers/
+  diagrams/
+  README.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  # Mermaid custom fence — the repo's diagrams-as-code standard (GitHub renders
+  # the same ```mermaid fences natively; Material renders them on the site).
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  # Grid cards on the landing pages
+  - attr_list
+  - md_in_html
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - tables
+  - footnotes
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  # GitHub-compatible heading slugs: the existing docs were authored for
+  # GitHub's renderer (e.g. `## Cost & teardown` → `#cost--teardown`), so match
+  # its slugify here — otherwise every cross-doc anchor to a heading with
+  # punctuation would break on the site but not on GitHub.
+  - toc:
+      permalink: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
+
+plugins:
+  - search
+
+# `mkdocs build --strict` makes the gate meaningful: a dead ANCHOR or a broken
+# NAV fails the build. This is a product repo, so the curated docs legitimately
+# link OUT to source files (`../infra/*.bicep`, `../scripts/*.sh`) and root docs
+# (`../README.md`, `../CONTRIBUTING.md`) that GitHub renders but the site doesn't
+# own — those `not_found` pointers stay informational (they are not broken on
+# GitHub, and none are intra-site page links). Anchor + nav integrity stay hard.
+validation:
+  nav:
+    omitted_files: info
+    not_found: warn
+  links:
+    not_found: info
+    anchors: warn
+    absolute_links: ignore
+    unrecognized_links: info
