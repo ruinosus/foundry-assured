@@ -14,40 +14,70 @@ spec:
     \ --strict + link-check as a SEPARATE job, never breaking the required 'CI passed')\
     \ + GitHub Pages publish. Preserve the product nature (Azure/FastAPI/React SaaS)\
     \ \u2014 form of DNA, content of foundry."
-  status: in-progress
+  status: done
   feature: f-dna-adoption
   reporter: claude-code
   acceptance_criteria:
-  - Given the repo, when 'dna init --scope foundry-dev --tools claude,copilot,cursor'
-    runs, then AGENTS.md exists as the canonical surface reflecting foundry's real
-    build/test/deploy + gitflow + SDLC, the dna-sdlc-cli skill is projected into .claude/.github/.cursor,
-    hooks are wired, and the existing CLAUDE.md is preserved and points to AGENTS.md
-    (no content lost)
-  - Given the AGENTS.md, when parsed by the dna-sdk agents.md/v1 reader, then it round-trips
-    as a valid agents.md/v1 document (parseable)
-  - "Given docs/, when the MkDocs site is built, then navigation follows Di\xE1taxis\
-    \ (Tutorials/How-to/Reference/Explanation) and every existing doc (METHOD, DEPLOYMENT,\
-    \ ADRs, wiki, case studies) is reachable \u2014 diff shows moves/additions, not\
-    \ blind deletes"
-  - Given the docs site, when 'mkdocs build --strict' runs, then it exits 0 (no broken
-    internal links, no missing nav files)
-  - Given CI, when the docs workflow runs, then docs build + link-check are a SEPARATE
-    workflow/job that does NOT feed the required 'CI passed' check, and the existing
-    CI is unchanged and green
+  - text: Given the repo, when 'dna init --scope foundry-dev --tools claude,copilot,cursor'
+      runs, then AGENTS.md exists as the canonical surface reflecting foundry's real
+      build/test/deploy + gitflow + SDLC, the dna-sdlc-cli skill is projected into
+      .claude/.github/.cursor, hooks are wired, and the existing CLAUDE.md is preserved
+      and points to AGENTS.md (no content lost)
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: Given the AGENTS.md, when parsed by the dna-sdk agents.md/v1 reader, then
+      it round-trips as a valid agents.md/v1 document (parseable)
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: "Given docs/, when the MkDocs site is built, then navigation follows Di\xE1\
+      taxis (Tutorials/How-to/Reference/Explanation) and every existing doc (METHOD,\
+      \ DEPLOYMENT, ADRs, wiki, case studies) is reachable \u2014 diff shows moves/additions,\
+      \ not blind deletes"
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: Given the docs site, when 'mkdocs build --strict' runs, then it exits 0
+      (no broken internal links, no missing nav files)
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: Given CI, when the docs workflow runs, then docs build + link-check are
+      a SEPARATE workflow/job that does NOT feed the required 'CI passed' check, and
+      the existing CI is unchanged and green
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
   acceptance_criteria_source: cli-create
   definition_of_done:
-  - AGENTS.md canonical + CLAUDE.md reconciled (pointer, no duplication); dna-sdlc-cli
-    skill projected for 3 tools; hooks active
-  - "mkdocs.yml + requirements-docs.txt + docs/index.md landing; Di\xE1taxis nav;\
-    \ existing docs reused (moved/linked, not deleted)"
-  - ".github/workflows/docs.yml (build --strict + lychee offline link-check + Pages\
-    \ deploy main-only, continue-on-error) \u2014 separate from ci.yml"
-  - README updated (DNA integrated, link to docs site) without bloat
-  - mkdocs build --strict green + existing 'CI passed' green on the PR; TestGuide
-    --product + TestRun recorded
+  - text: AGENTS.md canonical + CLAUDE.md reconciled (pointer, no duplication); dna-sdlc-cli
+      skill projected for 3 tools; hooks active
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: "mkdocs.yml + requirements-docs.txt + docs/index.md landing; Di\xE1taxis\
+      \ nav; existing docs reused (moved/linked, not deleted)"
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: ".github/workflows/docs.yml (build --strict + lychee offline link-check\
+      \ + Pages deploy main-only, continue-on-error) \u2014 separate from ci.yml"
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: README updated (DNA integrated, link to docs site) without bloat
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: mkdocs build --strict green + existing 'CI passed' green on the PR; TestGuide
+      --product + TestRun recorded
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
   definition_of_done_source: cli-create
   created_at: '2026-07-11T05:34:34+00:00'
-  updated_at: '2026-07-11T05:54:38+00:00'
+  updated_at: '2026-07-11T05:58:52+00:00'
   timeline:
   - at: '2026-07-11T05:34:34+00:00'
     actor: claude-code
@@ -114,6 +144,19 @@ spec:
     name: tr-tg-s-foundry-agent-ready-docs-20260711-055437
     summary: "TestRun tr-tg-s-foundry-agent-ready-docs-20260711-055437 \u2192 pass"
     outcome: pass
+  - at: '2026-07-11T05:58:51+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #116 merged \u2014 dna init (AGENTS.md can\xF4nico + skill multi-tool)\
+      \ + site Di\xE1taxis; CLAUDE.md preservado"
+  - at: '2026-07-11T05:58:52+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: done
+    commit_ref: 2bef91de3f38f88207601e58157d4d7f45a05f8c
   produces:
   - kind: Plan
     name: plan-s-foundry-agent-ready-docs
@@ -127,3 +170,4 @@ spec:
     name: tr-tg-s-foundry-agent-ready-docs-20260711-055437
     role: test-run
     at: '2026-07-11T05:54:38+00:00'
+  closed_at: '2026-07-11T05:58:50+00:00'
