@@ -121,6 +121,12 @@ spec:
     at: '2026-07-11T07:27:04+00:00'
     source: cli
     kaizen_doc: kz-001-lacuna-de-plataforma-dna-com
+  - at: '2026-07-11T07:28:06+00:00'
+    actor: claude-code
+    type: pr_opened
+    source: cli
+    summary: 'PR aberto: https://github.com/ruinosus/foundry-assured/pull/120'
+    pr_url: https://github.com/ruinosus/foundry-assured/pull/120
   produces:
   - kind: Plan
     name: plan-extract-lib-guardrails
