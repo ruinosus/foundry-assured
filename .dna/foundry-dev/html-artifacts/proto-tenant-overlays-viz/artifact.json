@@ -1,0 +1,6 @@
+{
+  "title": "Per-tenant overlays — base vs ACME (side by side)",
+  "description": "Owner-facing visual: same concierge agent composed for base vs tenant=acme; persona differs, base intact",
+  "source": "prototype story proto-tenant-overlays (f-dna-adoption)",
+  "created_at": "2026-07-11T10:35:40.335242+00:00"
+}

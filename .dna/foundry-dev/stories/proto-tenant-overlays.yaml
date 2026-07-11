@@ -1,0 +1,70 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Story
+metadata:
+  name: proto-tenant-overlays
+spec:
+  title: 'Prototype: per-tenant prompt/persona overlays'
+  description: 'Spike proving DNA per-tenant Soul overlay: acme customizes concierge
+    persona, base helpdesk untouched, no fork/redeploy'
+  status: in-progress
+  feature: f-dna-adoption
+  priority: medium
+  labels:
+  - dna
+  - spike
+  reporter: claude-code
+  acceptance_criteria:
+  - Given the shared helpdesk concierge, When composed for tenant=acme, Then the persona
+    reflects ACME's on-brand tone
+  - Given tenant=acme has an overlay, When composed with no tenant, Then the base
+    persona is returned unchanged (base intact, no fork)
+  acceptance_criteria_source: cli-create
+  definition_of_done:
+  - Runnable demo prints base vs acme prompts side by side with real captured output
+  - HTML artifact for the owner to visually compare base vs tenant
+  - 'README writeup: tenancy API used, productization cost, honest gaps'
+  - No production behavior changed; CI stays green
+  definition_of_done_source: cli-create
+  created_at: '2026-07-11T10:32:31+00:00'
+  updated_at: '2026-07-11T10:35:53+00:00'
+  timeline:
+  - at: '2026-07-11T10:32:31+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    to: in-progress
+  - at: '2026-07-11T10:33:20+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Understood DNA tenancy from the SDK: Tenant is a first-class kernel\
+      \ dimension (Kernel(tenant=...)), orthogonal to layers. FilesystemSource resolves\
+      \ per-tenant overlays at tenants/<tenant>/scopes/<scope>/\u2026 and unions them\
+      \ over the platform base (overlay shadows base by kind+name). Kernel.quick is\
+      \ tenant-blind, so the demo builds the full FS kernel with tenant threaded in,\
+      \ then instance(scope).build_prompt(agent)."
+    commit_ref: d0de999db7da9e5c47cb2663aca2ff7c496a667d
+  - at: '2026-07-11T10:33:20+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Prototype built: acme Soul overlay at tenants/acme/scopes/helpdesk/souls/concierge/\
+      \ (SOUL.md+soul.json) overriding ONLY the shared concierge persona. Demo demo/tenant_overlays_demo.py\
+      \ runs green: persona changed for acme=True, shared grounded-delta+guardrail\
+      \ body kept=True, base (no-tenant) prompt unchanged. Base intact, no fork, no\
+      \ redeploy \u2014 proven."
+    commit_ref: d0de999db7da9e5c47cb2663aca2ff7c496a667d
+  - type: kaizen
+    summary: "DX gap in DNA: Kernel.quick(scope) is tenant-blind, so per-tenant composition\
+      \ requires hand-rolling the full FS kernel (source+cache+resolver+extension\
+      \ load) just to pass a tenant. A Kernel.quick(scope, tenant=...) convenience\
+      \ would remove the footgun for anyone prototyping tenancy. Surfaced while building\
+      \ proto-tenant-overlays; adoption\u2192evolution loop."
+    actor: claude-code
+    at: '2026-07-11T10:35:53+00:00'
+    source: cli
+    kaizen_doc: kz-002-dx-gap-in-dna-kernel-quick-s
+  produces:
+  - kind: HtmlArtifact
+    name: proto-tenant-overlays-viz
+    at: '2026-07-11T10:35:52+00:00'
