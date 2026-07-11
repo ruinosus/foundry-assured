@@ -8,7 +8,7 @@ spec:
     \ + Coach-Overlay synthesis, pt-BR) e app/services/artifacts.py _HTML_SYSTEM (one-shot\
     \ HTML) pro scope DNA. Invent\xE1rio completo no relat\xF3rio da auditoria; dono\
     \ aprovou plano-primeiro, execu\xE7\xE3o story-a-story com aprova\xE7\xE3o dele."
-  status: in-progress
+  status: done
   feature: dna-adoption
   priority: medium
   labels:
@@ -16,20 +16,34 @@ spec:
   - refactor
   reporter: claude-code
   acceptance_criteria:
-  - "Given os prompts inline de copilot.py/artifacts.py, when migrados, then cada\
-    \ um vira um Agent/PromptTemplate no scope .dna e o c\xF3digo comp\xF5e via build_prompt\
-    \ (nenhum prompt inline sobra nesses arquivos)"
-  - "Given os prompts B5 (copilot) e B6 (artifacts HTML) que se sobrep\xF5em, when\
-    \ consolidados, then compartilham um Soul/Skill comum em vez de duplicar prosa"
+  - text: "Given os prompts inline de copilot.py/artifacts.py, when migrados, then\
+      \ cada um vira um Agent/PromptTemplate no scope .dna e o c\xF3digo comp\xF5\
+      e via build_prompt (nenhum prompt inline sobra nesses arquivos)"
+    done: true
+    done_at: '2026-07-11T06:38:19+00:00'
+    done_by: story-done-auto
+  - text: "Given os prompts B5 (copilot) e B6 (artifacts HTML) que se sobrep\xF5em,\
+      \ when consolidados, then compartilham um Soul/Skill comum em vez de duplicar\
+      \ prosa"
+    done: true
+    done_at: '2026-07-11T06:38:19+00:00'
+    done_by: story-done-auto
   acceptance_criteria_source: claude-code
   definition_of_done:
-  - "Data: prompts como Agent/PromptTemplate no scope; Code: copilot.py/artifacts.py\
-    \ comp\xF5em do scope, zero prompt inline"
-  - "Tests: eval determin\xEDstico de sentinelas verde; Docs: nota de escopo (answer_instructions\
-    \ e MEMORY_CONTEXT_PROMPT ficam FORA \u2014 auditoria marcou n\xE3o-migrar)"
+  - text: "Data: prompts como Agent/PromptTemplate no scope; Code: copilot.py/artifacts.py\
+      \ comp\xF5em do scope, zero prompt inline"
+    done: true
+    done_at: '2026-07-11T06:38:19+00:00'
+    done_by: story-done-auto
+  - text: "Tests: eval determin\xEDstico de sentinelas verde; Docs: nota de escopo\
+      \ (answer_instructions e MEMORY_CONTEXT_PROMPT ficam FORA \u2014 auditoria marcou\
+      \ n\xE3o-migrar)"
+    done: true
+    done_at: '2026-07-11T06:38:19+00:00'
+    done_by: story-done-auto
   definition_of_done_source: claude-code
   created_at: '2026-07-11T05:53:38+00:00'
-  updated_at: '2026-07-11T06:33:35+00:00'
+  updated_at: '2026-07-11T06:38:24+00:00'
   timeline:
   - at: '2026-07-11T05:53:38+00:00'
     actor: claude-code
@@ -67,6 +81,20 @@ spec:
     name: tr-copilot-prompts-migration-20260711-063334
     summary: "TestRun tr-copilot-prompts-migration-20260711-063334 \u2192 pass"
     outcome: pass
+  - at: '2026-07-11T06:38:22+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #118 merged \u2014 scope copilot (5 agents), B5/B6 consolidados em\
+      \ Soul+Skill, data-injection fica imperativa; eval 5/5 + helpdesk 10/10 sem\
+      \ regress\xE3o"
+  - at: '2026-07-11T06:38:24+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: done
+    commit_ref: 39c3fe5a7935291a0e848124eca2c06fbeebb0bc
   produces:
   - kind: Plan
     name: plan-migrate-copilot-prompts
@@ -80,3 +108,4 @@ spec:
     name: tr-copilot-prompts-migration-20260711-063334
     role: test-run
     at: '2026-07-11T06:33:35+00:00'
+  closed_at: '2026-07-11T06:38:19+00:00'
