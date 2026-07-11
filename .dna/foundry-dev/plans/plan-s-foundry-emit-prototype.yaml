@@ -1,0 +1,19 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Plan
+metadata:
+  name: plan-s-foundry-emit-prototype
+spec:
+  title: 'Plano: s-foundry-emit-prototype'
+  date: '2026-07-11'
+  status: accepted
+  story_ref: s-foundry-emit-prototype
+  journey_phase: plan
+  body: "1) dna emit concierge-grounded --target agent-framework \u2192 concierge.agent.yaml\
+    \ (nativo). 2) demo.py carrega o nativo via agent_framework_declarative.AgentFactory\
+    \ (client stub, sem Azure/.NET) \u2192 Agent vivo. 3) Prova a cadeia byte-equal:\
+    \ build link (emitted==load_prompts, dna venv) + runtime link (live Agent==emitted,\
+    \ backend venv). 4) README contrasta runtime-compose vs build-emit + conex\xE3\
+    o c/ cr\xEDtica Docker. Territ\xF3rio isolado: spike/emit-adoption/, produ\xE7\
+    \xE3o intocada."
+  created_at: '2026-07-11T13:40:38+00:00'
+  updated_at: '2026-07-11T13:40:38+00:00'

@@ -1,0 +1,76 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Story
+metadata:
+  name: s-foundry-emit-prototype
+spec:
+  title: "PROT\xD3TIPO: build-emit (Terraform) \u2014 dna emit \u2192 agent-framework\
+    \ nativo"
+  description: 'Prova o modelo Terraform no consumidor: autora em DNA, emite o PromptAgent
+    nativo do agent-framework em build-time, runtime carrega o nativo (sem dna-sdk).'
+  status: in-progress
+  feature: f-dna-adoption
+  owner: claude-code
+  priority: high
+  labels:
+  - dna
+  - spike
+  reporter: claude-code
+  acceptance_criteria:
+  - "Given o scope .dna/helpdesk, When 'dna emit concierge-grounded --target agent-framework',\
+    \ Then um PromptAgent nativo (concierge.agent.yaml) \xE9 gerado"
+  - "Given o artefato emitido, When carregado via agent_framework_declarative.AgentFactory,\
+    \ Then vira um Agent vivo cujas instructions == o prompt que o DNA comp\xF5e (byte-equal,\
+    \ 504 chars)"
+  - Given o writeup, Then contrasta runtime-compose vs build-emit com trade-offs honestos
+    e mostra como build-emit elimina o .dna viajando no Docker
+  acceptance_criteria_source: claude-code
+  definition_of_done:
+  - "Code: spike/emit-adoption/ (artefato + demo.py + README.md), sem tocar produ\xE7\
+    \xE3o/shims/pyproject"
+  - "Tests: demo RODA sob os dois venvs \u2014 build link (load_prompts) e runtime\
+    \ link (live Agent), ambos byte-equal PASS"
+  - "Docs: README com os dois modelos, trade-offs, e a conex\xE3o com a cr\xEDtica\
+    \ de empacotamento Docker do dono"
+  - "CI: n\xE3o quebra (prot\xF3tipo isolado, produ\xE7\xE3o intocada); PR marcada\
+    \ PROT\xD3TIPO \u2014 avaliar"
+  definition_of_done_source: claude-code
+  created_at: '2026-07-11T13:40:18+00:00'
+  updated_at: '2026-07-11T13:42:02+00:00'
+  timeline:
+  - at: '2026-07-11T13:40:18+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    to: in-progress
+  - at: '2026-07-11T13:40:39+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: in-progress
+  - at: '2026-07-11T13:42:01+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Emiss\xE3o OK: dna emit concierge-grounded --target agent-framework\
+      \ gerou spike/emit-adoption/concierge.agent.yaml (kind: Prompt / PromptAgent\
+      \ nativo). O de-para do pr\xF3prio emit lista os eixos DNA sem slot no target:\
+      \ composition structure (Soul+Guardrails achatam em 1 instructions), tenant\
+      \ overlay, eval-as-contract, model unbound."
+    commit_ref: 88257fe1d895998195f3014ac6a755ca14cb39ff
+  - at: '2026-07-11T13:42:02+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Demo prova a cadeia byte-equal transitiva (504 chars), cada elo sob\
+      \ o venv que tem a capability: RUNTIME link (backend venv, agent_framework_declarative.AgentFactory\
+      \ carrega o nativo \u2192 Agent vivo == emitted, SEM importar dna-sdk) + BUILD\
+      \ link (dna venv, emitted == dna.load_prompts). Ambos PASS. .NET/Azure evitado:\
+      \ PromptAgent sem model block \u2192 AgentFactory usa chat client injetado (stub),\
+      \ constr\xF3i offline."
+    commit_ref: 88257fe1d895998195f3014ac6a755ca14cb39ff
+  produces:
+  - kind: Plan
+    name: plan-s-foundry-emit-prototype
+    role: implementation
+    at: '2026-07-11T13:40:39+00:00'
