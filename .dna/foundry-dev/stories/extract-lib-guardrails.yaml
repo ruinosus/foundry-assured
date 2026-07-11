@@ -1,0 +1,33 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Story
+metadata:
+  name: extract-lib-guardrails
+spec:
+  title: Extrair pro _lib os guardrails repetidos >=3x
+  description: "Extrai pro scope _lib os 2 guardrails que se repetem em >=3 lugares:\
+    \ 'cite-ou-abst\xE9m' (grounded citation) e 'HTML self-contained sandboxed'. Scopes\
+    \ consumidores passam a referenciar o _lib. Invent\xE1rio completo no relat\xF3\
+    rio da auditoria; dono aprovou plano-primeiro."
+  status: todo
+  feature: dna-adoption
+  priority: low
+  labels:
+  - dna
+  - refactor
+  reporter: claude-code
+  acceptance_criteria:
+  - "Given os 2 guardrails repetidos >=3x, when extra\xEDdos pro _lib, then cada scope\
+    \ consumidor referencia a vers\xE3o do _lib em vez de manter c\xF3pia pr\xF3pria"
+  acceptance_criteria_source: claude-code
+  definition_of_done:
+  - "Data: guardrails no _lib; Code: consumidores referenciam _lib; sem duplica\xE7\
+    \xE3o de prosa de guardrail; Tests: composi\xE7\xE3o dos consumidores verde"
+  definition_of_done_source: claude-code
+  created_at: '2026-07-11T05:54:01+00:00'
+  updated_at: '2026-07-11T05:54:01+00:00'
+  timeline:
+  - at: '2026-07-11T05:54:01+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    to: todo

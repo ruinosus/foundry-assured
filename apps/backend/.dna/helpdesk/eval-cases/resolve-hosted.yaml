@@ -1,0 +1,29 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: resolve-hosted
+spec:
+  description: The HOSTED resolve variant answers grounded-only with citation but DROPS the TICKET/HITL escalation the backend resolve keeps (hosted has no human-in-the-loop)
+  target:
+    type: prompt
+    agent: resolve-hosted
+  checks:
+  # Grounded-only answering + citation + never-invent discipline is preserved.
+  - type: contains
+    value: ONLY the runbook content
+  - type: contains
+    value: cite the source document title(s)
+  - type: contains
+    value: never invent runbooks, sources, or steps
+  # The escalation contract the backend workflow branches on must be ABSENT on
+  # the hosted path — this is the intentional drift, now an asserted invariant.
+  - type: not_contains
+    value: 'TICKET:'
+  - type: not_contains
+    value: STEP 1
+  - type: not_contains
+    value: STEP 2
+  - type: min_length
+    value: 200
+  expected: The hosted RESOLVE keeps grounded cite-or-don't-know but carries no TICKET/STEP escalation (no HITL on the hosted single-identity path).
+  tags: [workflow, contract, hosted]

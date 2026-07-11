@@ -55,3 +55,8 @@ TEST-CREDENTIALS.local.md
 .superpowers/
 # DNA SDLC board — per-workstation pointer (written by `dna sdlc story start`)
 .dna/active-story.txt
+
+# Hosted containers' baked DNA scope — BUILD ARTIFACT, not source. The single
+# source of truth is apps/backend/.dna; scripts/sync-hosted-scope.sh mirrors it
+# into each hosted build context before the image build (ADR-013). Never commit.
+apps/hosted-*/.dna/

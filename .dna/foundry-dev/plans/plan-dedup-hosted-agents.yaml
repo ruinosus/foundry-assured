@@ -1,0 +1,40 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Plan
+metadata:
+  name: plan-dedup-hosted-agents
+spec:
+  title: 'Plano: dedup-hosted-agents'
+  date: '2026-07-11'
+  status: accepted
+  story_ref: dedup-hosted-agents
+  journey_phase: plan
+  body: "# Plan \u2014 dedup-hosted-agents\n\n## Problem\nThe 4 apps/hosted-* containers\
+    \ each hold a byte-copy of an agent prompt as an\ninline Python string constant\
+    \ in main.py. The same prompts also live (source of\ntruth since ADR-013) in the\
+    \ DNA scope apps/backend/.dna/helpdesk/. Two copies\nalready drifted: hosted-agent\
+    \ RESOLVE dropped the TICKET/HITL STEP logic on\npurpose (hosted has no HITL);\
+    \ hosted-platform PLATFORM paraphrases the no-write\nrule inline instead of the\
+    \ composed \"## Guardrail: no-write-claims\" section.\n\n## Approach \u2014 compose,\
+    \ don't copy (mirror apps/backend/app/agents/prompts.py)\n1. resolve-hosted variant\
+    \ (data, not code): add\n   apps/backend/.dna/helpdesk/agents/resolve-hosted.yaml\
+    \ \u2014 grounded-only answer\n   WITHOUT TICKET/STEP escalation. Backend keeps\
+    \ resolve (with TICKET); the diff\n   is versioned data.\n2. Per-hosted shim:\
+    \ each apps/hosted-*/prompts.py composes via\n   Kernel.quick(...).build_prompt(agent=...),\
+    \ failing loud, mirroring backend.\n   Base dir = own baked ./.dna if present\
+    \ (image), else sibling apps/backend/.dna\n   (source tree); DNA_BASE_DIR overrides\
+    \ both (ADR-014 mount = prod follow-up).\n3. main.py: replace each inline constant\
+    \ with `from prompts import <CONST>`.\n   hosted-agent: triage/retrieve/resolve-hosted;\
+    \ cockpit: cockpit;\n   selfwiki: selfwiki; platform: platform (gains composed\
+    \ Guardrail section).\n4. deps: dna-sdk>=0.3,<0.4 in each hosted requirements.txt.\n\
+    5. image self-containment: baked .dna per hosted = build artifact (gitignored);\n\
+    \   scripts/sync-hosted-scope.sh materializes it; azure.yaml prepackage hook syncs\n\
+    \   before remoteBuild.\n\n## Proof (deterministic, no LLM)\n- New eval-case resolve-hosted\
+    \ (NOT TICKET/STEP; contains grounded+cite+no-invent)\n  in the EXISTING helpdesk-prompts\
+    \ suite \u2014 CI dna eval step picks it up unchanged.\n- apps/backend/eval/hosted_prompts_compose_test.py:\
+    \ imports each hosted shim,\n  asserts composed sentinels + hosted-agent composes\
+    \ resolve-hosted (not resolve).\n- Existing hosted_build_test.py + hosted_platform_smoke_test.py\
+    \ still pass.\n\n## Out of scope (follow-ups)\n- ADR-014 Azure Files mount on\
+    \ hosted (prod-consistent, DNA_BASE_DIR=/mnt/dna).\n- Bump backend + CI eval pin\
+    \ to dna 0.3 (other agent's s-official-packages).\n"
+  created_at: '2026-07-11T05:44:07+00:00'
+  updated_at: '2026-07-11T05:44:07+00:00'

@@ -1,0 +1,20 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Agent
+metadata:
+  name: resolve-hosted
+  description: RESOLVE step for the HOSTED workflow — grounded cited answer, no TICKET/HITL escalation
+spec:
+  # Byte-faithful move of RESOLVE_INSTRUCTIONS from apps/hosted-agent/main.py.
+  # This is the INTENTIONAL variant of agents/resolve: the hosted container
+  # (apps/hosted-agent) runs the single-identity request/response model with no
+  # human-in-the-loop, so it drops STEP 1 (the TICKET: escalation sentinel) and
+  # the per-user "remembered preferences" tailoring (no per-user memory on the
+  # hosted path). The backend keeps agents/resolve WITH the TICKET logic; the
+  # difference is now versioned data, not a silently-drifted copy.
+  #
+  # Contract guard: eval-cases/resolve-hosted (asserts TICKET/STEP are ABSENT
+  # here and grounded-only + citation + never-invent are present).
+  # Edit THIS file to change the hosted RESOLVE prompt; the hosted shim
+  # (apps/hosted-agent/prompts.py) composes it at import.
+  instruction: |-
+    You are the RESOLVE step of a helpdesk workflow. Answer the developer using ONLY the runbook content the RETRIEVE step provided, and cite the source document title(s). If RETRIEVE returned 'NO_MATCH' or nothing relevant, say you don't know — never invent runbooks, sources, or steps.
