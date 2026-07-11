@@ -47,7 +47,7 @@ spec:
     --product + TestRun recorded
   definition_of_done_source: cli-create
   created_at: '2026-07-11T05:34:34+00:00'
-  updated_at: '2026-07-11T05:38:26+00:00'
+  updated_at: '2026-07-11T05:54:38+00:00'
   timeline:
   - at: '2026-07-11T05:34:34+00:00'
     actor: claude-code
@@ -78,8 +78,52 @@ spec:
       \ intacto). Provado: dna-sdk AgentDefinitionReader detecta + l\xEA AGENTS.md\
       \ como agents.md/v1 (8415 bytes, round-trip verbatim). .venv-dna gitignored."
     commit_ref: 68412e3bc4be4673c8fa3667fbb985d9c5b93dd2
+  - at: '2026-07-11T05:53:20+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Fase 2 (docs Di\xE1taxis) feita. Decis\xE3o-chave: N\xC3O relocar os\
+      \ 63 arquivos de docs/ \u2014 eles j\xE1 s\xE3o Di\xE1taxis-typed no front-matter\
+      \ (DOCS-STANDARD.md) e s\xE3o linkados de CLAUDE.md/README/ADRs/CI; mover quebraria\
+      \ tudo sem ganho. Em vez disso, impus a FORMA Di\xE1taxis via nav do MkDocs\
+      \ + landing grid-card + p\xE1ginas-cola novas (getting-started tutorial, reference/architecture+configuration+dna-scopes,\
+      \ how-to update-prompts+run-evals+operate-sdlc, 4 index de quadrante). O wiki\
+      \ gerado + specs de design ficam no repo (brows\xE1veis no GitHub) mas fora\
+      \ do site curado (exclude_docs) \u2014 um site de produto CURA. Slugify do mkdocs\
+      \ alinhado ao GitHub (pymdownx.slugs) pra os anchors existentes (ex.: cost--teardown)\
+      \ resolverem sem editar docs. Guards: mkdocs build --strict \u2192 exit 0; link-check\
+      \ offline (README+docs) \u2192 0 quebrados (achei+consertei 1 link pr\xE9-existente\
+      \ quebrado no README: ./backend/eval \u2192 ./apps/backend/eval). CI: .github/workflows/docs.yml\
+      \ \xE9 workflow SEPARADO (build strict + lychee offline + Pages main-only continue-on-error)\
+      \ \u2014 N\xC3O alimenta o 'CI passed' required; ci.yml intacto (diff vazio).\
+      \ README aponta pro site + AGENTS.md. Zero deletes de conte\xFAdo (git mostra\
+      \ adds + 1 fix de link)."
+    commit_ref: 1978e34deb4cf8e55725bddc20f42cd16c520003
+  - at: '2026-07-11T05:54:02+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestGuide
+    name: tg-s-foundry-agent-ready-docs
+    summary: TestGuide tg-s-foundry-agent-ready-docs (smoke)
+  - at: '2026-07-11T05:54:38+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestRun
+    name: tr-tg-s-foundry-agent-ready-docs-20260711-055437
+    summary: "TestRun tr-tg-s-foundry-agent-ready-docs-20260711-055437 \u2192 pass"
+    outcome: pass
   produces:
   - kind: Plan
     name: plan-s-foundry-agent-ready-docs
     role: implementation
     at: '2026-07-11T05:35:13+00:00'
+  - kind: TestGuide
+    name: tg-s-foundry-agent-ready-docs
+    role: test-guide
+    at: '2026-07-11T05:54:02+00:00'
+  - kind: TestRun
+    name: tr-tg-s-foundry-agent-ready-docs-20260711-055437
+    role: test-run
+    at: '2026-07-11T05:54:38+00:00'
