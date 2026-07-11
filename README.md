@@ -102,7 +102,7 @@ The deep-wiki the **selfwiki** domain grounds on can be generated two ways:
 - **Foundry pipeline** — [`apps/backend/app/knowledge/wiki_builder.py`](./apps/backend/app/knowledge/wiki_builder.py),
   automated via `uv run`, using the Foundry model (`gpt-5-mini`) with the build-fidelity
   gate. Costs roughly **$0.30** for the whole monorepo.
-- **Microsoft Agent Skills** — [`apps/backend/app/knowledge/skills/{wiki-architect,wiki-page-writer}`](./apps/backend/app/knowledge/skills).
+- **Microsoft Agent Skills** — [`apps/backend/.dna/wiki/skills/{wiki-architect,wiki-page-writer}`](./apps/backend/.dna/wiki/skills).
   Open the repo in **VS Code Copilot or Claude Code** and ask it to *"create a wiki"*;
   the IDE agent reads the `SKILL.md` and runs the loop. **No cloud, no azd, no cost** —
   it uses the IDE's own Copilot.
