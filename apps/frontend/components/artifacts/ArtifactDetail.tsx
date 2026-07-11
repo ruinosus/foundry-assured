@@ -76,50 +76,39 @@ export function ArtifactDetail({ id }: { id: string }) {
   if (!a) return error ? <p className="muted">⚠️ {error}</p> : <div className="empty">Loading…</div>;
 
   return (
-    <>
-      {error && (
-        <p className="muted" style={{ marginBottom: 12 }}>
-          ⚠️ {error}
-        </p>
-      )}
-      <div>
-        <h2 style={{ margin: "0 0 4px" }}>{a.title}</h2>
-        <p className="muted" style={{ margin: 0, fontSize: 13 }}>{a.description}</p>
-      </div>
-
-      <div style={{ margin: "12px 0", display: "flex", gap: 8, alignItems: "center" }}>
-        <span className={`pill ${STATUS[a.status] ?? "neutral"}`}>{a.status}</span>
+    <div className="studio-canvas">
+      <div className="canvas-header">
+        <h1 className="canvas-title-input" style={{ margin: 0 }}>{a.title}</h1>
+        <span className="chip-type">{a.type}</span>
+        {a.skill && <span className="chip-type">🎨 {a.skill}</span>}
+        <span data-testid="status-pill" className={`pill ${STATUS[a.status] ?? "neutral"}`}>{a.status}</span>
         <span className="muted">v{a.version}</span>
         {a.contentHash && (
           <span className="muted">· <code>{a.contentHash.slice(0, 12)}…</code></span>
         )}
-        {a.skill && <span className="muted">· {a.skill}</span>}
-      </div>
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
+        <span style={{ flex: 1 }} />
         {a.status === "draft" && (
-          <button className="btn btn-solid" disabled={busy} onClick={() => act("request-approval")}>
-            Request approval
-          </button>
+          <button data-testid="lifecycle-request-approval" className="btn btn-solid" disabled={busy}
+            onClick={() => act("request-approval")}>Request approval</button>
         )}
         {a.status === "pending_approval" && (
           <>
-            <button className="btn btn-solid" disabled={busy} onClick={() => act("approve")}>
-              Approve &amp; publish
-            </button>
-            <button className="acct-btn" disabled={busy} onClick={() => act("reject")}>
-              Reject
-            </button>
+            <button data-testid="lifecycle-approve" className="btn btn-solid" disabled={busy}
+              onClick={() => act("approve")}>Approve</button>
+            <button data-testid="lifecycle-reject" className="acct-btn" disabled={busy}
+              onClick={() => act("reject")}>Reject</button>
           </>
         )}
         {(a.status === "published" || a.status === "draft") && (
-          <button className="acct-btn" disabled={busy} onClick={() => act("archive")}>
-            Archive
-          </button>
+          <button data-testid="lifecycle-archive" className="acct-btn" disabled={busy}
+            onClick={() => act("archive")}>Archive</button>
         )}
       </div>
-
-      <SandboxViewer artifactId={a.id} />
-    </>
+      {error && <p className="muted" style={{ margin: 0 }}>⚠️ {error}</p>}
+      <div className="preview-hero">
+        <SandboxViewer artifactId={a.id} />
+      </div>
+      {a.description && <p className="muted" style={{ margin: 0, fontSize: 13 }}>{a.description}</p>}
+    </div>
   );
 }

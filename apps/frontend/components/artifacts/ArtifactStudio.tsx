@@ -42,6 +42,8 @@ import { useRouter } from "next/navigation";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { authedFetch } from "@/lib/auth/api";
 import { LivePreview } from "./LivePreview";
+import { studioToolRenderers } from "./studioToolRenderers";
+import { StudioSteps } from "./StudioSteps";
 
 const MAX_TITLE = 200;
 // Kept as the allowed-set for displaying/normalizing the agent-filled `type` — the manual
@@ -73,26 +75,6 @@ function htmlFromDelta(event: any, fallback: string): string {
   return next;
 }
 
-const card: React.CSSProperties = {
-  border: "1px solid #2563eb33",
-  borderLeft: "3px solid #2563eb",
-  borderRadius: 8,
-  padding: 12,
-  margin: "0 0 8px",
-  background: "#eff6ff",
-  fontFamily: "system-ui",
-};
-const btn = (bg: string): React.CSSProperties => ({
-  padding: "6px 14px",
-  borderRadius: 6,
-  border: "none",
-  background: bg,
-  color: "white",
-  cursor: "pointer",
-  fontSize: 13,
-  fontWeight: 600,
-});
-
 function StudioCanvas() {
   const { agent } = useAgent({ agentId: "artifacts-studio" });
   const [html, setHtml] = useState("");
@@ -103,6 +85,7 @@ function StudioCanvas() {
   const [skill, setSkill] = useState<string>("auto");
   const [usedSkill, setUsedSkill] = useState<string>("");
   const [regenerating, setRegenerating] = useState(false);
+  const [running, setRunning] = useState(false); // a generation turn is streaming
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const router = useRouter();
@@ -129,6 +112,11 @@ function StudioCanvas() {
   useEffect(() => {
     if (!agent) return;
     const sub = agent.subscribe({
+      // Drive the preview's loading state: a run is streaming until it finishes or pauses for
+      // approval (an interrupt finalizes the run — at which point the review bar takes over).
+      onRunInitialized: () => setRunning(true),
+      onRunFinalized: () => setRunning(false),
+      onRunFailed: () => setRunning(false),
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onStateSnapshotEvent: ({ event }: any) => {
         const snap = htmlFromSnapshot(event);
@@ -271,125 +259,99 @@ function StudioCanvas() {
 
   const titleOk = title.length > 0 && title.length <= MAX_TITLE;
   const canSave = titleOk && Boolean(type) && Boolean(html) && !saving;
+  const hasContent = html.trim().length > 0;
   const typeLabel =
     type && (ARTIFACT_TYPES as readonly string[]).includes(type)
       ? type[0].toUpperCase() + type.slice(1)
       : type || "—";
 
   return (
-    <div style={{ display: "flex", gap: 16, minHeight: "70vh" }}>
-      <div
-        style={{
-          flex: "1 1 40%",
-          minWidth: 0,
-          display: "flex",
-          flexDirection: "column",
-          border: "1px solid var(--border)",
-          borderRadius: 12,
-          overflow: "hidden",
-        }}
-      >
-        <div style={{ flex: 1, minHeight: "70vh" }}>
-          <CopilotChat agentId="artifacts-studio" />
-        </div>
+    <div className="studio-canvas">
+      <div className="canvas-header">
+        <input
+          data-testid="canvas-title"
+          aria-label="Artifact title"
+          className="canvas-title-input"
+          value={title}
+          maxLength={MAX_TITLE}
+          placeholder="Artifact title"
+          onChange={(e) => { userEditedTitle.current = true; setTitle(e.target.value); }}
+        />
+        <span className="chip-type">{typeLabel}</span>
+        <select
+          data-testid="skill-select"
+          className="acct-btn"
+          style={{ width: "auto" }}
+          value={skill}
+          onChange={(e) => setSkill(e.target.value)}
+        >
+          {SKILLS.map((s) => (
+            <option key={s} value={s}>{s === "auto" ? "Auto" : s[0].toUpperCase() + s.slice(1)}</option>
+          ))}
+        </select>
+        <button
+          data-testid="regenerate"
+          className="acct-btn"
+          style={{ width: "auto" }}
+          disabled={!agent || approving || Boolean(pending) || regenerating}
+          onClick={regenerate}
+        >
+          {regenerating ? "Regenerating…" : "Regenerate"}
+        </button>
+        <button data-testid="save-draft" className="btn btn-solid" disabled={!canSave} onClick={save}>
+          {saving ? "Saving…" : "Save as draft"}
+        </button>
       </div>
-
-      <div style={{ flex: "1 1 60%", minWidth: 0, display: "flex", flexDirection: "column", gap: 12 }}>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          <label className="muted" style={{ fontSize: 12 }}>
-            Title
-          </label>
-          <input
-            className="acct-btn"
-            style={{ cursor: "text" }}
-            placeholder="Q3 status report"
-            value={title}
-            maxLength={MAX_TITLE}
-            onChange={(e) => {
-              userEditedTitle.current = true;
-              setTitle(e.target.value);
-            }}
-          />
-          {!titleOk && title.length > 0 && (
-            <span className="muted" style={{ fontSize: 12 }}>
-              Title must be 1–{MAX_TITLE} characters.
-            </span>
-          )}
-
-          <label className="muted" style={{ fontSize: 12 }}>
-            Type <span style={{ fontWeight: 400 }}>(set by the agent)</span>
-          </label>
-          <div className="acct-btn" style={{ cursor: "default" }}>
-            {typeLabel}
-          </div>
-
-          <label className="muted" style={{ fontSize: 12 }}>
-            Skill
-          </label>
-          <div style={{ display: "flex", gap: 8 }}>
-            <select
-              className="acct-btn"
-              // flex:1 + minWidth:0 so the select fills the row and its selected value stays visible;
-              // .acct-btn's width:100% alone lost the flex fight with the Regenerate button, which
-              // squeezed the select down to just its dropdown arrow (the value looked "empty").
-              style={{ flex: 1, minWidth: 0 }}
-              value={skill}
-              onChange={(e) => setSkill(e.target.value)}
-            >
-              {SKILLS.map((s) => (
-                <option key={s} value={s}>
-                  {s === "auto" ? "Auto" : s[0].toUpperCase() + s.slice(1)}
-                </option>
-              ))}
-            </select>
-            <button
-              className="acct-btn"
-              // Natural width (override .acct-btn's width:100%) so it doesn't squeeze the select.
-              style={{ flex: "0 0 auto", width: "auto" }}
-              disabled={!agent || approving || Boolean(pending) || regenerating}
-              onClick={regenerate}
-            >
-              {regenerating ? "Regenerating…" : "Regenerate"}
-            </button>
-          </div>
-          {usedSkill && (
-            <span className="muted" style={{ fontSize: 12 }}>
-              Generated with: {usedSkill}
-            </span>
-          )}
-        </div>
-
-        {pending && (
-          <div style={card}>
-            <div style={{ fontWeight: 600, marginBottom: 6 }}>Apply this version of the artifact?</div>
-            {pending.toolName && (
-              <div style={{ fontSize: 13, marginBottom: 10 }}>
-                <b>Tool:</b> <code>{pending.toolName}</code>
-              </div>
-            )}
-            <div style={{ display: "flex", gap: 8 }}>
-              <button style={btn("#16a34a")} onClick={() => respond(true)}>
+      {usedSkill && (
+        <span data-testid="used-skill" className="muted" style={{ fontSize: 12, margin: "0 2px" }}>
+          Generated with: {usedSkill}
+        </span>
+      )}
+      {!titleOk && title.length > 0 && (
+        <p className="muted" style={{ margin: "4px 2px 0", fontSize: 12 }}>
+          Title must be between 1 and {MAX_TITLE} characters.
+        </p>
+      )}
+      <StudioSteps />
+      <div className="studio-grid">
+        <div className="preview-hero">
+          {pending && (
+            <div data-testid="review-bar" className="review-bar">
+              <span className="review-text">Review this version before applying</span>
+              <button data-testid="review-approve" className="btn btn-solid" onClick={() => respond(true)}>
                 Approve
               </button>
-              <button style={btn("#dc2626")} onClick={() => respond(false)}>
+              <button data-testid="review-reject" className="acct-btn" onClick={() => respond(false)}>
                 Reject
               </button>
             </div>
+          )}
+          {!pending && hasContent && !running && (
+            <div data-testid="iterate-hint" className="iterate-hint">
+              ✓ Draft ready — describe a change in the chat to refine it
+              <span className="muted"> (e.g. “make the bars green”, “add a third KPI”)</span>, or Save as draft.
+            </div>
+          )}
+          <div className="preview-stage">
+            <LivePreview html={html || "<!doctype html><html><body></body></html>"} />
+            {running && (
+              <div className="preview-overlay" data-testid="preview-loading">
+                <span className="spinner" aria-hidden />
+                <span>{hasContent ? "Updating the artifact…" : "Generating your artifact…"}</span>
+              </div>
+            )}
+            {!running && !hasContent && (
+              <div className="preview-overlay empty" data-testid="preview-empty">
+                <span className="empty-glyph" aria-hidden>◈</span>
+                <b>Your artifact will render here</b>
+                <span className="muted">Describe what you want in the chat on the right →</span>
+              </div>
+            )}
           </div>
-        )}
-
-        <LivePreview html={html || "<!doctype html><html><body></body></html>"} />
-
-        {saveError && (
-          <p className="muted" style={{ margin: 0 }}>
-            ⚠️ {saveError}
-          </p>
-        )}
-
-        <div>
-          <button className="btn btn-solid" disabled={!canSave} onClick={save}>
-            {saving ? "Saving…" : "Save as draft"}
-          </button>
+          {saveError && <p className="muted" style={{ margin: "8px 0 0" }}>⚠️ {saveError}</p>}
+        </div>
+        <div className="chat-rail">
+          <CopilotChat agentId="artifacts-studio" />
         </div>
       </div>
     </div>
@@ -401,6 +363,7 @@ function Studio({ authorization }: { authorization?: string }) {
     <CopilotKitProvider
       runtimeUrl="/api/copilotkit"
       headers={authorization ? { Authorization: authorization } : undefined}
+      renderToolCalls={studioToolRenderers}
     >
       <StudioCanvas />
     </CopilotKitProvider>

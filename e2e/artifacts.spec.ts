@@ -41,7 +41,8 @@ test("artifacts lifecycle: seed draft → sandbox preview → request approval �
 
   // 3) Detail page renders the HTML in the sandbox viewer (fetch-by-id path).
   await row.click();
-  await expect(page.getByRole("heading", { name: TITLE })).toBeVisible({ timeout: 30_000 });
+  // Canvas detail header shows the title (a span, no longer a heading).
+  await expect(page.getByText(TITLE, { exact: true })).toBeVisible({ timeout: 30_000 });
   const iframe = page.locator('iframe[title="artifact-preview"]');
   await expect(iframe).toBeVisible({ timeout: 30_000 });
   expect(await iframe.getAttribute("sandbox")).toBe("allow-scripts");
@@ -50,13 +51,13 @@ test("artifacts lifecycle: seed draft → sandbox preview → request approval �
   await shot(page, "detail-draft-preview");
 
   // 4) Request approval → pending_approval.
-  await page.getByRole("button", { name: "Request approval" }).click();
-  await expect(page.locator(".pill", { hasText: "pending_approval" })).toBeVisible({ timeout: 20_000 });
+  await page.getByTestId("lifecycle-request-approval").click();
+  await expect(page.getByTestId("status-pill")).toHaveText("pending_approval", { timeout: 20_000 });
   await shot(page, "pending-approval");
 
-  // 5) Approve & publish → published + immutable content hash.
-  await page.getByRole("button", { name: "Approve & publish" }).click();
-  await expect(page.locator(".pill", { hasText: "published" })).toBeVisible({ timeout: 20_000 });
+  // 5) Approve → published + immutable content hash.
+  await page.getByTestId("lifecycle-approve").click();
+  await expect(page.getByTestId("status-pill")).toHaveText("published", { timeout: 20_000 });
   await expect(page.locator("code")).toBeVisible(); // content-hash prefix
   await shot(page, "published");
 });

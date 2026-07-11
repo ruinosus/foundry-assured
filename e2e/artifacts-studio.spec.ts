@@ -31,13 +31,15 @@ test("studio (auto skill): describe → agent fills title/type/skill → approve
   await shot(page, "prompt-sent");
 
   // Approval card appears once the agent completes update_artifact (require_confirmation).
-  const approve = page.getByRole("button", { name: /^Approve$/ });
+  const approve = page.getByTestId("review-approve");
   await expect(approve).toBeVisible({ timeout: 180_000 });
 
   // AUTO-FILL (option c): Title populated from the approval args; a skill is shown as used.
-  const titleInput = page.getByPlaceholder("Q3 status report");
+  const titleInput = page.getByTestId("canvas-title");
   await expect(titleInput).not.toHaveValue("", { timeout: 10_000 });
-  await expect(page.getByText(/Generated with:/i)).toBeVisible();
+  await expect(page.getByTestId("used-skill")).toBeVisible();
+  // Canvas: the tool-activity strip shows the skill/inputs (steps rendered, not stuck cards).
+  await expect(page.getByTestId("steps-strip")).toBeVisible({ timeout: 10_000 });
   await shot(page, "approval-card-autofilled");
 
   // Sandbox invariant.
@@ -48,16 +50,18 @@ test("studio (auto skill): describe → agent fills title/type/skill → approve
   await approve.click();
   const frame = await iframe.elementHandle().then((h) => h!.contentFrame());
   await expect(frame!.locator("h1")).toBeVisible({ timeout: 30_000 });
+  // Canvas: no stuck "Running" tool card lingers in the transcript after approval.
+  await expect(page.getByText("Running")).toHaveCount(0);
   await shot(page, "preview-rendered");
 
   // Save (title is already agent-filled).
-  const save = page.getByRole("button", { name: /save as draft/i });
+  const save = page.getByTestId("save-draft");
   await expect(save).toBeEnabled();
   await save.click();
 
-  await expect(page.locator(".pill", { hasText: "draft" })).toBeVisible({ timeout: 30_000 });
-  // The detail page shows which skill generated it.
-  await expect(page.locator(".muted", { hasText: /report|slides|dashboard|walkthrough/ }).first()).toBeVisible();
+  await expect(page.getByTestId("status-pill")).toHaveText("draft", { timeout: 30_000 });
+  // The detail page shows which skill/type generated it (canvas chip, not a muted span).
+  await expect(page.locator(".chip-type", { hasText: /report|slides|dashboard|walkthrough/ }).first()).toBeVisible();
   await shot(page, "saved-draft");
 });
 
@@ -66,21 +70,21 @@ test("studio (skill override): approve → pin 'slides' → regenerate → used 
   await send(page, "Make something about the Foundry platform.");
 
   // First approval → accept it (Regenerate is intentionally disabled while an approval is pending).
-  const approve = page.getByRole("button", { name: /^Approve$/ });
+  const approve = page.getByTestId("review-approve");
   await expect(approve).toBeVisible({ timeout: 180_000 });
   await approve.click();
   // The preview settles (run resumed) — now Regenerate is enabled.
   const iframe = page.locator('iframe[title="artifact-preview"]');
   await expect(iframe).toBeVisible();
 
-  // Pin the slides skill via the selector (the only <select> in the reshaped panel) + regenerate.
-  await page.locator("select").selectOption("slides");
-  const regen = page.getByRole("button", { name: /^Regenerate$/ });
+  // Pin the slides skill via the canvas header selector + regenerate.
+  await page.getByTestId("skill-select").selectOption("slides");
+  const regen = page.getByTestId("regenerate");
   await expect(regen).toBeEnabled({ timeout: 20_000 });
   await regen.click();
 
   // A fresh approval lands and the "Generated with" indicator reflects the slides skill.
   await expect(approve).toBeVisible({ timeout: 180_000 });
-  await expect(page.getByText(/Generated with:\s*slides/i)).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByTestId("used-skill")).toContainText(/slides/i, { timeout: 20_000 });
   await shot(page, "override-slides");
 });
