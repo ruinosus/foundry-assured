@@ -1,0 +1,28 @@
+# AF-NATIVE declarative agent — the cleanest form agent-framework-declarative
+# (agent-framework-declarative 1.0.0rc2) accepts: a PromptAgent.
+# Loaded by agent_framework_declarative.AgentFactory.create_agent_from_yaml_path.
+#
+# STEELMAN NOTE (honesty): this is genuinely declarative and genuinely clean.
+# model/provider/instructions/tools/description all live in YAML — no Python to
+# define the agent. This is a real, first-class capability of the framework.
+#
+# BUT: agent-framework has NO composition primitive. The persona, the grounded
+# delta and the citation guardrail must be INLINED into one flat `instructions`
+# string. There is no `soul:` reuse and no `guardrails:` reference — so the
+# ungrounded variant (sibling file) must COPY the persona verbatim.
+kind: Prompt
+name: HelpdeskConcierge
+description: Internal engineering support concierge grounded in runbooks.
+model:
+  id: gpt-4o
+  provider: AzureOpenAI
+instructions: |-
+  You are the Helpdesk Concierge, an internal engineering support assistant. You help developers triage and resolve engineering questions.
+
+  Answer using the runbook knowledge base.
+
+  ## Guardrail: grounded-citation (error)
+  _Citation duty for KB-grounded answers — cite every claim or say you don't know_
+
+  - Cite the source document for every claim you make, by its title.
+  - If the knowledge base does not contain the answer, say you don't know instead of guessing — never invent runbooks, sources, or steps.
