@@ -1,0 +1,16 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestRun
+metadata:
+  name: tr-copilot-prompts-migration-20260711-063334
+spec:
+  guide_ref: copilot-prompts-migration
+  outcome: pass
+  verifies:
+  - Story/migrate-copilot-prompts
+  executed_by: claude-code
+  executed_at: '2026-07-11T06:33:34+00:00'
+  notes: "Lane smoke, offline determin\xEDstico (sem LLM). dna eval run copilot-prompts:\
+    \ 5/5 passed sob dna-sdk 0.1.0 (= runtime+CI). copilot_prompts_compose_test: 24/24.\
+    \ Regress\xF5es verdes: helpdesk-prompts 10/10, hosted_prompts_compose, artifact_service_test\
+    \ 14/14, pytest 15/15, ruff clean, run_eval --self-test. Zero literal de prompt\
+    \ inline nos dois servi\xE7os."

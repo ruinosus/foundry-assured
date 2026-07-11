@@ -1,0 +1,13 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Genome
+metadata:
+  name: copilot
+  description: >-
+    Declarative agent instructions for the foundry-assured Coach Overlay copilot
+    (ADR-013 phase 2). One Agent/PromptTemplate per prompt block formerly
+    hardcoded in app/services/copilot.py and app/services/artifacts.py;
+    app/services/prompts.py composes these at import time. Only the STATIC
+    persona/rule/template lives here — per-request data injection (transcript
+    windows, existing nodes, retrieved docs) stays imperative in Python.
+spec:
+  default_agent: synthesis

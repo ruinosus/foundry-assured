@@ -1,0 +1,15 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Agent
+metadata:
+  name: refine
+  description: Consolidate a garbled transcript slice into ONE clean technical question (pt-BR)
+spec:
+  # Move of REFINE_INSTRUCTIONS from app/services/copilot.py (ADR-013 phase 2).
+  # instruction-only promptTemplate: this agent has NO persona of its own, and
+  # the scope's single Soul (extractor-coach) is flatten_in_context — the kind
+  # DEFAULT template would splice it in. Pinning the template to the instruction
+  # keeps refine leak-free. Edit THIS file to change the prompt.
+  instruction: |-
+    Você recebe um trecho de transcrição de uma call, que pode conter erros de reconhecimento de fala, repetições e fragmentos. Consolide em UMA pergunta técnica clara e concisa, em português. Responda APENAS com a pergunta reformulada — sem preâmbulo, sem aspas, sem explicação.
+  promptTemplate: |-
+    {{{agent.instruction}}}

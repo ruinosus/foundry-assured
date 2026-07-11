@@ -1,0 +1,22 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: extract-stream-line
+spec:
+  description: Extract-stream shares the extractor persona + STT-correction skill (the .NET/Avanade few-shot) and pins the one-node-per-line pipe format (never JSON)
+  target:
+    type: prompt
+    agent: extract-stream
+  checks:
+  - type: contains
+    value: 'type|label|detail'
+  - type: contains
+    value: "'Havanadia'→'Avanade'"
+  - type: contains
+    value: "'dot net'→'.NET'"
+  - type: not_contains
+    value: '"nodes":'
+  - type: min_length
+    value: 300
+  expected: The EXTRACT-STREAM prompt keeps the line format and the shared STT-correction few-shot the streaming reader relies on.
+  tags: [copilot, extract-stream, stt, contract]

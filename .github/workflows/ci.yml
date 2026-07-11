@@ -49,12 +49,27 @@ jobs:
       # dna-cli comes from PyPI (it pins dna-sdk>=0.1,<0.2 itself — the same
       # range the backend depends on). Offline + deterministic; exits 1 on any
       # failed case.
-      - name: DNA prompt eval suite (dna eval run)
+      # Copilot + artifact prompt composition (ADR-013 phase 2): the two
+      # Python-interpolated PromptTemplates (synthesis-tone, html-artifact) are
+      # not prompt targets, so their sentinels are guarded by this compose test
+      # rather than the dna eval suite below.
+      - name: Copilot prompt composition test
+        run: uv run python -m eval.copilot_prompts_compose_test
+      # Prompt-invariant eval suites over the declarative .dna scopes — THE guard
+      # of record for prompt contracts (ADR-013 phase 2; the byte-equivalence
+      # gate retired when the prompts started evolving as Soul + Guardrails).
+      # dna-cli comes from PyPI (it pins dna-sdk>=0.1,<0.2 itself — the same
+      # range the backend depends on). Offline + deterministic; exits 1 on any
+      # failed case.
+      - name: DNA prompt eval suites (dna eval run)
         env:
           DNA_BASE_DIR: ${{ github.workspace }}/apps/backend/.dna
         run: >-
           uvx --from "dna-cli>=0.1,<0.2"
           dna eval run helpdesk-prompts --scope helpdesk
+          &&
+          uvx --from "dna-cli>=0.1,<0.2"
+          dna eval run copilot-prompts --scope copilot
 
   frontend:
     name: Frontend · typecheck + build

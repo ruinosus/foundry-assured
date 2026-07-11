@@ -159,14 +159,10 @@ def archive(tenant_id: str, artifact_id: str, *, user) -> ArtifactRecord:
     return _save(replace(rec, status=ArtifactStatus.ARCHIVED, updated_at=_now()))
 
 
-_HTML_SYSTEM = (
-    "You are an expert front-end engineer. Produce a SINGLE self-contained, "
-    "responsive HTML document (all CSS and JS inline, no external requests, no "
-    "external assets). Return ONLY the HTML, starting with <!doctype html>. "
-    "The document must be safe to render inside a sandboxed iframe."
-)
-
-
+# The one-shot HTML system prompt (B2) is declared as the DNA `html-artifact`
+# PromptTemplate (apps/backend/.dna/copilot/, ADR-013 phase 2). The static
+# template carries a named {{artifact_type}}; app/services/prompts.py fills it
+# with the per-request type — the runtime value stays imperative here.
 async def _generate_html(prompt: str, artifact_type: str, user=None) -> str:
     """LLM boundary — patched in tests. Mirrors app/services/copilot.py::_responses."""
     from azure.ai.projects.aio import AIProjectClient
@@ -183,7 +179,9 @@ async def _generate_html(prompt: str, artifact_type: str, user=None) -> str:
     try:
         client = proj.get_openai_client()
         client = await client if inspect.isawaitable(client) else client
-        instructions = f"{_HTML_SYSTEM}\nArtifact type: {artifact_type}."
+        from app.services.prompts import html_artifact_instructions
+
+        instructions = html_artifact_instructions(artifact_type)
         resp = await client.responses.create(
             model=cfg.foundry_model, instructions=instructions,
             input=prompt, stream=False,

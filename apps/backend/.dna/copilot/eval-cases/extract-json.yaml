@@ -1,0 +1,22 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: extract-json
+spec:
+  description: Extract composes the shared extractor persona + STT-correction skill + the JSON-output delta (never the streaming line format)
+  target:
+    type: prompt
+    agent: extract
+  checks:
+  - type: contains
+    value: Extraia até 6 itens NOVOS
+  - type: contains
+    value: '"nodes":[{"type":"...","label":"...","detail":"..."}]'
+  - type: contains
+    value: "'dot net'→'.NET'"
+  - type: not_contains
+    value: type|label|detail
+  - type: min_length
+    value: 300
+  expected: The EXTRACT prompt pins the JSON node shape, carries the shared persona + STT few-shot, and is not the streaming variant.
+  tags: [copilot, extract, contract]
