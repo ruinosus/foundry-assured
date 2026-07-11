@@ -2,14 +2,13 @@
 
 As of ADR-013 phase 2 the prompt SOURCE lives in the declarative DNA scope at
 ``apps/backend/.dna/copilot/`` and this module is a thin composition shim: it
-loads the scope once at import time via the DNA kernel and exposes the composed
+loads the scope once at import time via the DNA SDK and exposes the composed
 constants, so ``app/services/copilot.py`` and ``app/services/artifacts.py``
 stay thin wrappers. To change a prompt, edit the scope — not the services.
 
-Mirrors ``app/agents/prompts.py`` (the helpdesk shim) verbatim in structure:
-same ``DNA_BASE_DIR`` resolution (ADR-014 production leg), same fail-loud
-compose, same "a backend that boots with missing/empty prompts is worse than
-one that refuses to boot" stance.
+Mirrors ``app/agents/prompts.py`` (the helpdesk shim): same ``DNA_BASE_DIR``
+resolution (ADR-014 production leg) and the same ``dna.load_prompts`` compose
+(dna-sdk >= 0.5 — lazy, cached, fail-loud, returns clean prompts).
 
 What lives in the scope (STATIC persona / rule / template) vs what stays here
 (runtime-dynamic data injection — the anti-pattern the audit called out):
@@ -25,8 +24,9 @@ What lives in the scope (STATIC persona / rule / template) vs what stays here
 - ``html-artifact`` PromptTemplate        → the B2 one-shot HTML system prompt with
       a named ``{{artifact_type}}``; ``html_artifact_instructions(type)`` fills it.
 
-The per-request data (transcript windows, existing-node summaries, retrieved
-docs) is NEVER declared — the services keep building those strings in code.
+``load_prompts`` covers the *Agent* prompts; the two PromptTemplate bodies are
+read off the same ``ManifestInstance`` (``_prompts.mi``) — the runtime-data
+injection they carry is NEVER declared, the services build those strings in code.
 """
 
 from __future__ import annotations
@@ -34,6 +34,8 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
+
+from dna import load_prompts
 
 _logger = logging.getLogger(__name__)
 
@@ -72,97 +74,41 @@ def _resolve_base_dir() -> Path:
     return _DNA_BAKED_BASE_DIR
 
 
-_DNA_BASE_DIR = _resolve_base_dir()
-
-#: constant name -> DNA Agent document name (.dna/copilot/agents/<name>.yaml)
-_AGENT_FOR_CONSTANT = {
-    "REFINE_INSTRUCTIONS": "refine",
-    "EXTRACT_INSTRUCTIONS": "extract",
-    "EXTRACT_STREAM_INSTRUCTIONS": "extract-stream",
-    "EDGES_INSTRUCTIONS": "edges",
-    "SYNTHESIS_INSTRUCTIONS": "synthesis",
-}
-
-#: constant name -> DNA PromptTemplate document name (.dna/copilot/prompts/<name>/)
-_TEMPLATE_FOR_CONSTANT = {
-    "SYNTHESIS_TONE_TEMPLATE": "synthesis-tone",
-    "HTML_ARTIFACT_TEMPLATE": "html-artifact",
-}
-
-
-def _load_instance():
-    """Load the DNA scope, failing loudly."""
-    try:
-        from dna import Kernel
-    except ImportError as exc:  # pragma: no cover — dep declared in pyproject
-        raise RuntimeError(
-            "The 'dna-sdk' package is required to compose copilot prompts "
-            "(declared in apps/backend/pyproject.toml). Run `uv sync`."
-        ) from exc
-    if not _DNA_BASE_DIR.is_dir():
-        raise RuntimeError(
-            f"DNA base dir not found at {_DNA_BASE_DIR} — the backend must "
-            "ship apps/backend/.dna alongside the app package (see ADR-013)."
-        )
-    try:
-        return Kernel.quick(_DNA_SCOPE, base_dir=str(_DNA_BASE_DIR))
-    except Exception as exc:
-        raise RuntimeError(
-            f"DNA scope '{_DNA_SCOPE}' failed to load from {_DNA_BASE_DIR}: {exc}"
-        ) from exc
-
-
-def _compose(mi, agent: str) -> str:
-    """Compose an Agent's system prompt, asserting it exists + is non-empty."""
-    if mi.one("Agent", agent) is None:
-        raise RuntimeError(
-            f"DNA scope '{_DNA_SCOPE}' ({_DNA_BASE_DIR}) has no Agent "
-            f"'{agent}' — missing, renamed, or unparseable document; "
-            "refusing to boot with a placeholder instruction."
-        )
-    text = mi.build_prompt(agent=agent)
-    if not text or not text.strip():
-        raise RuntimeError(
-            f"DNA composed an empty prompt for agent '{agent}' in scope "
-            f"'{_DNA_SCOPE}' ({_DNA_BASE_DIR}) — refusing to boot."
-        )
-    # Composed templates can pad sections with trailing newlines; the original
-    # constants had none.
-    return text.rstrip("\n")
-
-
 def _template_body(mi, name: str) -> str:
-    """Fetch a PromptTemplate's raw body (with its ``{{...}}`` placeholders)."""
+    """Fetch a PromptTemplate's raw body (with its ``{{...}}`` placeholders).
+
+    ``load_prompts`` composes Agents only; a PromptTemplate is a raw template we
+    render per-call, so we read it off the library's ManifestInstance directly.
+    """
     doc = mi.one("PromptTemplate", name)
     if doc is None:
         raise RuntimeError(
-            f"DNA scope '{_DNA_SCOPE}' ({_DNA_BASE_DIR}) has no PromptTemplate "
-            f"'{name}' — missing, renamed, or unparseable document."
+            f"DNA scope '{_DNA_SCOPE}' has no PromptTemplate '{name}' — "
+            "missing, renamed, or unparseable document."
         )
     body = doc.spec.get("body")
     if not body or not str(body).strip():
         raise RuntimeError(
-            f"DNA PromptTemplate '{name}' has an empty body in scope "
-            f"'{_DNA_SCOPE}' ({_DNA_BASE_DIR})."
+            f"DNA PromptTemplate '{name}' has an empty body in scope '{_DNA_SCOPE}'."
         )
     return str(body)
 
 
-_mi = _load_instance()
+# Compose once at import time; ``load_prompts`` fails loudly on a missing scope
+# or agent, so a service that imports is a service with real prompts.
+_prompts = load_prompts(_DNA_SCOPE, base_dir=str(_resolve_base_dir()))
 
 # --- Composed Agent instructions (the STATIC persona/rule per prompt) ---------
-REFINE_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["REFINE_INSTRUCTIONS"])
-EXTRACT_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["EXTRACT_INSTRUCTIONS"])
-EXTRACT_STREAM_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["EXTRACT_STREAM_INSTRUCTIONS"])
-EDGES_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["EDGES_INSTRUCTIONS"])
+REFINE_INSTRUCTIONS = _prompts["refine"]
+EXTRACT_INSTRUCTIONS = _prompts["extract"]
+EXTRACT_STREAM_INSTRUCTIONS = _prompts["extract-stream"]
+EDGES_INSTRUCTIONS = _prompts["edges"]
 #: Tone-agnostic synthesis base; the tone is appended per meeting_type below.
-SYNTHESIS_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["SYNTHESIS_INSTRUCTIONS"])
+SYNTHESIS_INSTRUCTIONS = _prompts["synthesis"]
 
 # --- Raw PromptTemplate bodies (the STATIC template with named variables) -----
-SYNTHESIS_TONE_TEMPLATE = _template_body(_mi, _TEMPLATE_FOR_CONSTANT["SYNTHESIS_TONE_TEMPLATE"])
-HTML_ARTIFACT_TEMPLATE = _template_body(_mi, _TEMPLATE_FOR_CONSTANT["HTML_ARTIFACT_TEMPLATE"])
-
-del _mi
+SYNTHESIS_TONE_TEMPLATE = _template_body(_prompts.mi, "synthesis-tone")
+HTML_ARTIFACT_TEMPLATE = _template_body(_prompts.mi, "html-artifact")
 
 
 def _render(template: str, ctx: dict) -> str:

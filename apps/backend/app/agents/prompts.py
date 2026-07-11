@@ -7,7 +7,7 @@ mirrors the workflow prompts; keep them in sync here.
 
 As of ADR-013 the prompt SOURCE lives in the declarative DNA scope at
 ``apps/backend/.dna/helpdesk/`` and this module is a thin composition shim:
-it loads the scope once at import time via the DNA kernel and exposes the
+it loads the scope once at import time via the DNA SDK and exposes the
 composed constants, so no consumer changes. To change a prompt, edit the
 scope — not this file.
 
@@ -15,15 +15,14 @@ Phase 2 of ADR-013 decomposed the concierge prompts: the shared persona is a
 Soul (``souls/concierge/``), cross-cutting rules are Guardrails
 (``guardrails/grounded-citation``, ``guardrails/no-write-claims``) wired on
 the agents, and each agent YAML keeps only its variant delta. The composed
-constants are therefore MULTI-PART prompts now, no longer byte-copies of the
-pre-ADR-013 texts — the byte-equivalence gate retired with them, and the
-semantic contracts are guarded by the DNA eval suite
+constants are therefore MULTI-PART prompts now; the semantic contracts are
+guarded by the DNA eval suite
 (``.dna/helpdesk/eval-suites/helpdesk-prompts.yaml``, run in CI).
-``CONCIERGE_BASE_INSTRUCTIONS`` died in the same step: the base persona is
-the Soul, and nothing consumed the constant standalone.
 
-Composition note: composed prompts can carry trailing newlines from template
-sections; the constants never did, so we ``rstrip("\\n")``.
+Composition itself is ``dna.load_prompts`` (dna-sdk >= 0.5): a lazy, cached,
+fail-loud (``AgentNotFound``) mapping ``agent name -> composed prompt`` that
+returns each prompt already clean (no trailing padding). It collapses the old
+Kernel.quick + build_prompt + existence-guard + empty-check + rstrip boilerplate.
 """
 
 from __future__ import annotations
@@ -31,6 +30,8 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
+
+from dna import load_prompts
 
 _logger = logging.getLogger(__name__)
 
@@ -80,87 +81,25 @@ def _resolve_base_dir() -> Path:
     return _DNA_BAKED_BASE_DIR
 
 
-_DNA_BASE_DIR = _resolve_base_dir()
-
-#: constant name -> DNA Agent document name (.dna/helpdesk/agents/<name>.yaml)
-_AGENT_FOR_CONSTANT = {
-    "TRIAGE_INSTRUCTIONS": "triage",
-    "RETRIEVE_INSTRUCTIONS": "retrieve",
-    "RESOLVE_INSTRUCTIONS": "resolve",
-    "CONCIERGE_GROUNDED_INSTRUCTIONS": "concierge-grounded",
-    "CONCIERGE_UNGROUNDED_INSTRUCTIONS": "concierge-ungrounded",
-    "COCKPIT_INSTRUCTIONS": "cockpit",
-    "SELFWIKI_INSTRUCTIONS": "selfwiki",
-    "PLATFORM_INSTRUCTIONS": "platform",
-}
-
-
-def _load_instance():
-    """Load the DNA scope, failing loudly — a backend that boots with missing
-    or empty prompts is worse than one that refuses to boot."""
-    try:
-        from dna import Kernel
-    except ImportError as exc:  # pragma: no cover — dep declared in pyproject
-        raise RuntimeError(
-            "The 'dna-sdk' package is required to compose agent prompts "
-            "(declared in apps/backend/pyproject.toml). Run `uv sync`."
-        ) from exc
-    if not _DNA_BASE_DIR.is_dir():
-        raise RuntimeError(
-            f"DNA base dir not found at {_DNA_BASE_DIR} — the backend must "
-            "ship apps/backend/.dna alongside the app package (see ADR-013)."
-        )
-    try:
-        return Kernel.quick(_DNA_SCOPE, base_dir=str(_DNA_BASE_DIR))
-    except Exception as exc:
-        raise RuntimeError(
-            f"DNA scope '{_DNA_SCOPE}' failed to load from {_DNA_BASE_DIR}: {exc}"
-        ) from exc
-
-
-def _compose(mi, agent: str) -> str:
-    # build_prompt on a missing agent RETURNS the string "Agent '<x>' not
-    # found" instead of raising (dna-sdk 0.1.x), which would sail through the
-    # empty-check below and become the literal agent instruction. Assert the
-    # Agent document exists so a missing/renamed/unparseable agent YAML fails
-    # the boot loudly — in ANY mode, baked or external (ADR-013/ADR-014).
-    if mi.one("Agent", agent) is None:
-        raise RuntimeError(
-            f"DNA scope '{_DNA_SCOPE}' ({_DNA_BASE_DIR}) has no Agent "
-            f"'{agent}' — missing, renamed, or unparseable document; "
-            "refusing to boot with a placeholder instruction."
-        )
-    text = mi.build_prompt(agent=agent)
-    if not text or not text.strip():
-        raise RuntimeError(
-            f"DNA composed an empty prompt for agent '{agent}' in scope "
-            f"'{_DNA_SCOPE}' ({_DNA_BASE_DIR}) — refusing to boot with a "
-            "blank instruction."
-        )
-    # Composed templates can pad sections with trailing newlines; the
-    # original constants had none.
-    return text.rstrip("\n")
-
-
-_mi = _load_instance()
+# Compose once at import time; ``load_prompts`` fails loudly on a missing scope
+# or agent, so a backend that boots is a backend with real prompts.
+_prompts = load_prompts(_DNA_SCOPE, base_dir=str(_resolve_base_dir()))
 
 # --- Multi-agent workflow steps (triage -> retrieve -> resolve) ---------------
-TRIAGE_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["TRIAGE_INSTRUCTIONS"])
-RETRIEVE_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["RETRIEVE_INSTRUCTIONS"])
-RESOLVE_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["RESOLVE_INSTRUCTIONS"])
+TRIAGE_INSTRUCTIONS = _prompts["triage"]
+RETRIEVE_INSTRUCTIONS = _prompts["retrieve"]
+RESOLVE_INSTRUCTIONS = _prompts["resolve"]
 
 # --- Single concierge agent (Phase 0/1 + the eval target) ---------------------
 # The shared persona is souls/concierge (composed into both variants below).
-CONCIERGE_GROUNDED_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["CONCIERGE_GROUNDED_INSTRUCTIONS"])
-CONCIERGE_UNGROUNDED_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["CONCIERGE_UNGROUNDED_INSTRUCTIONS"])
+CONCIERGE_GROUNDED_INSTRUCTIONS = _prompts["concierge-grounded"]
+CONCIERGE_UNGROUNDED_INSTRUCTIONS = _prompts["concierge-ungrounded"]
 
 # --- Second domain: Cockpit platform expert (grounded over the cockpit-kb) -----
-COCKPIT_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["COCKPIT_INSTRUCTIONS"])
+COCKPIT_INSTRUCTIONS = _prompts["cockpit"]
 
 # --- Third domain: this project's own deep-wiki (the "selfwiki" — dogfood) -----
-SELFWIKI_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["SELFWIKI_INSTRUCTIONS"])
+SELFWIKI_INSTRUCTIONS = _prompts["selfwiki"]
 
 # --- Fourth domain: tool-driven engineering-platform concierge -----------------
-PLATFORM_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["PLATFORM_INSTRUCTIONS"])
-
-del _mi
+PLATFORM_INSTRUCTIONS = _prompts["platform"]

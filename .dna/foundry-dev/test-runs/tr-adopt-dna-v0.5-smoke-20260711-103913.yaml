@@ -1,0 +1,21 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestRun
+metadata:
+  name: tr-adopt-dna-v0.5-smoke-20260711-103913
+spec:
+  guide_ref: adopt-dna-v0.5-smoke
+  outcome: pass
+  verifies:
+  - adopt-dna-v0.5
+  executed_by: claude-code
+  executed_at: '2026-07-11T10:39:13+00:00'
+  notes: "All 5 steps PASS under dna-sdk 0.5.0. Backend import smoke: helpdesk/triage=397,\
+    \ platform=677; copilot/refine=275, synthesis(interview)=377, html(report)=301;\
+    \ studio=948 + STUDIO_SKILLS_DIR ok; wiki/page-writer=5848. Hosted: agent(triage397/retrieve452/resolve-hosted421),\
+    \ cockpit1797, platform677, selfwiki2175 \u2014 all compose from the single .dna\
+    \ source. Eval suites: helpdesk 10, copilot 5, studio 1, wiki 3 all passed. Compose-tests\
+    \ hosted/copilot/studio-wiki all green. Verified load_prompts is byte-identical\
+    \ to old build_prompt().rstrip for all 19 agents."
+  evidence:
+  - 'local: apps/backend eval suites + compose-tests + import smoke under dna-sdk
+    0.5.0'

@@ -1,0 +1,30 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Plan
+metadata:
+  name: plan-adopt-dna-v0.5
+spec:
+  title: 'Plano: adopt-dna-v0.5'
+  date: '2026-07-11'
+  status: accepted
+  story_ref: adopt-dna-v0.5
+  journey_phase: plan
+  body: "Adopt dna-sdk v0.5 in foundry-assured \u2014 collapse the prompt-composition\
+    \ shims onto the new dna.load_prompts.\n\n## Context\nBackend pinned dna-sdk>=0.1,<0.2;\
+    \ hosted apps >=0.3,<0.4. Every shim hand-rolls Kernel.quick + build_prompt +\
+    \ a mi.one() existence guard + an empty-check + .rstrip('\\n') + a constant\u2192\
+    agent map + N manual compose calls. v0.5 ships dna.load_prompts(scope, base_dir)\
+    \ \u2192 a lazy, cached, fail-loud (AgentNotFound) PromptLibrary that returns\
+    \ already-clean prompts. Verified byte-identical to the old mechanism for all\
+    \ 19 agents under 0.5.\n\n## Plan\n1. Bump: apps/backend/pyproject.toml 0.1\u2192\
+    >=0.5,<0.6; 4 hosted requirements.txt 0.3\u2192>=0.5,<0.6; CI ci.yml uvx --from\
+    \ dna-cli 0.1\u2192>=0.5,<0.6 (4 steps); regenerate uv.lock.\n2. Collapse 8 shims\
+    \ onto load_prompts; PRESERVE _resolve_base_dir (ADR-014 baked-vs-Azure-Files)\
+    \ passing result as base_dir=. services/prompts.py keeps PromptTemplate body access\
+    \ via lib.mi.one (load_prompts covers Agents only); studio keeps STUDIO_SKILLS_DIR\
+    \ export. hosted shims keep the 3-tier baked/sibling resolution.\n3. Prove: eval\
+    \ suites helpdesk(10)/copilot(5)/studio(1)/wiki(3) + hosted/copilot/studio-wiki\
+    \ compose-tests + backend pytest green under 0.5; report line counts before\u2192\
+    after per shim.\n\n## Gate\n'CI passed' green on the PR (story pr --base develop).\
+    \ No merge. Worktree preserved."
+  created_at: '2026-07-11T10:32:01+00:00'
+  updated_at: '2026-07-11T10:32:01+00:00'

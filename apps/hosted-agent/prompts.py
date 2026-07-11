@@ -2,8 +2,9 @@
 
 Mirrors the backend shim (apps/backend/app/agents/prompts.py): the prompt SOURCE
 lives ONCE in apps/backend/.dna/helpdesk/ and this module composes the constants
-at import time via the DNA kernel — the hosted container no longer carries a
-byte-copy of the prompt text that can silently drift from the scope (ADR-013).
+at import time via ``dna.load_prompts`` (dna-sdk >= 0.5 — lazy, cached, fail-loud,
+returns clean prompts) — the hosted container no longer carries a byte-copy of
+the prompt text that can silently drift from the scope (ADR-013).
 
 Base-dir resolution, in priority order:
   1. DNA_BASE_DIR env (ADR-014 production leg) — e.g. the read-only Azure Files
@@ -25,6 +26,8 @@ import logging
 import os
 from pathlib import Path
 
+from dna import load_prompts
+
 _logger = logging.getLogger(__name__)
 
 _DNA_SCOPE = "helpdesk"
@@ -32,15 +35,6 @@ _DNA_SCOPE = "helpdesk"
 # source tree (apps/hosted-agent -> parents[1] == apps, then backend/.dna).
 _BAKED = Path(__file__).resolve().parent / ".dna"
 _SIBLING = Path(__file__).resolve().parents[1] / "backend" / ".dna"
-
-#: constant name -> DNA Agent document name (.dna/helpdesk/agents/<name>.yaml)
-_AGENT_FOR_CONSTANT = {
-    "TRIAGE_INSTRUCTIONS": "triage",
-    "RETRIEVE_INSTRUCTIONS": "retrieve",
-    # hosted has no HITL: compose the resolve-hosted variant, not the backend's
-    # resolve (which keeps the TICKET escalation step).
-    "RESOLVE_INSTRUCTIONS": "resolve-hosted",
-}
 
 
 def _resolve_base_dir() -> Path:
@@ -65,57 +59,12 @@ def _resolve_base_dir() -> Path:
     return _SIBLING
 
 
-_DNA_BASE_DIR = _resolve_base_dir()
+# Compose once at import time; ``load_prompts`` fails loudly on a missing scope
+# or agent, so a hosted agent that boots is one with real prompts.
+_prompts = load_prompts(_DNA_SCOPE, base_dir=str(_resolve_base_dir()))
 
-
-def _load_instance():
-    """Load the DNA scope, failing loudly — a hosted agent that boots with a
-    missing or empty prompt is worse than one that refuses to boot."""
-    try:
-        from dna import Kernel
-    except ImportError as exc:  # pragma: no cover — dep declared in requirements.txt
-        raise RuntimeError(
-            "The 'dna-sdk' package is required to compose agent prompts "
-            "(declared in requirements.txt). Run `pip install -r requirements.txt`."
-        ) from exc
-    if not _DNA_BASE_DIR.is_dir():
-        raise RuntimeError(
-            f"DNA base dir not found at {_DNA_BASE_DIR} — the image must bake "
-            "the helpdesk scope (scripts/sync-hosted-scope.sh) or DNA_BASE_DIR "
-            "must point at it (ADR-013/ADR-014)."
-        )
-    try:
-        return Kernel.quick(_DNA_SCOPE, base_dir=str(_DNA_BASE_DIR))
-    except Exception as exc:
-        raise RuntimeError(
-            f"DNA scope '{_DNA_SCOPE}' failed to load from {_DNA_BASE_DIR}: {exc}"
-        ) from exc
-
-
-def _compose(mi, agent: str) -> str:
-    # build_prompt on a missing agent RETURNS a placeholder string instead of
-    # raising, which would sail through the empty-check and become the literal
-    # instruction — assert the Agent document exists so a missing/renamed YAML
-    # fails the boot loudly, in ANY mode (baked, sibling or external mount).
-    if mi.one("Agent", agent) is None:
-        raise RuntimeError(
-            f"DNA scope '{_DNA_SCOPE}' ({_DNA_BASE_DIR}) has no Agent "
-            f"'{agent}' — missing, renamed, or unparseable document."
-        )
-    text = mi.build_prompt(agent=agent)
-    if not text or not text.strip():
-        raise RuntimeError(
-            f"DNA composed an empty prompt for agent '{agent}' in scope "
-            f"'{_DNA_SCOPE}' ({_DNA_BASE_DIR}) — refusing to boot blank."
-        )
-    # Composed templates can pad sections with trailing newlines.
-    return text.rstrip("\n")
-
-
-_mi = _load_instance()
-
-TRIAGE_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["TRIAGE_INSTRUCTIONS"])
-RETRIEVE_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["RETRIEVE_INSTRUCTIONS"])
-RESOLVE_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["RESOLVE_INSTRUCTIONS"])
-
-del _mi
+TRIAGE_INSTRUCTIONS = _prompts["triage"]
+RETRIEVE_INSTRUCTIONS = _prompts["retrieve"]
+# hosted has no HITL: compose the resolve-hosted variant, not the backend's
+# resolve (which keeps the TICKET escalation step).
+RESOLVE_INSTRUCTIONS = _prompts["resolve-hosted"]

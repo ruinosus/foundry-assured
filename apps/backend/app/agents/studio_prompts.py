@@ -2,19 +2,19 @@
 
 As of ADR-013 phase 3 (the tool-calling frontier) the prompt SOURCE lives in the
 declarative DNA scope at ``apps/backend/.dna/studio/`` and this module is a thin
-composition shim: it loads the scope once at import time via the DNA kernel and
+composition shim: it loads the scope once at import time via the DNA SDK and
 exposes the composed constant, so ``app/agents/artifacts_studio.py`` stays a thin
 wrapper around the tool/state plumbing. To change the persona, edit the scope —
 not the agent module.
 
-Mirrors ``app/agents/prompts.py`` verbatim in structure: same ``DNA_BASE_DIR``
-resolution (ADR-014 production leg), same fail-loud compose, same "a backend that
-boots with a missing/empty prompt is worse than one that refuses to boot" stance.
+Mirrors ``app/agents/prompts.py``: same ``DNA_BASE_DIR`` resolution (ADR-014
+production leg) and the same ``dna.load_prompts`` compose (dna-sdk >= 0.5 —
+lazy, cached, fail-loud, returns a clean prompt).
 
 THE FRONTIER (why only ONE constant lives here). The Artifacts Studio agent is a
 tool-calling, generative-UI agent; DNA declares its PROMPT, not its mechanism:
 
-- ``_STUDIO_INSTRUCTIONS`` (this constant) — the STATIC persona + tool-calling
+- ``STUDIO_INSTRUCTIONS`` (this constant) — the STATIC persona + tool-calling
   contract → ``Agent/artifacts-studio``.
 - The ``update_artifact`` ``@tool`` body + ``approval_mode``, ``build_artifact_mcp_reads()``,
   and the ``SkillsProvider`` wiring stay IMPERATIVE in ``artifacts_studio.py`` — a
@@ -22,10 +22,10 @@ tool-calling, generative-UI agent; DNA declares its PROMPT, not its mechanism:
 - The 4 artifact skills (report/slides/dashboard/walkthrough) are discovered by
   ``SkillsProvider.from_paths`` directly off disk at runtime (file discovery +
   ``read_skill_resource`` over ``slides/references/*``), NOT composed into the
-  prompt. Their single source of truth is now ``.dna/studio/skills/`` — the
-  provider simply points there. Composing them into the prompt would defeat the
-  progressive-disclosure the SDK's skill loader gives, so the mechanism is left
-  intact and only the source relocated (ADR-013 phase-3 frontier decision).
+  prompt. Their single source of truth is now ``.dna/studio/skills/`` (exported as
+  ``STUDIO_SKILLS_DIR`` below) — the provider simply points there. Composing them
+  into the prompt would defeat the progressive-disclosure the SDK's skill loader
+  gives, so the mechanism is left intact and only the source relocated.
 """
 
 from __future__ import annotations
@@ -33,6 +33,8 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
+
+from dna import load_prompts
 
 _logger = logging.getLogger(__name__)
 
@@ -75,54 +77,7 @@ def _resolve_base_dir() -> Path:
     return _DNA_BAKED_BASE_DIR
 
 
-_DNA_BASE_DIR = _resolve_base_dir()
-
-
-def _load_instance():
-    """Load the DNA scope, failing loudly — a backend that boots with a missing
-    or empty prompt is worse than one that refuses to boot."""
-    try:
-        from dna import Kernel
-    except ImportError as exc:  # pragma: no cover — dep declared in pyproject
-        raise RuntimeError(
-            "The 'dna-sdk' package is required to compose the Artifacts Studio "
-            "prompt (declared in apps/backend/pyproject.toml). Run `uv sync`."
-        ) from exc
-    if not _DNA_BASE_DIR.is_dir():
-        raise RuntimeError(
-            f"DNA base dir not found at {_DNA_BASE_DIR} — the backend must ship "
-            "apps/backend/.dna alongside the app package (see ADR-013)."
-        )
-    try:
-        return Kernel.quick(_DNA_SCOPE, base_dir=str(_DNA_BASE_DIR))
-    except Exception as exc:
-        raise RuntimeError(
-            f"DNA scope '{_DNA_SCOPE}' failed to load from {_DNA_BASE_DIR}: {exc}"
-        ) from exc
-
-
-def _compose(mi, agent: str) -> str:
-    """Compose an Agent's system prompt, asserting it exists + is non-empty."""
-    if mi.one("Agent", agent) is None:
-        raise RuntimeError(
-            f"DNA scope '{_DNA_SCOPE}' ({_DNA_BASE_DIR}) has no Agent "
-            f"'{agent}' — missing, renamed, or unparseable document; "
-            "refusing to boot with a placeholder instruction."
-        )
-    text = mi.build_prompt(agent=agent)
-    if not text or not text.strip():
-        raise RuntimeError(
-            f"DNA composed an empty prompt for agent '{agent}' in scope "
-            f"'{_DNA_SCOPE}' ({_DNA_BASE_DIR}) — refusing to boot."
-        )
-    # Composed templates can pad sections with trailing newlines; the original
-    # constant had none.
-    return text.rstrip("\n")
-
-
-_mi = _load_instance()
-
 #: The static persona + tool-calling contract for the generative-UI Studio agent.
-STUDIO_INSTRUCTIONS = _compose(_mi, "artifacts-studio")
-
-del _mi
+#: ``load_prompts`` fails loudly on a missing scope/agent, so a boot is a boot
+#: with a real prompt.
+STUDIO_INSTRUCTIONS = load_prompts(_DNA_SCOPE, base_dir=str(_resolve_base_dir()))["artifacts-studio"]
