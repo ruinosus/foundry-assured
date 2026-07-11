@@ -3,21 +3,21 @@ kind: Story
 metadata:
   name: sp-dna-vs-agentframework
 spec:
-  title: 'SPIKE — DNA vs agent-framework: keep DNA, pivot to neutral de-para, or retire?'
-  description: >-
-    Adversarial decision spike (time-boxed, not for merge). Implement the SAME
-    agent — the grounded helpdesk concierge (persona + citation guardrail) —
-    BOTH ways and compare by evidence, steelmanning the competitor. (A) the
-    cleanest agent-framework-declarative path (AgentFactory + PromptAgent YAML);
-    (B) the existing DNA path (.dna/helpdesk Soul+Guardrail+delta composed by the
-    Kernel). REFRAME (owner insight): the survival question is NOT prompt-vs-prompt
-    (DNA loses on ceremony there) but whether DNA earns its keep as a NEUTRAL
-    DEFINITION layer — author once, EMIT/adapt to each runtime framework. So the
-    spike also prototypes the DNA -> agent-framework EMITTER (de-para) and assesses
-    conceptual portability to Bedrock/Vertex/OpenAI plus competitive honesty vs
-    Open Agent Spec / Google OKF. Output = the report + verdict + spike/comparison.html,
-    not production code.
-  status: review
+  title: "SPIKE \u2014 DNA vs agent-framework: keep DNA, pivot to neutral de-para,\
+    \ or retire?"
+  description: "Adversarial decision spike (time-boxed, not for merge). Implement\
+    \ the SAME agent \u2014 the grounded helpdesk concierge (persona + citation guardrail)\
+    \ \u2014 BOTH ways and compare by evidence, steelmanning the competitor. (A) the\
+    \ cleanest agent-framework-declarative path (AgentFactory + PromptAgent YAML);\
+    \ (B) the existing DNA path (.dna/helpdesk Soul+Guardrail+delta composed by the\
+    \ Kernel). REFRAME (owner insight): the survival question is NOT prompt-vs-prompt\
+    \ (DNA loses on ceremony there) but whether DNA earns its keep as a NEUTRAL DEFINITION\
+    \ layer \u2014 author once, EMIT/adapt to each runtime framework. So the spike\
+    \ also prototypes the DNA -> agent-framework EMITTER (de-para) and assesses conceptual\
+    \ portability to Bedrock/Vertex/OpenAI plus competitive honesty vs Open Agent\
+    \ Spec / Google OKF. Output = the report + verdict + spike/comparison.html, not\
+    \ production code."
+  status: done
   reporter: claude-code
   priority: high
   labels:
@@ -28,21 +28,25 @@ spec:
   acceptance_criteria:
   - text: The concierge is implemented BOTH ways and both RUN (compose a live agent)
     done: true
-  - text: agent-framework's real declarative surface is investigated in the installed lib (not assumed)
+  - text: agent-framework's real declarative surface is investigated in the installed
+      lib (not assumed)
     done: true
-  - text: A DNA -> agent-framework emitter is prototyped and round-trips (emitted == composed)
+  - text: A DNA -> agent-framework emitter is prototyped and round-trips (emitted
+      == composed)
     done: true
-  - text: Per-axis comparison table with real numbers + honest verdict, incl. "retire DNA" if warranted
+  - text: Per-axis comparison table with real numbers + honest verdict, incl. "retire
+      DNA" if warranted
     done: true
   definition_of_done:
-  - text: spike/ dir with both implementations + emitter + a runnable compare harness (PASS)
+  - text: spike/ dir with both implementations + emitter + a runnable compare harness
+      (PASS)
     done: true
   - text: spike/comparison.html self-contained visual with the scorecard + verdict
     done: true
   - text: Report delivered; production untouched; worktree preserved
     done: true
   created_at: '2026-07-11T11:10:00+00:00'
-  updated_at: '2026-07-11T11:10:00+00:00'
+  updated_at: '2026-07-11T15:26:14+00:00'
   timeline:
   - at: '2026-07-11T11:10:00+00:00'
     actor: claude-code
@@ -53,41 +57,38 @@ spec:
     actor: claude-code
     type: comment
     source: cli
-    summary: >-
-      Passo 0 finding — agent-framework HAS a real declarative loader
-      (agent-framework-declarative 1.0.0rc2: AgentFactory + PromptAgent YAML with
-      kind/name/description/instructions/model{id,provider}/tools/options). It is
-      genuinely clean for a SINGLE agent. BUT: (1) no composition primitive — no
-      Soul reuse, no Guardrail-as-doc; the ungrounded variant must COPY the persona
-      verbatim. (2) no tenant/overlay slot in the PromptAgent model. (3) the loader
-      hard-loads .NET 8 at import (pythonnet 3.0.5 + powerfx 0.0.34) — failed with
-      'must install .NET' on this box; only ran via DOTNET_ROLL_FORWARD=Major. Plain
-      (imperative) agent-framework avoids .NET but is no longer declarative.
+    summary: "Passo 0 finding \u2014 agent-framework HAS a real declarative loader\
+      \ (agent-framework-declarative 1.0.0rc2: AgentFactory + PromptAgent YAML with\
+      \ kind/name/description/instructions/model{id,provider}/tools/options). It is\
+      \ genuinely clean for a SINGLE agent. BUT: (1) no composition primitive \u2014\
+      \ no Soul reuse, no Guardrail-as-doc; the ungrounded variant must COPY the persona\
+      \ verbatim. (2) no tenant/overlay slot in the PromptAgent model. (3) the loader\
+      \ hard-loads .NET 8 at import (pythonnet 3.0.5 + powerfx 0.0.34) \u2014 failed\
+      \ with 'must install .NET' on this box; only ran via DOTNET_ROLL_FORWARD=Major.\
+      \ Plain (imperative) agent-framework avoids .NET but is no longer declarative."
   - at: '2026-07-11T11:10:00+00:00'
     actor: claude-code
     type: comment
     source: cli
-    summary: >-
-      Reframe proven with running code — spike/compare.py runs the concierge THREE
-      ways: (A) AF-native AgentFactory loads a hand-written PromptAgent YAML; (B) DNA
-      Kernel composes Soul+Guardrail+delta; (C) the DNA->AF EMITTER materializes the
-      PromptAgent YAML FROM the DNA definition and AgentFactory loads THAT into a live
-      Agent. Equivalence gate PASS: emitted instructions byte-equal the DNA-composed
-      prompt. De-para works and is cheap (~20 LOC/target) because DNA composition
-      already yields a clean artifact.
+    summary: "Reframe proven with running code \u2014 spike/compare.py runs the concierge\
+      \ THREE ways: (A) AF-native AgentFactory loads a hand-written PromptAgent YAML;\
+      \ (B) DNA Kernel composes Soul+Guardrail+delta; (C) the DNA->AF EMITTER materializes\
+      \ the PromptAgent YAML FROM the DNA definition and AgentFactory loads THAT into\
+      \ a live Agent. Equivalence gate PASS: emitted instructions byte-equal the DNA-composed\
+      \ prompt. De-para works and is cheap (~20 LOC/target) because DNA composition\
+      \ already yields a clean artifact."
   - at: '2026-07-11T11:20:00+00:00'
     actor: claude-code
     type: comment
     source: cli
-    summary: >-
-      Verdict delivered (spike/comparison.html + report). CONDITIONAL — the runtime
-      count decides. As a prompt-manager for a single agent-framework app, DNA does
-      NOT justify itself (AF's own declarative YAML is cleaner + already a dep). DNA
-      earns its keep ONLY as a neutral author-once->emit-to-each-runtime layer: the
-      emitter is proven (byte-equal round-trip, ~20 LOC/target) and the 2026 niche is
-      open (only Oracle Agent Spec, partial; OKF=wrong layer; A2A/MCP=interop;
-      AgentCore=hosting). One runtime -> retire to AF-native + Langfuse. Many runtimes
-      -> keep DNA, pivot to de-para (and emit THROUGH Oracle Agent Spec, not reinvent).
+    summary: "Verdict delivered (spike/comparison.html + report). CONDITIONAL \u2014\
+      \ the runtime count decides. As a prompt-manager for a single agent-framework\
+      \ app, DNA does NOT justify itself (AF's own declarative YAML is cleaner + already\
+      \ a dep). DNA earns its keep ONLY as a neutral author-once->emit-to-each-runtime\
+      \ layer: the emitter is proven (byte-equal round-trip, ~20 LOC/target) and the\
+      \ 2026 niche is open (only Oracle Agent Spec, partial; OKF=wrong layer; A2A/MCP=interop;\
+      \ AgentCore=hosting). One runtime -> retire to AF-native + Langfuse. Many runtimes\
+      \ -> keep DNA, pivot to de-para (and emit THROUGH Oracle Agent Spec, not reinvent)."
   - at: '2026-07-11T11:20:00+00:00'
     actor: claude-code
     type: pr_opened
@@ -100,4 +101,17 @@ spec:
     source: cli
     from: in-progress
     to: review
+  - at: '2026-07-11T15:26:13+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "prot\xF3tipo mergeado (avalia\xE7\xE3o do dono)"
+  - at: '2026-07-11T15:26:14+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: review
+    to: done
+    commit_ref: b5f7a21f135747b75494b12b2b807f15e7146a0d
   produces: []
+  closed_at: '2026-07-11T15:26:12+00:00'

@@ -7,7 +7,7 @@ spec:
     \ nativo"
   description: 'Prova o modelo Terraform no consumidor: autora em DNA, emite o PromptAgent
     nativo do agent-framework em build-time, runtime carrega o nativo (sem dna-sdk).'
-  status: review
+  status: done
   feature: f-dna-adoption
   owner: claude-code
   priority: high
@@ -16,26 +16,47 @@ spec:
   - spike
   reporter: claude-code
   acceptance_criteria:
-  - "Given o scope .dna/helpdesk, When 'dna emit concierge-grounded --target agent-framework',\
-    \ Then um PromptAgent nativo (concierge.agent.yaml) \xE9 gerado"
-  - "Given o artefato emitido, When carregado via agent_framework_declarative.AgentFactory,\
-    \ Then vira um Agent vivo cujas instructions == o prompt que o DNA comp\xF5e (byte-equal,\
-    \ 504 chars)"
-  - Given o writeup, Then contrasta runtime-compose vs build-emit com trade-offs honestos
-    e mostra como build-emit elimina o .dna viajando no Docker
+  - text: "Given o scope .dna/helpdesk, When 'dna emit concierge-grounded --target\
+      \ agent-framework', Then um PromptAgent nativo (concierge.agent.yaml) \xE9 gerado"
+    done: true
+    done_at: '2026-07-11T15:26:15+00:00'
+    done_by: story-done-auto
+  - text: "Given o artefato emitido, When carregado via agent_framework_declarative.AgentFactory,\
+      \ Then vira um Agent vivo cujas instructions == o prompt que o DNA comp\xF5\
+      e (byte-equal, 504 chars)"
+    done: true
+    done_at: '2026-07-11T15:26:15+00:00'
+    done_by: story-done-auto
+  - text: Given o writeup, Then contrasta runtime-compose vs build-emit com trade-offs
+      honestos e mostra como build-emit elimina o .dna viajando no Docker
+    done: true
+    done_at: '2026-07-11T15:26:15+00:00'
+    done_by: story-done-auto
   acceptance_criteria_source: claude-code
   definition_of_done:
-  - "Code: spike/emit-adoption/ (artefato + demo.py + README.md), sem tocar produ\xE7\
-    \xE3o/shims/pyproject"
-  - "Tests: demo RODA sob os dois venvs \u2014 build link (load_prompts) e runtime\
-    \ link (live Agent), ambos byte-equal PASS"
-  - "Docs: README com os dois modelos, trade-offs, e a conex\xE3o com a cr\xEDtica\
-    \ de empacotamento Docker do dono"
-  - "CI: n\xE3o quebra (prot\xF3tipo isolado, produ\xE7\xE3o intocada); PR marcada\
-    \ PROT\xD3TIPO \u2014 avaliar"
+  - text: "Code: spike/emit-adoption/ (artefato + demo.py + README.md), sem tocar\
+      \ produ\xE7\xE3o/shims/pyproject"
+    done: true
+    done_at: '2026-07-11T15:26:15+00:00'
+    done_by: story-done-auto
+  - text: "Tests: demo RODA sob os dois venvs \u2014 build link (load_prompts) e runtime\
+      \ link (live Agent), ambos byte-equal PASS"
+    done: true
+    done_at: '2026-07-11T15:26:15+00:00'
+    done_by: story-done-auto
+  - text: "Docs: README com os dois modelos, trade-offs, e a conex\xE3o com a cr\xED\
+      tica de empacotamento Docker do dono"
+    done: true
+    done_at: '2026-07-11T15:26:15+00:00'
+    done_by: story-done-auto
+  - text: "CI: n\xE3o quebra (prot\xF3tipo isolado, produ\xE7\xE3o intocada); PR marcada\
+      \ PROT\xD3TIPO \u2014 avaliar"
+    done: true
+    done_at: '2026-07-11T15:26:15+00:00'
+    done_by: story-done-auto
   definition_of_done_source: claude-code
   created_at: '2026-07-11T13:40:18+00:00'
-  updated_at: '2026-07-11T13:45:23+00:00'
+  updated_at: '2026-07-11T15:26:17+00:00'
   timeline:
   - at: '2026-07-11T13:40:18+00:00'
     actor: claude-code
@@ -101,8 +122,21 @@ spec:
     source: cli
     from: in-progress
     to: review
+  - at: '2026-07-11T15:26:15+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "prot\xF3tipo mergeado (avalia\xE7\xE3o do dono)"
+  - at: '2026-07-11T15:26:17+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: review
+    to: done
+    commit_ref: b5f7a21f135747b75494b12b2b807f15e7146a0d
   produces:
   - kind: Plan
     name: plan-s-foundry-emit-prototype
     role: implementation
     at: '2026-07-11T13:40:39+00:00'
+  closed_at: '2026-07-11T15:26:15+00:00'

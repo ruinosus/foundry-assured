@@ -6,7 +6,7 @@ spec:
   title: 'Prototype: per-tenant prompt/persona overlays'
   description: 'Spike proving DNA per-tenant Soul overlay: acme customizes concierge
     persona, base helpdesk untouched, no fork/redeploy'
-  status: in-progress
+  status: done
   feature: f-dna-adoption
   priority: medium
   labels:
@@ -14,19 +14,38 @@ spec:
   - spike
   reporter: claude-code
   acceptance_criteria:
-  - Given the shared helpdesk concierge, When composed for tenant=acme, Then the persona
-    reflects ACME's on-brand tone
-  - Given tenant=acme has an overlay, When composed with no tenant, Then the base
-    persona is returned unchanged (base intact, no fork)
+  - text: Given the shared helpdesk concierge, When composed for tenant=acme, Then
+      the persona reflects ACME's on-brand tone
+    done: true
+    done_at: '2026-07-11T15:26:08+00:00'
+    done_by: story-done-auto
+  - text: Given tenant=acme has an overlay, When composed with no tenant, Then the
+      base persona is returned unchanged (base intact, no fork)
+    done: true
+    done_at: '2026-07-11T15:26:08+00:00'
+    done_by: story-done-auto
   acceptance_criteria_source: cli-create
   definition_of_done:
-  - Runnable demo prints base vs acme prompts side by side with real captured output
-  - HTML artifact for the owner to visually compare base vs tenant
-  - 'README writeup: tenancy API used, productization cost, honest gaps'
-  - No production behavior changed; CI stays green
+  - text: Runnable demo prints base vs acme prompts side by side with real captured
+      output
+    done: true
+    done_at: '2026-07-11T15:26:08+00:00'
+    done_by: story-done-auto
+  - text: HTML artifact for the owner to visually compare base vs tenant
+    done: true
+    done_at: '2026-07-11T15:26:08+00:00'
+    done_by: story-done-auto
+  - text: 'README writeup: tenancy API used, productization cost, honest gaps'
+    done: true
+    done_at: '2026-07-11T15:26:08+00:00'
+    done_by: story-done-auto
+  - text: No production behavior changed; CI stays green
+    done: true
+    done_at: '2026-07-11T15:26:08+00:00'
+    done_by: story-done-auto
   definition_of_done_source: cli-create
   created_at: '2026-07-11T10:32:31+00:00'
-  updated_at: '2026-07-11T10:35:53+00:00'
+  updated_at: '2026-07-11T15:26:11+00:00'
   timeline:
   - at: '2026-07-11T10:32:31+00:00'
     actor: claude-code
@@ -64,7 +83,20 @@ spec:
     at: '2026-07-11T10:35:53+00:00'
     source: cli
     kaizen_doc: kz-002-dx-gap-in-dna-kernel-quick-s
+  - at: '2026-07-11T15:26:10+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "prot\xF3tipo mergeado (avalia\xE7\xE3o do dono)"
+  - at: '2026-07-11T15:26:11+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: done
+    commit_ref: b5f7a21f135747b75494b12b2b807f15e7146a0d
   produces:
   - kind: HtmlArtifact
     name: proto-tenant-overlays-viz
     at: '2026-07-11T10:35:52+00:00'
+  closed_at: '2026-07-11T15:26:08+00:00'
