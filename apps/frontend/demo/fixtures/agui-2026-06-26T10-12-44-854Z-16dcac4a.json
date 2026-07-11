@@ -1,0 +1,1682 @@
+{
+  "fixtures": [
+    {
+      "match": {
+        "message": "What's the weather in Paris today?"
+      },
+      "events": [
+        {
+          "type": "RUN_STARTED",
+          "threadId": "t-4",
+          "runId": "r-4"
+        },
+        {
+          "type": "CUSTOM",
+          "name": "status",
+          "value": {
+            "state": "IN_PROGRESS"
+          }
+        },
+        {
+          "type": "STEP_STARTED",
+          "stepName": "triage"
+        },
+        {
+          "type": "ACTIVITY_SNAPSHOT",
+          "messageId": "executor:triage",
+          "activityType": "executor",
+          "content": {
+            "executor_id": "triage",
+            "status": "in_progress",
+            "data": [
+              {
+                "type": "message",
+                "role": "user",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "What's the weather in Paris today?",
+                    "additional_properties": {}
+                  }
+                ],
+                "message_id": "m1",
+                "additional_properties": {}
+              }
+            ]
+          },
+          "replace": true
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "triage",
+            "response_id": "resp_0d7ea26b4ad1f210006a3e5092336c81909286f6b977f475f3",
+            "continuation_token": {
+              "response_id": "resp_0d7ea26b4ad1f210006a3e5092336c81909286f6b977f475f3"
+            },
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "triage",
+            "response_id": "resp_0d7ea26b4ad1f210006a3e5092336c81909286f6b977f475f3",
+            "continuation_token": {
+              "response_id": "resp_0d7ea26b4ad1f210006a3e5092336c81909286f6b977f475f3"
+            },
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "triage",
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "TEXT_MESSAGE_START",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "role": "assistant"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": "Intent"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": ":"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": " Weather"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": " inquiry"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": "  \n"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": "Urg"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": "ency"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": ":"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": " Low"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": "  \n"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": "Rest"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": "ated"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": ":"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": " What"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": " is"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": " the"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": " current"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": " weather"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": " in"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": " Paris"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": " today"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b",
+          "delta": "?"
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "triage",
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "triage",
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "triage",
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "usage",
+          "value": {
+            "input_token_count": 82,
+            "output_token_count": 23,
+            "total_token_count": 105,
+            "openai.cached_input_tokens": 0,
+            "cache_read_input_token_count": 0,
+            "openai.reasoning_tokens": 0,
+            "reasoning_output_token_count": 0
+          }
+        },
+        {
+          "type": "STEP_FINISHED",
+          "stepName": "triage"
+        },
+        {
+          "type": "ACTIVITY_SNAPSHOT",
+          "messageId": "executor:triage",
+          "activityType": "executor",
+          "content": {
+            "executor_id": "triage",
+            "status": "completed",
+            "data": [
+              {
+                "executor_id": "triage",
+                "agent_response": {
+                  "type": "agent_response",
+                  "messages": [
+                    {
+                      "type": "message",
+                      "role": "assistant",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "Intent: Weather inquiry  \nUrgency: Low  \nRestated: What is the current weather in Paris today?",
+                          "additional_properties": {}
+                        }
+                      ],
+                      "author_name": "triage",
+                      "additional_properties": {}
+                    }
+                  ],
+                  "response_id": "resp_0d7ea26b4ad1f210006a3e5092336c81909286f6b977f475f3",
+                  "created_at": "2026-06-26T10:12:34.000000Z",
+                  "usage_details": {
+                    "reasoning_output_token_count": 0,
+                    "cache_read_input_token_count": 0,
+                    "input_token_count": 82,
+                    "total_token_count": 105,
+                    "openai.cached_input_tokens": 0,
+                    "openai.reasoning_tokens": 0,
+                    "output_token_count": 23
+                  },
+                  "additional_properties": {}
+                },
+                "full_conversation": [
+                  {
+                    "type": "message",
+                    "role": "user",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "What's the weather in Paris today?",
+                        "additional_properties": {}
+                      }
+                    ],
+                    "message_id": "m1",
+                    "additional_properties": {}
+                  },
+                  {
+                    "type": "message",
+                    "role": "assistant",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "Intent: Weather inquiry  \nUrgency: Low  \nRestated: What is the current weather in Paris today?",
+                        "additional_properties": {}
+                      }
+                    ],
+                    "author_name": "triage",
+                    "additional_properties": {}
+                  }
+                ]
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "triage",
+                "response_id": "resp_0d7ea26b4ad1f210006a3e5092336c81909286f6b977f475f3",
+                "continuation_token": {
+                  "response_id": "resp_0d7ea26b4ad1f210006a3e5092336c81909286f6b977f475f3"
+                },
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "triage",
+                "response_id": "resp_0d7ea26b4ad1f210006a3e5092336c81909286f6b977f475f3",
+                "continuation_token": {
+                  "response_id": "resp_0d7ea26b4ad1f210006a3e5092336c81909286f6b977f475f3"
+                },
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "Intent",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": ":",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " Weather",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " inquiry",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "  \n",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "Urg",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "ency",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": ":",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " Low",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "  \n",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "Rest",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "ated",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": ":",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " What",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " is",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " the",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " current",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " weather",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " in",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " Paris",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " today",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "?",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "triage",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "usage",
+                    "usage_details": {
+                      "input_token_count": 82,
+                      "output_token_count": 23,
+                      "total_token_count": 105,
+                      "openai.cached_input_tokens": 0,
+                      "cache_read_input_token_count": 0,
+                      "openai.reasoning_tokens": 0,
+                      "reasoning_output_token_count": 0
+                    },
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "triage",
+                "response_id": "resp_0d7ea26b4ad1f210006a3e5092336c81909286f6b977f475f3",
+                "created_at": "2026-06-26T10:12:34.000000Z",
+                "additional_properties": {}
+              }
+            ]
+          },
+          "replace": true
+        },
+        {
+          "type": "TEXT_MESSAGE_END",
+          "messageId": "21227287-5984-428d-bfe5-303244087a7b"
+        },
+        {
+          "type": "STEP_STARTED",
+          "stepName": "superstep:1"
+        },
+        {
+          "type": "STEP_STARTED",
+          "stepName": "retrieve"
+        },
+        {
+          "type": "ACTIVITY_SNAPSHOT",
+          "messageId": "executor:retrieve",
+          "activityType": "executor",
+          "content": {
+            "executor_id": "retrieve",
+            "status": "in_progress",
+            "data": {
+              "executor_id": "triage",
+              "agent_response": {
+                "type": "agent_response",
+                "messages": [
+                  {
+                    "type": "message",
+                    "role": "assistant",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "Intent: Weather inquiry  \nUrgency: Low  \nRestated: What is the current weather in Paris today?",
+                        "additional_properties": {}
+                      }
+                    ],
+                    "author_name": "triage",
+                    "additional_properties": {}
+                  }
+                ],
+                "response_id": "resp_0d7ea26b4ad1f210006a3e5092336c81909286f6b977f475f3",
+                "created_at": "2026-06-26T10:12:34.000000Z",
+                "usage_details": {
+                  "reasoning_output_token_count": 0,
+                  "cache_read_input_token_count": 0,
+                  "input_token_count": 82,
+                  "total_token_count": 105,
+                  "openai.cached_input_tokens": 0,
+                  "openai.reasoning_tokens": 0,
+                  "output_token_count": 23
+                },
+                "additional_properties": {}
+              },
+              "full_conversation": [
+                {
+                  "type": "message",
+                  "role": "user",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "What's the weather in Paris today?",
+                      "additional_properties": {}
+                    }
+                  ],
+                  "message_id": "m1",
+                  "additional_properties": {}
+                },
+                {
+                  "type": "message",
+                  "role": "assistant",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "Intent: Weather inquiry  \nUrgency: Low  \nRestated: What is the current weather in Paris today?",
+                      "additional_properties": {}
+                    }
+                  ],
+                  "author_name": "triage",
+                  "additional_properties": {}
+                }
+              ]
+            }
+          },
+          "replace": true
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "retrieve",
+            "response_id": "resp_0dd4317d15b04991006a3e50979aa88193946601fb8bac6543",
+            "continuation_token": {
+              "response_id": "resp_0dd4317d15b04991006a3e50979aa88193946601fb8bac6543"
+            },
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "retrieve",
+            "response_id": "resp_0dd4317d15b04991006a3e50979aa88193946601fb8bac6543",
+            "continuation_token": {
+              "response_id": "resp_0dd4317d15b04991006a3e50979aa88193946601fb8bac6543"
+            },
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "retrieve",
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "TEXT_MESSAGE_START",
+          "messageId": "e6f138ac-bb3e-4404-87aa-d239ef588eff",
+          "role": "assistant"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "e6f138ac-bb3e-4404-87aa-d239ef588eff",
+          "delta": "NO"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "e6f138ac-bb3e-4404-87aa-d239ef588eff",
+          "delta": "_MATCH"
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "retrieve",
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "retrieve",
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "retrieve",
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "usage",
+          "value": {
+            "input_token_count": 127,
+            "output_token_count": 3,
+            "total_token_count": 130,
+            "openai.cached_input_tokens": 0,
+            "cache_read_input_token_count": 0,
+            "openai.reasoning_tokens": 0,
+            "reasoning_output_token_count": 0
+          }
+        },
+        {
+          "type": "STEP_FINISHED",
+          "stepName": "retrieve"
+        },
+        {
+          "type": "ACTIVITY_SNAPSHOT",
+          "messageId": "executor:retrieve",
+          "activityType": "executor",
+          "content": {
+            "executor_id": "retrieve",
+            "status": "completed",
+            "data": [
+              {
+                "executor_id": "retrieve",
+                "agent_response": {
+                  "type": "agent_response",
+                  "messages": [
+                    {
+                      "type": "message",
+                      "role": "assistant",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "NO_MATCH",
+                          "additional_properties": {}
+                        }
+                      ],
+                      "author_name": "retrieve",
+                      "additional_properties": {}
+                    }
+                  ],
+                  "response_id": "resp_0dd4317d15b04991006a3e50979aa88193946601fb8bac6543",
+                  "created_at": "2026-06-26T10:12:39.000000Z",
+                  "usage_details": {
+                    "reasoning_output_token_count": 0,
+                    "cache_read_input_token_count": 0,
+                    "input_token_count": 127,
+                    "total_token_count": 130,
+                    "openai.cached_input_tokens": 0,
+                    "openai.reasoning_tokens": 0,
+                    "output_token_count": 3
+                  },
+                  "additional_properties": {}
+                },
+                "full_conversation": [
+                  {
+                    "type": "message",
+                    "role": "user",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "What's the weather in Paris today?",
+                        "additional_properties": {}
+                      }
+                    ],
+                    "message_id": "m1",
+                    "additional_properties": {}
+                  },
+                  {
+                    "type": "message",
+                    "role": "assistant",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "Intent: Weather inquiry  \nUrgency: Low  \nRestated: What is the current weather in Paris today?",
+                        "additional_properties": {}
+                      }
+                    ],
+                    "author_name": "triage",
+                    "additional_properties": {}
+                  },
+                  {
+                    "type": "message",
+                    "role": "assistant",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "NO_MATCH",
+                        "additional_properties": {}
+                      }
+                    ],
+                    "author_name": "retrieve",
+                    "additional_properties": {}
+                  }
+                ]
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "retrieve",
+                "response_id": "resp_0dd4317d15b04991006a3e50979aa88193946601fb8bac6543",
+                "continuation_token": {
+                  "response_id": "resp_0dd4317d15b04991006a3e50979aa88193946601fb8bac6543"
+                },
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "retrieve",
+                "response_id": "resp_0dd4317d15b04991006a3e50979aa88193946601fb8bac6543",
+                "continuation_token": {
+                  "response_id": "resp_0dd4317d15b04991006a3e50979aa88193946601fb8bac6543"
+                },
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "retrieve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "retrieve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "NO",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "retrieve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "_MATCH",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "retrieve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "retrieve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "retrieve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "retrieve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "usage",
+                    "usage_details": {
+                      "input_token_count": 127,
+                      "output_token_count": 3,
+                      "total_token_count": 130,
+                      "openai.cached_input_tokens": 0,
+                      "cache_read_input_token_count": 0,
+                      "openai.reasoning_tokens": 0,
+                      "reasoning_output_token_count": 0
+                    },
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "retrieve",
+                "response_id": "resp_0dd4317d15b04991006a3e50979aa88193946601fb8bac6543",
+                "created_at": "2026-06-26T10:12:39.000000Z",
+                "additional_properties": {}
+              }
+            ]
+          },
+          "replace": true
+        },
+        {
+          "type": "STEP_FINISHED",
+          "stepName": "superstep:1"
+        },
+        {
+          "type": "TEXT_MESSAGE_END",
+          "messageId": "e6f138ac-bb3e-4404-87aa-d239ef588eff"
+        },
+        {
+          "type": "STEP_STARTED",
+          "stepName": "superstep:2"
+        },
+        {
+          "type": "STEP_STARTED",
+          "stepName": "resolve"
+        },
+        {
+          "type": "ACTIVITY_SNAPSHOT",
+          "messageId": "executor:resolve",
+          "activityType": "executor",
+          "content": {
+            "executor_id": "resolve",
+            "status": "in_progress",
+            "data": {
+              "executor_id": "retrieve",
+              "agent_response": {
+                "type": "agent_response",
+                "messages": [
+                  {
+                    "type": "message",
+                    "role": "assistant",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "NO_MATCH",
+                        "additional_properties": {}
+                      }
+                    ],
+                    "author_name": "retrieve",
+                    "additional_properties": {}
+                  }
+                ],
+                "response_id": "resp_0dd4317d15b04991006a3e50979aa88193946601fb8bac6543",
+                "created_at": "2026-06-26T10:12:39.000000Z",
+                "usage_details": {
+                  "reasoning_output_token_count": 0,
+                  "cache_read_input_token_count": 0,
+                  "input_token_count": 127,
+                  "total_token_count": 130,
+                  "openai.cached_input_tokens": 0,
+                  "openai.reasoning_tokens": 0,
+                  "output_token_count": 3
+                },
+                "additional_properties": {}
+              },
+              "full_conversation": [
+                {
+                  "type": "message",
+                  "role": "user",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "What's the weather in Paris today?",
+                      "additional_properties": {}
+                    }
+                  ],
+                  "message_id": "m1",
+                  "additional_properties": {}
+                },
+                {
+                  "type": "message",
+                  "role": "assistant",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "Intent: Weather inquiry  \nUrgency: Low  \nRestated: What is the current weather in Paris today?",
+                      "additional_properties": {}
+                    }
+                  ],
+                  "author_name": "triage",
+                  "additional_properties": {}
+                },
+                {
+                  "type": "message",
+                  "role": "assistant",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "NO_MATCH",
+                      "additional_properties": {}
+                    }
+                  ],
+                  "author_name": "retrieve",
+                  "additional_properties": {}
+                }
+              ]
+            }
+          },
+          "replace": true
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "resolve",
+            "response_id": "resp_0f692eac33c7b03b006a3e509b95e081949897394d00a5491d",
+            "continuation_token": {
+              "response_id": "resp_0f692eac33c7b03b006a3e509b95e081949897394d00a5491d"
+            },
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "resolve",
+            "response_id": "resp_0f692eac33c7b03b006a3e509b95e081949897394d00a5491d",
+            "continuation_token": {
+              "response_id": "resp_0f692eac33c7b03b006a3e509b95e081949897394d00a5491d"
+            },
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "resolve",
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "TEXT_MESSAGE_START",
+          "messageId": "60ae34dd-d7d7-43be-b07a-e6c4dcef2d6f",
+          "role": "assistant"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "60ae34dd-d7d7-43be-b07a-e6c4dcef2d6f",
+          "delta": "I"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "60ae34dd-d7d7-43be-b07a-e6c4dcef2d6f",
+          "delta": " don't"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "60ae34dd-d7d7-43be-b07a-e6c4dcef2d6f",
+          "delta": " know"
+        },
+        {
+          "type": "TEXT_MESSAGE_CONTENT",
+          "messageId": "60ae34dd-d7d7-43be-b07a-e6c4dcef2d6f",
+          "delta": "."
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "resolve",
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "resolve",
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "workflow_output",
+          "value": {
+            "type": "agent_response_update",
+            "contents": [],
+            "role": "assistant",
+            "author_name": "resolve",
+            "additional_properties": {}
+          }
+        },
+        {
+          "type": "CUSTOM",
+          "name": "usage",
+          "value": {
+            "input_token_count": 1094,
+            "output_token_count": 5,
+            "total_token_count": 1099,
+            "openai.cached_input_tokens": 0,
+            "cache_read_input_token_count": 0,
+            "openai.reasoning_tokens": 0,
+            "reasoning_output_token_count": 0
+          }
+        },
+        {
+          "type": "STEP_FINISHED",
+          "stepName": "resolve"
+        },
+        {
+          "type": "ACTIVITY_SNAPSHOT",
+          "messageId": "executor:resolve",
+          "activityType": "executor",
+          "content": {
+            "executor_id": "resolve",
+            "status": "completed",
+            "data": [
+              {
+                "executor_id": "resolve",
+                "agent_response": {
+                  "type": "agent_response",
+                  "messages": [
+                    {
+                      "type": "message",
+                      "role": "assistant",
+                      "contents": [
+                        {
+                          "type": "text",
+                          "text": "I don't know.",
+                          "additional_properties": {}
+                        }
+                      ],
+                      "author_name": "resolve",
+                      "additional_properties": {}
+                    }
+                  ],
+                  "response_id": "resp_0f692eac33c7b03b006a3e509b95e081949897394d00a5491d",
+                  "created_at": "2026-06-26T10:12:43.000000Z",
+                  "usage_details": {
+                    "reasoning_output_token_count": 0,
+                    "cache_read_input_token_count": 0,
+                    "input_token_count": 1094,
+                    "total_token_count": 1099,
+                    "openai.cached_input_tokens": 0,
+                    "openai.reasoning_tokens": 0,
+                    "output_token_count": 5
+                  },
+                  "additional_properties": {}
+                },
+                "full_conversation": [
+                  {
+                    "type": "message",
+                    "role": "user",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "What's the weather in Paris today?",
+                        "additional_properties": {}
+                      }
+                    ],
+                    "message_id": "m1",
+                    "additional_properties": {}
+                  },
+                  {
+                    "type": "message",
+                    "role": "assistant",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "Intent: Weather inquiry  \nUrgency: Low  \nRestated: What is the current weather in Paris today?",
+                        "additional_properties": {}
+                      }
+                    ],
+                    "author_name": "triage",
+                    "additional_properties": {}
+                  },
+                  {
+                    "type": "message",
+                    "role": "assistant",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "NO_MATCH",
+                        "additional_properties": {}
+                      }
+                    ],
+                    "author_name": "retrieve",
+                    "additional_properties": {}
+                  },
+                  {
+                    "type": "message",
+                    "role": "assistant",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "I don't know.",
+                        "additional_properties": {}
+                      }
+                    ],
+                    "author_name": "resolve",
+                    "additional_properties": {}
+                  }
+                ]
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "resolve",
+                "response_id": "resp_0f692eac33c7b03b006a3e509b95e081949897394d00a5491d",
+                "continuation_token": {
+                  "response_id": "resp_0f692eac33c7b03b006a3e509b95e081949897394d00a5491d"
+                },
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "resolve",
+                "response_id": "resp_0f692eac33c7b03b006a3e509b95e081949897394d00a5491d",
+                "continuation_token": {
+                  "response_id": "resp_0f692eac33c7b03b006a3e509b95e081949897394d00a5491d"
+                },
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "resolve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "resolve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": "I",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "resolve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " don't",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "resolve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": " know",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "resolve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "text",
+                    "text": ".",
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "resolve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "resolve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "resolve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [],
+                "role": "assistant",
+                "author_name": "resolve",
+                "additional_properties": {}
+              },
+              {
+                "type": "agent_response_update",
+                "contents": [
+                  {
+                    "type": "usage",
+                    "usage_details": {
+                      "input_token_count": 1094,
+                      "output_token_count": 5,
+                      "total_token_count": 1099,
+                      "openai.cached_input_tokens": 0,
+                      "cache_read_input_token_count": 0,
+                      "openai.reasoning_tokens": 0,
+                      "reasoning_output_token_count": 0
+                    },
+                    "additional_properties": {}
+                  }
+                ],
+                "role": "assistant",
+                "author_name": "resolve",
+                "response_id": "resp_0f692eac33c7b03b006a3e509b95e081949897394d00a5491d",
+                "created_at": "2026-06-26T10:12:43.000000Z",
+                "additional_properties": {}
+              }
+            ]
+          },
+          "replace": true
+        },
+        {
+          "type": "STEP_FINISHED",
+          "stepName": "superstep:2"
+        },
+        {
+          "type": "TEXT_MESSAGE_END",
+          "messageId": "60ae34dd-d7d7-43be-b07a-e6c4dcef2d6f"
+        },
+        {
+          "type": "STEP_STARTED",
+          "stepName": "superstep:3"
+        },
+        {
+          "type": "STEP_STARTED",
+          "stepName": "escalate"
+        },
+        {
+          "type": "ACTIVITY_SNAPSHOT",
+          "messageId": "executor:escalate",
+          "activityType": "executor",
+          "content": {
+            "executor_id": "escalate",
+            "status": "in_progress",
+            "data": {
+              "executor_id": "resolve",
+              "agent_response": {
+                "type": "agent_response",
+                "messages": [
+                  {
+                    "type": "message",
+                    "role": "assistant",
+                    "contents": [
+                      {
+                        "type": "text",
+                        "text": "I don't know.",
+                        "additional_properties": {}
+                      }
+                    ],
+                    "author_name": "resolve",
+                    "additional_properties": {}
+                  }
+                ],
+                "response_id": "resp_0f692eac33c7b03b006a3e509b95e081949897394d00a5491d",
+                "created_at": "2026-06-26T10:12:43.000000Z",
+                "usage_details": {
+                  "reasoning_output_token_count": 0,
+                  "cache_read_input_token_count": 0,
+                  "input_token_count": 1094,
+                  "total_token_count": 1099,
+                  "openai.cached_input_tokens": 0,
+                  "openai.reasoning_tokens": 0,
+                  "output_token_count": 5
+                },
+                "additional_properties": {}
+              },
+              "full_conversation": [
+                {
+                  "type": "message",
+                  "role": "user",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "What's the weather in Paris today?",
+                      "additional_properties": {}
+                    }
+                  ],
+                  "message_id": "m1",
+                  "additional_properties": {}
+                },
+                {
+                  "type": "message",
+                  "role": "assistant",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "Intent: Weather inquiry  \nUrgency: Low  \nRestated: What is the current weather in Paris today?",
+                      "additional_properties": {}
+                    }
+                  ],
+                  "author_name": "triage",
+                  "additional_properties": {}
+                },
+                {
+                  "type": "message",
+                  "role": "assistant",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "NO_MATCH",
+                      "additional_properties": {}
+                    }
+                  ],
+                  "author_name": "retrieve",
+                  "additional_properties": {}
+                },
+                {
+                  "type": "message",
+                  "role": "assistant",
+                  "contents": [
+                    {
+                      "type": "text",
+                      "text": "I don't know.",
+                      "additional_properties": {}
+                    }
+                  ],
+                  "author_name": "resolve",
+                  "additional_properties": {}
+                }
+              ]
+            }
+          },
+          "replace": true
+        },
+        {
+          "type": "STEP_FINISHED",
+          "stepName": "escalate"
+        },
+        {
+          "type": "ACTIVITY_SNAPSHOT",
+          "messageId": "executor:escalate",
+          "activityType": "executor",
+          "content": {
+            "executor_id": "escalate",
+            "status": "completed",
+            "data": [
+              "I don't know."
+            ]
+          },
+          "replace": true
+        },
+        {
+          "type": "STEP_FINISHED",
+          "stepName": "superstep:3"
+        },
+        {
+          "type": "RUN_FINISHED",
+          "threadId": "t-4",
+          "runId": "r-4"
+        }
+      ]
+    }
+  ]
+}

@@ -9,19 +9,33 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
+import { branding } from "@/lib/branding";
+import { DOMAINS } from "@/lib/domains";
+import { useMyRoles, isAdmin } from "@/lib/auth/roles";
 
-const NAV = [
+// The domain agents are config-driven from the registry → /d/<id>. Workspace pages are
+// static. Two sections so the sidebar reads as "tools" + "agents".
+const AGENT_NAV = DOMAINS.map((d) => ({ href: `/d/${d.id}`, label: d.label, icon: d.icon }));
+const WORKSPACE_NAV = [
   { href: "/", label: "Overview", icon: "▦" },
-  { href: "/chat", label: "Concierge", icon: "💬" },
   { href: "/tickets", label: "Tickets", icon: "🎫" },
   { href: "/evals", label: "Evaluations", icon: "✓" },
+  { href: "/artifacts", label: "Artifacts", icon: "📦" },
+];
+
+const ADMIN_NAV = [
+  { href: "/admin/users", label: "Admin", icon: "🛡️" },
+  { href: "/admin/connections", label: "Connections", icon: "🔌" },
 ];
 
 const TITLES: Record<string, string> = {
   "/": "Overview",
-  "/chat": "Concierge",
   "/tickets": "Tickets",
   "/evals": "Evaluations",
+  "/artifacts": "Artifacts",
+  "/admin/users": "Admin",
+  "/admin/connections": "Connections",
+  ...Object.fromEntries(DOMAINS.map((d) => [`/d/${d.id}`, d.label])),
 };
 
 function BackendStatus() {
@@ -84,7 +98,18 @@ export function AppShell({
   flush?: boolean;
 }) {
   const pathname = usePathname() || "/";
-  const title = TITLES[pathname] ?? "";
+  // Exact match first; then fall back to the longest base route that is a prefix of the
+  // current path, so nested workspace routes (e.g. /artifacts/<id>) inherit their base label
+  // — consistent with the sidebar's startsWith-based active state.
+  const title =
+    TITLES[pathname] ??
+    Object.entries(TITLES)
+      .filter(([href]) => href !== "/" && pathname.startsWith(`${href}/`))
+      .sort((a, b) => b[0].length - a[0].length)[0]?.[1] ??
+    "";
+  const roles = useMyRoles();
+  // Show Admin in the nav only to Admins (the page + every endpoint re-check server-side).
+  const workspace = isAdmin(roles) ? [...WORKSPACE_NAV, ...ADMIN_NAV] : WORKSPACE_NAV;
 
   return (
     <div className="shell">
@@ -92,22 +117,33 @@ export function AppShell({
         <div className="brand">
           <span className="brand-mark">⚡</span>
           <span>
-            Foundry Helpdesk
-            <small>Engineering support</small>
+            {branding.product}
+            <small>{branding.tagline}</small>
           </span>
         </div>
 
-        <div className="nav-section">Workspace</div>
-        {NAV.map((item) => {
-          const active =
-            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
-          return (
-            <Link key={item.href} href={item.href} className={`nav-item ${active ? "active" : ""}`}>
-              <span className="ico">{item.icon}</span>
-              {item.label}
-            </Link>
-          );
-        })}
+        {[
+          { section: "Workspace", items: workspace },
+          { section: "AI agents", items: AGENT_NAV },
+        ].map(({ section, items }) => (
+          <div key={section}>
+            <div className="nav-section">{section}</div>
+            {items.map((item) => {
+              const active =
+                item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`nav-item ${active ? "active" : ""}`}
+                >
+                  <span className="ico">{item.icon}</span>
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
 
         <div className="sidebar-foot-group">
           {authConfigured && <AccountChip />}

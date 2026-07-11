@@ -1,50 +1,26 @@
 "use client";
 
-// Read-only view of eval runs recorded by the offline harness
-// (backend/eval/run_eval.py -> runs.jsonl), served via /api/evals. Each run links
-// to its Foundry portal report when the cloud judges ran.
+// Live evaluation runs read from the Foundry project (the canonical store), served
+// via /api/evals → backend /eval/foundry. Shows real groundedness/relevance/coherence
+// pass counts per run, each linking to its portal report.
 
 import { useEffect, useState } from "react";
+import { authedFetch } from "@/lib/auth/api";
 
-type Counts = { passed: number; failed: number; errored?: number };
-type Provider = {
-  provider: string;
-  passed: number;
-  total: number;
-  failed: number;
-  report_url: string | null;
-  checks: Record<string, Counts>;
-};
+const FOUNDRY_PORTAL = "https://ai.azure.com";
+
+type Criterion = { name: string; passed: number; total: number };
 type Run = {
-  ts: string;
+  id: string;
   eval_name: string;
-  queries: number;
-  cloud: boolean;
-  gate_passed: boolean;
-  providers: Provider[];
+  status: string;
+  created_at: number; // unix seconds
+  report_url: string | null;
+  total: number;
+  passed: number;
+  failed: number;
+  criteria: Criterion[];
 };
-
-function Scores({ provider }: { provider: Provider }) {
-  return (
-    <div style={{ marginBottom: 6 }}>
-      <span className="muted" style={{ marginRight: 8, fontWeight: 600 }}>
-        {provider.provider}
-      </span>
-      {Object.entries(provider.checks).map(([name, c]) => {
-        const total = c.passed + c.failed + (c.errored ?? 0);
-        const ok = c.failed === 0;
-        return (
-          <span key={name} className="score">
-            <span className={`pill ${ok ? "ok" : "bad"}`}>
-              {c.passed}/{total}
-            </span>
-            <span className="muted">{name}</span>
-          </span>
-        );
-      })}
-    </div>
-  );
-}
 
 export function EvalsView() {
   const [runs, setRuns] = useState<Run[] | null>(null);
@@ -53,7 +29,7 @@ export function EvalsView() {
   async function load() {
     setError(null);
     try {
-      const r = await fetch("/api/evals", { cache: "no-store" });
+      const r = await authedFetch("/api/evals", { cache: "no-store" });
       const data = await r.json();
       setRuns(data.runs ?? []);
       if (data.error) setError(data.error);
@@ -67,19 +43,26 @@ export function EvalsView() {
     load();
   }, []);
 
+  const portalLink = runs?.find((r) => r.report_url)?.report_url ?? FOUNDRY_PORTAL;
+
   return (
     <>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
           <h2 style={{ margin: "0 0 4px" }}>Evaluations</h2>
           <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-            Offline harness runs — deterministic policy gate plus Foundry hosted judges.
-            Each cloud run links to its report in the Foundry portal.
+            Live from the Foundry project — hosted groundedness/relevance/coherence judges.
+            Each run links to its full report in the portal.
           </p>
         </div>
-        <button className="btn btn-solid" onClick={load}>
-          ↻ Refresh
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <a className="btn" href={portalLink} target="_blank" rel="noreferrer">
+            Foundry portal ↗
+          </a>
+          <button className="btn btn-solid" onClick={load}>
+            ↻ Refresh
+          </button>
+        </div>
       </div>
 
       {error && (
@@ -93,8 +76,13 @@ export function EvalsView() {
       ) : runs.length === 0 ? (
         <div className="table-wrap">
           <div className="empty">
-            No runs yet. From <code>backend/</code>, run{" "}
-            <code>uv run python -m eval.run_eval --cloud</code> to record one.
+            No evaluation runs found in the Foundry project yet. Run{" "}
+            <code>uv run python -m eval.run_eval --cloud</code> from <code>apps/backend/</code>,
+            then refresh — or browse the{" "}
+            <a href={FOUNDRY_PORTAL} target="_blank" rel="noreferrer">
+              Foundry portal ↗
+            </a>
+            .
           </div>
         </div>
       ) : (
@@ -103,38 +91,47 @@ export function EvalsView() {
             <thead>
               <tr>
                 <th>When</th>
-                <th>Queries</th>
-                <th>Gate</th>
+                <th>Eval</th>
+                <th>Status</th>
                 <th>Scores</th>
                 <th>Report</th>
               </tr>
             </thead>
             <tbody>
-              {runs.map((run, i) => {
-                const portal = run.providers.find((p) => p.report_url)?.report_url;
+              {runs.map((run) => {
+                const ok = run.status === "completed" && run.failed === 0;
                 return (
-                  <tr key={`${run.ts}-${i}`}>
+                  <tr key={run.id}>
                     <td style={{ whiteSpace: "nowrap" }}>
-                      {new Date(run.ts).toLocaleString()}
+                      {run.created_at ? new Date(run.created_at * 1000).toLocaleString() : "—"}
                     </td>
-                    <td>{run.queries}</td>
+                    <td>{run.eval_name}</td>
                     <td>
-                      <span className={`pill ${run.gate_passed ? "ok" : "bad"}`}>
-                        {run.gate_passed ? "passed" : "failed"}
+                      <span className={`pill ${ok ? "ok" : run.status === "failed" ? "bad" : "neutral"}`}>
+                        {run.status}
                       </span>
                     </td>
                     <td>
-                      {run.providers.map((p) => (
-                        <Scores key={p.provider} provider={p} />
-                      ))}
+                      {run.criteria.length === 0 ? (
+                        <span className="muted">—</span>
+                      ) : (
+                        run.criteria.map((c) => (
+                          <span key={c.name} className="score">
+                            <span className={`pill ${c.passed === c.total ? "ok" : "bad"}`}>
+                              {c.passed}/{c.total}
+                            </span>
+                            <span className="muted">{c.name}</span>
+                          </span>
+                        ))
+                      )}
                     </td>
                     <td>
-                      {portal ? (
-                        <a className="link-out" href={portal} target="_blank" rel="noreferrer">
+                      {run.report_url ? (
+                        <a className="link-out" href={run.report_url} target="_blank" rel="noreferrer">
                           Open in Foundry ↗
                         </a>
                       ) : (
-                        <span className="muted">local only</span>
+                        <span className="muted">—</span>
                       )}
                     </td>
                   </tr>

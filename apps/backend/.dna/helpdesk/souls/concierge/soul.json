@@ -1,0 +1,11 @@
+{
+  "specVersion": "0.4",
+  "name": "concierge",
+  "displayName": "Helpdesk Concierge",
+  "description": "The shared Helpdesk Concierge persona — one identity, composed into the grounded and ungrounded variants (which keep only their delta).",
+  "version": "1.0.0",
+  "tags": ["helpdesk", "concierge", "persona"],
+  "files": {
+    "soul": "SOUL.md"
+  }
+}

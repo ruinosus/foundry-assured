@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mecanismo KB → Agente · Caso de uso: Meridian Freight</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#131a2e; --panel2:#1b2440; --ink:#e8edf7; --muted:#9aa6c4;
+    --line:#2a355a; --pub:#3ddc97; --plat:#4aa3ff; --price:#ffb454; --fraud:#ff6b8a;
+    --accent:#8b7bff;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(180deg,#0b1020,#0d1430);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+  .wrap{max-width:1080px;margin:0 auto;padding:32px 20px 80px}
+  header.hero{text-align:center;padding:36px 0 12px}
+  .hero h1{font-size:30px;margin:.2em 0;letter-spacing:.2px}
+  .hero p{color:var(--muted);max-width:720px;margin:8px auto;font-size:17px}
+  .tag{display:inline-block;font-size:12px;color:var(--accent);border:1px solid var(--line);
+    border-radius:999px;padding:3px 12px;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+  h2{font-size:21px;margin:42px 0 8px;border-left:3px solid var(--accent);padding-left:12px}
+  .sub{color:var(--muted);margin:0 0 18px}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin:14px 0}
+  .grid{display:grid;gap:14px}
+  .g3{grid-template-columns:repeat(3,1fr)} .g2{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:760px){.g3,.g2{grid-template-columns:1fr}}
+  .chip{display:inline-block;font-size:12px;font-weight:600;border-radius:6px;padding:2px 8px;margin:2px 2px 2px 0}
+  .c-pub{background:rgba(61,220,151,.15);color:var(--pub);border:1px solid rgba(61,220,151,.4)}
+  .c-plat{background:rgba(74,163,255,.15);color:var(--plat);border:1px solid rgba(74,163,255,.4)}
+  .c-price{background:rgba(255,180,84,.15);color:var(--price);border:1px solid rgba(255,180,84,.4)}
+  .c-fraud{background:rgba(255,107,138,.15);color:var(--fraud);border:1px solid rgba(255,107,138,.4)}
+  .repo{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;
+    border:1px solid var(--line);border-radius:10px;background:var(--panel2);margin:8px 0}
+  .repo .name{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:14px}
+  .repo .stack{color:var(--muted);font-size:12px}
+  .pipe{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;align-items:stretch;margin-top:8px}
+  @media(max-width:760px){.pipe{grid-template-columns:1fr}}
+  .step{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:14px;position:relative}
+  .step .n{position:absolute;top:-10px;left:-10px;width:26px;height:26px;border-radius:50%;
+    background:var(--accent);color:#0b1020;font-weight:700;display:grid;place-items:center;font-size:13px}
+  .step h4{margin:6px 0 4px;font-size:14px} .step p{margin:0;color:var(--muted);font-size:12.5px}
+  .persona{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:16px}
+  .persona h4{margin:0 0 2px} .persona .role{color:var(--muted);font-size:13px;margin-bottom:10px}
+  .ask{font-style:italic;color:var(--ink);background:rgba(139,123,255,.08);border-left:2px solid var(--accent);
+    padding:6px 10px;border-radius:0 8px 8px 0;margin:8px 0;font-size:13.5px}
+  .ans{font-size:13.5px;padding:8px 10px;border-radius:8px;margin-top:6px}
+  .ans.ok{background:rgba(61,220,151,.1);border:1px solid rgba(61,220,151,.3)}
+  .ans.no{background:rgba(255,107,138,.1);border:1px solid rgba(255,107,138,.3)}
+  table{width:100%;border-collapse:collapse;margin-top:8px;font-size:14px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
+    background:#0c1228;border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+  pre{background:#0c1228;border:1px solid var(--line);border-radius:10px;padding:14px;overflow:auto;
+    font-size:12.5px;line-height:1.5}
+  details{border:1px solid var(--line);border-radius:10px;padding:0 14px;margin:10px 0;background:var(--panel2)}
+  details summary{cursor:pointer;padding:12px 0;font-weight:600;color:var(--accent);font-size:14px}
+  details[open] summary{border-bottom:1px solid var(--line);margin-bottom:10px}
+  .arrow{color:var(--accent);text-align:center;font-size:20px}
+  .foot{color:var(--muted);font-size:13px;text-align:center;margin-top:40px}
+  .kpi{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:14px}
+  .kpi div{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 16px;text-align:center}
+  .kpi b{display:block;font-size:20px;color:var(--pub)}
+  .kpi span{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="tag">Microsoft Foundry · Caso de uso</span>
+    <h1>Um assistente sobre TODOS os repositórios — que respeita quem pode ver o quê</h1>
+    <p>A empresa fictícia <b>Meridian Freight</b> (logística) tem conhecimento espalhado em
+       <b>SharePoint, ADLS/Blob e repositórios</b>. Este é o passeio, ponta a ponta, de
+       como o mecanismo unifica tudo numa base fiel e num agente que responde com
+       segurança: <b>cada pessoa só enxerga o que já tinha acesso em cada fonte</b>.</p>
+    <div class="kpi">
+      <div><b>N fontes</b><span>SharePoint · ADLS · repos</span></div>
+      <div><b>0</b><span>linhas de código editadas</span></div>
+      <div><b>= ACL da fonte</b><span>quem vê cada doc</span></div>
+    </div>
+  </header>
+
+  <div class="panel" style="border-color:rgba(139,123,255,.4);background:rgba(139,123,255,.06)">
+    <p class="sub" style="margin:0">Caso de uso parte do projeto maior <b>Foundry Assured</b> — hoje com
+       <b>4 domínios</b> (helpdesk · cockpit · selfwiki, a própria deep-wiki do repo, · <b>platform</b>,
+       ops sobre os MCP first-party da Microsoft) servidos pela <b>Assurance Console</b>
+       (<code>/d/[domain]</code>), e <b>RBAC</b> via Entra App Roles (Admin/Author/Approver/Reader) +
+       portal <code>/admin/users</code>. Modelo <code>gpt-5-mini</code>. O projeto evoluiu ainda para
+       <b>SaaS multi-tenant híbrido</b> (modos <code>self_hosted · dedicated · shared</code>) —
+       arquitetura em
+       <a href="./saas-architecture.html" style="color:var(--plat)">saas-architecture.html</a>.
+       Estado atual nos decks novos:
+       <a href="./deep-wiki-presentation.html" style="color:var(--plat)">deep-wiki-presentation.html</a> ·
+       <a href="./fluxo-deepwiki.html" style="color:var(--plat)">fluxo-deepwiki.html</a> ·
+       <a href="./quadro-comparativo-deepwiki.html" style="color:var(--plat)">quadro-comparativo-deepwiki.html</a>.</p>
+  </div>
+
+  <h2>1 · O ponto de partida: o conhecimento está em MUITAS fontes — cada uma com seu acesso</h2>
+  <p class="sub">Numa multinacional, o conhecimento não está só em repos: está em
+     <b>SharePoint, OneDrive, ADLS/Blob, Confluence, repos…</b>. Cada fonte já tem seu
+     <b>controle de acesso nativo</b>. O mecanismo <b>herda o ACL de cada fonte</b> — não
+     inventa "tier". O elo comum é a <b>identidade Entra ID</b>: a pessoa é a mesma em todas.</p>
+  <div class="panel">
+    <table>
+      <tr><th>Fonte da Meridian</th><th>Acesso nativo</th><th>Como o acesso entra</th></tr>
+      <tr><td><b>SharePoint</b> — políticas, RH, jurídico</td><td>permissões de site/biblioteca</td><td><span class="chip c-pub">automático</span> Foundry IQ ingere o ACL</td></tr>
+      <tr><td><b>ADLS Gen2</b> — datasets, relatórios</td><td>ACLs de arquivo/pasta</td><td><span class="chip c-pub">automático</span> sync de ACL</td></tr>
+      <tr><td><b>Repos</b> (GitHub/ADO) → wikis</td><td>times de leitura do repo</td><td><span class="chip c-plat">herdado</span> da origem na geração</td></tr>
+      <tr><td><b>Blob</b> — exports, anexos</td><td>sem ACL nativo</td><td><span class="chip c-plat">anexado</span> do sistema de origem</td></tr>
+    </table>
+    <p class="sub" style="margin-top:14px">Os repos da Meridian, por exemplo, têm grupos
+       distintos — <span class="chip c-pub">all-employees</span>
+       <span class="chip c-plat">eng-platform</span> <span class="chip c-price">eng-pricing</span>
+       <span class="chip c-fraud">sec-fraud</span> — e <b>cada documento nasce com o(s)
+       grupo(s) da sua fonte</b>. <code>eng-platform</code> ≠ <code>eng-pricing</code>,
+       mesmo ambos sendo "internos": o corte é por <b>grupo real</b>, não por nível.</p>
+  </div>
+
+  <h2>2 · O fluxo, do código-fonte à resposta segura</h2>
+  <p class="sub">Cinco passos. O acesso é <b>herdado do repo</b> na geração e <b>imposto no
+     momento da pergunta</b>.</p>
+  <div class="pipe">
+    <div class="step"><span class="n">1</span><h4>Provisionar</h4><p><code>azd up</code> sobe a nuvem da Meridian (Foundry + Search + apps). Bicep do template.</p></div>
+    <div class="step"><span class="n">2</span><h4>Conectar fontes</h4><p>SharePoint/ADLS entram com <b>ACL nativo automático</b>; repos viram wiki fiel e citado, <b>herdando o acesso da origem</b>.</p></div>
+    <div class="step"><span class="n">3</span><h4>Federar (Foundry IQ)</h4><p>Tudo numa base só. Cada documento <b>mantém o(s) grupo(s) da sua fonte</b>; o corte por permissão fica armado.</p></div>
+    <div class="step"><span class="n">4</span><h4>Perguntar</h4><p>O agente busca <b>com a identidade de quem perguntou</b> — o Search corta o que essa pessoa não pode ver.</p></div>
+    <div class="step"><span class="n">5</span><h4>Garantir</h4><p>Gates medem qualidade <b>e</b> segurança no CI: um vazamento reprova o build.</p></div>
+  </div>
+
+  <details>
+    <summary>Detalhe técnico — federação multi-fonte, herança e imposição</summary>
+    <p><b>SharePoint / ADLS Gen2 (automático):</b> o Foundry IQ ingere o <b>ACL nativo</b>
+       da fonte junto com o conteúdo — as permissões de site/biblioteca/arquivo viram
+       metadados de permissão no índice. <b>Zero classificação</b>: o acesso flui da fonte.</p>
+    <p><b>Repos / Blob comum (herdado/anexado):</b> sem ACL nativo, o acesso vem da origem.
+       A <code>wiki_builder</code> sabe de qual repo cada página veio e grava o grupo de
+       leitura do repo no manifesto (dado, não código):</p>
+    <pre>// manifest.json (DADO, vindo da origem — não do código)
+{ "component": "mf-pricing-engine",
+  "groups": ["eng-pricing"] }   // ← times com read no repo (GitHub/ADO/Bitbucket)</pre>
+    <p><b>Imposição (igual pra TODAS as fontes):</b> o agente passa o token Entra do usuário
+       (<code>x-ms-query-source-authorization</code>). O Foundry IQ resolve os grupos
+       daquele usuário e devolve <b>só</b> os documentos cujo ACL bate — venha do SharePoint,
+       do ADLS ou do repo. Sem token → nada. Documento sem acesso declarado → <b>fail-closed</b>.</p>
+  </details>
+
+  <h2>3 · A prova: mesma pergunta, pessoas diferentes</h2>
+  <p class="sub">Pergunta idêntica — <i>"explique o algoritmo de precificação"</i> — três
+     identidades, três resultados. O agente <b>não tem como</b> revelar o que a pessoa não pode ver.</p>
+  <div class="grid g3">
+    <div class="persona">
+      <h4>Dana</h4><div class="role">Time de Pricing · <span class="chip c-price">eng-pricing</span></div>
+      <div class="ask">"explique o algoritmo de precificação"</div>
+      <div class="ans ok">✅ Recebe os docs reais do <code>mf-pricing-engine</code>, citando arquivos e versões.</div>
+    </div>
+    <div class="persona">
+      <h4>Sam</h4><div class="role">Time de Plataforma · <span class="chip c-plat">eng-platform</span></div>
+      <div class="ask">"explique o algoritmo de precificação"</div>
+      <div class="ans no">⛔ "Não tenho isso no conhecimento que posso acessar." — <code>eng-pricing</code> ≠ <code>eng-platform</code>.</div>
+    </div>
+    <div class="persona">
+      <h4>Contratado</h4><div class="role">Externo · <span class="chip c-pub">all-employees</span></div>
+      <div class="ask">"explique o algoritmo de precificação"</div>
+      <div class="ans no">⛔ Só enxerga portal e SDK públicos. Pricing nem aparece na busca.</div>
+    </div>
+  </div>
+  <p class="sub" style="margin-top:8px">Sam é engenheiro sênior — mas <b>de outro time</b>.
+     O corte é por <b>grupo</b>, não por cargo nem por "nível". É exatamente o acesso que
+     ele já tinha (ou não) nos repositórios.</p>
+
+  <h2>4 · O que é código genérico vs. dado da empresa</h2>
+  <p class="sub">O segredo de virar <b>template</b>: o mecanismo não sabe nada sobre a
+     Meridian. A empresa traz os dados; o mecanismo traz as garantias.</p>
+  <div class="panel">
+    <table>
+      <tr><th>Código genérico (no template)</th><th>Dado da Meridian (externo, fora do repo)</th></tr>
+      <tr><td>geração de wiki, ingestão, provider seguro, evals, red-team</td><td>o <b>corpus</b> (os wikis dos repos deles)</td></tr>
+      <tr><td>mecanismo que <b>lê o ACL e impõe</b> (genérico p/ qualquer fonte)</td><td>o <b>ACL de cada fonte</b> (SharePoint/ADLS nativo; repos herdado da origem)</td></tr>
+      <tr><td>agente, prompts, gates de qualidade e segurança</td><td>o <b>golden set</b> + limiares deles</td></tr>
+    </table>
+    <p class="sub" style="margin-top:12px"><b>Nenhuma regra de classificação no código.</b>
+       Trocar de empresa = trocar o corpus, os grupos e a herança de acesso. O Python
+       fica intocado.</p>
+  </div>
+
+  <h2>5 · As garantias (medidas, com gate no CI)</h2>
+  <div class="grid g2">
+    <div class="panel"><b>Qualidade</b><p class="sub" style="margin:6px 0 0">Groundedness (cada
+      afirmação ancorada na fonte) · Completude (lista todos os itens, não 6 de 9) ·
+      Recall do retrieval. Abaixo do limiar → reprova o merge.</p></div>
+    <div class="panel"><b>Segurança</b><p class="sub" style="margin:6px 0 0">Gate de acesso:
+      Sam <b>jamais</b> recupera um doc de <code>eng-pricing</code> — um único vazamento
+      reprova o build. Red-team: prompt malicioso não faz o agente vazar entre grupos.</p></div>
+  </div>
+  <p class="sub" style="margin-top:10px">"100% de eficácia" honesto = <b>controle medido com
+     gate</b> (não promessa mágica): limiares no CI + avaliação contínua em produção +
+     taxa de sucesso de ataque abaixo do teto. É a forma que passa em auditoria.</p>
+
+  <p class="foot">Mecanismo KB → Agente · 100% Microsoft Foundry · o acesso segue a fonte,
+     a garantia é medida, o código é genérico.</p>
+
+</div>
+</body>
+</html>

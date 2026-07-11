@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import "@copilotkit/react-core/v2/styles.css";
 import "@/styles/globals.css";
 import { Providers } from "@/components/shell/Providers";
+import { branding } from "@/lib/branding";
 
 export const metadata: Metadata = {
-  title: "Foundry Helpdesk",
-  description: "Internal engineering support concierge",
+  title: branding.product,
+  description: branding.description,
 };
 
 export default function RootLayout({

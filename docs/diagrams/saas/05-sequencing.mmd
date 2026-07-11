@@ -1,0 +1,15 @@
+%% Foundry Assured — SaaS target architecture · Fig 5: Sub-project sequencing
+flowchart LR
+    A["A — Multi-tenant foundation<br/>TenantConfigProvider + DEPLOYMENT_MODE<br/>multi-tenant Entra / tid / tenant-scoped store"]
+    B["B — Connection store + UI<br/>schema + Connections page<br/>(plug Foundry/KB, OAuth GitHub/ADO)"]
+    C["C — Credential brokering<br/>multi-tenant OBO / passthrough<br/>secret_ref resolution"]
+    D["D — Stamps / packaging<br/>Managed App (dedicated)<br/>Lighthouse (shared data-plane)"]
+    A --> B --> C
+    A --> D
+
+    classDef found fill:#cfe3ff,stroke:#2b6cb0,color:#1a202c;
+    classDef next fill:#d8f0dd,stroke:#2f855a,color:#1a202c;
+    classDef pack fill:#eadcff,stroke:#6b46c1,color:#1a202c;
+    class A found;
+    class B,C next;
+    class D pack;

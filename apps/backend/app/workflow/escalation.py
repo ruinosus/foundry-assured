@@ -28,6 +28,7 @@ from agent_framework import (
     response_handler,
 )
 
+from app.core.auth import has_role
 from app.tools.tickets import create_ticket
 
 TICKET_PREFIX = "TICKET:"
@@ -69,9 +70,18 @@ class EscalationExecutor(Executor):
         approved: bool,
         ctx: WorkflowContext[str, str],
     ) -> None:
+        if approved and not has_role("Approver", "Admin"):
+            # RBAC gate: approving the escalation is an Approver/Admin action. The human
+            # approval above is necessary but not sufficient — the approver must hold the
+            # role. (No-op when auth is off — local dev approves freely.)
+            await ctx.yield_output(
+                "Aprovação recebida, mas você não tem o papel **Approver** para abrir "
+                "chamados. Nenhum ticket foi aberto — peça a um aprovador."
+            )
+            return
         if approved:
             # Real, persisted action (viewable at GET /tickets and the /tickets page),
-            # gated by the human approval above.
+            # gated by the human approval above + the Approver role.
             ticket = create_ticket(request.summary)
             await ctx.yield_output(
                 f'✅ Ticket {ticket["id"]} opened — "{ticket["summary"]}". '

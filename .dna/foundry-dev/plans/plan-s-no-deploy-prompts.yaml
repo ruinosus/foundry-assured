@@ -1,0 +1,40 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Plan
+metadata:
+  name: plan-s-no-deploy-prompts
+spec:
+  title: 'Plano: s-no-deploy-prompts'
+  date: '2026-07-10'
+  status: accepted
+  story_ref: s-no-deploy-prompts
+  journey_phase: plan
+  body: "# Plano \u2014 s-no-deploy-prompts (fase 3): prompts sem rebuild\n\n## Descoberta\
+    \ (feita)\n- Como o backend sobe: dev local = `uv run uvicorn app.main:app` (venv,\
+    \ l\xEA .dna do disco);\n  deploy = imagem Docker via azd \u2192 Azure Container\
+    \ Apps. N\xC3O existe compose local hoje.\n- Como o kernel resolve o base_dir:\
+    \ `prompts.py` fixa `_DNA_BASE_DIR = <backend>/.dna`\n  (path relativo ao m\xF3\
+    dulo) e comp\xF5e TODAS as constantes no import; `domains.py`/`graph.py`\n  constroem\
+    \ os agents no boot a partir das constantes.\n- Suporte do dna-sdk 0.1.0: `Kernel.quick(scope,\
+    \ base_dir)` recarrega do disco a cada boot\n  de processo; existe adapter postgres\
+    \ (DNA_SOURCE_URL) \u2014 mas N\xC3O h\xE1 watch/reload de scope\n  in-process,\
+    \ e mesmo que houvesse, os agents j\xE1 constru\xEDdos no boot n\xE3o re-leem\
+    \ instructions.\n\n## Decis\xE3o (ratificada)\nVolume mount primeiro. Refresh\
+    \ = restart do processo (`docker compose restart backend`),\nN\xC3O hot-reload:\
+    \ \xE9 o menor mecanismo honesto que o SDK + a arquitetura do shim suportam sem\n\
+    gambiarra. Rebuild da imagem deixa de ser necess\xE1rio pra mudar prompt \u2014\
+    \ que \xE9 o caso real.\nPG source = evolu\xE7\xE3o multi-r\xE9plica, s\xF3 documentada\
+    \ (ADR-014).\n\n## Passos\n1. `apps/backend/compose.yaml` \u2014 service backend:\
+    \ build ., bind `./.dna:/app/.dna:ro`\n   (sobrep\xF5e o COPY; imagem continua\
+    \ self-contained sem o mount), porta 8000, env_file\n   opcional.\n2. Coment\xE1\
+    rio no Dockerfile (COPY .dna = fallback self-contained; compose monta por cima).\n\
+    3. README do backend \u2014 se\xE7\xE3o \"container run + prompt edit sem rebuild\"\
+    .\n4. `docs/adr/ADR-014-runtime-prompt-scope-no-rebuild.md` \u2014 modelo completo.\n\
+    5. Prova de produto: prompt composto antes \u2192 editar YAML no host \u2192 restart\
+    \ (sem build) \u2192\n   prompt composto depois; diff como evid\xEAncia. (Se o\
+    \ docker local seguir inoperante \u2014\n   disco cheio \u2014 a prova roda no\
+    \ n\xEDvel do processo com o MESMO mecanismo: boot novo l\xEA o\n   .dna editado\
+    \ do disco; gap ambiental narrado.)\n6. TestGuide --product + TestRun.\n\n## Stacked\n\
+    Branch `feat/s-no-deploy-prompts` sobre `feat/s-official-packages` (PR B aponta\
+    \ pra\nbranch do A at\xE9 o A mergear).\n"
+  created_at: '2026-07-10T19:19:59+00:00'
+  updated_at: '2026-07-10T19:19:59+00:00'

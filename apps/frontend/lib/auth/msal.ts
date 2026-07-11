@@ -4,12 +4,15 @@
 // runs without auth (matching the backend's DefaultAzureCredential fallback).
 
 import { PublicClientApplication, type Configuration } from "@azure/msal-browser";
+import { demoMode } from "@/lib/demo";
 
 const tenantId = process.env.NEXT_PUBLIC_ENTRA_TENANT_ID;
 const spaClientId = process.env.NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID;
 const apiClientId = process.env.NEXT_PUBLIC_ENTRA_API_CLIENT_ID;
 
-export const authConfigured = Boolean(tenantId && spaClientId && apiClientId);
+// Demo mode is always no-auth (the mock backend doesn't validate tokens), even if
+// Entra vars happen to be present in the environment.
+export const authConfigured = !demoMode && Boolean(tenantId && spaClientId && apiClientId);
 
 // The backend API scope the user consents to (OBO is then done server-side).
 export const apiScopes = apiClientId ? [`api://${apiClientId}/access_as_user`] : [];

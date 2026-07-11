@@ -1,0 +1,21 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "managedByTenantId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "mspOfferName": {
+      "value": "Foundry Helpdesk — managed data-plane operations"
+    },
+    "mspOfferDescription": {
+      "value": "Least-privilege, revocable cross-tenant management of the Foundry Helpdesk data-plane resources by the publisher."
+    },
+    "principalId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "principalIdDisplayName": {
+      "value": "Foundry Helpdesk Operations"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Agent
+metadata:
+  name: concierge-ungrounded
+  description: Helpdesk Concierge, ungrounded variant — greeting-only while retrieval is not wired
+spec:
+  # Decomposed (ADR-013 phase 2): the shared persona lives in souls/concierge;
+  # this instruction is ONLY the ungrounded delta. Deliberately NO
+  # grounded-citation guardrail — the variant must not carry the citation duty
+  # (enforced by a not_contains check in eval-cases/concierge-ungrounded-humility).
+  soul: concierge
+  instruction: |-
+    Knowledge retrieval is not wired up yet, so greet the developer and keep replies short. Do not invent runbooks or sources.
+  # Agent-level template override (cascade level 1) — persona-first, no guardrails.
+  promptTemplate: |-
+    {{{soul_content}}}
+
+    {{{agent.instruction}}}

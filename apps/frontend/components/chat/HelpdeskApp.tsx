@@ -9,6 +9,8 @@ import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
+import { branding } from "@/lib/branding";
+import { demoMode } from "@/lib/demo";
 import { TicketApproval } from "@/components/chat/TicketApproval";
 
 const WorkflowSteps = dynamic(
@@ -29,7 +31,8 @@ function Chat({ authorization }: { authorization?: string }) {
       // Renders the CopilotKit Inspector (the floating devtools icon) with the
       // live core wired up. Setting showDevConsole is the supported way — a bare
       // <CopilotKitInspector/> has no core and shows "core not attached".
-      showDevConsole
+      // Dev-only: NODE_ENV is inlined at build, so production bundles ship without it.
+      showDevConsole={process.env.NODE_ENV !== "production"}
     >
       <main
         style={{
@@ -42,19 +45,29 @@ function Chat({ authorization }: { authorization?: string }) {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 4px" }}>
-          <div className="seg">
-            <button className={mode === "live" ? "on" : ""} onClick={() => setMode("live")}>
-              Live workflow
-            </button>
-            <button className={mode === "hosted" ? "on" : ""} onClick={() => setMode("hosted")}>
-              Hosted agent
-            </button>
-          </div>
-          <span className="muted" style={{ fontSize: 12 }}>
-            {mode === "live"
-              ? "AG-UI · live steps, approval, per-user OBO + memory"
-              : "Foundry Agent Service · managed, Responses protocol"}
-          </span>
+          {demoMode ? (
+            // Demo mode talks to a recorded aimock fixture — only the Live AG-UI path
+            // is replayed, so hide the engine toggle and flag that it's mocked.
+            <span className="pill" style={{ fontSize: 12 }}>
+              ● Demo · replayed fixture, no Azure
+            </span>
+          ) : (
+            <>
+              <div className="seg">
+                <button className={mode === "live" ? "on" : ""} onClick={() => setMode("live")}>
+                  Live workflow
+                </button>
+                <button className={mode === "hosted" ? "on" : ""} onClick={() => setMode("hosted")}>
+                  Hosted agent
+                </button>
+              </div>
+              <span className="muted" style={{ fontSize: 12 }}>
+                {mode === "live"
+                  ? "AG-UI · live steps, approval, per-user OBO + memory"
+                  : "Foundry Agent Service · managed, Responses protocol"}
+              </span>
+            </>
+          )}
         </div>
 
         {mode === "live" ? (
@@ -116,7 +129,7 @@ function AuthedChat() {
   if (!isAuthenticated) {
     return (
       <div style={center}>
-        <p>Sign in to use the Helpdesk Concierge.</p>
+        <p>Sign in to use {branding.product}.</p>
         <button
           onClick={() => instance.loginRedirect({ scopes: apiScopes })}
           style={{

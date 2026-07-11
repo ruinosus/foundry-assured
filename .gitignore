@@ -35,3 +35,23 @@ yarn-error.log*
 copilotkit-events-*.json
 apps/backend/eval/runs.jsonl
 apps/backend/data/
+apps/backend/eval/datasets/cockpit_golden.jsonl
+
+# GitHub App / TLS private keys — never commit
+*.pem
+
+# Local-only notes that may hold secrets (e.g. TEST-CREDENTIALS.local.md) — never commit
+*.local.md
+
+# E2E (Playwright)
+e2e/node_modules/
+e2e/artifacts/
+e2e/.auth/
+e2e/test-results/
+apps/backend/.cockpit-acl-poc.json
+TEST-CREDENTIALS.local.md
+
+# Superpowers local tooling/session state (brainstorm scratch, server pids/logs) — never commit
+.superpowers/
+# DNA SDLC board — per-workstation pointer (written by `dna sdlc story start`)
+.dna/active-story.txt

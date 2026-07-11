@@ -1,6 +1,6 @@
 // Foundry Helpdesk — azd entry point (subscription-scoped).
 //
-// Provisions a resource group, then the Foundry account + project + gpt-4.1-mini
+// Provisions a resource group, then the Foundry account + project + gpt-5-mini
 // deployment + data-plane role assignment (in resources.bicep).
 //
 // Schema verified against the official Foundry sample
@@ -20,8 +20,19 @@ param location string
 @description('Object ID granted data-plane access. azd sets this from AZURE_PRINCIPAL_ID.')
 param principalId string = ''
 
+@description('Entra group of app users, granted Foundry User so they can run inference as themselves (OBO). azd maps APP_USERS_GROUP_ID. Empty skips.')
+param appUsersGroupId string = ''
+
+@description('ACL classification group object-IDs (name→objectID) for the grounded domains (cockpit/selfwiki). Wired into the backend so acl_group_map is populated and retrieval sends the per-user OBO ACL header; empty leaves ACL domains fail-closed. azd maps ACL_PUBLIC_GROUP / ACL_INTERNAL_GROUP / ACL_CONFIDENTIAL_GROUP.')
+param aclPublicGroup string = ''
+param aclInternalGroup string = ''
+param aclConfidentialGroup string = ''
+
+@description('Type of principalId: User locally, ServicePrincipal in CI/CD (azd maps AZURE_PRINCIPAL_TYPE).')
+param principalType string = 'User'
+
 @description('Model deployment name, surfaced to the app as FOUNDRY_MODEL.')
-param modelDeploymentName string = 'gpt-4.1-mini'
+param modelDeploymentName string = 'gpt-5-mini'
 
 @description('Optional region override for Azure AI Search (set AZURE_SEARCH_LOCATION if eastus2 is out of Search capacity). Falls back to location.')
 param searchLocation string = ''
@@ -54,6 +65,8 @@ module resources 'resources.bicep' = {
     tags: tags
     resourceToken: resourceToken
     principalId: principalId
+    principalType: principalType // 'User' locally, 'ServicePrincipal' in CI/CD
+    appUsersGroupId: appUsersGroupId
     modelDeploymentName: modelDeploymentName
     searchLocation: effectiveSearchLocation // region override for AI Search capacity
   }
@@ -75,9 +88,18 @@ module apps 'containerapps.bicep' = {
     foundryModel: resources.outputs.FOUNDRY_MODEL
     azureSearchEndpoint: resources.outputs.AZURE_SEARCH_ENDPOINT
     azureSearchKnowledgeBase: resources.outputs.AZURE_SEARCH_KNOWLEDGE_BASE
+    storageAccountName: resources.outputs.AZURE_STORAGE_ACCOUNT
+    fileShareName: resources.outputs.AZURE_FILE_SHARE
+    artifactBlobAccountUrl: resources.outputs.ARTIFACT_BLOB_ACCOUNT_URL
+    artifactStoreAccountUrl: resources.outputs.ARTIFACT_STORE_ACCOUNT_URL
+    promptsShareName: resources.outputs.AZURE_PROMPTS_FILE_SHARE
     entraTenantId: entraTenantId
     entraApiClientId: entraApiClientId
     entraApiClientSecret: entraApiClientSecret
+    appUsersGroupId: appUsersGroupId
+    aclPublicGroup: aclPublicGroup
+    aclInternalGroup: aclInternalGroup
+    aclConfidentialGroup: aclConfidentialGroup
   }
 }
 
@@ -86,6 +108,9 @@ output WEB_URL string = apps.outputs.WEB_URL
 
 // Surfaced into .azure/<env>/.env by azd — feed these to the backend / ingestion.
 output FOUNDRY_PROJECT_ENDPOINT string = resources.outputs.FOUNDRY_PROJECT_ENDPOINT
+output AZURE_AI_PROJECT_ID string = resources.outputs.AZURE_AI_PROJECT_ID   // azd uses this to deploy hosted agents
+output AZURE_AI_ACCOUNT_ID string = resources.outputs.AZURE_AI_ACCOUNT_ID   // postdeploy hook: agent RBAC scope
+output AZURE_SEARCH_ID string = resources.outputs.AZURE_SEARCH_ID           // postdeploy hook: agent RBAC scope
 output FOUNDRY_MODEL string = resources.outputs.FOUNDRY_MODEL
 output FOUNDRY_EMBEDDING_MODEL string = resources.outputs.FOUNDRY_EMBEDDING_MODEL
 output AZURE_AI_ACCOUNT_ENDPOINT string = resources.outputs.AZURE_AI_ACCOUNT_ENDPOINT
@@ -97,6 +122,12 @@ output AZURE_SEARCH_KNOWLEDGE_BASE string = resources.outputs.AZURE_SEARCH_KNOWL
 output AZURE_STORAGE_ACCOUNT string = resources.outputs.AZURE_STORAGE_ACCOUNT
 output AZURE_STORAGE_RESOURCE_ID string = resources.outputs.AZURE_STORAGE_RESOURCE_ID
 output AZURE_STORAGE_CONTAINER string = resources.outputs.AZURE_STORAGE_CONTAINER
+output AZURE_PROMPTS_FILE_SHARE string = resources.outputs.AZURE_PROMPTS_FILE_SHARE // push-prompts.sh reads this from the azd env
+
+// Artifacts feature — surfaced into the backend .env (bootstrap.sh) so local dev
+// can reach the Blob (content) + Table (metadata) stores.
+output ARTIFACT_BLOB_ACCOUNT_URL string = resources.outputs.ARTIFACT_BLOB_ACCOUNT_URL
+output ARTIFACT_STORE_ACCOUNT_URL string = resources.outputs.ARTIFACT_STORE_ACCOUNT_URL
 
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = resources.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
 output AZURE_CONTAINER_REGISTRY_NAME string = resources.outputs.AZURE_CONTAINER_REGISTRY_NAME

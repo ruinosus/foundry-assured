@@ -1,0 +1,26 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestRun
+metadata:
+  name: tr-tg-s-aca-azure-files-prompts-20260710-201937
+spec:
+  guide_ref: tg-s-aca-azure-files-prompts
+  outcome: partial
+  verifies:
+  - Story/s-aca-azure-files-prompts
+  executed_by: claude-code
+  executed_at: '2026-07-10T20:19:37+00:00'
+  notes: "Passos 1-6 (todo o execut\xE1vel offline) PASSARAM: matriz de 5 cen\xE1\
+    rios do resolver rodada com processos reais do produto (import de app.agents.prompts)\
+    \ \u2014 (1) sem env byte-id\xEAntico ao main; (2) scope ausente \u2192 warning\
+    \ de fallback no stderr + bytes id\xEAnticos ao cozido; (3) scope seedado com\
+    \ marcador \u2192 marcador presente no prompt composto; (4) scope quebrado \u2192\
+    \ RuntimeError no import; (5) agent deletado \u2192 RuntimeError 'has no Agent'\
+    \ (guarda nova do bug latente do build_prompt). Gates: az bicep build limpo em\
+    \ infra/main.bicep e infra/managed-app/managedApp.bicep (bicep 0.44.1, mesmo comando\
+    \ do job CI 'Infra \xB7 bicep build'); dna eval run helpdesk-prompts 9/9; bash\
+    \ -n do push-prompts.sh ok; ruff limpo nos arquivos tocados. Passos 7-9 (deploy\
+    \ real: mount de fato no ACA, listKeys do storage link, loop push\u2192restart\u2192\
+    prompt novo no ar) N\xC3O executados \u2014 sem credencial/deploy nesta sess\xE3\
+    o; registrados como checklist do dono no PR body. Outcome partial = honesto: mecanismo\
+    \ provado no n\xEDvel do processo + infra compilada; a prova fim-a-fim no ACA\
+    \ \xE9 a pend\xEAncia nomeada."

@@ -1,0 +1,2 @@
+# Keeps public/ in the repo + Docker build context. The frontend Dockerfile
+# does `COPY --from=build /app/public ./public`, which fails if the dir is absent.

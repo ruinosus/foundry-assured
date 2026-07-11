@@ -1,0 +1,38 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestGuide
+metadata:
+  name: tg-s-official-packages
+spec:
+  description: Roteiro de teste de s-official-packages (derivado das acceptance_criteria).
+  kind_of_test: smoke
+  status: active
+  steps:
+  - action: "No Studio, valide: Dado o pyproject do backend, quando as deps resolvem,\
+      \ ent\xE3o dna-sdk vem do PyPI como dna-sdk>=0.1,<0.2 (sem git-dep, sem allow-direct-references)\
+      \ e o uv.lock aponta pra files.pythonhosted.org"
+    where: "<rota/tela \u2014 ex. /scopes/:scope/...>"
+    expected: "<o que voc\xEA V\xCA quando est\xE1 certo (marque \u2717 S\xD3 se estiver\
+      \ quebrado)>"
+  - action: "No Studio, valide: Dado o Dockerfile do backend, quando a imagem builda,\
+      \ ent\xE3o ela N\xC3O instala git (nada mais no build precisa dele) e o docker\
+      \ build local passa"
+    where: "<rota/tela \u2014 ex. /scopes/:scope/...>"
+    expected: "<o que voc\xEA V\xCA quando est\xE1 certo (marque \u2717 S\xD3 se estiver\
+      \ quebrado)>"
+  - action: "No Studio, valide: Dado o CI, quando o job backend roda, ent\xE3o o passo\
+      \ 'dna eval run' instala dna-cli 0.1.0 do PyPI (sem ref git) e a suite helpdesk-prompts\
+      \ passa"
+    where: "<rota/tela \u2014 ex. /scopes/:scope/...>"
+    expected: "<o que voc\xEA V\xCA quando est\xE1 certo (marque \u2717 S\xD3 se estiver\
+      \ quebrado)>"
+  - action: "No Studio, valide: Dado o dna-sdk 0.1.0 do PyPI, quando os 8 prompts\
+      \ comp\xF5em, ent\xE3o s\xE3o byte-id\xEAnticos aos compostos pelo SHA pinado\
+      \ 3628a9ee (evid\xEAncia de equival\xEAncia registrada)"
+    where: "<rota/tela \u2014 ex. /scopes/:scope/...>"
+    expected: "<o que voc\xEA V\xCA quando est\xE1 certo (marque \u2717 S\xD3 se estiver\
+      \ quebrado)>"
+  verifies:
+  - Story/s-official-packages
+  created_at: '2026-07-10T19:17:05+00:00'
+  updated_at: '2026-07-10T19:17:05+00:00'
+  owner: claude-code

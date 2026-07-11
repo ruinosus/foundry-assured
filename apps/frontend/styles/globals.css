@@ -410,6 +410,300 @@ table.evals tr:last-child td {
   height: calc(100vh - var(--topbar-h));
 }
 
+/* ---------- Assurance Console (chat + evidence) ---------- */
+.console {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  height: calc(100vh - var(--topbar-h));
+}
+.console-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.console-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.console-icon {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  background: var(--primary-tint);
+}
+.console-head-meta {
+  min-width: 0;
+  flex: 1;
+}
+.console-head-meta h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.console-head-meta p {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+}
+.console-kind {
+  flex: 0 0 auto;
+}
+/* The shared chat-host fixes its own viewport height; inside the console it must flex. */
+.console .copilotkit-chat-host {
+  height: auto;
+  flex: 1;
+  min-height: 0;
+}
+.console-chat {
+  flex: 1;
+  min-height: 0;
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Suggested prompts */
+.suggest {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 24px;
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+}
+.suggest-label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+}
+.suggest-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.suggest-chip {
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 999px;
+  padding: 7px 13px;
+  font-size: 12.5px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.12s, background 0.12s;
+}
+.suggest-chip:hover {
+  border-color: var(--primary);
+  background: var(--primary-tint);
+  color: var(--primary);
+}
+
+/* Evidence panel */
+.evidence {
+  border-left: 1px solid var(--border);
+  background: var(--surface);
+  padding: 18px 18px 24px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.evidence-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.evidence-sources {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  /* Contained scroll box: many sources scroll here instead of pushing "Garantias" off-screen. */
+  max-height: 42vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.source-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  word-break: break-all;
+}
+.source-chip.component {
+  border-color: #ddd6fe;
+  background: #f5f3ff;
+}
+.source-ico {
+  font-family: system-ui;
+  flex: 0 0 auto;
+}
+/* Structured citations (grounded stream): numbered, clickable footnotes. */
+.evidence-citations {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 42vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.citation-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  padding: 7px 9px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  font: inherit;
+}
+.citation-btn:hover {
+  border-color: #c7d2fe;
+  background: #f5f3ff;
+}
+.citation-idx {
+  flex: 0 0 auto;
+  min-width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: #ede9fe;
+  color: #5b21b6;
+  font-size: 11px;
+  font-weight: 700;
+}
+.citation-src {
+  font-size: 12px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  word-break: break-all;
+}
+.citation-detail {
+  padding: 6px 9px 2px 35px;
+}
+.citation-link {
+  font-size: 11.5px;
+  word-break: break-all;
+  color: #4f46e5;
+}
+.citation-content {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+  max-height: 180px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  border-left: 2px solid var(--border);
+  padding-left: 10px;
+}
+.evidence-empty {
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin: 0;
+}
+.evidence-guarantees {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.evidence-guarantees li {
+  display: flex;
+  gap: 10px;
+}
+.evidence-guarantees b {
+  font-size: 13px;
+}
+.evidence-guarantees p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+}
+.guarantee-icon {
+  flex: 0 0 20px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 11px;
+  font-weight: 700;
+  background: var(--ok-tint);
+  color: var(--ok);
+}
+
+/* Domain role-cards (landing) */
+.domain-card {
+  display: block;
+  transition: border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+}
+.domain-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 8px 24px -16px rgba(37, 99, 235, 0.5);
+  transform: translateY(-1px);
+}
+.domain-card-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.domain-card-icon {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 9px;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  background: var(--primary-tint);
+}
+.domain-card-head h3 {
+  margin: 0;
+}
+.tag.tag-neutral {
+  background: #f1f5f9;
+  color: var(--muted);
+}
+
+/* Narrow screens: drop the evidence panel below the chat. */
+@media (max-width: 920px) {
+  .console {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .evidence {
+    border-left: none;
+    border-top: 1px solid var(--border);
+  }
+  .console .copilotkit-chat-host {
+    height: 60vh;
+  }
+}
+
 /* ---------- Engine selector (Live workflow vs Hosted agent) ---------- */
 .seg {
   display: inline-flex;
@@ -432,4 +726,62 @@ table.evals tr:last-child td {
   background: var(--surface);
   color: var(--primary);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* --- Mermaid pan/zoom viewer (components/console/MermaidZoom.tsx) ---
+   The app has no Tailwind, so streamdown's built-in mermaid viewport is unstyled/broken.
+   MermaidZoom takes over the block: fixed viewport + drag-pan + wheel-zoom + a control bar. */
+[data-streamdown="mermaid-block"].mz-block {
+  height: clamp(240px, 52vh, 520px);
+  overflow: hidden;
+  position: relative;
+  padding: 0;
+  margin: 12px 0;
+  cursor: grab;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  touch-action: none;
+  user-select: none;
+}
+[data-streamdown="mermaid-block"].mz-block svg {
+  display: block;
+  will-change: transform;
+}
+[data-streamdown="mermaid-block"].mz-block:fullscreen {
+  height: 100vh;
+  border: 0;
+  border-radius: 0;
+}
+.mz-ctrl {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 5;
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+}
+.mz-ctrl button {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+.mz-ctrl button:hover {
+  background: var(--primary-tint);
+  color: var(--primary);
 }

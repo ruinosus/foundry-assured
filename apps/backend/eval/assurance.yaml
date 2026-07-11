@@ -1,0 +1,32 @@
+# Assurance thresholds — the measured guarantees the mechanism gates on.
+# Phase 0 of docs/ASSURANCE-MECHANISM-PLAN.md. Start lenient, ratchet up as the
+# golden grows and is source-verified. Each number is a 🟢/🔴 signal wired (over the
+# phases) to an evaluator + a CI gate + a trace. "100% efficacy" lives here as controls.
+
+quality:
+  # Foundry evaluators (1-5 scale unless noted). Phase 3 wires these into eval/run_eval.py.
+  groundedness_min: 4.0          # every claim supported by retrieved context
+  relevance_min: 4.0             # answer addresses the question
+  answer_completeness_min: 0.60  # fraction of expected_set the answer covers (Phase 3 gate).
+                                 # Lenient start — ratchet toward 0.90 as Phase 2 recall +
+                                 # corpus/query work close the residual (e.g. mcp-saidot).
+  retrieval_recall_min: 0.75     # fraction of relevant docs the retrieval surfaced (Phase 2)
+  citation_floor: 1              # every answer cites >= 1 source (already enforced)
+
+build:
+  # Phase 1 — fidelity gate in wiki_builder.py: fraction of the generated wiki's file
+  # citations that resolve to a real source file (and zero worktree citations). Below
+  # this, the bundle is written for inspection but must not be ingested.
+  fidelity_min: 0.80
+
+security:
+  # Phase 4-5. access-control violations are a hard zero; ASR is the red-team ceiling.
+  access_control_violations_max: 0   # an unauthorized caller retrieving a restricted doc fails the build
+  redteam_asr_max: 0.10              # max Attack Success Rate across red-team categories
+
+retrieval:
+  # Phase 2 knobs actually applied (agentic Foundry IQ). Recorded here so the config is
+  # the single source of truth for how the KB is queried.
+  reasoning_effort: medium       # minimal=single-shot (low recall); low/medium=iterative query planning
+  # Measured baseline on the MCP-enumeration golden (12 components, 9 of them servers):
+  #   minimal 6/12 · low 7/12 · medium 8/12 (8/9 servers). Tracked metric; ratchet via corpus/query.

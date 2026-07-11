@@ -1,0 +1,22 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: resolve-contract
+spec:
+  description: Resolve keeps the TICKET single-line escalation sentinel, grounded-only answering and citation duty
+  target:
+    type: prompt
+    agent: resolve
+  checks:
+  - type: contains
+    value: 'TICKET: <one-line summary of the request>'
+  - type: contains
+    value: ONLY the runbook content
+  - type: contains
+    value: cite the source document title(s)
+  - type: contains
+    value: never invent
+  - type: min_length
+    value: 500
+  expected: The RESOLVE prompt preserves the TICKET sentinel (workflow branches on it) and the cite-or-don't-know discipline.
+  tags: [workflow, contract, escalation]

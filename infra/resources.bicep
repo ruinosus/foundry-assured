@@ -1,6 +1,6 @@
 // Foundry Helpdesk — resource-group-scoped resources.
 //
-// Phase 0: Foundry account + project + gpt-4.1-mini + caller data-plane role.
+// Phase 0: Foundry account + project + gpt-5-mini + caller data-plane role.
 // Phase 1: Azure AI Search (Foundry IQ knowledge base), Storage for the corpus,
 //          an embedding deployment, and the role assignments that let the search
 //          managed identity reach the model + blobs, and the caller build/query
@@ -21,14 +21,21 @@ param resourceToken string
 @description('Principal granted data-plane roles (the deploying user). Empty skips assignments.')
 param principalId string = ''
 
+@description('Entra group whose members USE the app. Granted Foundry User on the Foundry account so end users can run inference AS THEMSELVES (OBO) — the grounded synthesis calls the model with the user token, which 403s without data-plane access. Empty skips (single-user/dev). ')
+param appUsersGroupId string = ''
+
+@description('Type of principalId: User for a person (default), ServicePrincipal for CI/CD. ARM rejects a mismatch.')
+param principalType string = 'User'
+var effectivePrincipalType = empty(principalType) ? 'User' : principalType
+
 @description('Chat model deployment name (must match the app FOUNDRY_MODEL).')
-param modelDeploymentName string = 'gpt-4.1-mini'
+param modelDeploymentName string = 'gpt-5-mini'
 
-@description('Chat model version for gpt-4.1-mini.')
-param modelVersion string = '2025-04-14'
+@description('Chat model version for gpt-5-mini (gpt-4.1-mini was retired/deprecating; the gpt-4.x and gpt-4o chat families are no longer GA in eastus2 — only the gpt-5.x family is).')
+param modelVersion string = '2025-08-07'
 
-@description('Chat deployment capacity (thousands of TPM). Lower if you hit quota.')
-param modelCapacity int = 30
+@description('Chat deployment capacity (thousands of TPM). GlobalStandard is pay-per-token, so capacity is just the rate limit — keep it high so agentic retrieval + KB indexing + evals do not throttle. Lower only if you hit a subscription quota cap.')
+param modelCapacity int = 100
 
 @description('Embedding model used to vectorize the knowledge base corpus.')
 param embeddingModelName string = 'text-embedding-3-small'
@@ -36,8 +43,8 @@ param embeddingModelName string = 'text-embedding-3-small'
 @description('Embedding model version.')
 param embeddingModelVersion string = '1'
 
-@description('Embedding deployment capacity (thousands of TPM). Keep low — quota is tight.')
-param embeddingCapacity int = 20
+@description('Embedding deployment capacity (thousands of TPM). This caps the KB indexer embedding throughput — at 20 a large re-ingest crawls (~1s/chunk). GlobalStandard is pay-per-token, so raise it freely. Lower only if a subscription quota cap blocks the deploy.')
+param embeddingCapacity int = 100
 
 @description('Azure AI Search SKU. Basic is the floor for agentic retrieval (managed identity).')
 param searchSkuName string = 'basic'
@@ -45,20 +52,24 @@ param searchSkuName string = 'basic'
 @description('Region for Azure AI Search. Empty falls back to the main location; override if a region is out of Search capacity.')
 param searchLocation string = ''
 
-var accountName = 'aif-helpdesk-${resourceToken}'
-var projectName = 'helpdesk-concierge'
-var searchName = 'srch-helpdesk-${resourceToken}'
-var registryName = 'acrhelpdesk${resourceToken}'
-var storageName = 'sthelpdesk${resourceToken}'
+var accountName = 'aif-assured-${resourceToken}'
+var projectName = 'foundry-assured'
+var searchName = 'srch-assured-${resourceToken}'
+var registryName = 'acrassured${resourceToken}'
+var storageName = 'stassured${resourceToken}'
 var corpusContainerName = 'corpus'
+var dataShareName = 'assured-data'
+var promptsShareName = 'assured-prompts'
 
 // Built-in role definition GUIDs (stable Azure identifiers).
 var roleAzureAiUser = '53ca6127-db72-4b80-b1b0-d745d6d5456d' // Azure AI User / Foundry User (Foundry data plane)
 var roleCognitiveServicesUser = 'a97b65f3-24c7-4388-baec-2e87135dc908' // Cognitive Services User (call model deployments)
 var roleSearchServiceContributor = '7ca78c08-252a-4471-8644-bb5ff32d4ba0' // create knowledge bases/sources
 var roleSearchIndexDataReader = '1407120a-92aa-4202-b7e9-c0e197c71c8f' // query (retrieve) indexes
+var roleSearchIndexDataContributor = '8ebe5a00-799e-43f5-93ac-243d3dce84a7' // write index docs: ACL stamping (acl_setup) + purge_orphans (superset of Data Reader)
 var roleStorageBlobDataReader = '2a2b9908-6ea1-4ae2-8e65-a410df84e7d1' // search MI reads corpus blobs
 var roleStorageBlobDataContributor = 'ba92f5b4-2d11-453d-a403-e96b0029c9fe' // caller uploads corpus blobs
+var roleStorageTableDataContributor = '0a9a7e1f-b9d0-4cc4-a60d-0319b160aaa3' // backend identity r/w artifact metadata table
 var roleAcrPull = '7f951dda-4ed3-4680-a7ca-43fe172d538d' // project MI pulls the hosted-agent image
 
 var searchRegion = empty(searchLocation) ? location : searchLocation
@@ -120,6 +131,55 @@ resource embeddingDeployment 'Microsoft.CognitiveServices/accounts/deployments@2
 }
 
 // ---------------------------------------------------------------------------
+// Observability: Log Analytics + Application Insights, connected to the Foundry
+// account so agent-framework's OpenTelemetry GenAI spans (gen_ai.usage.*) land in
+// the Foundry "Tracing" / App Insights "Agents" view. The category 'AppInsights'
+// connection is what `project.telemetry.get_application_insights_connection_string()`
+// reads. Connection schema verified against the Microsoft.CognitiveServices/
+// accounts/connections template reference (category/authType/credentials).
+// ---------------------------------------------------------------------------
+
+resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
+  name: 'log-assured-${resourceToken}'
+  location: location
+  tags: tags
+  properties: {
+    sku: { name: 'PerGB2018' }
+    retentionInDays: 30
+  }
+}
+
+resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
+  name: 'appi-assured-${resourceToken}'
+  location: location
+  tags: tags
+  kind: 'web'
+  properties: {
+    Application_Type: 'web'
+    WorkspaceResourceId: logAnalytics.id
+  }
+}
+
+// Account-level connection (shared to all projects) — the telemetry target Foundry reads.
+resource appInsightsConnection 'Microsoft.CognitiveServices/accounts/connections@2025-06-01' = {
+  name: 'appinsights'
+  parent: account
+  properties: {
+    category: 'AppInsights'
+    target: appInsights.id
+    authType: 'ApiKey'
+    credentials: {
+      key: appInsights.properties.ConnectionString
+    }
+    isSharedToAll: true
+    metadata: {
+      ApiType: 'Azure'
+      ResourceId: appInsights.id
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Storage for the knowledge base corpus (blob knowledge source)
 // ---------------------------------------------------------------------------
 
@@ -145,6 +205,48 @@ resource corpusContainer 'Microsoft.Storage/storageAccounts/blobServices/contain
   parent: blobService
   name: corpusContainerName
   properties: { publicAccess: 'None' }
+}
+
+// Artifacts feature: private container for AI-generated HTML (never public).
+resource artifactsContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
+  parent: blobService
+  name: 'artifacts'
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
+resource tableService 'Microsoft.Storage/storageAccounts/tableServices@2023-05-01' = {
+  parent: storage
+  name: 'default'
+}
+
+resource artifactsTable 'Microsoft.Storage/storageAccounts/tableServices/tables@2023-05-01' = {
+  parent: tableService
+  name: 'artifacts'
+}
+
+// File share mounted by the backend container app (Azure Files) so app data written
+// to /app/data (tickets.jsonl) survives scale-to-zero / restarts. Small + cheap.
+resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {
+  parent: storage
+  name: 'default'
+}
+
+resource dataShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
+  parent: fileService
+  name: dataShareName
+  properties: { shareQuota: 1 } // GiB — jsonl records are tiny
+}
+
+// File share holding the runtime DNA prompt scope (ADR-014, production leg).
+// Mounted read-only into the backend at /mnt/dna; publishing prompts =
+// scripts/push-prompts.sh (upload + revision restart). Starts EMPTY on a fresh
+// provision — the backend then falls back to the scope baked into the image.
+resource promptsShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
+  parent: fileService
+  name: promptsShareName
+  properties: { shareQuota: 1 } // GiB — the scope is a handful of YAML/MD files
 }
 
 // ---------------------------------------------------------------------------
@@ -189,7 +291,7 @@ resource registry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = 
 // publishing to Azure. Pulls images from ACR and (for the backend) calls Foundry
 // + the search KB as itself. Created here so all its RBAC lives with the targets.
 resource appIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' = {
-  name: 'id-helpdesk-app-${resourceToken}'
+  name: 'id-assured-app-${resourceToken}'
   location: location
   tags: tags
 }
@@ -219,6 +321,29 @@ resource appToSearch 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: search
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchIndexDataReader)
+    principalId: appIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+// Backend identity (appIdentity) needs to read/write artifact blobs + table entries.
+// Least privilege: scoped to the artifacts container/table only — NOT the whole
+// account (which also holds the corpus KB container).
+resource backendBlobContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(artifactsContainer.id, appIdentity.id, roleStorageBlobDataContributor)
+  scope: artifactsContainer
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageBlobDataContributor)
+    principalId: appIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource backendTableContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(artifactsTable.id, appIdentity.id, roleStorageTableDataContributor)
+  scope: artifactsTable
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageTableDataContributor)
     principalId: appIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
@@ -282,18 +407,22 @@ resource userSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchServiceContributor)
     principalId: principalId
-    principalType: 'User'
+    principalType: effectivePrincipalType
   }
 }
 
-// Caller -> query (retrieve) the knowledge base from the local backend.
-resource userSearchReader 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
-  name: guid(search.id, principalId, roleSearchIndexDataReader)
+// Caller -> query (retrieve) the KB AND write index docs. The data-plane ingest writes documents
+// directly as the caller: document-level ACL stamping (app/knowledge/acl_setup.py) and orphan
+// reconciliation (ingest_docbundles.purge_orphans) both need Search Index Data Contributor — Reader
+// can only query, so a from-scratch `azd up` would 403 on ACL stamping without this. Contributor
+// is a superset of Data Reader, so it also covers retrieval from the local backend.
+resource userSearchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
+  name: guid(search.id, principalId, roleSearchIndexDataContributor)
   scope: search
   properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchIndexDataReader)
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchIndexDataContributor)
     principalId: principalId
-    principalType: 'User'
+    principalType: effectivePrincipalType
   }
 }
 
@@ -304,7 +433,7 @@ resource userStorageContributor 'Microsoft.Authorization/roleAssignments@2022-04
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageBlobDataContributor)
     principalId: principalId
-    principalType: 'User'
+    principalType: effectivePrincipalType
   }
 }
 
@@ -315,7 +444,20 @@ resource userAiUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAzureAiUser)
     principalId: principalId
-    principalType: 'User'
+    principalType: effectivePrincipalType
+  }
+}
+
+// App users (a group) -> Foundry data plane. The grounded synthesis runs the model AS THE USER (OBO)
+// so answers are attributable and per-user ACL works; without Foundry User the user's token 403s on
+// inference. Group-scoped so every app user is covered by one assignment. Empty skips (single-user/dev).
+resource appUsersToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(appUsersGroupId)) {
+  name: guid(account.id, appUsersGroupId, roleAzureAiUser)
+  scope: account
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAzureAiUser)
+    principalId: appUsersGroupId
+    principalType: 'Group'
   }
 }
 
@@ -324,10 +466,22 @@ resource userAiUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!
 // ---------------------------------------------------------------------------
 
 output FOUNDRY_PROJECT_ENDPOINT string = 'https://${accountName}.services.ai.azure.com/api/projects/${projectName}'
+// ARM resource id of the Foundry project — azd reads this (AZURE_AI_PROJECT_ID) to resolve the
+// target project when deploying hosted agents (azure.ai.agent). Surfacing it as an output keeps it
+// in lockstep with the account/project names — so a rename never leaves a stale manually-set value.
+output AZURE_AI_PROJECT_ID string = project.id
+// ARM ids of the account + search — read by the postdeploy hook (scripts/hook-postdeploy.sh) to
+// grant each hosted agent's deploy-time instance identity its runtime roles (Azure AI User on the
+// account, Search Index Data Reader on search), which Bicep can't pre-assign (identity is minted at deploy).
+output AZURE_AI_ACCOUNT_ID string = account.id
+output AZURE_SEARCH_ID string = search.id
 output AZURE_AI_ACCOUNT_ENDPOINT string = account.properties.endpoint
 output AZURE_AI_OPENAI_ENDPOINT string = 'https://${accountName}.openai.azure.com'
 output FOUNDRY_MODEL string = modelDeploymentName
 output FOUNDRY_EMBEDDING_MODEL string = embeddingModelName
+
+// Observability — set in the local/app env to export gen_ai OTEL spans to App Insights.
+output APPLICATIONINSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
 
 output AZURE_SEARCH_ENDPOINT string = 'https://${searchName}.search.windows.net'
 output AZURE_SEARCH_KNOWLEDGE_BASE string = 'helpdesk-kb'
@@ -335,6 +489,12 @@ output AZURE_SEARCH_KNOWLEDGE_BASE string = 'helpdesk-kb'
 output AZURE_STORAGE_ACCOUNT string = storage.name
 output AZURE_STORAGE_RESOURCE_ID string = storage.id
 output AZURE_STORAGE_CONTAINER string = corpusContainerName
+output AZURE_FILE_SHARE string = dataShareName
+output AZURE_PROMPTS_FILE_SHARE string = promptsShareName
+
+// Artifacts feature — Blob (content) + Table (metadata) account URLs for the backend.
+output ARTIFACT_BLOB_ACCOUNT_URL string = storage.properties.primaryEndpoints.blob
+output ARTIFACT_STORE_ACCOUNT_URL string = storage.properties.primaryEndpoints.table
 
 // Consumed by azd (and the agent extension) to build/push the hosted-agent image.
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = registry.properties.loginServer

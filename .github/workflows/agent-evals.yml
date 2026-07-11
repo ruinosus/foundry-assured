@@ -1,0 +1,48 @@
+name: Agent evaluation (Foundry)
+
+# Evaluates the deployed hosted agent (helpdesk-concierge) with Microsoft Foundry's
+# OFFICIAL action — microsoft/ai-agent-evals — which scores it with hosted judges
+# (groundedness, relevance, coherence, intent-resolution) and, when a baseline is
+# given, reports confidence intervals + a statistical-significance comparison.
+#
+# ADVISORY by design: results land in the run summary to inform a human before they
+# approve a production deploy. It does NOT block — a 9-item golden set is too small to
+# hard-gate on LLM-judge scores (community guidance: hard-gate the deterministic
+# policy ASSERTs in ci.yml; keep judge scores advisory until the set grows + judges
+# are calibrated, then graduate to a baseline/CI gate — which is exactly what this
+# action's significance testing enables). See docs/DEPLOYMENT.md › Agent evaluation.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Agent version to evaluate
+        default: "3"
+      baseline:
+        description: "Baseline agent id to compare against (e.g. helpdesk-concierge:2). Blank = absolute scores."
+        default: ""
+
+permissions:
+  id-token: write # Azure OIDC
+  contents: read
+
+jobs:
+  evaluate:
+    name: ai-agent-evals on helpdesk-concierge
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Run Foundry agent evaluation
+        uses: microsoft/ai-agent-evals@v3-beta
+        with:
+          azure-ai-project-endpoint: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
+          deployment-name: ${{ vars.FOUNDRY_MODEL }}
+          data-path: ${{ github.workspace }}/apps/backend/eval/datasets/agent-evals.json
+          # With a baseline, evaluate both versions so the action can compare them.
+          agent-ids: ${{ inputs.baseline && format('helpdesk-concierge:{0},{1}', inputs.version, inputs.baseline) || format('helpdesk-concierge:{0}', inputs.version) }}
+          baseline-agent-id: ${{ inputs.baseline }}

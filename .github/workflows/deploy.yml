@@ -1,9 +1,15 @@
 name: Deploy (Azure Container Apps)
 
-# Manual deploy of the backend + frontend to Azure Container Apps via azd.
+# Deploys the backend + frontend to Azure Container Apps via azd. Two entrypoints:
+#   • release: published — release-please cut a release (see release.yml) → deploy.
+#   • workflow_dispatch  — manual, ad-hoc deploy.
+# Both stop at the `production` Environment gate below until a reviewer approves,
+# so cutting a release never deploys on its own — a human always confirms.
 # Does NOT redeploy the hosted agent (that would reset its content-safety guardrail).
 # Requires Azure OIDC + repo vars/secrets — see CONTRIBUTING.md › CI/CD setup.
 on:
+  release:
+    types: [published]
   workflow_dispatch:
     inputs:
       services:
@@ -33,6 +39,12 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: Azure/setup-azd@v2
+      - name: Install azd Foundry agents extension
+        # azure.yaml declares the hosted agent (host: azure.ai.agent). azd needs the
+        # azure.ai.agents extension just to PARSE that service — without it, even
+        # `azd provision` (backend/web only) aborts with "unsupported host". The
+        # fresh runner has no extensions; install is idempotent + GA (no alpha flag).
+        run: azd extension install azure.ai.agents
       - name: azd login (OIDC)
         run: >
           azd auth login --federated-credential-provider github
@@ -40,6 +52,22 @@ jobs:
       - name: Configure deploy env (NEXT_PUBLIC + Entra)
         run: |
           azd env new "$AZURE_ENV_NAME" --no-prompt || azd env select "$AZURE_ENV_NAME"
+          # The deployer here is the CI service principal, not a person — so the
+          # deployer data-plane role assignments must use ServicePrincipal, else ARM
+          # rejects them: "UnmatchedPrincipalType ... specified PrincipalType 'User'".
+          azd env set AZURE_PRINCIPAL_TYPE            "ServicePrincipal"
+          # AI Search was provisioned in a different region (capacity override). Without
+          # this, bicep defaults it to AZURE_LOCATION and the idempotent re-provision
+          # fails: "resource already exists in location eastus ... cannot be created in eastus2".
+          azd env set AZURE_SEARCH_LOCATION           "${{ vars.AZURE_SEARCH_LOCATION }}"
+          # selfwiki's private read audience = the app-users group. Without this the deployed backend
+          # leaves APP_USERS_GROUP_ID empty → the /selfwiki ACL header isn't sent → retrieve returns 0.
+          azd env set APP_USERS_GROUP_ID              "${{ vars.APP_USERS_GROUP_ID }}"
+          # cockpit ACL classification groups. Without these the backend's acl_group_map is empty →
+          # the /cockpit OBO ACL header isn't sent → the ACL index returns 0 authorized docs → "não sei".
+          azd env set ACL_PUBLIC_GROUP                "${{ vars.ACL_PUBLIC_GROUP }}"
+          azd env set ACL_INTERNAL_GROUP             "${{ vars.ACL_INTERNAL_GROUP }}"
+          azd env set ACL_CONFIDENTIAL_GROUP         "${{ vars.ACL_CONFIDENTIAL_GROUP }}"
           azd env set NEXT_PUBLIC_ENTRA_TENANT_ID     "${{ vars.NEXT_PUBLIC_ENTRA_TENANT_ID }}"
           azd env set NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID "${{ vars.NEXT_PUBLIC_ENTRA_SPA_CLIENT_ID }}"
           azd env set NEXT_PUBLIC_ENTRA_API_CLIENT_ID "${{ vars.NEXT_PUBLIC_ENTRA_API_CLIENT_ID }}"
@@ -49,7 +77,7 @@ jobs:
       - name: Provision (idempotent) + deploy selected services
         run: |
           azd provision --no-prompt
-          for svc in ${{ inputs.services }}; do
+          for svc in ${{ inputs.services || 'backend web' }}; do
             azd deploy "$svc" --no-prompt
           done
       - name: Web URL

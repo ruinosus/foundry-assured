@@ -1,0 +1,39 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Plan
+metadata:
+  name: plan-s-official-packages
+spec:
+  title: 'Plano: s-official-packages'
+  date: '2026-07-10'
+  status: accepted
+  story_ref: s-official-packages
+  journey_phase: plan
+  body: "# Plano \u2014 s-official-packages: git-dep \u2192 PyPI oficial\n\n## Contexto\n\
+    O DNA publicou `dna-sdk 0.1.0` + `dna-cli 0.1.0` no PyPI. O backend hoje consome\n\
+    `dna-sdk @ git+https://github.com/ruinosus/dna@3628a9ee...#subdirectory=packages/sdk-py`,\n\
+    o que exige `allow-direct-references` no hatch e `git` na imagem Docker slim.\
+    \ O CI e o\nCONTRIBUTING tamb\xE9m carregam o pin git (uvx --from git+... / uv\
+    \ tool install git+...).\n\n## Pr\xE9-verifica\xE7\xE3o (feita)\n- PyPI live:\
+    \ dna-sdk 0.1.0, dna-cli 0.1.0 (requires: dna-sdk<0.2,>=0.1).\n- Equival\xEAncia\
+    \ de composi\xE7\xE3o: os 8 prompts compostos pelo SHA pinado 3628a9ee\n  (venv\
+    \ atual do backend, verificado via direct_url.json + aus\xEAncia de strip_prompt_block)\n\
+    \  s\xE3o BYTE-ID\xCANTICOS aos compostos pelo dna-sdk 0.1.0 do PyPI (diff vazio).\n\
+    \  O delta 3628a9ee\u2192v0.1.0 no sdk \xE9 o i-013 (strip de trailing whitespace\
+    \ na composi\xE7\xE3o)\n  + LICENSE/README/metadata \u2014 neutro pros docs do\
+    \ helpdesk.\n\n## Passos\n1. `pyproject.toml`: `dna-sdk>=0.1,<0.2`; remover coment\xE1\
+    rio da git-dep e o bloco\n   `[tool.hatch.metadata] allow-direct-references` (nenhuma\
+    \ outra dep \xE9 direct reference).\n2. `Dockerfile`: remover apt-get git (s\xF3\
+    \ existia pra git-dep; base j\xE1 tem o resto).\n3. `uv lock` regenerado (uv.lock\
+    \ passa a apontar files.pythonhosted.org).\n4. `ci.yml`: passo dna eval usa `uvx\
+    \ --from dna-cli==0.1.* dna eval run ...` (sem refs git).\n5. `CONTRIBUTING.md`:\
+    \ install do CLI vira `uv tool install dna-cli` (PyPI).\n6. `ADR-013`: se\xE7\xE3\
+    o Dependency atualizada \u2014 PyPI oficial como caminho; git-dep pinada\n   vira\
+    \ nota hist\xF3rica.\n\n## Prova\n- `docker build` local da imagem do backend\
+    \ OK.\n- venv ressincronizada resolve dna-sdk do PyPI; suite do CI local:\n  `run_eval\
+    \ --self-test` + `test_attribution` + `dna eval run helpdesk-prompts` (CLI do\
+    \ PyPI).\n- Evid\xEAncia de equival\xEAncia dos 8 prompts (diff vazio) anexada\
+    \ na timeline.\n- TestGuide --product + TestRun.\n\n## Fora de escopo\n- Runtime\
+    \ no-rebuild dos prompts (PR B, s-no-deploy-prompts).\n- Qualquer mudan\xE7a no\
+    \ repo dna.\n"
+  created_at: '2026-07-10T19:08:07+00:00'
+  updated_at: '2026-07-10T19:08:07+00:00'

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quadro comparativo · deep-wiki engines</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0c11;
+    --panel:#10131a;
+    --panel-2:#141821;
+    --line:#222835;
+    --line-soft:#1a1f29;
+    --txt:#c9d1d9;
+    --txt-strong:#eef2f6;
+    --muted:#6b7686;
+    --yes:#3fb950;
+    --no:#f85149;
+    --part:#d8a629;
+    --accent:#2dd4bf;
+    --accent-dim:rgba(45,212,191,.10);
+    --accent-line:rgba(45,212,191,.38);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--bg);
+    color:var(--txt);
+    font-family:"Inter",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    padding:40px 24px 56px;
+    line-height:1.5;
+  }
+  .wrap{max-width:1060px;margin:0 auto}
+
+  .eyebrow{
+    font-family:"JetBrains Mono",monospace;
+    font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--accent);
+    display:flex;align-items:center;gap:9px;margin-bottom:18px;
+  }
+  .eyebrow::before{content:"";width:26px;height:1px;background:var(--accent-line)}
+
+  h1{
+    font-family:"Space Grotesk",sans-serif;
+    font-weight:700;
+    font-size:clamp(26px,4.4vw,40px);
+    line-height:1.08;
+    letter-spacing:-.015em;
+    color:var(--txt-strong);
+    margin:0 0 14px;
+  }
+  h1 .hl{color:var(--accent)}
+  .lede{max-width:660px;color:var(--muted);font-size:15px;margin:0 0 30px}
+  .lede strong{color:var(--txt);font-weight:500}
+
+  .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
+  table{border-collapse:collapse;width:100%;min-width:780px;font-size:13.5px}
+
+  thead th{
+    text-align:left;vertical-align:bottom;
+    padding:16px 14px;
+    border-bottom:1px solid var(--line);
+    background:var(--panel-2);
+    position:sticky;top:0;
+  }
+  thead th.cap{
+    font-family:"JetBrains Mono",monospace;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+    font-weight:500;width:30%;
+  }
+  .col-name{font-family:"Space Grotesk",sans-serif;font-weight:600;font-size:15px;color:var(--txt-strong);display:block}
+  .col-tag{font-family:"JetBrains Mono",monospace;font-size:10px;letter-spacing:.04em;color:var(--muted);margin-top:5px;display:block}
+
+  th.mine{background:var(--accent-dim);border-bottom:1px solid var(--accent-line);border-left:1px solid var(--accent-line);border-right:1px solid var(--accent-line)}
+  th.mine .col-name{color:var(--accent)}
+  th.mine .col-tag{color:#7fded0}
+
+  tbody th{
+    text-align:left;font-weight:500;color:var(--txt);
+    padding:14px;border-bottom:1px solid var(--line-soft);
+    font-size:13.5px;
+  }
+  tbody td{
+    padding:14px;border-bottom:1px solid var(--line-soft);
+    vertical-align:top;
+  }
+  td.mine{background:var(--accent-dim);border-left:1px solid var(--accent-line);border-right:1px solid var(--accent-line)}
+  tbody tr:last-child th,tbody tr:last-child td{border-bottom:none}
+  tbody tr:last-child td.mine{border-bottom:1px solid var(--accent-line)}
+
+  .mark{display:inline-flex;align-items:center;gap:8px;font-family:"JetBrains Mono",monospace;font-size:12px}
+  .dot{width:7px;height:7px;border-radius:50%;flex:none}
+  .yes .dot{background:var(--yes);box-shadow:0 0 8px rgba(63,185,80,.5)}
+  .no .dot{background:var(--no)}
+  .part .dot{background:var(--part)}
+  .yes{color:#8be397}
+  .no{color:#f99}
+  .part{color:#e7c45f}
+  .note{display:block;color:var(--muted);font-size:11.5px;font-family:"Inter",sans-serif;margin-top:4px;line-height:1.35}
+
+  .legend{
+    display:flex;flex-wrap:wrap;gap:18px;margin:18px 2px 0;
+    font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);
+  }
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+
+  .foot{
+    margin-top:26px;padding-top:18px;border-top:1px solid var(--line-soft);
+    font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--muted);
+    line-height:1.7;
+  }
+  .foot b{color:var(--accent);font-weight:500}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a href="./deep-wiki-presentation.html" style="display:inline-flex;align-items:center;gap:7px;font-family:'JetBrains Mono',monospace;font-size:12px;letter-spacing:.04em;color:var(--accent);text-decoration:none;margin-bottom:24px;border:1px solid var(--accent-line);border-radius:20px;padding:6px 13px">← voltar à apresentação</a>
+
+  <div class="eyebrow">Deep-wiki engines · comparativo de capacidades</div>
+  <h1>Cada tijolo existe lá fora.<br><span class="hl">O monte, não.</span></h1>
+  <p class="lede">Gerar wiki de um repositório virou commodity; aparar busca por identidade é padrão Azure documentado. O que ninguém junta é <strong>geração citável + gate de fidelidade na ingestão + retrieval aparado por identidade</strong> num pipeline local e auditável.</p>
+
+  <div class="scroll">
+  <table>
+    <thead>
+      <tr>
+        <th class="cap">Capacidade</th>
+        <th><span class="col-name">DeepWiki</span><span class="col-tag">SaaS · Cognition/Devin</span></th>
+        <th><span class="col-name">deepwiki-open</span><span class="col-tag">OSS · AsyncFuncAI</span></th>
+        <th><span class="col-name">OpenDeepWiki</span><span class="col-tag">OSS · C#/TS</span></th>
+        <th class="mine"><span class="col-name">Este mecanismo</span><span class="col-tag">Foundry · local</span></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>Onde roda</th>
+        <td><span class="mark part"><span class="dot"></span>Hospedado</span><span class="note">Seus dados passam pelos servidores deles</span></td>
+        <td><span class="mark yes"><span class="dot"></span>Local</span><span class="note">Docker / Ollama</span></td>
+        <td><span class="mark yes"><span class="dot"></span>Self-host</span></td>
+        <td class="mine"><span class="mark yes"><span class="dot"></span>Local</span><span class="note">uv run · CI · cron</span></td>
+      </tr>
+      <tr>
+        <th>Wiki citável gerada do código</th>
+        <td><span class="mark yes"><span class="dot"></span>Sim</span></td>
+        <td><span class="mark yes"><span class="dot"></span>Sim</span></td>
+        <td><span class="mark yes"><span class="dot"></span>Sim</span></td>
+        <td class="mine"><span class="mark yes"><span class="dot"></span>Sim</span><span class="note">claim → caminho de arquivo real</span></td>
+      </tr>
+      <tr>
+        <th>Gate de fidelidade antes de ingerir</th>
+        <td><span class="mark no"><span class="dot"></span>Não</span></td>
+        <td><span class="mark no"><span class="dot"></span>Não</span></td>
+        <td><span class="mark no"><span class="dot"></span>Não</span></td>
+        <td class="mine"><span class="mark yes"><span class="dot"></span>Sim</span><span class="note">≥80% das citações têm que resolver, senão não ingere</span></td>
+      </tr>
+      <tr>
+        <th>Retrieval agêntico + fallback semântico</th>
+        <td><span class="mark part"><span class="dot"></span>RAG</span><span class="note">Ask Devin, sem fallback garantido</span></td>
+        <td><span class="mark part"><span class="dot"></span>RAG</span></td>
+        <td><span class="mark part"><span class="dot"></span>RAG + chat</span></td>
+        <td class="mine"><span class="mark yes"><span class="dot"></span>Sim</span><span class="note">Foundry IQ + queda p/ busca direta</span></td>
+      </tr>
+      <tr>
+        <th>Trim de acesso por identidade (Entra ID + OBO)</th>
+        <td><span class="mark no"><span class="dot"></span>Não</span></td>
+        <td><span class="mark no"><span class="dot"></span>Não</span></td>
+        <td><span class="mark part"><span class="dot"></span>Roles no app</span><span class="note">Não é trim por documento no retrieval</span></td>
+        <td class="mine"><span class="mark yes"><span class="dot"></span>Sim</span><span class="note">por documento, antes do modelo ver</span></td>
+      </tr>
+      <tr>
+        <th>Fail-closed · à prova de injeção</th>
+        <td><span class="mark no"><span class="dot"></span>Não</span></td>
+        <td><span class="mark no"><span class="dot"></span>Não</span></td>
+        <td><span class="mark no"><span class="dot"></span>Não</span></td>
+        <td class="mine"><span class="mark yes"><span class="dot"></span>Sim</span><span class="note">ASR 0% · 8 ataques adversariais</span></td>
+      </tr>
+      <tr>
+        <th>Custo medido por execução</th>
+        <td><span class="mark no"><span class="dot"></span>Opaco</span></td>
+        <td><span class="mark part"><span class="dot"></span>Depende da API</span></td>
+        <td><span class="mark no"><span class="dot"></span>Opaco</span></td>
+        <td class="mine"><span class="mark yes"><span class="dot"></span>Sim</span><span class="note">$0,30 / monorepo · ~$0,011/página</span></td>
+      </tr>
+      <tr>
+        <th>Auditável / verificável</th>
+        <td><span class="mark part"><span class="dot"></span>Caixa-preta</span></td>
+        <td><span class="mark yes"><span class="dot"></span>Sim</span></td>
+        <td><span class="mark yes"><span class="dot"></span>Sim</span></td>
+        <td class="mine"><span class="mark yes"><span class="dot"></span>Sim</span><span class="note">cada afirmação resolve p/ a fonte</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="legend">
+    <span><span class="dot" style="background:var(--yes)"></span>Sim</span>
+    <span><span class="dot" style="background:var(--part)"></span>Parcial</span>
+    <span><span class="dot" style="background:var(--no)"></span>Não</span>
+  </div>
+
+  <div class="foot">
+    Gerar wiki = commodity · trim por identidade = padrão Azure documentado · <b>o gate de fidelidade + grounding como fronteira de segurança é o que os concorrentes não entregam.</b><br>
+    Nota de mercado: o Agents SDK do Foundry ainda não expõe o header de identidade (<b>x-ms-query-source-authorization</b>) no tool de AI Search — a camada de app deste mecanismo resolve isso antes da própria Microsoft.
+  </div>
+
+</div>
+</body>
+</html>

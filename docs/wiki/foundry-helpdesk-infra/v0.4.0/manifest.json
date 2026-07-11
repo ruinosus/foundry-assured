@@ -1,0 +1,68 @@
+{
+  "key": "foundry-helpdesk-infra-v0.4.0",
+  "title": "foundry-helpdesk-infra v0.4.0",
+  "source": {
+    "type": "repo",
+    "ref": "infra",
+    "commit": "39fb347c53c16f47f59f07f44df1aa830fbb5112"
+  },
+  "language": "pt-br",
+  "model": "local-agent",
+  "generatedAt": "2026-07-06T18:45:24+00:00",
+  "kind": "element",
+  "component": "foundry-helpdesk-infra",
+  "componentVersion": "v0.4.0",
+  "releaseVersion": null,
+  "pages": [
+    {
+      "id": "page-1",
+      "title": "Visão Geral da Infraestrutura",
+      "order": 1,
+      "file": "pages/page-1.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-2",
+      "title": "O Stack azd (main.bicep → resources + containerapps)",
+      "order": 2,
+      "file": "pages/page-2.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-3",
+      "title": "Recursos Compartilhados (resources.bicep)",
+      "order": 3,
+      "file": "pages/page-3.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-4",
+      "title": "Artifacts — Storage Privado + RBAC de Menor Privilégio",
+      "order": 4,
+      "file": "pages/page-4.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-5",
+      "title": "Container Apps (backend + web)",
+      "order": 5,
+      "file": "pages/page-5.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-6",
+      "title": "Stamp Dedicado (Managed Application) + Azure Lighthouse",
+      "order": 6,
+      "file": "pages/page-6.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-7",
+      "title": "Hosted Agents, Identidades Entra/ACL e Scripts de Bring-up",
+      "order": 7,
+      "file": "pages/page-7.md",
+      "audience": "base"
+    }
+  ],
+  "groups": []
+}

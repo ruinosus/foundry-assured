@@ -1,18 +1,54 @@
+---
+title: Deployment & provisioning guide
+description: End-to-end steps from a fresh clone to a provisioned, optionally cloud-published Foundry Assured.
+type: how-to
+audience: operator
+status: stable
+updated: 2026-06-27
+---
+
 # Deployment & provisioning guide
 
 End-to-end: from a fresh `git clone` to a fully provisioned, optionally
-cloud-published Foundry Helpdesk. Read top to bottom the first time.
+cloud-published Foundry Assured. Read top to bottom the first time.
 
 > Architecture & repo layout: [`../README.md`](../README.md). This doc is the
 > operational runbook.
+
+## Quickstart (the short path)
+
+**One command** — [`scripts/up-all.sh`](../scripts/up-all.sh) chains preflight (tools + sign-in) →
+`azd up` → (optional auth) → `bootstrap.sh`, then prints the remaining steps. From the repo root,
+after `azd auth login && az login`:
+
+```bash
+./scripts/up-all.sh                # provision + bootstrap (no sign-in; single identity)
+./scripts/up-all.sh --with-auth    # also create the Entra apps + the 4 app roles (sign-in + HITL)
+./scripts/up-all.sh -h             # help / flags (--provision-only, etc.)
+```
+
+Or run the same stages by hand (what `up-all.sh` calls):
+
+```bash
+azd up                      # provision all Azure infra (Step 1)
+./scripts/setup-entra.sh    # OPTIONAL: create the 2 Entra app regs + write env (Step 3)
+./scripts/bootstrap.sh      # fill .env from azd, ingest the KB, provision memory (Steps 2+4)
+
+cd apps/backend  && uv run uvicorn app.main:app --port 8000 --reload   # Step 5
+cd apps/frontend && npm install && npm run dev                        # → http://localhost:3000
+```
+
+Skip `setup-entra.sh` to run **without sign-in** (single `DefaultAzureCredential`
+identity). The rest of this doc is the **reference** behind those scripts — read it
+to understand or do any step by hand.
 
 ## What gets provisioned
 
 | Layer | How | Where |
 | --- | --- | --- |
 | Foundry account + project + models, Azure AI Search, Storage, ACR, Container Apps env, RBAC | **Bicep** via `azd up` (control plane) | `infra/` |
-| Knowledge base + memory store | **Python scripts** (data plane) | `apps/backend/{app/knowledge/ingest.py, cli/}` |
-| Entra app registrations (SPA + API) for sign-in + OBO | **manual** (portal) — see Step 3 | — |
+| Knowledge base + memory store | **Python scripts** (data plane) — or `scripts/bootstrap.sh` | `apps/backend/{app/knowledge/ingest.py, cli/}` |
+| Entra app registrations (SPA + API) for sign-in + OBO | `scripts/setup-entra.sh` (or manual — Step 3) | — |
 | Hosted agent (Foundry Agent Service) | `azd deploy helpdesk-concierge` + post-deploy RBAC | `apps/hosted-agent/` |
 | Backend + frontend (Container Apps) | `azd up` / `azd deploy backend web` | `apps/{backend,frontend}/` |
 
@@ -40,12 +76,12 @@ azd up        # prompts for an environment name + region
 ```
 
 This runs `infra/` and creates, in a `rg-<env>` resource group:
-a Foundry account `aif-helpdesk-<token>` + project **`helpdesk-concierge`**,
-`gpt-4.1-mini` + `text-embedding-3-small` deployments, **Azure AI Search (Basic)**,
+a Foundry account `aif-assured-<token>` + project **`foundry-assured`**,
+`gpt-5-mini` + `text-embedding-3-small` deployments, **Azure AI Search (Basic)**,
 a Storage account, an **ACR**, a **Container Apps environment**, a shared managed
 identity, and all keyless role assignments.
 
-Region tips: pick where `gpt-4.1-mini` GlobalStandard has quota (e.g. `eastus2`);
+Region tips: pick where `gpt-5-mini` GlobalStandard has quota (e.g. `eastus2`);
 if Azure AI Search is out of capacity there, set `AZURE_SEARCH_LOCATION` (e.g.
 `eastus`). Lower `modelCapacity` in `infra/resources.bicep` on quota errors.
 
@@ -72,14 +108,17 @@ without them the app falls back to `DefaultAzureCredential` and skips OBO).
 
 ## Step 3 — Entra app registrations (sign-in + OBO)
 
-This is the only **manual** part, and the easiest to get wrong. You create **two**
-app registrations: a **SPA** (the browser signs in) and an **API** (the backend
-validates the token and exchanges it On-Behalf-Of the user). Skip this whole step
-to run without auth (single shared `DefaultAzureCredential` identity).
+> **Fast path:** `./scripts/setup-entra.sh` does everything in this step (idempotent)
+> and writes the env files. The steps below are the reference / manual fallback if
+> consent needs a portal click.
+
+You create **two** app registrations: a **SPA** (the browser signs in) and an **API**
+(the backend validates the token and exchanges it On-Behalf-Of the user). Skip this
+whole step to run without auth (single shared `DefaultAzureCredential` identity).
 
 ### 3a. API app registration (the backend's audience)
 
-1. **Entra ID → App registrations → New registration.** Name e.g. `foundry-helpdesk-api`. Register.
+1. **Entra ID → App registrations → New registration.** Name e.g. `foundry-assured-api`. Register.
 2. **Expose an API → Add a scope.** Accept the default `api://<api-client-id>` Application ID URI. Scope name **`access_as_user`**, admins+users can consent.
 3. **Certificates & secrets → New client secret.** Copy the **value** → this is `ENTRA_API_CLIENT_SECRET`.
 4. **Manifest →** set `"requestedAccessTokenVersion": 2` (otherwise the backend rejects v1 tokens with "invalid claims").
@@ -90,7 +129,7 @@ to run without auth (single shared `DefaultAzureCredential` identity).
 
 ### 3b. SPA app registration (the frontend)
 
-1. **New registration.** Name e.g. `foundry-helpdesk-spa`. Under *Redirect URI*, platform **Single-page application**, URI **`http://localhost:3000`** (add your deployed `WEB_URL` after Step 7).
+1. **New registration.** Name e.g. `foundry-assured-spa`. Under *Redirect URI*, platform **Single-page application**, URI **`http://localhost:3000`** (add your deployed `WEB_URL` after Step 7).
 2. **API permissions → Add → My APIs →** select the API app → delegated **`access_as_user`** → **Grant admin consent**.
 3. If you sign in with a **personal/guest** account (live.com/gmail), the backend scheme sets `allow_guest_users=True` already; just make sure the account is a guest member of the tenant.
 
@@ -110,18 +149,92 @@ NEXT_PUBLIC_ENTRA_API_CLIENT_ID=<api-app-client-id>
 
 The frontend must run on **port 3000** (it must match the SPA redirect URI).
 
+### 3d. App roles (RBAC) — required for HITL approval + the admin portal
+
+Declare the four app roles on the **API** app and grant the app-only Microsoft Graph
+permissions the in-portal user management needs:
+
+```bash
+ENTRA_API_CLIENT_ID=<api-app-client-id> ./scripts/setup-app-roles.sh
+```
+
+This is idempotent and:
+- declares the four app roles — **Admin**, **Author**, **Approver**, **Reader**;
+- grants the app-only Graph permissions (`User.ReadWrite.All`, `User.Invite.All`,
+  `AppRoleAssignment.ReadWrite.All`, `Directory.Read.All`) and runs admin consent.
+
+Then **assign yourself the Admin role**: **Entra → Enterprise applications → the API app →
+Users and groups → Add user/group** → pick yourself → role **Admin**. The HITL approval
+card requires **Approver** or **Admin**; the `/admin/users` portal requires **Admin**.
+
+> Design & company-group→app-role mapping: [RBAC-AND-USER-MANAGEMENT-PLAN.md](./RBAC-AND-USER-MANAGEMENT-PLAN.md).
+
 ---
 
 ## Step 4 — Data-plane objects (KB + memory)
 
+> **Fast path:** `./scripts/bootstrap.sh` runs the helpdesk ingest + memory (and fills
+> `.env` from the azd outputs first). The manual commands:
+
 ```bash
 cd apps/backend
-uv run python -m app.knowledge.ingest      # upload corpus → knowledge source → Foundry IQ knowledge base
 uv run python -m cli.provision_memory      # create the Foundry memory store
 ```
 
-These are **data-plane** (not Bicep). Ingestion indexes ~13 runbooks (a few
-minutes; the script polls until it settles).
+These are **data-plane** (not Bicep), so you ingest each domain by hand. There are
+**three domains, each with its own knowledge base + ingest** — deploy/ingest any subset
+(at least one):
+
+```bash
+cd apps/backend
+
+# Helpdesk KB — ~13 fake runbooks (a few minutes; the script polls until it settles)
+uv run python -m app.knowledge.ingest
+
+# Cockpit KB — point at a folder of Cockpit doc bundles
+COCKPIT_DOCBUNDLES=/path/to/cockpit/docbundles \
+  uv run python -m app.knowledge.ingest_docbundles
+
+# Selfwiki KB — this repo's own deep-wiki (docs/wiki); reuses ingest_docbundles via ENV override
+KB_KNOWLEDGE_SOURCE=selfwiki-docbundles-ks \
+KB_DOMAIN_LABEL="o projeto foundry-assured" \
+COCKPIT_STORAGE_CONTAINER=selfwiki-corpus \
+COCKPIT_SEARCH_KNOWLEDGE_BASE=selfwiki-kb \
+COCKPIT_SEARCH_INDEX=selfwiki-docbundles-ks-index \
+COCKPIT_DOCBUNDLES=../../docs/wiki \
+  uv run python -m app.knowledge.ingest_docbundles
+```
+
+Each ingest uploads its corpus → knowledge source → Foundry IQ knowledge base, stamps
+the per-document access groups, and polls until the index settles.
+
+### Generating the selfwiki corpus — two paths
+
+The `docs/wiki` deep-wiki that the **selfwiki** ingest consumes is itself generated.
+There are **two ways** to produce it:
+
+1. **Foundry pipeline (`wiki_builder.py`)** — automated, runs in-cloud. From
+   `apps/backend`: `uv run python -m app.knowledge.wiki_builder …`. Needs `azd up` done
+   and the Foundry model (`gpt-5-mini`) deployed; it enforces the **build-fidelity gate**
+   (rejects a low-fidelity bundle). This is the path that costs tokens.
+2. **Microsoft Agent Skills** — no cloud, no cost. The skills under
+   `apps/backend/app/knowledge/skills/{wiki-architect,wiki-page-writer}` are run by your
+   IDE agent (**VS Code Copilot** or **Claude Code**): open the repo and ask it to
+   *"create a wiki"* — the agent follows the skill instructions to write the bundle
+   locally. (There is no `copilot plugin install` / slash command; it's the skills the
+   IDE agent reads.)
+
+Either path produces a doc bundle the selfwiki ingest above can index.
+
+> **Citation style differs between the paths** (verified by actually running the Copilot CLI
+> path on `infra/` — 100% of the source files it cited exist). The Foundry pipeline emits
+> **repo-relative paths** (`infra/resources.bicep`); the Agent Skill resolves the git remote
+> and emits **GitHub blob URLs** plus external/schema URLs and intra-wiki page links. The
+> build-fidelity gate (`eval` / `wiki_builder._fidelity_report`) now **normalizes blob +
+> external URLs**, so it scores the Foundry bundles cleanly (94–100%); but it still counts the
+> skill's wiki-internal `.md` cross-links + prose, so it under-scores skill output. Validate a
+> skill-generated bundle by **source-file existence** (do its cited files exist?), not the same
+> gate threshold — the two are faithful, but not drop-in identical for the gate.
 
 ---
 
@@ -140,7 +253,7 @@ Open <http://localhost:3000> — Overview, **/chat** (Live ⇄ Hosted toggle),
 ## Step 6 — Deploy the hosted agent (Foundry Agent Service)
 
 ```bash
-azd env set AZURE_AI_PROJECT_ID "<project ARM id, ends in /projects/helpdesk-concierge>"
+azd env set AZURE_AI_PROJECT_ID "<project ARM id, ends in /projects/foundry-assured>"
 azd deploy helpdesk-concierge
 azd ai agent show helpdesk-concierge        # status + endpoint + portal playground
 azd ai agent invoke helpdesk-concierge "How do I roll back a bad deploy?"
@@ -152,8 +265,8 @@ the agent at deploy time, so it can't be pre-assigned in Bicep. Grant the agent'
 
 ```bash
 AID=<instance-identity-principal-id>
-ACC=<account ARM id .../accounts/aif-helpdesk-...>
-SRCH=<search ARM id .../searchServices/srch-helpdesk-...>
+ACC=<account ARM id .../accounts/aif-assured-...>
+SRCH=<search ARM id .../searchServices/srch-assured-...>
 az role assignment create --assignee-object-id $AID --assignee-principal-type ServicePrincipal \
   --role 53ca6127-db72-4b80-b1b0-d745d6d5456d --scope $ACC      # Azure AI User (call the model)
 az role assignment create --assignee-object-id $AID --assignee-principal-type ServicePrincipal \
@@ -179,8 +292,9 @@ azd env get-values | grep WEB_URL      # then add  https://<web-fqdn>/  to the S
 Bicep wires the apps to each other by FQDN (no manual URL config) and grants the
 shared identity ACR pull + Foundry/Search access. Images build remotely in ACR.
 
-> **Cost:** the container apps default to `minReplicas: 1` (always-on). For
-> scale-to-zero (idle = \$0), set `minReplicas: 0` in `infra/containerapps.bicep`.
+> **Cost:** the container apps are configured **`minReplicas: 0`** (scale-to-zero,
+> idle = \$0) in `infra/containerapps.bicep`. They spin up on the first request and
+> back down when idle. See [Cost & teardown](#cost--teardown) for the full picture.
 
 ---
 
@@ -199,15 +313,53 @@ List the built-in RAI policies for `--policy`:
 
 ---
 
+## Agent evaluation (Foundry `ai-agent-evals` action)
+
+The repo uses Microsoft's **official** [`microsoft/ai-agent-evals`](https://github.com/microsoft/ai-agent-evals)
+GitHub Action to evaluate the **deployed hosted agent** (`helpdesk-concierge`) with
+Foundry's hosted judges. Workflow: `.github/workflows/agent-evals.yml` (manual).
+
+```bash
+# absolute scores for the current agent (v3)
+gh workflow run agent-evals.yml
+
+# compare v3 against a baseline (v2) — confidence intervals + significance test
+gh workflow run agent-evals.yml -f version=3 -f baseline=helpdesk-concierge:2
+```
+
+- **Dataset:** `apps/backend/eval/datasets/agent-evals.json` (generated from the golden
+  set; `evaluators: groundedness, relevance, coherence, intent_resolution`).
+- **Auth:** the same Azure OIDC + repo vars as the other cloud workflows.
+- **Output:** scores land in the **Actions run summary**; with `baseline`, a side-by-side
+  comparison with confidence intervals. *(Enable the repo Wiki for the full detailed view.)*
+- **Advisory, not blocking** — see the workflow header for why (small golden set →
+  hard-gate the deterministic ASSERTs in `ci.yml`, keep judge scores advisory until the
+  set grows + judges are calibrated, then graduate to a baseline/CI gate).
+
 ## Cost & teardown
 
-| Resource | Cost | Note |
-| --- | --- | --- |
-| Azure AI Search (Basic) | ~\$0.10/hr | the meter that runs 24/7 |
-| ACR (Basic) | ~\$5/mo | |
-| Container Apps (min 1 replica) | a few \$/mo each | set `minReplicas: 0` for scale-to-zero |
-| Hosted agent compute | **\$0 idle** | deprovisions after 15 min |
-| Models | per token | |
+Pay-as-you-go, East US 2, USD. Prices below are pulled **live from the Azure Retail
+Prices API**; for the full derivation (the Microsoft-indicated method + how to
+reproduce it with the Azure Cost Estimator), see **[COST.md](./COST.md)**. The table
+separates **fixed meters** (billed 24/7 whether or not anyone uses the app) from
+**usage meters** (≈\$0 when idle).
+
+| Resource | SKU | Cost | Kind |
+| --- | --- | --- | --- |
+| **Azure AI Search** | Basic | **~\$0.10/hr ≈ \$74/mo** | 🔴 fixed — runs 24/7, **the meter to watch** |
+| Azure Container Registry | Basic | ~\$0.17/day ≈ **\$5/mo** | 🔴 fixed (already provisioned for the hosted agent) |
+| Log Analytics | PerGB2018 | \$2.30/GB analyzed · **\$0/mo demo** | 🟡 usage — first 5 GB/mo free; demo telemetry is well under it |
+| Container Apps (backend + web) | Consumption, 0.5 vCPU / 1 GiB, **scale-to-zero** | **\$0 idle** · ~cents under demo load | 🟢 usage — within the monthly free grant (180k vCPU-s / 360k GiB-s / 2M req) |
+| Hosted agent compute | — | **\$0 idle** | 🟢 deprovisions ~15 min after last call |
+| Azure AI Foundry | Cognitive Services S0 | no fixed fee | 🟢 pay per token (below) |
+| Model usage | `gpt-5-mini` GlobalStandard | ~\$0.25 / 1M input · ~\$2.00 / 1M output tok | 🟢 usage — a showcase is cents–few \$/mo |
+| Embeddings | `text-embedding-3-*` | ~\$0.02 / 1M tok | 🟢 usage — negligible |
+| Storage (blob corpus) | Standard_LRS | <\$1/mo | 🟢 usage |
+| **Azure Files** (tickets) | 1 GiB share on the same account | ~\$0.06/mo + tiny txns → **cents** | 🟢 usage — persists `data/tickets.jsonl` across scale-to-zero |
+
+**Bottom line:**
+- **Marginal cost of the backend + web deploy** (Step 7): **~\$0–3/mo** — compute is scale-to-zero, the ACR already existed, so it's just a little Log Analytics ingestion.
+- **Dominant cost overall: Azure AI Search ≈ \$74/mo if left on 24/7.** It has no scale-to-zero. If you're not actively using the showcase, **`azd down`** to stop that meter — it's ~95% of the bill.
 
 ```bash
 azd ai agent delete helpdesk-concierge   # remove just the hosted agent

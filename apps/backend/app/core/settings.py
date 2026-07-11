@@ -1,37 +1,33 @@
-"""Application settings, loaded from environment / .env.
+"""Platform-global application settings, loaded from environment / .env.
 
-Env var names match what FoundryChatClient reads natively
-(FOUNDRY_PROJECT_ENDPOINT, FOUNDRY_MODEL), so the client can also pick them
-up on its own — we surface them here for explicit wiring and validation.
+Per-tenant data-plane config (Foundry/Search/Storage pointers, ACL, memory store,
+hosted agent) lives in ``app.core.tenant`` and is read via ``tenant_config()``.
+This module keeps only platform-global settings (auth, CORS, tenant-store wiring).
 """
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class Settings(BaseSettings):
+class PlatformSettings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env", env_file_encoding="utf-8", extra="ignore"
     )
 
-    # Foundry project endpoint, e.g. https://<project>.services.ai.azure.com/api/projects/<name>
-    foundry_project_endpoint: str = ""
-    # Model deployment name, e.g. gpt-4.1-mini
-    foundry_model: str = "gpt-4.1-mini"
+    # --- Deployment mode + tenant store (a later task wires DEPLOYMENT_MODE) ---
+    deployment_mode: str = "self_hosted"
+    tenant_store_table: str = "tenants"
+    tenant_store_account_url: str = ""
+    # "table" (default, production) | "memory" (DEV/CI only — ephemeral, lets shared mode boot
+    # offline; never use in production).
+    tenant_store_backend: str = "table"
 
-    # Foundry account OpenAI endpoint, e.g. https://<account>.openai.azure.com
-    # Used by the knowledge base for embeddings + query planning.
-    azure_ai_openai_endpoint: str = ""
-    # Embedding deployment used to vectorize the corpus.
-    foundry_embedding_model: str = "text-embedding-3-small"
-
-    # --- Phase 1: Foundry IQ knowledge base (Azure AI Search) ---
-    azure_search_endpoint: str = ""
-    azure_search_knowledge_base: str = "helpdesk-kb"
-
-    # Storage holding the corpus (blob knowledge source).
-    azure_storage_account: str = ""
-    azure_storage_resource_id: str = ""
-    azure_storage_container: str = "corpus"
+    # Artifacts (HTML artifacts feature)
+    artifact_store_backend: str = "table"       # "table" | "memory"
+    artifact_store_account_url: str = ""         # ARTIFACT_STORE_ACCOUNT_URL
+    artifact_table: str = "artifacts"            # ARTIFACT_TABLE
+    artifact_blob_account_url: str = ""          # ARTIFACT_BLOB_ACCOUNT_URL
+    artifact_container: str = "artifacts"        # ARTIFACT_CONTAINER
+    artifact_max_html_bytes: int = 2_000_000     # 2 MB cap (defense-in-depth)
 
     # --- Phase 3: Entra ID + On-Behalf-Of (per-user identity) ---
     # Backend API app registration (the audience of incoming tokens).
@@ -41,12 +37,19 @@ class Settings(BaseSettings):
     # Frontend SPA app registration (surfaced to the frontend env; not used here).
     entra_spa_client_id: str = ""
 
-    # --- Phase 3: Foundry memory store ---
-    foundry_memory_store: str = "helpdesk-memory"
+    # --- MCP integration (platform/ops domain) — PLATFORM-GLOBAL flags only ---
+    # mcp_enabled is a deployment switch; mcp_learn_url is the public Learn endpoint (same for
+    # all tenants). The per-tenant MCP fields (ADO org, GitHub PAT, self-hosted Azure URL) live
+    # in TenantConfig (app.core.tenant), read via tenant_config().
+    mcp_enabled: bool = False
+    mcp_learn_url: str = "https://learn.microsoft.com/api/mcp"
 
-    # --- Phase 6: hosted agent (Foundry Agent Service) ---
-    # Name of the deployed hosted agent, invoked via the Responses protocol.
-    hosted_agent_name: str = "helpdesk-concierge"
+    # Tenants permitted to self-onboard (CSV of tids) — controlled rollout. WE control this.
+    onboarding_allowed_tids: str = ""
+
+    @property
+    def allowed_tids(self) -> set[str]:
+        return {t.strip() for t in self.onboarding_allowed_tids.split(",") if t.strip()}
 
     # CORS origin for the local Next.js frontend
     frontend_origin: str = "http://localhost:3000"
@@ -65,4 +68,4 @@ class Settings(BaseSettings):
         return f"api://{self.entra_api_client_id}/access_as_user"
 
 
-settings = Settings()
+settings = PlatformSettings()

@@ -1,0 +1,79 @@
+name: Release
+
+# Release-please reads the Conventional Commits on main and maintains a rolling
+# "release PR" that bumps the version + regenerates CHANGELOG.md. Merging that PR
+# cuts a git tag + GitHub Release — which gates the production deploy (deploy.yml ›
+# on.release). No deploy happens here; this only cuts the release.
+#
+# Token: prefer a GitHub App installation token (short-lived ~1h, least-privilege,
+# a machine identity — the enterprise/compliant choice over a PAT). Set repo
+# variable RELEASE_APP_ID + secret RELEASE_APP_PRIVATE_KEY to enable it. A release
+# created with the App token *does* trigger deploy.yml's `on: release` (unlike one
+# created with the built-in GITHUB_TOKEN, which GitHub blocks to avoid recursion).
+# Falls back to GITHUB_TOKEN when the App isn't configured — the release still cuts,
+# but you then dispatch the deploy manually (deploy.yml has workflow_dispatch).
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write # create tags + releases + the release PR's commits
+  pull-requests: write # open/maintain the release PR
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: Maintain release PR / cut release
+    runs-on: ubuntu-latest
+    steps:
+      # Mint a short-lived GitHub App token when the App is configured; skipped
+      # otherwise (the token expression below falls back to GITHUB_TOKEN).
+      - uses: actions/create-github-app-token@v3
+        id: app-token
+        if: ${{ vars.RELEASE_APP_ID != '' }}
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+
+      - uses: googleapis/release-please-action@v5
+        with:
+          token: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+      - uses: actions/checkout@v5
+
+      # Safety net. release-please-action@v4 here intermittently REFUSES to tag a
+      # just-merged release PR ("There are untagged, merged release PRs outstanding
+      # - aborting"), so the GitHub Release never gets cut and the version stalls
+      # (it needed a manual cut for both v0.2.0 and v0.3.0). If the manifest version
+      # has no release yet, cut it from the CHANGELOG and mark the merged release PR
+      # `autorelease: tagged` so the next run reconciles cleanly. Uses the same token
+      # as release-please, so when the App is configured this cut also triggers the
+      # deploy.
+      - name: Cut release if release-please left the version untagged
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token || secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          VERSION="$(jq -r '.["."]' .release-please-manifest.json)"
+          TAG="v${VERSION}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "$TAG already released — nothing to do."
+            exit 0
+          fi
+          echo "release-please left $TAG untagged — cutting it from the CHANGELOG."
+          awk -v v="$VERSION" '
+            $0 ~ "^## \\[" v "\\]" { f = 1 }
+            f && $0 ~ "^## \\[" && $0 !~ "\\[" v "\\]" { exit }
+            f { print }
+          ' CHANGELOG.md > /tmp/notes.md
+          gh release create "$TAG" --target "$GITHUB_SHA" --title "$TAG" --notes-file /tmp/notes.md
+          PR="$(gh pr list --state merged --search 'label:"autorelease: pending"' --json number --jq '.[0].number // empty')"
+          if [ -n "$PR" ]; then
+            gh pr edit "$PR" --add-label "autorelease: tagged" --remove-label "autorelease: pending"
+            echo "Marked PR #$PR autorelease: tagged."
+          fi

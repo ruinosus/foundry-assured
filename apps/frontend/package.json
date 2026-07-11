@@ -7,23 +7,26 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "demo": "bash ../../scripts/demo.sh",
+    "demo:record": "bash ../../scripts/demo-record.sh"
   },
   "dependencies": {
     "@ag-ui/client": "^0.0.57",
-    "@azure/msal-browser": "^5.15.0",
-    "@azure/msal-react": "^5.5.0",
-    "@copilotkit/react-core": "^1.61.2",
-    "@copilotkit/react-ui": "^1.61.2",
-    "@copilotkit/runtime": "^1.61.2",
-    "next": "^15.5.0",
+    "@azure/msal-browser": "^5.16.0",
+    "@azure/msal-react": "^5.5.1",
+    "@copilotkit/react-core": "^1.62.1",
+    "@copilotkit/react-ui": "^1.62.1",
+    "@copilotkit/runtime": "^1.62.1",
+    "next": "^16.2.10",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
+    "@copilotkit/aimock": "^1.35.0",
+    "@types/node": "^26.1.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "typescript": "^5.6.0"
+    "typescript": "^6.0.3"
   }
 }

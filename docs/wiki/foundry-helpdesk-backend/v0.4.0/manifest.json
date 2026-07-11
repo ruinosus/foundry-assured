@@ -1,0 +1,82 @@
+{
+  "key": "foundry-helpdesk-backend-v0.4.0",
+  "title": "foundry-helpdesk-backend v0.4.0",
+  "source": {
+    "type": "repo",
+    "ref": "apps/backend",
+    "commit": "39fb347c53c16f47f59f07f44df1aa830fbb5112"
+  },
+  "language": "pt-br",
+  "model": "local-agent",
+  "generatedAt": "2026-07-06T20:58:23+00:00",
+  "kind": "element",
+  "component": "foundry-helpdesk-backend",
+  "componentVersion": "v0.4.0",
+  "releaseVersion": null,
+  "pages": [
+    {
+      "id": "page-1",
+      "title": "Visão Geral do Backend (SaaS Híbrido + HTML Artifacts)",
+      "order": 1,
+      "file": "pages/page-1.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-2",
+      "title": "Modos de Implantação e o Seam de Tenant",
+      "order": 2,
+      "file": "pages/page-2.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-3",
+      "title": "Autenticação, OBO e RBAC Multi-Tenant",
+      "order": 3,
+      "file": "pages/page-3.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-4",
+      "title": "Registry de Domínios, Endpoints e o Wiring do mount",
+      "order": 4,
+      "file": "pages/page-4.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-5",
+      "title": "Domínios de Agente e o Workflow Helpdesk",
+      "order": 5,
+      "file": "pages/page-5.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-6",
+      "title": "O Quarto Domínio: Platform e Integração MCP",
+      "order": 6,
+      "file": "pages/page-6.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-7",
+      "title": "Conhecimento, ACL e o retrieve() Unificado",
+      "order": 7,
+      "file": "pages/page-7.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-8",
+      "title": "HTML Artifacts: Persistência, Ciclo de Vida Governado e o Studio Skill-Driven",
+      "order": 8,
+      "file": "pages/page-8.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-9",
+      "title": "Avaliação, Garantia (Assurance) e Testes",
+      "order": 9,
+      "file": "pages/page-9.md",
+      "audience": "base"
+    }
+  ],
+  "groups": []
+}

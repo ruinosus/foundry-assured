@@ -33,6 +33,28 @@ jobs:
         run: uv sync --frozen
       - name: Policy gate (planted-violation self-test)
         run: uv run python -m eval.run_eval --self-test
+      - name: ACL attribution round-trip (chunk key == blob key)
+        run: uv run python -m eval.test_attribution
+      - name: Artifact store tests
+        run: |
+          uv run python -m eval.artifact_store_test
+          uv run python -m eval.artifact_service_test
+          uv run python -m eval.artifact_rbac_test
+          uv run python -m eval.artifact_studio_test
+          uv run python -m eval.artifact_skills_test
+          uv run python -m eval.artifact_mcp_reads_test
+      # Prompt-invariant eval suite over the declarative .dna scope — THE guard
+      # of record for prompt contracts (ADR-013 phase 2; the byte-equivalence
+      # gate retired when the prompts started evolving as Soul + Guardrails).
+      # dna-cli comes from PyPI (it pins dna-sdk>=0.1,<0.2 itself — the same
+      # range the backend depends on). Offline + deterministic; exits 1 on any
+      # failed case.
+      - name: DNA prompt eval suite (dna eval run)
+        env:
+          DNA_BASE_DIR: ${{ github.workspace }}/apps/backend/.dna
+        run: >-
+          uvx --from "dna-cli>=0.1,<0.2"
+          dna eval run helpdesk-prompts --scope helpdesk
 
   frontend:
     name: Frontend · typecheck + build

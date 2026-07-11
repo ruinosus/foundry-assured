@@ -1,7 +1,7 @@
-# Eval harness (Phase 5)
+# Eval & assurance harness
 
-Offline evaluation for the Helpdesk Concierge, built on the **agent-framework
-native evaluation API** (`LocalEvaluator`, `@evaluator`, `FoundryEvals`,
+Offline evaluation **and the assurance gates** for the Helpdesk Concierge, built on the
+**agent-framework native evaluation API** (`LocalEvaluator`, `@evaluator`, `FoundryEvals`,
 `EvalItem`, `EvalResults`) — nothing hand-rolled. Two layers:
 
 | Layer | What | Gates CI? |
@@ -17,7 +17,25 @@ eval/
   assertions.py             # the executable ASSERT policies (LocalEvaluator checks)
   rubrics/helpdesk_quality.md  # the cloud rubric (Foundry quality evaluators)
   run_eval.py               # runner: agent -> EvalItems (with source as context) -> evaluate -> gate
+  assurance.yaml            # the measured thresholds every gate reads (single source of truth)
+  access_control_test.py    # security gate: agentic retrieve + app-side trim, per identity → no cross-group leak (violations_max: 0)
+  red_team_test.py          # security gate: injection/exfil corpus through the same trim → ASR ≤ redteam_asr_max
+  test_attribution.py       # round-trip check: chunk→component attribution agrees across the trim's two derivations
 ```
+
+The declarative prompt layer (ADR-013) is guarded YAML-natively next to the prompts
+themselves: `../.dna/helpdesk/eval-{cases,suites}/` — nine offline invariant cases run
+in CI via `dna eval run helpdesk-prompts` (TICKET/NO_MATCH sentinels, the grounded
+citation duty via the wired `grounded-citation` Guardrail, `not_contains` checks proving
+the ungrounded variant does NOT carry it, HITL never-claim-a-write, pt-BR discipline).
+The phase-1 byte-equivalence gate (`prompts_equivalence_test.py`) retired in ADR-013
+phase 2: it proved the *move* was byte-faithful; once prompts started legitimately
+evolving as Soul + Guardrails, semantic invariants became the guard of record.
+
+All thresholds live in **`assurance.yaml`** (quality: groundedness / completeness /
+retrieval-recall / citation-floor; build: fidelity; security: access-control violations =
+0 + red-team ASR ceiling). Start lenient, ratchet up. The security gates run in CI via
+`.github/workflows/security-gates.yml`.
 
 ## Run (from `backend/`)
 

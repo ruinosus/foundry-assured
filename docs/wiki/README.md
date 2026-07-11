@@ -1,0 +1,143 @@
+# docs/wiki — the project's own deep-wiki (generated)
+
+This is a **machine-generated deep-wiki of THIS repository** — the `selfwiki` domain (the
+"deep-wiki daqui"). It's the assurance mechanism turned on its own source:
+[`wiki_builder.py`](../../apps/backend/app/knowledge/wiki_builder.py) read the real code of
+each area of the monorepo and wrote a faithful, cited wiki bundle, gated on **build
+fidelity** (≥ 80% of file citations must resolve to a real source file — see
+[`assurance.yaml`](../../apps/backend/eval/assurance.yaml)).
+
+> **Generated, not curated.** Unlike the rest of `docs/` (hand-written, follows
+> [`DOCS-STANDARD.md`](../DOCS-STANDARD.md) — front-matter + Diátaxis types), the bundles
+> here are machine-generated in the ingest bundle format and are **exempt from the
+> front-matter rule** (the standard says so). Don't hand-edit them — regenerate.
+
+Unlike the **Cockpit** corpus (Avanade-internal docs, read from an external path and never
+committed), this corpus is generated from *this public repo*, so it's safe to version here.
+It's also the input the selfwiki ingest ships to the cloud knowledge base.
+
+## What's here
+
+One bundle per monorepo area, in the format the ingest consumes
+(`manifest.json` + `pages/page-N.md` + `llms.txt`). **Current bundles are `v0.4.0`** — regenerated
+from the code at commit `39fb347` to reflect the **HTML Artifacts feature** (a governed
+generate→approve→publish lifecycle with a swappable Table+Blob store and a `sandbox="allow-scripts"`
+viewer → the **Artifacts Studio** canvas over CopilotKit v2 + AG-UI with live predictive HTML
+streaming + in-loop edit approval → **skill-driven generation** via the native `SkillsProvider`
+over a `SKILL.md` library + read-only MCP grounding), on top of the grounded-archetype unification +
+multi-tenant SaaS evolution already captured. `v0.4.0` was produced via the **local Microsoft
+Agent-Skills path** (`.github/skills/deep-wiki` — `wiki-architect` + `wiki-writer`, run by the coding
+agent — **no Foundry infra**), so the manifests read `model: local-agent`, with **local citations**
+`(path:line)` (v0.3.0 used remote GitHub links). The superseded `v0.3.0` bundles were dropped.
+
+| Bundle (`v0.4.0`) | Source area | Pages | Fidelity (cited paths → real file) |
+| --- | --- | --- | --- |
+| `foundry-helpdesk-backend/`  | `apps/backend`  | 9 | 100% (351/351) |
+| `foundry-helpdesk-frontend/` | `apps/frontend` | 9 | ~99% (500/506; the 6 are `Next.js` prose false-positives) |
+| `foundry-helpdesk-infra/`    | `infra` (+ `azure.yaml`, `apps/hosted-*`, `scripts/`) | 7 | 100% (249/249) |
+| `foundry-helpdesk-docs/`     | `docs`          | 9 | ~97% (359/371, whole-monorepo denominator)¹ |
+
+### What this dogfood surfaced (v0.4.0)
+
+The mechanism found faults in itself again while regenerating — each is grounded and flagged on the relevant page:
+
+- **Dedicated-stamp gap:** `containerapps.bicep` made `artifactBlobAccountUrl`/`artifactStoreAccountUrl`
+  required params with no default (`infra/containerapps.bicep:50-54`), but `infra/managed-app/managedApp.bicep`'s
+  `apps` module doesn't pass them — so the dedicated stamp won't validate against the current `containerapps.bicep`
+  until updated (the primary `main.bicep` path already threads them at `:93-94`).
+- **env-example drift:** the new `ARTIFACTS_STUDIO_AGUI_URL` override consumed by the copilotkit route isn't
+  listed in `apps/frontend/.env.example`.
+- **Version lag persists:** `apps/backend/pyproject.toml`, `apps/frontend/package.json` and `app/main.py` still
+  read `0.1.0` while the wiki is `v0.4.0`.
+- **Doc drift persists:** `docs/PRESENTATIONS-PORTAL-PLAN.md` is still cited but untracked/absent.
+
+### What the earlier dogfood (v0.3.0) surfaced
+
+The mechanism found faults in itself again — each is grounded and flagged on the relevant page:
+
+- **Orphaned hosted agents:** `azure.yaml` still declares `selfwiki-expert` **and** `cockpit-expert`
+  (`azure.ai.agent`) — azd builds/deploys/RBAC-grants them (`scripts/hook-postdeploy.sh`) — but the
+  grounded twins were retired, so **nothing invokes them** (no `/selfwiki-hosted` or `/cockpit-hosted`
+  route; `chat.py` serves only `helpdesk`/`platform`). `COST.md` still counts 3 hosted agents vs 4 declared.
+- **Vestigial backend code:** `app/agents/cockpit.py` + `selfwiki.py` (only `*_configured()` over legacy
+  fields, never mounted) and `app/agents/secure_search.py` (app-side ACL trim, now out of the production
+  `retrieve()` path — kept alive only by tests).
+- **Version lag:** `apps/backend/pyproject.toml`, `apps/frontend/package.json` and `app/main.py` all still
+  read `0.1.0` (and `title="Foundry Assured"`) while the wiki is `v0.3.0`.
+- **azd wiring gap:** `main.parameters.json` doesn't map `appUsersGroupId`, so a plain `azd up` skips the
+  `appUsersToFoundry` grant. **api-version skew:** `retrieve()` uses `2026-05-01-preview` vs
+  `2025-08-01-preview` in `acl_setup.py`/`secure_search.py`.
+- **Doc drift:** `docs/README.md` index omits the new specs/ADRs/plans; `PRESENTATIONS-PORTAL-PLAN.md` is
+  cited but still untracked; `lighthouse.bicep` missed the `helpdesk`→`assured` rename.
+
+> **Two gate bugs an earlier dogfood (v0.2.0) surfaced** (the mechanism finding faults in itself);
+> both fixed, kept here as history — the v0.3.0 run above scored 100% on all four bundles:
+> 1. An extension-alternation regex matched `.js` inside `.json` (`js` sorted before
+>    `json`), silently failing every `.json`/`.tsx` citation — unfairly failing the
+>    config/frontend-heavy bundles (frontend 37%, infra 50% before the fix). Fixed
+>    (longest-extension-first) in `wiki_builder.py`; backend/frontend/infra scores above
+>    are post-fix (85–98%).
+> 2. ¹ The fidelity check resolved citations only against the bundle's `--repo` gather,
+>    but a cross-cutting `docs/` bundle legitimately cites files across `apps/` + `infra/`.
+>    Scored against `docs/` alone it read 71%; against the whole monorepo (the fair
+>    denominator) it's **85%**. The `--fidelity-root` flag lets a monorepo sub-area
+>    resolve citations against the repo root.
+
+## Regenerate
+
+Two paths, both fidelity-gated (≥ 80% of cited paths must resolve to a real file):
+
+**A — Foundry pipeline** (`wiki_builder.py`, uses the Foundry `gpt-5-mini` model → needs `azd up` /
+Azure). From `apps/backend/`, one run per area:
+
+```bash
+uv run python -m app.knowledge.wiki_builder \
+  --repo ../../apps/backend --component foundry-helpdesk-backend --version v0.3.0 \
+  --out ../../docs/wiki
+# …repeat for ../../apps/frontend, ../../infra, ../../docs
+```
+
+**B — Local Agent-Skills path** (**how `v0.3.0` was produced** — **NO Foundry/Azure infra**). The
+generator is the upstream Microsoft [`deep-wiki` plugin](https://github.com/microsoft/skills/tree/main/.github/plugins/deep-wiki)
+(MIT), **vendored (pinned) at [`.github/skills/deep-wiki/`](../../.github/skills/deep-wiki/)** so any
+coding agent that reads `.github/skills` — **GitHub Copilot cloud agent / CLI / VS Code agent mode, or
+Claude Code** — discovers it (see [ADR-012](../adr/ADR-012-reuse-upstream-deep-wiki-tooling.md)). Open
+the repo in the agent and ask it to *"regenerate the deep-wiki for area X following the
+`wiki-page-writer` skill, with linked citations and the ≥80% build-fidelity gate."* Copilot CLI can
+also install upstream directly: `/plugin marketplace add microsoft/skills` → `/plugin install
+deep-wiki@skills`. (The legacy copy in [`apps/backend/app/knowledge/skills/`](../../apps/backend/app/knowledge/skills/)
+is kept for back-compat until callers repoint at the vendored plugin.)
+
+> **Keeping it fresh (roadmap).** The `wiki-freshness` gate only *detects* drift. ADR-012 adds an
+> OpenWiki-style regen — [`.github/workflows/wiki-regen.yml`](../../.github/workflows/wiki-regen.yml),
+> a manual template — to *close* the loop (drift → regenerate via the skill → PR) once a CI coding
+> agent + model credential are wired.
+
+## Ingest into the selfwiki knowledge base
+
+Getting the committed bundles into the Foundry `selfwiki-si-kb` is a **separate manual step** —
+merging to `develop` does not ingest anything. Run the dedicated selfwiki entrypoint from
+`apps/backend/` (needs Azure sign-in — `az login` / `azd auth login` — with the data-plane roles
+**Storage Blob Data Contributor** + **Search Index Data Contributor** + **Search Service
+Contributor**):
+
+```bash
+cd apps/backend
+uv run python -m app.knowledge.ingest_docbundles --selfwiki
+```
+
+`--selfwiki` uploads `docs/wiki` to `selfwiki-corpus`, refreshes the blob knowledge source that
+drives `selfwiki-docbundles-ks-index`, (re)provisions the ACTIVE searchIndex KB `selfwiki-si-kb`
+over that index, **prunes prior-version blobs** + reconciles the index, and triggers the indexer
+async. It steers only the selfwiki names (**no `COCKPIT_*` env overrides**) and stamps **no ACL**
+(single-audience). New pages appear in the KB incrementally over a few minutes — **no redeploy**
+(the `/selfwiki` agent reads the KB live). Override the bundle dir with `COCKPIT_DOCBUNDLES` if
+needed; it defaults to this repo's `docs/wiki`.
+
+> The old recipe — reusing the cockpit path via `KB_KNOWLEDGE_SOURCE` / `COCKPIT_STORAGE_CONTAINER` /
+> `COCKPIT_SEARCH_*` env overrides — is **retired**: post-unification the cockpit path also
+> (re)creates the cockpit searchIndex twin, so a partial override set would silently repoint
+> `cockpit-docbundles-si-ks` at the selfwiki index (corrupting the cockpit KB). Use `--selfwiki`.
+
+The `/selfwiki` agent ([`selfwiki.py`](../../apps/backend/app/agents/selfwiki.py)) then
+answers questions about this project grounded in this wiki.

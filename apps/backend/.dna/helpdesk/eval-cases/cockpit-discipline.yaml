@@ -1,0 +1,24 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: cockpit-discipline
+spec:
+  description: Cockpit expert answers in pt-BR, grounds exclusively on retrieved KB docs, cites component+doc, admits gaps
+  target:
+    type: prompt
+    agent: cockpit
+  checks:
+  - type: contains
+    value: português (pt-BR)
+  - type: contains
+    value: '**exclusivamente**'
+  - type: contains
+    value: Cite a fonte de cada afirmação
+  - type: contains
+    value: diga que não sabe
+  - type: contains
+    value: Mermaid
+  - type: min_length
+    value: 1000
+  expected: The Cockpit prompt keeps the Foundry IQ answering discipline — pt-BR, KB-only grounding, per-claim citation, no invention.
+  tags: [cockpit, grounding, citation]

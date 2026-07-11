@@ -10,7 +10,7 @@ Steps:
   2. Create a blob *knowledge source* (Azure AI Search auto-chunks + embeds it
      using the Foundry embedding deployment, via the search managed identity).
   3. Create the *knowledge base* that orchestrates agentic retrieval over that
-     source, using gpt-4.1-mini for query planning + answer synthesis.
+     source, using gpt-5-mini for query planning + answer synthesis.
 
 Auth is DefaultAzureCredential throughout (no keys). The deploying user needs
 Search Service Contributor + Storage Blob Data Contributor (granted by the
@@ -44,7 +44,7 @@ from azure.search.documents.indexes.models import (
 )
 from azure.storage.blob import BlobServiceClient
 
-from app.core.settings import settings
+from app.core.tenant import tenant_config
 
 CORPUS_DIR = Path(__file__).parent / "corpus"
 KNOWLEDGE_SOURCE_NAME = "helpdesk-runbooks-ks"
@@ -107,8 +107,8 @@ def _require(name: str, value: str) -> str:
 
 
 def upload_corpus(credential: TokenCredential) -> int:
-    account = _require("AZURE_STORAGE_ACCOUNT", settings.azure_storage_account)
-    container = settings.azure_storage_container
+    account = _require("AZURE_STORAGE_ACCOUNT", tenant_config().azure_storage_account)
+    container = tenant_config().azure_storage_container
     blob_service = BlobServiceClient(
         account_url=f"https://{account}.blob.core.windows.net",
         credential=credential,
@@ -145,8 +145,8 @@ def _validate_storage_resource_id(rid: str) -> None:
 
 
 def create_knowledge_source(index_client: SearchIndexClient) -> None:
-    openai_endpoint = _require("AZURE_AI_OPENAI_ENDPOINT", settings.azure_ai_openai_endpoint)
-    storage_id = _require("AZURE_STORAGE_RESOURCE_ID", settings.azure_storage_resource_id)
+    openai_endpoint = _require("AZURE_AI_OPENAI_ENDPOINT", tenant_config().azure_ai_openai_endpoint)
+    storage_id = _require("AZURE_STORAGE_RESOURCE_ID", tenant_config().azure_storage_resource_id)
     _validate_storage_resource_id(storage_id)
 
     # ResourceId=<...>; tells Search to read blobs via its managed identity (keyless).
@@ -155,13 +155,13 @@ def create_knowledge_source(index_client: SearchIndexClient) -> None:
         description="Internal engineering runbooks and policies (helpdesk corpus).",
         azure_blob_parameters=AzureBlobKnowledgeSourceParameters(
             connection_string=f"ResourceId={storage_id};",
-            container_name=settings.azure_storage_container,
+            container_name=tenant_config().azure_storage_container,
             ingestion_parameters=KnowledgeSourceIngestionParameters(
                 embedding_model=KnowledgeSourceAzureOpenAIVectorizer(
                     azure_open_ai_parameters=AzureOpenAIVectorizerParameters(
                         resource_url=openai_endpoint,
-                        deployment_name=settings.foundry_embedding_model,
-                        model_name=settings.foundry_embedding_model,
+                        deployment_name=tenant_config().foundry_embedding_model,
+                        model_name=tenant_config().foundry_embedding_model,
                         # auth_identity omitted -> search service managed identity
                     )
                 ),
@@ -176,8 +176,8 @@ def create_knowledge_source(index_client: SearchIndexClient) -> None:
 
 
 def create_knowledge_base(index_client: SearchIndexClient) -> None:
-    openai_endpoint = settings.azure_ai_openai_endpoint
-    kb_name = settings.azure_search_knowledge_base
+    openai_endpoint = tenant_config().azure_ai_openai_endpoint
+    kb_name = tenant_config().azure_search_knowledge_base
 
     knowledge_base = KnowledgeBase(
         name=kb_name,
@@ -187,8 +187,8 @@ def create_knowledge_base(index_client: SearchIndexClient) -> None:
             KnowledgeBaseAzureOpenAIModel(
                 azure_open_ai_parameters=AzureOpenAIVectorizerParameters(
                     resource_url=openai_endpoint,
-                    deployment_name=settings.foundry_model,
-                    model_name=settings.foundry_model,
+                    deployment_name=tenant_config().foundry_model,
+                    model_name=tenant_config().foundry_model,
                 )
             )
         ],
@@ -206,13 +206,17 @@ def create_knowledge_base(index_client: SearchIndexClient) -> None:
     print(f"Knowledge base '{kb_name}' created/updated.")
 
 
-def wait_for_ingestion(index_client: SearchIndexClient, timeout_s: int = 600) -> None:
+def wait_for_ingestion(
+    index_client: SearchIndexClient,
+    timeout_s: int = 600,
+    ks_name: str = KNOWLEDGE_SOURCE_NAME,
+) -> None:
     """Poll the knowledge source status until indexing settles (best-effort)."""
     print("Waiting for indexing to complete (this can take a few minutes)...")
     deadline = time.monotonic() + timeout_s
     while time.monotonic() < deadline:
         try:
-            status = index_client.get_knowledge_source_status(KNOWLEDGE_SOURCE_NAME)
+            status = index_client.get_knowledge_source_status(ks_name)
         except Exception as exc:  # noqa: BLE001 - status API is preview; tolerate gaps
             print(f"  (status check unavailable: {exc}); skipping wait.")
             return
@@ -230,18 +234,18 @@ def wait_for_ingestion(index_client: SearchIndexClient, timeout_s: int = 600) ->
 
 def main() -> None:
     _setup_logging()
-    _require("AZURE_SEARCH_ENDPOINT", settings.azure_search_endpoint)
-    # A blob knowledge source that uses an LLM (gpt-4.1-mini query planning) needs
+    _require("AZURE_SEARCH_ENDPOINT", tenant_config().azure_search_endpoint)
+    # A blob knowledge source that uses an LLM (gpt-5-mini query planning) needs
     # the 2026-05-01-preview API; the SDK default (2025-11-01-preview) is older.
     api_version = os.environ.get("SEARCH_API_VERSION", "2026-05-01-preview")
-    print(f"Search endpoint: {settings.azure_search_endpoint}")
-    print(f"OpenAI endpoint: {settings.azure_ai_openai_endpoint}")
-    print(f"Embedding: {settings.foundry_embedding_model} | Chat: {settings.foundry_model}")
+    print(f"Search endpoint: {tenant_config().azure_search_endpoint}")
+    print(f"OpenAI endpoint: {tenant_config().azure_ai_openai_endpoint}")
+    print(f"Embedding: {tenant_config().foundry_embedding_model} | Chat: {tenant_config().foundry_model}")
     print(f"api-version: {api_version}")
 
     credential = DefaultAzureCredential()
     index_client = SearchIndexClient(
-        endpoint=settings.azure_search_endpoint,
+        endpoint=tenant_config().azure_search_endpoint,
         credential=credential,
         api_version=api_version,
         logging_enable=True,  # emit HTTP request/response lines
