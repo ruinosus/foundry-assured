@@ -1,0 +1,22 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestRun
+metadata:
+  name: tr-tg-s-no-deploy-prompts-20260710-192410
+spec:
+  guide_ref: tg-s-no-deploy-prompts
+  outcome: pass
+  verifies:
+  - Story/s-no-deploy-prompts
+  executed_by: claude-code
+  executed_at: '2026-07-10T19:24:10+00:00'
+  evidence:
+  - "local:2026-07-10 \u2014 (1) docker compose config OK (compose.yaml v\xE1lido,\
+    \ bind ./.dna:/app/.dna:ro). (2) Prova no-rebuild no mecanismo real: processo\
+    \ A importou app.agents.prompts e comp\xF4s COCKPIT_INSTRUCTIONS (baseline salvo);\
+    \ edit no host em .dna/helpdesk/agents/cockpit.yaml (linha-marcador [PROVA ADR-014]);\
+    \ processo B (equivalente ao restart do container com volume) comp\xF4s o prompt\
+    \ COM o marcador \u2014 diff unificado: +'- [PROVA ADR-014] Esta linha foi editada\
+    \ no host, sem rebuild de imagem...'; revert do YAML \u2192 processo C comp\xF4\
+    s byte-id\xEAntico ao baseline. Zero docker build. (3) Smoke DENTRO do container\
+    \ pendente: daemon docker local inoperante (disco host 100%, containerd I/O error)\
+    \ \u2014 gap ambiental narrado na story, n\xE3o do change."

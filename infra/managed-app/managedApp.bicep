@@ -90,6 +90,7 @@ module apps '../containerapps.bicep' = {
     azureSearchKnowledgeBase: resources.outputs.AZURE_SEARCH_KNOWLEDGE_BASE
     storageAccountName: resources.outputs.AZURE_STORAGE_ACCOUNT
     fileShareName: resources.outputs.AZURE_FILE_SHARE
+    promptsShareName: resources.outputs.AZURE_PROMPTS_FILE_SHARE
     entraTenantId: entraTenantId
     entraApiClientId: entraApiClientId
     entraApiClientSecret: entraApiClientSecret

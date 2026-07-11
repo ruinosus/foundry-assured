@@ -1,0 +1,26 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: concierge-grounded-citation
+spec:
+  description: Grounded concierge composes the shared Soul plus the citation + don't-guess duties via the grounded-citation Guardrail (repo rule 4 / eval policy)
+  target:
+    type: prompt
+    agent: concierge-grounded
+  checks:
+  - type: contains
+    value: Helpdesk Concierge
+  # Pins that the Guardrail document is actually WIRED on the agent (the
+  # section header the composition renders), not merely phrased in prose.
+  - type: contains
+    value: '## Guardrail: grounded-citation (error)'
+  - type: contains
+    value: Cite the source document
+  - type: contains
+    value: say you don't know instead of guessing
+  - type: contains
+    value: never invent runbooks
+  - type: min_length
+    value: 300
+  expected: The grounded variant embeds the base persona and enforces cite-every-claim (the ASSERT policy's contract).
+  tags: [concierge, grounding, citation]

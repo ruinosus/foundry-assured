@@ -1,0 +1,52 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestGuide
+metadata:
+  name: tg-s-aca-azure-files-prompts
+spec:
+  description: "Valida o leg de produ\xE7\xE3o do ADR-014 (Azure Files no ACA): resolver\
+    \ DNA_BASE_DIR do backend nos 5 cen\xE1rios, gates de infra (bicep build nos 2\
+    \ entry points), eval suite de conte\xFAdo, e o runbook push-prompts.sh. Passos\
+    \ 1-6 s\xE3o execut\xE1veis offline (validados neste TestRun); passos 7-9 S\xD3\
+    \ um deploy real prova (pend\xEAncia do dono, checklist no PR body)."
+  kind_of_test: smoke
+  status: active
+  steps:
+  - action: Sem DNA_BASE_DIR, importar app.agents.prompts (processo novo)
+    expected: "comp\xF5e do scope cozido; COCKPIT_INSTRUCTIONS byte-id\xEAntico ao\
+      \ main"
+  - action: DNA_BASE_DIR apontando pra dir SEM o scope helpdesk (share vazio), importar
+      prompts
+    expected: "boot N\xC3O quebra; warning expl\xEDcito de fallback no stderr; prompts\
+      \ byte-id\xEAnticos ao cozido"
+  - action: "DNA_BASE_DIR apontando pra c\xF3pia do scope com linha-marcador no cockpit.yaml,\
+      \ importar prompts"
+    expected: "COCKPIT_INSTRUCTIONS cont\xE9m o marcador (scope externo ganha); cozido\
+      \ n\xE3o cont\xE9m"
+  - action: "DNA_BASE_DIR apontando pra dir com helpdesk/ presente mas Genome.yaml\
+      \ imparse\xE1vel, importar prompts"
+    expected: RuntimeError no import (fail-loud; sem fallback silencioso; sem instruction-placeholder
+      'Agent not found')
+  - action: Scope com um agent YAML deletado (qualquer modo), importar prompts
+    expected: "RuntimeError 'has no Agent' \u2014 guarda do bug latente do build_prompt\
+      \ (dna-sdk devolve string em vez de levantar)"
+  - action: az bicep build em infra/main.bicep E infra/managed-app/managedApp.bicep
+      + dna eval run helpdesk-prompts --scope helpdesk + bash -n scripts/push-prompts.sh
+    expected: "compila\xE7\xF5es limpas, 9/9 casos da suite passando, sintaxe do script\
+      \ ok"
+  - action: "DEPLOY REAL (dono): azd provision \u2014 share assured-prompts criado,\
+      \ storage link 'prompts' no environment, mount /mnt/dna e env DNA_BASE_DIR na\
+      \ revision do backend"
+    expected: az containerapp show mostra volume+mount; boot log mostra o fallback
+      (share ainda vazio) e o app responde
+  - action: 'DEPLOY REAL (dono): ./scripts/push-prompts.sh'
+    expected: upload-batch conclui, revision restart ok, boot log mostra 'composing
+      scope helpdesk from DNA_BASE_DIR=/mnt/dna'
+  - action: 'DEPLOY REAL (dono): editar um prompt YAML, rodar push-prompts.sh de novo,
+      perguntar no chat'
+    expected: "resposta reflete o prompt novo SEM build de imagem nem azd deploy \u2014\
+      \ restart \xE9 a unidade de refresh"
+  verifies:
+  - Story/s-aca-azure-files-prompts
+  created_at: '2026-07-10T20:19:04+00:00'
+  updated_at: '2026-07-10T20:19:04+00:00'
+  owner: claude-code

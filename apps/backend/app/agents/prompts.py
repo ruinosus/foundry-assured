@@ -4,141 +4,163 @@ Both the multi-agent workflow (app/workflow/agents.py) and the single concierge
 (app/agents/concierge.py) build their agents from these. The hosted-agent container
 (backend/hosted/main.py) is deliberately self-contained — it can't import this — but
 mirrors the workflow prompts; keep them in sync here.
+
+As of ADR-013 the prompt SOURCE lives in the declarative DNA scope at
+``apps/backend/.dna/helpdesk/`` and this module is a thin composition shim:
+it loads the scope once at import time via the DNA kernel and exposes the
+composed constants, so no consumer changes. To change a prompt, edit the
+scope — not this file.
+
+Phase 2 of ADR-013 decomposed the concierge prompts: the shared persona is a
+Soul (``souls/concierge/``), cross-cutting rules are Guardrails
+(``guardrails/grounded-citation``, ``guardrails/no-write-claims``) wired on
+the agents, and each agent YAML keeps only its variant delta. The composed
+constants are therefore MULTI-PART prompts now, no longer byte-copies of the
+pre-ADR-013 texts — the byte-equivalence gate retired with them, and the
+semantic contracts are guarded by the DNA eval suite
+(``.dna/helpdesk/eval-suites/helpdesk-prompts.yaml``, run in CI).
+``CONCIERGE_BASE_INSTRUCTIONS`` died in the same step: the base persona is
+the Soul, and nothing consumed the constant standalone.
+
+Composition note: composed prompts can carry trailing newlines from template
+sections; the constants never did, so we ``rstrip("\\n")``.
 """
 
+from __future__ import annotations
+
+import logging
+import os
+from pathlib import Path
+
+_logger = logging.getLogger(__name__)
+
+# apps/backend/.dna — sits next to the app package so it ships with the
+# backend (the Dockerfile copies it alongside ``app/``).
+_DNA_BAKED_BASE_DIR = Path(__file__).resolve().parents[2] / ".dna"
+_DNA_SCOPE = "helpdesk"
+
+
+def _resolve_base_dir() -> Path:
+    """Pick where the DNA scope is composed from (ADR-014, production leg).
+
+    ``DNA_BASE_DIR`` (the same env var the ``dna`` CLI uses for "where scopes
+    live") selects an external scope directory — in ACA that's the read-only
+    Azure Files mount at ``/mnt/dna``. Semantics, deliberately asymmetric:
+
+    - env var unset → the baked-in copy (today's behavior: local dev, compose,
+      self-contained image), byte-identical.
+    - env var set but the scope is ABSENT there (fresh provision, nobody has
+      published prompts to the share yet) → loud log + fall back to the baked
+      copy. Absent means "not adopted yet"; the self-contained image is the
+      right answer, and a fresh ``azd up`` must not crash-loop the backend.
+    - env var set and the scope is PRESENT → use it, and any load/compose
+      failure fails LOUDLY (ADR-013). Present means an operator published a
+      scope; silently falling back would run stale prompts while they believe
+      the new ones are live.
+    """
+    override = os.environ.get("DNA_BASE_DIR", "").strip()
+    if not override:
+        return _DNA_BAKED_BASE_DIR
+    external = Path(override)
+    if (external / _DNA_SCOPE).is_dir():
+        _logger.info(
+            "DNA prompts: composing scope '%s' from DNA_BASE_DIR=%s",
+            _DNA_SCOPE,
+            external,
+        )
+        return external
+    _logger.warning(
+        "DNA prompts: DNA_BASE_DIR=%s is set but scope '%s' is absent there "
+        "(empty/unseeded share?) — falling back to the baked-in copy at %s. "
+        "Publish with scripts/push-prompts.sh to adopt the external scope.",
+        external,
+        _DNA_SCOPE,
+        _DNA_BAKED_BASE_DIR,
+    )
+    return _DNA_BAKED_BASE_DIR
+
+
+_DNA_BASE_DIR = _resolve_base_dir()
+
+#: constant name -> DNA Agent document name (.dna/helpdesk/agents/<name>.yaml)
+_AGENT_FOR_CONSTANT = {
+    "TRIAGE_INSTRUCTIONS": "triage",
+    "RETRIEVE_INSTRUCTIONS": "retrieve",
+    "RESOLVE_INSTRUCTIONS": "resolve",
+    "CONCIERGE_GROUNDED_INSTRUCTIONS": "concierge-grounded",
+    "CONCIERGE_UNGROUNDED_INSTRUCTIONS": "concierge-ungrounded",
+    "COCKPIT_INSTRUCTIONS": "cockpit",
+    "SELFWIKI_INSTRUCTIONS": "selfwiki",
+    "PLATFORM_INSTRUCTIONS": "platform",
+}
+
+
+def _load_instance():
+    """Load the DNA scope, failing loudly — a backend that boots with missing
+    or empty prompts is worse than one that refuses to boot."""
+    try:
+        from dna import Kernel
+    except ImportError as exc:  # pragma: no cover — dep declared in pyproject
+        raise RuntimeError(
+            "The 'dna-sdk' package is required to compose agent prompts "
+            "(declared in apps/backend/pyproject.toml). Run `uv sync`."
+        ) from exc
+    if not _DNA_BASE_DIR.is_dir():
+        raise RuntimeError(
+            f"DNA base dir not found at {_DNA_BASE_DIR} — the backend must "
+            "ship apps/backend/.dna alongside the app package (see ADR-013)."
+        )
+    try:
+        return Kernel.quick(_DNA_SCOPE, base_dir=str(_DNA_BASE_DIR))
+    except Exception as exc:
+        raise RuntimeError(
+            f"DNA scope '{_DNA_SCOPE}' failed to load from {_DNA_BASE_DIR}: {exc}"
+        ) from exc
+
+
+def _compose(mi, agent: str) -> str:
+    # build_prompt on a missing agent RETURNS the string "Agent '<x>' not
+    # found" instead of raising (dna-sdk 0.1.x), which would sail through the
+    # empty-check below and become the literal agent instruction. Assert the
+    # Agent document exists so a missing/renamed/unparseable agent YAML fails
+    # the boot loudly — in ANY mode, baked or external (ADR-013/ADR-014).
+    if mi.one("Agent", agent) is None:
+        raise RuntimeError(
+            f"DNA scope '{_DNA_SCOPE}' ({_DNA_BASE_DIR}) has no Agent "
+            f"'{agent}' — missing, renamed, or unparseable document; "
+            "refusing to boot with a placeholder instruction."
+        )
+    text = mi.build_prompt(agent=agent)
+    if not text or not text.strip():
+        raise RuntimeError(
+            f"DNA composed an empty prompt for agent '{agent}' in scope "
+            f"'{_DNA_SCOPE}' ({_DNA_BASE_DIR}) — refusing to boot with a "
+            "blank instruction."
+        )
+    # Composed templates can pad sections with trailing newlines; the
+    # original constants had none.
+    return text.rstrip("\n")
+
+
+_mi = _load_instance()
+
 # --- Multi-agent workflow steps (triage -> retrieve -> resolve) ---------------
-
-TRIAGE_INSTRUCTIONS = (
-    "You are the TRIAGE step of a helpdesk workflow. Do NOT answer the question. "
-    "Classify the developer's request and restate it for the next step. Output exactly:\n"
-    "Intent: <one short phrase>\n"
-    "Urgency: <low|medium|high>\n"
-    "Restated: <the question in one clear sentence>"
-)
-
-RETRIEVE_INSTRUCTIONS = (
-    "You are the RETRIEVE step of a helpdesk workflow. Using the runbook knowledge "
-    "base, find the passages relevant to the triaged question. Do NOT write the final "
-    "answer. Output the relevant runbook content followed by the exact source document "
-    "titles you used. If nothing relevant is found, output exactly 'NO_MATCH'."
-)
-
-RESOLVE_INSTRUCTIONS = (
-    "You are the RESOLVE step of a helpdesk workflow.\n\n"
-    "STEP 1 — decide if this is a TICKET request. It is a ticket request if the "
-    "developer asks to open/create/file a ticket or 'chamado', OR asks you to perform "
-    "an action you cannot do from runbooks (replace hardware, order a device, reset "
-    "access, escalate to a team).\n"
-    "  If it IS a ticket request, respond with EXACTLY one line and NOTHING else:\n"
-    "  TICKET: <one-line summary of the request>\n"
-    "  Do NOT explain how to open a ticket. Do NOT answer the question. Output only "
-    "that single line.\n\n"
-    "STEP 2 — otherwise it is a question. Answer using ONLY the runbook content the "
-    "RETRIEVE step provided, and cite the source document title(s). If RETRIEVE "
-    "returned 'NO_MATCH' or nothing relevant, say you don't know — never invent "
-    "runbooks, sources, or steps. Use the developer's remembered preferences (e.g. "
-    "their OS or stack) to tailor the steps when relevant."
-)
+TRIAGE_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["TRIAGE_INSTRUCTIONS"])
+RETRIEVE_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["RETRIEVE_INSTRUCTIONS"])
+RESOLVE_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["RESOLVE_INSTRUCTIONS"])
 
 # --- Single concierge agent (Phase 0/1 + the eval target) ---------------------
-
-CONCIERGE_BASE_INSTRUCTIONS = (
-    "You are the Helpdesk Concierge, an internal engineering support assistant. "
-    "You help developers triage and resolve engineering questions."
-)
-
-CONCIERGE_GROUNDED_INSTRUCTIONS = (
-    CONCIERGE_BASE_INSTRUCTIONS
-    + " Answer using the runbook knowledge base. Cite the source document for "
-    "every claim you make, by its title. If the knowledge base does not contain "
-    "the answer, say you don't know instead of guessing — never invent runbooks, "
-    "sources, or steps."
-)
-
-CONCIERGE_UNGROUNDED_INSTRUCTIONS = (
-    CONCIERGE_BASE_INSTRUCTIONS
-    + " Knowledge retrieval is not wired up yet, so greet the developer and keep "
-    "replies short. Do not invent runbooks or sources."
-)
+# The shared persona is souls/concierge (composed into both variants below).
+CONCIERGE_GROUNDED_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["CONCIERGE_GROUNDED_INSTRUCTIONS"])
+CONCIERGE_UNGROUNDED_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["CONCIERGE_UNGROUNDED_INSTRUCTIONS"])
 
 # --- Second domain: Cockpit platform expert (grounded over the cockpit-kb) -----
+COCKPIT_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["COCKPIT_INSTRUCTIONS"])
 
-# Self-contained answering discipline. This is Microsoft's documented Foundry IQ
-# pattern for KB-grounded Q&A: grounding comes from the Azure AI Search context provider
-# (agentic retrieval injects the Cockpit docs, with citations) and the answering
-# discipline lives in the instructions — no consume-side Agent Skill. (The grounded-qa
-# skill, adapted from deep-wiki's file-oriented wiki-qa, was the wrong tool here: it
-# exposed read_skill_resource, which the model misused to hunt non-existent skill
-# resources instead of using the retrieved KB context. Generation still uses skills.)
-COCKPIT_INSTRUCTIONS = (
-    "Você é um especialista na plataforma **Cockpit** (Avanade AAP). Responda SEMPRE em "
-    "português (pt-BR).\n\n"
-    "Fundamente a resposta **exclusivamente** nos documentos da base de conhecimento do "
-    "Cockpit que foram recuperados e estão no seu contexto (Foundry IQ) — nunca em "
-    "conhecimento externo ou suposição. Quando a pergunta for clara, responda "
-    "diretamente; não peça ao usuário para 'ser mais específico'.\n\n"
-    "Regras:\n"
-    "- Cite a fonte de cada afirmação: o componente e o documento (ex.: "
-    "`cockpit-portal-api v2.1.1 — Arquitetura`), indicando a versão quando relevante.\n"
-    "- Em perguntas de arquitetura / entre componentes (quem persiste o quê, quem chama "
-    "quem, hierarquias, depreciações), prefira os documentos **autoritativos de "
-    "PLATAFORMA/ARQUITETURA** aos resumos de componentes individuais; se conflitarem, "
-    "siga o documento de arquitetura.\n"
-    "- Se os documentos recuperados forem insuficientes, **diga que não sabe** e aponte "
-    "o que falta — nunca invente componentes, versões, endpoints ou detalhes.\n"
-    "- Ao **listar/enumerar** (ex.: 'quais são todos os X'), seja **exaustivo**: varra "
-    "TODOS os componentes presentes no contexto recuperado e não omita nenhum. Distinga "
-    "**servidor MCP** de **SDK/cliente** (ex.: `cockpit-mcp-sdk` é um SDK, não um "
-    "servidor). Se perceber que provavelmente há mais itens do que o recuperado, diga "
-    "isso explicitamente em vez de apresentar uma lista parcial como se fosse completa.\n\n"
-    "Formato: use títulos `##`, blocos de código com linguagem e **tabelas** para dados "
-    "estruturados (listas de componentes, endpoints, comparações). Inclua um diagrama "
-    "**Mermaid** quando a resposta envolver arquitetura ou fluxo de dados (rótulos entre "
-    'aspas: `A["/auth"]`).'
-)
+# --- Third domain: this project's own deep-wiki (the "selfwiki" — dogfood) -----
+SELFWIKI_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["SELFWIKI_INSTRUCTIONS"])
 
-# --- Third domain: this project's own deep-wiki (the "selfwiki" — dogfood) -------
+# --- Fourth domain: tool-driven engineering-platform concierge -----------------
+PLATFORM_INSTRUCTIONS = _compose(_mi, _AGENT_FOR_CONSTANT["PLATFORM_INSTRUCTIONS"])
 
-# The mechanism turned on itself: a deep-wiki generated from THIS monorepo's own source
-# (apps/backend, apps/frontend, infra, docs), ingested into selfwiki-kb, answered by the
-# same Foundry IQ agentic-retrieval pattern. Same answering discipline as Cockpit, but the
-# domain is the foundry-assured project + its assurance mechanism.
-SELFWIKI_INSTRUCTIONS = (
-    "Você é o **especialista do projeto foundry-assured** — um concierge de engenharia "
-    "que conhece este próprio repositório por dentro (backend Python/agent-framework, "
-    "frontend Next.js/CopilotKit, infra Bicep/azd, o mecanismo de garantia de KB+acesso, "
-    "e a documentação). Responda SEMPRE em português (pt-BR).\n\n"
-    "Fundamente a resposta **exclusivamente** nos documentos da deep-wiki deste projeto "
-    "que foram recuperados e estão no seu contexto (Foundry IQ) — nunca em conhecimento "
-    "externo ou suposição. Esta wiki foi gerada a partir do código-fonte real do "
-    "monorepo; trate-a como a fonte de verdade. Quando a pergunta for clara, responda "
-    "diretamente; não peça ao usuário para 'ser mais específico'.\n\n"
-    "Regras:\n"
-    "- Cite a fonte de cada afirmação: a área e o documento (ex.: "
-    "`backend — Arquitetura`, `infra — Provisionamento`), apontando "
-    "arquivos/módulos concretos quando relevante.\n"
-    "- Em perguntas de arquitetura / entre áreas (quem chama quem, como o frontend fala "
-    "com o backend, como o mecanismo de acesso funciona, ordem das fases), prefira os "
-    "documentos **autoritativos de visão geral / arquitetura** aos resumos pontuais; se "
-    "conflitarem, siga o documento de arquitetura.\n"
-    "- Se os documentos recuperados forem insuficientes, **diga em 1–2 frases** que não "
-    "encontrou isso na base e sugira como reformular — **NÃO** liste tabelas de "
-    "‘documentos que faltam’ nem peça arquivos ao usuário. Nunca invente módulos, "
-    "endpoints, comandos ou detalhes de implementação.\n"
-    "- Ao **listar/enumerar** (ex.: 'quais são todas as fases', 'quais endpoints'), seja "
-    "**exaustivo**: varra TODOS os itens presentes no contexto recuperado e não omita "
-    "nenhum. Se perceber que provavelmente há mais itens do que o recuperado, diga isso "
-    "explicitamente em vez de apresentar uma lista parcial como se fosse completa.\n\n"
-    "Formato: use títulos `##`, blocos de código com linguagem e **tabelas** para dados "
-    "estruturados (listas de módulos, endpoints, comparações). Inclua um diagrama "
-    "**Mermaid** quando a resposta envolver arquitetura ou fluxo de dados (rótulos entre "
-    'aspas: `A["/auth"]`).'
-)
-
-
-PLATFORM_INSTRUCTIONS = """You are the engineering-platform concierge. You answer using the
-connected Microsoft tools (Learn docs, and — when enabled — Azure, Entra, Azure DevOps, GitHub).
-Prefer a tool over guessing. Ground factual claims in tool results and say which tool/source you
-used. If a tool you'd need isn't available to this user, say so plainly rather than inventing an
-answer. For any action that changes state (deploy, create issue, directory change), explain what
-you would do and let the approval step handle it — never claim you performed a write."""
+del _mi

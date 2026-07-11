@@ -53,6 +53,9 @@ param artifactBlobAccountUrl string
 @description('Table endpoint of the storage account backing the artifacts feature (artifact metadata).')
 param artifactStoreAccountUrl string
 
+@description('Azure Files share holding the runtime DNA prompt scope, mounted read-only into the backend at /mnt/dna (ADR-014). Empty share = backend falls back to the scope baked into the image.')
+param promptsShareName string
+
 var placeholderImage = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
 var backendAppName = 'ca-backend-${resourceToken}'
 var webAppName = 'ca-web-${resourceToken}'
@@ -97,6 +100,22 @@ resource envDataStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' 
       accountKey: storageAcct.listKeys().keys[0].value
       shareName: fileShareName
       accessMode: 'ReadWrite'
+    }
+  }
+}
+
+// Runtime DNA prompt scope (ADR-014, production leg). Read-only: the runtime
+// only READS prompts; publishing goes through scripts/push-prompts.sh (upload
+// to the share + revision restart), never through the app.
+resource envPromptsStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
+  parent: env
+  name: 'prompts'
+  properties: {
+    azureFile: {
+      accountName: storageAccountName
+      accountKey: storageAcct.listKeys().keys[0].value
+      shareName: promptsShareName
+      accessMode: 'ReadOnly'
     }
   }
 }
@@ -166,14 +185,21 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'ARTIFACT_TABLE', value: 'artifacts' }
             { name: 'ARTIFACT_BLOB_ACCOUNT_URL', value: artifactBlobAccountUrl }
             { name: 'ARTIFACT_STORE_ACCOUNT_URL', value: artifactStoreAccountUrl }
+            // Runtime DNA prompt scope override (ADR-014, production leg): the
+            // backend composes prompts from $DNA_BASE_DIR/helpdesk when that
+            // scope exists on the mounted share, else falls back (loudly) to
+            // the copy baked into the image. Prompt update = push-prompts.sh.
+            { name: 'DNA_BASE_DIR', value: '/mnt/dna' }
           ]
           volumeMounts: [
             { volumeName: 'data', mountPath: '/app/data' } // tickets.jsonl persists here
+            { volumeName: 'prompts', mountPath: '/mnt/dna' } // DNA prompt scope (read-only share)
           ]
         }
       ]
       volumes: [
         { name: 'data', storageType: 'AzureFile', storageName: envDataStorage.name }
+        { name: 'prompts', storageType: 'AzureFile', storageName: envPromptsStorage.name }
       ]
       // Single replica: the persisted jsonl is append-based, so >1 writer could
       // interleave/corrupt it. Scale-to-zero still applies (idle = $0).

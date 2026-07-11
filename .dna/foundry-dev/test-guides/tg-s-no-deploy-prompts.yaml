@@ -1,0 +1,33 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestGuide
+metadata:
+  name: tg-s-no-deploy-prompts
+spec:
+  description: Roteiro de teste de s-no-deploy-prompts (derivado das acceptance_criteria).
+  kind_of_test: smoke
+  status: active
+  steps:
+  - action: "No Studio, valide: Dado o compose local do backend, quando o stack sobe,\
+      \ ent\xE3o /app/.dna \xE9 um bind mount de ./apps/backend/.dna (volume sobrep\xF5\
+      e o COPY) e a imagem continua self-contained sem o mount"
+    where: "<rota/tela \u2014 ex. /scopes/:scope/...>"
+    expected: "<o que voc\xEA V\xCA quando est\xE1 certo (marque \u2717 S\xD3 se estiver\
+      \ quebrado)>"
+  - action: "No Studio, valide: Dado um prompt editado em .dna/helpdesk no host, quando\
+      \ o processo reinicia (restart, sem docker build), ent\xE3o o prompt composto\
+      \ reflete a mudan\xE7a \u2014 evid\xEAncia com diff do prompt composto antes/depois"
+    where: "<rota/tela \u2014 ex. /scopes/:scope/...>"
+    expected: "<o que voc\xEA V\xCA quando est\xE1 certo (marque \u2717 S\xD3 se estiver\
+      \ quebrado)>"
+  - action: "No Studio, valide: Dado o ADR-014, quando lido, ent\xE3o documenta o\
+      \ modelo: board dev-time (.dna/foundry-dev) vs scope runtime (apps/backend/.dna),\
+      \ volume no-deploy com restart como refresh honesto, e PG source como evolu\xE7\
+      \xE3o multi-r\xE9plica n\xE3o implementada"
+    where: "<rota/tela \u2014 ex. /scopes/:scope/...>"
+    expected: "<o que voc\xEA V\xCA quando est\xE1 certo (marque \u2717 S\xD3 se estiver\
+      \ quebrado)>"
+  verifies:
+  - Story/s-no-deploy-prompts
+  created_at: '2026-07-10T19:24:09+00:00'
+  updated_at: '2026-07-10T19:24:09+00:00'
+  owner: claude-code

@@ -1,0 +1,27 @@
+apiVersion: github.com/ruinosus/dna/v1
+kind: Agent
+metadata:
+  name: concierge-grounded
+  description: Helpdesk Concierge, grounded variant — cites the runbook KB, never invents
+spec:
+  # Decomposed (ADR-013 phase 2): the shared persona lives in souls/concierge,
+  # the citation duty in guardrails/grounded-citation. This instruction is ONLY
+  # the grounded delta. Contract guard: eval-cases/concierge-grounded-citation.
+  soul: concierge
+  guardrails:
+  - grounded-citation
+  instruction: |-
+    Answer using the runbook knowledge base.
+  # Agent-level template override (cascade level 1) — the kind default puts the
+  # instruction before the soul; the concierge reads better persona-first.
+  promptTemplate: |-
+    {{{soul_content}}}
+
+    {{{agent.instruction}}}
+
+    {{#guardrails-guardrail}}## Guardrail: {{name}} ({{severity}})
+    {{#description}}_{{description}}_
+
+    {{/description}}{{#rules}}- {{{.}}}
+    {{/rules}}
+    {{/guardrails-guardrail}}

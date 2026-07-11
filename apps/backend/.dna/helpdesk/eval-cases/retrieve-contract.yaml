@@ -1,0 +1,20 @@
+apiVersion: github.com/ruinosus/dna/eval/v1
+kind: EvalCase
+metadata:
+  name: retrieve-contract
+spec:
+  description: Retrieve surfaces runbook passages + exact source titles, never the final answer, NO_MATCH sentinel intact
+  target:
+    type: prompt
+    agent: retrieve
+  checks:
+  - type: contains
+    value: Do NOT write the final answer
+  - type: contains
+    value: exact source document titles
+  - type: contains
+    value: "'NO_MATCH'"
+  - type: min_length
+    value: 200
+  expected: The RETRIEVE prompt keeps the sources + NO_MATCH sentinel contract the workflow edges rely on.
+  tags: [workflow, contract]

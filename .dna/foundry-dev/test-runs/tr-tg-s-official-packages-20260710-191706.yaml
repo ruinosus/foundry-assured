@@ -1,0 +1,21 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestRun
+metadata:
+  name: tr-tg-s-official-packages-20260710-191706
+spec:
+  guide_ref: tg-s-official-packages
+  outcome: pass
+  verifies:
+  - Story/s-official-packages
+  executed_by: claude-code
+  executed_at: '2026-07-10T19:17:06+00:00'
+  evidence:
+  - "local:2026-07-10 \u2014 (1) uv lock: dna-sdk source registry+pypi.org (era git+3628a9ee);\
+    \ uv sync --frozen instalou dna-sdk 0.1.0 do wheel PyPI. (2) Equival\xEAncia 8/8:\
+    \ dump dos prompts compostos (triage/retrieve/resolve/concierge-grounded/concierge-ungrounded/cockpit/selfwiki/platform)\
+    \ com o SHA pinado vs PyPI 0.1.0 \u2192 diff vazio. (3) Suite do CI local: run_eval\
+    \ --self-test PASS (2 viola\xE7\xF5es plantadas CAUGHT), test_attribution PASS,\
+    \ uvx --from 'dna-cli>=0.1,<0.2' dna eval run helpdesk-prompts --scope helpdesk\
+    \ = 9 passed/0 failed. (4) docker build: uv sync completou DENTRO da imagem sem\
+    \ git antes do daemon falhar por disco-cheio do host (falha ambiental, n\xE3o\
+    \ do change) \u2014 fallback de prova previsto na task."
