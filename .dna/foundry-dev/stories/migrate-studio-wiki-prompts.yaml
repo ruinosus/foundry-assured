@@ -17,19 +17,28 @@ spec:
   - refactor
   reporter: claude-code
   acceptance_criteria:
-  - "Given o Artifacts Studio agent e os 3 agentes do wiki-builder, when migrados,\
-    \ then instru\xE7\xE3o+skills ficam declaradas no scope e o tool/context plumbing\
-    \ permanece em c\xF3digo"
-  - "Given as 4 artifact-skills, when migradas, then viram Skill Kinds referenciados\
-    \ pelos agentes (sem c\xF3pia inline)"
+  - text: "Given o Artifacts Studio agent e os 3 agentes do wiki-builder, when migrados,\
+      \ then instru\xE7\xE3o+skills ficam declaradas no scope e o tool/context plumbing\
+      \ permanece em c\xF3digo"
+    done: true
+    done_at: '2026-07-11T07:03:24+00:00'
+    done_by: story-done-auto
+  - text: "Given as 4 artifact-skills, when migradas, then viram Skill Kinds referenciados\
+      \ pelos agentes (sem c\xF3pia inline)"
+    done: true
+    done_at: '2026-07-11T07:03:24+00:00'
+    done_by: story-done-auto
   acceptance_criteria_source: claude-code
   definition_of_done:
-  - "Code: agentes comp\xF5em instru\xE7\xE3o+skills do scope; plumbing intacto; Tests:\
-    \ composi\xE7\xE3o verde + testes comportamentais existentes (artifact_studio_test\
-    \ etc.) passam"
+  - text: "Code: agentes comp\xF5em instru\xE7\xE3o+skills do scope; plumbing intacto;\
+      \ Tests: composi\xE7\xE3o verde + testes comportamentais existentes (artifact_studio_test\
+      \ etc.) passam"
+    done: true
+    done_at: '2026-07-11T07:03:24+00:00'
+    done_by: story-done-auto
   definition_of_done_source: claude-code
   created_at: '2026-07-11T05:54:00+00:00'
-  updated_at: '2026-07-11T06:58:10+00:00'
+  updated_at: '2026-07-11T07:03:26+00:00'
   timeline:
   - at: '2026-07-11T05:54:00+00:00'
     actor: claude-code
@@ -74,6 +83,13 @@ spec:
     name: tr-tg-migrate-studio-wiki-prompts-20260711-065810
     summary: "TestRun tr-tg-migrate-studio-wiki-prompts-20260711-065810 \u2192 pass"
     outcome: pass
+  - at: '2026-07-11T07:03:26+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #119 merged \u2014 scopes studio+wiki; skills relocadas p/ fonte\
+      \ \xFAnica (conserta gap de packaging); eval studio 1/1 + wiki 3/3, sem regress\xE3\
+      o. Migra\xE7\xE3o de prompts COMPLETA (F1+F2+F3)"
   produces:
   - kind: Plan
     name: plan-migrate-studio-wiki-prompts
