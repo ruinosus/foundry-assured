@@ -1,0 +1,16 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestRun
+metadata:
+  name: tr-tg-migrate-studio-wiki-prompts-20260711-070437
+spec:
+  guide_ref: tg-migrate-studio-wiki-prompts
+  outcome: pass
+  verifies:
+  - Story/migrate-studio-wiki-prompts
+  executed_by: claude-code
+  executed_at: '2026-07-11T07:04:37+00:00'
+  evidence:
+  - "smoke de produto manual (Barna/claude-code): Kernel.quick comp\xF5e studio/artifacts-studio\
+    \ (948 chars) + wiki/wiki-page-writer (5848 chars) dos novos scopes .dna \u2014\
+    \ prompts n\xE3o-vazios, composi\xE7\xE3o real do disco. Automatizado: eval studio\
+    \ 1/1 + wiki 3/3 no CI."
