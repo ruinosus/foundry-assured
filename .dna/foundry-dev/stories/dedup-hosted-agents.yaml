@@ -6,7 +6,7 @@ spec:
   title: "Dedup hosted agents \u2014 compose prompts from the DNA scope"
   description: The 4 apps/hosted-* stop shipping byte-copies of the prompts and compose
     from apps/backend/.dna via build_prompt (kills real drift)
-  status: review
+  status: done
   feature: dna-adoption
   priority: high
   labels:
@@ -14,27 +14,49 @@ spec:
   - refactor
   reporter: claude-code
   acceptance_criteria:
-  - Given the 4 hosted containers, when they boot, then each composes its instruction
-    from the DNA scope via build_prompt (no inline prompt string constant remains)
-  - Given resolve drifted intentionally (hosted has no HITL), when hosted-agent composes
-    RESOLVE, then it uses a new resolve-hosted Agent variant WITHOUT the TICKET/STEP
-    logic, while the backend keeps resolve WITH it
-  - Given the composed prompts, when the helpdesk-prompts eval suite runs, then new/existing
-    cases assert the right sentinels per hosted (resolve-hosted !TICKET, platform
-    Guardrail section, pt-BR, triage/retrieve contracts)
+  - text: Given the 4 hosted containers, when they boot, then each composes its instruction
+      from the DNA scope via build_prompt (no inline prompt string constant remains)
+    done: true
+    done_at: '2026-07-11T06:04:12+00:00'
+    done_by: story-done-auto
+  - text: Given resolve drifted intentionally (hosted has no HITL), when hosted-agent
+      composes RESOLVE, then it uses a new resolve-hosted Agent variant WITHOUT the
+      TICKET/STEP logic, while the backend keeps resolve WITH it
+    done: true
+    done_at: '2026-07-11T06:04:12+00:00'
+    done_by: story-done-auto
+  - text: Given the composed prompts, when the helpdesk-prompts eval suite runs, then
+      new/existing cases assert the right sentinels per hosted (resolve-hosted !TICKET,
+      platform Guardrail section, pt-BR, triage/retrieve contracts)
+    done: true
+    done_at: '2026-07-11T06:04:12+00:00'
+    done_by: story-done-auto
   acceptance_criteria_source: claude-code
   definition_of_done:
-  - 'Code: 4 hosted main.py compose via a prompts.py shim mirroring apps/backend/app/agents/prompts.py;
-    dna-sdk added to each requirements.txt'
-  - 'Data: apps/backend/.dna/helpdesk/agents/resolve-hosted.yaml created; resolve-hosted
-    eval-case added to the helpdesk-prompts suite'
-  - 'Tests: dna eval run helpdesk-prompts green with new cases; hosted_build_test
-    + hosted_platform_smoke_test still pass; a composition test proves each hosted
-    shim composes the right agent'
-  - 'CI: ''CI passed'' green on the PR (the dna eval step picks up the new cases automatically)'
+  - text: 'Code: 4 hosted main.py compose via a prompts.py shim mirroring apps/backend/app/agents/prompts.py;
+      dna-sdk added to each requirements.txt'
+    done: true
+    done_at: '2026-07-11T06:04:12+00:00'
+    done_by: story-done-auto
+  - text: 'Data: apps/backend/.dna/helpdesk/agents/resolve-hosted.yaml created; resolve-hosted
+      eval-case added to the helpdesk-prompts suite'
+    done: true
+    done_at: '2026-07-11T06:04:12+00:00'
+    done_by: story-done-auto
+  - text: 'Tests: dna eval run helpdesk-prompts green with new cases; hosted_build_test
+      + hosted_platform_smoke_test still pass; a composition test proves each hosted
+      shim composes the right agent'
+    done: true
+    done_at: '2026-07-11T06:04:12+00:00'
+    done_by: story-done-auto
+  - text: 'CI: ''CI passed'' green on the PR (the dna eval step picks up the new cases
+      automatically)'
+    done: true
+    done_at: '2026-07-11T06:04:12+00:00'
+    done_by: story-done-auto
   definition_of_done_source: claude-code
   created_at: '2026-07-11T05:43:00+00:00'
-  updated_at: '2026-07-11T05:57:47+00:00'
+  updated_at: '2026-07-11T06:04:14+00:00'
   timeline:
   - at: '2026-07-11T05:43:00+00:00'
     actor: claude-code
@@ -129,6 +151,19 @@ spec:
     source: cli
     from: in-progress
     to: review
+  - at: '2026-07-11T06:04:13+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #117 merged \u2014 4 hosted comp\xF5em do scope; resolve-hosted variante;\
+      \ format-drift do platform corrigido; eval 10/10"
+  - at: '2026-07-11T06:04:14+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: review
+    to: done
+    commit_ref: 4b76524bc99447228fcd1742e6c2ed053492a3d3
   produces:
   - kind: Plan
     name: plan-dedup-hosted-agents
@@ -142,3 +177,4 @@ spec:
     name: tr-tg-dedup-hosted-agents-20260711-055536
     role: test-run
     at: '2026-07-11T05:55:37+00:00'
+  closed_at: '2026-07-11T06:04:12+00:00'
