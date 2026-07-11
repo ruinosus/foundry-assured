@@ -6,7 +6,7 @@ spec:
   title: "Adopt dna-sdk v0.5 \u2014 collapse prompt shims onto load_prompts"
   description: "Bump dna-sdk 0.1/0.3 \u2192 0.5 and replace Kernel.quick+build_prompt+manual-guards\
     \ shims with dna.load_prompts across backend + hosted apps"
-  status: review
+  status: done
   feature: f-dna-adoption
   priority: high
   labels:
@@ -14,23 +14,41 @@ spec:
   - refactor
   reporter: claude-code
   acceptance_criteria:
-  - Given the foundry backend + 4 hosted apps, When dna-sdk is bumped to >=0.5,<0.6
-    (pyproject + requirements + CI), Then uv.lock regenerates and all eval suites
-    (helpdesk/copilot/studio/wiki) + compose-tests pass under 0.5
-  - Given each prompt shim, When refactored to dna.load_prompts(scope, base_dir=<resolved>),
-    Then the composed prompt is byte-identical (same eval sentinels) and the ADR-014
-    _resolve_base_dir policy is preserved
+  - text: Given the foundry backend + 4 hosted apps, When dna-sdk is bumped to >=0.5,<0.6
+      (pyproject + requirements + CI), Then uv.lock regenerates and all eval suites
+      (helpdesk/copilot/studio/wiki) + compose-tests pass under 0.5
+    done: true
+    done_at: '2026-07-11T10:43:52+00:00'
+    done_by: story-done-auto
+  - text: Given each prompt shim, When refactored to dna.load_prompts(scope, base_dir=<resolved>),
+      Then the composed prompt is byte-identical (same eval sentinels) and the ADR-014
+      _resolve_base_dir policy is preserved
+    done: true
+    done_at: '2026-07-11T10:43:52+00:00'
+    done_by: story-done-auto
   acceptance_criteria_source: cli-create
   definition_of_done:
-  - 'Code: 8 shims collapsed onto load_prompts; ADR-014 base_dir resolution preserved;
-    template/skills-dir extras kept'
-  - 'Tests: helpdesk(10)+copilot(5)+studio(1)+wiki(3) eval suites + hosted/copilot/studio-wiki
-    compose-tests green under 0.5; backend pytest green; backend boots'
-  - 'CI: ''CI passed'' green on PR opened via story pr --base develop'
-  - "Docs: line-count before\u2192after per shim reported as the DX proof"
+  - text: 'Code: 8 shims collapsed onto load_prompts; ADR-014 base_dir resolution
+      preserved; template/skills-dir extras kept'
+    done: true
+    done_at: '2026-07-11T10:43:52+00:00'
+    done_by: story-done-auto
+  - text: 'Tests: helpdesk(10)+copilot(5)+studio(1)+wiki(3) eval suites + hosted/copilot/studio-wiki
+      compose-tests green under 0.5; backend pytest green; backend boots'
+    done: true
+    done_at: '2026-07-11T10:43:52+00:00'
+    done_by: story-done-auto
+  - text: 'CI: ''CI passed'' green on PR opened via story pr --base develop'
+    done: true
+    done_at: '2026-07-11T10:43:52+00:00'
+    done_by: story-done-auto
+  - text: "Docs: line-count before\u2192after per shim reported as the DX proof"
+    done: true
+    done_at: '2026-07-11T10:43:52+00:00'
+    done_by: story-done-auto
   definition_of_done_source: cli-create
   created_at: '2026-07-11T10:31:46+00:00'
-  updated_at: '2026-07-11T10:40:40+00:00'
+  updated_at: '2026-07-11T10:43:54+00:00'
   timeline:
   - at: '2026-07-11T10:31:46+00:00'
     actor: claude-code
@@ -95,6 +113,19 @@ spec:
     source: cli
     from: in-progress
     to: review
+  - at: '2026-07-11T10:43:53+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #122 merged \u2014 dna-sdk 0.5; shims colapsaram (prompts.py 166\u2192\
+      105 etc.); load_prompts byte-id\xEAntico p/ os 19 agentes"
+  - at: '2026-07-11T10:43:54+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: review
+    to: done
+    commit_ref: 9f18c2b4e389a7f6781f738da7e69fdf3073338e
   produces:
   - kind: Plan
     name: plan-adopt-dna-v0.5
@@ -108,3 +139,4 @@ spec:
     name: tr-adopt-dna-v0.5-smoke-20260711-103913
     role: test-run
     at: '2026-07-11T10:39:14+00:00'
+  closed_at: '2026-07-11T10:43:52+00:00'
