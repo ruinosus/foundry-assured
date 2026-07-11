@@ -1,0 +1,16 @@
+apiVersion: github.com/ruinosus/dna/testkit/v1
+kind: TestRun
+metadata:
+  name: tr-tg-s-foundry-agent-ready-docs-20260711-055437
+spec:
+  guide_ref: tg-s-foundry-agent-ready-docs
+  outcome: pass
+  verifies:
+  - Story/s-foundry-agent-ready-docs
+  executed_by: claude-code
+  executed_at: '2026-07-11T05:54:37+00:00'
+  notes: "All 6 steps green: mkdocs build --strict exit 0; offline link-check 46 files\
+    \ / 0 broken; AGENTS.md parses as agents.md/v1 (detect=True); ci.yml diff empty\
+    \ (CI passed untouched); 4 Di\xE1taxis quadrants built + cost--teardown anchor\
+    \ resolves + HTML decks preserved; 11 docs files changed, 0 deleted (adds + 1\
+    \ link fix)."

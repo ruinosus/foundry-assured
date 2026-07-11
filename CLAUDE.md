@@ -2,6 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+> **Start with [`AGENTS.md`](./AGENTS.md).** That is the canonical, agent-agnostic
+> onboarding surface (an `agents.md/v1` instance read by 28+ tools): the repo map, the
+> real build/test/deploy commands, the gitflow, and the `dna sdlc` protocol. This file is
+> the **deep, opinionated working rules** — the phases, the SDK-signature discipline, the
+> architecture, the non-negotiables. AGENTS.md orients; CLAUDE.md goes deep. The two are
+> complementary, not duplicates.
+
 ## Estado atual
 
 Repositório **shipped** (v0.6.0): todas as 6 fases do showcase estão verdes (KB, workflow streaming, memória + OBO, HITL, eval, hosted-agent), e por cima delas o **mecanismo de assurance** (build-fidelity → recall → completeness → controle de acesso por documento → red-team).

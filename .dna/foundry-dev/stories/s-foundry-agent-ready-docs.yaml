@@ -1,0 +1,173 @@
+apiVersion: github.com/ruinosus/dna/sdlc/v1
+kind: Story
+metadata:
+  name: s-foundry-agent-ready-docs
+spec:
+  title: "Agent-ready surface + Di\xE1taxis docs site (repo quality standard)"
+  description: "Elevate foundry-assured to the owner's cross-repo standard: (1) agent-ready\
+    \ onboarding via 'dna init' on the EXISTING foundry-dev board (AGENTS.md canonical\
+    \ agents.md/v1 surface + dna-sdlc-cli skill projected for claude/copilot/cursor\
+    \ + commit-trailer hooks), reconciling the rich existing CLAUDE.md as a pointer/complement\
+    \ rather than a duplicate; (2) a navigable MkDocs Material site organized by Di\xE1\
+    taxis (tutorials/how-to/reference/explanation) that REUSES the existing docs/\
+    \ (35 items), ADRs, and wiki without losing content; (3) guards + CI (mkdocs build\
+    \ --strict + link-check as a SEPARATE job, never breaking the required 'CI passed')\
+    \ + GitHub Pages publish. Preserve the product nature (Azure/FastAPI/React SaaS)\
+    \ \u2014 form of DNA, content of foundry."
+  status: done
+  feature: f-dna-adoption
+  reporter: claude-code
+  acceptance_criteria:
+  - text: Given the repo, when 'dna init --scope foundry-dev --tools claude,copilot,cursor'
+      runs, then AGENTS.md exists as the canonical surface reflecting foundry's real
+      build/test/deploy + gitflow + SDLC, the dna-sdlc-cli skill is projected into
+      .claude/.github/.cursor, hooks are wired, and the existing CLAUDE.md is preserved
+      and points to AGENTS.md (no content lost)
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: Given the AGENTS.md, when parsed by the dna-sdk agents.md/v1 reader, then
+      it round-trips as a valid agents.md/v1 document (parseable)
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: "Given docs/, when the MkDocs site is built, then navigation follows Di\xE1\
+      taxis (Tutorials/How-to/Reference/Explanation) and every existing doc (METHOD,\
+      \ DEPLOYMENT, ADRs, wiki, case studies) is reachable \u2014 diff shows moves/additions,\
+      \ not blind deletes"
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: Given the docs site, when 'mkdocs build --strict' runs, then it exits 0
+      (no broken internal links, no missing nav files)
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: Given CI, when the docs workflow runs, then docs build + link-check are
+      a SEPARATE workflow/job that does NOT feed the required 'CI passed' check, and
+      the existing CI is unchanged and green
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  acceptance_criteria_source: cli-create
+  definition_of_done:
+  - text: AGENTS.md canonical + CLAUDE.md reconciled (pointer, no duplication); dna-sdlc-cli
+      skill projected for 3 tools; hooks active
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: "mkdocs.yml + requirements-docs.txt + docs/index.md landing; Di\xE1taxis\
+      \ nav; existing docs reused (moved/linked, not deleted)"
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: ".github/workflows/docs.yml (build --strict + lychee offline link-check\
+      \ + Pages deploy main-only, continue-on-error) \u2014 separate from ci.yml"
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: README updated (DNA integrated, link to docs site) without bloat
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  - text: mkdocs build --strict green + existing 'CI passed' green on the PR; TestGuide
+      --product + TestRun recorded
+    done: true
+    done_at: '2026-07-11T05:58:50+00:00'
+    done_by: story-done-auto
+  definition_of_done_source: cli-create
+  created_at: '2026-07-11T05:34:34+00:00'
+  updated_at: '2026-07-11T05:58:52+00:00'
+  timeline:
+  - at: '2026-07-11T05:34:34+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    to: todo
+  - at: '2026-07-11T05:35:13+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: todo
+    to: in-progress
+  - at: '2026-07-11T05:38:26+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Fase 1 (agent-ready) feita: 'dna init --scope foundry-dev --tools claude,copilot,cursor'\
+      \ idempotente sobre o board EXISTENTE (board+hooks skipped, n\xE3o criou board\
+      \ novo). AGENTS.md gerado era boilerplate s\xF3-SDLC \u2014 reescrevi como superf\xED\
+      cie can\xF4nica agents.md/v1 refletindo a REALIDADE do foundry: layout real\
+      \ (apps/backend|frontend|hosted-*, os DOIS pap\xE9is de .dna \u2014 board dev-time\
+      \ vs runtime prompts ADR-013/014), comandos reais de build/test/deploy, gitflow\
+      \ develop\u2192main, o gate 'CI passed', e os n\xE3o-negoci\xE1veis destilados\
+      \ do CLAUDE.md. Rela\xE7\xE3o AGENTS.md\u2194CLAUDE.md resolvida limpa: AGENTS.md\
+      \ orienta (can\xF4nico, lido por 28+ tools), CLAUDE.md aprofunda (fases/SDK-discipline/arch)\
+      \ \u2014 header no CLAUDE.md aponta pro AGENTS.md, zero duplica\xE7\xE3o. Skill\
+      \ dna-sdlc-cli projetada id\xEAntica em .claude/.github/.cursor (deep-wiki vendored\
+      \ intacto). Provado: dna-sdk AgentDefinitionReader detecta + l\xEA AGENTS.md\
+      \ como agents.md/v1 (8415 bytes, round-trip verbatim). .venv-dna gitignored."
+    commit_ref: 68412e3bc4be4673c8fa3667fbb985d9c5b93dd2
+  - at: '2026-07-11T05:53:20+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "Fase 2 (docs Di\xE1taxis) feita. Decis\xE3o-chave: N\xC3O relocar os\
+      \ 63 arquivos de docs/ \u2014 eles j\xE1 s\xE3o Di\xE1taxis-typed no front-matter\
+      \ (DOCS-STANDARD.md) e s\xE3o linkados de CLAUDE.md/README/ADRs/CI; mover quebraria\
+      \ tudo sem ganho. Em vez disso, impus a FORMA Di\xE1taxis via nav do MkDocs\
+      \ + landing grid-card + p\xE1ginas-cola novas (getting-started tutorial, reference/architecture+configuration+dna-scopes,\
+      \ how-to update-prompts+run-evals+operate-sdlc, 4 index de quadrante). O wiki\
+      \ gerado + specs de design ficam no repo (brows\xE1veis no GitHub) mas fora\
+      \ do site curado (exclude_docs) \u2014 um site de produto CURA. Slugify do mkdocs\
+      \ alinhado ao GitHub (pymdownx.slugs) pra os anchors existentes (ex.: cost--teardown)\
+      \ resolverem sem editar docs. Guards: mkdocs build --strict \u2192 exit 0; link-check\
+      \ offline (README+docs) \u2192 0 quebrados (achei+consertei 1 link pr\xE9-existente\
+      \ quebrado no README: ./backend/eval \u2192 ./apps/backend/eval). CI: .github/workflows/docs.yml\
+      \ \xE9 workflow SEPARADO (build strict + lychee offline + Pages main-only continue-on-error)\
+      \ \u2014 N\xC3O alimenta o 'CI passed' required; ci.yml intacto (diff vazio).\
+      \ README aponta pro site + AGENTS.md. Zero deletes de conte\xFAdo (git mostra\
+      \ adds + 1 fix de link)."
+    commit_ref: 1978e34deb4cf8e55725bddc20f42cd16c520003
+  - at: '2026-07-11T05:54:02+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestGuide
+    name: tg-s-foundry-agent-ready-docs
+    summary: TestGuide tg-s-foundry-agent-ready-docs (smoke)
+  - at: '2026-07-11T05:54:38+00:00'
+    actor: claude-code
+    type: artifact_produced
+    source: cli
+    kind: TestRun
+    name: tr-tg-s-foundry-agent-ready-docs-20260711-055437
+    summary: "TestRun tr-tg-s-foundry-agent-ready-docs-20260711-055437 \u2192 pass"
+    outcome: pass
+  - at: '2026-07-11T05:58:51+00:00'
+    actor: claude-code
+    type: comment
+    source: cli
+    summary: "PR #116 merged \u2014 dna init (AGENTS.md can\xF4nico + skill multi-tool)\
+      \ + site Di\xE1taxis; CLAUDE.md preservado"
+  - at: '2026-07-11T05:58:52+00:00'
+    actor: claude-code
+    type: status_change
+    source: cli
+    from: in-progress
+    to: done
+    commit_ref: 2bef91de3f38f88207601e58157d4d7f45a05f8c
+  produces:
+  - kind: Plan
+    name: plan-s-foundry-agent-ready-docs
+    role: implementation
+    at: '2026-07-11T05:35:13+00:00'
+  - kind: TestGuide
+    name: tg-s-foundry-agent-ready-docs
+    role: test-guide
+    at: '2026-07-11T05:54:02+00:00'
+  - kind: TestRun
+    name: tr-tg-s-foundry-agent-ready-docs-20260711-055437
+    role: test-run
+    at: '2026-07-11T05:54:38+00:00'
+  closed_at: '2026-07-11T05:58:50+00:00'
