@@ -13,20 +13,20 @@
   },
   "dependencies": {
     "@ag-ui/client": "^0.0.57",
-    "@azure/msal-browser": "^5.16.0",
-    "@azure/msal-react": "^5.5.1",
-    "@copilotkit/react-core": "^1.62.1",
-    "@copilotkit/react-ui": "^1.62.1",
-    "@copilotkit/runtime": "^1.62.1",
-    "next": "^16.2.10",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "@azure/msal-browser": "^5.17.3",
+    "@azure/msal-react": "^5.5.4",
+    "@copilotkit/react-core": "^1.65.0",
+    "@copilotkit/react-ui": "^1.65.0",
+    "@copilotkit/runtime": "^1.65.0",
+    "next": "^16.2.12",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@copilotkit/aimock": "^1.35.0",
-    "@types/node": "^26.1.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "typescript": "^6.0.3"
+    "@copilotkit/aimock": "^1.37.4",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "typescript": "^7.0.2"
   }
 }
