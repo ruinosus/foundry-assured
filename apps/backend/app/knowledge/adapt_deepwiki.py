@@ -39,6 +39,8 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
+from app.knowledge.docbundle_schema import validate_manifest
+
 # Nav/scaffold files deep-wiki may emit that are not content pages.
 _SKIP_NAMES = {"_sidebar.md", "summary.md", "index.md", "readme.md", "llms.txt", "llms-full.txt"}
 _SKIP_DIRS = {".vitepress", "onboarding", "node_modules", ".git"}
@@ -119,8 +121,15 @@ def adapt(repo: Path, component: str, version: str, out_dir: Path, wiki_dir: str
         "language": language, "model": "github-copilot-cli/deep-wiki",
         "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "kind": "element", "component": component, "componentVersion": version,
-        "releaseVersion": None, "pages": manifest_pages,
+        # This path has no access input at all (deep-wiki knows nothing about the
+        # repo's read teams) — so it declares nothing. `null`, never `[]`.
+        "releaseVersion": None, "groups": None, "pages": manifest_pages,
     }
+    # Same contract as every other writer of this format (docbundle_schema.py).
+    try:
+        validate_manifest(manifest)
+    except ValueError as exc:
+        raise SystemExit(f"❌ {exc}") from exc
     (bundle / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     (bundle / "llms.txt").write_text("\n".join(llms_lines) + "\n", encoding="utf-8")
     print(f"\n✅ Bundle (deep-wiki → ingest format): {bundle}  ({len(manifest_pages)} páginas)", flush=True)

@@ -35,6 +35,12 @@ jobs:
         run: uv run python -m eval.run_eval --self-test
       - name: ACL attribution round-trip (chunk key == blob key)
         run: uv run python -m eval.test_attribution
+      # Doc-bundle format contract: every manifest field this repo reads or writes
+      # must exist in the producer's schema (vendored). Offline + deterministic.
+      # It exists because the format already forked once — the ingest read an ACL
+      # field the producer's model never had, and a second generator grew from it.
+      - name: Doc-bundle contract (producer ↔ consumer field agreement)
+        run: uv run python -m eval.docbundle_contract_test
       # Prompt-invariant eval suite over the declarative .dna scope — THE guard
       # of record for prompt contracts (ADR-013 phase 2; the byte-equivalence
       # gate retired when the prompts started evolving as Soul + Guardrails).

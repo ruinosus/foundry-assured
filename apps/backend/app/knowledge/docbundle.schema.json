@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$comment": "Contrato do doc bundle (manifest.json). GERADO de apps/agent/src/services/docbundle.py no projeto aap-kb — não edite à mão; rode docbundle.escrever_schema(). Cópias em outros projetos devem ser idênticas byte a byte.",
+  "$defs": {
+    "PageMeta": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "order": {
+          "title": "Order",
+          "type": "integer"
+        },
+        "file": {
+          "title": "File",
+          "type": "string"
+        },
+        "audience": {
+          "default": "base",
+          "title": "Audience",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "order",
+        "file"
+      ],
+      "title": "PageMeta",
+      "type": "object"
+    },
+    "Source": {
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "ref": {
+          "default": "",
+          "title": "Ref",
+          "type": "string"
+        },
+        "commit": {
+          "default": "",
+          "title": "Commit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "Source",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "key": {
+      "title": "Key",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "source": {
+      "$ref": "#/$defs/Source"
+    },
+    "language": {
+      "default": "pt-br",
+      "title": "Language",
+      "type": "string"
+    },
+    "model": {
+      "default": "",
+      "title": "Model",
+      "type": "string"
+    },
+    "generatedAt": {
+      "default": "",
+      "title": "Generatedat",
+      "type": "string"
+    },
+    "origin": {
+      "default": "gerado",
+      "title": "Origin",
+      "type": "string"
+    },
+    "kind": {
+      "default": "element",
+      "title": "Kind",
+      "type": "string"
+    },
+    "component": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Component"
+    },
+    "componentVersion": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Componentversion"
+    },
+    "releaseVersion": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Releaseversion"
+    },
+    "groups": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Grupos (object-id do Entra ou nome resolvível pelo consumidor) que podem LER este bundle — herdado da fonte, nunca classificado aqui. AUSENTE (null) ≠ VAZIO: null = o bundle não declara acesso (o consumidor decide); [] = declara que nenhum grupo lê (fail-closed explícito).",
+      "title": "Groups"
+    },
+    "pages": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/PageMeta"
+      },
+      "title": "Pages",
+      "type": "array"
+    }
+  },
+  "required": [
+    "key",
+    "title",
+    "source"
+  ],
+  "title": "Manifest",
+  "type": "object"
+}

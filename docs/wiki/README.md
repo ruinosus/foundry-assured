@@ -93,6 +93,24 @@ also install upstream directly: `/plugin marketplace add microsoft/skills` → `
 deep-wiki@skills`. (The legacy copy in [`apps/backend/app/knowledge/skills/`](../../apps/backend/app/knowledge/skills/)
 is kept for back-compat until callers repoint at the vendored plugin.)
 
+**The manifest format is a contract, not a convention.** It is defined by the doc-bundle
+*producer* project and vendored here as
+[`app/knowledge/docbundle.schema.json`](../../apps/backend/app/knowledge/docbundle.schema.json);
+`eval/docbundle_contract_test.py` gates it in CI. Path A validates what it writes
+automatically — **path B writes the manifest by hand, so validate it before committing**:
+
+```bash
+cd apps/backend
+uv run python -c "import json,sys; from app.knowledge.docbundle_schema import validate_manifest; \
+validate_manifest(json.load(open(sys.argv[1]))); print('OK')" \
+  ../../docs/wiki/<component>/<version>/manifest.json
+```
+
+One field deserves care: `groups`, the read access inherited from the source. **`null` (or
+absent) = no access declared**, the ingest decides; **`[]` = declared that no group may
+read it** (fail-closed). They are not interchangeable. These self-wiki bundles are
+single-audience and declare nothing, so they carry `null`.
+
 > **Keeping it fresh (roadmap).** The `wiki-freshness` gate only *detects* drift. ADR-012 adds an
 > OpenWiki-style regen — [`.github/workflows/wiki-regen.yml`](../../.github/workflows/wiki-regen.yml),
 > a manual template — to *close* the loop (drift → regenerate via the skill → PR) once a CI coding

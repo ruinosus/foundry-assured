@@ -19,6 +19,10 @@ dependencies = [
     "azure-monitor-opentelemetry>=1.8.8",
     "azure-data-tables>=12.7.0",
     "httpx>=0.28.1",
+    # Validates every doc-bundle manifest we write against the vendored contract
+    # (app/knowledge/docbundle.schema.json). Official validator — the format is a
+    # cross-repo contract, so a hand-rolled check would only encode our reading of it.
+    "jsonschema>=4.26.0",
     # Declarative agent prompts (ADR-013) — official PyPI release.
     "dna-sdk>=0.1,<0.2",
 ]

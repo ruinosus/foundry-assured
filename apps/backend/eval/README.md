@@ -21,7 +21,18 @@ eval/
   access_control_test.py    # security gate: agentic retrieve + app-side trim, per identity → no cross-group leak (violations_max: 0)
   red_team_test.py          # security gate: injection/exfil corpus through the same trim → ASR ≤ redteam_asr_max
   test_attribution.py       # round-trip check: chunk→component attribution agrees across the trim's two derivations
+  docbundle_contract_test.py # format gate: every manifest field we read/write exists in the producer's vendored schema
 ```
+
+`docbundle_contract_test.py` is the anti-fork gate (CI, offline). The doc-bundle
+`manifest.json` is defined by the *producer* project, not here, and it forked once: the
+ingest started reading `groups` (per-document ACL) while the producer's model had no such
+field, so a local generator grew its own format. The contract now travels as data —
+`app/knowledge/docbundle.schema.json`, generated from the producer's model and copied
+here — every manifest we write is validated against it before hitting disk, and this gate
+derives (with `ast`) the fields we read and write and fails if any is outside it. Point
+`DOCBUNDLE_SCHEMA_REF` at a local checkout of the producer's schema to also verify the
+vendored copy hasn't drifted.
 
 The declarative prompt layer (ADR-013) is guarded YAML-natively next to the prompts
 themselves: `../.dna/helpdesk/eval-{cases,suites}/` — nine offline invariant cases run
