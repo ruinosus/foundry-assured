@@ -1,0 +1,21 @@
+# AgentSchema PromptAgent
+# https://raw.githubusercontent.com/microsoft/AgentSchema/refs/heads/main/schemas/v1.0/PromptAgent.yaml
+#
+# `model` is deliberately absent — the backend owns model selection.
+#
+# `instructions` is ONLY the grounded delta. The shared persona and the citation
+# duty are documents of their own (personas/, guardrails/) because two agents
+# share them; AgentSchema has neither concept, so the references ride in the
+# standard `metadata` bag under this repository's vendor key and the host
+# composes them in a fixed order (persona → instructions → guardrails).
+kind: prompt
+name: concierge-grounded
+displayName: Helpdesk Concierge (grounded)
+description: Helpdesk Concierge, grounded variant — cites the runbook KB, never invents
+metadata:
+  x-foundry-assured:
+    persona: concierge
+    guardrails:
+      - grounded-citation
+instructions: |-
+  Answer using the runbook knowledge base.

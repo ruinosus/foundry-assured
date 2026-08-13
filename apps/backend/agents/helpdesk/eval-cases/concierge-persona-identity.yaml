@@ -1,0 +1,17 @@
+# The persona is a prompt target of its own: it is the identity BOTH concierge
+# variants compose, and pinning it here is what keeps the two from drifting
+# apart one edit at a time. (Was `concierge-soul-identity` while the persona was
+# a DNA Soul.)
+name: concierge-persona-identity
+description: The shared concierge persona names itself and its mission (the identity both variants compose)
+target:
+  persona: concierge
+checks:
+- type: contains
+  value: Helpdesk Concierge
+- type: contains
+  value: internal engineering support assistant
+- type: min_length
+  value: 100
+expected: The persona introduces the Helpdesk Concierge identity shared by the grounded and ungrounded variants.
+tags: [concierge, identity, persona]

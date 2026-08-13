@@ -34,14 +34,18 @@ derives (with `ast`) the fields we read and write and fails if any is outside it
 `DOCBUNDLE_SCHEMA_REF` at a local checkout of the producer's schema to also verify the
 vendored copy hasn't drifted.
 
-The declarative prompt layer (ADR-013) is guarded YAML-natively next to the prompts
-themselves: `../.dna/helpdesk/eval-{cases,suites}/` — nine offline invariant cases run
-in CI via `dna eval run helpdesk-prompts` (TICKET/NO_MATCH sentinels, the grounded
-citation duty via the wired `grounded-citation` Guardrail, `not_contains` checks proving
-the ungrounded variant does NOT carry it, HITL never-claim-a-write, pt-BR discipline).
+The declarative prompt layer (ADR-013) is guarded YAML-natively next to the definitions
+themselves: `../agents/helpdesk/eval-{cases,suites}/` — nine offline invariant cases run
+in CI by `prompt_contract_test.py` (TICKET/NO_MATCH sentinels, the grounded citation duty
+via the wired `grounded-citation` guardrail, `not_contains` checks proving the ungrounded
+variant does NOT carry it, HITL never-claim-a-write, pt-BR discipline, and — since
+ADR-015 — that an agent wears no persona it did not ask for).
 The phase-1 byte-equivalence gate (`prompts_equivalence_test.py`) retired in ADR-013
 phase 2: it proved the *move* was byte-faithful; once prompts started legitimately
-evolving as Soul + Guardrails, semantic invariants became the guard of record.
+evolving as persona + guardrails, semantic invariants became the guard of record. The
+runner moved in-tree with [ADR-015](../../../docs/adr/ADR-015-agentschema-replaces-the-dna-sdk.md)
+(it was `dna eval run helpdesk-prompts` from `dna-cli`); the cases were always this
+repository's contracts, so they stayed.
 
 All thresholds live in **`assurance.yaml`** (quality: groundedness / completeness /
 retrieval-recall / citation-floor; build: fidelity; security: access-control violations =

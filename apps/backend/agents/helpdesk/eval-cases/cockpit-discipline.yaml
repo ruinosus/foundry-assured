@@ -1,0 +1,24 @@
+name: cockpit-discipline
+description: Cockpit expert answers in pt-BR, grounds exclusively on retrieved KB docs, cites component+doc, admits gaps
+target:
+  agent: cockpit
+checks:
+- type: contains
+  value: português (pt-BR)
+- type: contains
+  value: '**exclusivamente**'
+- type: contains
+  value: Cite a fonte de cada afirmação
+- type: contains
+  value: diga que não sabe
+- type: contains
+  value: Mermaid
+# A persona is worn only by the agents that REFERENCE it. This negative
+# invariant exists because the reader this replaced appended the shared
+# persona to every agent that did not override its prompt template.
+- type: not_contains
+  value: Helpdesk Concierge
+- type: min_length
+  value: 1000
+expected: The Cockpit prompt keeps the Foundry IQ answering discipline — pt-BR, KB-only grounding, per-claim citation, no invention.
+tags: [cockpit, grounding, citation]

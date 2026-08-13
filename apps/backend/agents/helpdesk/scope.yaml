@@ -1,0 +1,11 @@
+# Application catalog — deliberately NOT AgentSchema.
+# AgentSchema describes one agent; it has no document that names a directory of
+# agents, its default, or the shared documents they compose. That is application
+# configuration, so it is declared here instead of being forced into an agent
+# document. Read by app/agents/definitions.py.
+name: helpdesk
+description: >-
+  Declarative agent definitions for the foundry-assured backend — one
+  AgentSchema PromptAgent per instruction block the backend builds an agent
+  from (ADR-013).
+defaultAgent: concierge-grounded

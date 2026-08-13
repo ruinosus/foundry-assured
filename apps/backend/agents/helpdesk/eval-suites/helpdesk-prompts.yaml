@@ -1,0 +1,27 @@
+# Application data — deliberately NOT AgentSchema.
+# AgentSchema describes an agent, not a test of one. These cases are this
+# repository's own contract suite (they always were: the checks encode what the
+# backend and its eval policies branch on), so they stay repo-owned YAML with a
+# small runner in eval/prompt_contract_test.py.
+name: helpdesk-prompts
+description: >-
+  Offline, deterministic invariants over the composed agent prompts — THE guard
+  of record since ADR-013 phase 2 (the byte-equivalence gate
+  eval/prompts_equivalence_test.py was retired once the prompts started
+  legitimately evolving: shared persona in personas/, cross-cutting rules in
+  guardrails/). Each case pins a semantic contract the backend and its eval
+  policies rely on: the RESOLVE TICKET: and RETRIEVE NO_MATCH sentinels the
+  workflow branches on, the grounded citation duty (wired guardrail) that ASSERT
+  enforces, the ungrounded variant FORBIDDING that duty (not_contains), the
+  platform HITL never-claim-a-write guardrail, and the pt-BR grounding
+  discipline of cockpit/selfwiki.
+cases:
+- triage-contract
+- retrieve-contract
+- resolve-contract
+- concierge-persona-identity
+- concierge-grounded-citation
+- concierge-ungrounded-humility
+- cockpit-discipline
+- selfwiki-discipline
+- platform-write-safety

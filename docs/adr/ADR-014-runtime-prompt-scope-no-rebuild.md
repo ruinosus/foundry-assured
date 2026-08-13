@@ -1,7 +1,19 @@
 # ADR-014 — The runtime prompt scope decouples from the image (volume mount; restart, not rebuild)
 
-- **Status:** Proposed
+- **Status:** Accepted; **amended 2026-08-13** by
+  [ADR-015](./ADR-015-agentschema-replaces-the-dna-sdk.md)
 - **Date:** 2026-07-10 (production/ACA leg added the same day)
+
+> **Amendment (2026-08-13).** The decision below stands whole — bind-mount over
+> the baked copy, restart as the refresh unit, an Azure Files share at an
+> alternative path selected by one env var. Only the names moved with ADR-015:
+> `apps/backend/.dna/` → **`apps/backend/agents/`**, `DNA_BASE_DIR` →
+> **`AGENTS_DIR`**, `/mnt/dna` → **`/mnt/agents`**. (The env var had to move: the
+> repo-root SDLC board still uses `DNA_BASE_DIR` with a different meaning, so one
+> name for two directories would have made the documented silent-fallback path
+> fire for the wrong reason.) The `.dna/foundry-dev/` board in the table below is
+> unaffected — it is dev-time data, and the `dna` CLI that reads it is a tool, not
+> a dependency of this backend.
 - **Context:** [ADR-013](./ADR-013-declarative-agent-prompts-dna.md) phase 3 —
   [`apps/backend/compose.yaml`](../../apps/backend/compose.yaml),
   [`apps/backend/Dockerfile`](../../apps/backend/Dockerfile),

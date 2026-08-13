@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Publish the runtime DNA prompt scope to production (ADR-014, production leg).
+# Publish the runtime agent definitions to production (ADR-014, production leg).
 #
-# Uploads apps/backend/.dna/ to the `assured-prompts` Azure Files share (mounted
-# read-only in the backend container app at /mnt/dna, selected via DNA_BASE_DIR)
+# Uploads apps/backend/agents/ to the `assured-prompts` Azure Files share (mounted
+# read-only in the backend container app at /mnt/agents, selected via AGENTS_DIR)
 # and restarts the backend revision so the new prompts compose at boot.
 #
 # The prod prompt loop — no image build, no `azd deploy`:
 #
-#   $EDITOR apps/backend/.dna/helpdesk/agents/cockpit.yaml
-#   dna eval run helpdesk-prompts --scope helpdesk   # the content gate (CI runs it too)
-#   ./scripts/push-prompts.sh                        # upload + revision restart
+#   $EDITOR apps/backend/agents/helpdesk/cockpit.yaml
+#   (cd apps/backend && uv run python -m eval.prompt_contract_test)  # the content gate (CI runs it too)
+#   ./scripts/push-prompts.sh                                        # upload + revision restart
 #
 # Restart is the refresh unit (ADR-014): prompts compose at import and agents
 # are built at boot — there is deliberately NO hot reload. A backend scaled to
@@ -17,11 +17,14 @@
 #
 # Honest caveats:
 # - `az storage file upload-batch` overwrites but never DELETES: removing or
-#   renaming a scope file needs `az storage file delete-batch` (or wiping the
-#   share) before the upload — see --mirror.
+#   renaming a definition file needs `az storage file delete-batch` (or wiping
+#   the share) before the upload — see --mirror.
 # - --mirror empties the share first. A cold start during the wipe→upload
-#   window boots on the baked-in fallback (scope absent) or fails loudly on a
-#   half-uploaded scope and is retried by ACA; the terminal restart settles it.
+#   window boots on the baked-in fallback (definitions absent) or fails loudly on
+#   a half-uploaded tree and is retried by ACA; the terminal restart settles it.
+# - ⚠️ ONE-TIME, on an environment provisioned before ADR-015: the share still
+#   holds the old DNA scope (`helpdesk/agents/*.yaml` with `apiVersion:`), which
+#   the AgentSchema reader refuses loudly. Run `--mirror` once to replace it.
 #
 # Reads everything from the azd env (bicep outputs) — run after `azd up`.
 set -euo pipefail
@@ -54,10 +57,10 @@ if [ "$MIRROR" = 1 ]; then
   az storage file delete-batch --account-name "$SA" --account-key "$KEY" --source "$SHARE" >/dev/null
 fi
 
-echo "▸ uploading apps/backend/.dna → $SA/$SHARE"
+echo "▸ uploading apps/backend/agents → $SA/$SHARE"
 az storage file upload-batch --account-name "$SA" --account-key "$KEY" \
-  --destination "$SHARE" --source apps/backend/.dna --no-progress >/dev/null
-echo "  ✓ scope uploaded"
+  --destination "$SHARE" --source apps/backend/agents --no-progress >/dev/null
+echo "  ✓ definitions uploaded"
 
 if [ "$RESTART" = 1 ]; then
   APP="$(az containerapp list -g "$RG" --query "[?tags.\"azd-service-name\"=='backend'].name | [0]" -o tsv)"

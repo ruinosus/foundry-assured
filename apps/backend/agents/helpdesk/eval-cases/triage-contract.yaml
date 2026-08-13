@@ -1,0 +1,24 @@
+# Application data — deliberately NOT AgentSchema (see eval-suites/README note in
+# the suite file). Offline invariant over the COMPOSED prompt of one agent.
+name: triage-contract
+description: Triage classifies + restates, never answers, and emits the exact three-line output contract
+target:
+  agent: triage
+checks:
+- type: contains
+  value: Do NOT answer the question
+- type: contains
+  value: 'Intent: <one short phrase>'
+- type: contains
+  value: 'Urgency: <low|medium|high>'
+- type: contains
+  value: 'Restated: <the question in one clear sentence>'
+# A persona is worn only by the agents that REFERENCE it. This negative
+# invariant exists because the reader this replaced appended the shared
+# persona to every agent that did not override its prompt template.
+- type: not_contains
+  value: Helpdesk Concierge
+- type: min_length
+  value: 200
+expected: The TRIAGE prompt forbids answering and pins the Intent/Urgency/Restated output shape.
+tags: [workflow, contract]

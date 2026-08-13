@@ -42,12 +42,14 @@ Scopes: `backend`, `frontend`, `hosted-agent`, `infra`, `eval`, `auth`, `deps`, 
 
 - **Never invent SDK signatures.** Verify against the installed package / Microsoft
   docs before fixing any `azure-ai-projects` / `agent-framework` call.
-- **Agent prompts** change only in `apps/backend/.dna/helpdesk/` — agents keep their variant
-  delta, the shared persona is `souls/concierge/`, cross-cutting rules are `guardrails/*`
-  ([ADR-013](./docs/adr/ADR-013-declarative-agent-prompts-dna.md)); `app/agents/prompts.py` is the
+- **Agent prompts** change only in `apps/backend/agents/helpdesk/` — one
+  [AgentSchema](https://github.com/microsoft/AgentSchema) `PromptAgent` per agent holding its
+  variant delta, the shared persona in `personas/`, cross-cutting rules in `guardrails/`
+  ([ADR-013](./docs/adr/ADR-013-declarative-agent-prompts-dna.md),
+  [ADR-015](./docs/adr/ADR-015-agentschema-replaces-the-dna-sdk.md)); `app/agents/prompts.py` is the
   single consumption point and composes them at import. When a prompt contract changes, update the
-  matching EvalCase in `.dna/helpdesk/eval-cases/` in the same PR — `dna eval run helpdesk-prompts`
-  is the CI guard.
+  matching case in `agents/helpdesk/eval-cases/` in the same PR —
+  `uv run python -m eval.prompt_contract_test` is the CI guard.
 - Auth is **keyless** (`DefaultAzureCredential` / OBO) — no API keys in code.
 - Every resolver answer **must cite a source** (the eval policy gate enforces it).
 - Never commit secrets or `.env` values.
@@ -55,10 +57,10 @@ Scopes: `backend`, `frontend`, `hosted-agent`, `infra`, `eval`, `auth`, `deps`, 
 ## Work tracking — the in-repo DNA SDLC board
 
 Non-trivial work is tracked as versioned YAML in **`.dna/foundry-dev/`** (features/stories +
-timelines), driven by the [`dna` CLI](https://github.com/ruinosus/dna) — distinct from
-`apps/backend/.dna/` (the runtime prompt scope; root = how we WORK, backend = what the product RUNS).
-Install the CLI from PyPI (the same distribution CI uses — see `.github/workflows/ci.yml`):
-`uv tool install dna-cli` — it pulls `dna-sdk` from PyPI itself.
+timelines), driven by the [`dna` CLI](https://github.com/ruinosus/dna). This is a **dev-time tool**,
+not a dependency of anything the product runs: the backend's agent definitions moved to AgentSchema
+in [ADR-015](./docs/adr/ADR-015-agentschema-replaces-the-dna-sdk.md) and `dna-sdk` is no longer
+installed by any app here. Install the CLI from PyPI: `uv tool install dna-cli`.
 
 Basics, from the repo root with `DNA_BASE_DIR=$PWD/.dna`: `dna sdlc story create s-x --feature f-y
 --ac … --dod …` → `story start s-x --plan "…"` → narrate with `story comment` as you work →

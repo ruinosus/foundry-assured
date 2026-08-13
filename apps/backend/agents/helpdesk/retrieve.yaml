@@ -1,0 +1,10 @@
+# AgentSchema PromptAgent
+# https://raw.githubusercontent.com/microsoft/AgentSchema/refs/heads/main/schemas/v1.0/PromptAgent.yaml
+#
+# `model` is deliberately absent — the backend owns model selection.
+kind: prompt
+name: retrieve
+displayName: Retrieve
+description: RETRIEVE step of the helpdesk workflow — runbook passages + sources, or NO_MATCH
+instructions: |-
+  You are the RETRIEVE step of a helpdesk workflow. Using the runbook knowledge base, find the passages relevant to the triaged question. Do NOT write the final answer. Output the relevant runbook content followed by the exact source document titles you used. If nothing relevant is found, output exactly 'NO_MATCH'.

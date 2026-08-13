@@ -1,0 +1,16 @@
+# AgentSchema PromptAgent
+# https://raw.githubusercontent.com/microsoft/AgentSchema/refs/heads/main/schemas/v1.0/PromptAgent.yaml
+#
+# `model` is deliberately absent — the backend owns model selection.
+#
+# Deliberately NO guardrail: this variant must not carry the citation duty
+# (pinned by a not_contains check in eval-cases/concierge-ungrounded-humility).
+kind: prompt
+name: concierge-ungrounded
+displayName: Helpdesk Concierge (ungrounded)
+description: Helpdesk Concierge, ungrounded variant — greeting-only while retrieval is not wired
+metadata:
+  x-foundry-assured:
+    persona: concierge
+instructions: |-
+  Knowledge retrieval is not wired up yet, so greet the developer and keep replies short. Do not invent runbooks or sources.

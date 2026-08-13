@@ -219,14 +219,14 @@ resource dataShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-0
   properties: { shareQuota: 1 } // GiB — jsonl records are tiny
 }
 
-// File share holding the runtime DNA prompt scope (ADR-014, production leg).
-// Mounted read-only into the backend at /mnt/dna; publishing prompts =
+// File share holding the runtime agent definitions (ADR-014, production leg).
+// Mounted read-only into the backend at /mnt/agents; publishing prompts =
 // scripts/push-prompts.sh (upload + revision restart). Starts EMPTY on a fresh
-// provision — the backend then falls back to the scope baked into the image.
+// provision — the backend then falls back to the definitions baked into the image.
 resource promptsShare 'Microsoft.Storage/storageAccounts/fileServices/shares@2023-05-01' = {
   parent: fileService
   name: promptsShareName
-  properties: { shareQuota: 1 } // GiB — the scope is a handful of YAML/MD files
+  properties: { shareQuota: 1 } // GiB — the definitions are a handful of YAML/MD files
 }
 
 // ---------------------------------------------------------------------------

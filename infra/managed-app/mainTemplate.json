@@ -869,7 +869,7 @@
             "promptsShareName": {
               "type": "string",
               "metadata": {
-                "description": "Azure Files share holding the runtime DNA prompt scope, mounted read-only into the backend at /mnt/dna (ADR-014). Empty share = backend falls back to the scope baked into the image."
+                "description": "Azure Files share holding the runtime agent definitions, mounted read-only into the backend at /mnt/agents (ADR-014). Empty share = backend falls back to the definitions baked into the image."
               }
             }
           },
@@ -1036,8 +1036,8 @@
                           "value": "[parameters('appUsersGroupId')]"
                         },
                         {
-                          "name": "DNA_BASE_DIR",
-                          "value": "/mnt/dna"
+                          "name": "AGENTS_DIR",
+                          "value": "/mnt/agents"
                         }
                       ],
                       "volumeMounts": [
@@ -1047,7 +1047,7 @@
                         },
                         {
                           "volumeName": "prompts",
-                          "mountPath": "/mnt/dna"
+                          "mountPath": "/mnt/agents"
                         }
                       ]
                     }

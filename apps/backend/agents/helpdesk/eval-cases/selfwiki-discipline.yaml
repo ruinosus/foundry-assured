@@ -1,0 +1,24 @@
+name: selfwiki-discipline
+description: Selfwiki expert grounds exclusively on the project deep-wiki, cites area+doc, degrades gracefully on gaps
+target:
+  agent: selfwiki
+checks:
+- type: contains
+  value: foundry-assured
+- type: contains
+  value: português (pt-BR)
+- type: contains
+  value: '**exclusivamente**'
+- type: contains
+  value: diga em 1–2 frases
+- type: contains
+  value: Nunca invente módulos
+# A persona is worn only by the agents that REFERENCE it. This negative
+# invariant exists because the reader this replaced appended the shared
+# persona to every agent that did not override its prompt template.
+- type: not_contains
+  value: Helpdesk Concierge
+- type: min_length
+  value: 1500
+expected: The selfwiki prompt keeps the dogfood grounding discipline and the short honest-gap behavior.
+tags: [selfwiki, grounding, citation]
