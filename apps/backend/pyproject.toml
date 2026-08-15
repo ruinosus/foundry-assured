@@ -5,8 +5,8 @@ description = "Foundry Helpdesk backend — multi-agent workflow over AG-UI"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "agent-framework>=1.9.0",
-    "agent-framework-ag-ui>=1.0.0rc5",
+    "agent-framework>=1.13.0",
+    "agent-framework-ag-ui>=1.0.1",
     "azure-ai-projects>=2.4.0",
     "azure-identity>=1.25.3",
     "azure-search-documents>=11.7.0b2",
@@ -26,17 +26,16 @@ dependencies = [
     # Declarative agent definitions (ADR-013, ADR-015). The documents in
     # apps/backend/agents/ are Microsoft AgentSchema files and this is
     # Microsoft's own reader for that schema — its `_models.py` IS the schema.
-    # Pinned exactly because the object model is imported directly: only
-    # `AgentFactory` is public there and it builds an agent over a chat client,
-    # which is not the shape this backend needs.
+    # The object model is imported directly: only `AgentFactory` is public there
+    # and it builds an agent over a chat client, which is not the shape this
+    # backend needs.
     #
-    # NOT 1.0.1: that release requires agent-framework-core>=1.13.0, and this
-    # backend's agent-framework-ag-ui 1.0.0rc5 does not survive that core
-    # (`ImportError: cannot import name '_try_execute_function_calls'`, measured
-    # — it fails `eval.run_eval --self-test`, a required CI gate). Moving to
-    # 1.0.1 means moving agent-framework AND agent-framework-ag-ui with it; that
-    # is a framework upgrade, not a schema-reader swap, and it gets its own change.
-    "agent-framework-declarative==1.0.0rc2",
+    # Was pinned at ==1.0.0rc2 because 1.0.1 required agent-framework-core>=1.13.0
+    # and ag-ui 1.0.0rc5 did not survive that core (`ImportError: cannot import
+    # name '_try_execute_function_calls'`). That note said the move "gets its own
+    # change" — this is that change: core and ag-ui moved together, and the four
+    # offline gates plus a route-mounting boot were run against the result.
+    "agent-framework-declarative>=1.0.1",
     # The definition documents are YAML, read here rather than through a loader
     # that would also want a chat client.
     "pyyaml>=6.0,<7.0",
