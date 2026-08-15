@@ -86,10 +86,6 @@
     ],
     [
       "POST",
-      "/techdocs"
-    ],
-    [
-      "POST",
       "/helpdesk"
     ],
     [
@@ -107,6 +103,128 @@
     [
       "POST",
       "/selfwiki"
+    ],
+    [
+      "POST",
+      "/techdocs"
+    ]
+  ],
+  "self_hosted_oncall": [
+    [
+      "DELETE",
+      "/admin/role-assignments/{assignment_id}"
+    ],
+    [
+      "DELETE",
+      "/admin/users/{user_id}"
+    ],
+    [
+      "GET",
+      "/admin/role-assignments"
+    ],
+    [
+      "GET",
+      "/admin/roles"
+    ],
+    [
+      "GET",
+      "/admin/users"
+    ],
+    [
+      "GET",
+      "/docs"
+    ],
+    [
+      "GET",
+      "/docs/oauth2-redirect"
+    ],
+    [
+      "GET",
+      "/eval/foundry"
+    ],
+    [
+      "GET",
+      "/eval/runs"
+    ],
+    [
+      "GET",
+      "/healthz"
+    ],
+    [
+      "GET",
+      "/me"
+    ],
+    [
+      "GET",
+      "/oncall/health"
+    ],
+    [
+      "GET",
+      "/openapi.json"
+    ],
+    [
+      "GET",
+      "/redoc"
+    ],
+    [
+      "GET",
+      "/tickets"
+    ],
+    [
+      "HEAD",
+      "/docs"
+    ],
+    [
+      "HEAD",
+      "/docs/oauth2-redirect"
+    ],
+    [
+      "HEAD",
+      "/openapi.json"
+    ],
+    [
+      "HEAD",
+      "/redoc"
+    ],
+    [
+      "POST",
+      "/admin/role-assignments"
+    ],
+    [
+      "POST",
+      "/admin/users"
+    ],
+    [
+      "POST",
+      "/admin/users/invite"
+    ],
+    [
+      "POST",
+      "/helpdesk"
+    ],
+    [
+      "POST",
+      "/helpdesk-hosted"
+    ],
+    [
+      "POST",
+      "/oncall"
+    ],
+    [
+      "POST",
+      "/platform"
+    ],
+    [
+      "POST",
+      "/platform-hosted"
+    ],
+    [
+      "POST",
+      "/selfwiki"
+    ],
+    [
+      "POST",
+      "/techdocs"
     ]
   ],
   "shared": [
@@ -212,10 +330,6 @@
     ],
     [
       "POST",
-      "/techdocs"
-    ],
-    [
-      "POST",
       "/helpdesk"
     ],
     [
@@ -233,6 +347,10 @@
     [
       "POST",
       "/selfwiki"
+    ],
+    [
+      "POST",
+      "/techdocs"
     ],
     [
       "POST",

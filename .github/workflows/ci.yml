@@ -109,6 +109,12 @@ jobs:
       - name: Edit round-trips end to end
         run: uv run python -m tests.hitl.edit_roundtrip_test
 
+      # ADR-020: two runtimes in one backend. The route snapshot's third profile is what proves
+      # the LangGraph domain actually mounts (/oncall), and the registry test that the two
+      # registries — backend and frontend — still mirror each other with the new kind.
+      - name: Registry mirrors (five domains, two runtimes)
+        run: uv run python -m tests.registry.domain_registry_test
+
       # shared mode: the app must BOOT with auth on (no tenant is resolved at import), and each
       # request must resolve ITS OWN tenant's domain config. The first was broken and its guard
       # was red; the second was unreachable because of the first.

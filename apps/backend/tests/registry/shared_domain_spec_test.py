@@ -74,6 +74,9 @@ def main() -> int:
             "techdocs": "grounded",
             "selfwiki": "grounded",
             "platform": "tool",
+            # ADR-020: a LangGraph domain in the same registry. The topology now carries the
+            # RUNTIME as well, and is still readable with no tenant resolved.
+            "oncall": "graph",
         },
     )
 

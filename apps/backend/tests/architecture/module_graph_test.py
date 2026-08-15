@@ -45,6 +45,7 @@ MAP: dict[str, str] = {
 MODULES = (
     "tenancy", "admin", "knowledge", "helpdesk", "grounded",
     "platform_ops", "tickets", "hosted", "evaluation", "agentdefs",
+    "oncall",  # ADR-020: the LangGraph domain — a different runtime, same guarantees
     "hitl",  # ADR-019: approve/edit/reject/respond + the role gate neither framework has
 )
 

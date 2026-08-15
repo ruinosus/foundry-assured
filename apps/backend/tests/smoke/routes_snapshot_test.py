@@ -28,7 +28,7 @@ import app as _app
 
 BACKEND = pathlib.Path(_app.__file__).resolve().parent.parent
 FIXTURE = pathlib.Path(__file__).with_name("routes_snapshot.json")
-PROFILES = ("self_hosted", "shared")
+PROFILES = ("self_hosted", "self_hosted_oncall", "shared")
 
 
 def capture(profile: str) -> list[list[str]]:

@@ -73,6 +73,11 @@ DOMAIN_KINDS: dict[str, str] = {
     "techdocs": "grounded",
     "selfwiki": "grounded",
     "platform": "tool",
+    # ADR-020: a domain on a DIFFERENT runtime, mounted by the same loop. The registry
+    # dispatches by kind and each branch calls its framework's own idiom — there is no adapter
+    # making them look alike, because the frameworks move faster than such an adapter could be
+    # maintained. `oncall` is LangGraph; the four above are Agent Framework.
+    "oncall": "graph",
 }
 
 
@@ -190,6 +195,32 @@ def _mount_platform(app: FastAPI, domain_id: str) -> None:
         )
 
 
+def _mount_graph(app: FastAPI, domain_id: str) -> None:
+    """A LangGraph domain, mounted with LangGraph's own AG-UI adapter (ADR-020).
+
+    `add_langgraph_fastapi_endpoint` is the exact counterpart of the Agent Framework's
+    `add_agent_framework_fastapi_endpoint` used two functions up. Both speak AG-UI to the same
+    CopilotKit frontend; neither is wrapped to look like the other. That symmetry is the whole
+    argument of ADR-020 — the protocol is the seam, not an abstraction we maintain.
+    """
+    from ag_ui_langgraph import LangGraphAgent, add_langgraph_fastapi_endpoint
+
+    from app.modules.oncall.public import build_oncall_graph, oncall_configured
+
+    if not oncall_configured():
+        return
+
+    add_langgraph_fastapi_endpoint(
+        app=app,
+        agent=LangGraphAgent(
+            name=domain_id,
+            description="On-call triage with human-in-the-loop on escalation.",
+            graph=build_oncall_graph(),
+        ),
+        path=f"/{domain_id}",
+    )
+
+
 def mount_domains(app: FastAPI) -> None:
     """One loop over the static topology, dispatching by `kind`. Registers the live per-domain
     endpoints on the app (the hosted twins stay in the hosted module's router).
@@ -204,6 +235,8 @@ def mount_domains(app: FastAPI) -> None:
             _mount_helpdesk(app, domain_id)
         elif kind == "tool":
             _mount_platform(app, domain_id)
+        elif kind == "graph":
+            _mount_graph(app, domain_id)
 
 
 def include_routers(app) -> None:

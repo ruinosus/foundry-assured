@@ -36,6 +36,10 @@ class PlatformSettings(BaseSettings):
     mcp_enabled: bool = False
     mcp_learn_url: str = "https://learn.microsoft.com/api/mcp"
 
+    # The LangGraph on-call domain's model (ADR-020). Azure OpenAI deployment name — that
+    # runtime uses LangChain's own client, so it does not go through FoundryChatClient.
+    oncall_model: str = "gpt-5-mini"
+
     # Telemetry content capture (I-10). OFF by default and meant to stay off outside
     # debugging: ON lets prompts, messages and tool arguments reach span EVENTS (never
     # attributes), redacted. ACL-trimmed documents and approver identity are excluded

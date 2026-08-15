@@ -24,6 +24,16 @@ PROFILES = {
         "AZURE_SEARCH_ENDPOINT": "https://snapshot.invalid",
         "AZURE_SEARCH_KNOWLEDGE_BASE": "snapshot-kb",
     },
+    # ADR-020: the LangGraph domain mounts only with an Azure OpenAI endpoint, so a profile
+    # that sets one is the only way the snapshot can prove /oncall exists at all.
+    "self_hosted_oncall": {
+        "DEPLOYMENT_MODE": "self_hosted",
+        "MCP_ENABLED": "true",
+        "FOUNDRY_PROJECT_ENDPOINT": "https://snapshot.invalid/api/projects/snapshot",
+        "AZURE_SEARCH_ENDPOINT": "https://snapshot.invalid",
+        "AZURE_SEARCH_KNOWLEDGE_BASE": "snapshot-kb",
+        "AZURE_OPENAI_ENDPOINT": "https://snapshot.invalid",
+    },
     "shared": {
         "DEPLOYMENT_MODE": "shared",
         "MCP_ENABLED": "true",

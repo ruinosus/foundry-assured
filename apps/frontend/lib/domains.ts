@@ -5,7 +5,7 @@
 // sidebar nav, the generic console route (/d/[domain]), the landing role-cards, and the
 // per-domain starter prompts. Adding a domain = one entry here (+ a backend agent).
 
-export type DomainKind = "workflow" | "grounded" | "tool";
+export type DomainKind = "workflow" | "grounded" | "tool" | "graph";
 
 export interface Domain {
   /** Stable id — matches the backend agentId + the AG-UI endpoint path segment. */
@@ -76,6 +76,21 @@ export const DOMAINS: Domain[] = [
     ],
     endpoint: "/selfwiki",
     // Grounded runs live via OBO — no hosted twin needed.
+  },
+  {
+    id: "oncall",
+    icon: "🚨",
+    label: "On-call triage",
+    kind: "graph",
+    blurb:
+      "Triagem de incidente em LangGraph — o aprovador pode CORRIGIR a escalação antes de abrir, não só aceitar ou recusar.",
+    suggested: [
+      "O checkout está fora do ar para todos os usuários.",
+      "A taxa de erro do serviço de pagamentos subiu para 8%.",
+      "Um job noturno falhou, mas ninguém foi impactado.",
+    ],
+    endpoint: "/oncall",
+    // No hosted twin: LangGraph runs in this backend, not inside Foundry.
   },
   {
     id: "platform",

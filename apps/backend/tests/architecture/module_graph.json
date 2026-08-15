@@ -19,6 +19,9 @@
       "main.py",
       "registry.py"
     ],
+    "oncall": [
+      "registry.py"
+    ],
     "platform_ops": [
       "main.py",
       "registry.py"
@@ -117,6 +120,15 @@
       "modules/knowledge/internal/ingest_docbundles.py",
       "modules/knowledge/internal/secure_search.py",
       "modules/knowledge/internal/wiki_builder.py"
+    ]
+  },
+  "oncall": {
+    "shared": [
+      "modules/oncall/internal/graph.py",
+      "modules/oncall/public.py"
+    ],
+    "tickets": [
+      "modules/oncall/internal/graph.py"
     ]
   },
   "platform_ops": {

@@ -274,3 +274,27 @@ source_modules = [
 ]
 forbidden_modules = ["app.modules.hitl.internal"]
 
+# ADR-020: the LangGraph domain. Its framework's surface (create_agent, HumanInTheLoopMiddleware,
+# the checkpointer) stays inside this module's internal/ — which is exactly the isolation a ports
+# layer promised and did not need to provide.
+[[tool.importlinter.contracts]]
+name = "oncall internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.modules.hitl",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.oncall.internal"]
