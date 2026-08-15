@@ -93,8 +93,8 @@ The cloud workflows authenticate to Azure with **OIDC** (no stored credentials).
 1. **Create an Entra app + federated credential** for the repo:
    ```bash
    az ad app create --display-name foundry-assured-ci
-   # note the appId; create a service principal and grant it Contributor + the
-   # Foundry/Search data-plane roles on rg-<env>
+   # note the appId; create a service principal and grant it Contributor on rg-<env>.
+   # The DATA-plane roles are NOT granted by hand — the Bicep declares them (see step 4).
    az ad app federated-credential create --id <appId> --parameters '{
      "name": "github-main",
      "issuer": "https://token.actions.githubusercontent.com",
@@ -116,7 +116,19 @@ The cloud workflows authenticate to Azure with **OIDC** (no stored credentials).
      - For **`release.yml`** (release-please GitHub App): `RELEASE_APP_ID`.
    - **Secrets:** `ENTRA_API_CLIENT_SECRET`; `COCKPIT_TEST_PASSWORD` (test-identity password
      for the security gates); `RELEASE_APP_PRIVATE_KEY` (the release GitHub App key).
+   The variables above are **derived from the azd environment** — do not type them by hand.
+   `./scripts/sync-gh-variables.sh` reports drift and `--apply` writes them; they silently
+   drifted through a resource rename once and every scheduled cloud run failed for eight weeks.
 3. **Environments → `production`:** add required reviewers (gates `deploy.yml` / `provision-kb.yml`).
+4. **Grant the CI identity its data-plane roles — through the Bicep, never by hand:**
+   ```bash
+   azd env set AZURE_CI_PRINCIPAL_ID "$(az ad sp show --id <appId> --query id -o tsv)"
+   azd provision      # creates Azure AI User + Search Service/Index Contributor + Storage Blob Data Contributor
+   ```
+   `Contributor` is control-plane only; without this the cloud workflows reach Azure and then 403
+   on the Foundry and Search data planes. Assigning the roles with `az role assignment create`
+   instead would break the next provision — the template names assignments
+   `guid(scope, principal, role)`, and the CLI mints a random name for the same triple.
 
 > **Separate from CI:** the `foundry-assured-ci` app above is the *deploy* identity. The
 > **runtime** app also needs **app-only Microsoft Graph permissions** for the RBAC / admin

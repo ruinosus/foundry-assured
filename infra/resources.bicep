@@ -28,6 +28,9 @@ param appUsersGroupId string = ''
 param principalType string = 'User'
 var effectivePrincipalType = empty(principalType) ? 'User' : principalType
 
+@description('CI/CD deploy identity (the OIDC service principal), granted the SAME data-plane roles as principalId. It is a SEPARATE parameter because principalId carries whoever ran the last provision and that is a person in practice; the cloud workflows then 403 on the data plane. Always ServicePrincipal. Empty skips.')
+param ciPrincipalId string = ''
+
 @description('Chat model deployment name (must match the app FOUNDRY_MODEL).')
 param modelDeploymentName string = 'gpt-5-mini'
 
@@ -402,6 +405,61 @@ resource userAiUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAzureAiUser)
     principalId: principalId
     principalType: effectivePrincipalType
+  }
+}
+
+// CI deploy identity -> the SAME four data-plane roles the caller gets above.
+//
+// Why a second set instead of just passing the CI principal as `principalId`: that parameter holds
+// whoever ran the last provision, and provisioning is done by a person. The cloud workflows
+// (eval-cloud, provision-kb, agent-evals) authenticate as the OIDC service principal, which has
+// Contributor at the subscription — a CONTROL-plane role that grants nothing on the Foundry or
+// Search data planes. Measured: eval-cloud died on
+// `HttpResponseError: Operation returned an invalid status 'Forbidden'` with the SP holding only
+// Contributor + User Access Administrator, while the Search service's data-plane roles belonged to
+// a User principal.
+//
+// Assigning these by hand is worse than leaving them out: `az role assignment create` mints a random
+// assignment name, while these names are `guid(scope, principal, role)`. A later provision would try
+// to create the same triple under its deterministic name and fail with RoleAssignmentExists — so the
+// manual shortcut would break the next `azd up` rather than merely drift from it.
+resource ciSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(ciPrincipalId)) {
+  name: guid(search.id, ciPrincipalId, roleSearchServiceContributor)
+  scope: search
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchServiceContributor)
+    principalId: ciPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource ciSearchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(ciPrincipalId)) {
+  name: guid(search.id, ciPrincipalId, roleSearchIndexDataContributor)
+  scope: search
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleSearchIndexDataContributor)
+    principalId: ciPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource ciStorageContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(ciPrincipalId)) {
+  name: guid(storage.id, ciPrincipalId, roleStorageBlobDataContributor)
+  scope: storage
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageBlobDataContributor)
+    principalId: ciPrincipalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
+resource ciAiUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(ciPrincipalId)) {
+  name: guid(account.id, ciPrincipalId, roleAzureAiUser)
+  scope: account
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleAzureAiUser)
+    principalId: ciPrincipalId
+    principalType: 'ServicePrincipal'
   }
 }
 
