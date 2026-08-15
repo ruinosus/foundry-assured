@@ -51,6 +51,13 @@ jobs:
       - name: Prompt contract suite (composed AgentSchema definitions)
         run: uv run python -m eval.prompt_contract_test
 
+      # Telemetry landed BEFORE the module refactor (spec Phase 5.5a) so the moves are not
+      # made blind — a route snapshot cannot see a latency or cost regression. The risk of
+      # adding it is that it stops being free, so both defaults are asserted: no exporter
+      # configured → no-op, and content capture off unless explicitly switched on (I-10).
+      - name: Telemetry defaults (off by default, content capture opt-in)
+        run: uv run python -m tests.shared.telemetry_test
+
       # Route-surface snapshot — the modular-monolith refactor's safety net (ADR-017).
       # Boots the app under two fixed deployment profiles, each in its own interpreter,
       # and compares method+path against a recorded fixture. Catches the failure mode a

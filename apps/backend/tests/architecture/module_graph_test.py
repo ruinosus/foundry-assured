@@ -63,7 +63,15 @@ MAP: dict[str, str] = {
     "api/health.py": "COMPOSITION",
     "api/__init__.py": "COMPOSITION",
 }
-PREFIXES = (("knowledge/", "knowledge"), ("workflow/", "helpdesk"))
+PREFIXES = (
+    ("shared/", "shared"),  # incl. shared/telemetry/* — a package whose __init__ has real logic
+    ("knowledge/", "knowledge"),
+    ("workflow/", "helpdesk"),
+)
+
+# `__init__.py` files that are pure package markers carry no imports and are not worth a MAP
+# entry. One that carries logic IS worth one, so only a marker may be skipped: anything with
+# an import statement must be mapped, or the graph would quietly miss its edges.
 
 
 def module_of(relative: str) -> str | None:
@@ -84,7 +92,10 @@ def build_graph() -> tuple[dict[str, dict[str, list[str]]], list[str]]:
         relative = str(path.relative_to(APP))
         source = module_of(relative)
         if source is None:
-            if path.name != "__init__.py":  # empty package markers carry no imports
+            # A package marker may be skipped; an __init__ that imports anything may not, or
+            # its edges would vanish from the graph without anyone noticing.
+            marker = path.name == "__init__.py" and "import " not in path.read_text()
+            if not marker:
                 unmapped.append(relative)
             continue
 

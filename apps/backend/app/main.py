@@ -23,6 +23,11 @@ from app.domains import mount_domains
 from app.services.hosted import aclose as hosted_aclose
 from app.shared.auth import azure_scheme
 from app.shared.settings import settings
+from app.shared.telemetry import setup_telemetry
+
+# Telemetry first, so the rest of boot happens inside it. Default is a no-op: with no exporter
+# configured the app behaves exactly as it did (I-1). See app/shared/telemetry.
+setup_telemetry()
 
 # Wire tenancy into the auth flow (ADR-017). This used to be an import-time side effect of
 # app/core/auth.py; making it an explicit call is what lets the shared kernel stop importing a

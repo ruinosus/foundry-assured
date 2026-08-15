@@ -36,6 +36,12 @@ class PlatformSettings(BaseSettings):
     mcp_enabled: bool = False
     mcp_learn_url: str = "https://learn.microsoft.com/api/mcp"
 
+    # Telemetry content capture (I-10). OFF by default and meant to stay off outside
+    # debugging: ON lets prompts, messages and tool arguments reach span EVENTS (never
+    # attributes), redacted. ACL-trimmed documents and approver identity are excluded
+    # regardless. See app/shared/telemetry/content_policy.py.
+    telemetry_capture_content: bool = False
+
     # Tenants permitted to self-onboard (CSV of tids) — controlled rollout. WE control this.
     onboarding_allowed_tids: str = ""
 
