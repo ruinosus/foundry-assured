@@ -1,5 +1,6 @@
 # ADR-019 — The Agent Framework's approval is a yes/no; LangChain's is a conversation
 
+- **Superseded by:** [ADR-020](./ADR-020-canonical-frameworks-modular-organization.md) — the decision was framed as a runtime choice; it is not. The HITL comparison table remains accurate.
 - **Status:** **Accepted — adopt `edit`.** Superseded its own "measure first" stance within hours, by the escape hatch it wrote (see Decision)
 - **Date:** 2026-08-15
 - **Amends:** [ADR-018](./ADR-018-no-ahp-for-now.md) — its re-evaluation trigger fired

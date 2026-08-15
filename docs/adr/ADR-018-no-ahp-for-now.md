@@ -1,5 +1,6 @@
 # ADR-018 — No orchestration abstraction, and not AHP either — the registry is already the thin shell
 
+- **Superseded by:** [ADR-020](./ADR-020-canonical-frameworks-modular-organization.md) — the decision was framed as a runtime choice; it is not. The AHP maturity data and the anti-goals table remain accurate.
 - **Status:** Accepted
 - **Date:** 2026-08-15
 - **Context:** [`apps/backend/app/domains.py`](../../apps/backend/app/domains.py),
