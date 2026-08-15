@@ -26,12 +26,12 @@ def main() -> int:
             failures.append(name)
 
     import app.modules.grounded.internal.concierge as _con
-    import app.modules.grounded.internal.cockpit as _cok
+    import app.modules.grounded.internal.techdocs as _cok
     import app.modules.grounded.internal.selfwiki as _sw
     import app.modules.platform_ops.internal.platform as _plat
 
     from app.modules.grounded.internal.concierge import _knowledge_configured
-    from app.modules.grounded.internal.cockpit import cockpit_configured
+    from app.modules.grounded.internal.techdocs import techdocs_configured
     from app.modules.grounded.internal.selfwiki import selfwiki_configured
     from app.modules.platform_ops.internal.platform import platform_configured
 
@@ -54,7 +54,7 @@ def main() -> int:
         for m in _mods:
             m.tenant_config = _boom
         check("shared: _knowledge_configured True", _knowledge_configured() is True)
-        check("shared: cockpit_configured True", cockpit_configured() is True)
+        check("shared: techdocs_configured True", techdocs_configured() is True)
         check("shared: selfwiki_configured True", selfwiki_configured() is True)
         check("shared: platform_configured True when mcp on", platform_configured() is True)
 

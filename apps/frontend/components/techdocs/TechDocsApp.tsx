@@ -1,8 +1,8 @@
 "use client";
 
-// Cockpit expert chat — a second domain alongside the helpdesk. Grounded Q&A over the
-// Cockpit knowledge base (backend /cockpit, agentId "cockpit"). Same Entra sign-in +
-// token forwarding as the concierge; no Live/Hosted toggle, steps, or HITL (the Cockpit
+// TechDocs expert chat — a second domain alongside the helpdesk. Grounded Q&A over the
+// TechDocs knowledge base (backend /techdocs, agentId "techdocs"). Same Entra sign-in +
+// token forwarding as the concierge; no Live/Hosted toggle, steps, or HITL (the TechDocs
 // agent is pure reference retrieval).
 
 import { CopilotChat, CopilotKitProvider } from "@copilotkit/react-core/v2";
@@ -29,12 +29,12 @@ function Chat({ authorization }: { authorization?: string }) {
       >
         <div style={{ padding: "12px 4px" }}>
           <span className="muted" style={{ fontSize: 12 }}>
-            Cockpit expert · grounded in the Cockpit platform knowledge base (cites the
+            TechDocs expert · grounded in the TechDocs platform knowledge base (cites the
             component + doc)
           </span>
         </div>
         <div style={{ flex: 1, minHeight: 0 }} className="copilotkit-chat-host">
-          <CopilotChat agentId="cockpit" />
+          <CopilotChat agentId="techdocs" />
         </div>
       </main>
     </CopilotKitProvider>
@@ -77,7 +77,7 @@ function AuthedChat() {
   return <Chat authorization={`Bearer ${token}`} />;
 }
 
-export default function CockpitApp() {
+export default function TechDocsApp() {
   if (!authConfigured) return <Chat />;
   return <AuthedChat />;
 }

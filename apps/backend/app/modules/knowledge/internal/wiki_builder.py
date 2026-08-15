@@ -29,8 +29,8 @@ by the validation above.
 D1: one component. Run:
     cd apps/backend
     uv run python -m app.modules.knowledge.internal.wiki_builder \
-        --repo /path/to/cockpit/cockpit-openai-loadbalancer \
-        --component cockpit-openai-loadbalancer --version v1.1.0 --out /tmp/wiki-out
+        --repo /path/to/techdocs/techdocs-openai-loadbalancer \
+        --component techdocs-openai-loadbalancer --version v1.1.0 --out /tmp/wiki-out
 """
 
 from __future__ import annotations

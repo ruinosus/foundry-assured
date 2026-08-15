@@ -24,11 +24,11 @@ correct fail-closed behavior, never a leak.
 
 The native request shape is COPIED from the proven probe
 `apps/backend/eval/step0_searchindex_filter_probe.py` (RULE #1 — captured fact, not invented). The
-`docKey` → blob_url decode was VERIFIED LIVE against 38 real `cockpit-si-kb` docKeys (see `_decode_dockey`
+`docKey` → blob_url decode was VERIFIED LIVE against 38 real `techdocs-si-kb` docKeys (see `_decode_dockey`
 and `eval/dockey_decode_test.py`) — the probe's naïve `split("_")[1]` decode fell back to raw base64 for
 ~half the keys; the current decode strips the prefix/`_pages_` suffix by regex and uses standard base64. The
 per-citation `snippet` is read from `references[].sourceData.snippet`, populated by
-`includeReferenceSourceData=true` on the ksp — VERIFIED LIVE against `cockpit-si-kb` (every reference came
+`includeReferenceSourceData=true` on the ksp — VERIFIED LIVE against `techdocs-si-kb` (every reference came
 back with a non-empty snippet, ACL trim intact; see `_native_retrieve`, `_sourcedata_snippet`, and
 `eval/native_snippet_test.py`). This REPLACES the old `references[].id` ↔ `response`-chunk `ref_id` join,
 which never fired on the `answerSynthesis` KB (there `response` is the prose answer, not a chunk array).
@@ -128,7 +128,7 @@ async def _native_retrieve(
     url = f"{search}/knowledgebases/{kb}/retrieve?api-version={_KB_API}"
     # includeReferenceSourceData=true → each references[] entry carries its own sourceData
     # ({uid, blob_url, snippet}) populated from the KS's source_data_fields. VERIFIED LIVE against
-    # `cockpit-si-kb` (eval/native_snippet_test.py fixture): 39/39 (User A) and 37/37 (User B) references
+    # `techdocs-si-kb` (eval/native_snippet_test.py fixture): 39/39 (User A) and 37/37 (User B) references
     # came back with a non-empty `snippet`, and the per-user ACL trim held (A reaches the confidential
     # doc, B does not). This is the single-call source of the per-citation snippet — the old
     # response[].ref_id join never fired because this KB runs `answerSynthesis`, so `response` is the
@@ -175,7 +175,7 @@ _BLOB_URL_IN_TEXT = re.compile(r"https?://\S+?\.md")
 
 
 def _decode_dockey(dockey: str) -> str:
-    """searchIndex `docKey` → the blob URL. VERIFIED LIVE against 38 real `cockpit-si-kb` docKeys
+    """searchIndex `docKey` → the blob URL. VERIFIED LIVE against 38 real `techdocs-si-kb` docKeys
     (eval._dockey_investigate, 2026-07): the format is
 
         <12-hex>_<STANDARD-base64(blob_url + trailing byte)>_pages_<M>
@@ -214,7 +214,7 @@ def _sourcedata_snippet(ref: dict) -> str:
     With `includeReferenceSourceData=true` on the ksp (see `_native_retrieve`), every reference carries
     `sourceData = {uid, blob_url, snippet}` populated from the KS's `source_data_fields`. `snippet` is the
     verbatim grounding text for that citation — exactly what the UI shows on click. Verified live against
-    `cockpit-si-kb`: 39/39 (User A) and 37/37 (User B) references returned a non-empty `snippet`.
+    `techdocs-si-kb`: 39/39 (User A) and 37/37 (User B) references returned a non-empty `snippet`.
 
     Fallback to `content` covers a KS whose source_data_fields expose the chunk under `content` instead of
     `snippet` (the extractedData chunk key); empty string if neither is present (never a wrong snippet)."""

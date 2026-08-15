@@ -24,7 +24,7 @@ def main() -> int:
     check("name override applied", a.name == "PlatformConcierge")
     check("description override applied", a.description == "desc")
     check("id is the agent_id", a.id == "platform")
-    check("default name falls back to id", PerRequestAgent("cockpit", lambda: None).name == "cockpit")
+    check("default name falls back to id", PerRequestAgent("techdocs", lambda: None).name == "techdocs")
     check("isinstance SupportsAgentRun", isinstance(a, SupportsAgentRun))
 
     # the platform module exposes a proxy instance built from the generic class

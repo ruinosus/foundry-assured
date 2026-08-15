@@ -8,7 +8,7 @@ unauthorized component is a leak and fails the build (assurance.yaml
 security.access_control_violations_max, default 0).
 
 Test creds are secrets (gitignored .env / CI), never committed:
-  ENTRA_TENANT_ID, COCKPIT_TEST_USER_A, COCKPIT_TEST_USER_B, COCKPIT_TEST_PASSWORD,
+  ENTRA_TENANT_ID, TECHDOCS_TEST_USER_A, TECHDOCS_TEST_USER_B, TECHDOCS_TEST_PASSWORD,
   ACL_* groups, AZURE_SEARCH_ENDPOINT, ACL_CLASSIFICATION
 
   uv run python -m eval.access_control_test
@@ -35,7 +35,7 @@ from app.modules.tenancy.internal.tenant import tenant_config
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _ROPC_CLIENT = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
 _ASSURANCE = Path(__file__).resolve().parent / "assurance.yaml"
-_PROBE = "detalhes da arquitetura, métricas e pricing do cockpit"
+_PROBE = "detalhes da arquitetura, métricas e pricing do techdocs"
 
 
 def _violations_ceiling() -> int:
@@ -78,14 +78,14 @@ async def _kept_components(provider, token: str) -> tuple[set[str], set[str]]:
 
 
 async def _run() -> int:
-    password = os.environ.get("COCKPIT_TEST_PASSWORD", "")
-    upn_b = os.environ.get("COCKPIT_TEST_USER_B", "")
+    password = os.environ.get("TECHDOCS_TEST_PASSWORD", "")
+    upn_b = os.environ.get("TECHDOCS_TEST_USER_B", "")
     if not (password and upn_b):
         print("⏭️  skipping access-control gate: test creds not set.")
         return 0
 
     provider = AzureAISearchContextProvider(
-        endpoint=tenant_config().azure_search_endpoint, knowledge_base_name=tenant_config().cockpit_search_knowledge_base,
+        endpoint=tenant_config().azure_search_endpoint, knowledge_base_name=tenant_config().techdocs_search_knowledge_base,
         credential=DefaultAzureCredential(), mode="agentic", retrieval_reasoning_effort="medium",
     )
     await provider._ensure_knowledge_base()
@@ -104,7 +104,7 @@ async def _run() -> int:
     # Positive side: a cleared user (A) must NOT be over-restricted — they should be
     # entitled to strictly more than B (else the trim is globally clamping, which the
     # leak-only check wouldn't catch). Skips quietly if User A isn't configured.
-    upn_a = os.environ.get("COCKPIT_TEST_USER_A", "")
+    upn_a = os.environ.get("TECHDOCS_TEST_USER_A", "")
     if upn_a:
         kept_a, auth_a = await _kept_components(provider, _ropc_token(upn_a, password))
         a_leak = sorted(kept_a - auth_a)

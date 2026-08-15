@@ -1,18 +1,18 @@
-"""Ingest the Cockpit doc-bundle corpus into its own Foundry IQ knowledge base.
+"""Ingest the TechDocs doc-bundle corpus into its own Foundry IQ knowledge base.
 
 A second domain alongside the helpdesk: the same Foundry IQ pattern, pointed at the
-**Cockpit** platform docs (the `docbundles/` from the aap-kb project — ~250 markdown
+**TechDocs** platform docs (a doc-bundle producer — ~250 markdown
 pages across 21 components + the platform release). Builds a separate blob container,
-knowledge source and knowledge base (`cockpit-kb`) so the Cockpit expert agent
-retrieves only Cockpit content.
+knowledge source and knowledge base (`techdocs-kb`) so the TechDocs expert agent
+retrieves only TechDocs content.
 
-The corpus is INTERNAL (Avanade Cockpit platform docs) — this reads it from an
-external path (`COCKPIT_DOCBUNDLES`) and ships it only to the cloud KB; the content
+The corpus is INTERNAL (Avanade TechDocs platform docs) — this reads it from an
+external path (`TECHDOCS_DOCBUNDLES`) and ships it only to the cloud KB; the content
 is never copied into this (public) repo.
 
 Run (after the helpdesk infra exists):
     cd apps/backend
-    COCKPIT_DOCBUNDLES=/path/to/aap-kb/apps/agent/docbundles \
+    TECHDOCS_DOCBUNDLES=/path/to/your/docbundles \
       uv run python -m app.modules.knowledge.internal.ingest_docbundles
 
 SDK surface mirrors app/knowledge/ingest.py (azure-search-documents 11.7.0b2).
@@ -56,11 +56,11 @@ from app.modules.knowledge.internal.ingest import (
 )
 
 # The mechanism is domain-generic: the SAME pipeline serves any doc-bundle corpus by
-# pointing it at a different knowledge source / container / KB. Defaults are the Cockpit
+# pointing it at a different knowledge source / container / KB. Defaults are the TechDocs
 # domain; the selfwiki domain (this repo's own deep-wiki) reuses this module verbatim by
-# overriding KB_KNOWLEDGE_SOURCE + COCKPIT_STORAGE_CONTAINER + COCKPIT_SEARCH_KNOWLEDGE_BASE.
-KNOWLEDGE_SOURCE_NAME = os.environ.get("KB_KNOWLEDGE_SOURCE", "cockpit-docbundles-ks")
-DOMAIN_LABEL = os.environ.get("KB_DOMAIN_LABEL", "Avanade Cockpit platform")
+# overriding KB_KNOWLEDGE_SOURCE + TECHDOCS_STORAGE_CONTAINER + TECHDOCS_SEARCH_KNOWLEDGE_BASE.
+KNOWLEDGE_SOURCE_NAME = os.environ.get("KB_KNOWLEDGE_SOURCE", "techdocs-docbundles-ks")
+DOMAIN_LABEL = os.environ.get("KB_DOMAIN_LABEL", "Avanade TechDocs platform")
 # Foundry IQ derives these from the knowledge source name.
 INDEXER_NAME = f"{KNOWLEDGE_SOURCE_NAME}-indexer"
 INDEX_NAME = f"{KNOWLEDGE_SOURCE_NAME}-index"
@@ -177,7 +177,7 @@ def collect_pages(docbundles: Path) -> tuple[list[tuple[str, bytes]], dict[str, 
 
     Each page's generic H1 ("Visão Geral do Repositório") is replaced with a
     component+version-qualified one so the KB cites a meaningful source, e.g.
-    "cockpit-portal-api v2.1.1 — Visão Geral do Repositório".
+    "techdocs-portal-api v2.1.1 — Visão Geral do Repositório".
     """
     from app.modules.knowledge.internal.acl_setup import _component
 
@@ -200,7 +200,7 @@ def collect_pages(docbundles: Path) -> tuple[list[tuple[str, bytes]], dict[str, 
         if meta.get("groups") is not None:
             component_groups[_component(f"{key}__x.md")] = meta["groups"]
         # Citation label: "component version" for elements; the manifest title for
-        # the platform bundle (e.g. "Plataforma Cockpit 2.1.0").
+        # the platform bundle (e.g. "Plataforma TechDocs 2.1.0").
         label = f"{component} {version}" if component else (meta.get("title") or key)
         bundle_dir = manifest_path.parent
         for page in meta.get("pages", []):
@@ -229,16 +229,16 @@ def upload(credential, container: str, items: list[tuple[str, bytes]]) -> int:
         print(f"  created container '{container}'")
     for name, data in items:
         client.upload_blob(name=name, data=data, overwrite=True)
-    print(f"Uploaded {len(items)} Cockpit pages to {account}/{container}.")
+    print(f"Uploaded {len(items)} TechDocs pages to {account}/{container}.")
     return len(items)
 
 
 def create_knowledge_source(
     index_client: SearchIndexClient, *, ks_name: str | None = None, container: str | None = None, label: str | None = None
 ) -> None:
-    # Defaults keep the cockpit path byte-identical; overrides steer a second domain (selfwiki).
+    # Defaults keep the techdocs path byte-identical; overrides steer a second domain (selfwiki).
     ks = ks_name or KNOWLEDGE_SOURCE_NAME
-    cont = container or tenant_config().cockpit_storage_container
+    cont = container or tenant_config().techdocs_storage_container
     lbl = label or DOMAIN_LABEL
     # ACL-SAFE: if the KS already exists, DO NOT re-create it. create_or_update_knowledge_source
     # regenerates the index schema WITHOUT the out-of-band `groups` permissionFilter field (added by
@@ -279,7 +279,7 @@ def create_knowledge_source(
 
 
 def create_knowledge_base(index_client: SearchIndexClient) -> None:
-    kb_name = tenant_config().cockpit_search_knowledge_base
+    kb_name = tenant_config().techdocs_search_knowledge_base
     knowledge_base = KnowledgeBase(
         name=kb_name,
         description=f"{DOMAIN_LABEL} knowledge base for its grounded expert agent.",
@@ -312,11 +312,11 @@ def create_knowledge_base(index_client: SearchIndexClient) -> None:
 
 
 # ---------------------------------------------------------------------------
-# Task 2b — searchIndex-backed cockpit KB (over the EXISTING ACL-stamped index).
+# Task 2b — searchIndex-backed techdocs KB (over the EXISTING ACL-stamped index).
 #
 # NON-DESTRUCTIVE, REVERSIBLE cutover: this creates a SEPARATE knowledge source
-# (kind: searchIndex) + KB *alongside* the legacy azureBlob `cockpit-kb`, both over
-# the SAME already-built + ACL-stamped `cockpit-docbundles-ks-index`. Nothing about
+# (kind: searchIndex) + KB *alongside* the legacy azureBlob `techdocs-kb`, both over
+# the SAME already-built + ACL-stamped `techdocs-docbundles-ks-index`. Nothing about
 # the blob KB/source or the index is deleted or rebuilt.
 #
 # Why: STEP 0.5 proved (empirically) the native Foundry IQ retrieve honors the per-user
@@ -324,8 +324,8 @@ def create_knowledge_base(index_client: SearchIndexClient) -> None:
 # kind: searchIndex — NOT azureBlob (the #44454 gap). SDK model calls below mirror the
 # proven ones in eval/step0_searchindex_filter_probe.py (RULE #1 — not invented).
 #
-# Cutover = point cfg.cockpit_search_knowledge_base (env COCKPIT_SEARCH_KNOWLEDGE_BASE)
-# at cfg.cockpit_searchindex_knowledge_base. Rollback = point it back. The index the
+# Cutover = point cfg.techdocs_search_knowledge_base (env TECHDOCS_SEARCH_KNOWLEDGE_BASE)
+# at cfg.techdocs_searchindex_knowledge_base. Rollback = point it back. The index the
 # searchIndex KB reads is the SAME one the blob indexer keeps fresh, so ongoing ingest
 # continues to feed both KBs with no extra pipeline.
 # ---------------------------------------------------------------------------
@@ -334,13 +334,13 @@ def create_knowledge_base(index_client: SearchIndexClient) -> None:
 def create_searchindex_knowledge_source(index_client: SearchIndexClient) -> None:
     """Create/update the searchIndex knowledge source over the EXISTING ACL index.
 
-    Reads the SAME `cockpit-docbundles-ks-index` the blob indexer already builds +
+    Reads the SAME `techdocs-docbundles-ks-index` the blob indexer already builds +
     ACL-stamps — the index is neither rebuilt nor re-stamped here. Mirrors the probe's
     SearchIndexKnowledgeSource / SearchIndexKnowledgeSourceParameters calls.
     """
     cfg = tenant_config()
-    ks_name = cfg.cockpit_searchindex_knowledge_source
-    index_name = cfg.cockpit_search_index
+    ks_name = cfg.techdocs_searchindex_knowledge_source
+    index_name = cfg.techdocs_search_index
     knowledge_source = SearchIndexKnowledgeSource(
         name=ks_name,
         description=(
@@ -367,20 +367,20 @@ def create_searchindex_knowledge_source(index_client: SearchIndexClient) -> None
 
 
 def create_searchindex_knowledge_base(index_client: SearchIndexClient) -> None:
-    """Create/update the searchIndex-backed cockpit KB alongside the legacy blob KB.
+    """Create/update the searchIndex-backed techdocs KB alongside the legacy blob KB.
 
     Same models + answer instructions as the blob KB, differing only in its (searchIndex)
-    knowledge source. Not the ACTIVE KB until cfg.cockpit_search_knowledge_base is flipped
+    knowledge source. Not the ACTIVE KB until cfg.techdocs_search_knowledge_base is flipped
     to point here — so provisioning it is safe and does not disturb the running domain.
     """
     cfg = tenant_config()
-    kb_name = cfg.cockpit_searchindex_knowledge_base
-    ks_name = cfg.cockpit_searchindex_knowledge_source
+    kb_name = cfg.techdocs_searchindex_knowledge_base
+    ks_name = cfg.techdocs_searchindex_knowledge_source
     knowledge_base = KnowledgeBase(
         name=kb_name,
         description=(
             f"{DOMAIN_LABEL} knowledge base (searchIndex source) — native agentic "
-            "retrieve + per-user ACL header. Cutover twin of the legacy blob cockpit-kb."
+            "retrieve + per-user ACL header. Cutover twin of the legacy blob techdocs-kb."
         ),
         knowledge_sources=[KnowledgeSourceReference(name=ks_name)],
         models=[
@@ -428,13 +428,13 @@ def provision_searchindex_kb() -> None:
         connection_timeout=20,
         read_timeout=CALL_TIMEOUT_S,
     )
-    print("== searchIndex cockpit KB (over EXISTING ACL index — non-destructive) ==")
+    print("== searchIndex techdocs KB (over EXISTING ACL index — non-destructive) ==")
     create_searchindex_knowledge_source(index_client)
     create_searchindex_knowledge_base(index_client)
     print(
-        "\nDone. The searchIndex KB is provisioned ALONGSIDE the legacy blob cockpit-kb.\n"
-        "Cut over by pointing COCKPIT_SEARCH_KNOWLEDGE_BASE at "
-        f"'{tenant_config().cockpit_searchindex_knowledge_base}' (reversible — flip back to roll back)."
+        "\nDone. The searchIndex KB is provisioned ALONGSIDE the legacy blob techdocs-kb.\n"
+        "Cut over by pointing TECHDOCS_SEARCH_KNOWLEDGE_BASE at "
+        f"'{tenant_config().techdocs_searchindex_knowledge_base}' (reversible — flip back to roll back)."
     )
 
 
@@ -442,12 +442,12 @@ def provision_searchindex_kb() -> None:
 # selfwiki — searchIndex-backed KB over the EXISTING selfwiki index.
 #
 # selfwiki is the dogfood domain: its corpus (this repo's own deep-wiki) is ingested by
-# REUSING this module's blob pipeline verbatim via env overrides (COCKPIT_STORAGE_CONTAINER=
-# selfwiki-corpus, KB_KNOWLEDGE_SOURCE=selfwiki-docbundles-ks, COCKPIT_SEARCH_KNOWLEDGE_BASE=
+# REUSING this module's blob pipeline verbatim via env overrides (TECHDOCS_STORAGE_CONTAINER=
+# selfwiki-corpus, KB_KNOWLEDGE_SOURCE=selfwiki-docbundles-ks, TECHDOCS_SEARCH_KNOWLEDGE_BASE=
 # selfwiki-kb — see docs/CASE-STUDY-SELFWIKI-DOGFOOD.md). That left selfwiki-kb on an azureBlob
 # source, which the native retrieve (hardcoded kind:searchIndex) can't serve.
 #
-# This mirrors the cockpit Task 2b twin (create_searchindex_knowledge_source/_base above) for
+# This mirrors the techdocs Task 2b twin (create_searchindex_knowledge_source/_base above) for
 # selfwiki: a SEPARATE searchIndex KS + KB (selfwiki-si-kb over selfwiki-docbundles-si-ks) over
 # the SAME already-built selfwiki-docbundles-ks-index. selfwiki has NO per-user ACL, so this is a
 # functional/recall unification (get it onto the native path), not a security change. NON-
@@ -581,12 +581,12 @@ def _prune_stale_blobs(credential, container: str, *, keep: set[str]) -> None:
 
 def ingest_selfwiki() -> None:
     """Full CONTENT ingest for the **selfwiki** domain (this repo's own deep-wiki), steered to the
-    selfwiki names — no COCKPIT_* env overrides, no risk of touching the cockpit searchIndex twin.
+    selfwiki names — no TECHDOCS_* env overrides, no risk of touching the techdocs searchIndex twin.
 
         uv run python -m app.modules.knowledge.internal.ingest_docbundles --selfwiki
 
     selfwiki is a PRIVATE single-audience KB: readable by everyone with app access = the app-users
-    group (APP_USERS_GROUP_ID). Bundles default to this repo's docs/wiki (override COCKPIT_DOCBUNDLES).
+    group (APP_USERS_GROUP_ID). Bundles default to this repo's docs/wiki (override TECHDOCS_DOCBUNDLES).
     Uploads to selfwiki-corpus, ensures the blob KS that drives selfwiki-docbundles-ks-index (created
     once; skipped if it exists — ACL-safe), (re)provisions the ACTIVE searchIndex KB (selfwiki-si-kb),
     prunes prior-version blobs + reconciles the index, runs the indexer, then STAMPS every doc with the
@@ -596,7 +596,7 @@ def ingest_selfwiki() -> None:
     cfg = tenant_config()
     _require("AZURE_SEARCH_ENDPOINT", cfg.azure_search_endpoint)
     default_bundles = _repo_root() / "docs" / "wiki"
-    docbundles = Path(os.environ.get("COCKPIT_DOCBUNDLES", str(default_bundles))).expanduser()
+    docbundles = Path(os.environ.get("TECHDOCS_DOCBUNDLES", str(default_bundles))).expanduser()
     if not docbundles.is_dir():
         sys.exit(f"selfwiki docbundles dir not found: {docbundles}")
     # The blob KS name derives the index + indexer; keep it in lock-step with cfg.selfwiki_search_index
@@ -678,12 +678,12 @@ def main() -> None:
         return
     _setup_logging()
     _require("AZURE_SEARCH_ENDPOINT", tenant_config().azure_search_endpoint)
-    docbundles_path = os.environ.get("COCKPIT_DOCBUNDLES", tenant_config().cockpit_docbundles_path)
+    docbundles_path = os.environ.get("TECHDOCS_DOCBUNDLES", tenant_config().techdocs_docbundles_path)
     if not docbundles_path:
-        sys.exit("Set COCKPIT_DOCBUNDLES to the aap-kb docbundles/ directory.")
+        sys.exit("Set TECHDOCS_DOCBUNDLES to the docbundles/ directory.")
     docbundles = Path(docbundles_path).expanduser()
     if not docbundles.is_dir():
-        sys.exit(f"COCKPIT_DOCBUNDLES is not a directory: {docbundles}")
+        sys.exit(f"TECHDOCS_DOCBUNDLES is not a directory: {docbundles}")
 
     api_version = os.environ.get("SEARCH_API_VERSION", "2026-05-01-preview")
     credential = DefaultAzureCredential()
@@ -696,19 +696,19 @@ def main() -> None:
         read_timeout=CALL_TIMEOUT_S,
     )
 
-    print("== Step 1/3: collect + upload Cockpit corpus ==")
+    print("== Step 1/3: collect + upload TechDocs corpus ==")
     items, component_groups = collect_pages(docbundles)
     if not items:
         sys.exit(f"No pages found under {docbundles}")
     print(f"Collected {len(items)} pages from {docbundles}")
-    upload(credential, tenant_config().cockpit_storage_container, items)
+    upload(credential, tenant_config().techdocs_storage_container, items)
     print("== Step 2/3: create knowledge source ==")
     create_knowledge_source(index_client)
     print("== Step 3/3: create knowledge base ==")
     create_knowledge_base(index_client)
 
     # Task 2b: provision the searchIndex-backed twin KB over the SAME index alongside the
-    # blob KB (non-destructive). It's not the active KB until COCKPIT_SEARCH_KNOWLEDGE_BASE
+    # blob KB (non-destructive). It's not the active KB until TECHDOCS_SEARCH_KNOWLEDGE_BASE
     # is flipped to it, so creating it here disturbs nothing.
     print("== Step 3b/3: create searchIndex knowledge source + KB (cutover twin) ==")
     create_searchindex_knowledge_source(index_client)
@@ -723,7 +723,7 @@ def main() -> None:
     # blob is gone), then kick the indexer and return. The index fills incrementally
     # and is queryable during the run; blocking on the full ~1s/chunk embedding pass
     # just stalls the caller.
-    purge_orphans(credential, tenant_config().cockpit_storage_container)
+    purge_orphans(credential, tenant_config().techdocs_storage_container)
 
     # Phase 4: when access groups are configured, the ingest owns document-level ACL too,
     # stamping each doc with the read groups its source declared (component_groups, from

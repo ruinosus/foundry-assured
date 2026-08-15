@@ -1,7 +1,7 @@
-name: cockpit-discipline
-description: Cockpit expert answers in pt-BR, grounds exclusively on retrieved KB docs, cites component+doc, admits gaps
+name: techdocs-discipline
+description: TechDocs expert answers in pt-BR, grounds exclusively on retrieved KB docs, cites component+doc, admits gaps
 target:
-  agent: cockpit
+  agent: techdocs
 checks:
 - type: contains
   value: português (pt-BR)
@@ -20,5 +20,5 @@ checks:
   value: Helpdesk Concierge
 - type: min_length
   value: 1000
-expected: The Cockpit prompt keeps the Foundry IQ answering discipline — pt-BR, KB-only grounding, per-claim citation, no invention.
-tags: [cockpit, grounding, citation]
+expected: The TechDocs prompt keeps the Foundry IQ answering discipline — pt-BR, KB-only grounding, per-claim citation, no invention.
+tags: [techdocs, grounding, citation]

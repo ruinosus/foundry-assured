@@ -2,7 +2,7 @@
 #
 # Packages the selfwiki expert as a Foundry *hosted agent*: a container that serves
 # the Responses protocol on port 8088, invoked through the Foundry gateway. Mirrors
-# apps/hosted-cockpit/main.py — a self-contained, single-identity variant of the live
+# apps/hosted-techdocs/main.py — a self-contained, single-identity variant of the live
 # /selfwiki agent (app/agents/selfwiki.py), grounded in the selfwiki-kb deep-wiki
 # (agentic retrieval). Config from env (agent.yaml); auth via the platform-injected
 # agent identity (DefaultAzureCredential). Pure grounded Q&A — no workflow/memory/HITL.

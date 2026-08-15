@@ -13,7 +13,7 @@ npm run install:browser            # one-time: downloads chromium
 
 # creds never live in the repo — pass them at run time (test users: TEST-CREDENTIALS.local.md)
 export E2E_BASE_URL="$(cd ../apps/backend && azd env get-value WEB_URL)"
-export E2E_USER="cockpit-test-a@jeffersonbarnabegmail.onmicrosoft.com"
+export E2E_USER="techdocs-test-a@jeffersonbarnabegmail.onmicrosoft.com"
 export E2E_PASS='…'                # from TEST-CREDENTIALS.local.md (gitignored)
 
 npm test                           # runs smoke.spec.ts
@@ -30,7 +30,7 @@ npm run report                     # open the HTML report
 
 ## Scope
 
-- **Now (smoke):** sign in → visit helpdesk / cockpit / selfwiki / platform → one grounded
+- **Now (smoke):** sign in → visit helpdesk / techdocs / selfwiki / platform → one grounded
   helpdesk answer. One serial flow in a single context (MSAL token lives in `sessionStorage`).
 - **Next:** HITL approval (create_ticket), ACL A-sees / B-doesn't (two test users via per-user
   `storageState` + sessionStorage capture), evals, and the shared-mode admin/tenant flow.

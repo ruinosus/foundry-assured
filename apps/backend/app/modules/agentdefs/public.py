@@ -95,7 +95,7 @@ _AGENT_FOR_CONSTANT = {
     "RESOLVE_INSTRUCTIONS": "resolve",
     "CONCIERGE_GROUNDED_INSTRUCTIONS": "concierge-grounded",
     "CONCIERGE_UNGROUNDED_INSTRUCTIONS": "concierge-ungrounded",
-    "COCKPIT_INSTRUCTIONS": "cockpit",
+    "TECHDOCS_INSTRUCTIONS": "techdocs",
     "SELFWIKI_INSTRUCTIONS": "selfwiki",
     "PLATFORM_INSTRUCTIONS": "platform",
 }
@@ -147,8 +147,8 @@ RESOLVE_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["RESOLVE_INSTRUCTIONS
 CONCIERGE_GROUNDED_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["CONCIERGE_GROUNDED_INSTRUCTIONS"])
 CONCIERGE_UNGROUNDED_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["CONCIERGE_UNGROUNDED_INSTRUCTIONS"])
 
-# --- Second domain: Cockpit platform expert (grounded over the cockpit-kb) -----
-COCKPIT_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["COCKPIT_INSTRUCTIONS"])
+# --- Second domain: TechDocs platform expert (grounded over the techdocs-kb) -----
+TECHDOCS_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["TECHDOCS_INSTRUCTIONS"])
 
 # --- Third domain: this project's own deep-wiki (the "selfwiki" — dogfood) -----
 SELFWIKI_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["SELFWIKI_INSTRUCTIONS"])

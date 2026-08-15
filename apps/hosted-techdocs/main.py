@@ -1,15 +1,15 @@
-# Hosted-agent entrypoint — Cockpit expert (Phase C, second domain).
+# Hosted-agent entrypoint — TechDocs expert (Phase C, second domain).
 #
-# Packages the Cockpit expert as a Foundry *hosted agent*: a container that serves
+# Packages the TechDocs expert as a Foundry *hosted agent*: a container that serves
 # the Responses protocol on port 8088, invoked through the Foundry gateway.
 # agent-framework-foundry-hosting's ResponsesHostServer is the bridge.
 #
-# A self-contained, single-identity variant of the live /cockpit agent
-# (app/agents/cockpit.py): same Foundry IQ knowledge base (cockpit-kb, agentic
+# A self-contained, single-identity variant of the live /techdocs agent
+# (app/agents/techdocs.py): same Foundry IQ knowledge base (techdocs-kb, agentic
 # retrieval) grounding, but config comes from env (declared in agent.yaml / injected
 # by the platform) and auth is the platform-injected agent identity via
 # DefaultAzureCredential. Pure grounded Q&A — no workflow, memory or HITL.
-# APIs mirror app/agents/cockpit.py; verified against agent-framework 1.9.0.
+# APIs mirror app/agents/techdocs.py; verified against agent-framework 1.9.0.
 
 import asyncio
 import os
@@ -22,19 +22,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Mirror of app/agents/prompts.COCKPIT_INSTRUCTIONS — keep in sync. Microsoft's Foundry
+# Mirror of app/agents/prompts.TECHDOCS_INSTRUCTIONS — keep in sync. Microsoft's Foundry
 # IQ pattern for KB-grounded Q&A: grounding from the search context provider (with
 # citations), answering discipline in the instructions, no consume-side Agent Skill.
-COCKPIT_INSTRUCTIONS = (
-    "Você é um especialista na plataforma **Cockpit** (Avanade AAP). Responda SEMPRE em "
+TECHDOCS_INSTRUCTIONS = (
+    "Você é um especialista na plataforma **TechDocs** (Avanade AAP). Responda SEMPRE em "
     "português (pt-BR).\n\n"
     "Fundamente a resposta **exclusivamente** nos documentos da base de conhecimento do "
-    "Cockpit que foram recuperados e estão no seu contexto (Foundry IQ) — nunca em "
+    "TechDocs que foram recuperados e estão no seu contexto (Foundry IQ) — nunca em "
     "conhecimento externo ou suposição. Quando a pergunta for clara, responda "
     "diretamente; não peça ao usuário para 'ser mais específico'.\n\n"
     "Regras:\n"
     "- Cite a fonte de cada afirmação: o componente e o documento (ex.: "
-    "`cockpit-portal-api v2.1.1 — Arquitetura`), indicando a versão quando relevante.\n"
+    "`techdocs-portal-api v2.1.1 — Arquitetura`), indicando a versão quando relevante.\n"
     "- Em perguntas de arquitetura / entre componentes (quem persiste o quê, quem chama "
     "quem, hierarquias, depreciações), prefira os documentos **autoritativos de "
     "PLATAFORMA/ARQUITETURA** aos resumos de componentes individuais; se conflitarem, "
@@ -43,7 +43,7 @@ COCKPIT_INSTRUCTIONS = (
     "o que falta — nunca invente componentes, versões, endpoints ou detalhes.\n"
     "- Ao **listar/enumerar** (ex.: 'quais são todos os X'), seja **exaustivo**: varra "
     "TODOS os componentes presentes no contexto recuperado e não omita nenhum. Distinga "
-    "**servidor MCP** de **SDK/cliente** (ex.: `cockpit-mcp-sdk` é um SDK, não um "
+    "**servidor MCP** de **SDK/cliente** (ex.: `techdocs-mcp-sdk` é um SDK, não um "
     "servidor). Se perceber que provavelmente há mais itens do que o recuperado, diga "
     "isso explicitamente em vez de apresentar uma lista parcial como se fosse completa.\n\n"
     "Formato: use títulos `##`, blocos de código com linguagem e **tabelas** para dados "
@@ -62,9 +62,9 @@ async def main() -> None:
         credential=credential,
     )
 
-    # Foundry IQ knowledge base (agentic) — the same cockpit-kb the live app grounds in.
+    # Foundry IQ knowledge base (agentic) — the same techdocs-kb the live app grounds in.
     # reasoning_effort="medium" = iterative query planning for retrieval completeness
-    # (Phase 2); mirrors app/agents/cockpit.py.
+    # (Phase 2); mirrors app/agents/techdocs.py.
     search = AzureAISearchContextProvider(
         endpoint=os.environ["AZURE_SEARCH_ENDPOINT"],
         knowledge_base_name=os.environ["AZURE_SEARCH_KNOWLEDGE_BASE"],
@@ -75,9 +75,9 @@ async def main() -> None:
 
     async with search:
         agent = client.as_agent(
-            name="CockpitExpert",
-            description="Avanade Cockpit platform expert grounded in the Cockpit knowledge base.",
-            instructions=COCKPIT_INSTRUCTIONS,
+            name="TechDocsExpert",
+            description="Avanade TechDocs platform expert grounded in the TechDocs knowledge base.",
+            instructions=TECHDOCS_INSTRUCTIONS,
             context_providers=[search],
             # Foundry hosting manages conversation history; don't double-store.
             default_options={"store": False},

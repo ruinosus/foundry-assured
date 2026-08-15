@@ -11,8 +11,8 @@ services:
         docker:
             path: Dockerfile
             remoteBuild: true
-    cockpit-expert:
-        project: apps/hosted-cockpit
+    techdocs-expert:
+        project: apps/hosted-techdocs
         host: azure.ai.agent
         language: docker
         docker:

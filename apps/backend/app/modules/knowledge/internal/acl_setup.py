@@ -38,7 +38,7 @@ _GUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{1
 def _canonical(name: str) -> str:
     """Canonical component key: lowercase, spaces→hyphens, trailing version stripped.
 
-    Both the blob key (`plataforma-cockpit-2.1.0`) and the H1 label (`Plataforma Cockpit
+    Both the blob key (`plataforma-techdocs-2.1.0`) and the H1 label (`Plataforma TechDocs
     2.1.0`) must yield the SAME key, or the trim over-restricts. `-v?[\\d.]+` strips both
     `-v1.2.0` and `-2.1.0`."""
     s = name.strip().lower().replace(" ", "-")
@@ -105,9 +105,9 @@ def setup_acl(
     component_groups: { component-key : [group-name-or-id,…] }, typically built from the
     bundle manifests by the ingest. When None, falls back to the external map; pass `{}` to stamp
     EVERY doc with `default_groups` (no per-doc map — e.g. the single-audience selfwiki).
-    `index` / `default_groups` override the cockpit defaults so a second corpus (selfwiki) can be
+    `index` / `default_groups` override the techdocs defaults so a second corpus (selfwiki) can be
     stamped on ITS index with ITS audience group (access is still DATA — RULE #6)."""
-    _index = index or tenant_config().cockpit_search_index
+    _index = index or tenant_config().techdocs_search_index
     access = component_groups if component_groups is not None else _load_external()
     if default_groups is None:
         default_groups = [g for g in tenant_config().acl_default_groups.split(",") if g.strip()]

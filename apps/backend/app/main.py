@@ -66,7 +66,7 @@ app.add_middleware(
 include_routers(app)
 
 # Every domain's live endpoint, mounted by ONE loop that dispatches by `kind`
-# (workflow → helpdesk AG-UI; grounded → cockpit/selfwiki cited Q&A; tool → platform
+# (workflow → helpdesk AG-UI; grounded → techdocs/selfwiki cited Q&A; tool → platform
 # AG-UI). The hosted twins stay in app/api/chat.py.
 mount_domains(app)
 

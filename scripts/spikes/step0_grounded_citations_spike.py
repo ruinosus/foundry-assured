@@ -22,7 +22,7 @@ import sys
 from app.modules.tenancy.internal.tenant import tenant_config
 
 _API = "2026-05-01-preview"
-_PROBE = "Quais são os servidores MCP do Cockpit e o que cada um faz?"
+_PROBE = "Quais são os servidores MCP do TechDocs e o que cada um faz?"
 _CITE = (
     "Use a ferramenta da base de conhecimento para responder. Se não estiver na base, diga que não sabe. "
     "Toda afirmação deve trazer anotações da ferramenta e renderizá-las como 【message_idx:search_idx†source_name】."
@@ -41,9 +41,9 @@ async def _run() -> int:
     cfg = tenant_config()
     search = (cfg.azure_search_endpoint or "").rstrip("/")
     project = cfg.foundry_project_endpoint or ""
-    kb = cfg.cockpit_search_knowledge_base
+    kb = cfg.techdocs_search_knowledge_base
     if not (search and project and kb):
-        print("SKIP: STEP 0 needs live Foundry+Search (AZURE_SEARCH_ENDPOINT, FOUNDRY_PROJECT_ENDPOINT, cockpit KB).")
+        print("SKIP: STEP 0 needs live Foundry+Search (AZURE_SEARCH_ENDPOINT, FOUNDRY_PROJECT_ENDPOINT, techdocs KB).")
         return 0
 
     from azure.ai.projects.aio import AIProjectClient

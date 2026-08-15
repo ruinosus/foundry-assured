@@ -1,7 +1,7 @@
 """The doc-bundle manifest CONTRACT — vendored from the producer, enforced here.
 
 `manifest.json` is not our format: it is defined by the doc-bundle producer (the
-`aap-kb` project's `Manifest` model), and this repo both READS bundles
+the producer's `Manifest` model), and this repo both READS bundles
 (`ingest_docbundles`, `wiki_freshness_test`) and WRITES them (`wiki_builder`,
 `adapt_deepwiki`, and by hand via the vendored deep-wiki skill). Two repos, one
 format, no shared package — which is exactly how it forked once already: the

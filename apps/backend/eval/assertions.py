@@ -164,26 +164,26 @@ cites_a_source = evaluator(check_cites_a_source, name="cites_a_source")
 no_secret_leaked = evaluator(check_no_secret_leaked, name="no_secret_leaked")
 
 
-# Cockpit (second domain): the corpus is a cloud Foundry IQ KB, not local runbook
-# files, so the title-token match above doesn't apply. COCKPIT_INSTRUCTIONS makes the
+# TechDocs (second domain): the corpus is a cloud Foundry IQ KB, not local runbook
+# files, so the title-token match above doesn't apply. TECHDOCS_INSTRUCTIONS makes the
 # agent cite the component + source document; this floor passes when the answer
 # carries a citation signal (a source-file/component/version reference) or declines.
-_COCKPIT_CITATION = re.compile(
-    r"\bsrc/|\.(?:cs|ts|tsx|py|csproj|sln)\b|cockpit-[a-z0-9-]+|\bcomponente\b|"
+_TECHDOCS_CITATION = re.compile(
+    r"\bsrc/|\.(?:cs|ts|tsx|py|csproj|sln)\b|techdocs-[a-z0-9-]+|\bcomponente\b|"
     r"\bdocumento[- ]?fonte\b|\bfonte[s]?\b|\bv\d+\.\d+",
     re.IGNORECASE,
 )
 
 
-def check_cockpit_cites_source(response: str) -> bool:
-    """Cockpit policy: cite a component/source document, or explicitly decline."""
+def check_techdocs_cites_source(response: str) -> bool:
+    """TechDocs policy: cite a component/source document, or explicitly decline."""
     text = (response or "").lower().replace("’", "'")
     if any(marker in text for marker in _REFUSAL_MARKERS):
         return True
-    return bool(_COCKPIT_CITATION.search(response or ""))
+    return bool(_TECHDOCS_CITATION.search(response or ""))
 
 
-cockpit_cites_source = evaluator(check_cockpit_cites_source, name="cockpit_cites_source")
+techdocs_cites_source = evaluator(check_techdocs_cites_source, name="techdocs_cites_source")
 
 
 # Selfwiki (third domain, dogfood): grounded in a deep-wiki generated from THIS repo.

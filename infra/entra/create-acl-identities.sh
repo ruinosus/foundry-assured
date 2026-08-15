@@ -44,12 +44,12 @@ create_user() {  # nickname displayName -> objectId
   echo "$id"
 }
 
-PUB=$(create_group "SEC-cockpit-kb-public" "sec-cockpit-kb-public")
-INT=$(create_group "SEC-cockpit-kb-internal" "sec-cockpit-kb-internal")
-CONF=$(create_group "SEC-cockpit-kb-confidential" "sec-cockpit-kb-confidential")
+PUB=$(create_group "SEC-techdocs-kb-public" "sec-techdocs-kb-public")
+INT=$(create_group "SEC-techdocs-kb-internal" "sec-techdocs-kb-internal")
+CONF=$(create_group "SEC-techdocs-kb-confidential" "sec-techdocs-kb-confidential")
 
-A=$(create_user "cockpit-test-a" "Cockpit Test — Cleared (A)")
-B=$(create_user "cockpit-test-b" "Cockpit Test — Public-only (B)")
+A=$(create_user "techdocs-test-a" "TechDocs Test — Cleared (A)")
+B=$(create_user "techdocs-test-b" "TechDocs Test — Public-only (B)")
 
 for g in "$PUB" "$INT" "$CONF"; do az ad group member add --group "$g" --member-id "$A" 2>/dev/null || true; done
 az ad group member add --group "$PUB" --member-id "$B" 2>/dev/null || true
@@ -59,5 +59,5 @@ echo "# Cole no backend/.env (e no ACL_GROUPS do ingest):"
 echo "ACL_PUBLIC_GROUP=$PUB"
 echo "ACL_INTERNAL_GROUP=$INT"
 echo "ACL_CONFIDENTIAL_GROUP=$CONF"
-echo "COCKPIT_TEST_USER_A=$A   # public+internal+confidential"
-echo "COCKPIT_TEST_USER_B=$B   # public only"
+echo "TECHDOCS_TEST_USER_A=$A   # public+internal+confidential"
+echo "TECHDOCS_TEST_USER_B=$B   # public only"

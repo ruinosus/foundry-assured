@@ -30,11 +30,11 @@ def main() -> int:
             failures.append(name)
 
     check("DOMAIN_IDS is the four-domain catalog",
-          DOMAIN_IDS == ("helpdesk", "cockpit", "selfwiki", "platform"))
+          DOMAIN_IDS == ("helpdesk", "techdocs", "selfwiki", "platform"))
 
     # The inner check ignores its dependency-wiring `_user` arg and reads `_current_tenant`,
     # so the test calls `gate(_user=None)` directly (bypassing the Depends(require_user)).
-    gate = require_domain("cockpit")
+    gate = require_domain("techdocs")
 
     def _set(enabled: tuple[str, ...] | None) -> None:
         rec = None if enabled is None else TenantRecord(
@@ -59,7 +59,7 @@ def main() -> int:
         except HTTPException as e:
             return e.status_code == 403
 
-    check("entitled domain passes", allowed(("cockpit", "helpdesk")))
+    check("entitled domain passes", allowed(("techdocs", "helpdesk")))
     check("domain not in entitlement → 403", denies(("helpdesk",)))
     check("empty entitlement → 403", denies(()))
     check("no resolved tenant → 403", denies(None))

@@ -45,9 +45,9 @@ def _tenant(name: str):
     """A tenant config distinguishable by every field the grounded specs read."""
     return SimpleNamespace(
         hosted_agent_name=f"{name}-agent",
-        cockpit_searchindex_knowledge_base=f"{name}-cockpit-kb",
-        cockpit_searchindex_knowledge_source=f"{name}-cockpit-ks",
-        cockpit_search_index=f"{name}-cockpit-index",
+        techdocs_searchindex_knowledge_base=f"{name}-techdocs-kb",
+        techdocs_searchindex_knowledge_source=f"{name}-techdocs-ks",
+        techdocs_search_index=f"{name}-techdocs-index",
         selfwiki_searchindex_knowledge_base=f"{name}-selfwiki-kb",
         selfwiki_searchindex_knowledge_source=f"{name}-selfwiki-ks",
         selfwiki_search_index=f"{name}-selfwiki-index",
@@ -71,7 +71,7 @@ def main() -> int:
         "DOMAIN_KINDS mirrors domains.ts and needs no tenant",
         DOMAIN_KINDS == {
             "helpdesk": "workflow",
-            "cockpit": "grounded",
+            "techdocs": "grounded",
             "selfwiki": "grounded",
             "platform": "tool",
         },
@@ -86,19 +86,19 @@ def main() -> int:
         # what turns "served the wrong tenant's data" into "failed loudly". ---
         raised = False
         try:
-            domain_spec("cockpit")
+            domain_spec("techdocs")
         except RuntimeError:
             raised = True
         check("resolving a spec with no tenant raises (fail-closed)", raised)
 
         # --- Two tenants, same domain id, different config. ---
         _CURRENT["record"] = _tenant("alpha")
-        alpha = domain_spec("cockpit")
+        alpha = domain_spec("techdocs")
         _CURRENT["record"] = _tenant("beta")
-        beta = domain_spec("cockpit")
+        beta = domain_spec("techdocs")
 
-        check("tenant A gets its own KB", alpha.kb_name == "alpha-cockpit-kb")
-        check("tenant B gets its own KB", beta.kb_name == "beta-cockpit-kb")
+        check("tenant A gets its own KB", alpha.kb_name == "alpha-techdocs-kb")
+        check("tenant B gets its own KB", beta.kb_name == "beta-techdocs-kb")
         check("the two do not share a KB", alpha.kb_name != beta.kb_name)
         check("the two do not share a search index", alpha.search_index != beta.search_index)
         check(
@@ -108,8 +108,8 @@ def main() -> int:
 
         # --- Resolving again for A must return A's config, not the last one seen. ---
         _CURRENT["record"] = _tenant("alpha")
-        check("re-resolving A does not return B's config", domain_spec("cockpit").kb_name
-              == "alpha-cockpit-kb")
+        check("re-resolving A does not return B's config", domain_spec("techdocs").kb_name
+              == "alpha-techdocs-kb")
 
         # --- An unknown id is a KeyError, not a silent None. ---
         unknown = False

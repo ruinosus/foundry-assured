@@ -124,7 +124,7 @@ cat <<'EOF'
 
   Still manual (genuinely external):
     • Entra admin consent — only if your account lacked consent rights when setup-entra ran (1 portal click)
-    • cockpit / selfwiki KBs — the per-domain ingest (cockpit needs a docbundles path); see DEPLOYMENT.md › Step 4
+    • techdocs / selfwiki KBs — the per-domain ingest (techdocs needs a docbundles path); see DEPLOYMENT.md › Step 4
     • platform domain tools — bind a Foundry Toolbox + `azd env set TOOLBOX_NAME …` (ADR-011 / D-PACKAGING-RUNBOOK)
     • dedicated stamp — the Managed Application marketplace publish (Partner Center)
 

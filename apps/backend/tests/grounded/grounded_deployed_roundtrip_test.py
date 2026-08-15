@@ -1,14 +1,14 @@
-"""Deployed end-to-end ACL round-trip — hits the DEPLOYED /cockpit as real users (OBO), no browser.
+"""Deployed end-to-end ACL round-trip — hits the DEPLOYED /techdocs as real users (OBO), no browser.
 
 The definitive proof the whole stack works in the cloud: for each test user, get a token for the API
-app (confidential ROPC), POST it to the deployed backend /cockpit, consume the AG-UI stream, and
+app (confidential ROPC), POST it to the deployed backend /techdocs, consume the AG-UI stream, and
 assert the grounded answer comes back WITHOUT a 403 (the contextvar/OBO/inference path works) and that
 per-user ACL holds — A surfaces the confidential doc, B does not. More reliable than the browser E2E
 (no MFA/timing flakiness); it exercises the exact deployed code path.
 
 Infra-gated — skips cleanly unless set:
   BACKEND_URL (deployed backend), ENTRA_TENANT_ID, ENTRA_API_CLIENT_ID, ENTRA_API_CLIENT_SECRET,
-  COCKPIT_TEST_USER_A, COCKPIT_TEST_USER_B, COCKPIT_TEST_PASSWORD, COCKPIT_CONFIDENTIAL_SOURCE.
+  TECHDOCS_TEST_USER_A, TECHDOCS_TEST_USER_B, TECHDOCS_TEST_PASSWORD, TECHDOCS_CONFIDENTIAL_SOURCE.
 
     cd apps/backend && uv run python -m eval.grounded_deployed_roundtrip_test
 """
@@ -21,7 +21,7 @@ import sys
 import urllib.parse
 import urllib.request
 
-_PROBE = os.environ.get("COCKPIT_ACL_PROBE", "Como funciona a telemetria e a observabilidade do Cockpit?")
+_PROBE = os.environ.get("TECHDOCS_ACL_PROBE", "Como funciona a telemetria e a observabilidade do TechDocs?")
 
 
 def _post_form(url: str, data: dict) -> dict:
@@ -41,10 +41,10 @@ def _user_api_token(tid: str, api: str, secret: str, upn: str, pw: str) -> str:
 
 
 def _ask_deployed(backend: str, token: str) -> tuple[int, list[str], str | None]:
-    """POST the grounded turn to the deployed /cockpit; return (answer_chars, cited_sources, run_error)."""
+    """POST the grounded turn to the deployed /techdocs; return (answer_chars, cited_sources, run_error)."""
     body = {"messages": [{"role": "user", "content": _PROBE}]}
     req = urllib.request.Request(
-        f"{backend.rstrip('/')}/cockpit", method="POST", data=json.dumps(body).encode(),
+        f"{backend.rstrip('/')}/techdocs", method="POST", data=json.dumps(body).encode(),
         headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "Accept": "text/event-stream"},
     )
     chars, sources, err = 0, [], None
@@ -72,10 +72,10 @@ def main() -> None:
     tid = os.environ.get("ENTRA_TENANT_ID", "")
     api = os.environ.get("ENTRA_API_CLIENT_ID", "")
     secret = os.environ.get("ENTRA_API_CLIENT_SECRET", "")
-    a, b = os.environ.get("COCKPIT_TEST_USER_A", ""), os.environ.get("COCKPIT_TEST_USER_B", "")
-    pw, conf = os.environ.get("COCKPIT_TEST_PASSWORD", ""), os.environ.get("COCKPIT_CONFIDENTIAL_SOURCE", "")
+    a, b = os.environ.get("TECHDOCS_TEST_USER_A", ""), os.environ.get("TECHDOCS_TEST_USER_B", "")
+    pw, conf = os.environ.get("TECHDOCS_TEST_PASSWORD", ""), os.environ.get("TECHDOCS_CONFIDENTIAL_SOURCE", "")
     if not all([backend, tid, api, secret, a, b, pw, conf]):
-        print("⏭️  SKIP: deployed round-trip needs BACKEND_URL + ENTRA_API_* + COCKPIT_TEST_* + CONFIDENTIAL_SOURCE.")
+        print("⏭️  SKIP: deployed round-trip needs BACKEND_URL + ENTRA_API_* + TECHDOCS_TEST_* + CONFIDENTIAL_SOURCE.")
         sys.exit(0)
 
     ca, sa, ea = _ask_deployed(backend, _user_api_token(tid, api, secret, a, pw))
@@ -97,7 +97,7 @@ def main() -> None:
     if b_has:
         print("❌ FAIL: public-only B surfaced the confidential doc — ACL leak.")
         sys.exit(1)
-    print("✅ PASS: deployed /cockpit answers both users (no 403), A cites the confidential doc, B does not.")
+    print("✅ PASS: deployed /techdocs answers both users (no 403), A cites the confidential doc, B does not.")
     sys.exit(0)
 
 

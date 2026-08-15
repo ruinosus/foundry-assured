@@ -1,6 +1,6 @@
 """Task 2b A-vs-B gate — per-user ACL over the NATIVE agentic retrieve on the PROVISIONED
-searchIndex cockpit KB (`cockpit-si-kb` → `cockpit-docbundles-si-ks` over the EXISTING
-ACL-stamped `cockpit-docbundles-ks-index`).
+searchIndex techdocs KB (`techdocs-si-kb` → `techdocs-docbundles-si-ks` over the EXISTING
+ACL-stamped `techdocs-docbundles-ks-index`).
 
 Unlike step0_searchindex_filter_probe (which used only the single app/dev token available in a
 non-interactive shell and so could only confirm the confidential doc is *reachable* via the header),
@@ -11,13 +11,13 @@ confidential source and B does NOT — the exact per-user trim the header carrie
 agentic path over the searchIndex KB.
 
 It does NOT create or tear down any KB — it targets the KB that ingest_docbundles provisioned (default
-cfg.cockpit_searchindex_knowledge_base / _knowledge_source). Reuses the probe's proven native-retrieve
+cfg.techdocs_searchindex_knowledge_base / _knowledge_source). Reuses the probe's proven native-retrieve
 helpers (RULE #1). Read-only against live infra.
 
 Infra-gated — skips cleanly unless these are set (test-user creds read from .env via pydantic, since
 they aren't exported to os.environ):
-  ENTRA_TENANT_ID, COCKPIT_TEST_USER_A, COCKPIT_TEST_USER_B, COCKPIT_TEST_PASSWORD,
-  COCKPIT_CONFIDENTIAL_SOURCE, AZURE_SEARCH_ENDPOINT.
+  ENTRA_TENANT_ID, TECHDOCS_TEST_USER_A, TECHDOCS_TEST_USER_B, TECHDOCS_TEST_PASSWORD,
+  TECHDOCS_CONFIDENTIAL_SOURCE, AZURE_SEARCH_ENDPOINT.
 
     cd apps/backend && uv run python -m eval.step0_searchindex_kb_acl_abtest
 
@@ -55,11 +55,11 @@ class _Creds(BaseSettings):
     """Test-user creds live in .env (pydantic doesn't push them to os.environ)."""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
-    cockpit_test_user_a: str = ""
-    cockpit_test_user_b: str = ""
-    cockpit_test_password: str = ""
-    cockpit_confidential_source: str = ""
-    cockpit_acl_probe: str = "telemetria e observabilidade do cockpit"
+    techdocs_test_user_a: str = ""
+    techdocs_test_user_b: str = ""
+    techdocs_test_password: str = ""
+    techdocs_confidential_source: str = ""
+    techdocs_acl_probe: str = "telemetria e observabilidade do techdocs"
 
 
 def _ropc_token(upn: str, password: str) -> str:
@@ -76,15 +76,15 @@ async def _run() -> int:
     c = _Creds()
     cfg = tenant_config()
     a, b, pw, conf = (
-        c.cockpit_test_user_a, c.cockpit_test_user_b, c.cockpit_test_password, c.cockpit_confidential_source,
+        c.techdocs_test_user_a, c.techdocs_test_user_b, c.techdocs_test_password, c.techdocs_confidential_source,
     )
     search = (cfg.azure_search_endpoint or "").rstrip("/")
-    kb = cfg.cockpit_searchindex_knowledge_base
-    ks = cfg.cockpit_searchindex_knowledge_source
-    probe_text = os.environ.get("COCKPIT_ACL_PROBE") or c.cockpit_acl_probe
+    kb = cfg.techdocs_searchindex_knowledge_base
+    ks = cfg.techdocs_searchindex_knowledge_source
+    probe_text = os.environ.get("TECHDOCS_ACL_PROBE") or c.techdocs_acl_probe
 
     if not (a and b and pw and conf and search):
-        print("⏭️  SKIP: needs COCKPIT_TEST_USER_A/B + password + COCKPIT_CONFIDENTIAL_SOURCE + "
+        print("⏭️  SKIP: needs TECHDOCS_TEST_USER_A/B + password + TECHDOCS_CONFIDENTIAL_SOURCE + "
               "AZURE_SEARCH_ENDPOINT.")
         return 0
 
@@ -122,7 +122,7 @@ async def _run() -> int:
               "NOT trimming per-user (leak). DO NOT cut over.")
         return 1
     print("\n✅ PASS: on the searchIndex KB, native agentic retrieve honors the per-user ACL header — "
-          "A retrieves the confidential doc, B does not. Safe to cut cockpit over to it.")
+          "A retrieves the confidential doc, B does not. Safe to cut techdocs over to it.")
     return 0
 
 

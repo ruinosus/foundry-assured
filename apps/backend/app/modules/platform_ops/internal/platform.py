@@ -1,6 +1,6 @@
 """Platform/ops domain — a TOOL-driven agent (not KB-grounded).
 
-Unlike the grounded experts (cockpit/selfwiki), this agent's capability is the set of
+Unlike the grounded experts (techdocs/selfwiki), this agent's capability is the set of
 Microsoft first-party MCP tools assembled per-request from app/agents/mcp/. Tools are
 role-filtered (Reader sees reads, Author/Admin see writes) and, for OBO servers, run as the
 signed-in user. The /platform endpoint requires sign-in; the per-request tool build reads the

@@ -61,13 +61,13 @@
       "modules/grounded/internal/grounded.py"
     ],
     "shared": [
-      "modules/grounded/internal/cockpit.py",
+      "modules/grounded/internal/techdocs.py",
       "modules/grounded/internal/concierge.py",
       "modules/grounded/internal/grounded.py",
       "modules/grounded/internal/selfwiki.py"
     ],
     "tenancy": [
-      "modules/grounded/internal/cockpit.py",
+      "modules/grounded/internal/techdocs.py",
       "modules/grounded/internal/concierge.py",
       "modules/grounded/internal/grounded.py",
       "modules/grounded/internal/selfwiki.py"

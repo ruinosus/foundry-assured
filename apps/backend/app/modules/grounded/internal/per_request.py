@@ -1,7 +1,7 @@
 """Generic per-request agent proxy — builds its inner agent on every call.
 
 `add_agent_framework_fastapi_endpoint(agent=...)` wants a `SupportsAgentRun` *instance*, not a
-factory. In self_hosted/dedicated the grounded domains (cockpit, selfwiki) build once at boot
+factory. In self_hosted/dedicated the grounded domains (techdocs, selfwiki) build once at boot
 under the single-tenant config. In **shared** mode no tenant is resolved at boot, so the build —
 which reads `tenant_config()` — can't run until a request has resolved its tenant (via the auth +
 `require_domain` dependencies). This proxy defers the build to request time: each `.run()` calls
@@ -25,8 +25,8 @@ from agent_framework import Agent
 class PerRequestAgent:
     """A `SupportsAgentRun` proxy that rebuilds `builder()` on each delegated call.
 
-    The advertised `name` defaults to `agent_id` (e.g. "cockpit") — an intentional shared-mode
-    cosmetic default: the inner agent's richer name (e.g. "CockpitExpert") isn't available without
+    The advertised `name` defaults to `agent_id` (e.g. "techdocs") — an intentional shared-mode
+    cosmetic default: the inner agent's richer name (e.g. "TechDocsExpert") isn't available without
     building it, which we deliberately defer to request time, so we don't build just to read a name
     (self_hosted is unaffected — it serves the eagerly-built agent with its full name).
     """

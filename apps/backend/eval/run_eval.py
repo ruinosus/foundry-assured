@@ -40,7 +40,7 @@ from eval.assertions import (
     check_cites_a_source,
     check_no_secret_leaked,
     cites_a_source,
-    cockpit_cites_source,
+    techdocs_cites_source,
     no_secret_leaked,
     secret_findings,
     selfwiki_cites_source,
@@ -48,7 +48,7 @@ from eval.assertions import (
 
 _DATASETS = Path(__file__).resolve().parent / "datasets"
 _GOLDEN = _DATASETS / "golden.jsonl"
-_COCKPIT_GOLDEN = _DATASETS / "cockpit_golden.jsonl"
+_TECHDOCS_GOLDEN = _DATASETS / "techdocs_golden.jsonl"
 _SELFWIKI_GOLDEN = _DATASETS / "selfwiki_golden.jsonl"
 _ADVERSARIAL = _DATASETS / "adversarial.jsonl"
 _CORPUS = Path(__file__).resolve().parent.parent / "app" / "knowledge" / "corpus"
@@ -94,11 +94,11 @@ class _RetrieveAgent:
     real grounded path: `retrieve()` → `build_synthesis_kwargs()` → non-streaming Responses.
     The synthesized answer carries the citations inline, which is what `cites_source` scores.
 
-    IDENTITY (headless eval, no signed-in user): `retrieve(user=None, ...)`. On the cockpit
+    IDENTITY (headless eval, no signed-in user): `retrieve(user=None, ...)`. On the techdocs
     domain the native searchIndex path is fail-closed for a no-token user (ACL index →
     permissionFilterOption=enabled → ZERO docs) — which is CORRECT for production but would
     starve a groundedness/rubric measurement. So the eval spec (`_eval_spec`, below) routes
-    cockpit to the direct-search FALLBACK, whose `_direct_search_authorized` sends
+    techdocs to the direct-search FALLBACK, whose `_direct_search_authorized` sends
     `x-ms-enable-elevated-read: true` when there's no user token → the full doc set, headless.
     That is an EVAL AFFORDANCE, built only here — `retrieve()`/`_native_retrieve` production
     behavior is UNCHANGED (a real no-token user still gets fail-closed via the native path).
@@ -127,7 +127,7 @@ def _eval_spec(domain_id: str):
     """The DomainSpec the headless golden eval retrieves against — picked by id from the
     production registry (`app.registry._domains()`), then adapted for headless retrieval.
 
-    For cockpit we drop `kb_name` (and `ks_name`) so `retrieve()` takes the direct-search
+    For techdocs we drop `kb_name` (and `ks_name`) so `retrieve()` takes the direct-search
     FALLBACK over `search_index` instead of the native+ACL path — the fallback's elevated-read
     returns the full doc set with no signed-in user (see `_RetrieveAgent`). This is an
     eval-only construction (dataclasses.replace on a frozen spec); the production spec is
@@ -277,7 +277,7 @@ async def _build_items(
     """Run the agent on each query and wrap the turn into an EvalItem.
 
     Helpdesk feeds the named runbook's text as grounding ``context`` (groundedness).
-    Cockpit grounds in a cloud KB with no local source file, so it carries no context
+    TechDocs grounds in a cloud KB with no local source file, so it carries no context
     and instead supplies the golden ``expected`` answer for reference-based judges
     (similarity / response completeness).
 
@@ -314,19 +314,19 @@ async def _build_items(
 
 async def _run(cloud: bool, safety: bool, domain: str) -> int:
     # Domain config. helpdesk: grounded against local runbooks (+ --safety swaps in
-    # the adversarial set and safety judges). cockpit: a second domain grounded in a
+    # the adversarial set and safety judges). techdocs: a second domain grounded in a
     # cloud Foundry IQ KB (no local source file), measured for *correctness* against
     # the golden `expected` answer (reference-based judges), not groundedness.
-    if domain == "cockpit":
-        rows = _load_dataset(_COCKPIT_GOLDEN)
-        eval_name = "cockpit-golden"
-        local = LocalEvaluator(cockpit_cites_source, no_secret_leaked)
-        agent_factory = lambda: _RetrieveAgent(_eval_spec("cockpit"))  # noqa: E731
+    if domain == "techdocs":
+        rows = _load_dataset(_TECHDOCS_GOLDEN)
+        eval_name = "techdocs-golden"
+        local = LocalEvaluator(techdocs_cites_source, no_secret_leaked)
+        agent_factory = lambda: _RetrieveAgent(_eval_spec("techdocs"))  # noqa: E731
         build_kwargs = {"use_context": False, "expected_field": "expected", "pace_s": 3.0}
-        label = "cockpit golden"
+        label = "techdocs golden"
     elif domain == "selfwiki":
         # Third domain (dogfood): grounded in a deep-wiki generated from THIS repo.
-        # Like cockpit, the corpus is a cloud Foundry IQ KB (no local source file), so
+        # Like techdocs, the corpus is a cloud Foundry IQ KB (no local source file), so
         # we score correctness against the golden `expected` (reference-based judges),
         # not groundedness, and gate locally on a citation/decline floor.
         rows = _load_dataset(_SELFWIKI_GOLDEN)
@@ -353,7 +353,7 @@ async def _run(cloud: bool, safety: bool, domain: str) -> int:
         project = AIProjectClient(
             endpoint=tenant_config().foundry_project_endpoint, credential=cred
         )
-        if domain in ("cockpit", "selfwiki"):
+        if domain in ("techdocs", "selfwiki"):
             # SIMILARITY is the reference-based correctness score (answer vs the
             # golden `expected`) — the cloud analogue of the source-verified
             # "key-fact" judge — plus relevance/coherence. (RESPONSE_COMPLETENESS is
@@ -473,9 +473,9 @@ def _self_test() -> int:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Eval harness (Phase 5) — helpdesk + cockpit domains.")
-    parser.add_argument("--domain", choices=["helpdesk", "cockpit", "selfwiki"], default="helpdesk", help="which agent/golden to evaluate (default: helpdesk)")
-    parser.add_argument("--cloud", action="store_true", help="add Foundry cloud evaluators (helpdesk: groundedness/relevance/coherence; cockpit: similarity/completeness/relevance/coherence; +safety judges with --safety)")
+    parser = argparse.ArgumentParser(description="Eval harness (Phase 5) — helpdesk + techdocs domains.")
+    parser.add_argument("--domain", choices=["helpdesk", "techdocs", "selfwiki"], default="helpdesk", help="which agent/golden to evaluate (default: helpdesk)")
+    parser.add_argument("--cloud", action="store_true", help="add Foundry cloud evaluators (helpdesk: groundedness/relevance/coherence; techdocs: similarity/completeness/relevance/coherence; +safety judges with --safety)")
     parser.add_argument("--safety", action="store_true", help="[helpdesk] run the adversarial/jailbreak set; gate on refuse-or-ground + no-secret, score with Foundry safety judges")
     parser.add_argument("--self-test", action="store_true", help="prove the policy gate catches a planted violation (no network)")
     args = parser.parse_args()
