@@ -111,11 +111,10 @@ OpenWiki pass** — the floor is the reason the wiki is trustworthy at all.
 
 **Costs and risks, in the order they will bite**
 
-- **`CLAUDE.md` collision — verify before the first run.** OpenWiki's code mode writes `AGENTS.md`
-  and `CLAUDE.md` at the repository root as agent-readable pointers. This repository has a
-  curated, hand-written `CLAUDE.md` that is the entry point for every session. An unscoped run
-  would overwrite it. Confirm it can be disabled or redirected; if it cannot, that alone is
-  disqualifying.
+- **~~`CLAUDE.md` collision~~ — cleared by the spike, see the log below.** It edits only a
+  delimited managed block and fails safe. Left here struck through rather than deleted: the
+  concern was raised from the published docs and answered by reading the tool, which is the
+  point of running a spike before deciding.
 - **Telemetry is on by default.** It reports command type, outcome and provider — never files or
   credentials — but the data policy here is that nothing leaves the controlled environment
   without a reason. Set `OPENWIKI_TELEMETRY_DISABLED=1` (or `DO_NOT_TRACK=1`) in CI, not
@@ -129,6 +128,54 @@ OpenWiki pass** — the floor is the reason the wiki is trustworthy at all.
   manifest `model` field, and let the contract test hold the line.
 - **OKF v0.1 is a young format.** A `0.1` spec will move. The adapter is the blast radius, which
   is the right place for it.
+
+## Spike log
+
+### Phase A — read the tool, spend nothing (2026-08-15, `openwiki@0.3.3`)
+
+Installed the CLI and inspected the shipped package rather than guessing from the README. Three
+results, one of which corrects this ADR.
+
+**1. The `CLAUDE.md` risk was overstated — cleared.** The code-mode agent prompt says, verbatim:
+
+> Do not create or update repository /AGENTS.md or /CLAUDE.md files during normal code wiki runs.
+> Keep generated wiki content under the repository /openwiki directory.
+> Write generated files only under /openwiki. Do not modify source code, /AGENTS.md, /CLAUDE.md,
+> or /openwiki/INSTRUCTIONS.md.
+
+Where it does touch those files (setup), it writes inside a delimited region marked
+`<!-- OPENWIKI:START -->` / `<!-- OPENWIKI:END -->`, and if the markers are damaged it refuses:
+*"Repair or remove the markers and retry; the file was left unchanged."* It appends a managed
+block and fails safe — it does not overwrite a curated file. The published README description
+("writes AGENTS.md and CLAUDE.md at repo root") describes bootstrap, not steady state.
+
+**2. The citation gap is real, and now has evidence instead of an absence of evidence.** The
+concern was originally "the docs do not mention citations". Reading the packaged prompt and page
+schema:
+
+- OKF front matter carries `source: <Optional canonical URI for the underlying asset>` — **page
+  level and optional**, not per-claim.
+- The prompt does demand grounding: *"Ground every important claim in source files, tests,
+  existing docs, or git evidence you have inspected"*, and pages must name *"owning entrypoints
+  and symbols"*.
+- But nothing instructs it to emit **file paths as links with line ranges**, and the link
+  vocabulary throughout the prompt is about links *between wiki pages* for navigation.
+
+So OpenWiki grounds *semantically* while our fidelity gate scores a *machine-checkable citation
+form*. That is the whole question, unchanged in substance and sharper in shape: can
+`openwiki/INSTRUCTIONS.md` steer the agent to emit the blob-URL form reliably enough to clear
+0.80? Only a real run answers it.
+
+**3. The loop is as advertised.** `shouldCheckUpdateNoop` plus snapshot tracking are in the
+shipped code, both telemetry opt-outs (`OPENWIKI_TELEMETRY_DISABLED`, `DO_NOT_TRACK`) are
+honoured, and the CLI exposes `--init` / `--update` / `--print` for non-interactive CI use.
+
+### Phase B — the run that decides — NOT DONE
+
+Blocked on a model credential: no `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` / `GEMINI_API_KEY` in
+the environment, and OpenWiki defaults to OpenAI `gpt-5.6-terra`. This phase spends money and
+must run against an isolated copy of the repository, never the working tree. Exit criteria are
+unchanged, and criterion (1) is now the only one in real doubt.
 
 ## Alternatives considered
 
