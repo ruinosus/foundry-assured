@@ -1,0 +1,215 @@
+{
+  "key": "foundry-helpdesk-backend-v0.20260815",
+  "title": "foundry-helpdesk-backend v0.20260815",
+  "source": {
+    "type": "repo",
+    "ref": "/home/runner/work/foundry-assured/foundry-assured",
+    "commit": "17007d047c04d71b39fc69768e22595db86a1a8c"
+  },
+  "language": "pt-br",
+  "model": "openwiki/gpt-5.4",
+  "generatedAt": "2026-08-15T15:02:32.049Z",
+  "kind": "element",
+  "component": "foundry-helpdesk-backend",
+  "componentVersion": "v0.20260815",
+  "releaseVersion": null,
+  "groups": null,
+  "pages": [
+    {
+      "id": "page-1",
+      "title": "OpenWiki quickstart",
+      "order": 1,
+      "file": "pages/page-1.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-2",
+      "title": "Dedicated mode infrastructure",
+      "order": 2,
+      "file": "pages/page-2.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-3",
+      "title": "Infrastructure deployment",
+      "order": 3,
+      "file": "pages/page-3.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-4",
+      "title": "Infrastructure identity and access",
+      "order": 4,
+      "file": "pages/page-4.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-5",
+      "title": "End-to-end tests and validation recipes",
+      "order": 5,
+      "file": "pages/page-5.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-6",
+      "title": "Evaluation harness",
+      "order": 6,
+      "file": "pages/page-6.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-7",
+      "title": "Security and fidelity gates",
+      "order": 7,
+      "file": "pages/page-7.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-8",
+      "title": "Admin and tenant management APIs",
+      "order": 8,
+      "file": "pages/page-8.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-9",
+      "title": "Declarative agent definitions",
+      "order": 9,
+      "file": "pages/page-9.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-10",
+      "title": "Backend application overview",
+      "order": 10,
+      "file": "pages/page-10.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-11",
+      "title": "Backend auth and tenancy",
+      "order": 11,
+      "file": "pages/page-11.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-12",
+      "title": "Backend domains and endpoints",
+      "order": 12,
+      "file": "pages/page-12.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-13",
+      "title": "Evaluations and tickets",
+      "order": 13,
+      "file": "pages/page-13.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-14",
+      "title": "Grounded domains",
+      "order": 14,
+      "file": "pages/page-14.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-15",
+      "title": "Helpdesk workflow",
+      "order": 15,
+      "file": "pages/page-15.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-16",
+      "title": "Knowledge pipeline",
+      "order": 16,
+      "file": "pages/page-16.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-17",
+      "title": "Platform domain",
+      "order": 17,
+      "file": "pages/page-17.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-18",
+      "title": "Retrieval and ACL enforcement",
+      "order": 18,
+      "file": "pages/page-18.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-19",
+      "title": "Automation and release workflows",
+      "order": 19,
+      "file": "pages/page-19.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-20",
+      "title": "Repository architecture",
+      "order": 20,
+      "file": "pages/page-20.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-21",
+      "title": "Frontend admin, evals, and tickets pages",
+      "order": 21,
+      "file": "pages/page-21.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-22",
+      "title": "Frontend application overview",
+      "order": 22,
+      "file": "pages/page-22.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-23",
+      "title": "Frontend demo mode",
+      "order": 23,
+      "file": "pages/page-23.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-24",
+      "title": "Domain console",
+      "order": 24,
+      "file": "pages/page-24.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-25",
+      "title": "Hosted helpdesk agent",
+      "order": 25,
+      "file": "pages/page-25.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-26",
+      "title": "Hosted agents overview",
+      "order": 26,
+      "file": "pages/page-26.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-27",
+      "title": "Hosted platform agent",
+      "order": 27,
+      "file": "pages/page-27.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-28",
+      "title": "Hosted selfwiki and cockpit agents",
+      "order": 28,
+      "file": "pages/page-28.md",
+      "audience": "base"
+    }
+  ]
+}
