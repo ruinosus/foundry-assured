@@ -1,8 +1,18 @@
 # ADR-012 — Reuse upstream deep-wiki tooling for the self-wiki (don't reinvent the generator)
 
-- **Status:** Accepted
+- **Status:** Accepted; **freshness automation revisited 2026-08-15** by
+  [ADR-016](./ADR-016-openwiki-closes-the-freshness-loop.md)
 - **Date:** 2026-07-02
 - **Context:** the `selfwiki` domain + [`docs/wiki/`](../wiki/README.md); refines the wiki-generation half of the [assurance mechanism](../ASSURANCE-MECHANISM-PLAN.md)
+
+> **Amendment (2026-08-15).** The generator decision and the assurance layer below stand —
+> the vendored `deep-wiki` plugin still writes the wiki, and the bundle format, fidelity gate,
+> freshness gate and KB ingest are unchanged. What did not happen is the third bullet:
+> "Freshness → regen, OpenWiki-style" shipped as a template whose regeneration step is a
+> guarded `echo`, so nothing ever closed the loop. Six weeks later the bundles are still at
+> v0.3.0 and `deep-wiki tracks the code` is red on every PR.
+> [ADR-016](./ADR-016-openwiki-closes-the-freshness-loop.md) proposes consuming OpenWiki as the
+> freshness engine instead of writing that step ourselves.
 
 ## Context
 
