@@ -26,6 +26,9 @@ param appUsersGroupId string = ''
 @description('Type of principalId: User locally, ServicePrincipal in CI/CD (azd maps AZURE_PRINCIPAL_TYPE).')
 param principalType string = 'User'
 
+@description('Object ID of the CI/CD service principal (the OIDC deploy identity), granted the SAME data-plane roles as principalId. Separate because principalId holds whoever ran the last provision — in practice a person — so CI would otherwise never receive them. azd maps AZURE_CI_PRINCIPAL_ID. Empty skips.')
+param ciPrincipalId string = ''
+
 @description('Model deployment name, surfaced to the app as FOUNDRY_MODEL.')
 param modelDeploymentName string = 'gpt-5-mini'
 
@@ -61,6 +64,7 @@ module resources 'resources.bicep' = {
     resourceToken: resourceToken
     principalId: principalId
     principalType: principalType // 'User' locally, 'ServicePrincipal' in CI/CD
+    ciPrincipalId: ciPrincipalId
     appUsersGroupId: appUsersGroupId
     modelDeploymentName: modelDeploymentName
     searchLocation: effectiveSearchLocation // region override for AI Search capacity
