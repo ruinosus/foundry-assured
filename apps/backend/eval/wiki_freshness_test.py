@@ -24,11 +24,28 @@ _ROOT = Path(__file__).resolve().parents[3]
 _WIKI = _ROOT / "docs" / "wiki"
 
 # Generated component → the source area it was built from (relative to the repo root).
+#
+# ONE component, the whole repository. The four per-area bundles that came before are still on
+# disk and still ingested, but they are no longer graded — see _RETIRED below.
+#
+# Why the split ended: OpenWiki keeps a single `openwiki/` for a repository, while the bundles
+# were per-area. The first area worked (an --init into an empty directory); the second would have
+# run `--update` against a wiki about a DIFFERENT area, with the generator scoped away from the
+# very files that wiki describes. One wiki out, one bundle in, and the mismatch disappears.
 _AREA = {
-    "foundry-helpdesk-backend": "apps/backend",
-    "foundry-helpdesk-frontend": "apps/frontend",
-    "foundry-helpdesk-infra": "infra",
-    "foundry-helpdesk-docs": "docs",
+    "foundry-assured": ".",
+}
+
+# Bundles kept for history and still in the KB, deliberately NOT graded: their source areas moved
+# under the single-bundle model, so grading them would report drift that nobody can ever fix —
+# a permanently red gate, which is how this repository lost eight weeks of signal once already.
+# They are LISTED in the output rather than skipped in silence: "not graded" must be visible, or
+# it reads as "checked and fine".
+_RETIRED = {
+    "foundry-helpdesk-backend",
+    "foundry-helpdesk-frontend",
+    "foundry-helpdesk-infra",
+    "foundry-helpdesk-docs",
 }
 
 
@@ -62,11 +79,15 @@ def main() -> int:
         print("⏭️  no docs/wiki — nothing to check.")
         return 0
     stale: list[tuple[str, str, str, str]] = []
+    retired: set[str] = set()
     checked = 0
     for manifest in sorted(_WIKI.rglob("manifest.json")):
         meta = json.loads(manifest.read_text(encoding="utf-8"))
         comp = meta.get("component") or manifest.parent.parent.name
         gen = meta.get("generatedAt")
+        if comp in _RETIRED:
+            retired.add(comp)
+            continue
         area = _AREA.get(comp)
         if not (gen and area):
             continue
@@ -77,12 +98,22 @@ def main() -> int:
         if datetime.fromisoformat(commit) > datetime.fromisoformat(gen):
             stale.append((comp, area, gen, commit))
 
+    if retired:
+        print(f"ℹ️  not graded (retired per-area bundles, kept for history): {', '.join(sorted(retired))}\n")
+
     if stale:
         print("❌ Wiki STALE — source changed after the wiki was generated:\n")
         for comp, area, gen, commit in stale:
             print(f"   {comp}: {area} last changed {commit}  >  wiki generated {gen}")
         print("\n   → regenerate: wiki_builder --repo <area> … then re-ingest "
               "(see docs/wiki/README.md), and commit the refreshed bundle.")
+        return 1
+    if not checked:
+        # "0 bundles checked, all fresh" is a pass that means nothing — the failure mode this
+        # workflow exists to avoid. With no gradable bundle the honest answer is the same as
+        # drift, and it is also the useful one: this output drives wiki-regen, and "no wiki yet"
+        # is precisely when regeneration should run.
+        print(f"❌ No gradable bundle for {', '.join(sorted(_AREA))} — nothing documents the repository yet.")
         return 1
     print(f"✅ Wiki fresh — all {checked} bundle(s) newer than their source.")
     return 0
