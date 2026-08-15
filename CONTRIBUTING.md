@@ -84,6 +84,8 @@ Full conventions live in the [DNA repo docs](https://github.com/ruinosus/dna/tre
 | `eval-cloud.yml` | weekly + manual | Foundry groundedness/relevance/coherence (+ `--safety`) |
 | `deploy.yml` | manual | `azd` deploy backend + frontend to Container Apps |
 | `provision-kb.yml` | manual | re-ingest the knowledge base |
+| `wiki-freshness.yml` | push to `main` + weekly + callable | detects wiki drift. **Not a PR check** — it is the trigger `wiki-regen.yml` consumes ([ADR-016](./docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md)) |
+| `wiki-regen.yml` | manual | on drift: OpenWiki regenerates → adapter → **fidelity gate** → opens a PR. Needs the OpenWiki config below |
 | `release.yml` | push to `main` | release-please: version bump + changelog + tag (needs the GitHub App, below) |
 
 ### One-time GitHub setup (for the Azure workflows)
@@ -129,6 +131,13 @@ The cloud workflows authenticate to Azure with **OIDC** (no stored credentials).
    on the Foundry and Search data planes. Assigning the roles with `az role assignment create`
    instead would break the next provision — the template names assignments
    `guid(scope, principal, role)`, and the CLI mints a random name for the same triple.
+5. **For `wiki-regen.yml` (optional — only if you run the wiki loop):**
+   - **Variables:** `OPENWIKI_BASE_URL` (an Azure OpenAI `/openai/v1` endpoint — OpenWiki has no
+     `azure` provider, but its `openai-compatible` one takes that surface directly),
+     `OPENWIKI_MODEL` (a deployment name; a small model stalls on this job).
+   - **Secret:** `OPENWIKI_API_KEY` — sent as a bearer token, which the Azure `v1` surface accepts.
+
+   Leave them unset and the workflow simply cannot run; nothing else is affected.
 
 > **Separate from CI:** the `foundry-assured-ci` app above is the *deploy* identity. The
 > **runtime** app also needs **app-only Microsoft Graph permissions** for the RBAC / admin
