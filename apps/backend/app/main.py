@@ -20,7 +20,7 @@ from app.agents.mcp.registry import SERVERS
 from app.api import api_router
 from app.core import tenant_resolution, tenant_store
 from app.domains import mount_domains
-from app.services.hosted import aclose as hosted_aclose
+from app.modules.hosted.public import aclose as hosted_aclose
 from app.shared.auth import azure_scheme
 from app.shared.settings import settings
 from app.shared.telemetry import setup_telemetry

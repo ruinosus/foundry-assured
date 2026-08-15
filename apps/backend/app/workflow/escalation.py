@@ -29,7 +29,7 @@ from agent_framework import (
 )
 
 from app.shared.auth import has_role
-from app.tools.tickets import create_ticket
+from app.modules.tickets.public import create_ticket
 
 TICKET_PREFIX = "TICKET:"
 

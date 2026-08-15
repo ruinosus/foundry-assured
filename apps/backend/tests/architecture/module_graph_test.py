@@ -37,9 +37,9 @@ MAP: dict[str, str] = {
     "core/tenant_store.py": "tenancy",
     "core/onboarding.py": "tenancy",
     "api/tenant.py": "tenancy",
-    "services/graph.py": "admin",
-    "api/admin.py": "admin",
-    "api/me.py": "admin",
+    "modules/admin/internal/graph.py": "admin",
+    "modules/admin/api_admin.py": "admin",
+    "modules/admin/api_me.py": "admin",
     "services/retrieval.py": "knowledge",
     "agents/secure_search.py": "knowledge",
     "services/grounded.py": "grounded",
@@ -50,12 +50,16 @@ MAP: dict[str, str] = {
     "agents/platform.py": "platform_ops",
     "agents/mcp/registry.py": "platform_ops",
     "agents/mcp/tools.py": "platform_ops",
-    "tools/tickets.py": "tickets",
-    "api/tickets.py": "tickets",
-    "services/hosted.py": "hosted",
-    "api/chat.py": "hosted",
-    "services/foundry_evals.py": "evaluation",
-    "api/evals.py": "evaluation",
+    "modules/tickets/internal/tickets.py": "tickets",
+    "modules/tickets/api.py": "tickets",
+    "modules/tickets/public.py": "tickets",
+    "modules/hosted/internal/hosted.py": "hosted",
+    "modules/hosted/public.py": "hosted",
+    "modules/hosted/api.py": "hosted",
+    "modules/evaluation/internal/foundry_evals.py": "evaluation",
+    "modules/evaluation/public.py": "evaluation",
+    "modules/evaluation/api.py": "evaluation",
+    "modules/admin/public.py": "admin",
     "agents/prompts.py": "agentdefs",
     "agents/definitions.py": "agentdefs",
     "domains.py": "COMPOSITION",
@@ -90,16 +94,19 @@ def build_graph() -> tuple[dict[str, dict[str, list[str]]], list[str]]:
 
     for path in sorted(APP.rglob("*.py")):
         relative = str(path.relative_to(APP))
+        tree = ast.parse(path.read_text())
         source = module_of(relative)
         if source is None:
             # A package marker may be skipped; an __init__ that imports anything may not, or
-            # its edges would vanish from the graph without anyone noticing.
-            marker = path.name == "__init__.py" and "import " not in path.read_text()
-            if not marker:
+            # its edges would vanish from the graph without anyone noticing. Decided from the
+            # AST, not from the text: a docstring that merely mentions the word "import" is
+            # still a marker.
+            imports = any(isinstance(n, (ast.Import, ast.ImportFrom)) for n in ast.walk(tree))
+            if path.name != "__init__.py" or imports:
                 unmapped.append(relative)
             continue
 
-        for node in ast.walk(ast.parse(path.read_text())):
+        for node in ast.walk(tree):
             targets: list[str] = []
             if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("app."):
                 targets.append(node.module[len("app.") :])

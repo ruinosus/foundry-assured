@@ -59,6 +59,96 @@ type = "forbidden"
 source_modules = ["app.core"]
 forbidden_modules = ["app.agents"]
 
+# --- C3 (Phase 3) — internals are private. One contract per module; the source list is every
+# OTHER module plus the composition root, so a module can still reach its own internal.
+[[tool.importlinter.contracts]]
+name = "tickets internals are private"
+type = "forbidden"
+# Direct imports only: `public.py` re-exporting from its OWN internal is the design,
+# and the composition root reaching a module through its public is a legitimate chain.
+# Without this, every such chain is reported as an indirect violation.
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.admin",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.main",
+    "app.domains",
+    "app.api",
+    "app.agents",
+    "app.core",
+    "app.services",
+    "app.workflow",
+    "app.knowledge",
+]
+forbidden_modules = ["app.modules.tickets.internal"]
+
+[[tool.importlinter.contracts]]
+name = "admin internals are private"
+type = "forbidden"
+# Direct imports only: `public.py` re-exporting from its OWN internal is the design,
+# and the composition root reaching a module through its public is a legitimate chain.
+# Without this, every such chain is reported as an indirect violation.
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.main",
+    "app.domains",
+    "app.api",
+    "app.agents",
+    "app.core",
+    "app.services",
+    "app.workflow",
+    "app.knowledge",
+]
+forbidden_modules = ["app.modules.admin.internal"]
+
+[[tool.importlinter.contracts]]
+name = "hosted internals are private"
+type = "forbidden"
+# Direct imports only: `public.py` re-exporting from its OWN internal is the design,
+# and the composition root reaching a module through its public is a legitimate chain.
+# Without this, every such chain is reported as an indirect violation.
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tickets",
+    "app.modules.admin",
+    "app.modules.evaluation",
+    "app.main",
+    "app.domains",
+    "app.api",
+    "app.agents",
+    "app.core",
+    "app.services",
+    "app.workflow",
+    "app.knowledge",
+]
+forbidden_modules = ["app.modules.hosted.internal"]
+
+[[tool.importlinter.contracts]]
+name = "evaluation internals are private"
+type = "forbidden"
+# Direct imports only: `public.py` re-exporting from its OWN internal is the design,
+# and the composition root reaching a module through its public is a legitimate chain.
+# Without this, every such chain is reported as an indirect violation.
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tickets",
+    "app.modules.admin",
+    "app.modules.hosted",
+    "app.main",
+    "app.domains",
+    "app.api",
+    "app.agents",
+    "app.core",
+    "app.services",
+    "app.workflow",
+    "app.knowledge",
+]
+forbidden_modules = ["app.modules.evaluation.internal"]
+
 # =====================================================================================
 # TARGET CONTRACTS — enabled by the phase named on each. Kept here so the destination is
 # reviewable before the code moves (ADR-017).

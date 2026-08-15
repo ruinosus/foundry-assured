@@ -93,7 +93,7 @@ async def stream_grounded(body: dict, domain, user=None) -> AsyncGenerator[str]:
     from ag_ui.encoder import EventEncoder
     from azure.ai.projects.aio import AIProjectClient
 
-    from app.services.hosted import _last_user_text
+    from app.modules.hosted.public import last_user_text as _last_user_text
     from app.services.retrieval import retrieve
 
     user_text = _last_user_text(body.get("messages") or [])

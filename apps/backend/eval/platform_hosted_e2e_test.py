@@ -46,7 +46,7 @@ def main() -> int:
     # are fenced `TODO(infra-gated)` (Task 0) — confirm + assert them here against a deployed agent.
     #
     # NAMESPACE NOTE: to point the bridge at a configured endpoint, patch
-    #   app.services.hosted.tenant_config  (the IMPORTING namespace — hosted.py imports the
+    #   app.modules.hosted.internal.hosted.tenant_config  (the IMPORTING namespace — hosted.py imports the
     #   symbol `from app.core.tenant import tenant_config`, so rebinding app.core.tenant's
     #   attribute alone won't affect the already-imported reference inside hosted.py),
     # NOT app.core.tenant.tenant_config.

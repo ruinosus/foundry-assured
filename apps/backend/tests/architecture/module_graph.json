@@ -27,17 +27,17 @@
   },
   "admin": {
     "shared": [
-      "api/admin.py",
-      "api/me.py",
-      "services/graph.py"
+      "modules/admin/api_admin.py",
+      "modules/admin/api_me.py",
+      "modules/admin/internal/graph.py"
     ]
   },
   "evaluation": {
     "shared": [
-      "api/evals.py"
+      "modules/evaluation/api.py"
     ],
     "tenancy": [
-      "services/foundry_evals.py"
+      "modules/evaluation/internal/foundry_evals.py"
     ]
   },
   "grounded": {
@@ -82,15 +82,15 @@
   },
   "hosted": {
     "COMPOSITION": [
-      "api/chat.py"
+      "modules/hosted/api.py"
     ],
     "shared": [
-      "api/chat.py",
-      "services/hosted.py"
+      "modules/hosted/api.py",
+      "modules/hosted/internal/hosted.py"
     ],
     "tenancy": [
-      "api/chat.py",
-      "services/hosted.py"
+      "modules/hosted/api.py",
+      "modules/hosted/internal/hosted.py"
     ]
   },
   "knowledge": {
@@ -131,7 +131,7 @@
   },
   "tickets": {
     "shared": [
-      "api/tickets.py"
+      "modules/tickets/api.py"
     ]
   }
 }

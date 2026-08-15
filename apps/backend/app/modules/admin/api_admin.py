@@ -11,8 +11,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.shared.auth import APP_ROLES, require_role
-from app.services import graph
-from app.services.graph import GraphError
+from app.modules.admin.internal import graph
+from app.modules.admin.public import GraphError
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
