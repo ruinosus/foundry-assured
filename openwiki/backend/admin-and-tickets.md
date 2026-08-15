@@ -1,3 +1,10 @@
+---
+type: backend module
+title: Admin, tenant management, and tickets
+description: Administrative HTTP surfaces for Graph-backed user management, tenant-scoped connection management, and persisted ticket records opened by the helpdesk workflow.
+tags: [backend, admin, tickets, graph]
+---
+
 # Admin, tenant management, and tickets
 
 The backend has three operator-facing HTTP surfaces that sit outside the live domain endpoints: admin user and role management, tenant-scoped onboarding and connection management, and ticket persistence/readback. They are separate modules, but they work together as the repository’s control plane.

@@ -1,6 +1,4 @@
 # Files
 
-- [Admin, evaluations, and tickets pages](admin-evals-and-tickets.md) - Workspace-facing frontend pages for operational data and admin control, including role-based visibility, backend dependencies, and how each page maps to a backend API family.
-- [Assurance console](assurance-console.md) - Shared domain console for all agents, combining CopilotKit chat, workflow and approval widgets, live-versus-hosted switching, and evidence rendering.
-- [Frontend overview](overview.md) - Next.js frontend architecture for Foundry Assured, including shell composition, domain registry, auth setup, demo mode, and the workspace pages that sit around the shared assurance console.
-- [Frontend proxies and request flow](proxies-and-request-flow.md) - Browser-to-Next-to-backend request paths, including the generic domain route, CopilotKit proxying, bearer-token forwarding, and the operational proxies for admin, tenant, tickets, evals, and me.
+- [Frontend API proxies and admin surfaces](api-proxies-and-admin.md) - Route-handler layer that proxies browser requests to the backend, plus the admin pages that drive tenant and role management through those proxies.
+- [Frontend app and client runtime](app-and-runtime.md) - The Next.js shell, generic domain console, CopilotKit wiring, auth token forwarding, hosted/live toggles, EvidencePanel behavior, and demo mode.

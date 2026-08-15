@@ -1,6 +1,4 @@
 # Files
 
-- [Hosted cockpit and selfwiki agents](cockpit-and-selfwiki.md) - Hosted grounded twins for cockpit and selfwiki, including shared Responses packaging, prompt parity with live domains, and env-driven KB grounding.
-- [Hosted helpdesk agent](helpdesk.md) - Hosted helpdesk packaging over Responses, including workflow construction, env-driven config, and the live features it intentionally omits.
-- [Hosted agents overview](overview.md) - Strategy and repository structure for the four hosted-agent apps, including protocol splits, deploy surfaces from azure.yaml, and live-versus-hosted parity boundaries.
-- [Hosted platform agent](platform.md) - Invocations-based hosted platform packaging, toolbox binding seam, deploy-time configuration, and the unresolved infra-verified details that still constrain safe changes.
+- [Hosted platform agent over Invocations](platform-invocations.md) - The hosted platform concierge’s Invocations-based runtime, Toolbox contract, approval-parity goals, and the backend/frontend risks that are still infra-gated.
+- [Responses-hosted agents](responses-agents.md) - Hosted helpdesk, cockpit, and selfwiki containers that serve the Responses protocol through Foundry Agent Service. This page covers their shared deployment pattern and their deliberate parity gaps versus the live backend.

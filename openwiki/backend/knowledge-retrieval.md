@@ -1,3 +1,10 @@
+---
+type: backend module
+title: Knowledge retrieval and ACL enforcement
+description: Retrieval seam for grounded domains, including native and direct-search paths, per-user search tokens, docKey decoding, centralized dedupe, and fail-closed ACL behavior.
+tags: [backend, knowledge, retrieval, acl]
+---
+
 # Knowledge retrieval and ACL enforcement
 
 `modules/knowledge.internal.retrieval` is the backend’s single retrieval seam. The file says so in its header: every grounded domain calls `retrieve()`, which hides two engines and two identity layers behind one interface ([apps/backend/app/modules/knowledge/internal/retrieval.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/knowledge/internal/retrieval.py#L1-L23)). This module is also where the repository’s most important data-access invariant lives: **ACL trimming happens before the model sees content**.

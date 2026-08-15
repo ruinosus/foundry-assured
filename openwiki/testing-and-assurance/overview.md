@@ -1,6 +1,13 @@
+---
+type: testing and assurance
+title: Testing and assurance overview
+description: Evidence map for the repository’s assurance mechanism, from architecture-boundary tests and module suites to retrieval ACL probes, browser E2E runs, and wiki fidelity gates.
+tags: [testing, assurance, evals]
+---
+
 # Testing and assurance overview
 
-The repository’s testing strategy is organized around guarantees, not just code coverage. The README defines the five assurance pillars as build fidelity, recall, completeness, access control, and red-team robustness, each backed by gates in `apps/backend/eval/assurance.yaml` rather than hand-wavy promises (README.md). The backend package tree and test layout reinforce that split: architecture tests pin structure, module-focused tests pin subsystem behavior, and browser E2E tests pin user-visible end-to-end flows ([apps/backend/tests](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests), [e2e/playwright.config.ts](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/e2e/playwright.config.ts#L15-L38)).
+The repository’s testing strategy is organized around guarantees, not just code coverage. The README defines the five assurance pillars as build fidelity, recall, completeness, access control, and red-team robustness, each backed by gates in `apps/backend/eval/assurance.yaml` rather than hand-wavy promises ([README.md](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/README.md#L155-L172)). The backend package tree and test layout reinforce that split: architecture tests pin structure, module-focused tests pin subsystem behavior, and browser E2E tests pin user-visible end-to-end flows ([apps/backend/tests](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests), [e2e/playwright.config.ts](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/e2e/playwright.config.ts#L15-L38)).
 
 ## Architecture and boundary tests
 
@@ -39,7 +46,7 @@ The Playwright suite is the user-facing confidence layer. `smoke.spec.ts` signs 
 
 ## Wiki fidelity and freshness evidence
 
-The repository’s wiki assurance loop is itself tested. `openwiki/INSTRUCTIONS.md` explains that a backend fidelity gate scores pages by the fraction of citations resolving to real source files and rejects ingestion below the configured floor (openwiki/INSTRUCTIONS.md). ADR-016 turns that from process lore into an architectural rule: generation can be automated, but verification and ingest ownership remain local (docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md).
+The repository’s wiki assurance loop is itself tested. `openwiki/INSTRUCTIONS.md` explains that a backend fidelity gate scores pages by the fraction of citations resolving to real source files and rejects ingestion below the configured floor ([openwiki/INSTRUCTIONS.md](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/openwiki/INSTRUCTIONS.md#L6-L35)). ADR-016 turns that from process lore into an architectural rule: generation can be automated, but verification and ingest ownership remain local ([docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md#L68-L79)).
 
 ## Practical validation strategy
 

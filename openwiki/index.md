@@ -4,7 +4,7 @@ okf_version: "0.1"
 
 # Files
 
-- [Foundry Assured wiki quickstart](quickstart.md) - Entry point for the repository wiki, with a map of systems, task routing to canonical pages, and the shortest validation paths for common changes.
+- [OpenWiki quickstart](quickstart.md) - Entry point for the repository wiki. Use this page to route from an engineering task or change area to the canonical wiki page, source-owned subsystem, focused tests, and smallest useful validation step.
 
 # Directories
 
@@ -12,6 +12,5 @@ okf_version: "0.1"
 - [backend](backend/)
 - [frontend](frontend/)
 - [hosted-agents](hosted-agents/)
-- [infra](infra/)
-- [operations](operations/)
-- [testing-and-evals](testing-and-evals/)
+- [infra-and-ops](infra-and-ops/)
+- [testing-and-assurance](testing-and-assurance/)

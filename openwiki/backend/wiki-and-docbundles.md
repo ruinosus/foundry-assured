@@ -1,6 +1,13 @@
+---
+type: backend module
+title: Wiki adaptation and docbundle contracts
+description: How generated wiki outputs become ingestable docbundles, how OpenWiki and deep-wiki producers are adapted, and how the repository preserves freshness and fidelity contracts.
+tags: [backend, wiki, docbundles, openwiki]
+---
+
 # Wiki adaptation and docbundle contracts
 
-The repository treats generated wikis as structured ingestion artifacts, not free-form docs. ADR-016 defines the target loop: OpenWiki owns freshness automation, but this repository keeps ownership of the adapter, bundle format, fidelity gate, and ingest decision (docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md, docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md). The code that makes that decision concrete lives in the knowledge module, because generated wiki bundles are just another knowledge corpus.
+The repository treats generated wikis as structured ingestion artifacts, not free-form docs. ADR-016 defines the target loop: OpenWiki owns freshness automation, but this repository keeps ownership of the adapter, bundle format, fidelity gate, and ingest decision ([docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md#L54-L83), [docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md#L88-L99)). The code that makes that decision concrete lives in the knowledge module, because generated wiki bundles are just another knowledge corpus.
 
 ## Why adapters exist
 
@@ -32,7 +39,7 @@ This diagram shows the adaptation path from OpenWiki output to ingestable bundle
 
 ## Freshness and fidelity loop
 
-ADR-016 makes a sharp division of responsibility: freshness detection and update orchestration can be outsourced, but correctness stays repository-owned via fidelity verification and bundle ingest rules (docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md). The adapter comments reinforce this by preserving the documented commit from OpenWiki’s receipt rather than substituting “current HEAD now,” because the freshness gate compares against the documented tree, not whatever happens to exist when adaptation runs ([apps/backend/app/modules/knowledge/internal/adapt_openwiki.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/knowledge/internal/adapt_openwiki.py#L186-L193)).
+ADR-016 makes a sharp division of responsibility: freshness detection and update orchestration can be outsourced, but correctness stays repository-owned via fidelity verification and bundle ingest rules ([docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md#L68-L79)). The adapter comments reinforce this by preserving the documented commit from OpenWiki’s receipt rather than substituting “current HEAD now,” because the freshness gate compares against the documented tree, not whatever happens to exist when adaptation runs ([apps/backend/app/modules/knowledge/internal/adapt_openwiki.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/knowledge/internal/adapt_openwiki.py#L186-L193)).
 
 This is also why the repository’s `openwiki/INSTRUCTIONS.md` is so strict about GitHub blob citations with commit SHA and line ranges: the adapter can preserve content shape, but it cannot invent verifiable citations after the fact.
 

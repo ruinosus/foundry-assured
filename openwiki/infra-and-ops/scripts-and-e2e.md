@@ -1,3 +1,10 @@
+---
+type: operations
+title: Operational scripts and end-to-end flows
+description: Repository scripts for bootstrap, auth setup, prompt publishing, and one-shot deployment, plus Playwright browser tests that verify auth, ACL, and runtime behavior.
+tags: [ops, scripts, e2e, playwright]
+---
+
 # Operational scripts and end-to-end flows
 
 The repository’s shell scripts are not incidental helpers; together they form the supported operator workflow for local bring-up, cloud deployment, auth setup, prompt publishing, and demos. The e2e Playwright suite is the browser-level evidence that those workflows result in a working product.
@@ -16,7 +23,7 @@ The repository’s shell scripts are not incidental helpers; together they form 
 
 ## Demo and fixture workflows
 
-The frontend package scripts reference repo-level `demo.sh` and `demo-record.sh`, which let contributors replay or re-record AG-UI fixtures instead of running a live Azure backend ([apps/frontend/package.json](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/package.json#L5-L13)). The README documents this as the no-Azure demo path, and `lib/demo.ts` encodes the frontend runtime switch for it (README.md, [apps/frontend/lib/demo.ts](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/lib/demo.ts#L1-L5)).
+The frontend package scripts reference repo-level `demo.sh` and `demo-record.sh`, which let contributors replay or re-record AG-UI fixtures instead of running a live Azure backend ([apps/frontend/package.json](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/package.json#L5-L13)). The README documents this as the no-Azure demo path, and `lib/demo.ts` encodes the frontend runtime switch for it ([README.md](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/README.md#L120-L139), [apps/frontend/lib/demo.ts](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/lib/demo.ts#L1-L5)).
 
 ## Browser E2E test families
 

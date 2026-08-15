@@ -1,3 +1,10 @@
+---
+type: architecture
+title: Authentication and identity architecture
+description: End-to-end identity model for frontend MSAL sign-in, backend bearer validation, OBO credentialing, roles, onboarding guards, and auth-disabled local behavior.
+tags: [architecture, auth, identity, entra]
+---
+
 # Authentication and identity architecture
 
 Identity is a cross-cutting contract in this repository, not a backend middleware detail. The backend’s shared auth module describes the intended flow in its module docstring: the frontend acquires an Entra access token for the backend API, `require_user` validates that token and stores the `User` in a context variable, and downstream code calls `credential_for_request()` to mint an OBO credential so Foundry, Search, and memory run as the signed-in user ([apps/backend/app/shared/auth.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/shared/auth.py#L1-L18)). When auth is disabled, the same module intentionally degrades to `DefaultAzureCredential` and no-op dependencies so local development still works ([apps/backend/app/shared/auth.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/shared/auth.py#L16-L18), [apps/backend/app/shared/auth.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/shared/auth.py#L109-L117)).

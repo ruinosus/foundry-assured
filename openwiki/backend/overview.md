@@ -1,97 +1,82 @@
 ---
-type: service-overview
+type: backend architecture
 title: Backend overview
-description: Composition root and runtime map for the FastAPI backend, including app startup, router aggregation, domain mounting, service boundaries, and the main invariants that constrain safe changes.
-tags: [backend, fastapi, ag-ui, runtime]
+description: Composition-root map for the FastAPI backend, including lifecycle ordering, module boundaries, router inclusion, and domain mounting. Start here before changing any backend module.
+tags: [backend, fastapi, architecture]
 ---
 
-The backend is a Python 3.12 FastAPI service that owns three kinds of runtime surface at once: plain HTTP APIs, live AG-UI domain endpoints, and bridges to hosted Azure AI agents. The composition root is intentionally thin: `app.main` creates the app, preloads OpenID metadata when auth is enabled, applies CORS, includes the router bundle, and delegates all live domain registration to `mount_domains(app)`.[`apps/backend/pyproject.toml`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/pyproject.toml#L1-L18) [`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L1-L10) [`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L26-L35) [`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L37-L49)
+# Backend overview
 
-## Composition root and package map
+The backend is a Python 3.12 FastAPI application packaged as `foundry-helpdesk-backend`, with dependencies for Agent Framework, AG-UI, Foundry/Search/identity integrations, telemetry, and declarative agent loading ([apps/backend/pyproject.toml](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/pyproject.toml#L1-L18), [apps/backend/pyproject.toml](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/pyproject.toml#L19-L42)). ADR-017 is the governing architectural decision: the backend is a modular monolith organized by business domain with a shared kernel and one composition root, and CI is expected to enforce those boundaries rather than rely on team discipline ([docs/adr/ADR-017-module-boundaries.md](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/docs/adr/ADR-017-module-boundaries.md#L53-L75), [docs/adr/ADR-017-module-boundaries.md](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/docs/adr/ADR-017-module-boundaries.md#L125-L134)).
 
-The top-level backend packages break down as follows:
+## Composition root and lifecycle order
 
-- `app/api`: conventional HTTP routers for health, hosted chat bridges, tickets, evals, me, admin, and shared-mode tenant APIs.[`apps/backend/app/api/__init__.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/api/__init__.py#L1-L19)
-- `app/core`: auth, settings, tenant config/provider seam, onboarding, and shared-mode store setup.[`apps/backend/app/core/auth.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/auth.py#L1-L20) [`apps/backend/app/core/tenant.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/tenant.py#L18-L25)
-- `app/services`: grounded answering, hosted-agent bridging, retrieval seam, Foundry evals, and Graph-backed admin service code.[`apps/backend/app/services/grounded.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/services/grounded.py#L1-L18) [`apps/backend/app/services/hosted.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/services/hosted.py#L1-L8) [`apps/backend/app/services/retrieval.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/services/retrieval.py#L1-L18)
-- `app/workflow`: helpdesk workflow graph, individual workflow agents, escalation executor, memory integration, and AG-UI stream-order workaround.[`apps/backend/app/workflow/graph.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/workflow/graph.py#L1-L14) [`apps/backend/app/workflow/stream_fix.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/workflow/stream_fix.py#L1-L15)
-- `app/knowledge`: ingest, ACL setup, docbundle schema/adapter logic, and wiki generation/adaptation pipeline.[`apps/backend/app/knowledge/adapt_openwiki.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/knowledge/adapt_openwiki.py#L1-L16) [`apps/backend/app/knowledge/ingest_docbundles.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/knowledge/ingest_docbundles.py#L1-L18)
+`app.main` is intentionally thin and heavily commented because order matters. It sets up telemetry first, installs tenancy into auth flow second, injects the platform server catalog into tenancy third, then defines lifespan, app object, CORS, router inclusion, and domain mounting ([apps/backend/app/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/main.py#L27-L67)). Two of those steps are load-bearing invariants:
 
-## Domain mounting is the live runtime seam
+- `tenancy.install()` must run before `mount_domains()` so lazy `tenant_config()` reads see the shared-mode provider instead of the single-tenant default ([apps/backend/app/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/main.py#L31-L35)).
+- `tenancy.set_server_catalog(server.id for server in SERVERS)` is what breaks the tenancy↔platform cycle by handing tenancy a catalog rather than letting it import platform registry data directly ([apps/backend/app/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/main.py#L37-L41)).
 
-The most important backend extension surface is `app.domains`. A `DomainSpec` row captures the domain id, kind, grounding pointers, ACL map, and optional hosted twin, and `mount_domains()` walks the registry once to register live endpoints based on `kind`. Crucially, `_domains()` reads `tenant_config()` lazily when called rather than at import time, so importing `app.domains` has no request-time side effects and shared mode can defer tenant-specific values until a request has resolved the current tenant.[`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L34-L60) [`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L63-L99) [`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L167-L176)
-
-That has two important consequences for safe changes:
-
-- Adding or changing a live domain usually starts in the domain registry, not in `main.py`.[`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L44-L49)
-- Grounded domains must supply either `kb_name` or `search_index`, or the registry raises immediately in `__post_init__` rather than allowing broken retrieval URLs to surface later.[`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L36-L42) [`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L54-L60)
-
-## Router aggregation and API families
-
-`api_router` deliberately excludes the live `/helpdesk`, `/cockpit`, `/selfwiki`, and `/platform` endpoints; those are registered directly on the FastAPI app through the domain mounting loop. The router bundle instead owns the standard REST-like surfaces and hosted bridges.[`apps/backend/app/api/__init__.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/api/__init__.py#L1-L17)
-
-The main API families are:
-
-- `health` for simple service readiness.[`apps/backend/app/api/health.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/api/health.py#L1-L4)
-- `chat` for `/helpdesk-hosted` and `/platform-hosted`, which wrap hosted-agent access behind the same auth and domain gates as the live paths.[`apps/backend/app/api/chat.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/api/chat.py#L12-L34)
-- `admin` and Graph-backed role/user management.[`apps/backend/app/api/admin.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/api/admin.py#L1-L18)
-- `me`, `tickets`, and `evals` for frontend workspace pages.[`apps/backend/app/api/me.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/api/me.py#L1-L18) [`apps/backend/app/api/tickets.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/api/tickets.py#L1-L12) [`apps/backend/app/api/evals.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/api/evals.py#L1-L19)
-- `tenant` only in shared mode, enabled conditionally in router aggregation.[`apps/backend/app/api/__init__.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/api/__init__.py#L17-L19)
-
-## Lifecycle invariants
-
-Several backend invariants are structural rather than stylistic:
-
-1. **Auth metadata is preloaded during lifespan** so the first authenticated request does not pay that setup cost.[`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L26-L33)
-2. **Hosted clients are closed on app shutdown** by calling `hosted_aclose()` in lifespan teardown.[`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L27-L33) [`apps/backend/app/services/hosted.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/services/hosted.py#L47-L56)
-3. **CORS is applied directly in FastAPI**, not delegated to the AG-UI adapter, because the adapter’s `allow_origins` support is explicitly not trusted here yet.[`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L3-L10) [`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L37-L42)
-4. **Shared-mode boot is fail-fast**: when auth is enabled and deployment mode is `shared`, the backend switches providers and constructs the tenant store at import time so misconfiguration fails immediately.[`apps/backend/app/core/auth.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/auth.py#L77-L94) [`apps/backend/app/core/auth.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/auth.py#L106-L114)
+The lifespan function preloads OpenID configuration when auth is enabled and always closes hosted clients on shutdown, which means hosted bridge cleanup is part of normal app lifecycle rather than an edge-case utility ([apps/backend/app/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/main.py#L44-L50)).
 
 ```mermaid
-sequenceDiagram
-  participant FE as Frontend
-  participant API as FastAPI app
-  participant Auth as auth dependency
-  participant Registry as domain registry
-  participant Service as service or workflow
-
-  FE->>API: Request
-  API->>Auth: Apply auth_dependencies or route deps
-  Auth-->>API: current user and tenant context
-  API->>Registry: Resolve route kind or router handler
-  alt live domain
-    Registry->>Service: workflow or grounded platform service
-  else router API
-    API->>Service: admin ticket eval or hosted bridge handler
-  end
-  Service-->>FE: SSE stream or JSON response
+flowchart TD
+  START["process start"] --> TEL["setup_telemetry()"]
+  TEL --> TEN["tenancy.install()"]
+  TEN --> CAT["set_server_catalog()"]
+  CAT --> LIFE["define lifespan and FastAPI app"]
+  LIFE --> CORS["add CORSMiddleware"]
+  CORS --> ROUTERS["include_routers(app)"]
+  ROUTERS --> DOMS["mount_domains(app)"]
+  DOMS --> READY["backend ready"]
+  READY --> STOP["shutdown"]
+  STOP --> CLOSE["hosted_aclose()"]
 ```
-This diagram shows the backend request path from FastAPI entrypoint to live domain or router service.
+This diagram shows backend boot and shutdown order as encoded in `app.main`.
 
-## Primary change surfaces
+## Module map
 
-For most backend changes, the canonical owning files are:
+The `app/modules` package contains the business modules ADR-017 named explicitly: `admin`, `agentdefs`, `evaluation`, `grounded`, `helpdesk`, `hosted`, `knowledge`, `platform_ops`, `tenancy`, and `tickets` ([apps/backend/app/modules](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules)). The shared kernel lives under `app/shared` and holds settings, auth, and telemetry ([apps/backend/app/shared/auth.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/shared/auth.py#L19-L25)).
 
-- new live domain or domain metadata: `app/domains.py`
-- workflow logic: `app/workflow/*`
-- grounded retrieval or citation behavior: `app/services/grounded.py` and `app/services/retrieval.py`
-- auth, OBO, roles, memory scope, or shared-mode boot: `app/core/auth.py`
-- tenant resolution and config seam: `app/core/tenant.py` and `app/core/tenant_store.py`
-- hosted bridge behavior: `app/api/chat.py` and `app/services/hosted.py`
-- assurance and wiki/docbundle pipeline: `app/knowledge/*`
+The fastest trustworthy inventory of boundary expectations is `module_graph_test.py`. It encodes the module list, maps every Python file under `app/` to a module, and fails if a file is unmapped or if a new cross-module edge appears without being recorded and justified ([apps/backend/tests/architecture/module_graph_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/architecture/module_graph_test.py#L1-L18), [apps/backend/tests/architecture/module_graph_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/architecture/module_graph_test.py#L33-L58), [apps/backend/tests/architecture/module_graph_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/architecture/module_graph_test.py#L105-L152)). That test is the canonical answer to “is this import structurally allowed?”
+
+## Router inclusion versus direct domain mounting
+
+The backend has two integration styles:
+
+1. **Traditional routers.** `include_routers(app)` imports health, tickets, evaluation, hosted proxy, admin, and profile modules, and includes the tenant router only in shared mode ([apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L170-L188)).
+2. **Direct domain mounting.** `mount_domains(app)` walks the registry and wires AG-UI or grounded domain endpoints directly instead of via APIRouter modules ([apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L158-L167)).
+
+That split is deliberate. Router-style modules surface secondary APIs like admin and eval listing, while domain mounting keeps the live assistant endpoints in one canonical loop. If you add a new domain endpoint through a standalone router, you are bypassing the repository’s main domain contract.
+
+## Public surfaces by module
+
+Each business module exposes a `public.py` surface so composition and peer modules do not import internals directly. Examples:
+
+- `helpdesk.public` exports workflow builder, escalation executor, memory provider, and stream-order fix ([apps/backend/app/modules/helpdesk/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/helpdesk/public.py#L1-L19)).
+- `grounded.public` exports `stream_grounded`, the synthesis directive, `PerRequestAgent`, and concierge fallbacks ([apps/backend/app/modules/grounded/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/public.py#L1-L33)).
+- `knowledge.public` exports retrieval and ACL trimming surfaces and intentionally promotes formerly-underscore helpers that were actually public seams ([apps/backend/app/modules/knowledge/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/knowledge/public.py#L1-L26)).
+- `tenancy.public` exports tenant store/config types, install hooks, domain dependencies, and memory scope ([apps/backend/app/modules/tenancy/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/tenancy/public.py#L1-L10), [apps/backend/app/modules/tenancy/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/tenancy/public.py#L37-L73)).
+
+A safe internal refactor preserves these public surfaces or updates all consumers plus boundary tests.
+
+## Ownership boundaries
+
+| Concern | Owning module | Why |
+| --- | --- | --- |
+| Request identity, roles, telemetry, settings | `app/shared` | Shared kernel only. |
+| Tenant resolution, connection store, enabled domains | `modules/tenancy` | Deployment-mode seam and per-request data-plane selection. |
+| Knowledge lifecycle, retrieval, ACL | `modules/knowledge` | Retrieval and corpus contracts live here, not in domain modules. |
+| Helpdesk orchestration and approval | `modules/helpdesk` | Workflow-specific business logic. |
+| Grounded domain serving archetype | `modules/grounded` | Shared cited-Q&A runtime for cockpit and selfwiki. |
+| MCP tool assembly and brokering | `modules/platform_ops` | Tool-driven domain only. |
+| Hosted proxy routes and client cache | `modules/hosted` | Backend twin of hosted services. |
 
 ## Focused tests
 
-The backend’s own tests encode the most important invariants:
+The architecture test family is the quickest way to validate structural changes before running expensive integration flows. `module_graph_test.py` protects module edges; the rest of `tests/architecture` covers file anchors and invocation boundaries, and the test tree itself mirrors module ownership with directories for `grounded`, `knowledge`, `platform_ops`, `hosted`, `tenancy`, and others ([apps/backend/tests](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests)).
 
-- `eval/domain_registry_test.py` and `eval/domains_api_test.py` cover registry-driven mounting and route behavior.[`apps/backend/eval/domain_registry_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/domain_registry_test.py#L1-L40) [`apps/backend/eval/domains_api_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/domains_api_test.py#L1-L43)
-- `eval/shared_boot_smoke_test.py` proves shared-mode import/boot expectations.[`apps/backend/eval/shared_boot_smoke_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/shared_boot_smoke_test.py#L1-L43)
-- `eval/platform_hosted_bridge_test.py` covers a key hosted bridge failure path.[`apps/backend/eval/platform_hosted_bridge_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/platform_hosted_bridge_test.py#L1-L18)
+Minimal validation after backend wiring changes:
 
-## Minimal validation
-
-- `cd apps/backend && uv run python -m eval.domain_registry_test`
-- `cd apps/backend && uv run python -m eval.shared_boot_smoke_test`
-- `cd apps/backend && uv run python -m eval.platform_hosted_bridge_test`
-
-These three checks validate routing composition, shared boot invariants, and one hosted bridge boundary without requiring full cloud deployment.[`apps/backend/eval/domain_registry_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/domain_registry_test.py#L1-L40) [`apps/backend/eval/shared_boot_smoke_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/shared_boot_smoke_test.py#L1-L43) [`apps/backend/eval/platform_hosted_bridge_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/platform_hosted_bridge_test.py#L1-L18)
+- `cd apps/backend && uv run python -m tests.architecture.module_graph_test`
+- Start the app and hit one route from each changed surface.
+- Re-run the narrow module tests listed on each module page below.

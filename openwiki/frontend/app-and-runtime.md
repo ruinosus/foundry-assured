@@ -1,3 +1,10 @@
+---
+type: frontend architecture
+title: Frontend app and client runtime
+description: The Next.js shell, generic domain console, CopilotKit wiring, auth token forwarding, hosted/live toggles, EvidencePanel behavior, and demo mode.
+tags: [frontend, nextjs, copilotkit, runtime]
+---
+
 # Frontend app and client runtime
 
 The frontend is a Next.js application that renders one configurable assurance console across multiple domains rather than building a separate UI stack per agent. `apps/frontend/package.json` shows the key runtime dependencies: Next.js, React, CopilotKit, AG-UI client support, and MSAL browser/react packages ([apps/frontend/package.json](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/package.json#L1-L24)). The app is intentionally client-heavy because MSAL and CopilotKit cannot run meaningfully during SSR for the core chat surface ([apps/frontend/app/d/[domain]/page.tsx](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/app/d/%5Bdomain%5D/page.tsx#L3-L14)).
