@@ -30,7 +30,7 @@ from app.modules.platform_ops.internal.mcp_registry import (
 )
 from app.shared.auth import credential_for_request, current_roles
 from app.shared.settings import settings  # platform-global (auth_enabled)
-from app.core.tenant import tenant_config  # per-tenant (mcp ado/github/azure)
+from app.modules.tenancy.public import tenant_config  # per-tenant (mcp ado/github/azure)
 
 
 def _obo_header_provider(scope: str):
@@ -55,7 +55,7 @@ def _foundry_connection_header_provider(connection_id: str):
         from azure.ai.projects import AIProjectClient
 
         from app.shared.auth import credential_for_request
-        from app.core.tenant import tenant_config
+        from app.modules.tenancy.public import tenant_config
         client = AIProjectClient(
             endpoint=tenant_config().foundry_project_endpoint, credential=credential_for_request())
         conn = client.connections.get(connection_id, include_credentials=True)
@@ -211,8 +211,8 @@ def build_hosted_from_connections(conns, roles: set[str], get_tool) -> list:
 
 
 def _current_tenant_connections():
-    from app.core import tenant_resolution as _tenant_resolution
-    from app.core.tenant import current_tenant_id
+    from app.modules.tenancy import public as _tenant_resolution
+    from app.modules.tenancy.public import current_tenant_id
     store = _tenant_resolution.tenant_store()
     if store is None:
         return ()

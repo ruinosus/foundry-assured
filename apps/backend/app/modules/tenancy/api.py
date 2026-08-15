@@ -14,12 +14,12 @@ from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi_azure_auth.user import User
 from pydantic import BaseModel
 
-from app.core import tenant_resolution as _tenant_resolution
+from app.modules.tenancy.internal import tenant_resolution as _tenant_resolution
 from app.shared.auth import _current_user, azure_scheme, require_role, require_user
-from app.core.onboarding import onboarding_guard
+from app.modules.tenancy.internal.onboarding import onboarding_guard
 from app.shared.settings import settings
-from app.core.tenant import TenantConfig, current_tenant_id, DOMAIN_IDS, domains_for_tier
-from app.core.tenant_store import (
+from app.modules.tenancy.internal.tenant import TenantConfig, current_tenant_id, DOMAIN_IDS, domains_for_tier
+from app.modules.tenancy.internal.tenant_store import (
     Connection, TenantRecord, validate_kind, with_connection, without_connection,
 )
 

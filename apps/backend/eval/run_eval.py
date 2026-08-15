@@ -33,8 +33,8 @@ from pathlib import Path
 from agent_framework import EvalItem, EvalNotPassedError, LocalEvaluator, Message
 
 from app.modules.grounded.internal.concierge import build_concierge_agent
-from app.core.tenant import tenant_config
-from app.domains import _domains
+from app.modules.tenancy.internal.tenant import tenant_config
+from app.registry import _domains
 from eval.assertions import (
     _TITLE_PREFIX,
     check_cites_a_source,
@@ -125,7 +125,7 @@ class _RetrieveAgent:
 
 def _eval_spec(domain_id: str):
     """The DomainSpec the headless golden eval retrieves against — picked by id from the
-    production registry (`app.domains._domains()`), then adapted for headless retrieval.
+    production registry (`app.registry._domains()`), then adapted for headless retrieval.
 
     For cockpit we drop `kb_name` (and `ks_name`) so `retrieve()` takes the direct-search
     FALLBACK over `search_index` instead of the native+ACL path — the fallback's elevated-read

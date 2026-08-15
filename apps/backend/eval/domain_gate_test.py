@@ -12,13 +12,13 @@ import sys
 
 from fastapi import HTTPException
 
-from app.core.tenant import (
+from app.modules.tenancy.internal.tenant import (
     DOMAIN_IDS,
     TenantConfig,
     require_domain,
     set_current_tenant,
 )
-from app.core.tenant_store import TenantRecord
+from app.modules.tenancy.internal.tenant_store import TenantRecord
 
 
 def main() -> int:

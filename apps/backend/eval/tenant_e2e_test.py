@@ -67,16 +67,16 @@ from types import SimpleNamespace
 
 from fastapi import HTTPException
 
-from app.core import tenant_resolution
+from app.modules.tenancy.internal import tenant_resolution
 from app.shared import auth
-from app.core.tenant import (
+from app.modules.tenancy.internal.tenant import (
     MultiTenantConfigProvider,
     TenantConfig,
     current_tenant_id,
     set_current_tenant,
     set_provider,
 )
-from app.core.tenant_store import InMemoryTenantStore, TenantRecord
+from app.modules.tenancy.internal.tenant_store import InMemoryTenantStore, TenantRecord
 
 # Well-known Azure CLI ROPC client — used when ENTRA_API_CLIENT_ID is absent.
 _FALLBACK_ROPC_CLIENT = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
@@ -339,7 +339,7 @@ def main() -> int:
 
 def _try_get_config(expected_model: str) -> bool:
     """Check that tenant_config().foundry_model matches expected_model, returning bool."""
-    from app.core.tenant import tenant_config
+    from app.modules.tenancy.internal.tenant import tenant_config
     try:
         cfg = tenant_config()
         return cfg.foundry_model == expected_model

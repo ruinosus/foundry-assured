@@ -22,7 +22,7 @@ import urllib.request
 
 from azure.identity import DefaultAzureCredential
 
-from app.core.tenant import tenant_config
+from app.modules.tenancy.internal.tenant import tenant_config
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _API = "2025-08-01-preview"

@@ -15,11 +15,11 @@ from agent_framework import Agent
 from agent_framework.foundry import FoundryChatClient
 
 from app.modules.platform_ops.internal.mcp_tools import build_mcp_tools
-from app.modules.grounded.internal.per_request import PerRequestAgent
+from app.modules.grounded.public import PerRequestAgent
 from app.modules.agentdefs.public import PLATFORM_INSTRUCTIONS
 from app.shared.auth import credential_for_request
 from app.shared.settings import settings  # platform-global (mcp_enabled)
-from app.core.tenant import tenant_config  # per-tenant (foundry endpoint/model)
+from app.modules.tenancy.public import tenant_config  # per-tenant (foundry endpoint/model)
 
 
 def platform_configured() -> bool:

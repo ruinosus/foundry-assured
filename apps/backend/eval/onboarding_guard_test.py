@@ -11,7 +11,7 @@ from types import SimpleNamespace
 
 from fastapi import HTTPException
 
-from app.core import onboarding
+from app.modules.tenancy.internal import onboarding
 from app.shared import auth
 from app.shared.settings import settings
 

@@ -113,15 +113,15 @@ def main() -> int:
     from azure.identity import DefaultAzureCredential
 
     from app.shared.settings import settings
-    from app.core.tenant import TenantConfig
-    from app.core.tenant_store import (
+    from app.modules.tenancy.internal.tenant import TenantConfig
+    from app.modules.tenancy.internal.tenant_store import (
         Connection,
         TableStorageTenantStore,
         TenantRecord,
         with_connection,
         without_connection,
     )
-    from app.core.onboarding import onboarding_guard
+    from app.modules.tenancy.internal.onboarding import onboarding_guard
 
     failures: list[str] = []
 

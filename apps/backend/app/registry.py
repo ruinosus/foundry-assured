@@ -9,10 +9,10 @@ driven ops). Adding a domain = one `DomainSpec` row here (+ its agent/KB on the 
 ONE place instead of split across main.py (AG-UI adapter) and api/chat.py (router endpoints).
 
 Notes:
-- `_domains()` reads `tenant_config()` LAZILY — no import-time side effects (import app.domains
+- `_domains()` reads `tenant_config()` LAZILY — no import-time side effects (import app.registry
   is free). ACL is DATA (RULE #6): the registry only carries `acl_group_map` (name→objectID);
   no classification logic lives here.
-- `_domain_deps` is the canonical domain-gate helper (moved here from main.py; api/chat.py's
+- `domain_deps` is tenancy's (ADR-017): auth plus, in shared mode, the entitlement gate. It
   `_hosted_deps` is its duplicate). self_hosted/dedicated → exactly auth_dependencies(), byte-
   identical to today; only shared mode adds the per-tenant entitlement gate.
 """
@@ -26,9 +26,8 @@ from agent_framework_ag_ui import add_agent_framework_fastapi_endpoint
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import StreamingResponse
 
-from app.shared.auth import auth_dependencies
 from app.shared.settings import settings
-from app.core.tenant import require_domain, tenant_config
+from app.modules.tenancy.public import domain_deps, tenant_config
 
 
 @dataclass(frozen=True)
@@ -99,13 +98,6 @@ def _domains() -> list[DomainSpec]:
     ]
 
 
-def _domain_deps(domain_id: str) -> list:
-    """Auth deps, plus (shared mode only) the per-tenant entitlement gate. In self_hosted/
-    dedicated this is exactly auth_dependencies() — byte-identical to today."""
-    deps = auth_dependencies()
-    if settings.deployment_mode == "shared":
-        deps = [*deps, Depends(require_domain(domain_id))]
-    return deps
 
 
 def _mount_grounded(app: FastAPI, d: DomainSpec) -> None:
@@ -114,7 +106,7 @@ def _mount_grounded(app: FastAPI, d: DomainSpec) -> None:
 
     async def endpoint(request: Request) -> StreamingResponse:
         from app.shared.auth import current_user
-        from app.modules.grounded.internal.grounded import stream_grounded
+        from app.modules.grounded.public import stream_grounded
 
         return StreamingResponse(
             stream_grounded(await request.json(), d, current_user()),
@@ -125,23 +117,22 @@ def _mount_grounded(app: FastAPI, d: DomainSpec) -> None:
         f"/{d.id}",
         endpoint,
         methods=["POST"],
-        dependencies=_domain_deps(d.id),
+        dependencies=domain_deps(d.id),
     )
 
 
 def _mount_helpdesk(app: FastAPI, d: DomainSpec) -> None:
     """AG-UI workflow endpoint. With a KB wired, the per-request factory streams the Phase 2 steps
     + Phase 3 OBO/memory; without one, fall back to the single concierge agent."""
-    from app.modules.grounded.internal.concierge import _knowledge_configured, build_concierge_agent
-    from app.workflow.graph import build_helpdesk_workflow
-    from app.workflow.stream_fix import OrderedAgentFrameworkWorkflow
+    from app.modules.grounded.public import build_concierge_agent, knowledge_configured
+    from app.modules.helpdesk.public import OrderedAgentFrameworkWorkflow, build_helpdesk_workflow
 
-    if _knowledge_configured():
+    if knowledge_configured():
         add_agent_framework_fastapi_endpoint(
             app,
             agent=OrderedAgentFrameworkWorkflow(workflow_factory=build_helpdesk_workflow),
             path=f"/{d.id}",
-            dependencies=_domain_deps(d.id),
+            dependencies=domain_deps(d.id),
         )
     else:
         add_agent_framework_fastapi_endpoint(
@@ -153,14 +144,14 @@ def _mount_platform(app: FastAPI, d: DomainSpec) -> None:
     """Tool-driven ops concierge over the Microsoft first-party MCP servers. The platform_agent_proxy
     (a PerRequestAgent) rebuilds the agent on each run so tools are filtered under the caller's roles +
     OBO credential. Only mounted when platform is configured."""
-    from app.modules.platform_ops.internal.platform import platform_agent_proxy, platform_configured
+    from app.modules.platform_ops.public import platform_agent_proxy, platform_configured
 
     if platform_configured():
         add_agent_framework_fastapi_endpoint(
             app,
             agent=platform_agent_proxy,
             path=f"/{d.id}",
-            dependencies=_domain_deps(d.id),
+            dependencies=domain_deps(d.id),
         )
 
 
@@ -174,3 +165,24 @@ def mount_domains(app: FastAPI) -> None:
             _mount_helpdesk(app, d)
         elif d.kind == "tool":
             _mount_platform(app, d)
+
+
+def include_routers(app) -> None:
+    """Include every module's HTTP router. Was `app/api/__init__.py`; it belongs in the
+    composition root, which is the one place allowed to see all modules (ADR-017).
+
+    The shared-mode gate on the tenant router is unchanged — relocated, not rewritten.
+    """
+    from app import api_health
+    from app.modules.admin import api_admin, api_me
+    from app.modules.evaluation import api as evals
+    from app.modules.hosted import api as chat
+    from app.modules.tickets import api as tickets
+
+    for module in (api_health, tickets, evals, chat, api_admin, api_me):
+        app.include_router(module.router)
+
+    if settings.deployment_mode == "shared":
+        from app.modules.tenancy import api as tenant
+
+        app.include_router(tenant.router)

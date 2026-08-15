@@ -1,38 +1,38 @@
 {
   "COMPOSITION": {
     "admin": [
-      "api/__init__.py"
+      "registry.py"
     ],
     "agentdefs": [
-      "domains.py"
+      "registry.py"
     ],
     "evaluation": [
-      "api/__init__.py"
+      "registry.py"
     ],
     "grounded": [
-      "domains.py"
+      "registry.py"
     ],
     "helpdesk": [
-      "domains.py"
+      "registry.py"
     ],
     "hosted": [
-      "api/__init__.py",
-      "main.py"
+      "main.py",
+      "registry.py"
     ],
     "platform_ops": [
-      "domains.py",
-      "main.py"
+      "main.py",
+      "registry.py"
     ],
     "shared": [
-      "api/__init__.py",
-      "domains.py",
-      "main.py"
+      "main.py",
+      "registry.py"
     ],
     "tenancy": [
-      "domains.py"
+      "main.py",
+      "registry.py"
     ],
     "tickets": [
-      "api/__init__.py"
+      "registry.py"
     ]
   },
   "admin": {
@@ -75,25 +75,22 @@
   },
   "helpdesk": {
     "agentdefs": [
-      "workflow/agents.py"
+      "modules/helpdesk/internal/agents.py"
     ],
     "shared": [
-      "workflow/escalation.py",
-      "workflow/graph.py"
+      "modules/helpdesk/internal/escalation.py",
+      "modules/helpdesk/internal/graph.py"
     ],
     "tenancy": [
-      "workflow/agents.py",
-      "workflow/graph.py",
-      "workflow/memory.py"
+      "modules/helpdesk/internal/agents.py",
+      "modules/helpdesk/internal/graph.py",
+      "modules/helpdesk/internal/memory.py"
     ],
     "tickets": [
-      "workflow/escalation.py"
+      "modules/helpdesk/internal/escalation.py"
     ]
   },
   "hosted": {
-    "COMPOSITION": [
-      "modules/hosted/api.py"
-    ],
     "shared": [
       "modules/hosted/api.py",
       "modules/hosted/internal/hosted.py"
@@ -133,10 +130,11 @@
   },
   "tenancy": {
     "shared": [
-      "api/tenant.py",
-      "core/onboarding.py",
-      "core/tenant.py",
-      "core/tenant_resolution.py"
+      "modules/tenancy/api.py",
+      "modules/tenancy/internal/onboarding.py",
+      "modules/tenancy/internal/tenant.py",
+      "modules/tenancy/internal/tenant_resolution.py",
+      "modules/tenancy/public.py"
     ]
   },
   "tickets": {

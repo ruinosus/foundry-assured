@@ -19,7 +19,7 @@ import asyncio
 import json
 import sys
 
-from app.core.tenant import tenant_config
+from app.modules.tenancy.internal.tenant import tenant_config
 
 _API = "2026-05-01-preview"
 _PROBE = "Quais são os servidores MCP do Cockpit e o que cada um faz?"

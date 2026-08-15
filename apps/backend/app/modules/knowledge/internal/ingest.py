@@ -44,7 +44,7 @@ from azure.search.documents.indexes.models import (
 )
 from azure.storage.blob import BlobServiceClient
 
-from app.core.tenant import tenant_config
+from app.modules.tenancy.public import tenant_config
 
 CORPUS_DIR = Path(__file__).parent / "corpus"
 KNOWLEDGE_SOURCE_NAME = "helpdesk-runbooks-ks"

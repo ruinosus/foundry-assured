@@ -12,10 +12,10 @@ from types import SimpleNamespace
 
 from fastapi import HTTPException
 
-from app.core import tenant_resolution as _tr
-import app.api.tenant as tapi
-from app.core.tenant import DOMAIN_IDS
-from app.core.tenant_store import InMemoryTenantStore
+from app.modules.tenancy.internal import tenant_resolution as _tr
+import app.modules.tenancy.api as tapi
+from app.modules.tenancy.internal.tenant import DOMAIN_IDS
+from app.modules.tenancy.internal.tenant_store import InMemoryTenantStore
 
 
 def main() -> int:

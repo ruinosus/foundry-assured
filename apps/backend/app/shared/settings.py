@@ -1,7 +1,7 @@
 """Platform-global application settings, loaded from environment / .env.
 
 Per-tenant data-plane config (Foundry/Search/Storage pointers, ACL, memory store,
-hosted agent) lives in ``app.core.tenant`` and is read via ``tenant_config()``.
+hosted agent) lives in ``app.modules.tenancy.internal.tenant`` and is read via ``tenant_config()``.
 This module keeps only platform-global settings (auth, CORS, tenant-store wiring).
 """
 
@@ -32,7 +32,7 @@ class PlatformSettings(BaseSettings):
     # --- MCP integration (platform/ops domain) — PLATFORM-GLOBAL flags only ---
     # mcp_enabled is a deployment switch; mcp_learn_url is the public Learn endpoint (same for
     # all tenants). The per-tenant MCP fields (ADO org, GitHub PAT, self-hosted Azure URL) live
-    # in TenantConfig (app.core.tenant), read via tenant_config().
+    # in TenantConfig (app.modules.tenancy.internal.tenant), read via tenant_config().
     mcp_enabled: bool = False
     mcp_learn_url: str = "https://learn.microsoft.com/api/mcp"
 

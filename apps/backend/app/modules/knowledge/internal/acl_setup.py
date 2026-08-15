@@ -28,7 +28,7 @@ from pathlib import Path
 
 from azure.identity import DefaultAzureCredential
 
-from app.core.tenant import tenant_config
+from app.modules.tenancy.public import tenant_config
 
 _API = "2025-08-01-preview"
 _SEARCH_SCOPE = "https://search.azure.com/.default"

@@ -10,9 +10,9 @@ from __future__ import annotations
 import sys
 from types import SimpleNamespace
 
-from app.core import tenant_resolution
+from app.modules.tenancy.internal import tenant_resolution
 from app.shared import auth
-from app.core.tenant import set_current_tenant
+from app.modules.tenancy.internal.tenant import set_current_tenant
 
 
 def main() -> int:

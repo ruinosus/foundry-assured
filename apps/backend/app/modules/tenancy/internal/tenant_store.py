@@ -9,7 +9,7 @@ import json
 from dataclasses import dataclass, asdict, replace
 from typing import Protocol
 
-from app.core.tenant import TenantConfig
+from app.modules.tenancy.internal.tenant import TenantConfig
 
 
 @dataclass(frozen=True)

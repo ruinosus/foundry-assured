@@ -19,7 +19,7 @@ from app.modules.agentdefs.public import (
     RETRIEVE_INSTRUCTIONS,
     TRIAGE_INSTRUCTIONS,
 )
-from app.core.tenant import tenant_config
+from app.modules.tenancy.public import tenant_config
 
 
 def _client(credential: TokenCredential) -> FoundryChatClient:

@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import sys
 
-from app.core.tenant import TenantConfig
-from app.core.tenant_store import InMemoryTenantStore, TenantRecord
+from app.modules.tenancy.internal.tenant import TenantConfig
+from app.modules.tenancy.internal.tenant_store import InMemoryTenantStore, TenantRecord
 
 
 def main() -> int:

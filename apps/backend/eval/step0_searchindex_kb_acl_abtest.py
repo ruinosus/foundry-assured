@@ -38,7 +38,7 @@ from azure.identity import DefaultAzureCredential
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.shared.settings import settings
-from app.core.tenant import tenant_config
+from app.modules.tenancy.internal.tenant import tenant_config
 
 # Reuse the proven native-retrieve helpers from the STEP 0.5 probe (RULE #1 — don't reinvent shapes).
 from eval.step0_searchindex_filter_probe import (

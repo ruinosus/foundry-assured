@@ -28,7 +28,7 @@ from __future__ import annotations
 
 import sys
 
-from app.core.tenant import tenant_config
+from app.modules.tenancy.internal.tenant import tenant_config
 
 
 def main() -> int:
@@ -47,9 +47,9 @@ def main() -> int:
     #
     # NAMESPACE NOTE: to point the bridge at a configured endpoint, patch
     #   app.modules.hosted.internal.hosted.tenant_config  (the IMPORTING namespace — hosted.py imports the
-    #   symbol `from app.core.tenant import tenant_config`, so rebinding app.core.tenant's
+    #   symbol `from app.modules.tenancy.internal.tenant import tenant_config`, so rebinding app.modules.tenancy.internal.tenant's
     #   attribute alone won't affect the already-imported reference inside hosted.py),
-    # NOT app.core.tenant.tenant_config.
+    # NOT app.modules.tenancy.internal.tenant.tenant_config.
     print(
         "⏭ skipped (platform hosted Invocations E2E deferred to D-packaging — "
         "live streaming contract not verified offline; see Task 0)"

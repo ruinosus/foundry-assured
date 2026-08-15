@@ -1,7 +1,7 @@
 """FastAPI app entrypoint.
 
 Thin: creates the app, applies CORS, includes the HTTP routers (app/api), and
-registers every domain's live endpoint via `mount_domains(app)` (app/domains.py) —
+registers every domain's live endpoint via `mount_domains(app)` (app/registry.py) —
 one loop that dispatches by `kind` (workflow/grounded/tool). Business logic lives in
 services/ and the agents/ + workflow/ packages — keep this file about wiring only.
 
@@ -16,10 +16,9 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.modules.platform_ops.internal.mcp_registry import SERVERS
-from app.api import api_router
-from app.core import tenant_resolution, tenant_store
-from app.domains import mount_domains
+from app.modules.platform_ops.public import SERVERS
+from app.modules.tenancy import public as tenancy
+from app.registry import include_routers, mount_domains
 from app.modules.hosted.public import aclose as hosted_aclose
 from app.shared.auth import azure_scheme
 from app.shared.settings import settings
@@ -33,13 +32,13 @@ setup_telemetry()
 # app/core/auth.py; making it an explicit call is what lets the shared kernel stop importing a
 # business module. It MUST run before mount_domains(), which reads tenant_config() and would
 # otherwise see the default SingleTenant provider in shared mode. No-op outside shared.
-tenant_resolution.install()
+tenancy.install()
 
 # Break the core↔agents cycle (ADR-017 §the cycle): the MCP server catalog is platform data,
 # and tenancy only needs the valid ids to validate a connection kind. The composition root is
 # the one place allowed to know both, so it hands the ids over instead of tenancy importing
 # the platform registry.
-tenant_store.set_server_catalog(server.id for server in SERVERS)
+tenancy.set_server_catalog(server.id for server in SERVERS)
 
 
 @asynccontextmanager
@@ -60,7 +59,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(api_router)
+include_routers(app)
 
 # Every domain's live endpoint, mounted by ONE loop that dispatches by `kind`
 # (workflow → helpdesk AG-UI; grounded → cockpit/selfwiki cited Q&A; tool → platform

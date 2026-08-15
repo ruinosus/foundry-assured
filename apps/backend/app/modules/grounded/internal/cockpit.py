@@ -15,7 +15,7 @@ The Cockpit KB is org-wide (not per-user), so this runs under the app's own iden
 """
 
 from app.shared.settings import settings
-from app.core.tenant import tenant_config
+from app.modules.tenancy.public import tenant_config
 
 
 def cockpit_configured() -> bool:

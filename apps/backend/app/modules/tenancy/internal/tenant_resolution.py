@@ -2,7 +2,7 @@
 
 `auth.py` was two things glued together: request identity (genuinely cross-cutting, now
 `app/shared/auth.py`) and tenant resolution (this file — the `tenancy` domain). The glue was
-six imports of `app.core.tenant*` from inside the shared kernel, one of them already carrying
+six imports of `app.modules.tenancy.internal.tenant*` from inside the shared kernel, one of them already carrying
 `# local import avoids a cycle`.
 
 The dependency is inverted rather than cut: `shared.auth` exposes a post-authenticate hook and
@@ -41,10 +41,10 @@ def _make_tenant_store():
     boot offline; NEVER use in production: it doesn't persist and isn't shared across instances).
     """
     if settings.tenant_store_backend == "memory":
-        from app.core.tenant_store import InMemoryTenantStore  # dev/CI: no Azure needed
+        from app.modules.tenancy.internal.tenant_store import InMemoryTenantStore  # dev/CI: no Azure needed
 
         return InMemoryTenantStore()
-    from app.core.tenant_store import TableStorageTenantStore  # lazy: shared mode only
+    from app.modules.tenancy.internal.tenant_store import TableStorageTenantStore  # lazy: shared mode only
 
     if not settings.tenant_store_account_url:
         raise RuntimeError("DEPLOYMENT_MODE=shared requires TENANT_STORE_ACCOUNT_URL")
@@ -60,7 +60,7 @@ def tenant_store():
 
 def resolve_tenant(user, store) -> None:
     """Authorization choke point: onboarded+active tid → set _current_tenant, else 403."""
-    from app.core.tenant import set_current_tenant
+    from app.modules.tenancy.internal.tenant import set_current_tenant
 
     rec = store.get(getattr(user, "tid", None))
     if rec is None or rec.status != "active":
@@ -74,7 +74,7 @@ def memory_scope() -> str:
     SingleTenant keeps the bare user.oid (memory keys are persisted — prefixing would orphan
     existing memories). Only MultiTenant prefixes by tid.
     """
-    from app.core.tenant import current_tenant_id
+    from app.modules.tenancy.internal.tenant import current_tenant_id
 
     user = auth.current_user()
     base = user.oid if (user is not None and user.oid) else "dev-local"
@@ -99,7 +99,7 @@ def install() -> None:
     if _tenant_store is not None:
         return
 
-    from app.core.tenant import MultiTenantConfigProvider, set_provider
+    from app.modules.tenancy.internal.tenant import MultiTenantConfigProvider, set_provider
 
     set_provider(MultiTenantConfigProvider())
     _tenant_store = _make_tenant_store()

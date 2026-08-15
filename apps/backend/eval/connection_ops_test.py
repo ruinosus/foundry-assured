@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import sys
 
-from app.core.tenant import TenantConfig
-from app.core.tenant_store import (
+from app.modules.tenancy.internal.tenant import TenantConfig
+from app.modules.tenancy.internal.tenant_store import (
     Connection, TenantRecord, set_server_catalog, validate_kind, with_connection, without_connection,
 )
 # The catalog is injected by the composition root at boot (ADR-017); tests inject it too,

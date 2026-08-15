@@ -38,8 +38,8 @@ def main() -> int:
     def _boom():
         raise RuntimeError("tenant_config() must not be called in shared mode at boot")
 
-    # The agents do `from app.core.tenant import tenant_config`, so each module holds its
-    # OWN reference in its namespace — patch THOSE (not app.core.tenant). With the landmine
+    # The agents do `from app.modules.tenancy.internal.tenant import tenant_config`, so each module holds its
+    # OWN reference in its namespace — patch THOSE (not app.modules.tenancy.internal.tenant). With the landmine
     # armed, if any *_configured() in shared mode falls through to tenant_config(), _boom()
     # raises and this test ERRORS. That makes the test guard the load-bearing property
     # (shared never reads a tenant) independently of .env state, not just the return values.

@@ -105,7 +105,7 @@ def main() -> int:
     from azure.identity import DefaultAzureCredential
 
     from app.modules.platform_ops.internal.mcp_tools import build_from_connections, build_hosted_from_connections
-    from app.core.tenant_store import Connection
+    from app.modules.tenancy.internal.tenant_store import Connection
 
     failures: list[str] = []
 
@@ -123,8 +123,8 @@ def main() -> int:
     # Patch the tenant context so build_from_connections can resolve the endpoint.
     # We monkeypatch tenant_config() to return a TenantConfig with our test values.
     # This avoids needing a live Table Storage / tenant record for this test.
-    import app.core.tenant as _tenant_mod
-    from app.core.tenant import TenantConfig
+    import app.modules.tenancy.internal.tenant as _tenant_mod
+    from app.modules.tenancy.internal.tenant import TenantConfig
 
     original_tenant_config = getattr(_tenant_mod, "_tenant_config_override", None)
     test_tenant_cfg = TenantConfig(
@@ -133,7 +133,7 @@ def main() -> int:
     )
 
     # Monkeypatch: replace `tenant_config()` for the duration of the test.
-    # The function lives in app.core.tenant; tools.py imports it from there.
+    # The function lives in app.modules.tenancy.internal.tenant; tools.py imports it from there.
     _original_fn = _tenant_mod.tenant_config
     _tenant_mod.tenant_config = lambda: test_tenant_cfg  # type: ignore[assignment]
     # Also patch the reference already imported into tools (re-exported name).

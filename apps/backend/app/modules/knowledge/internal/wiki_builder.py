@@ -47,7 +47,7 @@ from pathlib import Path
 from agent_framework.foundry import FoundryChatClient
 from azure.identity import DefaultAzureCredential
 
-from app.core.tenant import tenant_config
+from app.modules.tenancy.public import tenant_config
 
 
 def _backend_root() -> Path:

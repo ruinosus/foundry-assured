@@ -40,10 +40,10 @@ def main() -> int:
     # Import and neutralize the heavy factories BEFORE app.main runs mount_domains().
     # The mount helpers import these lazily from the module, so patching the module
     # attribute here is what the mount actually sees.
-    from app import domains
+    from app import registry as domains
     import app.modules.grounded.internal.concierge as concierge
     import app.modules.platform_ops.internal.platform as platform
-    from app.workflow import graph, stream_fix
+    from app.modules.helpdesk.internal import graph, stream_fix
 
     concierge.build_concierge_agent = lambda: object()
     platform.platform_agent_proxy = object()

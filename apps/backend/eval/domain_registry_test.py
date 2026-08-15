@@ -11,8 +11,8 @@ from __future__ import annotations
 
 import sys
 
-import app.domains as domains_mod
-from app.domains import DomainSpec, _domain_deps, _domains, mount_domains
+import app.registry as domains_mod
+from app.registry import DomainSpec, domain_deps, _domains, mount_domains
 
 
 class _FakeApp:
@@ -70,17 +70,17 @@ def main() -> int:
         ok_index = False
     check("grounded guard allows search_index-only", ok_index)
 
-    # --- _domain_deps: self_hosted → exactly auth_dependencies() (no domain gate) ---
+    # --- domain_deps: self_hosted → exactly auth_dependencies() (no domain gate) ---
     from app.shared.auth import auth_dependencies
     from app.shared.settings import settings
 
     orig_mode = settings.deployment_mode
     try:
         settings.deployment_mode = "self_hosted"
-        check("_domain_deps == auth_dependencies() in self_hosted", _domain_deps("cockpit") == auth_dependencies())
+        check("domain_deps == auth_dependencies() in self_hosted", domain_deps("cockpit") == auth_dependencies())
         settings.deployment_mode = "shared"
-        shared_deps = _domain_deps("cockpit")
-        check("_domain_deps adds a gate in shared mode", len(shared_deps) == len(auth_dependencies()) + 1)
+        shared_deps = domain_deps("cockpit")
+        check("domain_deps adds a gate in shared mode", len(shared_deps) == len(auth_dependencies()) + 1)
     finally:
         settings.deployment_mode = orig_mode
 
@@ -92,13 +92,17 @@ def main() -> int:
 
     # Patch every heavy symbol the mount helpers import lazily, plus the adapter.
     saved = {}
-    import app.modules.grounded.internal.concierge as concierge_mod
-    import app.modules.platform_ops.internal.platform as platform_mod
-    import app.workflow.graph as graph_mod
-    import app.workflow.stream_fix as sf_mod
+    # Patch the PUBLIC surfaces, not the internals. `public.py` binds its re-exports at
+    # import time, so patching `internal.concierge.build_concierge_agent` no longer reaches
+    # what `registry.py` calls — a real consequence of the module boundary, not a test quirk.
+    import app.modules.grounded.public as concierge_mod
+    import app.modules.helpdesk.public as graph_mod
+    import app.modules.platform_ops.public as platform_mod
+
+    sf_mod = graph_mod
 
     saved["adapter"] = domains_mod.add_agent_framework_fastapi_endpoint
-    saved["kc"] = concierge_mod._knowledge_configured
+    saved["kc"] = concierge_mod.knowledge_configured
     saved["bca"] = concierge_mod.build_concierge_agent
     saved["pc"] = platform_mod.platform_configured
     saved["proxy"] = platform_mod.platform_agent_proxy
@@ -107,7 +111,7 @@ def main() -> int:
 
     try:
         domains_mod.add_agent_framework_fastapi_endpoint = fake_adapter
-        concierge_mod._knowledge_configured = lambda: True
+        concierge_mod.knowledge_configured = lambda: True
         concierge_mod.build_concierge_agent = lambda: object()
         platform_mod.platform_configured = lambda: True
         platform_mod.platform_agent_proxy = object()
@@ -120,14 +124,14 @@ def main() -> int:
         grounded_paths = {r["path"] for r in app.routes}
         check("one POST route per grounded domain", grounded_paths == {"/cockpit", "/selfwiki"})
         check("grounded routes are POST", all(r["methods"] == ["POST"] for r in app.routes))
-        check("grounded routes gated by _domain_deps", all(r["dependencies"] is not None for r in app.routes))
+        check("grounded routes gated by domain_deps", all(r["dependencies"] is not None for r in app.routes))
 
         adapter_paths = {c["path"] for c in adapter_calls}
         check("workflow + tool branches hit the adapter (/helpdesk, /platform)", adapter_paths == {"/helpdesk", "/platform"})
         check("workflow/tool adapter calls carry deps", all(c["dependencies"] is not None for c in adapter_calls))
     finally:
         domains_mod.add_agent_framework_fastapi_endpoint = saved["adapter"]
-        concierge_mod._knowledge_configured = saved["kc"]
+        concierge_mod.knowledge_configured = saved["kc"]
         concierge_mod.build_concierge_agent = saved["bca"]
         platform_mod.platform_configured = saved["pc"]
         platform_mod.platform_agent_proxy = saved["proxy"]

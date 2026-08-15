@@ -18,7 +18,7 @@ import logging
 from azure.ai.projects import AIProjectClient
 from azure.identity import DefaultAzureCredential
 
-from app.core.tenant import tenant_config
+from app.modules.tenancy.public import tenant_config
 
 logger = logging.getLogger(__name__)
 

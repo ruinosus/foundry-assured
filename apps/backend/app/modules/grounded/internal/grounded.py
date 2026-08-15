@@ -24,7 +24,7 @@ import uuid
 from collections.abc import AsyncGenerator
 
 from app.shared.settings import settings
-from app.core.tenant import tenant_config
+from app.modules.tenancy.public import tenant_config
 
 # Prepended to the synthesis input — the model answers ONLY from the retrieved documents and cites them
 # by their [n] number.
@@ -94,7 +94,7 @@ async def stream_grounded(body: dict, domain, user=None) -> AsyncGenerator[str]:
     from azure.ai.projects.aio import AIProjectClient
 
     from app.modules.hosted.public import last_user_text as _last_user_text
-    from app.modules.knowledge.internal.retrieval import retrieve
+    from app.modules.knowledge.public import retrieve
 
     user_text = _last_user_text(body.get("messages") or [])
     thread_id = body.get("threadId") or body.get("thread_id") or uuid.uuid4().hex

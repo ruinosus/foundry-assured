@@ -12,7 +12,7 @@ project_endpoint, credential, memory_store_name, scope, update_delay).
 from agent_framework.foundry import FoundryMemoryProvider
 from azure.core.credentials import TokenCredential
 
-from app.core.tenant import tenant_config
+from app.modules.tenancy.public import tenant_config
 
 MEMORY_CONTEXT_PROMPT = (
     "Known facts about this developer from past sessions (use when relevant):"

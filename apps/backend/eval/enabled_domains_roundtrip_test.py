@@ -12,8 +12,8 @@ import json
 import sys
 from dataclasses import asdict
 
-from app.core.tenant import TenantConfig
-from app.core.tenant_store import TenantRecord, _record_from_entity
+from app.modules.tenancy.internal.tenant import TenantConfig
+from app.modules.tenancy.internal.tenant_store import TenantRecord, _record_from_entity
 
 
 def _entity(rec: TenantRecord) -> dict:

@@ -29,18 +29,12 @@ APP = pathlib.Path(__file__).resolve().parents[2] / "app"
 FIXTURE = pathlib.Path(__file__).with_name("module_graph.json")
 
 # ADR-017's file → module map. Prefix rules cover the directories that move wholesale.
-# Files not yet moved into `modules/` still need an explicit entry; anything already under
-# `modules/<name>/` is derived by the prefix rule below, so a moved file needs no MAP change.
+# Only the composition root is listed by name; every business file lives under
+# `modules/<name>/` and is derived by the prefix rule below. Phase 3 is what made this short.
 MAP: dict[str, str] = {
-    "core/tenant_resolution.py": "tenancy",
-    "core/tenant.py": "tenancy",
-    "core/tenant_store.py": "tenancy",
-    "core/onboarding.py": "tenancy",
-    "api/tenant.py": "tenancy",
-    "domains.py": "COMPOSITION",
     "main.py": "COMPOSITION",
-    "api/health.py": "COMPOSITION",
-    "api/__init__.py": "COMPOSITION",
+    "registry.py": "COMPOSITION",
+    "api_health.py": "COMPOSITION",
 }
 
 # Every business module lives at `modules/<name>/`, so its name IS the mapping. Listed
@@ -53,7 +47,6 @@ MODULES = (
 
 PREFIXES = (
     ("shared/", "shared"),  # incl. shared/telemetry/* — a package whose __init__ has real logic
-    ("workflow/", "helpdesk"),  # not yet moved
     *((f"modules/{name}/", name) for name in MODULES),
 )
 

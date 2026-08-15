@@ -11,7 +11,7 @@ import asyncio
 import sys
 
 import app.modules.hosted.internal.hosted as hosted
-from app.core.tenant import TenantConfig
+from app.modules.tenancy.internal.tenant import TenantConfig
 from app.modules.hosted.public import stream_platform_agui
 
 
@@ -33,7 +33,7 @@ def main() -> int:
     # stream_platform_agui now makes a REAL httpx POST when an endpoint is configured; without
     # this patch a dev machine with FOUNDRY_PROJECT_ENDPOINT set would make a live network call
     # (going green only because Azure 500s). Patch the IMPORTING namespace
-    # (app.modules.hosted.internal.hosted.tenant_config, NOT app.core.tenant.tenant_config — hosted.py imported
+    # (app.modules.hosted.internal.hosted.tenant_config, NOT app.modules.tenancy.internal.tenant.tenant_config — hosted.py imported
     # the symbol by value) so _platform_invocations_url() returns "" and the bridge takes the
     # clean RuntimeError -> RUN_ERROR branch with zero network.
     _orig = hosted.tenant_config

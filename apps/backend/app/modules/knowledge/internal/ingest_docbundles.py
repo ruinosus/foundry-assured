@@ -46,7 +46,7 @@ from azure.search.documents.indexes.models import (
 )
 from azure.storage.blob import BlobServiceClient
 
-from app.core.tenant import tenant_config
+from app.modules.tenancy.public import tenant_config
 from app.modules.knowledge.internal.ingest import (
     CALL_TIMEOUT_S,
     _require,

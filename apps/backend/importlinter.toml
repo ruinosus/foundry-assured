@@ -2,163 +2,253 @@
 #
 #     uv run lint-imports --config importlinter.toml
 #
-# PHASE 0 (this file): only contracts that are TRUE of the CURRENT layout, so the tool runs
-# green from day one and a red build always means a real regression. The target contracts are
-# written down below, commented, with the phase that switches each one on. Do not enable a
-# contract early "to see what breaks" — a permanently red gate teaches people to ignore it.
+# All three contract families are live as of Phase 3: the layer rule, one privacy contract per
+# module, and the independence that killed the core<->agents cycle.
 #
-# Measured facts this file relies on (re-measure, do not trust this comment):
-#   - nothing under app/ imports app.main
-#   - app/core/settings.py imports nothing from app
-#   - app/core/tenant_store.py -> app.agents.mcp.registry is the known cycle (ADR-017 §cycle)
+# `allow_indirect_imports = true` on the privacy contracts is load-bearing: without it, every
+# legitimate composition-root -> public -> internal chain is reported as a violation, because
+# `forbidden` follows indirect imports by default. The rule we want is "no DIRECT import of
+# another module's internal".
 
 [tool.importlinter]
 root_packages = ["app"]
 
-# --- C0.1 — the composition root is a leaf: it imports the app, the app never imports it.
+# --- C1 — the three layers. composition may see everything; a module may see shared and other
+# modules' public; shared may see nothing inside the app.
+[[tool.importlinter.contracts]]
+name = "Layers: composition > modules > shared"
+type = "layers"
+layers = [
+    "app.main : app.registry",
+    "app.modules",
+    "app.shared",
+]
+
+# --- C2 — nothing imports the composition root.
 [[tool.importlinter.contracts]]
 name = "Nothing imports the composition root (app.main)"
 type = "forbidden"
-source_modules = [
-    "app.api",
-    "app.core",
-    "app.workflow",
-    "app.domains",
-]
+source_modules = ["app.modules", "app.shared"]
 forbidden_modules = ["app.main"]
 
-# C0.2 (settings imports nothing from the app) was retired in Phase 2: settings moved to
-# app/shared/ and C2.1 below covers the whole shared kernel, which is strictly stronger.
-
-# --- C2.1 (Phase 2) — the shared kernel imports nothing from the app. This is the rule that
-# makes the other layers mean anything: `auth.py` was split (ADR-017) precisely so it holds.
+# --- C3 — the shared kernel imports no business module. This is the rule that makes the other
+# layers mean anything: auth.py was split (ADR-017) precisely so it holds.
 [[tool.importlinter.contracts]]
 name = "Shared kernel imports no business module"
 type = "forbidden"
 source_modules = ["app.shared"]
-forbidden_modules = [
-    "app.api",
-    "app.core",
-    "app.domains",
-    "app.workflow",
-]
+forbidden_modules = ["app.modules"]
 
-# --- C2.2 (Phase 2) — the core<->agents cycle is dead. tenant_store used to import the MCP
-# registry for SERVERS; the composition root injects the ids now.
+# --- C4 — the dead cycle, and only the direction that WAS the cycle.
+# `independence` would forbid both directions, but only one was ever wrong: tenancy importing
+# the MCP catalog to validate a connection kind. The reverse (platform_ops reading
+# tenant_config for the per-tenant Foundry endpoint) is a legitimate module -> public edge and
+# is in the measured graph. Forbidding it would be enforcing a rule nobody decided.
 [[tool.importlinter.contracts]]
-name = "core (tenancy, not yet moved) does not import platform_ops (the dead cycle)"
+name = "tenancy does not import platform_ops (the dead cycle)"
 type = "forbidden"
-source_modules = ["app.core"]
+source_modules = ["app.modules.tenancy"]
 forbidden_modules = ["app.modules.platform_ops"]
 
-# --- C3 (Phase 3) — internals are private. One contract per module; the source list is every
-# OTHER module plus the composition root, so a module can still reach its own internal.
+# --- C5 — internals are private. One contract per module; sources are every OTHER module plus
+# the composition root, so a module can still reach its own internal.
+
 [[tool.importlinter.contracts]]
-name = "tickets internals are private"
+name = "tenancy internals are private"
 type = "forbidden"
-# Direct imports only: `public.py` re-exporting from its OWN internal is the design,
-# and the composition root reaching a module through its public is a legitimate chain.
-# Without this, every such chain is reported as an indirect violation.
 allow_indirect_imports = true
 source_modules = [
     "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
     "app.modules.hosted",
     "app.modules.evaluation",
+    "app.modules.agentdefs",
     "app.main",
-    "app.domains",
-    "app.api",
-    "app.core",
-    "app.workflow",
+    "app.registry",
+    "app.shared",
 ]
-forbidden_modules = ["app.modules.tickets.internal"]
+forbidden_modules = ["app.modules.tenancy.internal"]
 
 [[tool.importlinter.contracts]]
 name = "admin internals are private"
 type = "forbidden"
-# Direct imports only: `public.py` re-exporting from its OWN internal is the design,
-# and the composition root reaching a module through its public is a legitimate chain.
-# Without this, every such chain is reported as an indirect violation.
 allow_indirect_imports = true
 source_modules = [
+    "app.modules.tenancy",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
     "app.modules.tickets",
     "app.modules.hosted",
     "app.modules.evaluation",
+    "app.modules.agentdefs",
     "app.main",
-    "app.domains",
-    "app.api",
-    "app.core",
-    "app.workflow",
+    "app.registry",
+    "app.shared",
 ]
 forbidden_modules = ["app.modules.admin.internal"]
 
 [[tool.importlinter.contracts]]
-name = "hosted internals are private"
+name = "knowledge internals are private"
 type = "forbidden"
-# Direct imports only: `public.py` re-exporting from its OWN internal is the design,
-# and the composition root reaching a module through its public is a legitimate chain.
-# Without this, every such chain is reported as an indirect violation.
 allow_indirect_imports = true
 source_modules = [
-    "app.modules.tickets",
+    "app.modules.tenancy",
     "app.modules.admin",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
     "app.modules.evaluation",
+    "app.modules.agentdefs",
     "app.main",
-    "app.domains",
-    "app.api",
-    "app.core",
-    "app.workflow",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.knowledge.internal"]
+
+[[tool.importlinter.contracts]]
+name = "helpdesk internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.helpdesk.internal"]
+
+[[tool.importlinter.contracts]]
+name = "grounded internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.grounded.internal"]
+
+[[tool.importlinter.contracts]]
+name = "platform_ops internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.platform_ops.internal"]
+
+[[tool.importlinter.contracts]]
+name = "tickets internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.tickets.internal"]
+
+[[tool.importlinter.contracts]]
+name = "hosted internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.main",
+    "app.registry",
+    "app.shared",
 ]
 forbidden_modules = ["app.modules.hosted.internal"]
 
 [[tool.importlinter.contracts]]
 name = "evaluation internals are private"
 type = "forbidden"
-# Direct imports only: `public.py` re-exporting from its OWN internal is the design,
-# and the composition root reaching a module through its public is a legitimate chain.
-# Without this, every such chain is reported as an indirect violation.
 allow_indirect_imports = true
 source_modules = [
-    "app.modules.tickets",
+    "app.modules.tenancy",
     "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
     "app.modules.hosted",
+    "app.modules.agentdefs",
     "app.main",
-    "app.domains",
-    "app.api",
-    "app.core",
-    "app.workflow",
+    "app.registry",
+    "app.shared",
 ]
 forbidden_modules = ["app.modules.evaluation.internal"]
 
-# =====================================================================================
-# TARGET CONTRACTS — enabled by the phase named on each. Kept here so the destination is
-# reviewable before the code moves (ADR-017).
-# =====================================================================================
-#
-# PHASE 2 — the shared kernel exists and imports no module.
-#   [[tool.importlinter.contracts]]
-#   name = "shared imports no modules"
-#   type = "forbidden"
-#   source_modules = ["app.shared"]
-#   forbidden_modules = ["app.modules"]
-#
-# PHASE 2 — the cycle is dead: tenancy and platform_ops know nothing of each other.
-#   [[tool.importlinter.contracts]]
-#   name = "tenancy independent of platform_ops"
-#   type = "independence"
-#   modules = ["app.modules.tenancy", "app.modules.platform_ops"]
-#
-# PHASE 3 — the three layers.
-#   [[tool.importlinter.contracts]]
-#   name = "Layers: composition > modules > shared"
-#   type = "layers"
-#   layers = ["app.main | app.registry", "app.modules", "app.shared"]
-#
-# PHASE 3 (one per module, 10 total) — internals are private.
-#   [[tool.importlinter.contracts]]
-#   name = "<module> internals are private"
-#   type = "forbidden"
-#   source_modules = [<every other module>, "app.main", "app.registry"]
-#   forbidden_modules = ["app.modules.<module>.internal"]
-#
-# PHASE 5 — the measured public-to-public edges from ADR-017, pinned so a NEW cross-module
-# dependency is a deliberate act rather than an accident.
+[[tool.importlinter.contracts]]
+name = "agentdefs internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.agentdefs.internal"]
