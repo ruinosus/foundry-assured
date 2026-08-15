@@ -1,6 +1,6 @@
 # ADR-019 — The Agent Framework's approval is a yes/no; LangChain's is a conversation
 
-- **Status:** Proposed
+- **Status:** **Accepted — adopt `edit`.** Superseded its own "measure first" stance within hours, by the escape hatch it wrote (see Decision)
 - **Date:** 2026-08-15
 - **Amends:** [ADR-018](./ADR-018-no-ahp-for-now.md) — its re-evaluation trigger fired
 - **Context:** [`2026-08-15-hitl-spec.md`](../../2026-08-15-hitl-spec.md),
@@ -64,45 +64,86 @@ the same as "using `edit` is easy", and this ADR should not be read as claiming 
 
 ## Decision
 
-**Compare properly before adopting. Do not add LangChain to the backend on the strength of
-this table.**
+**Adopt LangChain's HITL for the approval surface, because `edit` is a stated product
+requirement.**
 
-The comparison above is real and the gap is real. It is also a gap in a feature nobody has yet
-shown to be needed here: `edit`, `respond` and retry context solve problems whose frequency in
-this product is **unmeasured**. The HITL spec's Phase 3 (approval metrics) is what turns that
-from taste into evidence, and it is one small piece of work behind an Azure environment.
+This ADR was written recommending "measure before adopting", with one escape hatch:
 
-Concretely:
+> *"If a **product** requirement arrives that names `edit` or `respond` explicitly … this ADR
+> is superseded immediately, without waiting for metrics. Demand stated by a human beats
+> demand inferred from a histogram."*
 
-1. **Phase 3 first.** Emit `app.approval.decisions`, `.retries`, `.latency`, `.pending`. If
-   rejections are rare and retries near zero, the gap is theoretical and this ADR closes as
-   "compared, not adopted".
-2. **If the data shows otherwise**, the decision is between two shapes, and it is *not*
-   "rewrite on LangChain":
-   - **(a)** keep the Agent Framework and accept our own failure memory for the retry context
-     only — bounded, one module, no second runtime;
-   - **(b)** run a LangChain/deepagents domain **alongside**, bound by a declarative document
-     in the `opentag-reference` `HostBinding` shape (agent · protocol · host · policy), which
-     is what ADR-018 said to do when this day came.
-3. **Whichever way, the role gate stays ours.** Neither framework has a notion of a required
-   role, and RULE #5 depends on it. That is not a tiebreaker; it is a constant.
+That requirement arrived. The approver must be able to **correct the action before approving
+it** — not only accept or refuse it. The Agent Framework offers a boolean; no amount of
+metrics changes that.
+
+The metrics (HITL spec Phase 3) remain worth building, but their purpose changes: they are no
+longer the gate on this decision, they are the audit record of it.
+
+### Observability and audit — already compatible, by accident of an earlier choice
+
+The concern that made this decision hard was auditability: adding a second runtime usually
+means a second observability stack, and an audit trail split across two systems is not an
+audit trail. Measured, it is not the case here.
+
+- **LangSmith exposes an OTLP endpoint** — `https://api.smith.langchain.com/otel`, driven by
+  the standard `OTEL_EXPORTER_OTLP_ENDPOINT` and `OTEL_EXPORTER_OTLP_HEADERS`. It is the
+  default backend for LangChain 1.0 / LangGraph 1.0, and it is **not** a proprietary protocol.
+- **Azure Monitor also ingests OTLP.**
+- **`shared/telemetry` already speaks OTLP.** `setup_telemetry()` (Phase 5.5a) wires
+  `OTLPSpanExporter()` when `OTEL_EXPORTER_OTLP_ENDPOINT` is set, and that exporter reads
+  `OTEL_EXPORTER_OTLP_HEADERS` from the environment on its own — verified in the installed
+  package. Pointing this backend at LangSmith is **configuration, not code**.
+
+So OpenTelemetry is the common denominator, and we are already standing on it. Both runtimes
+can emit into the same trace store, which is what makes one audit trail possible. That was not
+foresight — Phase 5.5a chose OTLP because it was the vendor-neutral option — but it is the
+reason this decision is affordable.
+
+### What LangChain itself recommends
+
+`interrupt()` is the modern standard, superseding `NodeInterrupt` and the older
+`interrupt_before` / `interrupt_after`. For tool-call approval specifically,
+`HumanInTheLoopMiddleware` with `interrupt_on` is the layer that carries the four decision
+types — it is built on the same interrupt machinery, not an alternative to it. Both require a
+**checkpointer**: the interrupt persists graph state and resumes with `Command(resume=…)`.
+
+That checkpointer is a real new dependency, and the honest cost of this decision.
+
+### Shape of the adoption
+
+Per ADR-018, which named this exact situation: **start from a declarative binding document**,
+not from a ports layer. The `opentag-reference` `HostBinding` shape (agent · protocol · host ·
+policy) is the reference, and `opentag-reference` is also the proof that a LangGraph agent and
+this stack can coexist.
+
+Non-negotiable regardless of runtime: **the role gate stays ours.** Neither framework has a
+notion of a required role, and RULE #5 depends on it.
 
 ## Consequences
 
-- **+** The gap is written down with numbers, so the next person does not rediscover it by
-  reading marketing pages.
-- **+** ADR-018's trigger worked as designed: the condition was named in advance, it fired,
-  and the response is a comparison rather than an impulse.
-- **+** Option (b) has a shape already — the binding document — instead of a ports layer.
-- **−** This ADR decides to measure rather than to act, which is unsatisfying when the gap is
-  visible. The alternative is adopting a second runtime for a feature with no demonstrated
-  demand, which is the more expensive mistake.
-- **−** Phase 3 needs an Azure environment, so the evidence is gated on infrastructure that
-  does not currently exist. That is a real delay, not a formality.
-- **⚠** If a *product* requirement arrives that names `edit` or `respond` explicitly — "the
-  approver must be able to fix the ticket summary before it is opened" — this ADR is superseded
-  immediately, without waiting for metrics. Demand stated by a human beats demand inferred
-  from a histogram.
+- **+** The approver gets `edit`, which no amount of work on the Agent Framework side would
+  have produced. The product requirement is met rather than negotiated down.
+- **+** **One audit trail, not two.** Both runtimes emit OpenTelemetry; LangSmith and Azure
+  Monitor both ingest OTLP; `shared/telemetry` already speaks it. This is the single fact that
+  makes a second runtime affordable, and it exists because Phase 5.5a chose the vendor-neutral
+  option rather than the convenient one.
+- **+** The adoption has a shape already (`HostBinding`) and a working reference
+  (`opentag-reference`), instead of a ports layer designed in the dark.
+- **−** **A checkpointer is a new dependency.** LangGraph interrupts persist graph state; that
+  store has to exist, be operated, and be reasoned about for tenancy. It is the honest price
+  of this decision and it is not small.
+- **−** **Two agent runtimes in one backend.** More surface, more upgrades, more ways for the
+  two HITL paths to drift apart. ADR-018's argument against premature ports still holds — what
+  changed is that the second runtime stopped being hypothetical.
+- **−** The `platform` domain just adopted `ToolApprovalMiddleware` (HITL spec Phase 1, already
+  merged). That work is not wasted — it is the right thing for a domain staying on the Agent
+  Framework — but the two domains will now approve through different machinery, and the
+  ApprovalCard has to render both.
+- **⚠** `opentag-reference` has `interrupt_on` and does not use it. Before committing to
+  `EditDecision`, build the smallest possible thing that actually round-trips an edit through
+  the UI. If that spike is hard, this ADR is worth revisiting — the type signature promising
+  `edit` is not the same as `edit` working end to end.
 
 ## References
 
