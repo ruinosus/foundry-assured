@@ -80,13 +80,23 @@ jobs:
           DO_NOT_TRACK: "1"
         # Model sizing is not a footnote: the spike measured a small model planning the wiki and
         # then stalling in the critic loop without emitting a page.
-        run: openwiki code --update --print --modelId "${{ vars.OPENWIKI_MODEL }}"
+        #
+        # --init when there is no wiki yet, --update after. The first automated run used --update
+        # against a repository with no openwiki/ directory: it behaved as an incremental pass over
+        # an empty base and produced 3 pages describing the most recent commits, not a wiki of the
+        # area. --update keeps a wiki current; it is not how one is born.
+        run: |
+          MODE=--update
+          [ -d openwiki ] || MODE=--init
+          echo "▸ openwiki code $MODE"
+          openwiki code "$MODE" --print --modelId "${{ vars.OPENWIKI_MODEL }}"
 
       - name: Adapt the OpenWiki output into the ingest bundle
         working-directory: apps/backend
         run: |
           uv sync --frozen
           VERSION="v0.$(date -u +%Y%m%d)"
+          echo "BUNDLE_VERSION=$VERSION" >> "$GITHUB_ENV"
           uv run python -m app.knowledge.adapt_openwiki \
             --repo "$GITHUB_WORKSPACE" \
             --component "foundry-helpdesk-$AREA" \
@@ -97,7 +107,16 @@ jobs:
         working-directory: apps/backend
         # THE gate. A bot writing the wiki unattended raises the value of this check, it does not
         # retire it: below the floor the bundle is kept for inspection and must not reach the KB.
-        run: uv run python -m eval.wiki_fidelity_test --component "foundry-helpdesk-$AREA"
+        #
+        # --version is passed EXPLICITLY, never inferred. The first automated run let the gate pick
+        # "the newest bundle" and it picked v0.3.0 over v0.20260815 (lexical ordering), grading the
+        # previous bundle at 97.6%, passing, and opening a PR for one that scores 75.6% — under the
+        # floor. The ordering bug is fixed too, but this step knows exactly which bundle it just
+        # produced, and a gate should never have to guess its own subject.
+        run: |
+          uv run python -m eval.wiki_fidelity_test \
+            --component "foundry-helpdesk-$AREA" \
+            --version "$BUNDLE_VERSION"
 
       - name: Open a pull request with the refreshed bundle
         uses: peter-evans/create-pull-request@v7

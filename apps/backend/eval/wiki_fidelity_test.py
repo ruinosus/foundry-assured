@@ -22,6 +22,7 @@ Run (from apps/backend):
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -31,12 +32,27 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 WIKI_ROOT = REPO_ROOT / "docs" / "wiki"
 
 
+def _version_key(name: str) -> tuple[int, ...]:
+    """Numeric-segment ordering, because lexical ordering is wrong here and it failed silently.
+
+    `v0.3.0` and `v0.20260815` coexist in this repository — hand-cut semver-ish versions and the
+    date stamp wiki-regen.yml generates. Sorted as strings, `v0.3.0` wins: '3' > '2' at the third
+    character. The first automated run hit exactly that: it gated the OLD bundle at 97.6%, passed,
+    and opened a pull request carrying a NEW bundle that scores 75.6% — below the floor. A gate
+    that validates the wrong artifact is worse than no gate, because it reports success.
+
+    Comparing numeric segments puts 20260815 above 3, which is what both schemes mean. Callers
+    that know which bundle they produced should still pass --version rather than rely on this.
+    """
+    return tuple(int(part) for part in re.findall(r"\d+", name)) or (0,)
+
+
 def _latest_version(component_dir: Path) -> Path:
-    """Newest bundle version for a component. Sorted lexically, which is what `vYYYYMMDD`
-    and `vX.Y.Z` both want in practice; an explicit --version wins when it does not."""
-    versions = sorted((p for p in component_dir.iterdir() if p.is_dir()), key=lambda p: p.name)
+    """Newest bundle version for a component."""
+    versions = sorted((p for p in component_dir.iterdir() if p.is_dir()), key=lambda p: _version_key(p.name))
     if not versions:
         raise SystemExit(f"❌ no bundle versions under {component_dir}")
+    print(f"(no --version given; using the newest of {[p.name for p in versions]})")
     return versions[-1]
 
 
