@@ -1,37 +1,85 @@
 # Foundry Assured
 
-An internal engineering support **concierge** — a Microsoft Foundry showcase that
-exercises every Foundry pillar hands-on: a grounded knowledge base, a streamed
-multi-agent workflow, per-user memory, human-in-the-loop approval, offline
-evaluation, and a managed hosted-agent deployment. The frontend is **CopilotKit**
-(Next.js) talking to a Python backend over the **AG-UI** protocol.
+**An internal engineering support assistant that proves what it tells you.**
 
-> **Clone → provision → deploy:** [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) — the
-> step-by-step runbook (infra, Entra app registrations, KB/memory, hosted agent,
-> Container Apps).
-> **Use this template:** [`docs/USE-THIS-TEMPLATE.md`](./docs/USE-THIS-TEMPLATE.md) —
-> *Use this template → Create a new repository*, then provision your own infra, CI/CD
-> identities (OIDC + GitHub App, no PAT) and reset the version history.
-> **Make it your own domain:** [`docs/CUSTOMIZE.md`](./docs/CUSTOMIZE.md) — swap the
-> corpus, prompts, action and identity to turn this into any "ask → ground → resolve →
-> escalate" assistant.
-> **Release & deploy automation:** [`docs/RELEASE-AUTOMATION.md`](./docs/RELEASE-AUTOMATION.md) —
-> the merge → release → gated-deploy flow + the GitHub App setup.
-> **Case study:** [`docs/CASE-STUDY-LLM-WIKI-LOOP.md`](./docs/CASE-STUDY-LLM-WIKI-LOOP.md) —
-> a measured generate→verify→ingest→consume loop for grounding an agent on a large codebase.
-> **Assurance mechanism:** [`docs/METHOD.md`](./docs/METHOD.md) — the reusable, measured
-> KB→agent guarantee (built faithfully · retrieves completely · secure per-caller access ·
-> red-teamed), with a worked example in [`docs/use-case-demo.html`](./docs/use-case-demo.html)
-> / [`docs/USE-CASE-WALKTHROUGH.md`](./docs/USE-CASE-WALKTHROUGH.md).
-> Contributing & CI/CD: [`CONTRIBUTING.md`](./CONTRIBUTING.md) · security:
-> [`SECURITY.md`](./SECURITY.md) · full build spec:
-> [`foundry-helpdesk-spec.md`](./foundry-helpdesk-spec.md) · working rules:
-> [`CLAUDE.md`](./CLAUDE.md)
+Ask it a question and it answers from your own runbooks, showing the source of every
+claim. If the answer requires *doing* something — opening a ticket, changing a
+resource — it stops and asks a human first. It never invents a source, never shows
+you a document you are not entitled to read, and never writes anything without
+approval. Those are not promises in a README: each one is a test that fails the
+build when broken.
 
-A developer asks in chat → the system **triages** intent/urgency → **retrieves**
-from the runbook knowledge base → **resolves** with a grounded, cited answer →
-**escalates** with human approval when an action is needed → and the whole thing
-is **evaluated** and **traceable**.
+Built as a **Microsoft Foundry** showcase — knowledge base, multi-agent workflow,
+per-user memory, human-in-the-loop approval, evaluation and tracing — with an
+assurance layer on top. Frontend is **CopilotKit** (Next.js) over the **AG-UI**
+protocol; backend is Python.
+
+---
+
+## What you actually get
+
+Sign in with your Microsoft account and you land in a console with four assistants.
+
+| Screen | What it is |
+|---|---|
+| `/d/helpdesk` | The support concierge — the full triage → retrieve → resolve → escalate workflow |
+| `/d/cockpit` | Cited Q&A over the Cockpit documentation |
+| `/d/selfwiki` | Cited Q&A over a wiki generated from **this repository's own code** |
+| `/d/platform` | Ops concierge over Microsoft MCP servers — Azure, GitHub, Entra, ADO, Learn |
+| `/tickets` | The tickets that were actually opened |
+| `/evals` | Quality scores for the agent's answers |
+| `/admin/users` | Users and role assignments (via Microsoft Graph) |
+
+### What happens when you ask something
+
+Type *"how do I recover my GitHub 2FA?"* into the helpdesk and you watch it work:
+
+1. **Triage** — classifies intent and urgency.
+2. **Retrieve** — searches the knowledge base, trimmed to what *you* are allowed to see.
+3. **Resolve** — answers with at least one citation. The **evidence panel** beside the
+   chat shows where each claim came from. No source, no answer — it declines instead of
+   guessing.
+4. **Escalate** — if action is needed, an **approval card** appears. The ticket is
+   created only after you approve it, and only if you hold the **Approver** role.
+5. **Remember** — preferences and resolutions carry across sessions.
+
+The intermediate steps stream to the screen as they happen. You are not staring at a
+spinner waiting for a paragraph.
+
+The `platform` domain works differently: it does not search documents, it **calls
+tools**. Read operations answer directly; every **write** goes behind human approval
+with a required role per tool.
+
+---
+
+## Why "Assured"
+
+Anyone can wire a chatbot to a vector store. The hard part is being able to say what it
+will and will not do — and prove it. Every guarantee below is enforced by something that
+turns CI red:
+
+| Guarantee | How it is proved |
+|---|---|
+| Every answer cites a source | Policy gate that **plants a violation** and fails if it is not caught |
+| You only see what you may see | Per-document ACL applied **before** the model sees the content |
+| No write without a human | Approval **plus** the Approver role, structurally — the ticket is created only in the response handler |
+| The wiki does not lie about the code | Build-fidelity floor at 80% (currently **96.4%**) + a freshness gate |
+| The architecture does not rot | 14 module-boundary contracts checked by `import-linter` on every push |
+| Prompts cannot drift silently | Prompt-contract suite over the declarative agent definitions |
+
+Read the method in [`docs/METHOD.md`](./docs/METHOD.md).
+
+---
+
+## The domain is swappable
+
+The architecture is *"ask → ground → resolve → escalate"*. Swapping the domain means
+swapping the corpus and the prompts — the machinery does not change. The shipped corpus
+is 13 generic engineering runbooks (2FA recovery, deploy rollback, pod crashloop, prod
+credential rotation, incident severity…), which is enough to see it work and not enough
+to be useful to your team. Making it yours: [`docs/CUSTOMIZE.md`](./docs/CUSTOMIZE.md).
+
+---
 
 ## Deployment modes — multi-tenant SaaS
 
@@ -66,7 +114,7 @@ The single-tenant `self_hosted` mode below is the **default**, byte-identical to
 pre-SaaS product — everything in this README runs unchanged in that mode unless a section
 says otherwise.
 
-## Four domains (config-driven)
+## How the four domains are wired
 
 The frontend is an **Assurance Console** that fronts four agents. Three are
 **grounded/workflow** domains sharing the same grounded/assured plumbing; the fourth is
@@ -137,20 +185,20 @@ CrashLoopBackOff…"*, *"What's the weather in Paris?"* (off-corpus → declines
 > captured by recording through the live UI); it runs in the full app. Add it by
 > re-recording with `./scripts/demo-record.sh` and approving a ticket in the browser.
 
-## Status — all six phases green
+## What is built
 
-| Phase | Pillar | What it proves |
-| --- | --- | --- |
-| 0 | AG-UI hello-world | message round-trips with streaming |
-| 1 | Foundry IQ knowledge base | answers cite a runbook, decline off-corpus |
-| 2 | Multi-agent workflow | `triage → retrieve → resolve` steps stream to the UI |
-| 3 | Memory + **Entra ID / OBO** | per-user memory, Foundry called *as the signed-in user* |
-| 4 | Human-in-the-loop | ticket escalation pauses for explicit approval before `create_ticket` |
-| 5 | Evaluation | deterministic policy gate + Foundry judges, surfaced on `/evals` from the project; CI runs Microsoft's official [`ai-agent-evals`](https://github.com/microsoft/ai-agent-evals) action on the deployed agent |
-| 6 | Hosted-agent deploy | same workflow packaged as a managed Foundry hosted agent |
+Every row below is shipped and exercised, not planned.
 
-> On top of the six showcase phases, the repo ships a reusable **assurance mechanism** —
-> the KB→agent guarantees below, each a **measured gate** in CI (not a promise).
+| Capability | What it means in the running app |
+| --- | --- |
+| Grounded knowledge base | answers cite a runbook and **decline** when the question is off-corpus |
+| Multi-agent workflow | `triage → retrieve → resolve` streams its steps to the UI as they run |
+| Memory + Entra ID / OBO | per-user memory; Foundry is called **as the signed-in user**, not as the app |
+| Human-in-the-loop | escalation pauses for explicit approval before `create_ticket` ever runs |
+| Evaluation | deterministic policy gate + Foundry judges, surfaced on `/evals`; CI runs Microsoft's [`ai-agent-evals`](https://github.com/microsoft/ai-agent-evals) against the deployed agent |
+| Hosted agents | the same workflow packaged as a managed Foundry hosted agent |
+| Multi-tenant SaaS | one codebase, three deployment modes — see below |
+| Modular monolith | ten domain modules with boundaries enforced in CI ([ADR-017](./docs/adr/ADR-017-module-boundaries.md)) |
 
 ## Assurance mechanism
 
@@ -174,7 +222,7 @@ Full as-built model: [`docs/METHOD.md`](./docs/METHOD.md) · visual walkthrough:
 ## Architecture
 
 Three layers. The Next.js frontend talks to the Python backend over **AG-UI (SSE)**;
-the backend runs a **multi-agent workflow** against Foundry in the cloud. Phase 6
+the backend runs a **multi-agent workflow** against Foundry in the cloud. The hosted-agent path
 adds a second, parallel delivery model: the same workflow packaged as a **managed
 hosted agent** (Responses protocol) on Foundry Agent Service.
 
@@ -261,7 +309,7 @@ apps/
     app/                      routes only: page (Overview) · chat · tickets · evals · api/* proxies
     components/{shell,chat,evals,tickets}/   feature-organized (HelpdeskApp, AppShell, …)
     lib/auth/msal.ts · styles/globals.css
-  hosted-agent/               Phase 6 — hosted-agent container (main · Dockerfile · agent.yaml)
+  hosted-agent/               hosted-agent container (main · Dockerfile · agent.yaml)
 infra/                        Bicep (azd): Foundry + AI Search + Storage + ACR + Container Apps + RBAC
 scripts/set-deploy-env.sh     copies Entra values from .env into the azd env (for publishing)
 docs/                         DEPLOYMENT.md (provisioning runbook) · presentation.html (slide deck)
@@ -280,7 +328,7 @@ azd up        # prompts for env name + location; provisions everything in infra/
 
 Creates `rg-<env>`, the Foundry account + project **`helpdesk-concierge`**, a
 `gpt-5-mini` + `text-embedding-3-small` deployment, **Azure AI Search (Basic)**,
-Storage, an **ACR** (for the Phase 6 image), and keyless RBAC. Pick a region where
+Storage, an **ACR** (for the hosted-agent image), and keyless RBAC. Pick a region where
 `gpt-5-mini` GlobalStandard is available; AI Search may need a different region
 (set `AZURE_SEARCH_LOCATION`).
 
@@ -334,7 +382,7 @@ an action. The in-portal admin page **`/admin/users`** manages users and their r
 assignments through **Microsoft Graph** (app-only), backed by the backend's `/admin/*`
 endpoints. Design + setup: [`docs/RBAC-AND-USER-MANAGEMENT-PLAN.md`](./docs/RBAC-AND-USER-MANAGEMENT-PLAN.md).
 
-## Evaluation (Phase 5)
+## Evaluation
 
 ```bash
 cd apps/backend
@@ -347,9 +395,9 @@ The **LocalEvaluator** policies (every answer cites a runbook or declines; never
 leak a secret) are the hard CI gate — a violation exits non-zero. **FoundryEvals**
 adds cloud LLM-judge scores, viewable per-run in the Foundry portal. CI runs the
 offline `--self-test` (`.github/workflows/eval-gate.yml`). See
-[`apps/backend/eval/README.md`](./backend/eval/README.md).
+[`apps/backend/eval/README.md`](./apps/backend/eval/README.md).
 
-## Hosted agent (Phase 6)
+## Hosted agents
 
 The workflow packaged as a managed Foundry hosted agent (Responses protocol),
 deployed via the Azure-recommended `azd ai agent` path:
@@ -431,6 +479,20 @@ ACR (`remoteBuild: true`), so no local Docker/amd64 step is needed.
 azd ai agent delete helpdesk-concierge   # remove just the hosted agent
 azd down --purge                         # delete the whole resource group (stops AI Search)
 ```
+
+## Documentation
+
+| | |
+|---|---|
+| [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md) | clone → provision → deploy, step by step |
+| [`docs/CUSTOMIZE.md`](./docs/CUSTOMIZE.md) | swap the corpus, prompts and action for your own domain |
+| [`docs/METHOD.md`](./docs/METHOD.md) | the assurance mechanism — how each guarantee is measured |
+| [`docs/OBSERVABILITY.md`](./docs/OBSERVABILITY.md) | what telemetry is emitted, and what is deliberately not |
+| [`docs/adr/`](./docs/adr/) | 18 architecture decisions, with the measurements behind them |
+| [`docs/USE-THIS-TEMPLATE.md`](./docs/USE-THIS-TEMPLATE.md) | fork it as a template, with your own infra and CI identities |
+| [`docs/RELEASE-AUTOMATION.md`](./docs/RELEASE-AUTOMATION.md) | merge → release → gated deploy |
+| [`docs/CASE-STUDY-LLM-WIKI-LOOP.md`](./docs/CASE-STUDY-LLM-WIKI-LOOP.md) | a measured generate→verify→ingest→consume loop over a large codebase |
+| [`CONTRIBUTING.md`](./CONTRIBUTING.md) · [`SECURITY.md`](./SECURITY.md) · [`CLAUDE.md`](./CLAUDE.md) | how to work in this repo |
 
 ## References
 
