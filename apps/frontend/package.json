@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "demo": "bash ../../scripts/demo.sh",
     "demo:record": "bash ../../scripts/demo-record.sh"
@@ -27,6 +27,8 @@
     "@types/node": "^26.1.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.1",
     "typescript": "^6.0.3"
   }
 }
