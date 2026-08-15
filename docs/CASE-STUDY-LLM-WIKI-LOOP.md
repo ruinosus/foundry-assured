@@ -142,7 +142,7 @@ content.
    curated `deep-wiki` skills rather than reinventing the methodology.
 
 > Method + plan: [`SECOND-DOMAIN-WIKI-PLAN.md`](./SECOND-DOMAIN-WIKI-PLAN.md). Generator:
-> `apps/backend/app/knowledge/wiki_builder.py` (uses the deep-wiki **generation** skills).
+> `apps/backend/app/modules/knowledge/internal/wiki_builder.py` (uses the deep-wiki **generation** skills).
 > Consumption is Microsoft's Foundry IQ pattern — the `AzureAISearchContextProvider`
 > grounds the agent; the answering discipline lives in `COCKPIT_INSTRUCTIONS`
-> (`apps/backend/app/agents/prompts.py`), no consume-side skill.
+> (`apps/backend/app/modules/agentdefs/public.py`), no consume-side skill.

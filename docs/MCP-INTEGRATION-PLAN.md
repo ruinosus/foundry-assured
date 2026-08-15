@@ -37,7 +37,7 @@ So our footprint is: a **thin registry (data)** + the **`platform` agent** that 
 from it + the **auth wiring** + a small **RBAC layer**. No custom builder, approval wrapper,
 or agent.yaml generator.
 
-## The registry (MCP servers as data) — `app/agents/mcp/registry.py`
+## The registry (MCP servers as data) — `app/modules/platform_ops/internal/mcp_registry.py`
 
 ```python
 @dataclass(frozen=True)
@@ -81,7 +81,7 @@ through as an unguarded read.
 
 ## The `platform` (ops) domain
 
-A new domain entry in `apps/frontend/lib/domains.ts` + `app/agents/platform.py` — a
+A new domain entry in `apps/frontend/lib/domains.ts` + `app/modules/platform_ops/internal/platform.py` — a
 **tool-driven** agent (not KB-grounded): an engineering-platform concierge that uses the MCP
 tools. Registered at `/d/platform`. Builds its tool list from the registry (filtered to the
 caller's role; see Governance).
@@ -109,7 +109,7 @@ single instance. Therefore:
 
 ## Authentication (local vs hosted differ — per Microsoft)
 
-- **Internal (our backend, `MCPStreamableHTTPTool`):** OBO — get the per-request credential via the existing **`credential_for_request()`** (`app/core/auth.py`, which builds the `OnBehalfOfCredential` from request context), then `cred.get_token(obo_scope)` → `headers={"Authorization": f"Bearer {token}"}`. The MCP server sees the **user's identity**, trimmed to their permissions.
+- **Internal (our backend, `MCPStreamableHTTPTool`):** OBO — get the per-request credential via the existing **`credential_for_request()`** (`app/shared/auth.py`, which builds the `OnBehalfOfCredential` from request context), then `cred.get_token(obo_scope)` → `headers={"Authorization": f"Bearer {token}"}`. The MCP server sees the **user's identity**, trimmed to their permissions.
 - **Hosted (Foundry):** **OAuth identity passthrough** (not raw OBO header), the Microsoft-recommended per-user mechanism — Agent Service issues a per-user **consent link** (`oauth_consent_request`) and stores the user's credentials. Configured via a **`project_connection_id`** (the connection holds the OAuth app/credentials), **not** a header.
 
 **Which path is active** is the *same* live-vs-hosted switch the project already has (the

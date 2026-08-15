@@ -89,7 +89,7 @@ COCKPIT_DOCBUNDLES=../../docs/wiki \
   uv run python -m app.knowledge.ingest_docbundles
 ```
 
-The agent (`app/agents/selfwiki.py`) is a thin mirror of the Cockpit agent pointed at a
+The agent (`app/modules/grounded/internal/selfwiki.py`) is a thin mirror of the Cockpit agent pointed at a
 different KB. "Same machine, different corpus + prompts" stopped being a claim and became
 the actual implementation — a third domain that ships by configuration.
 

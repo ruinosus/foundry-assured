@@ -101,7 +101,7 @@ a dev machine; use Path 1 when generation must be hosted/scheduled.
 
 ### Wiki Builder — proven (D1)
 
-`app/knowledge/wiki_builder.py` generates a faithful bundle from a repo, on Foundry:
+`app/modules/knowledge/internal/wiki_builder.py` generates a faithful bundle from a repo, on Foundry:
 deterministic source read → **plan** (one call) → **write** each page (Microsoft
 `wiki-page-writer` depth rules: cite the real file, no guessing) → **verify** (re-ground
 each claim against source, drop the unsupported) → assemble manifest + pages + llms.txt.
@@ -142,12 +142,12 @@ Generic via `--repo/--component/--model` → the reusable protocol for any multi
 ## Key files
 
 ```
-apps/backend/app/knowledge/ingest_docbundles.py   # Phase A: corpus → cockpit-kb (reads external COCKPIT_DOCBUNDLES)
-apps/backend/app/agents/cockpit.py             # Cockpit agent (AzureAISearchContextProvider, Foundry IQ agentic)
-apps/backend/app/agents/prompts.py             # COCKPIT_INSTRUCTIONS (identity + grounding/citation discipline)
-apps/backend/app/knowledge/skills/             # deep-wiki GENERATION skills (wiki-architect, wiki-page-writer)
+apps/backend/app/modules/knowledge/internal/ingest_docbundles.py   # Phase A: corpus → cockpit-kb (reads external COCKPIT_DOCBUNDLES)
+apps/backend/app/modules/grounded/internal/cockpit.py             # Cockpit agent (AzureAISearchContextProvider, Foundry IQ agentic)
+apps/backend/app/modules/agentdefs/public.py             # COCKPIT_INSTRUCTIONS (identity + grounding/citation discipline)
+apps/backend/app/modules/knowledge/skills/             # deep-wiki GENERATION skills (wiki-architect, wiki-page-writer)
 apps/backend/app/main.py                       # registers /cockpit (auth-gated) when cockpit-kb is configured
 apps/frontend/{app/cockpit, components/cockpit} # the /cockpit route + chat
 # gitignored / external (internal content): the Cockpit corpus + eval/datasets/cockpit_golden.jsonl
-# planned: apps/backend/app/knowledge/wiki_builder.py + skills (deep-wiki) — the generate side
+# planned: apps/backend/app/modules/knowledge/internal/wiki_builder.py + skills (deep-wiki) — the generate side
 ```
