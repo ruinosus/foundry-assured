@@ -46,7 +46,7 @@ Shared-mode multitenancy is layered underneath those domains by auth dependencie
 | Debug per-user grounded ACL behavior | [Grounded domains](./backend/grounded-domains.md), [Auth and tenancy](./backend/auth-and-tenancy.md) | `app/services/retrieval.py`, `app/services/grounded.py` | `uv run python -m eval.retrieval_acl_parity_test && uv run python -m eval.grounded_archetype_roundtrip_test` |
 | Add or debug MCP servers, tools, or connection policy | [Platform domain and MCP brokering](./backend/platform-domain.md) | `app/agents/mcp/registry.py`, `app/agents/mcp/tools.py`, `app/core/tenant_store.py` | `uv run python -m eval.mcp_registry_test && uv run python -m eval.connection_tools_build_test && uv run python -m eval.approval_mode_test` |
 | Debug hosted bridges or runtime caches | [Operations and runtime behavior](./backend/operations-and-runtime.md) | `app/services/hosted.py`, `app/api/chat.py`, `app/main.py` | `uv run python -m eval.platform_hosted_bridge_test && uv run python -m eval.hosted_build_test` |
-| Change bundle ingest, manifest handling, or wiki pipeline | [Knowledge pipeline and docbundle contract](./backend/knowledge-pipeline.md) | `app/knowledge/ingest_docbundles.py`, `app/knowledge/adapt_openwiki.py`, `app/knowledge/docbundle_schema.py`, `app/knowledge/wiki_builder.py` | `uv run python -m eval.docbundle_contract_test && uv run python -m eval.wiki_fidelity_test --component foundry-helpdesk-backend` |
+| Change bundle ingest, manifest handling, or wiki pipeline | [Knowledge pipeline and docbundle contract](./backend/knowledge-pipeline.md) | `app/knowledge/ingest_docbundles.py`, `app/knowledge/adapt_openwiki.py`, `app/knowledge/docbundle_schema.py`, `app/knowledge/wiki_builder.py` | `uv run python -m eval.docbundle_contract_test && uv run python -m eval.wiki_fidelity_test --component foundry-assured` |
 | Understand which tests protect a subsystem | [Evaluation and assurance](./backend/evaluation-and-assurance.md) | `apps/backend/eval/*` | pick the invariant batch from that page |
 
 ## Validation strategy
@@ -58,7 +58,7 @@ Prefer focused checks over broad sweeps:
 - Tenant gating: `uv run python -m eval.tenant_resolution_test`
 - Grounded retrieval contract: `uv run python -m eval.retrieval_shape_test`
 - Platform tool policy: `uv run python -m eval.mcp_registry_test`
-- Bundle contract and fidelity: `uv run python -m eval.docbundle_contract_test && uv run python -m eval.wiki_fidelity_test --component foundry-helpdesk-backend`
+- Bundle contract and fidelity: `uv run python -m eval.docbundle_contract_test && uv run python -m eval.wiki_fidelity_test --component foundry-assured`
 
 ## Backlog
 

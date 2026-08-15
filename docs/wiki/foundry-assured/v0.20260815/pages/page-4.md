@@ -1,10 +1,3 @@
----
-type: test-and-assurance-guide
-title: Evaluation and assurance
-description: The backend assurance harness, its fidelity and freshness gates, and the representative tests that encode apps/backend runtime invariants.
-tags: [backend, testing, assurance, eval]
----
-
 # Evaluation and assurance
 
 `apps/backend/eval/` is not just a loose test folder. It is the backend's assurance harness for runtime architecture, ACL behavior, tenancy, MCP brokering, prompt contracts, and knowledge-bundle quality. The repo's own OpenWiki brief points at `wiki_fidelity_test.py` and `assurance.yaml` as ingest gates, and the source tree adds many more focused invariants around request-time authorization, shared-mode boot, and hosted bridge behavior. [wiki_fidelity_test.py](https://github.com/ruinosus/foundry-assured/blob/4d10c9a42e5d5c2a2b7f60d26a3e694620a9bcaa/apps/backend/eval/wiki_fidelity_test.py#L1-L20) [wiki_freshness_test.py](https://github.com/ruinosus/foundry-assured/blob/4d10c9a42e5d5c2a2b7f60d26a3e694620a9bcaa/apps/backend/eval/wiki_freshness_test.py#L1-L13)
