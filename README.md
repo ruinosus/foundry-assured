@@ -94,10 +94,10 @@ mode, domains mount globally but are gated per-tenant by a **license entitlement
 
 The deep-wiki the **selfwiki** domain grounds on can be generated two ways:
 
-- **Foundry pipeline** — [`apps/backend/app/knowledge/wiki_builder.py`](./apps/backend/app/knowledge/wiki_builder.py),
+- **Foundry pipeline** — [`apps/backend/app/modules/knowledge/internal/wiki_builder.py`](./apps/backend/app/modules/knowledge/internal/wiki_builder.py),
   automated via `uv run`, using the Foundry model (`gpt-5-mini`) with the build-fidelity
   gate. Costs roughly **$0.30** for the whole monorepo.
-- **Microsoft Agent Skills** — [`apps/backend/app/knowledge/skills/{wiki-architect,wiki-page-writer}`](./apps/backend/app/knowledge/skills).
+- **Microsoft Agent Skills** — [`apps/backend/app/modules/knowledge/skills/{wiki-architect,wiki-page-writer}`](./apps/backend/app/modules/knowledge/skills).
   Open the repo in **VS Code Copilot or Claude Code** and ask it to *"create a wiki"*;
   the IDE agent reads the `SKILL.md` and runs the loop. **No cloud, no azd, no cost** —
   it uses the IDE's own Copilot.
@@ -232,24 +232,31 @@ flowchart LR
 ## Repository layout
 
 A monorepo: deployable apps live under `apps/`; infra and docs sit alongside.
-Each app is internally layered (backend: thin routers → services → core;
-frontend: feature-organized components).
+The backend is a **modular monolith by business domain** (ADR-017): one module per
+bounded context, each with a public surface and private internals, over a minimal
+shared kernel — with the boundaries checked in CI by `import-linter`.
 
 ```
 apps/
   backend/                    Python 3.12 · FastAPI · Agent Framework · uv
     app/
-      main.py                 app wiring: CORS, lifespan, routers, AG-UI /helpdesk
-      core/                   settings.py · auth.py (Entra JWT + OnBehalfOf / OBO)
-      api/                    thin HTTP routers: health · chat (/helpdesk-hosted) · tickets · evals
-      services/               hosted.py — Responses→AG-UI bridge for the hosted agent
-      agents/                 prompts.py (single source of truth) · concierge.py
-      workflow/               graph · agents · escalation · memory · stream_fix (multi-agent)
-      tools/tickets.py        real create_ticket tool + persistence
-      knowledge/              corpus/*.md (~13 runbooks) · ingest.py
+      main.py                 composition root: telemetry → tenancy → routers → domains
+      registry.py             DomainSpec + mount_domains (dispatch by `kind`) + include_routers
+      shared/                 SHARED KERNEL: settings · auth (Entra JWT + OBO) · telemetry/
+                              imports no business module — enforced, not a convention
+      modules/                one package per domain, each public.py + internal/
+        tenancy/              deployment-mode seam · tenant resolution · connections · entitlement
+        knowledge/            corpus · ingest · wiki builder · per-document ACL · retrieval
+        helpdesk/             the workflow: triage → retrieve → resolve → escalate (HITL)
+        grounded/             the cited-Q&A archetype (cockpit, selfwiki)
+        platform_ops/         tool-driven ops concierge over Microsoft MCP servers
+        agentdefs/            every declarative agent definition (loader + composition)
+        admin/ tickets/ hosted/ evaluation/
     agents/helpdesk/          the agent DEFINITIONS — AgentSchema PromptAgent per agent (+ personas · guardrails · eval-cases)
     cli/                      data-plane scripts: provision_memory · provision_guardrail · provision_eval_rule
-    eval/                     Phase 5 — offline harness (run_eval · assertions · datasets · rubrics)
+    eval/                     the assurance harness as PRODUCT (run_eval · assertions · datasets · rubrics + the 8 CI gates)
+    tests/                    tests mirroring the modules, plus smoke/ and architecture/
+    importlinter.toml         the 14 boundary contracts
   frontend/                   Next.js 15 (App Router) · CopilotKit v2 · MSAL
     app/                      routes only: page (Overview) · chat · tickets · evals · api/* proxies
     components/{shell,chat,evals,tickets}/   feature-organized (HelpdeskApp, AppShell, …)

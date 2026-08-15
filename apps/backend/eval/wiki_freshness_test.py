@@ -20,7 +20,9 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-_ROOT = Path(__file__).resolve().parents[3]
+import app as _app
+
+_ROOT = Path(_app.__file__).resolve().parents[3]
 _WIKI = _ROOT / "docs" / "wiki"
 
 # Generated component → the source area it was built from (relative to the repo root).

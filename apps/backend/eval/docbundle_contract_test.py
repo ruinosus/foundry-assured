@@ -6,7 +6,7 @@ nobody noticed (a missing key just reads as "no access declared"), and the local
 ended up growing its own generator of the same format. Two writers, one silent divergence,
 zero failing tests.
 
-So: `app/knowledge/docbundle.schema.json` is the producer's contract, vendored here, and
+So: `app/modules/knowledge/internal/docbundle.schema.json` is the producer's contract, vendored here, and
 this gate checks BOTH directions against it —
 
   1. every manifest field this repo READS exists in the contract (the direction that broke);
@@ -35,10 +35,10 @@ import sys
 import tempfile
 from pathlib import Path
 
-from app.knowledge import docbundle_schema
+from app.modules.knowledge.internal import docbundle_schema
 
 _BACKEND = Path(__file__).resolve().parents[1]
-_KNOWLEDGE = _BACKEND / "app" / "knowledge"
+_KNOWLEDGE = _BACKEND / "app" / "modules" / "knowledge" / "internal"  # ADR-017 moved it here
 _WIKI = _BACKEND.parents[1] / "docs" / "wiki"
 
 # Modules that touch a manifest, and the local variable each one binds it to. Reading a
@@ -186,7 +186,7 @@ def main() -> int:
 
     # 4. absent ≠ empty, proven through the real reader. Imported late: it pulls the
     # azure SDKs, and checks 0-3 are pure file reads.
-    from app.knowledge.ingest_docbundles import collect_pages
+    from app.modules.knowledge.internal.ingest_docbundles import collect_pages
 
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)

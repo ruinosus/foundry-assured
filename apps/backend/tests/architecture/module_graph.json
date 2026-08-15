@@ -1,0 +1,145 @@
+{
+  "COMPOSITION": {
+    "admin": [
+      "registry.py"
+    ],
+    "agentdefs": [
+      "registry.py"
+    ],
+    "evaluation": [
+      "registry.py"
+    ],
+    "grounded": [
+      "registry.py"
+    ],
+    "helpdesk": [
+      "registry.py"
+    ],
+    "hosted": [
+      "main.py",
+      "registry.py"
+    ],
+    "platform_ops": [
+      "main.py",
+      "registry.py"
+    ],
+    "shared": [
+      "main.py",
+      "registry.py"
+    ],
+    "tenancy": [
+      "main.py",
+      "registry.py"
+    ],
+    "tickets": [
+      "registry.py"
+    ]
+  },
+  "admin": {
+    "shared": [
+      "modules/admin/api_admin.py",
+      "modules/admin/api_me.py",
+      "modules/admin/internal/graph.py"
+    ]
+  },
+  "evaluation": {
+    "shared": [
+      "modules/evaluation/api.py"
+    ],
+    "tenancy": [
+      "modules/evaluation/internal/foundry_evals.py"
+    ]
+  },
+  "grounded": {
+    "agentdefs": [
+      "modules/grounded/internal/concierge.py"
+    ],
+    "hosted": [
+      "modules/grounded/internal/grounded.py"
+    ],
+    "knowledge": [
+      "modules/grounded/internal/grounded.py"
+    ],
+    "shared": [
+      "modules/grounded/internal/cockpit.py",
+      "modules/grounded/internal/concierge.py",
+      "modules/grounded/internal/grounded.py",
+      "modules/grounded/internal/selfwiki.py"
+    ],
+    "tenancy": [
+      "modules/grounded/internal/cockpit.py",
+      "modules/grounded/internal/concierge.py",
+      "modules/grounded/internal/grounded.py",
+      "modules/grounded/internal/selfwiki.py"
+    ]
+  },
+  "helpdesk": {
+    "agentdefs": [
+      "modules/helpdesk/internal/agents.py"
+    ],
+    "shared": [
+      "modules/helpdesk/internal/escalation.py",
+      "modules/helpdesk/internal/graph.py"
+    ],
+    "tenancy": [
+      "modules/helpdesk/internal/agents.py",
+      "modules/helpdesk/internal/graph.py",
+      "modules/helpdesk/internal/memory.py"
+    ],
+    "tickets": [
+      "modules/helpdesk/internal/escalation.py"
+    ]
+  },
+  "hosted": {
+    "shared": [
+      "modules/hosted/api.py",
+      "modules/hosted/internal/hosted.py"
+    ],
+    "tenancy": [
+      "modules/hosted/api.py",
+      "modules/hosted/internal/hosted.py"
+    ]
+  },
+  "knowledge": {
+    "shared": [
+      "modules/knowledge/internal/retrieval.py"
+    ],
+    "tenancy": [
+      "modules/knowledge/internal/acl_setup.py",
+      "modules/knowledge/internal/ingest.py",
+      "modules/knowledge/internal/ingest_docbundles.py",
+      "modules/knowledge/internal/secure_search.py",
+      "modules/knowledge/internal/wiki_builder.py"
+    ]
+  },
+  "platform_ops": {
+    "agentdefs": [
+      "modules/platform_ops/internal/platform.py"
+    ],
+    "grounded": [
+      "modules/platform_ops/internal/platform.py"
+    ],
+    "shared": [
+      "modules/platform_ops/internal/mcp_tools.py",
+      "modules/platform_ops/internal/platform.py"
+    ],
+    "tenancy": [
+      "modules/platform_ops/internal/mcp_tools.py",
+      "modules/platform_ops/internal/platform.py"
+    ]
+  },
+  "tenancy": {
+    "shared": [
+      "modules/tenancy/api.py",
+      "modules/tenancy/internal/onboarding.py",
+      "modules/tenancy/internal/tenant.py",
+      "modules/tenancy/internal/tenant_resolution.py",
+      "modules/tenancy/public.py"
+    ]
+  },
+  "tickets": {
+    "shared": [
+      "modules/tickets/api.py"
+    ]
+  }
+}

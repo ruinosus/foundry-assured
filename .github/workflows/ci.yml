@@ -51,6 +51,42 @@ jobs:
       - name: Prompt contract suite (composed AgentSchema definitions)
         run: uv run python -m eval.prompt_contract_test
 
+      # Telemetry landed BEFORE the module refactor (spec Phase 5.5a) so the moves are not
+      # made blind — a route snapshot cannot see a latency or cost regression. The risk of
+      # adding it is that it stops being free, so both defaults are asserted: no exporter
+      # configured → no-op, and content capture off unless explicitly switched on (I-10).
+      - name: Telemetry defaults (off by default, content capture opt-in)
+        run: uv run python -m tests.shared.telemetry_test
+
+      # Route-surface snapshot — the modular-monolith refactor's safety net (ADR-017).
+      # Boots the app under two fixed deployment profiles, each in its own interpreter,
+      # and compares method+path against a recorded fixture. Catches the failure mode a
+      # green test suite cannot: an endpoint silently lost to a forgotten import or a
+      # router that stopped being included. Offline; exits 1 on any surface change.
+      - name: Route surface snapshot (self_hosted + shared)
+        run: uv run python -m tests.smoke.routes_snapshot_test
+
+      # Architecture gate — module boundaries (ADR-017). Phase 0 enables only the two
+      # contracts that already hold, so red always means a real regression; the target
+      # contracts are written down (commented) in importlinter.toml and switch on with
+      # the phase named on each.
+      - name: Architecture gate (import-linter)
+        run: uv run lint-imports --config importlinter.toml
+
+      # Inter-module dependency graph (ADR-017). import-linter can only guard directories
+      # that exist; until Phase 3 creates them, this pins the same question against the
+      # target module map and fails on a NEW cross-module edge, naming the file. Also the
+      # Phase 1 red gate: a file with no module assigned fails the run.
+      - name: Module dependency graph (no new coupling)
+        run: uv run python -m tests.architecture.module_graph_test
+
+      # Filesystem anchors. Three paths computed as `parents[N]` from a file's own location
+      # broke during the module moves, TWO of them in silence — the tests that would have
+      # caught them were already failing for unrelated reasons. Anchoring on the `app`
+      # package survives any move; this forbids the fragile form outright.
+      - name: Filesystem anchors (no parents[N] path counting)
+        run: uv run python -m tests.architecture.filesystem_anchors_test
+
   frontend:
     name: Frontend · typecheck + build
     runs-on: ubuntu-latest

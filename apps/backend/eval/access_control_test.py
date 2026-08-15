@@ -28,9 +28,9 @@ from agent_framework import Message
 from agent_framework.azure import AzureAISearchContextProvider
 from azure.identity import DefaultAzureCredential
 
-from app.agents.secure_search import _chunk_component, authorized_components, trim_agentic_content
-from app.core.settings import settings
-from app.core.tenant import tenant_config
+from app.modules.knowledge.internal.secure_search import _chunk_component, authorized_components, trim_agentic_content
+from app.shared.settings import settings
+from app.modules.tenancy.internal.tenant import tenant_config
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _ROPC_CLIENT = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"

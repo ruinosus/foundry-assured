@@ -47,7 +47,7 @@ to understand or do any step by hand.
 | Layer | How | Where |
 | --- | --- | --- |
 | Foundry account + project + models, Azure AI Search, Storage, ACR, Container Apps env, RBAC | **Bicep** via `azd up` (control plane) | `infra/` |
-| Knowledge base + memory store | **Python scripts** (data plane) — or `scripts/bootstrap.sh` | `apps/backend/{app/knowledge/ingest.py, cli/}` |
+| Knowledge base + memory store | **Python scripts** (data plane) — or `scripts/bootstrap.sh` | `apps/backend/{app/modules/knowledge/internal/ingest.py, cli/}` |
 | Entra app registrations (SPA + API) for sign-in + OBO | `scripts/setup-entra.sh` (or manual — Step 3) | — |
 | Hosted agent (Foundry Agent Service) | `azd deploy helpdesk-concierge` + post-deploy RBAC | `apps/hosted-agent/` |
 | Backend + frontend (Container Apps) | `azd up` / `azd deploy backend web` | `apps/{backend,frontend}/` |
@@ -218,7 +218,7 @@ There are **two ways** to produce it:
    and the Foundry model (`gpt-5-mini`) deployed; it enforces the **build-fidelity gate**
    (rejects a low-fidelity bundle). This is the path that costs tokens.
 2. **Microsoft Agent Skills** — no cloud, no cost. The skills under
-   `apps/backend/app/knowledge/skills/{wiki-architect,wiki-page-writer}` are run by your
+   `apps/backend/app/modules/knowledge/skills/{wiki-architect,wiki-page-writer}` are run by your
    IDE agent (**VS Code Copilot** or **Claude Code**): open the repo and ask it to
    *"create a wiki"* — the agent follows the skill instructions to write the bundle
    locally. (There is no `copilot plugin install` / slash command; it's the skills the

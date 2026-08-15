@@ -1,0 +1,73 @@
+"""Tenancy: deployment-mode seam, per-request tenant resolution, connections, entitlement.
+
+`domain_deps` is the canonical gate for a domain endpoint: authentication plus, in shared
+mode, the per-tenant entitlement check (ADR-010). It used to live in the composition root,
+which made every module that needed it import composition — the layering backwards. It is
+tenancy's, because that is what it decides.
+
+This module never stores a customer secret (ADR-005): a `Connection` REFERENCES a Foundry
+connection, and the broker resolves it.
+"""
+
+from app.modules.tenancy.internal.onboarding import onboarding_guard
+from app.modules.tenancy.internal.tenant import (
+    DOMAIN_IDS,
+    TIER_DOMAINS,
+    MultiTenantConfigProvider,
+    TenantConfig,
+    current_tenant_id,
+    domains_for_tier,
+    require_domain,
+    set_current_tenant,
+    set_provider,
+    tenant_config,
+)
+from app.modules.tenancy.internal.tenant_resolution import install, memory_scope, tenant_store
+from app.modules.tenancy.internal.tenant_store import (
+    Connection,
+    InMemoryTenantStore,
+    TableStorageTenantStore,
+    TenantRecord,
+    set_server_catalog,
+    validate_kind,
+)
+from app.shared.auth import auth_dependencies
+from app.shared.settings import settings
+
+__all__ = [
+    "Connection",
+    "DOMAIN_IDS",
+    "InMemoryTenantStore",
+    "MultiTenantConfigProvider",
+    "TIER_DOMAINS",
+    "TableStorageTenantStore",
+    "TenantConfig",
+    "TenantRecord",
+    "current_tenant_id",
+    "domain_deps",
+    "domains_for_tier",
+    "install",
+    "memory_scope",
+    "onboarding_guard",
+    "require_domain",
+    "set_current_tenant",
+    "set_provider",
+    "set_server_catalog",
+    "tenant_config",
+    "tenant_store",
+    "validate_kind",
+]
+
+
+def domain_deps(domain_id: str) -> list:
+    """Auth deps, plus (shared mode only) the per-tenant entitlement gate.
+
+    In self_hosted/dedicated this is exactly `auth_dependencies()` — byte-identical to before
+    the refactor; only shared mode adds the gate.
+    """
+    from fastapi import Depends
+
+    deps = auth_dependencies()
+    if settings.deployment_mode == "shared":
+        deps = [*deps, Depends(require_domain(domain_id))]
+    return deps

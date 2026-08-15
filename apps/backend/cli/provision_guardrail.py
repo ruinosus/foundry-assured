@@ -33,8 +33,8 @@ from azure.ai.projects.models import (
 )
 from azure.identity import DefaultAzureCredential
 
-from app.core.settings import settings
-from app.core.tenant import tenant_config
+from app.shared.settings import settings
+from app.modules.tenancy.internal.tenant import tenant_config
 
 
 def _as_dict(obj) -> dict:

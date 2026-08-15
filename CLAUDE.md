@@ -30,22 +30,44 @@ O domínio é **swappable**: a arquitetura "pergunte → fundamente → resolva 
 Três camadas. O frontend Next.js conversa com o backend Python via **AG-UI sobre SSE**; o backend roda um **workflow multi-agente** que usa o Foundry na nuvem.
 
 - **Frontend** → o "Assurance Console". A rota genérica `/d/[domain]` (ex.: `/d/helpdesk`, `/d/cockpit`, `/d/selfwiki`, `/d/platform`; as antigas `/chat` e `/cockpit` redirecionam) é dirigida por **um registry**: `apps/frontend/lib/domains.ts` define o agent map (4 domínios; `kind: workflow | grounded | tool`), a nav, a rota genérica e os prompts sugeridos. No modo `shared`, os domínios montam globalmente mas são gated por tenant via **DomainAssignment** (ADR-010). `app/api/copilotkit/route.ts` registra um `CopilotRuntime` com um `HttpAgent` por domínio. A página usa `useCoAgentStateRender` para mostrar os passos intermediários, `useCopilotAction` (`renderAndWaitForResponse`) para o approval card, e um `EvidencePanel` para as fontes citadas + badges de assurance.
-- **Backend** → `apps/backend/app/main.py` é fino: cria o FastAPI (rodado como `app.main:app`), aplica CORS, inclui os routers de `app/api` e chama `mount_domains(app)`. O registry do backend é `app/domains.py` — **um `DomainSpec` por domínio e um único loop que despacha por `kind`** (`workflow` → AG-UI do helpdesk; `grounded` → cockpit/selfwiki; `tool` → platform). Camadas: `app/api` (routers finos) → `app/services` → `app/workflow` / `app/agents` / `app/core`. A resolução de tenant (modo `shared`) + brokering de credenciais ficam no `app/core` (seam `TenantConfigProvider`).
-- **Foundry** → o retriever consulta a **Foundry IQ KB** e trima por entitlement (`app/agents/secure_search.py`, `app/knowledge/acl_setup.py`); triage/resolver leem/escrevem **memória**; eval e traces vão para o Foundry Control Plane.
+- **Backend** → `apps/backend/app/main.py` é fino: cria o FastAPI (rodado como `app.main:app`), aplica CORS, chama `setup_telemetry()`, `include_routers(app)` e `mount_domains(app)`. O registry do backend é `app/registry.py` — **um `DomainSpec` por domínio e um único loop que despacha por `kind`** (`workflow` → AG-UI do helpdesk; `grounded` → cockpit/selfwiki; `tool` → platform). A organização é um **monolito modular por domínio** (ADR-017): `app/modules/<domínio>/` com `public.py` (única superfície importável) e `internal/` (privado), sobre um shared kernel `app/shared/` (settings, auth, telemetria) que não importa nenhum módulo. As fronteiras são verificadas em CI por `import-linter` (14 contratos). A resolução de tenant (modo `shared`) + brokering de credenciais ficam em `app/modules/tenancy/`.
+- **Foundry** → o retriever consulta a **Foundry IQ KB** e trima por entitlement (`app/modules/knowledge/internal/secure_search.py`, `app/modules/knowledge/internal/acl_setup.py`); triage/resolver leem/escrevem **memória**; eval e traces vão para o Foundry Control Plane.
 
-**Adicionar um domínio = 3 coisas:** uma linha no registry do frontend (`apps/frontend/lib/domains.ts`), um `DomainSpec` no registry do backend (`apps/backend/app/domains.py`) e o agente/KB correspondente. Os dois registries são espelhos — `eval/domain_registry_test.py` guarda esse contrato.
+**Adicionar um domínio = 3 coisas:** uma linha no registry do frontend (`apps/frontend/lib/domains.ts`), um `DomainSpec` no registry do backend (`apps/backend/app/registry.py`) e o agente/KB correspondente. Os dois registries são espelhos — `eval/domain_registry_test.py` guarda esse contrato.
 
 ### Layout do repositório
 
+Monolito modular por domínio (ADR-017) — a pergunta que organiza não é "que tipo de arquivo
+é esse?", é "**de que negócio esse arquivo é?**". `import-linter` mantém a resposta.
+
 ```
-apps/backend/          FastAPI: app/{api,services,agents,workflow,knowledge,core,tools}, cli/, eval/
-apps/backend/agents/   documentos AgentSchema (prompts) — ver abaixo
-apps/frontend/         Next.js App Router: app/, components/<área>/, lib/ (registry + auth)
-apps/hosted-*/         containers dos hosted agents (helpdesk, cockpit, selfwiki, platform)
-infra/                 bicep/azd (+ managed-app/ e lighthouse/ para o stamp dedicated)
-e2e/                   Playwright contra o app DEPLOYADO (sign-in Entra real)
-scripts/               bootstrap, setup-entra, up-all, dev-shared, demo, push-prompts
-docs/adr/              ADR-001..015 — decisões de arquitetura
+apps/backend/
+  app/main.py            composition root: setup_telemetry → tenancy.install → routers → domínios
+  app/registry.py        DomainSpec + mount_domains (despacha por `kind`) + include_routers
+  app/api_health.py      transversal
+  app/shared/            SHARED KERNEL — settings, auth, telemetry/. NÃO importa módulo algum
+  app/modules/<m>/       10 domínios: public.py (única superfície importável) + internal/
+                         tenancy · admin · knowledge · helpdesk · grounded · platform_ops
+                         tickets · hosted · evaluation · agentdefs
+  agents/helpdesk/       documentos AgentSchema (prompts) — NÃO se move (contrato de deploy)
+  eval/                  harness de assurance = PRODUTO (8 gates que os workflows invocam)
+  tests/<módulo>/        testes, espelhando os módulos; + smoke/ e architecture/
+  importlinter.toml      os 14 contratos de fronteira
+  cli/                   provision_*
+apps/frontend/           Next.js App Router: app/, components/<área>/, lib/ (registry + auth)
+apps/hosted-*/           containers dos hosted agents (helpdesk, cockpit, selfwiki, platform)
+infra/                   bicep/azd (+ managed-app/ e lighthouse/ para o stamp dedicated)
+e2e/                     Playwright contra o app DEPLOYADO (sign-in Entra real)
+scripts/                 bootstrap, setup-entra, up-all, dev-shared, demo, push-prompts; spikes/
+docs/adr/                ADR-001..018 — decisões de arquitetura
+```
+
+Regra de dependência, verificada em CI:
+
+```
+composition (main.py, registry.py)  →  o public de qualquer módulo
+modules/<m>/                        →  app.shared + o public de outro módulo
+shared/                             →  nada de dentro do app
 ```
 
 ## Prompts declarativos (AgentSchema)
@@ -53,7 +75,7 @@ docs/adr/              ADR-001..015 — decisões de arquitetura
 **Prompt não se edita em Python.** A fonte de cada prompt é um documento **AgentSchema `PromptAgent`** em `apps/backend/agents/helpdesk/` (`triage.yaml`, `retrieve.yaml`, `resolve.yaml`, `concierge-{grounded,ungrounded}.yaml`, `cockpit.yaml`, `selfwiki.yaml`, `platform.yaml`).
 
 - O que o AgentSchema **não** modela mora ao lado, como dado do repositório: catálogo do escopo (`scope.yaml`), persona compartilhada (`personas/*.md`), regras cross-cutting (`guardrails/*.md`). Um agente referencia persona/guardrail **por nome** no `metadata`, sob a chave `x-foundry-assured`.
-- `app/agents/definitions.py` carrega e compõe (ordem fixa: persona → instructions → additionalInstructions → guardrails); `app/agents/prompts.py` é o **único ponto de consumo** e compõe no import. Não altere esses dois para mudar texto de prompt.
+- `app/modules/agentdefs/internal/definitions.py` carrega e compõe (ordem fixa: persona → instructions → additionalInstructions → guardrails); `app/modules/agentdefs/public.py` é o **único ponto de consumo** e compõe no import. Não altere esses dois para mudar texto de prompt.
 - `AGENTS_DIR` seleciona um diretório externo de definições (no ACA, o mount read-only do Azure Files em `/mnt/agents`) — ADR-014: sem a env var usa a cópia baked; com a env var e escopo ausente cai pra baked com log alto; com escopo presente, qualquer falha de load é **loud**. `scripts/push-prompts.sh` publica sem redeploy.
 - **PowerFx (`=Env.X`) é recusado no load**, não usado — o reader devolveria a string literal quando o runtime .NET falta. Ver docstring de `definitions.py`.
 - Mudou contrato de prompt? Atualize o caso correspondente em `agents/helpdesk/eval-cases/` **no mesmo PR** — `uv run python -m eval.prompt_contract_test` é o guarda de CI.
@@ -66,8 +88,10 @@ docs/adr/              ADR-001..015 — decisões de arquitetura
 4. Toda resposta do resolver **DEVE** conter ao menos uma citação de fonte. É policy de eval (ASSERT pega violação).
 5. A tool `create_ticket` só pode disparar **após aprovação humana explícita** — e a aprovação HITL exige o papel **Approver** (ou **Admin**). Autorização vem de App Roles do Entra (Admin / Author / Approver / Reader) no claim `roles` do token; gestão de usuários + papéis fica em `/admin/users` (via Microsoft Graph, app-only). Plano: [`docs/RBAC-AND-USER-MANAGEMENT-PLAN.md`](./docs/RBAC-AND-USER-MANAGEMENT-PLAN.md).
 6. **Controle de acesso é DADO** (os grupos de leitura de cada fonte), **nunca lógica de classificação no código**. O acesso segue a fonte: grupos vêm do manifesto/`COCKPIT_ACL_CLASSIFICATION`, nomes resolvem para object-IDs via `COCKPIT_ACL_GROUP_MAP`; doc sem acesso declarado → fail-closed. Ver [`docs/METHOD.md`](./docs/METHOD.md).
-7. **Prompt muda no documento AgentSchema**, nunca em `app/agents/prompts.py` (ver seção acima).
-8. Nunca commitar segredo ou valor de `.env` (`TEST-CREDENTIALS.local.md` é gitignored).
+7. **Prompt muda no documento AgentSchema**, nunca em `app/modules/agentdefs/public.py` (ver seção acima).
+8. **Fronteiras de módulo são verificadas por `import-linter`** (ADR-017). Código novo entra DENTRO de um módulo existente ou cria módulo novo com `public.py`/`internal/`; import cross-module só via `public`. O shared kernel (`app/shared/`) não importa nenhum módulo. Rode `uv run lint-imports --config importlinter.toml` antes de commitar.
+9. **Nunca calcule caminho contando `parents[N]` a partir do próprio arquivo** — ancore no pacote `app` (`Path(app.__file__).resolve().parent.parent`). Três caminhos quebraram assim durante a ADR-017, dois em silêncio. `tests/architecture/filesystem_anchors_test.py` é o gate.
+10. Nunca commitar segredo ou valor de `.env` (`TEST-CREDENTIALS.local.md` é gitignored).
 
 ## Comandos
 
@@ -98,6 +122,13 @@ uv run python -m eval.test_attribution      # ACL attribution round-trip (chunk 
 uv run python -m eval.docbundle_contract_test  # contrato do doc-bundle (produtor ↔ consumidor)
 uv run python -m eval.prompt_contract_test  # invariantes dos prompts AgentSchema
 
+# gates de arquitetura (ADR-017)
+uv run lint-imports --config importlinter.toml           # 14 contratos de fronteira
+uv run python -m tests.smoke.routes_snapshot_test        # superfície HTTP (self_hosted + shared)
+uv run python -m tests.architecture.module_graph_test    # nenhuma dependência cross-module nova
+uv run python -m tests.architecture.filesystem_anchors_test  # nenhum parents[N] contado do arquivo
+uv run python -m tests.shared.telemetry_test             # telemetria off por default; captura opt-in
+
 # de apps/frontend/
 npm run typecheck && npm run lint && npm run build
 
@@ -112,7 +143,7 @@ uv run python -m eval.access_control_test   # zero vazamento entre grupos
 uv run python -m eval.red_team_test         # ASR ≤ teto de assurance.yaml
 ```
 
-Qualquer outro `eval/*_test.py` roda do mesmo jeito (`uv run python -m eval.<nome>`); a maioria é offline. Os limiares de todos os gates vivem em **`eval/assurance.yaml`** (fonte única).
+Os testes por módulo ficam em `tests/<módulo>/` e rodam igual (`uv run python -m tests.<módulo>.<nome>`); `eval/` guarda só o harness de assurance — os 8 módulos que os workflows invocam por path. Os limiares de todos os gates vivem em **`eval/assurance.yaml`** (fonte única).
 
 ### Eval com nuvem
 
