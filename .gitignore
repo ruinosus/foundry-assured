@@ -32,6 +32,9 @@ yarn-error.log*
 .vscode/
 
 # Generated / local artifacts
+# `bicep build infra/main.bicep` (the CI infra gate, run locally) drops the compiled
+# ARM template next to the source — it is output, not source.
+infra/main.json
 copilotkit-events-*.json
 apps/backend/eval/runs.jsonl
 apps/backend/data/
