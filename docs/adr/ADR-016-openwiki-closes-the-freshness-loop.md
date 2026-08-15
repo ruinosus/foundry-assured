@@ -319,6 +319,63 @@ What it costs, stated plainly:
   same disease in its purest form. It is also the useful answer — no wiki is precisely when
   regeneration should run.
 
+## Off-the-shelf tooling for the gates (surveyed 2026-08-15)
+
+ADR-012's lesson is that the generator is a commodity. The fair follow-up question is whether the
+**gates** are too — this repository writes its own freshness check and its own fidelity check, and
+"someone already built this" is the right suspicion to hold about both. Surveyed so the next person
+does not repeat the search.
+
+### [fiberplane/drift](https://github.com/fiberplane/drift) — MIT, ~131★, actively maintained
+
+Binds markdown to code locations and detects when the anchored code changes. It fingerprints via
+**tree-sitter AST hashes** (node kinds + token text, whitespace and position excluded), so
+reformatting does not trip it, and `#SymbolName` anchors narrow a doc paragraph to one declaration.
+`drift check` exits 1 in CI. TypeScript, Python, Rust, Go, Zig, Java.
+
+**On one axis it is strictly better than what we have.** `wiki_freshness_test` asks "is the newest
+commit in this area newer than the bundle's `generatedAt`?" — area granularity, timestamps. Drift
+asks "did the function this paragraph describes change?" — symbol granularity, AST. Ours is the
+coarse version of the same idea.
+
+**Why it does not fit today:** drift anchors are markup *inside the documents*, created by
+`drift link`. Our wiki is **regenerated wholesale on every run**, so the anchors would be destroyed
+each time. Drift solves "human-maintained docs that rot"; this ADR solves "bot-generated docs that
+may fabricate". Neighbouring problems, different mechanics. **If the wiki ever becomes
+human-maintained, drift is the right answer and this decision should be revisited.**
+
+### [lychee](https://github.com/lycheeverse/lychee) — mature, widely used, Rust
+
+Extracts links from Markdown and verifies they resolve, local files included, with an offline mode
+and `#fragment` checking. It covers two of the three things `_fidelity_report` does — extracting
+citations and resolving them — and does both more robustly than a regex.
+
+**Why it does not fit today:** our citations are GitHub **blob URLs**
+(`…/blob/<sha>/apps/backend/app/main.py#L35`). To lychee those are *remote* links: ~340 HTTP
+requests per run, GitHub rate limits and a token, and its offline mode would skip them entirely.
+`_fidelity_report` strips the blob URL down to a repo-relative path and resolves it against the
+local tree — offline, deterministic, ~3 seconds. That is adaptation to the citation format this
+repository chose, not a rewrite of a link checker.
+
+### Also looked at
+
+[driftcheck](https://github.com/deichrenner/driftcheck) (LLM-based pre-push doc drift) and
+Claude Code's doc-drift skills: same human-maintained-docs assumption as drift, plus a model call
+where we want a deterministic gate.
+
+### What this survey actually changes
+
+Nothing today, and one thing later:
+
+- **Keep both gates.** They cost seconds, run offline, and each caught a wrong artifact within
+  hours of existing — a bundle graded against the wrong version, and a bundle whose citations all
+  resolved while its coverage was a quarter of what it claimed.
+- **The scoring threshold is the part worth defending**, not the link resolution. A link checker is
+  binary; `fidelity_min` says how much imperfection is tolerable in a document a machine wrote.
+  That is policy, and policy is ours.
+- **Revisit if the wiki stops being generated.** Drift's AST anchoring is a better freshness signal
+  than our timestamps, and the only thing blocking it is that we overwrite the anchors every run.
+
 ## Alternatives considered
 
 - **Fill the `wiki-regen.yml` placeholder** with a coding-agent action driving the vendored
