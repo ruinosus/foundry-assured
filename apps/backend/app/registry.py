@@ -23,7 +23,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from agent_framework_ag_ui import add_agent_framework_fastapi_endpoint
-from fastapi import Depends, FastAPI, Request
+from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 
 from app.shared.settings import settings
@@ -57,6 +57,35 @@ class DomainSpec:
             raise ValueError(
                 f"grounded domain '{self.id}' must set kb_name or search_index"
             )
+
+
+# The TOPOLOGY: which domains exist and what kind each is. Static on purpose — it is the same
+# for every tenant, so it can be read at boot, where no tenant is resolved yet. The per-tenant
+# CONFIG (kb, index, ACL map) lives in `_domains()` and is resolved per request.
+#
+# Splitting the two is what makes `shared` + auth boot. `mount_domains` used to walk
+# `_domains()`, which reads `tenant_config()`; under MultiTenantConfigProvider that raises at
+# boot ("no tenant resolved for this request") because there is no request yet. Note that
+# `_knowledge_configured()` and `platform_configured()` already returned early in shared mode
+# for exactly this reason — the registry was the one place that had not followed the rule.
+DOMAIN_KINDS: dict[str, str] = {
+    "helpdesk": "workflow",
+    "cockpit": "grounded",
+    "selfwiki": "grounded",
+    "platform": "tool",
+}
+
+
+def domain_spec(domain_id: str) -> DomainSpec:
+    """The fully-configured spec for ONE domain, resolved against the CURRENT request's tenant.
+
+    Called from inside a request handler, where the auth dependency has already resolved the
+    tenant. Never call it at boot.
+    """
+    for spec in _domains():
+        if spec.id == domain_id:
+            return spec
+    raise KeyError(f"unknown domain: {domain_id}")
 
 
 def _domains() -> list[DomainSpec]:
@@ -100,28 +129,34 @@ def _domains() -> list[DomainSpec]:
 
 
 
-def _mount_grounded(app: FastAPI, d: DomainSpec) -> None:
+def _mount_grounded(app: FastAPI, domain_id: str) -> None:
     """POST /{id} → stream the grounded archetype (cited Q&A). Captures current_user() in the
-    endpoint body (the contextvar is lost inside the StreamingResponse generator)."""
+    endpoint body (the contextvar is lost inside the StreamingResponse generator).
+
+    The spec is resolved INSIDE the handler, not captured at mount time: in shared mode the
+    kb/index/ACL differ per tenant, so a spec captured at boot would serve every tenant the
+    config of whichever one happened to be resolved first. In self_hosted/dedicated the config
+    is global and stable, so this resolves to exactly the same object as before.
+    """
 
     async def endpoint(request: Request) -> StreamingResponse:
         from app.shared.auth import current_user
         from app.modules.grounded.public import stream_grounded
 
         return StreamingResponse(
-            stream_grounded(await request.json(), d, current_user()),
+            stream_grounded(await request.json(), domain_spec(domain_id), current_user()),
             media_type="text/event-stream",
         )
 
     app.add_api_route(
-        f"/{d.id}",
+        f"/{domain_id}",
         endpoint,
         methods=["POST"],
-        dependencies=domain_deps(d.id),
+        dependencies=domain_deps(domain_id),
     )
 
 
-def _mount_helpdesk(app: FastAPI, d: DomainSpec) -> None:
+def _mount_helpdesk(app: FastAPI, domain_id: str) -> None:
     """AG-UI workflow endpoint. With a KB wired, the per-request factory streams the Phase 2 steps
     + Phase 3 OBO/memory; without one, fall back to the single concierge agent."""
     from app.modules.grounded.public import build_concierge_agent, knowledge_configured
@@ -131,16 +166,16 @@ def _mount_helpdesk(app: FastAPI, d: DomainSpec) -> None:
         add_agent_framework_fastapi_endpoint(
             app,
             agent=OrderedAgentFrameworkWorkflow(workflow_factory=build_helpdesk_workflow),
-            path=f"/{d.id}",
-            dependencies=domain_deps(d.id),
+            path=f"/{domain_id}",
+            dependencies=domain_deps(domain_id),
         )
     else:
         add_agent_framework_fastapi_endpoint(
-            app, agent=build_concierge_agent(), path=f"/{d.id}"
+            app, agent=build_concierge_agent(), path=f"/{domain_id}"
         )
 
 
-def _mount_platform(app: FastAPI, d: DomainSpec) -> None:
+def _mount_platform(app: FastAPI, domain_id: str) -> None:
     """Tool-driven ops concierge over the Microsoft first-party MCP servers. The platform_agent_proxy
     (a PerRequestAgent) rebuilds the agent on each run so tools are filtered under the caller's roles +
     OBO credential. Only mounted when platform is configured."""
@@ -150,21 +185,25 @@ def _mount_platform(app: FastAPI, d: DomainSpec) -> None:
         add_agent_framework_fastapi_endpoint(
             app,
             agent=platform_agent_proxy,
-            path=f"/{d.id}",
-            dependencies=domain_deps(d.id),
+            path=f"/{domain_id}",
+            dependencies=domain_deps(domain_id),
         )
 
 
 def mount_domains(app: FastAPI) -> None:
-    """One loop over `_domains()`, dispatching by `kind`. Registers the live per-domain endpoints
-    on the app (the hosted twins stay in api/chat.py)."""
-    for d in _domains():
-        if d.kind == "grounded":
-            _mount_grounded(app, d)
-        elif d.kind == "workflow":
-            _mount_helpdesk(app, d)
-        elif d.kind == "tool":
-            _mount_platform(app, d)
+    """One loop over the static topology, dispatching by `kind`. Registers the live per-domain
+    endpoints on the app (the hosted twins stay in the hosted module's router).
+
+    Walks DOMAIN_KINDS, not `_domains()`: mounting must not read tenant config, because at boot
+    no tenant is resolved. Each handler resolves its own spec per request.
+    """
+    for domain_id, kind in DOMAIN_KINDS.items():
+        if kind == "grounded":
+            _mount_grounded(app, domain_id)
+        elif kind == "workflow":
+            _mount_helpdesk(app, domain_id)
+        elif kind == "tool":
+            _mount_platform(app, domain_id)
 
 
 def include_routers(app) -> None:
