@@ -51,11 +51,23 @@ _RETIRED = {
 }
 
 
+# Everything `wiki-regen.yml` writes back to the repository. Excluded from "did the source
+# change?", because a generator's own output is not source — counting it makes the gate
+# unsatisfiable: regenerating the wiki becomes the very change that marks it stale.
+#
+# `openwiki/` was missing here and that is exactly what happened. The bundle was generated at
+# 20:14:54 and the commit carrying it landed at 20:17:51 — one commit holding BOTH docs/wiki
+# and openwiki/ — so the check compared the wiki against a "source change" that was the wiki.
+# Measured against the real last source commit (#157, 20:10:25) the bundle is newer, which is
+# the truth. The docstring below already stated this intent; only `openwiki/` post-dated it.
+_GENERATED = (":(exclude)docs/wiki", ":(exclude)openwiki")
+
+
 def _latest_commit_iso(area: str) -> str | None:
-    """Latest commit date touching `area`, EXCLUDING the generated wiki itself (so
-    regenerating docs/wiki doesn't make the docs bundle look perpetually stale)."""
+    """Latest commit date touching `area`, EXCLUDING everything the generator writes (so
+    regenerating the wiki doesn't make the bundle look perpetually stale)."""
     args = ["git", "-C", str(_ROOT), "log", "-1", "--format=%cI", "--",
-            area, ":(exclude)docs/wiki"]
+            area, *_GENERATED]
     out = subprocess.run(args, capture_output=True, text=True, check=False).stdout.strip()
     return out or None
 
