@@ -94,6 +94,12 @@ jobs:
       - name: Module invocations resolve (workflows + scripts)
         run: uv run python -m tests.architecture.module_invocations_test
 
+      # HITL. Adopting the framework's ToolApprovalMiddleware must not change WHAT stops for a
+      # human. Asserts auto_approval_rules stays empty (nothing starts "on the loop"), that role
+      # filtering still runs before any rule could, and that no write tool reaches a Reader.
+      - name: Approval parity (no tool silently un-gated)
+        run: uv run python -m tests.platform_ops.approval_parity_test
+
       # shared mode: the app must BOOT with auth on (no tenant is resolved at import), and each
       # request must resolve ITS OWN tenant's domain config. The first was broken and its guard
       # was red; the second was unreachable because of the first.

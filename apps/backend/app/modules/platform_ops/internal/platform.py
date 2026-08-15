@@ -11,7 +11,7 @@ APIs mirror app/agents/selfwiki.py (agent-framework 1.9.0).
 
 from __future__ import annotations
 
-from agent_framework import Agent
+from agent_framework import Agent, ToolApprovalMiddleware
 from agent_framework.foundry import FoundryChatClient
 
 from app.modules.platform_ops.internal.mcp_tools import build_mcp_tools
@@ -28,6 +28,25 @@ def platform_configured() -> bool:
     return bool(settings.mcp_enabled and tenant_config().foundry_project_endpoint)
 
 
+# ── Human-in-the-loop ────────────────────────────────────────────────────────
+# `ToolApprovalMiddleware` is the framework's own approval machinery, adopted rather than
+# rebuilt (HITL spec §2). It queues concurrent approval requests, carries standing approvals
+# across the same AgentSession, and is where auto-approval rules would go.
+#
+# `auto_approval_rules` is EMPTY on purpose (invariant H-4): nothing starts "on the loop".
+# A rule here would let a tool run without asking, and that promotion is a deliberate human
+# decision backed by the approval metrics — not a default.
+#
+# What this middleware does NOT do, and must not be expected to: check WHO is approving.
+# The framework has no notion of a required role. Authorization stays where it already is —
+# `build_mcp_tools()` filters by the caller's roles (min_role / min_role_write) BEFORE the
+# agent ever sees a tool, so a rule can only ever be consulted for tools the caller is
+# already entitled to. RULE #5 depends on that ordering.
+def _approval_middleware() -> ToolApprovalMiddleware:
+    """The framework's approval middleware, with no auto-approval rules (H-4)."""
+    return ToolApprovalMiddleware(source_id="tool_approval", auto_approval_rules=None)
+
+
 def build_platform_agent() -> Agent:
     """A tool-driven concierge over the Microsoft first-party MCP servers."""
     cfg = tenant_config()
@@ -41,6 +60,7 @@ def build_platform_agent() -> Agent:
         description="Engineering-platform concierge over Microsoft first-party MCP tools.",
         instructions=PLATFORM_INSTRUCTIONS,
         tools=build_mcp_tools(),
+        middleware=[_approval_middleware()],
     )
 
 
