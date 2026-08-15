@@ -1,0 +1,82 @@
+# Architecture gate — module boundaries checked in CI (ADR-017).
+#
+#     uv run lint-imports --config importlinter.toml
+#
+# PHASE 0 (this file): only contracts that are TRUE of the CURRENT layout, so the tool runs
+# green from day one and a red build always means a real regression. The target contracts are
+# written down below, commented, with the phase that switches each one on. Do not enable a
+# contract early "to see what breaks" — a permanently red gate teaches people to ignore it.
+#
+# Measured facts this file relies on (re-measure, do not trust this comment):
+#   - nothing under app/ imports app.main
+#   - app/core/settings.py imports nothing from app
+#   - app/core/tenant_store.py -> app.agents.mcp.registry is the known cycle (ADR-017 §cycle)
+
+[tool.importlinter]
+root_packages = ["app"]
+
+# --- C0.1 — the composition root is a leaf: it imports the app, the app never imports it.
+[[tool.importlinter.contracts]]
+name = "Nothing imports the composition root (app.main)"
+type = "forbidden"
+source_modules = [
+    "app.api",
+    "app.agents",
+    "app.core",
+    "app.knowledge",
+    "app.services",
+    "app.tools",
+    "app.workflow",
+    "app.domains",
+]
+forbidden_modules = ["app.main"]
+
+# --- C0.2 — settings is the bottom of the world. It is the one file every layer reads, so it
+# must not read any of them back. This is the seed of the future `shared` kernel rule.
+[[tool.importlinter.contracts]]
+name = "Settings imports nothing from the app"
+type = "forbidden"
+source_modules = ["app.core.settings"]
+forbidden_modules = [
+    "app.api",
+    "app.agents",
+    "app.domains",
+    "app.knowledge",
+    "app.services",
+    "app.tools",
+    "app.workflow",
+]
+
+# =====================================================================================
+# TARGET CONTRACTS — enabled by the phase named on each. Kept here so the destination is
+# reviewable before the code moves (ADR-017).
+# =====================================================================================
+#
+# PHASE 2 — the shared kernel exists and imports no module.
+#   [[tool.importlinter.contracts]]
+#   name = "shared imports no modules"
+#   type = "forbidden"
+#   source_modules = ["app.shared"]
+#   forbidden_modules = ["app.modules"]
+#
+# PHASE 2 — the cycle is dead: tenancy and platform_ops know nothing of each other.
+#   [[tool.importlinter.contracts]]
+#   name = "tenancy independent of platform_ops"
+#   type = "independence"
+#   modules = ["app.modules.tenancy", "app.modules.platform_ops"]
+#
+# PHASE 3 — the three layers.
+#   [[tool.importlinter.contracts]]
+#   name = "Layers: composition > modules > shared"
+#   type = "layers"
+#   layers = ["app.main | app.registry", "app.modules", "app.shared"]
+#
+# PHASE 3 (one per module, 10 total) — internals are private.
+#   [[tool.importlinter.contracts]]
+#   name = "<module> internals are private"
+#   type = "forbidden"
+#   source_modules = [<every other module>, "app.main", "app.registry"]
+#   forbidden_modules = ["app.modules.<module>.internal"]
+#
+# PHASE 5 — the measured public-to-public edges from ADR-017, pinned so a NEW cross-module
+# dependency is a deliberate act rather than an accident.
