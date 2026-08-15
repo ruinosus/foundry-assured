@@ -1,18 +1,32 @@
 name: Wiki freshness
 
-# Surfaces deep-wiki staleness: if an area's source changed after its wiki bundle was
-# generated, the bundle must be regenerated (wiki_builder + re-ingest) or the agent grounds
-# in a wiki that no longer matches the code. NOT a required merge gate — regeneration needs
-# the Foundry model (not available in basic CI) — so this is its own workflow that goes red
-# when the wiki drifts, making it visible without blocking merges.
+# Detects deep-wiki staleness: if an area's source changed after its wiki bundle was generated,
+# the bundle must be regenerated or the agent grounds in a wiki that no longer matches the code.
+#
+# ADR-016 changed what this workflow IS. It used to run on every pull request as a visible-but-
+# non-blocking check, and it was red on every PR for eight weeks — a gate that is always red has
+# stopped carrying information, so people stop reading it. Now that regeneration is automated
+# (wiki-regen.yml), keeping it as a PR check would be worse still: it would go GREEN BY
+# CONSTRUCTION, passing because a bot just touched the files rather than because anyone verified
+# anything. Same disease, opposite sign.
+#
+# So it is no longer a per-PR gate. It is the deterministic TRIGGER that decides whether
+# regeneration runs, plus a scheduled/manual signal on `main`. The gate that actually protects the
+# knowledge base is the fidelity floor (`build.fidelity_min` in eval/assurance.yaml), applied to
+# the generated bundle in wiki-regen.yml before anything is ingested.
 
 on:
   push:
     branches: [main]
-  pull_request:
   schedule:
     - cron: "0 7 * * 1" # Mondays 07:00 UTC
   workflow_dispatch:
+  # Callable so wiki-regen.yml can ask "did anything change?" without duplicating the check.
+  workflow_call:
+    outputs:
+      stale:
+        description: "'true' when at least one area's source is newer than its wiki bundle."
+        value: ${{ jobs.freshness.outputs.stale }}
 
 permissions:
   contents: read
@@ -21,6 +35,8 @@ jobs:
   freshness:
     name: deep-wiki tracks the code
     runs-on: ubuntu-latest
+    outputs:
+      stale: ${{ steps.check.outputs.stale }}
     defaults:
       run:
         working-directory: apps/backend
@@ -31,4 +47,16 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv sync --frozen
       - name: Check the wiki is newer than its source
-        run: uv run python -m eval.wiki_freshness_test
+        id: check
+        # Non-zero means drift. That is an ANSWER, not a failure, so it is captured as an output
+        # instead of failing the job — the caller decides what to do with it. `continue-on-error`
+        # would have been the shorter spelling and the wrong one: it would leave the run marked
+        # failed, which is exactly the always-red noise this workflow is moving away from.
+        run: |
+          if uv run python -m eval.wiki_freshness_test; then
+            echo "stale=false" >> "$GITHUB_OUTPUT"
+            echo "✅ Every wiki bundle is newer than its source."
+          else
+            echo "stale=true" >> "$GITHUB_OUTPUT"
+            echo "⚠️ Wiki drift detected — wiki-regen.yml is what acts on this."
+          fi

@@ -1,14 +1,21 @@
-name: Wiki regen (template)
+name: Wiki regen
 
-# TEMPLATE — closes the loop the `wiki-freshness` gate only opens (ADR-012, OpenWiki-style).
-# `wiki-freshness` DETECTS drift (source newer than its bundle); this WOULD regenerate the stale
-# area via the vendored deep-wiki skill (.github/skills/deep-wiki/skills/wiki-page-writer) and open
-# a PR. Manual (workflow_dispatch) ONLY — it is NOT scheduled, and the regen step is GUARDED behind
-# a model credential so nothing runs (or spends) until an org wires a coding-agent action + secret.
+# Closes the loop that wiki-freshness only opens (ADR-016). Replaces the guarded `echo`
+# placeholder ADR-012 shipped: the generator is OpenWiki, consumed rather than written here.
 #
-# To activate: (1) add an ANTHROPIC_API_KEY secret (or swap in GitHub Copilot cloud agent / another
-# coding-agent action), (2) fill in the guarded step below per that action's docs, (3) optionally add
-# a `schedule:` trigger. Until then this workflow only reports which bundles are stale.
+# The shape, and who owns each step:
+#
+#   wiki-freshness (workflow_call)   TRIGGER   — ours, deterministic
+#   openwiki code --update           GENERATOR — theirs, commodity
+#   adapt_openwiki → bundle          FORMAT    — ours
+#   fidelity >= build.fidelity_min   GATE      — ours, the one that matters
+#   pull request                     GATE      — human
+#
+# Deliberately NOT scheduled yet. ADR-016 says adopt on workflow_dispatch first, look at the pull
+# requests it opens, and only then turn on a cron — the spike measured that three consecutive runs
+# over unchanged source still edited 15 → 2 → 1 files, so a daily cron would open a PR most days
+# for agent-taste revisions. Driving it from the freshness trigger is what keeps that in check;
+# proving that on real runs is what earns the schedule.
 
 on:
   workflow_dispatch:
@@ -16,42 +23,99 @@ on:
       area:
         description: Area to regenerate
         type: choice
-        default: all
-        options: [all, backend, frontend, infra, docs]
+        default: backend
+        options: [backend, frontend, infra, docs]
+      force:
+        description: Regenerate even when the freshness check reports no drift
+        type: boolean
+        default: false
 
 permissions:
   contents: read
 
 jobs:
+  # Ask the deterministic gate, rather than trusting the agent to decide it has nothing to do.
+  drift:
+    uses: ./.github/workflows/wiki-freshness.yml
+
   regen:
-    name: detect stale → (guarded) regenerate
+    name: regenerate ${{ inputs.area }} via OpenWiki
+    needs: drift
+    if: ${{ needs.drift.outputs.stale == 'true' || inputs.force }}
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/backend
+    permissions:
+      contents: write
+      pull-requests: write
+    env:
+      AREA: ${{ inputs.area }}
     steps:
       - uses: actions/checkout@v5
-      - uses: astral-sh/setup-uv@v6
         with:
-          enable-cache: true
-      - run: uv sync --frozen
+          # Full history so `openwiki code --update` can diff HEAD against the commit it last
+          # documented; a shallow clone hides that commit and the update runs against an empty
+          # change summary.
+          fetch-depth: 0
 
-      # Deterministic + free: report which bundles are stale (same check as wiki-freshness).
-      - name: Detect drift
-        run: uv run python -m eval.wiki_freshness_test || true
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - uses: astral-sh/setup-uv@v6
 
-      # GUARDED regen — no-ops unless a model credential is present. Fill in per your chosen
-      # coding-agent action (e.g. anthropics/claude-code-action or the GitHub Copilot cloud agent);
-      # the prompt below is the same one docs/wiki/README.md § Regenerate documents.
-      - name: Regenerate stale area(s) via the deep-wiki skill
-        if: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+      - name: Install OpenWiki
+        # Pinned: this is a generator whose output we gate on, so an unannounced upgrade is a
+        # silent change to the wiki. Bump deliberately, like any other vendored tool.
+        run: npm install --global openwiki@0.3.3
+
+      - name: Regenerate the wiki
+        working-directory: .
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          AREA: ${{ inputs.area }}
+          # Azure OpenAI through the openai-compatible provider — measured working with the key
+          # sent as a bearer token (spike, ADR-016). No `azure` provider exists in OpenWiki.
+          OPENWIKI_PROVIDER: openai-compatible
+          OPENAI_COMPATIBLE_BASE_URL: ${{ vars.OPENWIKI_BASE_URL }}
+          OPENAI_COMPATIBLE_API_KEY: ${{ secrets.OPENWIKI_API_KEY }}
+          OPENAI_COMPATIBLE_USE_RESPONSES_API: "false"
+          # Nothing leaves the controlled environment without a reason.
+          OPENWIKI_TELEMETRY_DISABLED: "1"
+          DO_NOT_TRACK: "1"
+        # Model sizing is not a footnote: the spike measured a small model planning the wiki and
+        # then stalling in the critic loop without emitting a page.
+        run: openwiki code --update --print --modelId "${{ vars.OPENWIKI_MODEL }}"
+
+      - name: Adapt the OpenWiki output into the ingest bundle
+        working-directory: apps/backend
         run: |
-          echo "TODO(ADR-012): invoke a coding agent here with the prompt:"
-          echo "  'Regenerate the deep-wiki for area $AREA following"
-          echo "   .github/skills/deep-wiki/skills/wiki-page-writer/SKILL.md,"
-          echo "   with linked citations and the >=80% build-fidelity gate; bump the bundle version"
-          echo "   and re-stamp generatedAt.' Then open a PR with the refreshed docs/wiki bundle."
-          echo "Guarded placeholder — wire your coding-agent action to make this real."
+          uv sync --frozen
+          VERSION="v0.$(date -u +%Y%m%d)"
+          uv run python -m app.knowledge.adapt_openwiki \
+            --repo "$GITHUB_WORKSPACE" \
+            --component "foundry-helpdesk-$AREA" \
+            --version "$VERSION" \
+            --out "$GITHUB_WORKSPACE/docs/wiki"
+
+      - name: Fidelity gate
+        working-directory: apps/backend
+        # THE gate. A bot writing the wiki unattended raises the value of this check, it does not
+        # retire it: below the floor the bundle is kept for inspection and must not reach the KB.
+        run: uv run python -m eval.wiki_fidelity_test --component "foundry-helpdesk-$AREA"
+
+      - name: Open a pull request with the refreshed bundle
+        uses: peter-evans/create-pull-request@v7
+        with:
+          add-paths: |
+            openwiki
+            docs/wiki
+            AGENTS.md
+            CLAUDE.md
+          branch: wiki/regen-${{ inputs.area }}
+          commit-message: "docs(wiki): regenerate the ${{ inputs.area }} wiki"
+          title: "docs(wiki): regenerate the ${{ inputs.area }} wiki"
+          body: |
+            Automated regeneration — the freshness trigger reported drift in `${{ inputs.area }}`.
+
+            Generated by OpenWiki, adapted into the ingest bundle format, and **past the fidelity
+            floor** (`build.fidelity_min` in `eval/assurance.yaml`) — the bundle would not be here
+            otherwise.
+
+            Review for accuracy, not for formatting: the citations were checked mechanically, the
+            claims were not.
