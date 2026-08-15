@@ -6,6 +6,7 @@
     "location": { "value": "${AZURE_LOCATION}" },
     "principalId": { "value": "${AZURE_PRINCIPAL_ID}" },
     "principalType": { "value": "${AZURE_PRINCIPAL_TYPE}" },
+    "ciPrincipalId": { "value": "${AZURE_CI_PRINCIPAL_ID}" },
     "searchLocation": { "value": "${AZURE_SEARCH_LOCATION}" },
     "entraTenantId": { "value": "${ENTRA_TENANT_ID}" },
     "entraApiClientId": { "value": "${ENTRA_API_CLIENT_ID}" },
