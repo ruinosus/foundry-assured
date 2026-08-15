@@ -44,21 +44,25 @@ export const DOMAINS: Domain[] = [
     // authorized for, unlike raw model inference (/openai/v1/responses) which 403s on this project.
     hostedAgentId: "helpdesk-hosted",
   },
-  {
-    id: "cockpit",
-    icon: "🛰️",
-    label: "Cockpit expert",
-    kind: "grounded",
-    blurb:
-      "Q&A fundamentado na base da plataforma Cockpit — cita o componente e o documento de cada afirmação.",
-    suggested: [
-      "Quais são todos os servidores MCP do Cockpit?",
-      "Qual é a arquitetura do cockpit-portal-api?",
-      "Como funciona a hierarquia de multi-tenancy?",
-    ],
-    endpoint: "/cockpit",
-    // Grounded runs live via OBO — no hosted twin needed.
-  },
+  // TEMP: cockpit escondido — a KB dele (cockpit-si-kb) e o índice (cockpit-docbundles-ks-index)
+  // não estão provisionados neste ambiente, então o retrieve falha e a UI fica muda (o POST
+  // /cockpit ainda devolve 200: o erro vai só pelo stream SSE). Corpus e agente do backend estão
+  // intactos — para reativar, ingerir a KB (app.knowledge.ingest_docbundles) e descomentar.
+  // {
+  //   id: "cockpit",
+  //   icon: "🛰️",
+  //   label: "Cockpit expert",
+  //   kind: "grounded",
+  //   blurb:
+  //     "Q&A fundamentado na base da plataforma Cockpit — cita o componente e o documento de cada afirmação.",
+  //   suggested: [
+  //     "Quais são todos os servidores MCP do Cockpit?",
+  //     "Qual é a arquitetura do cockpit-portal-api?",
+  //     "Como funciona a hierarquia de multi-tenancy?",
+  //   ],
+  //   endpoint: "/cockpit",
+  //   // Grounded runs live via OBO — no hosted twin needed.
+  // },
   {
     id: "selfwiki",
     icon: "📖",
