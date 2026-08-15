@@ -55,6 +55,10 @@ export function TicketApproval() {
   const { agent } = useAgent({ agentId: "helpdesk" });
   const [pending, setPending] = useState<Pending | null>(null);
   const [busy, setBusy] = useState(false);
+  // The approver's corrected summary. Empty means "not editing" — the card only shows the
+  // input once Edit is pressed, so the default path (approve / reject) stays two clicks.
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
 
   useEffect(() => {
     if (!agent) return;
@@ -91,16 +95,20 @@ export function TicketApproval() {
 
   if (!pending) return null;
 
-  const respond = async (approved: boolean) => {
+  // The payload is either the legacy boolean or a decision object. The backend accepts both
+  // and treats anything unrecognized as a REJECT, so a malformed payload can never be the
+  // reason a ticket opens (ADR-019).
+  const respond = async (payload: boolean | { type: string; args?: Record<string, string> }) => {
     if (!agent || busy) return;
     setBusy(true);
     const id = pending.id;
     setPending(null);
+    setEditing(false);
     try {
       // Send the AG-UI array form (the CopilotKit runtime validates this); the
       // runtime route rewrites it to the backend's dict form before forwarding.
       await agent.runAgent({
-        resume: [{ interruptId: id, status: "resolved", payload: approved }],
+        resume: [{ interruptId: id, status: "resolved", payload }],
       });
     } finally {
       setBusy(false);
@@ -126,18 +134,81 @@ export function TicketApproval() {
       ) : (
         <>
           <div style={{ fontWeight: 600, marginBottom: 6 }}>Open a support ticket?</div>
-          <div style={{ fontSize: 13, marginBottom: 10 }}>
-            <b>Summary:</b> {pending.summary}
-          </div>
+          {editing ? (
+            <div style={{ marginBottom: 10 }}>
+              <label htmlFor="ticket-summary" style={{ fontSize: 13, fontWeight: 600 }}>
+                Summary
+              </label>
+              <textarea
+                id="ticket-summary"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                rows={3}
+                style={{
+                  width: "100%",
+                  marginTop: 4,
+                  padding: 8,
+                  borderRadius: 6,
+                  border: "1px solid #2563eb55",
+                  fontFamily: "inherit",
+                  fontSize: 13,
+                  resize: "vertical",
+                }}
+              />
+            </div>
+          ) : (
+            <div style={{ fontSize: 13, marginBottom: 10 }}>
+              <b>Summary:</b> {pending.summary}
+            </div>
+          )}
         </>
       )}
       <div style={{ display: "flex", gap: 8 }}>
-        <button style={btn("#16a34a")} disabled={busy} onClick={() => respond(true)}>
-          Approve
-        </button>
-        <button style={btn("#dc2626")} disabled={busy} onClick={() => respond(false)}>
-          Reject
-        </button>
+        {editing ? (
+          <>
+            {/* An edit that changes nothing is an approval — the backend refuses an empty
+                edit, so send the plain approval rather than a no-op correction. */}
+            <button
+              style={btn("#16a34a")}
+              disabled={busy || !draft.trim()}
+              onClick={() =>
+                respond(
+                  pending.kind === "ticket" && draft.trim() === pending.summary
+                    ? { type: "approve" }
+                    : { type: "edit", args: { summary: draft.trim() } },
+                )
+              }
+            >
+              Save &amp; approve
+            </button>
+            <button style={btn("#6b7280")} disabled={busy} onClick={() => setEditing(false)}>
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            <button style={btn("#16a34a")} disabled={busy} onClick={() => respond(true)}>
+              Approve
+            </button>
+            {pending.kind === "ticket" && (
+              // Editing is only offered where the backend can apply it. The platform agent's
+              // native tool approval is still accept/refuse (ADR-019).
+              <button
+                style={btn("#2563eb")}
+                disabled={busy}
+                onClick={() => {
+                  setDraft(pending.summary);
+                  setEditing(true);
+                }}
+              >
+                Edit
+              </button>
+            )}
+            <button style={btn("#dc2626")} disabled={busy} onClick={() => respond(false)}>
+              Reject
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
