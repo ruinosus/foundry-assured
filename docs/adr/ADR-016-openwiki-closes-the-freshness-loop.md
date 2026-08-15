@@ -285,6 +285,40 @@ Nothing curated was overwritten. `--init` also drops `AGENTS.md` and — worth k
 surprises someone — `.github/workflows/openwiki-update.yml`, the recurrence workflow, straight
 into the repository.
 
+## Amendment (2026-08-15) — one wiki for the repository, not one per area
+
+The loop shipped and produced a good backend bundle (11 pages, 98.8% fidelity, correctly scoped).
+Running the **second** area exposed a mismatch the first one hid.
+
+**OpenWiki keeps a single `openwiki/` per repository. Our bundles were per area.** With backend
+already generated and committed, a `frontend` run would have found `openwiki/index.md` present —
+so `--update` — and then updated a wiki *about the backend* while `.openwikiignore` scoped the
+generator away from the very files that wiki describes. Every outcome of that is wrong, and the
+backend bundle we had just approved was the thing at risk.
+
+The first area worked only because it was an `--init` into an empty directory. That is not a
+design; that is a starting condition.
+
+**Decision: one wiki, one bundle — component `foundry-assured`, area `.`.** Per-area bundles were
+inherited from `wiki_builder`, whose generator takes `--repo <area>` and genuinely produces one
+per area. OpenWiki does not work that way, and bending it into that shape means fighting the tool
+on every run. It also matches what the tool does best: an incremental `--update` against a wiki of
+the whole repository, which is exactly the loop this ADR exists to consume.
+
+What it costs, stated plainly:
+
+- **Per-component ACL granularity goes away** for this path. The manifests already declare
+  `groups: null` on both adapter paths (neither generator knows the repo's read groups), so
+  nothing regresses today — but a future per-area ACL would need the split back.
+- **The four per-area bundles are retired, not deleted.** They stay on disk and stay in the KB;
+  they are simply no longer graded, because their areas no longer map to a generator that will
+  ever refresh them. Grading them would report drift nobody can fix — a permanently red gate,
+  which is the failure this ADR started from. `wiki_freshness_test` prints them as "not graded"
+  rather than skipping them silently: unmeasured must look different from measured-and-fine.
+- **Zero gradable bundles now reports drift**, not success. "0 bundles checked, all fresh" is the
+  same disease in its purest form. It is also the useful answer — no wiki is precisely when
+  regeneration should run.
+
 ## Alternatives considered
 
 - **Fill the `wiki-regen.yml` placeholder** with a coding-agent action driving the vendored
