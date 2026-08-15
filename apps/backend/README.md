@@ -4,11 +4,11 @@ FastAPI + Microsoft Agent Framework, exposing the agent domains over AG-UI:
 
 - **`/helpdesk`** — the multi-agent workflow (triage → retrieve → resolve →
   escalate, with HITL).
-- **`/cockpit`** — grounded Q&A over the `cockpit-kb` corpus.
+- **`/techdocs`** — grounded Q&A over the `techdocs-kb` corpus.
 - **`/selfwiki`** — grounded Q&A over a deep-wiki generated from this repo's own
   source.
 
-`/cockpit` and `/selfwiki` register only once their KB is ingested + configured.
+`/techdocs` and `/selfwiki` register only once their KB is ingested + configured.
 The `/admin/*` (user + role management via Microsoft Graph) and `/me` endpoints back
 the Entra App Roles RBAC (Admin / Author / Approver / Reader).
 
@@ -53,7 +53,7 @@ a **restart, not a rebuild**:
 
 ```bash
 docker compose up -d                     # build once, run
-$EDITOR agents/helpdesk/cockpit.yaml     # change a prompt
+$EDITOR agents/helpdesk/techdocs.yaml     # change a prompt
 docker compose restart backend           # restart picks it up — no image build
 ```
 
@@ -66,7 +66,7 @@ mounted read-only at `/mnt/agents` and selected via `AGENTS_DIR` (ADR-014,
 production leg). Publish with:
 
 ```bash
-$EDITOR agents/helpdesk/cockpit.yaml            # change a prompt
+$EDITOR agents/helpdesk/techdocs.yaml            # change a prompt
 uv run python -m eval.prompt_contract_test      # content gate (CI runs it too)
 ../../scripts/push-prompts.sh                   # upload + revision restart — no image build
 ```

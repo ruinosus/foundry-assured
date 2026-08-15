@@ -67,7 +67,7 @@ const urlFor = (d: { id: string; endpoint: string }) =>
 // Grounded domains are plain request→response. Interrupt-bearing domains (workflow + tool)
 // get the resume bridge. Both come straight from the registry — adding a domain is one entry
 // in lib/domains.ts (+ its backend agent), no per-domain wiring here.
-// Per-domain env override: <ID>_AGUI_URL (e.g. COCKPIT_AGUI_URL, PLATFORM_AGUI_URL).
+// Per-domain env override: <ID>_AGUI_URL (e.g. TECHDOCS_AGUI_URL, PLATFORM_AGUI_URL).
 const registryAgents = Object.fromEntries(
   DOMAINS.map((d) => [
     d.id,
@@ -84,7 +84,7 @@ const registryAgents = Object.fromEntries(
 // "Missing method field", which silently resets the chat. `basePath` strips the route prefix so the
 // catch-all [[...slug]] segments match the multi-route patterns. (Diagnosed via the e2e harness.)
 const runtime = new CopilotRuntime({
-  // helpdesk + platform keep their hosted twins; grounded domains (cockpit, selfwiki) run live via OBO.
+  // helpdesk + platform keep their hosted twins; grounded domains (techdocs, selfwiki) run live via OBO.
   // platform-hosted carries HITL (write-approval interrupt), so it uses the resume bridge.
   agents: {
     ...registryAgents,

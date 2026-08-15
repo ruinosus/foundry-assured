@@ -16,7 +16,7 @@ from collections.abc import AsyncGenerator
 from app.modules.tenancy.public import tenant_config
 
 # Cached async OpenAI clients (+ project/credential), keyed by hosted-agent name — so the same
-# bridge serves any hosted twin (helpdesk-concierge, cockpit-expert, …) without re-warming.
+# bridge serves any hosted twin (helpdesk-concierge, techdocs-expert, …) without re-warming.
 _clients: dict[str, dict] = {}
 
 

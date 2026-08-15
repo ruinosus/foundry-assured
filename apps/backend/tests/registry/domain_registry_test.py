@@ -38,21 +38,21 @@ def main() -> int:
     # --- Registry shape ---
     specs = _domains()
     by_id = {d.id: d for d in specs}
-    check("four domains", len(specs) == 4 and set(by_id) == {"helpdesk", "cockpit", "selfwiki", "platform"})
+    check("four domains", len(specs) == 4 and set(by_id) == {"helpdesk", "techdocs", "selfwiki", "platform"})
     kind_map = {d.id: d.kind for d in specs}
     check(
         "kind map matches domains.ts",
-        kind_map == {"helpdesk": "workflow", "cockpit": "grounded", "selfwiki": "grounded", "platform": "tool"},
+        kind_map == {"helpdesk": "workflow", "techdocs": "grounded", "selfwiki": "grounded", "platform": "tool"},
     )
 
-    for gid in ("cockpit", "selfwiki"):
+    for gid in ("techdocs", "selfwiki"):
         g = by_id[gid]
         check(f"{gid} grounded carries kb_name", bool(g.kb_name))
         check(f"{gid} grounded carries instructions", bool(g.instructions))
 
-    ck = by_id["cockpit"]
-    check("cockpit carries ks_name", ck.ks_name == "cockpit-docbundles-si-ks")
-    check("cockpit acl_group_map is a dict (parsed property)", isinstance(ck.acl_group_map, dict))
+    ck = by_id["techdocs"]
+    check("techdocs carries ks_name", ck.ks_name == "techdocs-docbundles-si-ks")
+    check("techdocs acl_group_map is a dict (parsed property)", isinstance(ck.acl_group_map, dict))
     check("helpdesk carries hosted_agent_name", bool(by_id["helpdesk"].hosted_agent_name))
 
     # --- Grounded guard: neither kb_name nor search_index → ValueError at build ---
@@ -77,9 +77,9 @@ def main() -> int:
     orig_mode = settings.deployment_mode
     try:
         settings.deployment_mode = "self_hosted"
-        check("domain_deps == auth_dependencies() in self_hosted", domain_deps("cockpit") == auth_dependencies())
+        check("domain_deps == auth_dependencies() in self_hosted", domain_deps("techdocs") == auth_dependencies())
         settings.deployment_mode = "shared"
-        shared_deps = domain_deps("cockpit")
+        shared_deps = domain_deps("techdocs")
         check("domain_deps adds a gate in shared mode", len(shared_deps) == len(auth_dependencies()) + 1)
     finally:
         settings.deployment_mode = orig_mode
@@ -122,7 +122,7 @@ def main() -> int:
         mount_domains(app)
 
         grounded_paths = {r["path"] for r in app.routes}
-        check("one POST route per grounded domain", grounded_paths == {"/cockpit", "/selfwiki"})
+        check("one POST route per grounded domain", grounded_paths == {"/techdocs", "/selfwiki"})
         check("grounded routes are POST", all(r["methods"] == ["POST"] for r in app.routes))
         check("grounded routes gated by domain_deps", all(r["dependencies"] is not None for r in app.routes))
 

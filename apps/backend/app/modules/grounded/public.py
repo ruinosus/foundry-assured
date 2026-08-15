@@ -1,4 +1,4 @@
-"""The grounded archetype: cited Q&A over a knowledge base (cockpit, selfwiki).
+"""The grounded archetype: cited Q&A over a knowledge base (techdocs, selfwiki).
 
 Every answer this module produces must carry at least one source citation — RULE #4, enforced
 by the eval policy gate, not by a protocol.
@@ -12,7 +12,7 @@ from app.modules.grounded.internal.concierge import (
     _knowledge_configured as knowledge_configured,
     build_concierge_agent,
 )
-from app.modules.grounded.internal.cockpit import cockpit_configured
+from app.modules.grounded.internal.techdocs import techdocs_configured
 from app.modules.grounded.internal.grounded import (
     SYNTHESIS_DIRECTIVE,
     build_synthesis_kwargs,
@@ -26,7 +26,7 @@ __all__ = [
     "SYNTHESIS_DIRECTIVE",
     "build_concierge_agent",
     "build_synthesis_kwargs",
-    "cockpit_configured",
+    "techdocs_configured",
     "knowledge_configured",
     "selfwiki_configured",
     "stream_grounded",

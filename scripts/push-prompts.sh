@@ -7,7 +7,7 @@
 #
 # The prod prompt loop — no image build, no `azd deploy`:
 #
-#   $EDITOR apps/backend/agents/helpdesk/cockpit.yaml
+#   $EDITOR apps/backend/agents/helpdesk/techdocs.yaml
 #   (cd apps/backend && uv run python -m eval.prompt_contract_test)  # the content gate (CI runs it too)
 #   ./scripts/push-prompts.sh                                        # upload + revision restart
 #

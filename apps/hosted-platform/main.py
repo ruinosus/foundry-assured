@@ -8,7 +8,7 @@
 # protocol the grounded twins use cannot do).
 #
 # This is the FULL-PARITY Invocations twin of the live platform agent — NOT the single-identity
-# Responses stripping the grounded hosted-agent/hosted-cockpit do. The grounded twins drop
+# Responses stripping the grounded hosted-agent/hosted-techdocs do. The grounded twins drop
 # OBO/memory/HITL because pure Q&A fits a single-identity request/response model; the platform
 # concierge instead keeps its tool capability and its write-approval interrupt, which is exactly
 # why it serves Invocations rather than Responses.

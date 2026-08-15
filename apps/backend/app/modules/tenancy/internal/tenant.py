@@ -42,19 +42,19 @@ class TenantConfig:
     azure_storage_resource_id: str = ""
     azure_storage_container: str = "corpus"
 
-    # --- Second domain: Cockpit expert (its own KB over the cockpit docbundles) ---
-    # cockpit_search_knowledge_base is the ACTIVE cockpit KB — flip this to cut the
+    # --- Second domain: TechDocs expert (its own KB over the techdocs docbundles) ---
+    # techdocs_search_knowledge_base is the ACTIVE techdocs KB — flip this to cut the
     # domain over between the legacy azureBlob KB and the searchIndex KB below.
-    # Task 2b: the searchIndex KB (cockpit-si-kb over cockpit-si-ks) is what lets the
+    # Task 2b: the searchIndex KB (techdocs-si-kb over techdocs-si-ks) is what lets the
     # native agentic retrieve honor the per-user ACL header (x-ms-query-source-authorization).
-    cockpit_search_knowledge_base: str = "cockpit-kb"
-    cockpit_search_index: str = "cockpit-docbundles-ks-index"
-    cockpit_storage_container: str = "cockpit-corpus"
-    # searchIndex-backed cockpit KB + its knowledge source (over the EXISTING ACL index).
+    techdocs_search_knowledge_base: str = "techdocs-kb"
+    techdocs_search_index: str = "techdocs-docbundles-ks-index"
+    techdocs_storage_container: str = "techdocs-corpus"
+    # searchIndex-backed techdocs KB + its knowledge source (over the EXISTING ACL index).
     # Provisioned alongside the blob KB by ingest_docbundles; cutover = point
-    # cockpit_search_knowledge_base at cockpit_searchindex_knowledge_base (fully reversible).
-    cockpit_searchindex_knowledge_base: str = "cockpit-si-kb"
-    cockpit_searchindex_knowledge_source: str = "cockpit-docbundles-si-ks"
+    # techdocs_search_knowledge_base at techdocs_searchindex_knowledge_base (fully reversible).
+    techdocs_searchindex_knowledge_base: str = "techdocs-si-kb"
+    techdocs_searchindex_knowledge_source: str = "techdocs-docbundles-si-ks"
 
     # --- Third domain: selfwiki (this repo's own deep-wiki — dogfood) ---
     # selfwiki_search_knowledge_base is the LEGACY azureBlob KB (selfwiki-kb). selfwiki has NO
@@ -64,13 +64,13 @@ class TenantConfig:
     selfwiki_search_index: str = "selfwiki-docbundles-ks-index"
     selfwiki_storage_container: str = "selfwiki-corpus"
     # searchIndex-backed selfwiki KB + its knowledge source (over the EXISTING selfwiki index).
-    # Provisioned alongside the legacy blob KB (mirrors cockpit-si-kb); the registry points here so
+    # Provisioned alongside the legacy blob KB (mirrors techdocs-si-kb); the registry points here so
     # the native retrieve's hardcoded kind:searchIndex matches. Reversible: repoint the registry back.
     selfwiki_searchindex_knowledge_base: str = "selfwiki-si-kb"
     selfwiki_searchindex_knowledge_source: str = "selfwiki-docbundles-si-ks"
 
     # --- Phase 4: document-level access control (access follows the source) — GENERIC (all domains) ---
-    # Neutral ACL_* names (renamed off the cockpit product name — the old COCKPIT_ACL_* env names
+    # Neutral ACL_* names (renamed off the techdocs product name — the old TECHDOCS_ACL_* env names
     # are gone). See the generic-config-naming-rename spec.
     acl_extra_group_map: str = ""   # extra "name:objectId,..." pairs beyond the named trio (env ACL_GROUP_MAP)
     acl_classification: str = ""
@@ -79,8 +79,8 @@ class TenantConfig:
     acl_internal_group: str = ""
     acl_confidential_group: str = ""
 
-    # Path to the aap-kb docbundles/ dir (internal Cockpit corpus).
-    cockpit_docbundles_path: str = ""
+    # Path to a doc-bundle directory (the TechDocs corpus you point it at).
+    techdocs_docbundles_path: str = ""
 
     # Entra group of app users (granted Foundry User to use the app, infra/resources.bicep). Doubles
     # as the selfwiki AUDIENCE: the self-wiki is readable by everyone with app access. Env APP_USERS_GROUP_ID.
@@ -94,7 +94,7 @@ class TenantConfig:
 
     # D-runtime: the deployed platform hosted agent (Invocations protocol). Empty until deployed.
     platform_hosted_agent_name: str = "platform-concierge"
-    cockpit_hosted_agent_name: str = "cockpit-expert"
+    techdocs_hosted_agent_name: str = "techdocs-expert"
     selfwiki_hosted_agent_name: str = "selfwiki-expert"
 
     # --- MCP integration: per-tenant fields (each tenant's own ADO org / GitHub PAT / self-
@@ -134,11 +134,11 @@ class _TenantEnv(BaseSettings):
     azure_storage_account: str = ""
     azure_storage_resource_id: str = ""
     azure_storage_container: str = "corpus"
-    cockpit_search_knowledge_base: str = "cockpit-kb"
-    cockpit_search_index: str = "cockpit-docbundles-ks-index"
-    cockpit_storage_container: str = "cockpit-corpus"
-    cockpit_searchindex_knowledge_base: str = "cockpit-si-kb"
-    cockpit_searchindex_knowledge_source: str = "cockpit-docbundles-si-ks"
+    techdocs_search_knowledge_base: str = "techdocs-kb"
+    techdocs_search_index: str = "techdocs-docbundles-ks-index"
+    techdocs_storage_container: str = "techdocs-corpus"
+    techdocs_searchindex_knowledge_base: str = "techdocs-si-kb"
+    techdocs_searchindex_knowledge_source: str = "techdocs-docbundles-si-ks"
     selfwiki_search_knowledge_base: str = ""
     selfwiki_search_index: str = "selfwiki-docbundles-ks-index"
     selfwiki_storage_container: str = "selfwiki-corpus"
@@ -152,12 +152,12 @@ class _TenantEnv(BaseSettings):
     acl_public_group: str = ""
     acl_internal_group: str = ""
     acl_confidential_group: str = ""
-    cockpit_docbundles_path: str = ""
+    techdocs_docbundles_path: str = ""
     app_users_group_id: str = ""
     foundry_memory_store: str = "helpdesk-memory"
     hosted_agent_name: str = "helpdesk-concierge"
     platform_hosted_agent_name: str = "platform-concierge"
-    cockpit_hosted_agent_name: str = "cockpit-expert"
+    techdocs_hosted_agent_name: str = "techdocs-expert"
     selfwiki_hosted_agent_name: str = "selfwiki-expert"
     # DEPRECATED (C): the shared-mode build reads per-tenant Connections instead; kept for self-hosted back-compat
     mcp_ado_organization: str = ""
@@ -214,7 +214,7 @@ def current_tenant_id() -> str | None:
 
 
 # The registered agent domains (shared mode mounts all; entitlement gates per tenant).
-DOMAIN_IDS: tuple[str, ...] = ("helpdesk", "cockpit", "selfwiki", "platform")
+DOMAIN_IDS: tuple[str, ...] = ("helpdesk", "techdocs", "selfwiki", "platform")
 
 
 # Per-tier domain entitlement (ADR-010 Open Q#3). Unknown/unset tier → all domains (non-breaking;

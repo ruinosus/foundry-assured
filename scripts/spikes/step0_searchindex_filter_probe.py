@@ -5,9 +5,9 @@ Throwaway verification SPIKE (NOT product code, NOT red-green TDD). It answers O
 decides the architecture of the next tasks:
 
   STEP 0 proved `filterAddOn` is REJECTED (HTTP 400 "Property 'filterAddOn' is not allowed") when the KB's
-  knowledge source is `kind: "azureBlob"` — which the production `cockpit-kb` is — AND that the agentic
+  knowledge source is `kind: "azureBlob"` — which the production `techdocs-kb` is — AND that the agentic
   retrieve path IGNORES the `x-ms-query-source-authorization` header on azureBlob. Microsoft docs say
-  `filterAddOn` is `searchIndex`-only. The `searchIndex` the filter would target — `cockpit-docbundles-ks-index`
+  `filterAddOn` is `searchIndex`-only. The `searchIndex` the filter would target — `techdocs-docbundles-ks-index`
   — ALREADY EXISTS and is already ACL-stamped (`groups` field filterable, permissionFilter=groupIds,
   index permissionFilterOption=ENABLED).
 
@@ -33,9 +33,9 @@ the searchIndex probe KB WITH x-ms-query-source-authorization and confirms the c
 that way (and that filterAddOn is accepted, recorded separately). The A-vs-B per-user trim is carried by the
 HEADER token's group membership (as the direct-search path already does today), NOT by filterAddOn.
 
-NON-DESTRUCTIVE: creates a SEPARATE probe KB (`cockpit-si-probe-kb`) + knowledge source
-(`cockpit-si-probe-ks`) pointing at the EXISTING `cockpit-docbundles-ks-index`. NEVER touches `cockpit-kb`
-or `cockpit-docbundles-ks`. Tears them down at the end by default (set KEEP_PROBE_KB=1 to leave in place).
+NON-DESTRUCTIVE: creates a SEPARATE probe KB (`techdocs-si-probe-kb`) + knowledge source
+(`techdocs-si-probe-ks`) pointing at the EXISTING `techdocs-docbundles-ks-index`. NEVER touches `techdocs-kb`
+or `techdocs-docbundles-ks`. Tears them down at the end by default (set KEEP_PROBE_KB=1 to leave in place).
 
 Identity: SERVICE credential on retrieve = the APP/dev identity (DefaultAzureCredential, Search Index Data
 Reader). The per-user ACL distinction is the x-ms-query-source-authorization token's group membership. In
@@ -70,13 +70,13 @@ _RETRIEVE_API = "2026-05-01-preview"
 # create_or_update_knowledge_source / _base use the mgmt api-version the repo pins in ingest_docbundles.
 _MGMT_API = "2026-05-01-preview"
 
-# Clearly-named probe resources — SEPARATE from cockpit-kb / cockpit-docbundles-ks (never touched).
-_PROBE_KB = os.environ.get("PROBE_KB_NAME", "cockpit-si-probe-kb")
-_PROBE_KS = os.environ.get("PROBE_KS_NAME", "cockpit-si-probe-ks")
+# Clearly-named probe resources — SEPARATE from techdocs-kb / techdocs-docbundles-ks (never touched).
+_PROBE_KB = os.environ.get("PROBE_KB_NAME", "techdocs-si-probe-kb")
+_PROBE_KS = os.environ.get("PROBE_KS_NAME", "techdocs-si-probe-ks")
 
-_PROBE_TEXT = "telemetria e observabilidade do cockpit"
+_PROBE_TEXT = "telemetria e observabilidade do techdocs"
 _ASSISTANT_PROMPT = (
-    "You retrieve grounding data about the Cockpit platform. Cite sources by their ref_id."
+    "You retrieve grounding data about the TechDocs platform. Cite sources by their ref_id."
 )
 
 
@@ -85,8 +85,8 @@ class _ProbeEnv(BaseSettings):
     os.environ.get would falsely SKIP — the .env keys carry the real values)."""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
-    cockpit_confidential_source: str = ""
-    cockpit_acl_probe: str = ""
+    techdocs_confidential_source: str = ""
+    techdocs_acl_probe: str = ""
 
 
 def _dump(label: str, obj: object) -> None:
@@ -151,7 +151,7 @@ def _create_probe_kb(index_name: str) -> tuple[bool, str]:
     # confidential-source substring check has something to match on (docKey is the opaque `uid`).
     ks = SearchIndexKnowledgeSource(
         name=_PROBE_KS,
-        description="STEP 0.5 probe — searchIndex source over the EXISTING ACL-stamped cockpit index.",
+        description="STEP 0.5 probe — searchIndex source over the EXISTING ACL-stamped techdocs index.",
         search_index_parameters=SearchIndexKnowledgeSourceParameters(
             search_index_name=index_name,
             source_data_fields=[
@@ -305,28 +305,28 @@ async def _run() -> int:  # noqa: C901 — one linear probe; readability over de
     cfg = tenant_config()
     tc = tenant_config()
     search = (cfg.azure_search_endpoint or "").rstrip("/")
-    index = cfg.cockpit_search_index
-    conf = env.cockpit_confidential_source
+    index = cfg.techdocs_search_index
+    conf = env.techdocs_confidential_source
     conf_gid = tc.acl_confidential_group
     pub_gid = tc.acl_public_group
     internal_gid = tc.acl_internal_group
     default_groups = [g for g in tc.acl_default_groups.split(",") if g.strip()]
 
     if not (search and index and conf and conf_gid and pub_gid):
-        print("SKIP: searchIndex-filter probe needs live Search+index, COCKPIT_CONFIDENTIAL_SOURCE and "
+        print("SKIP: searchIndex-filter probe needs live Search+index, TECHDOCS_CONFIDENTIAL_SOURCE and "
               "the ACL group IDs (confidential/public).")
         return 0
 
-    if env.cockpit_acl_probe:
+    if env.techdocs_acl_probe:
         global _PROBE_TEXT  # noqa: PLW0603 — allow the .env probe override (same idiom as the roundtrip test)
-        _PROBE_TEXT = env.cockpit_acl_probe
+        _PROBE_TEXT = env.techdocs_acl_probe
 
     from azure.identity import DefaultAzureCredential
 
     service_token = DefaultAzureCredential().get_token(_SEARCH_SCOPE).token
 
     # 1) Create the probe KB non-destructively (searchIndex source over the EXISTING ACL index).
-    print(f"Creating probe KB '{_PROBE_KB}' (searchIndex → '{index}') — cockpit-kb untouched.\n")
+    print(f"Creating probe KB '{_PROBE_KB}' (searchIndex → '{index}') — techdocs-kb untouched.\n")
     ok, detail = _create_probe_kb(index)
     if not ok:
         low = detail.lower()

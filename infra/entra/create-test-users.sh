@@ -18,9 +18,9 @@ DOMAIN="${1:?usage: create-test-users.sh <tenant-domain> <initial-password>}"
 PW="${2:?initial password required}"
 
 gid() { az ad group show --group "$1" --query id -o tsv; }
-PUB=$(gid "SEC-cockpit-kb-public")
-INT=$(gid "SEC-cockpit-kb-internal")
-CONF=$(gid "SEC-cockpit-kb-confidential")
+PUB=$(gid "SEC-techdocs-kb-public")
+INT=$(gid "SEC-techdocs-kb-internal")
+CONF=$(gid "SEC-techdocs-kb-confidential")
 
 create_user() {  # nickname displayname -> prints objectId
   az ad user create \
@@ -31,8 +31,8 @@ create_user() {  # nickname displayname -> prints objectId
     --query id -o tsv
 }
 
-A=$(create_user "cockpit-test-a" "Cockpit Test — Cleared (A)")
-B=$(create_user "cockpit-test-b" "Cockpit Test — Public-only (B)")
+A=$(create_user "techdocs-test-a" "TechDocs Test — Cleared (A)")
+B=$(create_user "techdocs-test-b" "TechDocs Test — Public-only (B)")
 
 for g in "$PUB" "$INT" "$CONF"; do az ad group member add --group "$g" --member-id "$A"; done
 az ad group member add --group "$PUB" --member-id "$B"

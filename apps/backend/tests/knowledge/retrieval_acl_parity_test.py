@@ -9,7 +9,7 @@ carrier).
 
 It uses the same two real ROPC users A (confidential group) + B (public-only) and calls the PRODUCTION
 `retrieval.retrieve(query, user, domain)` for EACH, asserting on the RETURNED docs' `source` filenames:
-A's include COCKPIT_CONFIDENTIAL_SOURCE, B's do NOT. That source set IS retrieve()'s output — no prose.
+A's include TECHDOCS_CONFIDENTIAL_SOURCE, B's do NOT. That source set IS retrieve()'s output — no prose.
 
 Token injection: `retrieve()` derives the per-user search token via `retrieval._user_search_token(user)`,
 which does an OBO exchange from `user.access_token`. Our ROPC tokens are ALREADY search-scoped (not OBO
@@ -20,9 +20,9 @@ in a `finally`.
 
 Infra-gated — skips cleanly unless these are set (test-user creds read from .env via pydantic, since
 they aren't exported to os.environ):
-  ENTRA_TENANT_ID, COCKPIT_TEST_USER_A, COCKPIT_TEST_USER_B, COCKPIT_TEST_PASSWORD,
-  COCKPIT_CONFIDENTIAL_SOURCE, AZURE_SEARCH_ENDPOINT, and the searchIndex KB name.
-Prereq: the searchIndex cockpit KB provisioned + ACL-stamped (eval.step0_searchindex_kb_acl_abtest green).
+  ENTRA_TENANT_ID, TECHDOCS_TEST_USER_A, TECHDOCS_TEST_USER_B, TECHDOCS_TEST_PASSWORD,
+  TECHDOCS_CONFIDENTIAL_SOURCE, AZURE_SEARCH_ENDPOINT, and the searchIndex KB name.
+Prereq: the searchIndex techdocs KB provisioned + ACL-stamped (eval.step0_searchindex_kb_acl_abtest green).
 
     cd apps/backend && uv run python -m eval.retrieval_acl_parity_test
 
@@ -52,11 +52,11 @@ class _Creds(BaseSettings):
     """Test-user creds live in .env (pydantic doesn't push them to os.environ)."""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
-    cockpit_test_user_a: str = ""
-    cockpit_test_user_b: str = ""
-    cockpit_test_password: str = ""
-    cockpit_confidential_source: str = ""
-    cockpit_acl_probe: str = "telemetria e observabilidade do cockpit"
+    techdocs_test_user_a: str = ""
+    techdocs_test_user_b: str = ""
+    techdocs_test_password: str = ""
+    techdocs_confidential_source: str = ""
+    techdocs_acl_probe: str = "telemetria e observabilidade do techdocs"
 
 
 def _ropc_token(upn: str, password: str) -> str:
@@ -70,16 +70,16 @@ def _ropc_token(upn: str, password: str) -> str:
 
 
 class _Dom:
-    """Duck-typed domain stub (DomainSpec doesn't exist yet) exposing the searchIndex cockpit KB.
+    """Duck-typed domain stub (DomainSpec doesn't exist yet) exposing the searchIndex techdocs KB.
 
     retrieve() reads `.kb_name` (→ takes the native path), `.ks_name`, `.search_endpoint`,
     `.search_index`, `.instructions` via plain attribute access."""
 
     def __init__(self, cfg) -> None:
-        self.kb_name = cfg.cockpit_searchindex_knowledge_base      # "cockpit-si-kb"
-        self.ks_name = cfg.cockpit_searchindex_knowledge_source    # "cockpit-docbundles-si-ks"
+        self.kb_name = cfg.techdocs_searchindex_knowledge_base      # "techdocs-si-kb"
+        self.ks_name = cfg.techdocs_searchindex_knowledge_source    # "techdocs-docbundles-si-ks"
         self.search_endpoint = cfg.azure_search_endpoint
-        self.search_index = cfg.cockpit_search_index
+        self.search_index = cfg.techdocs_search_index
         self.instructions = "Retrieve grounding data and cite sources by their ref_id."
 
 
@@ -87,13 +87,13 @@ async def _run() -> int:
     c = _Creds()
     cfg = tenant_config()
     a, b, pw, conf = (
-        c.cockpit_test_user_a, c.cockpit_test_user_b, c.cockpit_test_password, c.cockpit_confidential_source,
+        c.techdocs_test_user_a, c.techdocs_test_user_b, c.techdocs_test_password, c.techdocs_confidential_source,
     )
-    probe = os.environ.get("COCKPIT_ACL_PROBE") or c.cockpit_acl_probe
+    probe = os.environ.get("TECHDOCS_ACL_PROBE") or c.techdocs_acl_probe
 
-    if not (a and b and pw and conf and cfg.azure_search_endpoint and cfg.cockpit_searchindex_knowledge_base):
-        print("⏭️  SKIP: retrieve() ACL parity needs COCKPIT_TEST_USER_A/B + password + "
-              "COCKPIT_CONFIDENTIAL_SOURCE + AZURE_SEARCH_ENDPOINT + searchIndex KB name.")
+    if not (a and b and pw and conf and cfg.azure_search_endpoint and cfg.techdocs_searchindex_knowledge_base):
+        print("⏭️  SKIP: retrieve() ACL parity needs TECHDOCS_TEST_USER_A/B + password + "
+              "TECHDOCS_CONFIDENTIAL_SOURCE + AZURE_SEARCH_ENDPOINT + searchIndex KB name.")
         return 0
 
     dom = _Dom(cfg)

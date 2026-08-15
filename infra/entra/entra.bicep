@@ -12,7 +12,7 @@
 // scope:
 //
 //   az deployment tenant create \
-//     --name cockpit-entra --location <loc> \
+//     --name techdocs-entra --location <loc> \
 //     --template-file infra/entra/entra.bicep
 //
 // Outputs are the group object-IDs — feed them to the ingest ACL mapping
@@ -25,29 +25,29 @@ targetScope = 'tenant'
 extension microsoftGraphV1
 
 resource gPublic 'Microsoft.Graph/groups@v1.0' = {
-  displayName: 'SEC-cockpit-kb-public'
-  description: 'Cockpit KB — public/general documents (all employees).'
-  uniqueName: 'sec-cockpit-kb-public'
+  displayName: 'SEC-techdocs-kb-public'
+  description: 'TechDocs KB — public/general documents (all employees).'
+  uniqueName: 'sec-techdocs-kb-public'
   mailEnabled: false
-  mailNickname: 'sec-cockpit-kb-public'
+  mailNickname: 'sec-techdocs-kb-public'
   securityEnabled: true
 }
 
 resource gInternal 'Microsoft.Graph/groups@v1.0' = {
-  displayName: 'SEC-cockpit-kb-internal'
-  description: 'Cockpit KB — internal platform/component documents.'
-  uniqueName: 'sec-cockpit-kb-internal'
+  displayName: 'SEC-techdocs-kb-internal'
+  description: 'TechDocs KB — internal platform/component documents.'
+  uniqueName: 'sec-techdocs-kb-internal'
   mailEnabled: false
-  mailNickname: 'sec-cockpit-kb-internal'
+  mailNickname: 'sec-techdocs-kb-internal'
   securityEnabled: true
 }
 
 resource gConfidential 'Microsoft.Graph/groups@v1.0' = {
-  displayName: 'SEC-cockpit-kb-confidential'
-  description: 'Cockpit KB — confidential (security/architecture internals).'
-  uniqueName: 'sec-cockpit-kb-confidential'
+  displayName: 'SEC-techdocs-kb-confidential'
+  description: 'TechDocs KB — confidential (security/architecture internals).'
+  uniqueName: 'sec-techdocs-kb-confidential'
   mailEnabled: false
-  mailNickname: 'sec-cockpit-kb-confidential'
+  mailNickname: 'sec-techdocs-kb-confidential'
   securityEnabled: true
 }
 

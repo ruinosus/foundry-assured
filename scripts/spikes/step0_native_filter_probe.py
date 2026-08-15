@@ -55,9 +55,9 @@ _SEARCH_SCOPE = "https://search.azure.com/.default"
 # We DO NOT assume the pinned one accepts filterAddOn — RULE #1.
 _API_CANDIDATES = ["2026-05-01-preview", "2025-11-01-preview", "2026-04-01"]
 
-_PROBE_TEXT = "telemetria e observabilidade do cockpit"
+_PROBE_TEXT = "telemetria e observabilidade do techdocs"
 _ASSISTANT_PROMPT = (
-    "You retrieve grounding data about the Cockpit platform. Cite sources by their ref_id."
+    "You retrieve grounding data about the TechDocs platform. Cite sources by their ref_id."
 )
 
 
@@ -66,11 +66,11 @@ class _ProbeEnv(BaseSettings):
     so a bare os.environ.get would falsely SKIP — the .env keys carry real values here)."""
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
-    cockpit_test_user_a: str = ""
-    cockpit_test_user_b: str = ""
-    cockpit_test_password: str = ""
-    cockpit_confidential_source: str = ""
-    cockpit_acl_probe: str = ""
+    techdocs_test_user_a: str = ""
+    techdocs_test_user_b: str = ""
+    techdocs_test_password: str = ""
+    techdocs_confidential_source: str = ""
+    techdocs_acl_probe: str = ""
 
 
 def _dump(label: str, obj: object) -> None:
@@ -210,21 +210,21 @@ async def _run() -> int:  # noqa: C901 — one linear probe; readability over de
     cfg = tenant_config()
     tc = tenant_config()
     search = (cfg.azure_search_endpoint or "").rstrip("/")
-    kb = cfg.cockpit_search_knowledge_base
-    conf = env.cockpit_confidential_source
+    kb = cfg.techdocs_search_knowledge_base
+    conf = env.techdocs_confidential_source
     conf_gid = tc.acl_confidential_group
     pub_gid = tc.acl_public_group
     internal_gid = tc.acl_internal_group
     default_groups = [g for g in tc.acl_default_groups.split(",") if g.strip()]
 
     if not (search and kb and conf and conf_gid and pub_gid):
-        print("SKIP: native-filter probe needs live Search+KB, COCKPIT_CONFIDENTIAL_SOURCE and the ACL "
+        print("SKIP: native-filter probe needs live Search+KB, TECHDOCS_CONFIDENTIAL_SOURCE and the ACL "
               "group IDs (confidential/public).")
         return 0
 
-    if env.cockpit_acl_probe:
+    if env.techdocs_acl_probe:
         global _PROBE_TEXT  # noqa: PLW0603 — allow the .env probe override, same idiom as the roundtrip test
-        _PROBE_TEXT = env.cockpit_acl_probe
+        _PROBE_TEXT = env.techdocs_acl_probe
 
     # SERVICE credential = app/dev identity (Search Index Data Reader). End users have no search RBAC, so
     # the caller filter — not the user's token — carries the per-user distinction.

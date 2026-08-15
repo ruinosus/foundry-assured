@@ -4,7 +4,7 @@ The defect (observed live in an A-vs-B run): the old decode did `dockey.split("_
 `b64decode`, which fell back to the RAW base64 docKey for ~half the real keys — a broken citation UX
 (the "click-a-source shows the snippet" feature renders opaque base64 instead of a filename).
 
-These fixtures are ACTUAL docKeys dumped from the live `cockpit-si-kb` searchIndex KB (RULE #1 — captured,
+These fixtures are ACTUAL docKeys dumped from a live searchIndex KB (RULE #1 — captured,
 not invented). Confirmed live format:
 
     <12-hex>_<STANDARD-base64(blob_url + glued tail byte)>_pages_<M>
@@ -26,7 +26,11 @@ import sys
 
 from app.modules.knowledge.internal.retrieval import _decode_dockey
 
-# (real docKey, expected filename) — dumped live from cockpit-si-kb (eval._dockey_investigate, 2026-07).
+# (real docKey, expected filename) — dumped live in 2026-07, BEFORE the techdocs rename.
+# The names still read `cockpit-*` on purpose: a docKey is an opaque captured value, and its
+# decoded filename is whatever was indexed at capture time. Rewriting these to `techdocs-*`
+# would make them invented rather than captured — the exact thing the header forbids. They are
+# testing the DECODER, not the corpus.
 # Mix of base64-segment lengths mod 4 so both the "used to work" and "used to fall back to raw" cases are
 # represented (the __page-1/3/6.md keys are the len≡1 class the OLD split-and-decode choked on).
 _FIXTURES: list[tuple[str, str]] = [

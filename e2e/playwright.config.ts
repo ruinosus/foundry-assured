@@ -3,7 +3,7 @@ import { defineConfig, devices } from "@playwright/test";
 // E2E against the DEPLOYED cloud app (no local webServer). Point E2E_BASE_URL at the
 // deployed web FQDN (azd env get-value WEB_URL). Auth creds come from env (never committed):
 //   E2E_BASE_URL  — the deployed web URL
-//   E2E_USER      — an Entra test user UPN (e.g. cockpit-test-a@…onmicrosoft.com)
+//   E2E_USER      — an Entra test user UPN (e.g. techdocs-test-a@…onmicrosoft.com)
 //   E2E_PASS      — that user's password
 //
 // Everything lands in ./artifacts so you can open it locally and follow each run:

@@ -14,7 +14,7 @@ description: >-
   workflow branches on, the grounded citation duty (wired guardrail) that ASSERT
   enforces, the ungrounded variant FORBIDDING that duty (not_contains), the
   platform HITL never-claim-a-write guardrail, and the pt-BR grounding
-  discipline of cockpit/selfwiki.
+  discipline of techdocs/selfwiki.
 cases:
 - triage-contract
 - retrieve-contract
@@ -22,6 +22,6 @@ cases:
 - concierge-persona-identity
 - concierge-grounded-citation
 - concierge-ungrounded-humility
-- cockpit-discipline
+- techdocs-discipline
 - selfwiki-discipline
 - platform-write-safety

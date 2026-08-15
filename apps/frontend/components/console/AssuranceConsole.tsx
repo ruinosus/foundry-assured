@@ -8,7 +8,7 @@
 // off lib/domains.ts. Workflow domains (helpdesk) additionally render the live steps +
 // HITL approval; grounded domains are pure cited Q&A.
 //
-// Auth mirrors HelpdeskApp/CockpitApp: when Entra is configured we gate on sign-in and
+// Auth mirrors HelpdeskApp/TechDocsApp: when Entra is configured we gate on sign-in and
 // forward the user's access token (the backend does the OBO exchange); otherwise the
 // chat renders directly (dev/demo mode).
 

@@ -4,33 +4,33 @@ import path from "node:path";
 import { completeMfa } from "./entra-mfa";
 
 // ── Per-user ACL round-trip in the BROWSER (the end-to-end proof) ────────────────────────────
-// Signs in as two Entra users against the app, asks Cockpit the same grounded question, and asserts
+// Signs in as two Entra users against the app, asks TechDocs the same grounded question, and asserts
 // the confidential doc is CITED for the CLEARED user (A) but NOT for the public-only user (B). This
-// exercises the full UNIFIED grounded stack: MSAL login → the /d/cockpit route → backend /cockpit →
+// exercises the full UNIFIED grounded stack: MSAL login → the /d/techdocs route → backend /techdocs →
 // OBO → stream_grounded → retrieve() (native searchIndex retrieve; x-ms-query-source-authorization
 // trims per-user by the stamped `groups` field) → synthesize → the `sources` CUSTOM event →
 // EvidencePanel (.citation-src). The headless API-level twin of this proof lives in
 // apps/backend/eval/grounded_archetype_roundtrip_test.py (POSTs the same A/B tokens straight to the
-// live /cockpit); this spec confirms the same ACL surfaces correctly in the real browser UI.
+// live /techdocs); this spec confirms the same ACL surfaces correctly in the real browser UI.
 //
-// NOTE (unification): cockpit no longer has a Foundry hosted twin — grounded runs live-OBO only, so
+// NOTE (unification): techdocs no longer has a Foundry hosted twin — grounded runs live-OBO only, so
 // there is no "Live" toggle to click anymore (the earlier toggle step is now a harmless no-op). The
-// route (/d/cockpit) and the winning assertion (cited SOURCE FILENAMES in .citation-src, never prose)
+// route (/d/techdocs) and the winning assertion (cited SOURCE FILENAMES in .citation-src, never prose)
 // are UNCHANGED.
 //
-// REQUIRES: the app reachable at E2E_BASE_URL running the unified grounded /cockpit path, and the two
+// REQUIRES: the app reachable at E2E_BASE_URL running the unified grounded /techdocs path, and the two
 // test users' creds. Skips cleanly when creds are absent.
 
-const PASS = process.env.COCKPIT_TEST_PASSWORD ?? "";
-const USER_A = process.env.COCKPIT_TEST_USER_A ?? "";
-const USER_B = process.env.COCKPIT_TEST_USER_B ?? "";
-const CONFIDENTIAL = process.env.COCKPIT_CONFIDENTIAL_SOURCE ?? "telemetry";
+const PASS = process.env.TECHDOCS_TEST_PASSWORD ?? "";
+const USER_A = process.env.TECHDOCS_TEST_USER_A ?? "";
+const USER_B = process.env.TECHDOCS_TEST_USER_B ?? "";
+const CONFIDENTIAL = process.env.TECHDOCS_CONFIDENTIAL_SOURCE ?? "telemetry";
 // Probe aligned with the headless retrieve() twin (step0_searchindex_kb_acl_abtest) — the extra
 // "qual servidor MCP expõe a telemetria" clause reliably steers the cleared user's synthesis to CITE
 // the confidential telemetry doc (not merely retrieve it), so the browser ACL + content-on-click
 // assertions track the same deterministic surface as the green retrieve()-level proof.
 const PROBE =
-  "Como funciona a telemetria e a observabilidade do Cockpit? Qual servidor MCP expõe a telemetria e como consultá-la?";
+  "Como funciona a telemetria e a observabilidade do TechDocs? Qual servidor MCP expõe a telemetria e como consultá-la?";
 
 const STEPS_DIR = path.join(__dirname, "artifacts", "acl");
 fs.mkdirSync(STEPS_DIR, { recursive: true });
@@ -47,17 +47,17 @@ async function shot(page: Page, name: string) {
   await page.screenshot({ path: path.join(STEPS_DIR, `${name}.png`), fullPage: true }).catch(() => {});
 }
 
-// What askCockpitAs returns: the cited source filenames (for the ACL check) and — when the caller
+// What askTechDocsAs returns: the cited source filenames (for the ACL check) and — when the caller
 // asks to probe content-on-click — the inline snippet text revealed by clicking the first citation.
 interface AskResult {
   sources: string; // lowercased, newline-joined .citation-src texts (the FONTES panel)
   snippet: string | null; // the .citation-content text after clicking citation #1 (null if not probed)
 }
 
-// Sign in a specific user in a FRESH context (no shared MSAL cache), then ask Cockpit (Live) the
+// Sign in a specific user in a FRESH context (no shared MSAL cache), then ask TechDocs (Live) the
 // probe and return the citations panel text + the answer text. When `probeContent` is set, also
 // click the first citation and capture the inline snippet (content-on-click) that renders.
-async function askCockpitAs(
+async function askTechDocsAs(
   browser: Browser,
   upn: string,
   tag: string,
@@ -102,9 +102,9 @@ async function askCockpitAs(
     await page.getByRole("button", { name: /accept|aceitar|yes|sim/i }).click({ timeout: 8_000 }).catch(() => {});
 
     await page.waitForURL((u) => u.host === APP_HOST, { timeout: 60_000 });
-    await page.goto("/d/cockpit");
+    await page.goto("/d/techdocs");
     await page.waitForLoadState("networkidle").catch(() => {});
-    // Post-unification cockpit runs live-OBO only (no hosted twin), so there's usually no "Live"
+    // Post-unification techdocs runs live-OBO only (no hosted twin), so there's usually no "Live"
     // toggle — this click is a harmless no-op kept for older builds that still render it.
     await page.getByRole("button", { name: /^live$/i }).click().catch(() => {});
     const composer = page.locator("textarea, [contenteditable='true']").first();
@@ -119,7 +119,7 @@ async function askCockpitAs(
     await assistant.waitFor({ state: "visible", timeout: 150_000 }).catch(() => {});
     await page.locator(".citation").first().waitFor({ state: "visible", timeout: 20_000 }).catch(() => {});
     await page.waitForTimeout(2000);
-    await shot(page, `cockpit-${tag}`);
+    await shot(page, `techdocs-${tag}`);
     if (diag.length) fs.writeFileSync(path.join(STEPS_DIR, `diag-${tag}.log`), diag.join("\n\n"), "utf8");
     // Return the CITED SOURCE FILENAMES (the FONTES panel), NOT the answer text — the question is
     // about "telemetria", so the answer text mentions the topic even for B; the ACL check must be on
@@ -138,7 +138,7 @@ async function askCockpitAs(
       const content = page.locator(".citation-content").first();
       await content.waitFor({ state: "visible", timeout: 10_000 }).catch(() => {});
       snippet = (await content.innerText().catch(() => "")) || "";
-      await shot(page, `cockpit-${tag}-citation-open`);
+      await shot(page, `techdocs-${tag}-citation-open`);
     }
 
     return { sources: sources.join("\n").toLowerCase(), snippet };
@@ -149,12 +149,12 @@ async function askCockpitAs(
 
 test.describe.configure({ mode: "serial" });
 
-test("cockpit ACL round-trip — A sees the confidential doc, B does not", async ({ browser }) => {
-  test.skip(!PASS || !USER_A || !USER_B, "set COCKPIT_TEST_USER_A/B + COCKPIT_TEST_PASSWORD to run");
+test("techdocs ACL round-trip — A sees the confidential doc, B does not", async ({ browser }) => {
+  test.skip(!PASS || !USER_A || !USER_B, "set TECHDOCS_TEST_USER_A/B + TECHDOCS_TEST_PASSWORD to run");
   test.setTimeout(10 * 60 * 1000); // two full logins (MFA) + two cold grounded answers
 
-  const resultA = await askCockpitAs(browser, USER_A, "A-cleared", /*probeContent*/ true);
-  const resultB = await askCockpitAs(browser, USER_B, "B-public");
+  const resultA = await askTechDocsAs(browser, USER_A, "A-cleared", /*probeContent*/ true);
+  const resultB = await askTechDocsAs(browser, USER_B, "B-public");
 
   const needle = CONFIDENTIAL.toLowerCase();
   const aSees = resultA.sources.includes(needle);

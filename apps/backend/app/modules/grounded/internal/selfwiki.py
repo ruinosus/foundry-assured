@@ -1,16 +1,16 @@
 """Selfwiki agent — the mechanism turned on itself (the "deep-wiki daqui").
 
-A third domain alongside the helpdesk and the Cockpit expert: same Foundry IQ pattern,
+A third domain alongside the helpdesk and the TechDocs expert: same Foundry IQ pattern,
 but the knowledge base (**selfwiki-kb**) is a deep-wiki generated from THIS monorepo's
 own source — apps/backend, apps/frontend, infra and docs (see
 app/knowledge/wiki_builder.py + the selfwiki ingest). It's the dogfood: we point the
 assurance mechanism at our own repo and ask it to answer questions about the project,
 grounded only in what the wiki captured from the real code.
 
-Pure grounded Q&A — no workflow steps or ticket escalation. Unlike Cockpit, this corpus
+Pure grounded Q&A — no workflow steps or ticket escalation. Unlike TechDocs, this corpus
 is single-audience (the repo is public), so there's no per-user ACL trim: it runs under
 the app's own identity (DefaultAzureCredential) with the plain agentic-retrieval provider.
-The /selfwiki endpoint still requires sign-in. APIs mirror app/agents/cockpit.py
+The /selfwiki endpoint still requires sign-in. APIs mirror app/agents/techdocs.py
 (agent-framework 1.9.0).
 """
 

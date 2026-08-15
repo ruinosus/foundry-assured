@@ -6,7 +6,7 @@
 # YAML in apps/backend/agents/helpdesk/ on the host needs NO image rebuild:
 #
 #   docker compose up -d            # build once, run
-#   $EDITOR agents/helpdesk/cockpit.yaml
+#   $EDITOR agents/helpdesk/techdocs.yaml
 #   docker compose restart backend  # restart, NOT rebuild — picks up the edit
 #
 # Refresh semantics are deliberately restart-grade: app/agents/prompts.py

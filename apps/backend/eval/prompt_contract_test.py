@@ -7,7 +7,7 @@ prompts started legitimately evolving). Each case in
 the RESOLVE `TICKET:` and RETRIEVE `NO_MATCH` sentinels the workflow branches
 on, the grounded citation duty the ASSERT policy enforces, the ungrounded
 variant FORBIDDING that duty, the platform HITL never-claim-a-write rule, and
-the pt-BR grounding discipline of cockpit/selfwiki.
+the pt-BR grounding discipline of techdocs/selfwiki.
 
 It used to run as `dna eval run helpdesk-prompts` from `dna-cli`. ADR-015
 replaced the DNA SDK with Microsoft's AgentSchema, and the eval cases came with

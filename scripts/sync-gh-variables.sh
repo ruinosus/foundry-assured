@@ -61,8 +61,8 @@ SYNCED=(
 #                        It is a GitHub↔Entra federation detail; azd knows nothing about it, and
 #                        overwriting it breaks every cloud workflow's login.
 #   RELEASE_APP_ID     — the release-please GitHub App. Same reasoning.
-#   COCKPIT_TEST_USER_* — test identities for the security gates, not infrastructure output.
-NEVER_SYNC="AZURE_CLIENT_ID RELEASE_APP_ID COCKPIT_TEST_USER_A COCKPIT_TEST_USER_B"
+#   TECHDOCS_TEST_USER_* — test identities for the security gates, not infrastructure output.
+NEVER_SYNC="AZURE_CLIENT_ID RELEASE_APP_ID TECHDOCS_TEST_USER_A TECHDOCS_TEST_USER_B"
 
 # Secrets never travel through here. `gh variable` is PLAINTEXT and readable by anyone with repo
 # access — a secret set as a variable is a disclosure, so refuse the whole run rather than leak one.

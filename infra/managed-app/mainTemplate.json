@@ -1127,8 +1127,8 @@
                           "value": "[format('https://{0}/helpdesk-hosted', format('{0}.{1}', variables('backendAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
                         },
                         {
-                          "name": "COCKPIT_AGUI_URL",
-                          "value": "[format('https://{0}/cockpit', format('{0}.{1}', variables('backendAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
+                          "name": "TECHDOCS_AGUI_URL",
+                          "value": "[format('https://{0}/techdocs', format('{0}.{1}', variables('backendAppName'), reference(resourceId('Microsoft.App/managedEnvironments', format('cae-assured-{0}', parameters('resourceToken'))), '2024-03-01').defaultDomain))]"
                         }
                       ]
                     }

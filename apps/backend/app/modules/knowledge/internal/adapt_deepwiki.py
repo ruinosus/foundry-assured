@@ -13,7 +13,7 @@ paths*): instead of the Foundry `wiki_builder.py`, a developer runs Microsoft's 
 deep-wiki writes pages under `wiki/**/*.md` (source-linked citations) + `llms.txt` at
 the repo root. This adapter maps that into the same bundle our ingestion already reads
 (`manifest.json` + `pages/page-N.md` + `llms.txt`), so the Copilot-generated wiki flows
-into the SAME Foundry IQ `cockpit-kb`. Generator is recorded in the manifest `model`
+into the SAME Foundry IQ `techdocs-kb`. Generator is recorded in the manifest `model`
 field so the two paths are distinguishable.
 
 Output structure (per ingest_docbundles.collect_pages):

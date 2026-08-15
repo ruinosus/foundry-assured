@@ -41,7 +41,7 @@ def authorized_components(caller_token: str) -> set[str]:
     service = DefaultAzureCredential().get_token(_SEARCH_SCOPE).token
     headers = {"Authorization": f"Bearer {service}", "x-ms-query-source-authorization": caller_token}
     cfg = tenant_config()
-    url: str | None = (f"{cfg.azure_search_endpoint}/indexes/{cfg.cockpit_search_index}/docs"
+    url: str | None = (f"{cfg.azure_search_endpoint}/indexes/{cfg.techdocs_search_index}/docs"
                        f"?api-version={_API}&search=*&$top=1000&$select=blob_url")
     components: set[str] = set()
     try:
@@ -57,12 +57,12 @@ def authorized_components(caller_token: str) -> set[str]:
 
 def _chunk_component(content: str) -> str:
     """The component key a chunk belongs to, from its H1 — handling both ingest formats:
-    component pages (`# cockpit-mcp-agent v1.2.0 — …` → `cockpit-mcp-agent`) and source
-    pages (`# Cockpit (fonte): Architecture` → `source__ARCHITECTURE`). Deterministic
+    component pages (`# techdocs-mcp-agent v1.2.0 — …` → `techdocs-mcp-agent`) and source
+    pages (`# TechDocs (fonte): Architecture` → `source__ARCHITECTURE`). Deterministic
     identity extraction (matches the ingest's labeling), not classification."""
     first = (content or "").lstrip().split("\n", 1)[0]
     label = (first[2:] if first.startswith("# ") else first).strip()
-    if label.lower().startswith("cockpit (fonte):"):
+    if label.lower().startswith("techdocs (fonte):"):
         title = label.split(":", 1)[1].strip()
         return "source__" + re.sub(r"\s+", "_", title).upper()
     head = re.split(r"\s+[—–]\s+", label, 1)[0]

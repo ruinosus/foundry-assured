@@ -19,7 +19,7 @@ import type { Domain } from "@/lib/domains";
 // A structured citation from the grounded stream (the CUSTOM `sources` event).
 interface Citation {
   index: number;
-  source: string; // the document filename (e.g. cockpit-mcp-server-v1.4.0__page-1.md)
+  source: string; // the document filename (e.g. techdocs-mcp-server-v1.4.0__page-1.md)
   url?: string; // the source URL (private blob — can't be opened directly; kept for reference)
   content?: string; // the retrieved snippet — shown INLINE on click (the storage is private by design)
 }
@@ -31,10 +31,10 @@ interface TextSource {
 }
 
 // File paths (app/…, infra/…, docs/…) and bare code filenames, plus the bundle/component
-// identifiers the grounded prompts cite (cockpit-*, foundry-helpdesk-*).
+// identifiers the grounded prompts cite (techdocs-*, foundry-helpdesk-*).
 const FILE_RE =
   /\b(?:app|apps|infra|docs|eval|lib|components|frontend|backend)\/[\w./-]+\.(?:py|tsx?|bicep|md|ya?ml|json|css|sh)\b|\b[\w-]+\.(?:py|tsx?|bicep)\b/g;
-const COMPONENT_RE = /\b(?:cockpit-[a-z0-9-]+|foundry-helpdesk-[a-z]+)\b/g;
+const COMPONENT_RE = /\b(?:techdocs-[a-z0-9-]+|foundry-helpdesk-[a-z]+)\b/g;
 
 function extractTextSources(text: string): TextSource[] {
   const seen = new Set<string>();

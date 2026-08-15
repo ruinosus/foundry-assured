@@ -44,22 +44,22 @@ export const DOMAINS: Domain[] = [
     // authorized for, unlike raw model inference (/openai/v1/responses) which 403s on this project.
     hostedAgentId: "helpdesk-hosted",
   },
-  // TEMP: cockpit hidden from the app — its Foundry KB (cockpit-si-kb) isn't provisioned in this
+  // TEMP: techdocs hidden from the app — its Foundry KB (techdocs-si-kb) isn't provisioned in this
   // env, so the domain 404s on retrieve. Corpus + backend agent are untouched; restore this block
   // (and ingest the KB) to bring it back.
   // {
-  //   id: "cockpit",
+  //   id: "techdocs",
   //   icon: "🛰️",
-  //   label: "Cockpit expert",
+  //   label: "TechDocs expert",
   //   kind: "grounded",
   //   blurb:
-  //     "Q&A fundamentado na base da plataforma Cockpit — cita o componente e o documento de cada afirmação.",
+  //     "Q&A fundamentado na base da plataforma TechDocs — cita o componente e o documento de cada afirmação.",
   //   suggested: [
-  //     "Quais são todos os servidores MCP do Cockpit?",
-  //     "Qual é a arquitetura do cockpit-portal-api?",
+  //     "Quais são todos os servidores MCP do TechDocs?",
+  //     "Qual é a arquitetura do techdocs-portal-api?",
   //     "Como funciona a hierarquia de multi-tenancy?",
   //   ],
-  //   endpoint: "/cockpit",
+  //   endpoint: "/techdocs",
   //   // Grounded runs live via OBO — no hosted twin needed.
   // },
   {

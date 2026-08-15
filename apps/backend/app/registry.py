@@ -2,7 +2,7 @@
 
 Mirrors the frontend registry (apps/frontend/lib/domains.ts): four domains, each with a
 `kind` — `workflow` (helpdesk: triage→retrieve→resolve→escalate over AG-UI), `grounded`
-(cockpit/selfwiki: cited Q&A via the `stream_grounded` archetype), `tool` (platform: MCP-
+(techdocs/selfwiki: cited Q&A via the `stream_grounded` archetype), `tool` (platform: MCP-
 driven ops). Adding a domain = one `DomainSpec` row here (+ its agent/KB on the backend).
 
 `mount_domains(app)` walks `_domains()` once and dispatches by kind, so the wiring lives in
@@ -70,7 +70,7 @@ class DomainSpec:
 # for exactly this reason — the registry was the one place that had not followed the rule.
 DOMAIN_KINDS: dict[str, str] = {
     "helpdesk": "workflow",
-    "cockpit": "grounded",
+    "techdocs": "grounded",
     "selfwiki": "grounded",
     "platform": "tool",
 }
@@ -91,7 +91,7 @@ def domain_spec(domain_id: str) -> DomainSpec:
 def _domains() -> list[DomainSpec]:
     """The four domain specs, built from the current request's tenant config (read LAZILY here —
     NOT at import). Mirrors domains.ts row-for-row."""
-    from app.modules.agentdefs.public import COCKPIT_INSTRUCTIONS, SELFWIKI_INSTRUCTIONS
+    from app.modules.agentdefs.public import TECHDOCS_INSTRUCTIONS, SELFWIKI_INSTRUCTIONS
 
     cfg = tenant_config()
     return [
@@ -101,12 +101,12 @@ def _domains() -> list[DomainSpec]:
             hosted_agent_name=cfg.hosted_agent_name,
         ),
         DomainSpec(
-            id="cockpit",
+            id="techdocs",
             kind="grounded",
-            instructions=COCKPIT_INSTRUCTIONS,
-            kb_name=cfg.cockpit_searchindex_knowledge_base,  # cockpit-si-kb (native searchIndex retrieve)
-            ks_name=cfg.cockpit_searchindex_knowledge_source,  # cockpit-docbundles-si-ks
-            search_index=cfg.cockpit_search_index,  # direct-search fallback target (ACL trims here too)
+            instructions=TECHDOCS_INSTRUCTIONS,
+            kb_name=cfg.techdocs_searchindex_knowledge_base,  # techdocs-si-kb (native searchIndex retrieve)
+            ks_name=cfg.techdocs_searchindex_knowledge_source,  # techdocs-docbundles-si-ks
+            search_index=cfg.techdocs_search_index,  # direct-search fallback target (ACL trims here too)
             search_endpoint=cfg.azure_search_endpoint,
             acl_group_map=cfg.acl_group_map,  # PARSED property (name→objectID), not the raw string
         ),
