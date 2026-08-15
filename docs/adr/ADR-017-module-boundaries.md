@@ -41,7 +41,14 @@ each file assigned to its target module, edges deduplicated):
 | tickets | shared | `api/tickets.py` |
 
 Every `.py` file under `app/` maps to exactly one destination; the walk reported no unmapped
-file. The bolded edges are the ones nobody had written down.
+file. **32 edges across 11 nodes.** The bolded edges are the ones nobody had written down.
+
+The walk is not a one-off script: it lives at
+[`tests/architecture/module_graph_test.py`](../../apps/backend/tests/architecture/module_graph_test.py),
+carries the file→module map above as its `MAP`, and runs in CI. It fails on a **new**
+cross-module edge (naming the file that introduced it) and on any file with no module
+assigned. `import-linter` can only guard directories that already exist; until Phase 3
+creates them, this answers the same question against the plan.
 
 ## Decision
 

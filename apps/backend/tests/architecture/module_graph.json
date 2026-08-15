@@ -1,0 +1,142 @@
+{
+  "COMPOSITION": {
+    "agentdefs": [
+      "domains.py"
+    ],
+    "grounded": [
+      "domains.py"
+    ],
+    "helpdesk": [
+      "domains.py"
+    ],
+    "hosted": [
+      "main.py"
+    ],
+    "platform_ops": [
+      "domains.py"
+    ],
+    "shared": [
+      "api/__init__.py",
+      "domains.py",
+      "main.py"
+    ],
+    "tenancy": [
+      "domains.py"
+    ]
+  },
+  "admin": {
+    "shared": [
+      "api/admin.py",
+      "api/me.py",
+      "services/graph.py"
+    ]
+  },
+  "evaluation": {
+    "shared": [
+      "api/evals.py"
+    ],
+    "tenancy": [
+      "services/foundry_evals.py"
+    ]
+  },
+  "grounded": {
+    "agentdefs": [
+      "agents/concierge.py"
+    ],
+    "hosted": [
+      "services/grounded.py"
+    ],
+    "knowledge": [
+      "services/grounded.py"
+    ],
+    "shared": [
+      "agents/cockpit.py",
+      "agents/concierge.py",
+      "agents/selfwiki.py",
+      "services/grounded.py"
+    ],
+    "tenancy": [
+      "agents/cockpit.py",
+      "agents/concierge.py",
+      "agents/selfwiki.py",
+      "services/grounded.py"
+    ]
+  },
+  "helpdesk": {
+    "agentdefs": [
+      "workflow/agents.py"
+    ],
+    "shared": [
+      "workflow/escalation.py",
+      "workflow/graph.py"
+    ],
+    "tenancy": [
+      "workflow/agents.py",
+      "workflow/memory.py"
+    ],
+    "tickets": [
+      "workflow/escalation.py"
+    ]
+  },
+  "hosted": {
+    "COMPOSITION": [
+      "api/chat.py"
+    ],
+    "shared": [
+      "api/chat.py",
+      "services/hosted.py"
+    ],
+    "tenancy": [
+      "api/chat.py",
+      "services/hosted.py"
+    ]
+  },
+  "knowledge": {
+    "shared": [
+      "services/retrieval.py"
+    ],
+    "tenancy": [
+      "agents/secure_search.py",
+      "knowledge/acl_setup.py",
+      "knowledge/ingest.py",
+      "knowledge/ingest_docbundles.py",
+      "knowledge/wiki_builder.py"
+    ]
+  },
+  "platform_ops": {
+    "agentdefs": [
+      "agents/platform.py"
+    ],
+    "grounded": [
+      "agents/platform.py"
+    ],
+    "shared": [
+      "agents/mcp/tools.py",
+      "agents/platform.py"
+    ],
+    "tenancy": [
+      "agents/mcp/tools.py",
+      "agents/platform.py"
+    ]
+  },
+  "shared": {
+    "tenancy": [
+      "core/auth.py"
+    ]
+  },
+  "tenancy": {
+    "platform_ops": [
+      "core/tenant_store.py"
+    ],
+    "shared": [
+      "api/tenant.py",
+      "core/onboarding.py",
+      "core/tenant.py"
+    ]
+  },
+  "tickets": {
+    "shared": [
+      "api/tickets.py"
+    ]
+  }
+}
