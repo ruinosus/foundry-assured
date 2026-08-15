@@ -46,10 +46,20 @@ Duas coisas medidas neste repositório, para você não repetir:
 
 ## Escopo
 
-O `wiki-regen.yml` restringe o que você pode ler (via `.openwikiignore`) e diz na mensagem do run
-qual área documentar. Documente **apenas** essa área. Um bundle chamado
-`foundry-helpdesk-backend` que descreve infra, frontend e workflows de release está errado, mesmo
-que cada frase esteja correta.
+**O repositório inteiro, num único wiki.** Backend (`apps/backend`), frontend (`apps/frontend`),
+infraestrutura (`infra/`), os hosted agents (`apps/hosted-*`), scripts de operação (`scripts/`) e
+os testes de ponta a ponta (`e2e/`). Não existe recorte por área.
+
+Isso é decisão registrada — [ADR-016](../docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md),
+emenda de 2026-08-15. O OpenWiki mantém **um** `openwiki/` por repositório, enquanto os bundles
+eram por área; a segunda área a rodar teria feito `--update` numa wiki sobre outra área, com o
+gerador restrito justamente aos arquivos que essa wiki não descreve. Um wiki, um bundle
+(`foundry-assured`), e o descasamento some.
+
+Um bundle que promete cobrir o repositório e descreve só `apps/backend` está **errado**, mesmo que
+cada frase esteja correta e todas as citações resolvam — foi exatamente o que aconteceu quando esta
+seção ainda pedia recorte por área: 12 páginas, 99% de fidelidade, 387 citações, todas apontando
+para o mesmo diretório. O gate mede citação, não cobertura.
 
 ## Prioridades de conteúdo
 
