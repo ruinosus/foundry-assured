@@ -1,10 +1,3 @@
----
-type: service-overview
-title: Backend overview
-description: Composition root and runtime map for the FastAPI backend, including app startup, router aggregation, domain mounting, service boundaries, and the main invariants that constrain safe changes.
-tags: [backend, fastapi, ag-ui, runtime]
----
-
 The backend is a Python 3.12 FastAPI service that owns three kinds of runtime surface at once: plain HTTP APIs, live AG-UI domain endpoints, and bridges to hosted Azure AI agents. The composition root is intentionally thin: `app.main` creates the app, preloads OpenID metadata when auth is enabled, applies CORS, includes the router bundle, and delegates all live domain registration to `mount_domains(app)`.[`apps/backend/pyproject.toml`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/pyproject.toml#L1-L18) [`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L1-L10) [`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L26-L35) [`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L37-L49)
 
 ## Composition root and package map

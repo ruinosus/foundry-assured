@@ -1,10 +1,3 @@
----
-type: subsystem-guide
-title: Auth and tenancy seam
-description: Entra authentication, OBO credential flow, request-scoped user context, and the deployment-mode seam that keeps most backend code tenant-agnostic.
-tags: [backend, auth, entra, tenancy]
----
-
 The backend’s auth and tenancy architecture is built around one principle: request-time identity and tenant resolution should be concentrated in `app.core`, so workflow, retrieval, and domain code can mostly consume `current_user()`, `credential_for_request()`, and `tenant_config()` without knowing which deployment mode they are in.[`apps/backend/app/core/auth.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/auth.py#L1-L20) [`apps/backend/app/core/tenant.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/tenant.py#L1-L6)
 
 ## Entra bearer validation

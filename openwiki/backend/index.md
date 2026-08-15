@@ -1,12 +1,12 @@
 # Files
 
-- [Backend API surface](api-surface.md) - Complete apps/backend HTTP and live endpoint surface, including mounted domain endpoints, hosted twins, operational routes, and their auth and protocol differences.
-- [Auth and tenancy](auth-and-tenancy.md) - How apps/backend authenticates callers, exchanges OBO credentials, resolves tenants, enforces roles and domain entitlements, and persists tenant records.
-- [Evaluation and assurance](evaluation-and-assurance.md) - The backend assurance harness, its fidelity and freshness gates, and the representative tests that encode apps/backend runtime invariants.
-- [Grounded domains](grounded-domains.md) - The shared grounded-domain archetype behind cockpit and selfwiki, including retrieval, ACL handling, synthesis, citations, and hosted-versus-live distinctions.
-- [Helpdesk workflow](helpdesk-workflow.md) - The multi-agent helpdesk workflow, its per-request identity and memory model, HITL escalation, and the stream-ordering workaround required by the AG-UI adapter.
-- [Knowledge pipeline and docbundle contract](knowledge-pipeline.md) - Backend-owned ingestion, wiki adaptation, schema validation, and bundle generation paths that feed the grounded domains.
-- [Operations and runtime behavior](operations-and-runtime.md) - Global runtime settings, startup and shutdown lifecycle, hosted-client caching, operational endpoints, persistence locations, and known runtime caveats in apps/backend.
-- [Backend overview](overview.md) - Runtime map of the apps/backend service, its domain registry, deployment modes, and the main subsystems that compose the backend.
-- [Platform domain and MCP brokering](platform-domain.md) - The tool-driven platform domain, its MCP server registry, per-request tool construction, connection-based credential brokering, and hosted-path variants.
-- [Prompt and agent-definition system](prompt-system.md) - Declarative AgentSchema prompt loading, repository-owned prompt composition, AGENTS_DIR override behavior, and the boot-time failure rules that protect backend agent instructions.
+- [Admin and operational APIs](admin-and-operations.md) - Backend HTTP APIs for admin management, user-role operations, tickets, evals, health, and caller identity, including their owning services and operational side effects.
+- [Auth and tenancy seam](auth-and-tenancy.md) - Entra authentication, OBO credential flow, request-scoped user context, and the deployment-mode seam that keeps most backend code tenant-agnostic.
+- [Grounded domains](grounded-domains.md) - Cockpit and selfwiki share a grounded Q&A archetype built from a single retrieval seam, structured citations, and tenant-aware access-control trimming.
+- [Knowledge and assurance pipeline](knowledge-and-assurance.md) - Backend-owned corpus ingest, docbundle and OpenWiki adaptation, ACL stamping, wiki fidelity gates, and the test suites that keep knowledge artifacts trustworthy.
+- [Backend overview](overview.md) - Composition root and runtime map for the FastAPI backend, including app startup, router aggregation, domain mounting, service boundaries, and the main invariants that constrain safe changes.
+- [Platform domain](platform-domain.md) - The platform domain is the backend’s tool-driven concierge, distinct from grounded domains because it depends on tool availability, approval on writes, and a live-versus-hosted split that is still partly infra-gated.
+- [Platform per-request agent proxy](platform-per-request-agent.md) - How the platform domain uses PerRequestAgent to satisfy AG-UI serving requirements while rebuilding caller-specific tools, tenant config, and OBO credentials on each request.
+- [Platform tools and RBAC](platform-tools-and-rbac.md) - MCP server registry, tenant connection overlays, internal versus hosted tool construction, and the fail-closed authorization model behind the platform domain.
+- [Tenant control plane](tenant-control-plane.md) - Shared-mode tenant records, onboarding, persistent store implementations, domain entitlements, and per-tenant connection/config ownership boundaries.
+- [Helpdesk workflow domain](workflow-helpdesk.md) - The live helpdesk domain is the backend’s multi-agent workflow over AG-UI, combining triage, retrieval, resolution, per-user memory, and human-approved ticket escalation.

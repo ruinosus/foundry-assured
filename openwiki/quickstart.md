@@ -1,65 +1,66 @@
 ---
 type: quickstart
-title: Backend wiki quickstart
-description: Entry point for the apps/backend wiki, with a map of the main backend systems, route families, and the shortest path from an intended change to the owning documentation and validation.
-tags: [quickstart, backend, navigation]
+title: Foundry Assured wiki quickstart
+description: Entry point for the repository wiki, with a map of systems, task routing to canonical pages, and the shortest validation paths for common changes.
+tags: [quickstart, navigation, repository]
 ---
 
-# Backend wiki quickstart
+This wiki documents the entire `foundry-assured` repository as one system: backend, frontend, hosted agents, infrastructure, operational scripts, and end-to-end tests. The repository’s central idea is not just “an app with agents”; it is a repo that packages agent experiences together with measurable assurance gates for grounding, access control, and generated wiki fidelity.[`README.md`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/README.md#L3-L7) [`README.md`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/README.md#L155-L168) [`docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md#L52-L83)
 
-This wiki documents **only** `apps/backend`. It is organized around the backend's runtime systems rather than the source tree so you can move quickly from a change intention to the owning subsystem, route family, invariants, and focused validation.
+## Start here by intent
 
-## Start here
+| If you want to change… | Read this page first | Key source entrypoints | Focused validation |
+| --- | --- | --- | --- |
+| overall architecture or deployment modes | [architecture/overview.md](./architecture/overview.md) | `apps/backend/app/main.py`, `apps/frontend/lib/domains.ts`, `infra/main.bicep` | `cd apps/backend && uv run python -m eval.docbundle_contract_test` |
+| FastAPI composition, route mounting, or backend service boundaries | [backend/overview.md](./backend/overview.md) | `apps/backend/app/main.py`, `apps/backend/app/domains.py`, `apps/backend/app/api/__init__.py` | `cd apps/backend && uv run python -m eval.domain_registry_test` |
+| helpdesk workflow, approval, or memory | [backend/workflow-helpdesk.md](./backend/workflow-helpdesk.md) | `apps/backend/app/workflow/*` | `cd apps/backend && uv run python -m eval.approval_mode_test` |
+| grounded retrieval, citations, or ACL trimming | [backend/grounded-domains.md](./backend/grounded-domains.md) | `apps/backend/app/services/grounded.py`, `apps/backend/app/services/retrieval.py` | `cd apps/backend && uv run python -m eval.access_control_test` |
+| platform tools or hosted platform bridging | [backend/platform-domain.md](./backend/platform-domain.md) | `apps/backend/app/agents/platform.py`, `apps/backend/app/services/hosted.py`, `apps/hosted-platform/main.py` | `cd apps/backend && uv run python -m eval.platform_hosted_bridge_test` |
+| auth, OBO, or shared-mode resolution | [backend/auth-and-tenancy.md](./backend/auth-and-tenancy.md) | `apps/backend/app/core/auth.py`, `apps/backend/app/core/tenant.py` | `cd apps/backend && uv run python -m eval.credential_wiring_test` |
+| tenant onboarding, connections, or domain entitlements | [backend/tenant-control-plane.md](./backend/tenant-control-plane.md) | `apps/backend/app/api/tenant.py`, `apps/backend/app/core/tenant_store.py` | `cd apps/backend && uv run python -m eval.tenant_store_test` |
+| Graph-backed admin APIs, tickets, or eval summaries | [backend/admin-and-operations.md](./backend/admin-and-operations.md) | `apps/backend/app/services/graph.py`, `apps/backend/app/api/*` | `cd apps/backend && uv run python -m eval.connection_ops_test` |
+| wiki/docbundle ingest or assurance thresholds | [backend/knowledge-and-assurance.md](./backend/knowledge-and-assurance.md) | `apps/backend/app/knowledge/*`, `apps/backend/eval/*` | `cd apps/backend && uv run python -m eval.wiki_fidelity_test --component foundry-helpdesk-backend` |
+| Next.js layout, routing, or auth shell | [frontend/overview.md](./frontend/overview.md) | `apps/frontend/app/*`, `apps/frontend/components/shell/AppShell.tsx` | `cd apps/frontend && npm run typecheck` |
+| CopilotKit console, evidence panel, or hosted toggle UX | [frontend/assurance-console.md](./frontend/assurance-console.md) | `apps/frontend/components/console/AssuranceConsole.tsx` | `cd e2e && npm test` |
+| proxy route handlers or token forwarding | [frontend/proxies-and-request-flow.md](./frontend/proxies-and-request-flow.md) | `apps/frontend/app/api/*`, `apps/frontend/lib/auth/api.ts` | `cd e2e && npm test` |
+| admin, tickets, or evals pages | [frontend/admin-evals-and-tickets.md](./frontend/admin-evals-and-tickets.md) | `apps/frontend/components/{admin,evals,tickets}/*` | `cd apps/frontend && npm run lint` |
+| hosted agent packaging | [hosted-agents/overview.md](./hosted-agents/overview.md) | `apps/hosted-*`, `azure.yaml` | `cd apps/backend && uv run python -m eval.hosted_build_test` |
+| Azure resources or RBAC | [infra/overview.md](./infra/overview.md) and [infra/identity-and-rbac.md](./infra/identity-and-rbac.md) | `infra/*.bicep`, `scripts/hook-postdeploy.sh` | `./scripts/up-all.sh --provision-only` |
+| deployment scripts, hooks, or prompt publishing | [operations/scripts-and-deployment.md](./operations/scripts-and-deployment.md) | `scripts/*.sh`, `azure.yaml` | `./scripts/bootstrap.sh` |
+| backend assurance suites or browser E2E | [testing-and-evals/overview.md](./testing-and-evals/overview.md) and [testing-and-evals/e2e.md](./testing-and-evals/e2e.md) | `apps/backend/eval/*`, `e2e/*` | `cd e2e && npm test` |
 
-- Runtime composition and the four backend domains: [Backend overview](./backend/overview.md)
-- Mounted endpoints, hosted twins, and JSON APIs: [Backend API surface](./backend/api-surface.md)
-- Entra auth, OBO, tenant resolution, onboarding, and domain entitlement: [Auth and tenancy](./backend/auth-and-tenancy.md)
-- Declarative prompt loading and `AGENTS_DIR` behavior: [Prompt and agent-definition system](./backend/prompt-system.md)
-- Triage → retrieve → resolve → escalate workflow: [Helpdesk workflow](./backend/helpdesk-workflow.md)
-- Grounded `cockpit` and `selfwiki` path: [Grounded domains](./backend/grounded-domains.md)
-- Tool-driven `platform` domain and MCP brokering: [Platform domain and MCP brokering](./backend/platform-domain.md)
-- Global runtime settings, hosted bridges, caches, and ops endpoints: [Operations and runtime behavior](./backend/operations-and-runtime.md)
-- Docbundle ingestion and backend-owned wiki pipeline: [Knowledge pipeline and docbundle contract](./backend/knowledge-pipeline.md)
-- Test harness and assurance gates: [Evaluation and assurance](./backend/evaluation-and-assurance.md)
+## Main sections
 
-## Backend mental model
+- [architecture/overview.md](./architecture/overview.md) — whole-repo map and cross-system flows
+- [backend/overview.md](./backend/overview.md) — FastAPI composition root and service boundaries
+- [frontend/overview.md](./frontend/overview.md) — Next.js shell, routes, and auth shape
+- [hosted-agents/overview.md](./hosted-agents/overview.md) — hosted packaging strategy and protocol split
+- [infra/overview.md](./infra/overview.md) — Azure resource topology and azd/Bicep output surfaces
+- [operations/scripts-and-deployment.md](./operations/scripts-and-deployment.md) — deployment automation chain
+- [testing-and-evals/overview.md](./testing-and-evals/overview.md) — proof-oriented tests and assurance gates
 
-The backend is a FastAPI app with one thin composition root in `app.main`, one domain registry in `app.domains`, and four live domains:
+## Repository concepts worth learning early
 
-- `helpdesk`: AG-UI workflow
-- `cockpit`: grounded SSE Q and A
-- `selfwiki`: grounded SSE Q and A over repo wiki content
-- `platform`: tool-driven AG-UI agent
+### Domain registry
 
-Shared-mode multitenancy is layered underneath those domains by auth dependencies, tenant resolution, and per-domain entitlement gates rather than by duplicating route trees. The grounded and platform paths are request-time systems; they should be understood together with auth and tenancy, not in isolation.
+Both backend and frontend are registry-driven around the same four domains: `helpdesk`, `cockpit`, `selfwiki`, and `platform`. The frontend registry controls labels and route behavior; the backend registry controls runtime kind and mounting.[`apps/frontend/lib/domains.ts`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/frontend/lib/domains.ts#L28-L95) [`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L63-L99)
 
-## Task routing
+### Shared-mode control plane
 
-| Change intent | Read first | Key source owners | Focused validation |
-|---|---|---|---|
-| Add or change a live domain mount | [Backend overview](./backend/overview.md), [Backend API surface](./backend/api-surface.md) | `app/main.py`, `app/domains.py` | `uv run python -m eval.domain_registry_test` |
-| Debug auth, OBO, or tenant 403s | [Auth and tenancy](./backend/auth-and-tenancy.md) | `app/core/auth.py`, `app/core/tenant.py`, `app/core/onboarding.py` | `uv run python -m eval.tenant_resolution_test && uv run python -m eval.domain_gate_test` |
-| Change onboarding or tenant admin behavior | [Auth and tenancy](./backend/auth-and-tenancy.md), [Backend API surface](./backend/api-surface.md) | `app/api/tenant.py`, `app/core/onboarding.py`, `app/core/tenant_store.py` | `uv run python -m eval.onboarding_guard_test && uv run python -m eval.domains_api_test` |
-| Change prompt YAML, guardrails, or prompt boot behavior | [Prompt and agent-definition system](./backend/prompt-system.md) | `app/agents/definitions.py`, `app/agents/prompts.py`, `agents/helpdesk/*` | `uv run python -m eval.prompt_contract_test` |
-| Change helpdesk workflow or escalation | [Helpdesk workflow](./backend/helpdesk-workflow.md) | `app/workflow/*.py`, `app/tools/tickets.py` | `uv run python -m eval.prompt_contract_test && uv run python -m eval.memory_scope_test` |
-| Change retrieval, citations, or grounded synthesis | [Grounded domains](./backend/grounded-domains.md) | `app/services/retrieval.py`, `app/services/grounded.py`, `app/domains.py` | `uv run python -m eval.retrieval_shape_test` |
-| Debug per-user grounded ACL behavior | [Grounded domains](./backend/grounded-domains.md), [Auth and tenancy](./backend/auth-and-tenancy.md) | `app/services/retrieval.py`, `app/services/grounded.py` | `uv run python -m eval.retrieval_acl_parity_test && uv run python -m eval.grounded_archetype_roundtrip_test` |
-| Add or debug MCP servers, tools, or connection policy | [Platform domain and MCP brokering](./backend/platform-domain.md) | `app/agents/mcp/registry.py`, `app/agents/mcp/tools.py`, `app/core/tenant_store.py` | `uv run python -m eval.mcp_registry_test && uv run python -m eval.connection_tools_build_test && uv run python -m eval.approval_mode_test` |
-| Debug hosted bridges or runtime caches | [Operations and runtime behavior](./backend/operations-and-runtime.md) | `app/services/hosted.py`, `app/api/chat.py`, `app/main.py` | `uv run python -m eval.platform_hosted_bridge_test && uv run python -m eval.hosted_build_test` |
-| Change bundle ingest, manifest handling, or wiki pipeline | [Knowledge pipeline and docbundle contract](./backend/knowledge-pipeline.md) | `app/knowledge/ingest_docbundles.py`, `app/knowledge/adapt_openwiki.py`, `app/knowledge/docbundle_schema.py`, `app/knowledge/wiki_builder.py` | `uv run python -m eval.docbundle_contract_test && uv run python -m eval.wiki_fidelity_test --component foundry-helpdesk-backend` |
-| Understand which tests protect a subsystem | [Evaluation and assurance](./backend/evaluation-and-assurance.md) | `apps/backend/eval/*` | pick the invariant batch from that page |
+Shared deployment mode adds a tenant-record subsystem with onboarding, per-tenant config, connection references, and domain entitlements. It is the most important subsystem to understand before changing multi-tenant behavior.[`apps/backend/app/core/auth.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/auth.py#L77-L94) [`apps/backend/app/api/tenant.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/api/tenant.py#L86-L100)
 
-## Validation strategy
+### Assurance gates
 
-Prefer focused checks over broad sweeps:
+The repo’s generated wiki, retrieval, and access-control behavior are all guarded by executable checks, especially the docbundle contract test, wiki fidelity test, access-control test, and Playwright E2E suite.[`apps/backend/eval/docbundle_contract_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/docbundle_contract_test.py#L1-L27) [`apps/backend/eval/wiki_fidelity_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/wiki_fidelity_test.py#L1-L20) [`apps/backend/eval/access_control_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/access_control_test.py#L1-L15) [`e2e/smoke.spec.ts`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/e2e/smoke.spec.ts#L123-L132)
 
-- Domain and route wiring: `uv run python -m eval.domain_registry_test`
-- Prompt behavior: `uv run python -m eval.prompt_contract_test`
-- Tenant gating: `uv run python -m eval.tenant_resolution_test`
-- Grounded retrieval contract: `uv run python -m eval.retrieval_shape_test`
-- Platform tool policy: `uv run python -m eval.mcp_registry_test`
-- Bundle contract and fidelity: `uv run python -m eval.docbundle_contract_test && uv run python -m eval.wiki_fidelity_test --component foundry-helpdesk-backend`
+## Suggested reading order
+
+1. [architecture/overview.md](./architecture/overview.md)
+2. [backend/overview.md](./backend/overview.md)
+3. [frontend/overview.md](./frontend/overview.md)
+4. the domain-specific backend page for your area
+5. the corresponding hosted/infra/operations/testing page if your change crosses runtime boundaries
 
 ## Backlog
 
-None. The current wiki scope is limited to `apps/backend`, and the documented backend systems all have dedicated pages.
+None currently. The inspected repo surfaces were documentable from source and tests in this run.

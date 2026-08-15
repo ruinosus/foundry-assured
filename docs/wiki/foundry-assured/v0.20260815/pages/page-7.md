@@ -1,13 +1,6 @@
----
-type: domain-guide
-title: Platform domain
-description: The platform domain is the backend’s tool-driven concierge, distinct from grounded domains because it depends on tool availability, approval on writes, and a live-versus-hosted split that is still partly infra-gated.
-tags: [backend, platform, tools, hosted]
----
-
 The `platform` domain is the outlier in the backend registry. Unlike `helpdesk`, it is not a multi-agent workflow, and unlike `cockpit` or `selfwiki`, it does not answer from retrieved documents. It is a tool-driven concierge intended to operate over Microsoft-first-party MCP servers and to preserve approval semantics for state-changing actions.[`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L3-L6) [`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L98-L99) [`apps/hosted-platform/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-platform/main.py#L3-L21)
 
-The detailed serving pattern for the live route is documented in [platform-per-request-agent.md](./platform-per-request-agent.md): platform must rebuild tenant config, caller roles, and OBO-sensitive tools per request rather than mount one eager agent forever.
+The detailed serving pattern for the live route is documented in platform-per-request-agent.md: platform must rebuild tenant config, caller roles, and OBO-sensitive tools per request rather than mount one eager agent forever.
 
 ## Mounting behavior
 
