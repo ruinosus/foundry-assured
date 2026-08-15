@@ -189,11 +189,11 @@ These are **data-plane** (not Bicep), so you ingest each domain by hand. There a
 cd apps/backend
 
 # Helpdesk KB — ~13 fake runbooks (a few minutes; the script polls until it settles)
-uv run python -m app.knowledge.ingest
+uv run python -m app.modules.knowledge.internal.ingest
 
 # Cockpit KB — point at a folder of Cockpit doc bundles
 COCKPIT_DOCBUNDLES=/path/to/cockpit/docbundles \
-  uv run python -m app.knowledge.ingest_docbundles
+  uv run python -m app.modules.knowledge.internal.ingest_docbundles
 
 # Selfwiki KB — this repo's own deep-wiki (docs/wiki); reuses ingest_docbundles via ENV override
 KB_KNOWLEDGE_SOURCE=selfwiki-docbundles-ks \
@@ -202,7 +202,7 @@ COCKPIT_STORAGE_CONTAINER=selfwiki-corpus \
 COCKPIT_SEARCH_KNOWLEDGE_BASE=selfwiki-kb \
 COCKPIT_SEARCH_INDEX=selfwiki-docbundles-ks-index \
 COCKPIT_DOCBUNDLES=../../docs/wiki \
-  uv run python -m app.knowledge.ingest_docbundles
+  uv run python -m app.modules.knowledge.internal.ingest_docbundles
 ```
 
 Each ingest uploads its corpus → knowledge source → Foundry IQ knowledge base, stamps
@@ -214,7 +214,7 @@ The `docs/wiki` deep-wiki that the **selfwiki** ingest consumes is itself genera
 There are **two ways** to produce it:
 
 1. **Foundry pipeline (`wiki_builder.py`)** — automated, runs in-cloud. From
-   `apps/backend`: `uv run python -m app.knowledge.wiki_builder …`. Needs `azd up` done
+   `apps/backend`: `uv run python -m app.modules.knowledge.internal.wiki_builder …`. Needs `azd up` done
    and the Foundry model (`gpt-5-mini`) deployed; it enforces the **build-fidelity gate**
    (rejects a low-fidelity bundle). This is the path that costs tokens.
 2. **Microsoft Agent Skills** — no cloud, no cost. The skills under

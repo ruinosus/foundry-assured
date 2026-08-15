@@ -290,7 +290,7 @@ Storage, an **ACR** (for the Phase 6 image), and keyless RBAC. Pick a region whe
 cd apps/backend
 cp .env.example .env                       # fill from `azd env get-values`
 az login
-uv run python -m app.knowledge.ingest      # build the Foundry IQ knowledge base
+uv run python -m app.modules.knowledge.internal.ingest      # build the Foundry IQ knowledge base
 uv run python -m cli.provision_memory      # create the memory store
 uv run uvicorn app.main:app --port 8000 --reload
 ```

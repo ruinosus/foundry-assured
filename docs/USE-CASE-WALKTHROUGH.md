@@ -76,7 +76,7 @@ ACL_GROUP_MAP=all-employees:<oid>,eng-platform:<oid>,eng-pricing:<oid>,sec-fraud
 ### 3. Generate the wiki — access is **inherited from each repo**
 
 ```bash
-uv run python -m app.knowledge.wiki_builder --repo ../mf-pricing-engine --component mf-pricing-engine --version v1.0.0 --groups eng-pricing --out ./wiki-out
+uv run python -m app.modules.knowledge.internal.wiki_builder --repo ../mf-pricing-engine --component mf-pricing-engine --version v1.0.0 --groups eng-pricing --out ./wiki-out
 ```
 
 The generator reads the **real source** and writes a faithful, cited wiki. As it does, it
@@ -120,7 +120,7 @@ if that's empty it's **fail-closed**, so an undeclared doc never leaks by omissi
 ### 5. Ingest — the mechanism just reads the declared groups and stamps
 
 ```bash
-ACL_CLASSIFICATION=./meridian-acl.json uv run python -m app.knowledge.ingest_docbundles
+ACL_CLASSIFICATION=./meridian-acl.json uv run python -m app.modules.knowledge.internal.ingest_docbundles
 ```
 
 For every document it reads the **owner-declared groups** (manifest or the file), resolves

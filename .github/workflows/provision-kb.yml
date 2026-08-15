@@ -39,4 +39,4 @@ jobs:
           AZURE_STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
           AZURE_STORAGE_RESOURCE_ID: ${{ vars.AZURE_STORAGE_RESOURCE_ID }}
           AZURE_STORAGE_CONTAINER: ${{ vars.AZURE_STORAGE_CONTAINER }}
-        run: uv run python -m app.knowledge.ingest
+        run: uv run python -m app.modules.knowledge.internal.ingest
