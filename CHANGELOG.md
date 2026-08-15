@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.9.0](https://github.com/ruinosus/foundry-assured/compare/v0.8.0...v0.9.0) (2026-08-15)
+
+
+### Features
+
+* **infra:** declare the CI identity's data-plane roles in the Bicep ([#137](https://github.com/ruinosus/foundry-assured/issues/137)) ([a2d913f](https://github.com/ruinosus/foundry-assured/commit/a2d913ff43364c37988901a5072c0296c56c0370))
+* **wiki:** add a rebuild input — "a wiki exists" is not "the right wiki exists" ([#147](https://github.com/ruinosus/foundry-assured/issues/147)) ([7e41ad6](https://github.com/ruinosus/foundry-assured/commit/7e41ad6f80befa024fae867b3fcdf763f8331a10))
+* **wiki:** one wiki for the repository, not one per area ([#145](https://github.com/ruinosus/foundry-assured/issues/145)) ([49e00ab](https://github.com/ruinosus/foundry-assured/commit/49e00ab92f3fe509be80db6dd5ceaca6088d2d37))
+* **wiki:** scope the generator to one area, and commit the citation contract ([#143](https://github.com/ruinosus/foundry-assured/issues/143)) ([4d10c9a](https://github.com/ruinosus/foundry-assured/commit/4d10c9a42e5d5c2a2b7f60d26a3e694620a9bcaa))
+* **wiki:** the freshness check becomes a trigger, and the loop actually closes ([#139](https://github.com/ruinosus/foundry-assured/issues/139)) ([f8cd8c2](https://github.com/ruinosus/foundry-assured/commit/f8cd8c205c5ae09440eba9f3583f1238f65e47d6))
+
+
+### Bug Fixes
+
+* **wiki:** the fidelity gate graded the wrong bundle and reported success ([#141](https://github.com/ruinosus/foundry-assured/issues/141)) ([17007d0](https://github.com/ruinosus/foundry-assured/commit/17007d047c04d71b39fc69768e22595db86a1a8c))
+
+
+### Documentation
+
+* **adr:** ADR-016 — OpenWiki closes the freshness loop ADR-012 only opened ([#135](https://github.com/ruinosus/foundry-assured/issues/135)) ([f7dc471](https://github.com/ruinosus/foundry-assured/commit/f7dc4713525f052d594299d4dc7cf6d0ecaec3e4))
+* **adr:** ADR-016 — survey the off-the-shelf tooling for the gates ([#148](https://github.com/ruinosus/foundry-assured/issues/148)) ([0dcf147](https://github.com/ruinosus/foundry-assured/commit/0dcf147bcc190ac69b370eeeac4865327f51df15))
+* **wiki:** regenerate the backend wiki ([#144](https://github.com/ruinosus/foundry-assured/issues/144)) ([d2995d8](https://github.com/ruinosus/foundry-assured/commit/d2995d87bda06cd1515f3e5d246e9e3d77de9a30))
+
 ## [0.8.0](https://github.com/ruinosus/foundry-assured/compare/v0.7.1...v0.8.0) (2026-08-15)
 
 
