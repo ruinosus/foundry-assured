@@ -1,7 +1,8 @@
 # ADR-016 — OpenWiki closes the freshness loop that ADR-012 only opened
 
-- **Status:** Proposed — the decision below is contingent on the spike in *Exit criteria*;
-  do not vendor or schedule anything before it passes
+- **Status:** Proposed — the spike ran (see *Spike log*): criterion 1 passes decisively,
+  criterion 3 fails as written and needs the workflow change described there. The decision is
+  ready for a call; nothing is scheduled until one is made.
 - **Date:** 2026-08-15
 - **Extends:** [ADR-012](./ADR-012-reuse-upstream-deep-wiki-tooling.md) (generation engine +
   assurance layer stand; only the **freshness automation** changes)
@@ -99,6 +100,11 @@ If (1) or (2) fails, the fallback is the alternative already on the table: fill 
 which is known to emit the citation form the gate expects. **Do not lower `fidelity_min` to make
 OpenWiki pass** — the floor is the reason the wiki is trustworthy at all.
 
+> **Outcome (2026-08-15):** (1) and (2) pass — 99.5% against the 0.80 floor. (3) does not: three
+> unchanged runs still produced 15 → 2 → 1 file edits. The spike log records the measurement and
+> the mitigation (drive `--update` from our own deterministic freshness gate instead of trusting
+> the agent's self-assessed no-op).
+
 ## Consequences
 
 **Good**
@@ -170,12 +176,83 @@ form*. That is the whole question, unchanged in substance and sharper in shape: 
 shipped code, both telemetry opt-outs (`OPENWIKI_TELEMETRY_DISABLED`, `DO_NOT_TRACK`) are
 honoured, and the CLI exposes `--init` / `--update` / `--print` for non-interactive CI use.
 
-### Phase B — the run that decides — NOT DONE
+### Phase B — the run that decides (2026-08-15)
 
-Blocked on a model credential: no `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` / `GEMINI_API_KEY` in
-the environment, and OpenWiki defaults to OpenAI `gpt-5.6-terra`. This phase spends money and
-must run against an isolated copy of the repository, never the working tree. Exit criteria are
-unchanged, and criterion (1) is now the only one in real doubt.
+Run against a throwaway `git worktree` of `main` at `0cb3b6d`, never the working tree. Scope
+narrowed to `apps/backend` with `.openwikiignore`, and `openwiki/INSTRUCTIONS.md` carrying the
+citation contract: the exact blob-URL form, the real HEAD SHA, at least five citations per
+substantive page, never cite an uninspected file.
+
+**Setup — Azure OpenAI works, and keyless works.** OpenWiki has no `azure` provider, but its
+`openai-compatible` provider takes the Azure `/openai/v1` surface directly. Both auth modes were
+measured against it: an AAD bearer token from `az account get-access-token` (keyless, matching
+this repository's rule #2) and an API key passed as `Authorization: Bearer` — HTTP 200 on each.
+No adapter needed.
+
+**Model sizing is not a footnote.** The first run used `gpt-5-mini` (this project's own Foundry
+deployment). It planned the wiki, then stalled in the critic loop without emitting a page. The
+same run on `gpt-5.4` produced 15 pages. A small model is not a cheap version of this job.
+
+**Criterion 1 — citations. PASSES, and beats the incumbent.** The `INSTRUCTIONS.md` steering
+worked: 430 citations emitted in the `blob/<sha>/<path>#L<a>-L<b>` form. Scored with the real
+gate (`wiki_builder._fidelity_report`, the same code that decides ingest):
+
+| | OpenWiki (this spike) | deep-wiki v0.3.0 (in production) |
+|---|---|---|
+| Pages | 15 | 8 |
+| Citations | 430 | 665 |
+| Resolved | **99.5%** | 97.6% |
+| Distinct files cited | **212** | 118 |
+| Worktree citations | 0 | 0 |
+
+99.5% against a floor of 0.80. The concern that opened this ADR — that OpenWiki grounds
+semantically while our gate scores a machine-checkable form — is answered: the form is
+steerable from `INSTRUCTIONS.md`, and the result is *more* faithful than what ships today.
+
+*Metric footnote, not a gate:* `line_ranged` counted 0 despite every citation carrying a range.
+`_CITE_RE` recognises `path:12-34` but not GitHub's `#L12-L34` anchor. The baseline scores 269
+only because the older pages mix both dialects. Nothing gates on this field, but the repository
+plainly has two citation dialects and the counter understands one.
+
+**Criterion 3 — the no-op run. FAILS as written.** Three consecutive `--update` runs against an
+unchanged `apps/backend`, comparing file hashes across all 18 documents:
+
+| Run | Files changed | What the agent reported |
+|---|---|---|
+| 1 (`--init`) | 15 created | initial generation |
+| 2 (`--update`) | 2 | fixed a broken trailing citation fragment and duplicated junk text — **defects from run 1** |
+| 3 (`--update`) | 1 | revised `api-surface.md` route descriptions against six source files it re-inspected |
+
+The **git-level** no-op detection works, and says so explicitly: *".last-update.json already
+pointed at the current HEAD (…) so this was an accuracy audit rather than a history-diff update."*
+It does not regenerate the wiki. But the accuracy audit still runs, and still finds something to
+revise — 15 → 2 → 1, converging, yet not to zero within three runs.
+
+On the daily schedule the shipped workflow uses, that opens a pull request most days carrying
+agent-taste revisions rather than code-driven updates — the exact churn "no-op detection" was
+supposed to prevent, and a reviewer cost paid against no code change.
+
+**Mitigation, and it belongs in our workflow rather than in OpenWiki:** gate PR creation on an
+actual source diff — run `--update` only when `wiki_freshness_test` reports drift, which is the
+gate this repository already owns and which is deterministic. Trusting the agent to decide it has
+nothing to do is the part that does not hold; asking it only when something demonstrably changed
+sidesteps it entirely. (Spike artifact worth naming: `.openwikiignore` excluding everything but
+one directory also restricted the agent's own `git` inspection — *"shell git inspection was
+restricted by .openwikiignore"* — so real use would not narrow scope this way.)
+
+**The `CLAUDE.md` behaviour, now measured rather than read.** `--init` *does* touch it — and the
+diff is 8 lines, purely additive, inside the markers:
+
+```markdown
+<!-- OPENWIKI:START -->
+## OpenWiki
+See [AGENTS.md](AGENTS.md) for OpenWiki agent instructions.
+<!-- OPENWIKI:END -->
+```
+
+Nothing curated was overwritten. `--init` also drops `AGENTS.md` and — worth knowing before it
+surprises someone — `.github/workflows/openwiki-update.yml`, the recurrence workflow, straight
+into the repository.
 
 ## Alternatives considered
 
