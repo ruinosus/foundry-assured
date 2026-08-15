@@ -1,10 +1,3 @@
----
-type: domain-guide
-title: Grounded domains
-description: Cockpit and selfwiki share a grounded Q&A archetype built from a single retrieval seam, structured citations, and tenant-aware access-control trimming.
-tags: [backend, grounded, retrieval, citations]
----
-
 The `cockpit` and `selfwiki` domains are both mounted as `grounded` domains. They differ in prompts, KB pointers, and ACL audience, but they intentionally share the same backend execution model: one retrieval seam, one synthesis path, and one AG-UI emission contract for citations.[`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L75-L97) [`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L111-L129)
 
 ## Mounting and domain data

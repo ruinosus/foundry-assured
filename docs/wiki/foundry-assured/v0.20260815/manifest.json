@@ -1,0 +1,194 @@
+{
+  "key": "foundry-assured-v0.20260815",
+  "title": "foundry-assured v0.20260815",
+  "source": {
+    "type": "repo",
+    "ref": "/home/runner/work/foundry-assured/foundry-assured",
+    "commit": "4b749e7bac56789f0b1097cd4a8212b5c5c65d05"
+  },
+  "language": "pt-br",
+  "model": "openwiki/gpt-5.4",
+  "generatedAt": "2026-08-15T17:27:21.488Z",
+  "kind": "element",
+  "component": "foundry-assured",
+  "componentVersion": "v0.20260815",
+  "releaseVersion": null,
+  "groups": null,
+  "pages": [
+    {
+      "id": "page-1",
+      "title": "Foundry Assured wiki quickstart",
+      "order": 1,
+      "file": "pages/page-1.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-2",
+      "title": "Admin and operational APIs",
+      "order": 2,
+      "file": "pages/page-2.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-3",
+      "title": "Auth and tenancy seam",
+      "order": 3,
+      "file": "pages/page-3.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-4",
+      "title": "Grounded domains",
+      "order": 4,
+      "file": "pages/page-4.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-5",
+      "title": "Knowledge and assurance pipeline",
+      "order": 5,
+      "file": "pages/page-5.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-6",
+      "title": "Backend overview",
+      "order": 6,
+      "file": "pages/page-6.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-7",
+      "title": "Platform domain",
+      "order": 7,
+      "file": "pages/page-7.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-8",
+      "title": "Platform per-request agent proxy",
+      "order": 8,
+      "file": "pages/page-8.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-9",
+      "title": "Platform tools and RBAC",
+      "order": 9,
+      "file": "pages/page-9.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-10",
+      "title": "Tenant control plane",
+      "order": 10,
+      "file": "pages/page-10.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-11",
+      "title": "Helpdesk workflow domain",
+      "order": 11,
+      "file": "pages/page-11.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-12",
+      "title": "Scripts and deployment automation",
+      "order": 12,
+      "file": "pages/page-12.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-13",
+      "title": "Repository architecture",
+      "order": 13,
+      "file": "pages/page-13.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-14",
+      "title": "Admin, evaluations, and tickets pages",
+      "order": 14,
+      "file": "pages/page-14.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-15",
+      "title": "Assurance console",
+      "order": 15,
+      "file": "pages/page-15.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-16",
+      "title": "Frontend overview",
+      "order": 16,
+      "file": "pages/page-16.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-17",
+      "title": "Frontend proxies and request flow",
+      "order": 17,
+      "file": "pages/page-17.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-18",
+      "title": "Hosted cockpit and selfwiki agents",
+      "order": 18,
+      "file": "pages/page-18.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-19",
+      "title": "Hosted helpdesk agent",
+      "order": 19,
+      "file": "pages/page-19.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-20",
+      "title": "Hosted agents overview",
+      "order": 20,
+      "file": "pages/page-20.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-21",
+      "title": "Hosted platform agent",
+      "order": 21,
+      "file": "pages/page-21.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-22",
+      "title": "Identity and RBAC model",
+      "order": 22,
+      "file": "pages/page-22.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-23",
+      "title": "Infrastructure overview",
+      "order": 23,
+      "file": "pages/page-23.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-24",
+      "title": "End-to-end test suite",
+      "order": 24,
+      "file": "pages/page-24.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-25",
+      "title": "Testing and evaluation overview",
+      "order": 25,
+      "file": "pages/page-25.md",
+      "audience": "base"
+    }
+  ]
+}

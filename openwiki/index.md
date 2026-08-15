@@ -4,9 +4,14 @@ okf_version: "0.1"
 
 # Files
 
-- [Skeleton](_skeleton.md)
-- [Backend wiki quickstart](quickstart.md) - Entry point for the apps/backend wiki, with a map of the main backend systems, route families, and the shortest path from an intended change to the owning documentation and validation.
+- [Foundry Assured wiki quickstart](quickstart.md) - Entry point for the repository wiki, with a map of systems, task routing to canonical pages, and the shortest validation paths for common changes.
 
 # Directories
 
+- [architecture](architecture/)
 - [backend](backend/)
+- [frontend](frontend/)
+- [hosted-agents](hosted-agents/)
+- [infra](infra/)
+- [operations](operations/)
+- [testing-and-evals](testing-and-evals/)
