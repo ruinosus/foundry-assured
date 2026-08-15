@@ -54,8 +54,22 @@ is the assurance layer") argues for consuming it rather than writing the guarded
 **Adopt OpenWiki as the freshness engine, behind an adapter, keeping the assurance layer
 unchanged — contingent on the citation spike below.**
 
-- **OpenWiki owns the loop**: schedule, git-diff-since-last-run, no-op detection, PR opening.
-  Replaces the `wiki-regen.yml` placeholder rather than filling it in.
+- **OpenWiki owns the loop**: generation, git-diff-since-last-run, PR opening. Replaces the
+  `wiki-regen.yml` placeholder rather than filling it in. It opens a pull request — it does not
+  push to `main` — so human review stays in the path by construction.
+- **The freshness check stops being a gate and becomes the trigger.** Today
+  `wiki-freshness` fails a pull request when the wiki is older than its source. Once regeneration
+  is automatic that gate is **green by construction** — it passes because a bot just touched the
+  files, not because anyone verified anything, which is the same disease as a permanently red
+  gate with the sign flipped. So it moves: `wiki_freshness_test` stays the deterministic answer to
+  "did anything change?", and that answer decides whether `--update` runs, instead of decorating
+  every unrelated PR with a red X. This also fixes the churn the spike measured (criterion 3):
+  asking the agent only when something demonstrably changed sidesteps its self-assessed no-op.
+- **Automation raises the value of the fidelity gate; it does not retire it.** Running in CI
+  guarantees *freshness*, never *correctness*. Today a person generates the wiki and reads the
+  result; afterwards a bot writes it daily and no one reads fifteen pages carefully. The
+  `fidelity_min: 0.80` floor is then the only thing between an unattended writer and the
+  knowledge base that answers users. Outsource the generator; never the verification.
 - **The assurance layer does not move**: the bundle format
   (`docs/wiki/<component>/<version>/{manifest.json, pages/page-N.md, llms.txt}`), the
   **fidelity gate** (`wiki_builder._fidelity_report`, floor `build.fidelity_min: 0.80` in
@@ -70,6 +84,23 @@ unchanged — contingent on the citation spike below.**
 - **The deep-wiki plugin stays vendored** as the generator for full regenerations and for the
   skills the loop does not cover (`wiki-llms-txt`, `wiki-qa`, `wiki-onboarding`, …). This ADR
   changes *what keeps the wiki current*, not *what writes it from scratch*.
+
+The resulting shape, with each step owned by whoever should own it:
+
+```
+source changes
+  → wiki_freshness_test detects drift        TRIGGER   — ours, deterministic
+  → openwiki code --update                   GENERATOR — theirs, commodity
+  → adapter → bundle                         FORMAT    — ours
+  → fidelity >= 0.80                         GATE      — ours, the one that matters
+  → pull request                             GATE      — human
+  → Foundry KB ingest + ACL                  ours
+```
+
+**Adopt on `workflow_dispatch` first, schedule later.** Run it by hand once or twice, look at the
+pull requests it opens, and measure the churn against a real review load before turning on the
+daily cron. ADR-012 shipped a template that was never exercised; the difference now is that the
+tool is real, so the trial can be too.
 
 ## Exit criteria — the spike that decides this
 
