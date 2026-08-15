@@ -1,0 +1,40 @@
+{
+  "key": "foundry-helpdesk-backend-v0.20260815",
+  "title": "foundry-helpdesk-backend v0.20260815",
+  "source": {
+    "type": "repo",
+    "ref": "/home/runner/work/foundry-assured/foundry-assured",
+    "commit": "f8cd8c205c5ae09440eba9f3583f1238f65e47d6"
+  },
+  "language": "pt-br",
+  "model": "openwiki/gpt-5.4",
+  "generatedAt": "2026-08-15T14:29:42.693Z",
+  "kind": "element",
+  "component": "foundry-helpdesk-backend",
+  "componentVersion": "v0.20260815",
+  "releaseVersion": null,
+  "groups": null,
+  "pages": [
+    {
+      "id": "page-1",
+      "title": "OpenWiki quickstart",
+      "order": 1,
+      "file": "pages/page-1.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-2",
+      "title": "Wiki automation decision",
+      "order": 2,
+      "file": "pages/page-2.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-3",
+      "title": "Wiki refresh loop",
+      "order": 3,
+      "file": "pages/page-3.md",
+      "audience": "base"
+    }
+  ]
+}

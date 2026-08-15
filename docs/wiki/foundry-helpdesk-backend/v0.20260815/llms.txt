@@ -1,0 +1,5 @@
+# foundry-helpdesk-backend v0.20260815
+
+- [OpenWiki quickstart](pages/page-1.md)
+- [Wiki automation decision](pages/page-2.md)
+- [Wiki refresh loop](pages/page-3.md)
