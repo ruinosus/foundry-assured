@@ -68,6 +68,13 @@ jobs:
         run: npm ci
       - name: Typecheck
         run: npm run typecheck
+      # Advisory ON PURPOSE, and this is the first run that means anything: until now
+      # the script called `next lint`, which Next 16 removed — it read "lint" as a
+      # directory, exited 1, and continue-on-error swallowed it, so the gate reported
+      # nothing for months. There was no ESLint config in the repo at all. It now runs
+      # the ESLint CLI and surfaces 9 real errors (react-hooks/set-state-in-effect ×5,
+      # react-hooks/purity ×2, react/no-unescaped-entities ×2). Drop continue-on-error
+      # once those are fixed — do NOT silence the rules to make it green.
       - name: Lint
         run: npm run lint
         continue-on-error: true
