@@ -1,10 +1,3 @@
----
-type: reference
-title: Backend API surface
-description: Contract-oriented map of backend HTTP endpoints, including auth and role gates, tenant ownership and onboarding rules, hosted bridges, Graph-backed admin behavior, and API-focused validation.
-tags: [backend, api, fastapi, contracts]
----
-
 # Backend API surface
 
 The backend splits its HTTP surface between ordinary FastAPI routers aggregated by `api_router` and live AG-UI domain mounts registered separately through `mount_domains(app)`. `api_router` includes health, tickets, evals, hosted chat bridges, admin, and `me`, and conditionally includes the tenant router only in shared mode. The mounted domain paths are `/helpdesk`, `/cockpit`, `/selfwiki`, and `/platform` ([`apps/backend/app/api/__init__.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/api/__init__.py#L1-L19), [`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/main.py#L44-L49), [`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/domains.py#L167-L176)).
@@ -40,7 +33,7 @@ This table is only the route map; the rest of this page focuses on the contract 
 
 `POST /helpdesk-hosted` uses `auth_dependencies()` and streams the named hosted helpdesk agent through `stream_agui`. `POST /platform-hosted` uses `_domain_deps("platform")`, so in shared mode it enforces the same domain entitlement gate as the live `/platform` endpoint. This is an important contract choice: the hosted twin is not an auth bypass around live-domain policy ([`apps/backend/app/api/chat.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/api/chat.py#L12-L34)).
 
-The actual bridge behavior is documented in [hosted-bridges](./hosted-bridges.md), but from the API perspective the key rule is that hosted endpoints preserve the same coarse access model as their live counterparts.
+The actual bridge behavior is documented in hosted-bridges, but from the API perspective the key rule is that hosted endpoints preserve the same coarse access model as their live counterparts.
 
 ## Admin API family
 
@@ -120,5 +113,5 @@ The backend has focused tests for these boundary rules:
 
 - Admin or Graph boundary changes: `uv run python -m eval.tenant_admin_e2e_test` plus targeted manual Graph config verification.
 - Tenant API contract changes: `uv run python -m eval.domains_api_test`, `uv run python -m eval.domain_gate_test`, `uv run python -m eval.onboarding_guard_test`.
-- Hosted endpoint gate changes: `uv run python -m eval.platform_hosted_bridge_test` and the hosted tests listed in [hosted-bridges](./hosted-bridges.md).
+- Hosted endpoint gate changes: `uv run python -m eval.platform_hosted_bridge_test` and the hosted tests listed in hosted-bridges.
 - Mounted-domain dependency changes: `uv run python -m eval.domain_registry_test`.

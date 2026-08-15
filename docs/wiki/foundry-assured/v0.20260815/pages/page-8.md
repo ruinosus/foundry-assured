@@ -1,10 +1,3 @@
----
-type: subsystem
-title: Knowledge pipeline
-description: Backend-owned pipeline that generates, adapts, validates, ingests, and ACL-stamps wiki and docbundle content into searchable Foundry and Azure Search corpora.
-tags: [backend, knowledge, ingestion, acl, wiki]
----
-
 # Knowledge pipeline
 
 The backend owns the full path from source-grounded documentation artifacts to live searchable corpora. That path has three distinct stages:

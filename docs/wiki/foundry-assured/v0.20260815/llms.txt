@@ -1,0 +1,14 @@
+# foundry-assured v0.20260815
+
+- [Backend wiki quickstart](pages/page-1.md)
+- [Backend API surface](pages/page-2.md)
+- [Auth and tenancy](pages/page-3.md)
+- [Evaluation and assurance](pages/page-4.md)
+- [Grounded domains](pages/page-5.md)
+- [Helpdesk workflow](pages/page-6.md)
+- [Hosted bridges](pages/page-7.md)
+- [Knowledge pipeline](pages/page-8.md)
+- [Operations and runtime](pages/page-9.md)
+- [Backend overview](pages/page-10.md)
+- [Platform domain](pages/page-11.md)
+- [Prompt system](pages/page-12.md)

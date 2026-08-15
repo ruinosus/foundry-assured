@@ -1,10 +1,3 @@
----
-type: workflow
-title: Helpdesk workflow
-description: Live AG-UI workflow for the helpdesk domain, covering per-request identity, triage-retrieve-resolve-escalate execution, memory, human approval, and stream-ordering constraints.
-tags: [backend, workflow, helpdesk, ag-ui]
----
-
 # Helpdesk workflow
 
 The live helpdesk path is the backend’s richest runtime: a request enters through the mounted `/helpdesk` AG-UI endpoint, the backend builds a workflow for the current caller, runs `triage -> retrieve -> resolve -> escalate`, and streams workflow state back to the UI. The module docs stress that this factory is per-request because both the credential and the memory scope come from request-scoped auth state, not from a long-lived singleton ([`apps/backend/app/workflow/graph.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/workflow/graph.py#L1-L14), [`apps/backend/app/workflow/graph.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/workflow/graph.py#L28-L53)).

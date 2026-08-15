@@ -1,10 +1,3 @@
----
-type: subsystem
-title: Grounded domains
-description: Shared grounded-answer path for the cockpit and selfwiki domains, including domain registry data, retrieval and synthesis flow, ACL behavior, and AG-UI source emission.
-tags: [backend, retrieval, grounded-domains, search]
----
-
 # Grounded domains
 
 The backend has two grounded domains, `cockpit` and `selfwiki`, and they deliberately share one implementation path. In the domain registry both are declared as `kind="grounded"`, each with instructions, a knowledge-base name, a search-index fallback target, and a `search_endpoint`; `cockpit` also carries the tenant ACL group map, while `selfwiki` derives a single-audience ACL map from `app_users_group_id` when configured. The comments state that `selfwiki`’s audience is intentionally the app-users group rather than a per-user ACL matrix ([`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/domains.py#L63-L99)).
@@ -82,7 +75,7 @@ Finally `_project` centralizes deduplication by URL and assigns 1-based indexes.
 
 Older defensive logic survives in `app/agents/secure_search.py` as background context: the backend originally used app-side trimming as defense in depth when service-side agentic retrieval did not enforce ACLs correctly. That module documents the design goal that access should be authoritative and fail-closed, deriving authorized components from the search service’s own ACL evaluation and dropping unattributable chunks rather than guessing. Even though the main grounded path now lives behind `app.services.retrieval`, the security principles did not change ([`apps/backend/app/agents/secure_search.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/agents/secure_search.py#L1-L19), [`apps/backend/app/agents/secure_search.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/agents/secure_search.py#L36-L88)).
 
-The grounded path therefore depends on the knowledge pipeline to stamp indexes correctly. `acl_setup.py` adds the `groups` permission field, disables trimming only during a maintenance window, stamps docs from manifest groups or defaults, and re-enables trimming in `finally`, specifically to avoid leaving the index open on failure ([`apps/backend/app/knowledge/acl_setup.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/knowledge/acl_setup.py#L97-L169)). That ingestion side is covered in [knowledge-pipeline](./knowledge-pipeline.md).
+The grounded path therefore depends on the knowledge pipeline to stamp indexes correctly. `acl_setup.py` adds the `groups` permission field, disables trimming only during a maintenance window, stamps docs from manifest groups or defaults, and re-enables trimming in `finally`, specifically to avoid leaving the index open on failure ([`apps/backend/app/knowledge/acl_setup.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/knowledge/acl_setup.py#L97-L169)). That ingestion side is covered in knowledge-pipeline.
 
 ## Safe change surface
 

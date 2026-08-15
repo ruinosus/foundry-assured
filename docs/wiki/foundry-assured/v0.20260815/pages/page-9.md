@@ -1,10 +1,3 @@
----
-type: operations
-title: Operations and runtime
-description: Runtime lifecycle, configuration surfaces, startup and shutdown behavior, local execution paths, and subsystem-oriented validation commands for the backend.
-tags: [backend, operations, runtime, config]
----
-
 # Operations and runtime
 
 This page covers how the backend process starts, what it needs from configuration, and which narrow validation commands map to each subsystem. It is not a deployment runbook; it is the runtime-facing view of the code under `apps/backend`.
@@ -60,7 +53,7 @@ The top-level README gives the normal backend local run command:
 cd apps/backend && uv run uvicorn app.main:app --port 8000 --reload
 ```
 
-That command is consistent with the package manifest, which depends on `uvicorn[standard]` and exposes the `app` package as the wheel target ([`README.md`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/README.md#L107-L115), [`apps/backend/pyproject.toml`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/pyproject.toml#L14-L18), [`apps/backend/pyproject.toml`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/pyproject.toml#L48-L53)).
+That command is consistent with the package manifest, which depends on `uvicorn[standard]` and exposes the `app` package as the wheel target (`README.md`, [`apps/backend/pyproject.toml`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/pyproject.toml#L14-L18), [`apps/backend/pyproject.toml`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/pyproject.toml#L48-L53)).
 
 When running locally without auth, expect:
 

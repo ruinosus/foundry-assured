@@ -1,10 +1,3 @@
----
-type: subsystem
-title: Platform domain
-description: Tool-driven platform concierge for MCP-backed operations, including per-request agent construction, server registry governance, tenant connections, and caller-role filtering.
-tags: [backend, platform, mcp, tools]
----
-
 # Platform domain
 
 The `platform` domain is the backend’s tool-driven concierge. Unlike `helpdesk`, `cockpit`, or `selfwiki`, it does not retrieve from a knowledge base as its primary capability. Instead it builds a Foundry chat agent whose capabilities come from Microsoft-first-party MCP tools filtered per request under the caller’s roles and credential ([`apps/backend/app/agents/platform.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/agents/platform.py#L1-L10), [`apps/backend/app/agents/platform.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/agents/platform.py#L31-L44)).
@@ -71,7 +64,7 @@ That means changing registry read/write classification or `tools.py` approval-mo
 
 ## Live versus hosted platform
 
-The live platform domain is the AG-UI mounted `PerRequestAgent` path described here. The hosted platform twin is separate and uses `/platform-hosted` plus the hosted bridge service. Shared registry and connection data feed both, but the hosted path has different transport and contract uncertainty around Invocations framing. Those bridge details are documented in [hosted-bridges](./hosted-bridges.md) ([`apps/backend/app/api/chat.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/api/chat.py#L29-L34), [`apps/backend/app/services/hosted.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/services/hosted.py#L121-L182)).
+The live platform domain is the AG-UI mounted `PerRequestAgent` path described here. The hosted platform twin is separate and uses `/platform-hosted` plus the hosted bridge service. Shared registry and connection data feed both, but the hosted path has different transport and contract uncertainty around Invocations framing. Those bridge details are documented in hosted-bridges ([`apps/backend/app/api/chat.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/api/chat.py#L29-L34), [`apps/backend/app/services/hosted.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/services/hosted.py#L121-L182)).
 
 ## Safe change recipes
 

@@ -1,10 +1,3 @@
----
-type: subsystem
-title: Prompt system
-description: Declarative AgentSchema prompt loading for backend agents, including scope catalogs, personas, guardrails, vendor extensions, environment resolution rules, and prompt-contract validation.
-tags: [backend, prompts, agentschema, agent-definitions]
----
-
 # Prompt system
 
 The backend no longer treats prompts as ad hoc string constants. `app/agents/definitions.py` is the canonical loader for AgentSchema `PromptAgent` documents stored under `apps/backend/agents/`, and `app/agents/prompts.py` is the thin compatibility layer that composes those documents once and re-exports stable constant names for runtime consumers ([`apps/backend/app/agents/definitions.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/agents/definitions.py#L1-L10), [`apps/backend/app/agents/prompts.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/agents/prompts.py#L1-L21)).

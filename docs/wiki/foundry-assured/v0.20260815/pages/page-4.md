@@ -1,10 +1,3 @@
----
-type: assurance
-title: Evaluation and assurance
-description: Assurance model and validation suites for the backend, covering fidelity and freshness gates, prompt contracts, registry and API invariants, retrieval ACL correctness, tenancy, MCP brokering, and hosted bridges.
-tags: [backend, evals, assurance, testing]
----
-
 # Evaluation and assurance
 
 The backend does not treat quality claims as informal. `eval/assurance.yaml` is the single threshold file for repository-wide guarantees: it defines quality floors such as groundedness, relevance, answer completeness, retrieval recall, and citation floor; a build-time `fidelity_min`; and security thresholds like zero access-control violations and a red-team attack-success ceiling ([`apps/backend/eval/assurance.yaml`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/eval/assurance.yaml#L1-L32)).
@@ -88,7 +81,7 @@ Hosted bridges have both unit-like and infra-backed checks:
 
 ## 8. Offline and cloud eval harness
 
-`run_eval.py` is the umbrella evaluation harness, while `eval/README.md` explains its modes and datasets. `foundry_evals.py` is the runtime-side reader for the canonical Foundry evaluation store. Together they form the backend’s broader measurement loop outside the narrow component tests listed above ([`apps/backend/eval/run_eval.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/eval/run_eval.py#L1-L80), [`apps/backend/eval/README.md`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/eval/README.md#L1-L90), [`apps/backend/app/services/foundry_evals.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/services/foundry_evals.py#L1-L11)).
+`run_eval.py` is the umbrella evaluation harness, while `eval/README.md` explains its modes and datasets. `foundry_evals.py` is the runtime-side reader for the canonical Foundry evaluation store. Together they form the backend’s broader measurement loop outside the narrow component tests listed above ([`apps/backend/eval/run_eval.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/eval/run_eval.py#L1-L80), `apps/backend/eval/README.md`, [`apps/backend/app/services/foundry_evals.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/services/foundry_evals.py#L1-L11)).
 
 ## Practical validation routing
 

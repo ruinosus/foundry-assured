@@ -1,10 +1,3 @@
----
-type: subsystem
-title: Auth and tenancy
-description: Request identity, OBO credentialing, shared-mode tenant resolution, entitlement checks, tenant configuration providers, persistence, and memory namespace rules.
-tags: [backend, auth, tenancy, obo]
----
-
 # Auth and tenancy
 
 The backend’s auth and tenancy model is designed around a single seam: request handlers and runtime subsystems ask for the current user, credential, and tenant config through shared helpers, and the active deployment mode decides how those are resolved. The module docs in `app/core/auth.py` and `app/core/tenant.py` make that separation explicit: auth validates and stores the caller, while tenancy resolves per-tenant data-plane config behind `tenant_config()` so workflow, grounded retrieval, and hosted services do not branch on deployment mode directly ([`apps/backend/app/core/auth.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/core/auth.py#L1-L21), [`apps/backend/app/core/tenant.py`](https://github.com/ruinosus/foundry-assured/blob/7e41ad6f80befa024fae867b3fcdf763f8331a10/apps/backend/app/core/tenant.py#L1-L6)).
