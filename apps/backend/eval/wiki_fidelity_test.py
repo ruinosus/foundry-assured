@@ -26,9 +26,11 @@ import re
 import sys
 from pathlib import Path
 
+import app as _app
+
 from app.modules.knowledge.internal.wiki_builder import _fidelity_floor, _fidelity_report, gather_source
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+REPO_ROOT = Path(_app.__file__).resolve().parents[3]
 WIKI_ROOT = REPO_ROOT / "docs" / "wiki"
 
 

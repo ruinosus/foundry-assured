@@ -25,7 +25,9 @@ import json
 import pathlib
 import sys
 
-APP = pathlib.Path(__file__).resolve().parents[2] / "app"
+import app as _app
+
+APP = pathlib.Path(_app.__file__).resolve().parent
 FIXTURE = pathlib.Path(__file__).with_name("module_graph.json")
 
 # ADR-017's file → module map. Prefix rules cover the directories that move wholesale.

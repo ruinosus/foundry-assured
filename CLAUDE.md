@@ -66,8 +66,10 @@ docs/adr/              ADR-001..015 — decisões de arquitetura
 4. Toda resposta do resolver **DEVE** conter ao menos uma citação de fonte. É policy de eval (ASSERT pega violação).
 5. A tool `create_ticket` só pode disparar **após aprovação humana explícita** — e a aprovação HITL exige o papel **Approver** (ou **Admin**). Autorização vem de App Roles do Entra (Admin / Author / Approver / Reader) no claim `roles` do token; gestão de usuários + papéis fica em `/admin/users` (via Microsoft Graph, app-only). Plano: [`docs/RBAC-AND-USER-MANAGEMENT-PLAN.md`](./docs/RBAC-AND-USER-MANAGEMENT-PLAN.md).
 6. **Controle de acesso é DADO** (os grupos de leitura de cada fonte), **nunca lógica de classificação no código**. O acesso segue a fonte: grupos vêm do manifesto/`COCKPIT_ACL_CLASSIFICATION`, nomes resolvem para object-IDs via `COCKPIT_ACL_GROUP_MAP`; doc sem acesso declarado → fail-closed. Ver [`docs/METHOD.md`](./docs/METHOD.md).
-7. **Prompt muda no documento AgentSchema**, nunca em `app/agents/prompts.py` (ver seção acima).
-8. Nunca commitar segredo ou valor de `.env` (`TEST-CREDENTIALS.local.md` é gitignored).
+7. **Prompt muda no documento AgentSchema**, nunca em `app/modules/agentdefs/public.py` (ver seção acima).
+8. **Fronteiras de módulo são verificadas por `import-linter`** (ADR-017). Código novo entra DENTRO de um módulo existente ou cria módulo novo com `public.py`/`internal/`; import cross-module só via `public`. O shared kernel (`app/shared/`) não importa nenhum módulo. Rode `uv run lint-imports --config importlinter.toml` antes de commitar.
+9. **Nunca calcule caminho contando `parents[N]` a partir do próprio arquivo** — ancore no pacote `app` (`Path(app.__file__).resolve().parent.parent`). Três caminhos quebraram assim durante a ADR-017, dois em silêncio. `tests/architecture/filesystem_anchors_test.py` é o gate.
+10. Nunca commitar segredo ou valor de `.env` (`TEST-CREDENTIALS.local.md` é gitignored).
 
 ## Comandos
 

@@ -20,7 +20,12 @@ def main() -> int:
         if not cond:
             failures.append(name)
 
-    root = Path(__file__).resolve().parents[2] / "hosted-platform"
+    # Anchored on the `app` package (apps/backend/app -> parents[2] is apps/), not counted
+    # from this file: this test moved from eval/ to tests/hosted/ and the old count silently
+    # pointed at apps/backend/hosted-platform.
+    import app as _app
+
+    root = Path(_app.__file__).resolve().parents[2] / "hosted-platform"
     check("hosted-platform/ exists", root.is_dir())
     for f in ("Dockerfile", "agent.yaml", "main.py", "requirements.txt"):
         check(f"{f} present", (root / f).is_file())

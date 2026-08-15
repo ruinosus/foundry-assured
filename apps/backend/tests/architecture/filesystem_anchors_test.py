@@ -26,7 +26,12 @@ import ast
 import pathlib
 import sys
 
-APP = pathlib.Path(__file__).resolve().parents[2] / "app"
+import app as _app
+
+BACKEND = pathlib.Path(_app.__file__).resolve().parent.parent
+# app/ AND the test trees: hosted_platform_smoke_test broke the same way when it moved from
+# eval/ to tests/hosted/, so scanning only app/ was scanning half the problem.
+ROOTS = (BACKEND / "app", BACKEND / "tests", BACKEND / "eval")
 
 # `parents[0]` and `parents[1]` are a file's own directory and its parent — those stay local
 # to the module and survive a move of the module as a whole. Anything deeper is reaching
@@ -47,7 +52,7 @@ def _rooted_in_own_file(node: ast.AST) -> bool:
 def offenders() -> list[tuple[str, int, int]]:
     """(relative path, line, index) for every `.parents[N]` with N > MAX_SAFE_DEPTH."""
     found: list[tuple[str, int, int]] = []
-    for path in sorted(APP.rglob("*.py")):
+    for path in sorted(p for root in ROOTS for p in root.rglob("*.py")):
         for node in ast.walk(ast.parse(path.read_text())):
             if not (isinstance(node, ast.Subscript) and isinstance(node.value, ast.Attribute)):
                 continue
@@ -61,7 +66,7 @@ def offenders() -> list[tuple[str, int, int]]:
             index = node.slice
             if isinstance(index, ast.Constant) and isinstance(index.value, int):
                 if index.value > MAX_SAFE_DEPTH:
-                    found.append((str(path.relative_to(APP)), node.lineno, index.value))
+                    found.append((str(path.relative_to(BACKEND)), node.lineno, index.value))
     return found
 
 

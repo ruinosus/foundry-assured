@@ -24,6 +24,9 @@ import pathlib
 import subprocess
 import sys
 
+import app as _app
+
+BACKEND = pathlib.Path(_app.__file__).resolve().parent.parent
 FIXTURE = pathlib.Path(__file__).with_name("routes_snapshot.json")
 PROFILES = ("self_hosted", "shared")
 
@@ -34,7 +37,7 @@ def capture(profile: str) -> list[list[str]]:
         [sys.executable, "-m", "tests.smoke._capture_routes", profile],
         capture_output=True,
         text=True,
-        cwd=pathlib.Path(__file__).resolve().parents[2],
+        cwd=BACKEND,
         check=False,  # the returncode is reported below with the captured stderr
     )
     if result.returncode != 0:
