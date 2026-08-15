@@ -1,3 +1,10 @@
+---
+type: infrastructure
+title: azd service graph and deployment hooks
+description: How azure.yaml composes backend, web, and hosted-agent services, and how postprovision/postdeploy hooks reconcile build-time auth config and deploy-time identities.
+tags: [infra, azd, hooks, deployment]
+---
+
 # azd service graph and deployment hooks
 
 `azure.yaml` is the deployment composition file for this repository. It declares the backend and web Container App services plus four hosted-agent services, and it defines the postprovision and postdeploy hooks that complete work Bicep cannot do alone ([azure.yaml](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/azure.yaml#L3-L23), [azure.yaml](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/azure.yaml#L24-L68), [azure.yaml](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/azure.yaml#L73-L81)). If `infra/*.bicep` defines the resource graph, `azure.yaml` defines the deployment graph.

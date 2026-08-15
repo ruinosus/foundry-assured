@@ -1,44 +1,55 @@
-The hosted helpdesk app packages the repository’s core helpdesk concept as a Foundry hosted agent serving the Responses protocol on port 8088. It is not a copy of the live backend workflow; it is a deliberately self-contained hosted variant.[`apps/hosted-agent/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-agent/main.py#L1-L16)
+# Repository architecture overview
 
-## Entrypoint and workflow construction
+foundry-assured is one repository containing a FastAPI backend, a Next.js frontend, four hosted-agent containers, Azure deployment assets, operational scripts, and evaluation harnesses. The repository README frames the product as an internal engineering concierge whose core behaviors are grounded retrieval, multi-agent workflow execution, per-user memory, approval-gated actions, offline evaluation, and managed hosted-agent deployment, rather than a single web app with a thin API layer (README.md). The same README also records the three deployment modes and the four domain families that now shape nearly every runtime seam in the repo: `helpdesk`, `cockpit`, `selfwiki`, and `platform` (README.md).
 
-`main.py` creates a `FoundryChatClient`, a Search context provider, three workflow steps, and then wraps the workflow as an agent before serving it with `ResponsesHostServer`.[`apps/hosted-agent/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-agent/main.py#L53-L68) [`apps/hosted-agent/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-agent/main.py#L70-L108)
+At runtime, the backend is the composition center. `app.main` installs telemetry first, then tenancy, then router inclusion, then domain mounting; the comments make the lifecycle order explicit because `mount_domains()` reads tenant configuration and would see the wrong provider if tenancy were installed later ([apps/backend/app/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/main.py#L27-L41)). `app.registry` is the backend’s domain catalog and dispatch layer: it defines a `DomainSpec`, builds the domain list lazily from tenant configuration, and mounts each domain by `kind` into either a grounded POST endpoint, an AG-UI workflow endpoint, or a tool-driven AG-UI endpoint ([apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L33-L99), [apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L103-L188)).
 
-The workflow ordering still mirrors live helpdesk conceptually:
+The frontend mirrors that domain-driven architecture instead of defining one page per product area. `lib/domains.ts` is the client-side registry that drives nav, generic `/d/[domain]` routing, suggested prompts, and hosted/live toggles, while `AssuranceConsole` renders one shell that changes behavior by domain kind and whether a hosted twin exists ([apps/frontend/lib/domains.ts](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/lib/domains.ts#L1-L27), [apps/frontend/lib/domains.ts](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/lib/domains.ts#L28-L98), [apps/frontend/components/console/AssuranceConsole.tsx](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/components/console/AssuranceConsole.tsx#L32-L99)). The generic route itself is intentionally tiny: `/d/[domain]` only reads the path segment and hands off to the console, so adding a domain is a registry change, not a page-tree rewrite ([apps/frontend/app/d/[domain]/page.tsx](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/app/d/%5Bdomain%5D/page.tsx#L3-L24)).
 
-- triage
-- retrieve
-- resolve
+Hosted agents are parallel deployables, not just backend code paths. `azure.yaml` defines six azd services: backend and web as Container Apps, plus four Azure AI Agent services for hosted helpdesk, cockpit, platform, and selfwiki ([azure.yaml](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/azure.yaml#L3-L81)). Each hosted service has its own `main.py`, and the code intentionally diverges between the standard Responses-hosted agents and the platform Invocations-hosted agent, because platform needs tool/approval parity that the simpler grounded hosted agents do not preserve ([apps/hosted-agent/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/hosted-agent/main.py#L1-L17), [apps/hosted-platform/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/hosted-platform/main.py#L1-L21)).
 
-but there is no escalation executor and no HITL interruption model.[`apps/hosted-agent/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-agent/main.py#L30-L50) [`apps/hosted-agent/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-agent/main.py#L95-L105)
+The infrastructure layer provisions both the application plane and the data-plane prerequisites. `infra/main.bicep` creates the resource group, calls `resources.bicep` for Foundry/Search/storage primitives, then calls `containerapps.bicep` for the backend and web Container Apps, surfacing the outputs that later hooks and scripts depend on ([infra/main.bicep](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/infra/main.bicep#L1-L18), [infra/main.bicep](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/infra/main.bicep#L52-L122)). azd is not just a wrapper around Bicep here; it is the deployment composition layer that wires services, build-time frontend auth vars, and post-provision/post-deploy hooks ([azure.yaml](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/azure.yaml#L62-L81)).
 
-## Config surface
+Finally, the repo treats documentation freshness and retrieval assurance as product features. ADR-016 records the decision to keep one `openwiki/` for the whole repo and make OpenWiki the freshness engine behind an adapter while preserving the repository’s own fidelity gate and bundle ingest contract (docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md). The backend package manifest and module layout confirm that this assurance loop is first-class code: dependencies include schema validation and declarative agent tooling, and the app is organized into bounded modules enforced by tests and import contracts instead of by folder convention alone ([apps/backend/pyproject.toml](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/pyproject.toml#L7-L42), docs/adr/ADR-017-module-boundaries.md).
 
-The hosted helpdesk app reads configuration from environment variables, especially:
+```mermaid
+flowchart TD
+  FE["Frontend Next.js and CopilotKit"] -->|"AG-UI and API proxies"| BE["Backend FastAPI composition root"]
+  BE -->|"workflow domain"| HD["Helpdesk module"]
+  BE -->|"grounded domains"| GD["Grounded and knowledge modules"]
+  BE -->|"tool domain"| PO["Platform ops module"]
+  BE -->|"hosted bridges"| HA["Hosted agent services"]
+  BE -->|"tenant and auth seams"| ID["Identity and tenancy"]
+  HA --> FDY["Foundry Agent Service and project"]
+  GD --> SRCH["Search and knowledge bases"]
+  ID --> MEM["Per-user or per-tenant memory scope"]
+  AZD["azd plus Bicep plus hooks"] --> FE
+  AZD --> BE
+  AZD --> HA
+  OW["OpenWiki plus adapters plus fidelity gate"] --> GD
+```
+This diagram shows the repository’s major runtime and deployment layers and the seams between them.
 
-- `FOUNDRY_PROJECT_ENDPOINT`
-- `AZURE_AI_MODEL_DEPLOYMENT_NAME`
-- `AZURE_SEARCH_ENDPOINT`
-- `AZURE_SEARCH_KNOWLEDGE_BASE`
+## Canonical subsystems
 
-It authenticates with `DefaultAzureCredential`, which in hosted deployment means the platform-injected agent identity.[`apps/hosted-agent/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-agent/main.py#L53-L60) [`apps/hosted-agent/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-agent/main.py#L62-L68)
+| Area | Canonical page | Why it exists |
+| --- | --- | --- |
+| Domain catalog and routing contract | domains-and-registry | Explains frontend/backend parity and tenant entitlement filtering. |
+| Auth, OBO, roles, onboarding | auth-and-identity | Central home for request identity and enforcement boundaries. |
+| Backend module map | ../backend/overview.md | Composition root, module boundaries, lifecycle ordering. |
+| Knowledge and wiki loops | ../backend/knowledge-ingestion.md | Ingestion, retrieval, ACL, and bundle adaptation change surfaces. |
+| Hosted runtimes | ../hosted-agents/responses-agents.md | Explains why hosted paths differ from live AG-UI paths. |
+| Deployment orchestration | ../infra-and-ops/azd-and-hooks.md | azd service graph, hooks, and post-deploy reconciliation. |
 
-## Non-parity with live helpdesk
+## Invariants that shape the whole repo
 
-The file is explicit about the features it drops relative to the live app:
+- **One domain registry contract, two implementations.** The backend registry and frontend `DOMAINS` table must stay conceptually aligned or routes, prompts, and hosted toggles drift apart ([apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L1-L18), [apps/frontend/lib/domains.ts](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/lib/domains.ts#L1-L27)).
+- **Lifecycle order matters at backend boot.** Telemetry, tenancy installation, server-catalog injection, router inclusion, and domain mounting are explicitly ordered in `app.main`; changing that order can make shared mode or hosted cleanup incorrect ([apps/backend/app/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/main.py#L27-L67)).
+- **azd hooks repair facts Bicep cannot know at provision time.** Hosted agent identities and deployed web URLs are only known after deployment, so the hooks are part of the supported architecture, not convenience glue ([scripts/hook-postdeploy.sh](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/scripts/hook-postdeploy.sh#L2-L10), [scripts/hook-postdeploy.sh](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/scripts/hook-postdeploy.sh#L41-L86)).
+- **Freshness automation never replaces fidelity verification.** ADR-016 keeps generation commoditized but fidelity, bundle shape, and ingest gates repository-owned (docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md).
 
-- OBO user identity
-- per-user memory
-- human-in-the-loop escalation
+## Focused validation
 
-Those are omitted because they do not fit the single-identity, request-response hosted model used here.[`apps/hosted-agent/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-agent/main.py#L8-L16)
-
-## Backend bridge consumer
-
-The frontend never calls the hosted helpdesk agent directly. The backend’s `/helpdesk-hosted` route calls `stream_agui(body, hosted_agent_name)` and re-emits the Responses stream as AG-UI events for CopilotKit.[`apps/backend/app/api/chat.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/api/chat.py#L12-L26) [`apps/backend/app/services/hosted.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/services/hosted.py#L72-L105)
-
-## Minimal validation
-
-- `cd apps/backend && uv run python -m eval.hosted_build_test`
-
-That is the narrowest repository-native check that this hosted packaging path still conforms to expectations.
+- Backend boot and mount logic: `cd apps/backend && uv run uvicorn app.main:app --port 8000 --reload`
+- Registry and module-boundary confidence: module and registry tests summarized in ../testing-and-assurance/overview.md
+- End-to-end deployment composition: `./scripts/up-all.sh --with-auth` for the full happy path ([scripts/up-all.sh](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/scripts/up-all.sh#L7-L26), [scripts/up-all.sh](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/scripts/up-all.sh#L89-L132))

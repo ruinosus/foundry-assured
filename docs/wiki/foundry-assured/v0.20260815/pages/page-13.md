@@ -1,78 +1,75 @@
-Foundry Assured is a single-repository system with two primary user-facing runtimes and one assurance pipeline. The browser UI is a Next.js application, the main server runtime is a FastAPI backend, and four separate hosted-agent containers package domain-specific variants for Azure AI Agent Service deployment. The repository also owns the infrastructure templates, deployment automation, wiki/docbundle assurance pipeline, and end-to-end tests that validate the deployed cloud application.`README.md` `README.md` [`azure.yaml`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/azure.yaml#L6-L23) [`azure.yaml`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/azure.yaml#L24-L61) [`apps/backend/pyproject.toml`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/pyproject.toml#L1-L18)
+# Backend overview
 
-## System layers
+The backend is a Python 3.12 FastAPI application packaged as `foundry-helpdesk-backend`, with dependencies for Agent Framework, AG-UI, Foundry/Search/identity integrations, telemetry, and declarative agent loading ([apps/backend/pyproject.toml](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/pyproject.toml#L1-L18), [apps/backend/pyproject.toml](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/pyproject.toml#L19-L42)). ADR-017 is the governing architectural decision: the backend is a modular monolith organized by business domain with a shared kernel and one composition root, and CI is expected to enforce those boundaries rather than rely on team discipline (docs/adr/ADR-017-module-boundaries.md, docs/adr/ADR-017-module-boundaries.md).
 
-The runtime composition is intentionally layered:
+## Composition root and lifecycle order
 
-1. **Frontend shell and console**: Next.js serves a generic domain console at `/d/[domain]`, uses a registry to decide which domain is active, and proxies browser requests through Next route handlers.[`apps/frontend/app/d/[domain]/page.tsx`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/frontend/app/d/[domain]/page.tsx#L3-L24) [`apps/frontend/lib/domains.ts`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/frontend/lib/domains.ts#L1-L26)
-2. **Backend API and live agent runtime**: FastAPI mounts HTTP routers plus one loop that registers the live domain endpoints based on backend domain specs.[`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L1-L10) [`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L35-L49) [`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L1-L18)
-3. **Foundry/Search/Storage data plane**: grounded answering, memory, retrieval, and hosted-agent invocation depend on Azure AI Foundry, Azure AI Search, and Storage resources provisioned by Bicep.[`infra/main.bicep`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/infra/main.bicep#L1-L8) [`infra/resources.bicep`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/infra/resources.bicep#L79-L105) [`infra/resources.bicep`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/infra/resources.bicep#L188-L253)
-4. **Hosted-agent packaging path**: four small Python apps package helpdesk, cockpit, selfwiki, and platform variants for Azure AI Agent Service, with protocol differences between Responses and Invocations paths.[`apps/hosted-agent/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-agent/main.py#L1-L16) [`apps/hosted-cockpit/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-cockpit/main.py#L1-L12) [`apps/hosted-platform/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-platform/main.py#L1-L21)
-5. **Assurance and test pipeline**: backend eval modules, wiki/docbundle contract gates, and Playwright E2E prove that retrieval, access control, hosting, and generated wiki bundles stay trustworthy.[`apps/backend/eval/assurance.yaml`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/assurance.yaml#L6-L25) [`apps/backend/eval/wiki_fidelity_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/wiki_fidelity_test.py#L1-L20) [`e2e/playwright.config.ts`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/e2e/playwright.config.ts#L3-L13)
+`app.main` is intentionally thin and heavily commented because order matters. It sets up telemetry first, installs tenancy into auth flow second, injects the platform server catalog into tenancy third, then defines lifespan, app object, CORS, router inclusion, and domain mounting ([apps/backend/app/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/main.py#L27-L67)). Two of those steps are load-bearing invariants:
+
+- `tenancy.install()` must run before `mount_domains()` so lazy `tenant_config()` reads see the shared-mode provider instead of the single-tenant default ([apps/backend/app/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/main.py#L31-L35)).
+- `tenancy.set_server_catalog(server.id for server in SERVERS)` is what breaks the tenancy↔platform cycle by handing tenancy a catalog rather than letting it import platform registry data directly ([apps/backend/app/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/main.py#L37-L41)).
+
+The lifespan function preloads OpenID configuration when auth is enabled and always closes hosted clients on shutdown, which means hosted bridge cleanup is part of normal app lifecycle rather than an edge-case utility ([apps/backend/app/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/main.py#L44-L50)).
 
 ```mermaid
 flowchart TD
-  Browser["Browser user"] --> NextUI["Next.js frontend"]
-  NextUI --> Proxy["Next route handlers"]
-  Proxy --> FastAPI["FastAPI backend"]
-  FastAPI --> LiveDomains["Live domains: helpdesk, grounded, platform"]
-  FastAPI --> HostedBridge["Hosted-agent bridge endpoints"]
-  LiveDomains --> Foundry["Azure AI Foundry"]
-  LiveDomains --> Search["Azure AI Search"]
-  LiveDomains --> Storage["Storage and Tables"]
-  HostedBridge --> AgentService["Azure AI Agent Service"]
-  Bicep["infra/*.bicep"] --> Foundry
-  Bicep --> Search
-  Bicep --> Storage
-  Scripts["scripts/*.sh and azure hooks"] --> Bicep
-  Eval["backend eval and e2e"] --> FastAPI
-  Eval --> NextUI
-  Eval --> AgentService
+  START["process start"] --> TEL["setup_telemetry()"]
+  TEL --> TEN["tenancy.install()"]
+  TEN --> CAT["set_server_catalog()"]
+  CAT --> LIFE["define lifespan and FastAPI app"]
+  LIFE --> CORS["add CORSMiddleware"]
+  CORS --> ROUTERS["include_routers(app)"]
+  ROUTERS --> DOMS["mount_domains(app)"]
+  DOMS --> READY["backend ready"]
+  READY --> STOP["shutdown"]
+  STOP --> CLOSE["hosted_aclose()"]
 ```
-This diagram shows the repository’s main runtime and deployment surfaces.
+This diagram shows backend boot and shutdown order as encoded in `app.main`.
 
-## Deployment modes and tenancy seam
+## Module map
 
-The repository’s top-level product shape is a hybrid multi-tenant SaaS with three deployment modes: `self_hosted`, `dedicated`, and `shared`. The seam is explicit: a tenant config provider supplies either one static `.env`-backed config or a request-resolved tenant config, while the rest of the core code reads `tenant_config()` and stays mode-agnostic.`README.md` [`apps/backend/app/core/tenant.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/tenant.py#L1-L6) [`apps/backend/app/core/tenant.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/tenant.py#L171-L186) [`apps/backend/app/core/auth.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/auth.py#L106-L123)
+The `app/modules` package contains the business modules ADR-017 named explicitly: `admin`, `agentdefs`, `evaluation`, `grounded`, `helpdesk`, `hosted`, `knowledge`, `platform_ops`, `tenancy`, and `tickets` ([apps/backend/app/modules](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules)). The shared kernel lives under `app/shared` and holds settings, auth, and telemetry ([apps/backend/app/shared/auth.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/shared/auth.py#L19-L25)).
 
-That mode split matters architecturally because:
+The fastest trustworthy inventory of boundary expectations is `module_graph_test.py`. It encodes the module list, maps every Python file under `app/` to a module, and fails if a file is unmapped or if a new cross-module edge appears without being recorded and justified ([apps/backend/tests/architecture/module_graph_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/architecture/module_graph_test.py#L1-L18), [apps/backend/tests/architecture/module_graph_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/architecture/module_graph_test.py#L33-L58), [apps/backend/tests/architecture/module_graph_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/architecture/module_graph_test.py#L105-L152)). That test is the canonical answer to “is this import structurally allowed?”
 
-- **self_hosted/dedicated** keep a single static tenant config and avoid shared-mode tenant-store boot logic.[`apps/backend/app/core/auth.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/auth.py#L106-L114)
-- **shared** resolves tenant identity from the signed-in user token, requires onboarding, and gates domains per tenant entitlement.[`apps/backend/app/core/auth.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/auth.py#L97-L123) [`apps/backend/app/core/tenant.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/core/tenant.py#L216-L252)
-- The frontend does not hardcode separate pages per mode; it remains domain-registry driven, while admin and tenant APIs expose the control plane needed only in shared mode.[`apps/frontend/lib/domains.ts`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/frontend/lib/domains.ts#L28-L45) [`apps/backend/app/api/tenant.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/api/tenant.py#L1-L7)
+## Router inclusion versus direct domain mounting
 
-## Domain families
+The backend has two integration styles:
 
-There are four runtime domains, but they belong to three architectural families:
+1. **Traditional routers.** `include_routers(app)` imports health, tickets, evaluation, hosted proxy, admin, and profile modules, and includes the tenant router only in shared mode ([apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L170-L188)).
+2. **Direct domain mounting.** `mount_domains(app)` walks the registry and wires AG-UI or grounded domain endpoints directly instead of via APIRouter modules ([apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L158-L167)).
 
-- **Workflow**: `helpdesk` is the live AG-UI workflow that chains triage, retrieve, resolve, and escalation.[`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L70-L75) [`apps/backend/app/workflow/graph.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/workflow/graph.py#L28-L54)
-- **Grounded**: `cockpit` and `selfwiki` both stream a single grounded Q&A archetype over retrieved documents and a `sources` event contract.[`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L75-L97) [`apps/backend/app/services/grounded.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/services/grounded.py#L1-L18)
-- **Tool-driven**: `platform` is an AG-UI domain built around tools and approval, not retrieval-based grounding.[`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L98-L99) [`apps/backend/app/domains.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/domains.py#L152-L165)
+That split is deliberate. Router-style modules surface secondary APIs like admin and eval listing, while domain mounting keeps the live assistant endpoints in one canonical loop. If you add a new domain endpoint through a standalone router, you are bypassing the repository’s main domain contract.
 
-The same four domains also drive the frontend navigation and console metadata, so adding a domain is meant to be registry-first rather than page-first.[`apps/frontend/lib/domains.ts`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/frontend/lib/domains.ts#L1-L7) [`apps/frontend/lib/domains.ts`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/frontend/lib/domains.ts#L28-L95)
+## Public surfaces by module
 
-## Live versus hosted execution
+Each business module exposes a `public.py` surface so composition and peer modules do not import internals directly. Examples:
 
-A major repository-wide distinction is between **live backend execution** and **hosted-agent execution**:
+- `helpdesk.public` exports workflow builder, escalation executor, memory provider, and stream-order fix ([apps/backend/app/modules/helpdesk/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/helpdesk/public.py#L1-L19)).
+- `grounded.public` exports `stream_grounded`, the synthesis directive, `PerRequestAgent`, and concierge fallbacks ([apps/backend/app/modules/grounded/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/public.py#L1-L33)).
+- `knowledge.public` exports retrieval and ACL trimming surfaces and intentionally promotes formerly-underscore helpers that were actually public seams ([apps/backend/app/modules/knowledge/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/knowledge/public.py#L1-L26)).
+- `tenancy.public` exports tenant store/config types, install hooks, domain dependencies, and memory scope ([apps/backend/app/modules/tenancy/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/tenancy/public.py#L1-L10), [apps/backend/app/modules/tenancy/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/tenancy/public.py#L37-L73)).
 
-- The live backend mounts AG-UI or streaming grounded routes directly on FastAPI and can use OBO, per-user memory, and workflow interrupts.[`apps/backend/app/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/main.py#L44-L49) [`apps/backend/app/services/grounded.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/services/grounded.py#L76-L84)
-- Hosted helpdesk, cockpit, and selfwiki use `ResponsesHostServer`, which fits final-answer request/response behavior.[`apps/hosted-agent/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-agent/main.py#L95-L108) [`apps/hosted-cockpit/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-cockpit/main.py#L76-L87) [`apps/hosted-selfwiki/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-selfwiki/main.py#L77-L87)
-- Hosted platform uses `InvocationsHostServer` because write approval and raw AG-UI-style interrupts need a different protocol shape than Responses can provide.[`apps/hosted-platform/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-platform/main.py#L3-L21) [`apps/hosted-platform/main.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/hosted-platform/main.py#L54-L77)
-- The backend bridges hosted agents back into the frontend by re-emitting Responses streams as AG-UI or passing through Invocations bytes for platform, with explicit TODOs for infra-verified framing and audience details.[`apps/backend/app/services/hosted.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/services/hosted.py#L1-L8) [`apps/backend/app/services/hosted.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/services/hosted.py#L72-L105) [`apps/backend/app/services/hosted.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/app/services/hosted.py#L121-L182)
+A safe internal refactor preserves these public surfaces or updates all consumers plus boundary tests.
 
-## Assurance is part of the architecture
+## Ownership boundaries
 
-The repo is not only an app; it is also an assurance mechanism. The architecture therefore includes generation and validation of code-grounded wiki bundles, access-control checks, and eval thresholds that decide whether artifacts are trusted enough for ingest.`README.md` `docs/adr/ADR-016-openwiki-closes-the-freshness-loop.md` [`apps/backend/eval/docbundle_contract_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/docbundle_contract_test.py#L1-L18) [`apps/backend/eval/access_control_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/access_control_test.py#L1-L15)
+| Concern | Owning module | Why |
+| --- | --- | --- |
+| Request identity, roles, telemetry, settings | `app/shared` | Shared kernel only. |
+| Tenant resolution, connection store, enabled domains | `modules/tenancy` | Deployment-mode seam and per-request data-plane selection. |
+| Knowledge lifecycle, retrieval, ACL | `modules/knowledge` | Retrieval and corpus contracts live here, not in domain modules. |
+| Helpdesk orchestration and approval | `modules/helpdesk` | Workflow-specific business logic. |
+| Grounded domain serving archetype | `modules/grounded` | Shared cited-Q&A runtime for cockpit and selfwiki. |
+| MCP tool assembly and brokering | `modules/platform_ops` | Tool-driven domain only. |
+| Hosted proxy routes and client cache | `modules/hosted` | Backend twin of hosted services. |
 
-That is why infra, scripts, and tests are first-class repository systems rather than support folders: the product promise depends on them.
+## Focused tests
 
-## Focused validation
+The architecture test family is the quickest way to validate structural changes before running expensive integration flows. `module_graph_test.py` protects module edges; the rest of `tests/architecture` covers file anchors and invocation boundaries, and the test tree itself mirrors module ownership with directories for `grounded`, `knowledge`, `platform_ops`, `hosted`, `tenancy`, and others ([apps/backend/tests](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests)).
 
-For a high-level repository sanity pass, the narrowest evidence-backed commands are:
+Minimal validation after backend wiring changes:
 
-- `cd apps/backend && uv run python -m eval.docbundle_contract_test`
-- `cd apps/backend && uv run python -m eval.wiki_fidelity_test --component foundry-helpdesk-backend`
-- `cd apps/backend && uv run python -m eval.tenant_provider_test`
-- `cd e2e && npm test`
-
-Those commands exercise the architecture’s trust boundaries: artifact contract, citation fidelity, tenant seam, and deployed UI flow.[`apps/backend/eval/docbundle_contract_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/docbundle_contract_test.py#L27-L27) [`apps/backend/eval/wiki_fidelity_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/wiki_fidelity_test.py#L17-L20) [`apps/backend/eval/tenant_provider_test.py`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/apps/backend/eval/tenant_provider_test.py#L1-L7) [`e2e/package.json`](https://github.com/ruinosus/foundry-assured/blob/4b749e7bac56789f0b1097cd4a8212b5c5c65d05/e2e/package.json#L5-L10)
+- `cd apps/backend && uv run python -m tests.architecture.module_graph_test`
+- Start the app and hit one route from each changed surface.
+- Re-run the narrow module tests listed on each module page below.

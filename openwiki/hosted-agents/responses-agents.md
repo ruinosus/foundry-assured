@@ -1,3 +1,10 @@
+---
+type: service group
+title: Responses-hosted agents
+description: Hosted helpdesk, cockpit, and selfwiki containers that serve the Responses protocol through Foundry Agent Service. This page covers their shared deployment pattern and their deliberate parity gaps versus the live backend.
+tags: [hosted-agents, responses, foundry]
+---
+
 # Responses-hosted agents
 
 Three hosted-agent services in this repository share the same basic pattern: `apps/hosted-agent`, `apps/hosted-cockpit`, and `apps/hosted-selfwiki` each package a self-contained agent and expose the Responses protocol through `ResponsesHostServer` ([apps/hosted-agent/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/hosted-agent/main.py#L1-L17), [apps/hosted-cockpit/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/hosted-cockpit/main.py#L1-L12), [apps/hosted-selfwiki/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/hosted-selfwiki/main.py#L1-L12)). `azure.yaml` registers these services as `azure.ai.agent` deployments with `python main.py` startup commands ([azure.yaml](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/azure.yaml#L14-L38), [azure.yaml](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/azure.yaml#L50-L61)).

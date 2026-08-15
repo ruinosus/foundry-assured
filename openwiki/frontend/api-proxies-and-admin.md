@@ -1,3 +1,10 @@
+---
+type: frontend architecture
+title: Frontend API proxies and admin surfaces
+description: Route-handler layer that proxies browser requests to the backend, plus the admin pages that drive tenant and role management through those proxies.
+tags: [frontend, api, proxy, admin]
+---
+
 # Frontend API proxies and admin surfaces
 
 The frontend does not call backend URLs directly from most browser components. Instead, it uses Next.js route handlers under `app/api` as a proxy layer for backend health, CopilotKit runtime calls, admin APIs, tenant APIs, profile data, tickets, and evals. This keeps backend URLs and auth header handling centralized and avoids exposing cross-origin details to browser code.

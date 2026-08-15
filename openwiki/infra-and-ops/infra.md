@@ -1,3 +1,10 @@
+---
+type: infrastructure
+title: Infrastructure topology
+description: Bicep-defined Azure topology for Foundry, Search, storage, Container Apps, and the dedicated-stamp extension seams. Use this page to trace deployment outputs back to runtime behavior.
+tags: [infra, bicep, azure, deployment]
+---
+
 # Infrastructure topology
 
 The infrastructure layer is split between subscription-scoped entrypoint Bicep, resource-group-scoped service provisioning, and Container Apps deployment. `infra/main.bicep` creates the resource group, invokes `resources.bicep` for data-plane and identity resources, then invokes `containerapps.bicep` for runtime apps, surfacing a large set of outputs into the azd environment ([infra/main.bicep](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/infra/main.bicep#L1-L18), [infra/main.bicep](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/infra/main.bicep#L52-L98), [infra/main.bicep](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/infra/main.bicep#L100-L122)).
@@ -64,7 +71,7 @@ This diagram shows the main Azure resource dependencies in the self-hosted runti
 
 ## Dedicated stamp and Lighthouse seam
 
-The repo’s enterprise extension path is not a separate architecture; it is a different packaging of the same modules. ADR-002 records that the dedicated stamp is delivered as an Azure Managed Application and cross-tenant data-plane management uses Azure Lighthouse (docs/adr/ADR-002-dedicated-stamp-managed-app-lighthouse.md). The implementation note is important: marketplace artifacts are authored in Bicep by composing the existing `infra/` modules and compiling to ARM JSON, so the dedicated stamp is a re-parameterization of the same resources, not a forked template line (docs/adr/ADR-002-dedicated-stamp-managed-app-lighthouse.md).
+The repo’s enterprise extension path is not a separate architecture; it is a different packaging of the same modules. ADR-002 records that the dedicated stamp is delivered as an Azure Managed Application and cross-tenant data-plane management uses Azure Lighthouse ([docs/adr/ADR-002-dedicated-stamp-managed-app-lighthouse.md](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/docs/adr/ADR-002-dedicated-stamp-managed-app-lighthouse.md#L14-L29)). The implementation note is important: marketplace artifacts are authored in Bicep by composing the existing `infra/` modules and compiling to ARM JSON, so the dedicated stamp is a re-parameterization of the same resources, not a forked template line ([docs/adr/ADR-002-dedicated-stamp-managed-app-lighthouse.md](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/docs/adr/ADR-002-dedicated-stamp-managed-app-lighthouse.md#L31-L39)).
 
 ## Focused validation
 

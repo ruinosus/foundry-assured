@@ -1,3 +1,10 @@
+---
+type: backend module
+title: Hosted bridges and evaluation APIs
+description: Backend support for hosted-agent invocation, AG-UI bridging, lifecycle cleanup, and evaluation data endpoints, including verified versus infra-gated behavior.
+tags: [backend, hosted, evals, ag-ui]
+---
+
 # Hosted bridges and evaluation APIs
 
 The backend `hosted` module is the live app’s bridge to separately deployed hosted agents. Its router exposes `/helpdesk-hosted` and `/platform-hosted`, each returning a `StreamingResponse` that translates or relays hosted-agent protocols back into AG-UI so the frontend can use the same chat surface ([apps/backend/app/modules/hosted/api.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/hosted/api.py#L12-L34)). The module is also lifecycle-aware: `app.main` closes cached hosted clients on shutdown through `hosted_aclose()` ([apps/backend/app/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/main.py#L44-L50)).

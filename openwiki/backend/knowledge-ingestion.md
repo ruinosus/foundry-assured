@@ -1,3 +1,10 @@
+---
+type: backend module
+title: Knowledge ingestion and ACL stamping
+description: Ingestion lifecycle for helpdesk and docbundle-based corpora, including blob upload, knowledge source and base creation, explicit indexer triggering, and ACL metadata stamping.
+tags: [backend, knowledge, ingestion, acl]
+---
+
 # Knowledge ingestion and ACL stamping
 
 The knowledge module owns more than retrieval. It also owns how corpora become queryable Foundry/Search assets. The simplest path is `internal/ingest.py`, which uploads Markdown runbooks, creates a blob knowledge source, creates a knowledge base, and waits for ingestion status ([apps/backend/app/modules/knowledge/internal/ingest.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/knowledge/internal/ingest.py#L1-L20), [apps/backend/app/modules/knowledge/internal/ingest.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/knowledge/internal/ingest.py#L235-L272)). The richer docbundle path in `ingest_docbundles.py` ingests generated wiki bundles for cockpit and selfwiki into separate corpora and Search-backed knowledge assets ([apps/backend/app/modules/knowledge/internal/ingest_docbundles.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/knowledge/internal/ingest_docbundles.py#L1-L18), [apps/backend/app/modules/knowledge/internal/ingest_docbundles.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/knowledge/internal/ingest_docbundles.py#L58-L66)).

@@ -1,3 +1,10 @@
+---
+type: architecture
+title: Domains and registry contract
+description: Canonical contract between the backend domain registry and the frontend domain catalog. This page explains how domain kind, entitlement, hosted twins, and disabled domains are represented and validated.
+tags: [architecture, domains, registry]
+---
+
 # Domains and registry contract
 
 The repository’s user-facing surface is organized around domains, not around pages or controllers. On the backend, `app.registry` owns the `DomainSpec` dataclass and the lazy `_domains()` builder that turns current tenant configuration into four domain rows: `helpdesk`, `cockpit`, `selfwiki`, and `platform` ([apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L33-L60), [apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L62-L99)). On the frontend, `lib/domains.ts` is the single source of truth for the generic console route, nav labels, suggested prompts, and whether a domain exposes a hosted twin ([apps/frontend/lib/domains.ts](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/lib/domains.ts#L1-L27), [apps/frontend/lib/domains.ts](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/lib/domains.ts#L28-L98)).
@@ -36,7 +43,7 @@ This diagram shows how tenant config feeds the backend registry and how the fron
 
 ## Entitlements and enabled domains
 
-The registry is global, but availability is tenant-scoped in shared mode. `domain_deps(domain_id)` starts with authentication dependencies and appends `Depends(require_domain(domain_id))` only when `settings.deployment_mode == "shared"`, making entitlement a tenancy concern instead of a registry concern ([apps/backend/app/modules/tenancy/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/tenancy/public.py#L62-L73)). The README calls this out as per-tenant license entitlement via `DomainAssignment`/ADR-010 rather than per-build code branching (README.md).
+The registry is global, but availability is tenant-scoped in shared mode. `domain_deps(domain_id)` starts with authentication dependencies and appends `Depends(require_domain(domain_id))` only when `settings.deployment_mode == "shared"`, making entitlement a tenancy concern instead of a registry concern ([apps/backend/app/modules/tenancy/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/tenancy/public.py#L62-L73)). The README calls this out as per-tenant license entitlement via `DomainAssignment`/ADR-010 rather than per-build code branching ([README.md](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/README.md#L86-L91)).
 
 That means there are two distinct “domain disabled” states:
 

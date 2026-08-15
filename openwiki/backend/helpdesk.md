@@ -1,3 +1,10 @@
+---
+type: backend module
+title: Helpdesk workflow module
+description: The helpdesk domain’s workflow runtime, including per-request agent construction, memory wiring, escalation approval, and stream-order invariants.
+tags: [backend, helpdesk, workflow, hitl]
+---
+
 # Helpdesk workflow module
 
 The helpdesk module owns the repository’s canonical multi-agent workflow: triage, retrieve, resolve, then optionally escalate behind human approval. Its public surface is intentionally small: `build_helpdesk_workflow`, `EscalationExecutor`, `build_memory_provider`, and `OrderedAgentFrameworkWorkflow` are the exported parts other modules are allowed to use ([apps/backend/app/modules/helpdesk/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/helpdesk/public.py#L1-L19)). The registry mounts that workflow at `/helpdesk` only when knowledge is configured; otherwise it falls back to a single concierge agent, preserving a working app even without KB provisioning ([apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L124-L140)).

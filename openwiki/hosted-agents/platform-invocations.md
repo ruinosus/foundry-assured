@@ -1,3 +1,10 @@
+---
+type: service
+title: Hosted platform agent over Invocations
+description: The hosted platform concierge’s Invocations-based runtime, Toolbox contract, approval-parity goals, and the backend/frontend risks that are still infra-gated.
+tags: [hosted-agents, platform, invocations, toolbox]
+---
+
 # Hosted platform agent over Invocations
 
 `apps/hosted-platform/main.py` is intentionally not another Responses-hosted grounded agent. Its header explains the key design choice: the hosted platform concierge must preserve tool capability and write-approval interrupts, so it serves the Invocations protocol rather than Responses ([apps/hosted-platform/main.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/hosted-platform/main.py#L1-L14)). This is the hosted runtime family that differs most from the live backend and has the most explicit infra-gated work left.

@@ -1,3 +1,10 @@
+---
+type: backend module
+title: Platform operations domain
+description: Tool-driven platform concierge over MCP servers, including registry-as-data, per-tool RBAC, connection-driven builds, and the split between internal and hosted tool acquisition.
+tags: [backend, platform-ops, mcp, tools]
+---
+
 # Platform operations domain
 
 The platform operations module is the one backend domain that answers by calling tools instead of retrieving a corpus. Its runtime entrypoint, `build_platform_agent()`, constructs a `FoundryChatClient` with tenant-scoped project/model config and the current request credential, then wraps that client as an agent with `PLATFORM_INSTRUCTIONS` and `build_mcp_tools()` ([apps/backend/app/modules/platform_ops/internal/platform.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/platform.py#L31-L44)). The registry mounts `/platform` only when `platform_configured()` says the platform domain is available ([apps/backend/app/modules/platform_ops/internal/platform.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/platform.py#L25-L29), [apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L143-L155)).
