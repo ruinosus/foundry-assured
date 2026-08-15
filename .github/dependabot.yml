@@ -28,6 +28,14 @@ updates:
     groups:
       npm:
         patterns: ["*"]
+    ignore:
+      # The Next build runs its own type-check through the TypeScript compiler API,
+      # so NEXT decides which major is usable — not Dependabot. TypeScript 7 fails
+      # the build outright ("does not provide the compiler API required by Next.js",
+      # measured on #128), and it takes the whole grouped PR down with it. Bump by
+      # hand together with Next.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
 
   # GitHub Actions
   - package-ecosystem: github-actions
