@@ -165,3 +165,11 @@ Detalhe completo em [`CONTRIBUTING.md`](./CONTRIBUTING.md). O essencial:
 - CopilotKit + MAF: `docs.copilotkit.ai/ms-agent-dotnet` (vale p/ Python também)
 - Foundry IQ cookbook: `microsoft-foundry/forgebook` → notebook "mastering-foundry-iq"
 - ASSERT (eval policies): `aka.ms/assert`
+
+<!-- OPENWIKI:START -->
+
+## OpenWiki
+
+See [AGENTS.md](AGENTS.md) for OpenWiki agent instructions.
+
+<!-- OPENWIKI:END -->
