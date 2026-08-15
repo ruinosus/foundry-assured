@@ -41,7 +41,23 @@ def _latest_commit_iso(area: str) -> str | None:
     return out or None
 
 
+def area_path(component: str) -> str:
+    """Source area a component's wiki is built from. Queryable so wiki-regen.yml can scope the
+    generator to one area without a second copy of `_AREA` living in YAML — two copies of a map
+    is two things to forget to update, and the one in YAML is the one nobody tests."""
+    area = _AREA.get(component)
+    if not area:
+        raise SystemExit(f"❌ unknown component: {component} (known: {', '.join(sorted(_AREA))})")
+    return area
+
+
 def main() -> int:
+    # `--path-for <component>` answers "which directory is this wiki about?" and exits. It is a
+    # query, not a gate run.
+    if len(sys.argv) == 3 and sys.argv[1] == "--path-for":
+        print(area_path(sys.argv[2]))
+        return 0
+
     if not _WIKI.exists():
         print("⏭️  no docs/wiki — nothing to check.")
         return 0
