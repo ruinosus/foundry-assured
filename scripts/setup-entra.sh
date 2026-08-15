@@ -23,8 +23,13 @@ API_NAME="${API_NAME:-foundry-helpdesk-api}"
 SPA_NAME="${SPA_NAME:-foundry-helpdesk-spa}"
 REDIRECT="${REDIRECT:-http://localhost:3000}"
 
-# Well-known first-party resource the Foundry data plane is fronted by (ai.azure.com).
+# Well-known first-party resources the Foundry data plane is fronted by. It is NOT a single
+# audience: project/KB operations go to ai.azure.com (AML), but MODEL INFERENCE goes to
+# cognitiveservices.azure.com. Missing the latter still lets a request reach the backend and
+# retrieve — then the model call 403s, because OBO can't mint a token for an audience the app
+# never requested. Both are required.
 AML_APPID="18a66f5f-dbdf-4c17-9dd7-1634712a9cbe"
+COGSVC_APPID="7d312290-28c8-473c-a0ed-8e53749b6d6d"
 
 command -v az >/dev/null || { echo "✖ az not found."; exit 1; }
 command -v uuidgen >/dev/null || { echo "✖ uuidgen not found."; exit 1; }
@@ -81,13 +86,20 @@ fi
 API_SECRET="$(az ad app credential reset --id "$API_OBJID" --append --display-name bootstrap --years 1 --query password -o tsv)"
 echo "  ✔ client secret minted"
 
-# Delegated perms the OBO exchange needs: AML (ai.azure.com) + Search (search.azure.com).
+# Delegated perms the OBO exchange needs: AML (ai.azure.com) + Cognitive Services
+# (cognitiveservices.azure.com — model inference) + Search (search.azure.com).
 SEARCH_APPID="$(az ad sp list --filter "servicePrincipalNames/any(x:x eq 'https://search.azure.com')" --query "[0].appId" -o tsv --all 2>/dev/null || true)"
-for res in "$AML_APPID" "$SEARCH_APPID"; do
+for res in "$AML_APPID" "$COGSVC_APPID" "$SEARCH_APPID"; do
   [ -z "$res" ] && { echo "  ⚠ could not resolve a resource app (search.azure.com?) — add its delegated user_impersonation in the portal"; continue; }
   sid="$(res_scope "$res")"
   [ -z "$sid" ] && { echo "  ⚠ no user_impersonation scope on $res — add it in the portal"; continue; }
-  az ad app permission add --id "$API_APPID" --api "$res" --api-permissions "$sid=Scope" 2>/dev/null && echo "  ✔ delegated perm on $res"
+  # `permission add` APPENDS unconditionally — re-running this script would stack duplicate
+  # entries for the same scope. Skip when it's already registered so the script stays idempotent.
+  if az ad app show --id "$API_APPID" --query "requiredResourceAccess[?resourceAppId=='$res'].resourceAccess[].id" -o tsv 2>/dev/null | grep -qx "$sid"; then
+    echo "  · delegated perm on $res (already present)"
+  else
+    az ad app permission add --id "$API_APPID" --api "$res" --api-permissions "$sid=Scope" 2>/dev/null && echo "  ✔ delegated perm on $res"
+  fi
 done
 
 # ---- SPA app ---------------------------------------------------------------

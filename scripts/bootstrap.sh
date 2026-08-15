@@ -45,7 +45,11 @@ for k in FOUNDRY_PROJECT_ENDPOINT FOUNDRY_MODEL AZURE_AI_OPENAI_ENDPOINT \
   v="$(val "$k")"
   [ -n "$v" ] && upsert "$BACK_ENV" "$k" "$v" && echo "  ✔ $k"
 done
-upsert "$BACK_ENV" FOUNDRY_MEMORY_STORE "$(val FOUNDRY_MEMORY_STORE || echo helpdesk-memory)"
+# NOT `$(val X || echo default)` — val() is a sed filter that exits 0 even when the key is
+# absent, so the `||` never fires and the name lands EMPTY. That made provision_memory get("")
+# report "already exists" and skip creation, leaving the deployment silently memory-less.
+mem="$(val FOUNDRY_MEMORY_STORE)"
+upsert "$BACK_ENV" FOUNDRY_MEMORY_STORE "${mem:-helpdesk-memory}"
 upsert "$BACK_ENV" FRONTEND_ORIGIN "http://localhost:3000"
 
 echo "▸ Writing ${FRONT_ENV}…"
