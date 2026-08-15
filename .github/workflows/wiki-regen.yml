@@ -24,6 +24,10 @@ on:
         description: Regenerate even when the freshness check reports no drift
         type: boolean
         default: false
+      rebuild:
+        description: Discard the existing wiki and write it from scratch (--init)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -93,6 +97,19 @@ jobs:
           # itself is what may be missing — OpenWiki writes index.md at the root of its output.
           MODE=--update
           [ -f openwiki/index.md ] || MODE=--init
+
+          # `rebuild` exists because "a wiki is present" and "a wiki of the right SCOPE is present"
+          # are different questions, and only the first one is answerable from disk. When the
+          # per-area bundles collapsed into one (ADR-016 amendment), the wiki on disk covered
+          # apps/backend only. --update dutifully diffed the last documented commit, adjusted the
+          # few changed files, and produced an 11-page bundle labelled as the whole repository at
+          # 97.5% fidelity: every citation resolved, and the bundle still lied about its coverage.
+          # A gate that scores citations cannot catch that, so a human says when to start over.
+          if [ "${{ inputs.rebuild }}" = "true" ]; then
+            echo "▸ rebuild requested — discarding the existing wiki (keeping INSTRUCTIONS.md)"
+            find openwiki -mindepth 1 -maxdepth 1 ! -name INSTRUCTIONS.md -exec rm -rf {} +
+            MODE=--init
+          fi
           echo "▸ openwiki code $MODE"
           openwiki code "$MODE" --print --modelId "${{ vars.OPENWIKI_MODEL }}" \
             "Follow openwiki/INSTRUCTIONS.md exactly — in particular the citation format, using \
