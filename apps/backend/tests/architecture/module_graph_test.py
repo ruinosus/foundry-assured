@@ -45,6 +45,7 @@ MAP: dict[str, str] = {
 MODULES = (
     "tenancy", "admin", "knowledge", "helpdesk", "grounded",
     "platform_ops", "tickets", "hosted", "evaluation", "agentdefs",
+    "hitl",  # ADR-019: approve/edit/reject/respond + the role gate neither framework has
 )
 
 PREFIXES = (

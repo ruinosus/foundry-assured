@@ -252,3 +252,25 @@ source_modules = [
     "app.shared",
 ]
 forbidden_modules = ["app.modules.agentdefs.internal"]
+
+[[tool.importlinter.contracts]]
+name = "hitl internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.hitl.internal"]
+

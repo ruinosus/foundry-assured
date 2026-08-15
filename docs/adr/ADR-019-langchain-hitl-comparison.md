@@ -140,10 +140,19 @@ notion of a required role, and RULE #5 depends on it.
   merged). That work is not wasted — it is the right thing for a domain staying on the Agent
   Framework — but the two domains will now approve through different machinery, and the
   ApprovalCard has to render both.
-- **⚠** `opentag-reference` has `interrupt_on` and does not use it. Before committing to
-  `EditDecision`, build the smallest possible thing that actually round-trips an edit through
-  the UI. If that spike is hard, this ADR is worth revisiting — the type signature promising
-  `edit` is not the same as `edit` working end to end.
+- **✅ The spike ran, and `edit` round-trips.** The warning below was answered before
+  committing, not after. `tests/hitl/edit_roundtrip_test.py` drives the real middleware with
+  no model: the agent proposes `{"summary": "pod crashloop", "priority": "low"}`, the human
+  answers with an `EditDecision` carrying corrections, and the tool executes with
+  `{"summary": "Kubernetes pod in CrashLoopBackOff", "priority": "high"}` — the human's
+  values, not the model's. Nothing executes while the interrupt is pending. It stayed as a
+  test rather than a scratch file, because if it goes red the decision behind this ADR is void.
+
+  Two things the source showed that no article did: `edit` replaces `name` and `args` while
+  **keeping the tool-call `id`**, and `reject` carries a message whose default explicitly tells
+  the model *not to retry*. Also worth recording for whoever writes the tests: the
+  `langchain_core` fakes do not implement `bind_tools` and the agent factory calls it
+  unconditionally, so testing this offline needs a small model double.
 
 ## References
 

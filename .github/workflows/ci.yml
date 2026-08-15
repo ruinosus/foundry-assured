@@ -100,6 +100,15 @@ jobs:
       - name: Approval parity (no tool silently un-gated)
         run: uv run python -m tests.platform_ops.approval_parity_test
 
+      # HITL decisions (ADR-019). `edit` lets the approver CORRECT an action before it runs,
+      # which the Agent Framework cannot express — its approval is a boolean. Editing runs the
+      # action, so it needs the same role as approving; these two guard that it does, and that
+      # a malformed answer becomes a reject rather than an approval.
+      - name: Approval decisions (edit is not a loophole)
+        run: uv run python -m tests.hitl.decision_test
+      - name: Edit round-trips end to end
+        run: uv run python -m tests.hitl.edit_roundtrip_test
+
       # shared mode: the app must BOOT with auth on (no tenant is resolved at import), and each
       # request must resolve ITS OWN tenant's domain config. The first was broken and its guard
       # was red; the second was unreachable because of the first.
