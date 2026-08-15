@@ -13,7 +13,7 @@ is never copied into this (public) repo.
 Run (after the helpdesk infra exists):
     cd apps/backend
     COCKPIT_DOCBUNDLES=/path/to/aap-kb/apps/agent/docbundles \
-      uv run python -m app.knowledge.ingest_docbundles
+      uv run python -m app.modules.knowledge.internal.ingest_docbundles
 
 SDK surface mirrors app/knowledge/ingest.py (azure-search-documents 11.7.0b2).
 """
@@ -47,7 +47,7 @@ from azure.search.documents.indexes.models import (
 from azure.storage.blob import BlobServiceClient
 
 from app.core.tenant import tenant_config
-from app.knowledge.ingest import (
+from app.modules.knowledge.internal.ingest import (
     CALL_TIMEOUT_S,
     _require,
     _setup_logging,
@@ -179,7 +179,7 @@ def collect_pages(docbundles: Path) -> tuple[list[tuple[str, bytes]], dict[str, 
     component+version-qualified one so the KB cites a meaningful source, e.g.
     "cockpit-portal-api v2.1.1 — Visão Geral do Repositório".
     """
-    from app.knowledge.acl_setup import _component
+    from app.modules.knowledge.internal.acl_setup import _component
 
     items: list[tuple[str, bytes]] = []
     component_groups: dict[str, list[str]] = {}
@@ -415,7 +415,7 @@ def provision_searchindex_kb() -> None:
 
     Standalone entry point for the Task 2b cutover — the index already exists and is
     ACL-stamped by a prior full ingest, so this just adds the searchIndex-backed twin:
-        uv run python -m app.knowledge.ingest_docbundles --searchindex-kb-only
+        uv run python -m app.modules.knowledge.internal.ingest_docbundles --searchindex-kb-only
     """
     _setup_logging()
     _require("AZURE_SEARCH_ENDPOINT", tenant_config().azure_search_endpoint)
@@ -535,7 +535,7 @@ def provision_selfwiki_searchindex_kb() -> None:
 
     Standalone entry point for the selfwiki cutover — the index already exists + is populated by a
     prior full selfwiki ingest, so this just adds the searchIndex-backed twin:
-        uv run python -m app.knowledge.ingest_docbundles --selfwiki-searchindex-kb-only
+        uv run python -m app.modules.knowledge.internal.ingest_docbundles --selfwiki-searchindex-kb-only
     """
     _setup_logging()
     _require("AZURE_SEARCH_ENDPOINT", tenant_config().azure_search_endpoint)
@@ -583,7 +583,7 @@ def ingest_selfwiki() -> None:
     """Full CONTENT ingest for the **selfwiki** domain (this repo's own deep-wiki), steered to the
     selfwiki names — no COCKPIT_* env overrides, no risk of touching the cockpit searchIndex twin.
 
-        uv run python -m app.knowledge.ingest_docbundles --selfwiki
+        uv run python -m app.modules.knowledge.internal.ingest_docbundles --selfwiki
 
     selfwiki is a PRIVATE single-audience KB: readable by everyone with app access = the app-users
     group (APP_USERS_GROUP_ID). Bundles default to this repo's docs/wiki (override COCKPIT_DOCBUNDLES).
@@ -595,7 +595,7 @@ def ingest_selfwiki() -> None:
     _setup_logging()
     cfg = tenant_config()
     _require("AZURE_SEARCH_ENDPOINT", cfg.azure_search_endpoint)
-    default_bundles = Path(__file__).resolve().parents[4] / "docs" / "wiki"
+    default_bundles = _repo_root() / "docs" / "wiki"
     docbundles = Path(os.environ.get("COCKPIT_DOCBUNDLES", str(default_bundles))).expanduser()
     if not docbundles.is_dir():
         sys.exit(f"selfwiki docbundles dir not found: {docbundles}")
@@ -646,7 +646,7 @@ def ingest_selfwiki() -> None:
     trigger_indexer(indexer_client, indexer_name=indexer_name, wait_s=900)
     purge_orphans(credential, cfg.selfwiki_storage_container, index_name=cfg.selfwiki_search_index)
     print("== selfwiki 5/5: stamp the app-users audience (permissionFilter trim) ==")
-    from app.knowledge.acl_setup import setup_acl
+    from app.modules.knowledge.internal.acl_setup import setup_acl
 
     # Access is DATA (RULE #6) — pass {} (no per-doc map) so EVERY doc gets the single audience.
     setup_acl({}, index=cfg.selfwiki_search_index, default_groups=[audience])
@@ -654,6 +654,16 @@ def ingest_selfwiki() -> None:
         f"\nDone — selfwiki indexed + stamped to the app-users group ({audience}); trimming ENABLED. "
         f"Live in '{cfg.selfwiki_searchindex_knowledge_base}'. No redeploy needed."
     )
+
+
+def _repo_root() -> Path:
+    """The repository root, anchored on the `app` package (apps/backend/app -> up three).
+
+    NOT `parents[N]` from this file — see the note in wiki_builder._backend_root.
+    """
+    import app as _app
+
+    return Path(_app.__file__).resolve().parents[3]
 
 
 def main() -> None:
@@ -723,7 +733,7 @@ def main() -> None:
     if tenant_config().acl_group_map:
         print("== Step 5/5: indexer (blocking) + document-level ACL (access from source) ==")
         trigger_indexer(indexer_client, wait_s=900)
-        from app.knowledge.acl_setup import setup_acl
+        from app.modules.knowledge.internal.acl_setup import setup_acl
 
         setup_acl(component_groups or None)
         print("\nDone (corpus indexed + per-document access stamped + trimming enabled).")

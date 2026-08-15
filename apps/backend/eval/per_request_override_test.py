@@ -9,7 +9,7 @@ from __future__ import annotations
 import sys
 
 from agent_framework import SupportsAgentRun
-from app.agents.per_request import PerRequestAgent
+from app.modules.grounded.internal.per_request import PerRequestAgent
 
 
 def main() -> int:
@@ -28,7 +28,7 @@ def main() -> int:
     check("isinstance SupportsAgentRun", isinstance(a, SupportsAgentRun))
 
     # the platform module exposes a proxy instance built from the generic class
-    from app.agents.platform import platform_agent_proxy  # new export
+    from app.modules.platform_ops.internal.platform import platform_agent_proxy  # new export
     check("platform proxy is SupportsAgentRun", isinstance(platform_agent_proxy, SupportsAgentRun))
     check("platform proxy keeps its name", platform_agent_proxy.name == "PlatformConcierge")
 

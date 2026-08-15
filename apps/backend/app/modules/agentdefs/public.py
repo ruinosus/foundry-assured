@@ -27,13 +27,22 @@ import logging
 import os
 from pathlib import Path
 
-from app.agents.definitions import AGENTS_DIRECTORY, PromptPack, load_pack
+import app as _app_package
+from app.modules.agentdefs.internal.definitions import AGENTS_DIRECTORY, PromptPack, load_pack
 
 _logger = logging.getLogger(__name__)
 
 # apps/backend/agents — sits next to the app package so it ships with the
 # backend (the Dockerfile copies it alongside ``app/``).
-_BAKED_BASE_DIR = Path(__file__).resolve().parents[2] / AGENTS_DIRECTORY
+#
+# Anchored on the `app` package rather than counting `parents[N]` from this file. The count
+# was parents[2] while this lived at app/agents/prompts.py and silently became wrong when
+# ADR-017 moved it to app/modules/agentdefs/ — it resolved to app/agents, which does not
+# exist, and the loader refused the boot. Deriving it from the package survives any further
+# move inside app/, because the documents' location is a deployment contract (I-7, ADR-014),
+# not an implementation detail of whoever reads them.
+_BACKEND_ROOT = Path(_app_package.__file__).resolve().parent.parent
+_BAKED_BASE_DIR = _BACKEND_ROOT / AGENTS_DIRECTORY
 _SCOPE = "helpdesk"
 
 

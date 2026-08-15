@@ -14,7 +14,7 @@ from app.core.tenant_store import (
 )
 # The catalog is injected by the composition root at boot (ADR-017); tests inject it too,
 # because tenancy no longer reaches into the platform registry for it.
-from app.agents.mcp.registry import SERVERS
+from app.modules.platform_ops.internal.mcp_registry import SERVERS
 set_server_catalog(server.id for server in SERVERS)
 
 

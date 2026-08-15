@@ -63,7 +63,7 @@ class DomainSpec:
 def _domains() -> list[DomainSpec]:
     """The four domain specs, built from the current request's tenant config (read LAZILY here —
     NOT at import). Mirrors domains.ts row-for-row."""
-    from app.agents.prompts import COCKPIT_INSTRUCTIONS, SELFWIKI_INSTRUCTIONS
+    from app.modules.agentdefs.public import COCKPIT_INSTRUCTIONS, SELFWIKI_INSTRUCTIONS
 
     cfg = tenant_config()
     return [
@@ -114,7 +114,7 @@ def _mount_grounded(app: FastAPI, d: DomainSpec) -> None:
 
     async def endpoint(request: Request) -> StreamingResponse:
         from app.shared.auth import current_user
-        from app.services.grounded import stream_grounded
+        from app.modules.grounded.internal.grounded import stream_grounded
 
         return StreamingResponse(
             stream_grounded(await request.json(), d, current_user()),
@@ -132,7 +132,7 @@ def _mount_grounded(app: FastAPI, d: DomainSpec) -> None:
 def _mount_helpdesk(app: FastAPI, d: DomainSpec) -> None:
     """AG-UI workflow endpoint. With a KB wired, the per-request factory streams the Phase 2 steps
     + Phase 3 OBO/memory; without one, fall back to the single concierge agent."""
-    from app.agents.concierge import _knowledge_configured, build_concierge_agent
+    from app.modules.grounded.internal.concierge import _knowledge_configured, build_concierge_agent
     from app.workflow.graph import build_helpdesk_workflow
     from app.workflow.stream_fix import OrderedAgentFrameworkWorkflow
 
@@ -153,7 +153,7 @@ def _mount_platform(app: FastAPI, d: DomainSpec) -> None:
     """Tool-driven ops concierge over the Microsoft first-party MCP servers. The platform_agent_proxy
     (a PerRequestAgent) rebuilds the agent on each run so tools are filtered under the caller's roles +
     OBO credential. Only mounted when platform is configured."""
-    from app.agents.platform import platform_agent_proxy, platform_configured
+    from app.modules.platform_ops.internal.platform import platform_agent_proxy, platform_configured
 
     if platform_configured():
         add_agent_framework_fastapi_endpoint(

@@ -21,11 +21,7 @@ name = "Nothing imports the composition root (app.main)"
 type = "forbidden"
 source_modules = [
     "app.api",
-    "app.agents",
     "app.core",
-    "app.knowledge",
-    "app.services",
-    "app.tools",
     "app.workflow",
     "app.domains",
 ]
@@ -42,22 +38,18 @@ type = "forbidden"
 source_modules = ["app.shared"]
 forbidden_modules = [
     "app.api",
-    "app.agents",
     "app.core",
     "app.domains",
-    "app.knowledge",
-    "app.services",
-    "app.tools",
     "app.workflow",
 ]
 
 # --- C2.2 (Phase 2) — the core<->agents cycle is dead. tenant_store used to import the MCP
 # registry for SERVERS; the composition root injects the ids now.
 [[tool.importlinter.contracts]]
-name = "core does not import agents (the dead cycle)"
+name = "core (tenancy, not yet moved) does not import platform_ops (the dead cycle)"
 type = "forbidden"
 source_modules = ["app.core"]
-forbidden_modules = ["app.agents"]
+forbidden_modules = ["app.modules.platform_ops"]
 
 # --- C3 (Phase 3) — internals are private. One contract per module; the source list is every
 # OTHER module plus the composition root, so a module can still reach its own internal.
@@ -75,11 +67,8 @@ source_modules = [
     "app.main",
     "app.domains",
     "app.api",
-    "app.agents",
     "app.core",
-    "app.services",
     "app.workflow",
-    "app.knowledge",
 ]
 forbidden_modules = ["app.modules.tickets.internal"]
 
@@ -97,11 +86,8 @@ source_modules = [
     "app.main",
     "app.domains",
     "app.api",
-    "app.agents",
     "app.core",
-    "app.services",
     "app.workflow",
-    "app.knowledge",
 ]
 forbidden_modules = ["app.modules.admin.internal"]
 
@@ -119,11 +105,8 @@ source_modules = [
     "app.main",
     "app.domains",
     "app.api",
-    "app.agents",
     "app.core",
-    "app.services",
     "app.workflow",
-    "app.knowledge",
 ]
 forbidden_modules = ["app.modules.hosted.internal"]
 
@@ -141,11 +124,8 @@ source_modules = [
     "app.main",
     "app.domains",
     "app.api",
-    "app.agents",
     "app.core",
-    "app.services",
     "app.workflow",
-    "app.knowledge",
 ]
 forbidden_modules = ["app.modules.evaluation.internal"]
 

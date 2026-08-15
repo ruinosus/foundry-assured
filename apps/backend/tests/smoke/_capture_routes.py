@@ -41,7 +41,8 @@ def main() -> int:
     # The mount helpers import these lazily from the module, so patching the module
     # attribute here is what the mount actually sees.
     from app import domains
-    from app.agents import concierge, platform
+    import app.modules.grounded.internal.concierge as concierge
+    import app.modules.platform_ops.internal.platform as platform
     from app.workflow import graph, stream_fix
 
     concierge.build_concierge_agent = lambda: object()

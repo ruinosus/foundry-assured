@@ -16,7 +16,7 @@ from agent_framework.azure import AzureAISearchContextProvider
 from agent_framework.foundry import FoundryChatClient
 from azure.identity import DefaultAzureCredential
 
-from app.agents.prompts import (
+from app.modules.agentdefs.public import (
     CONCIERGE_GROUNDED_INSTRUCTIONS,
     CONCIERGE_UNGROUNDED_INSTRUCTIONS,
 )

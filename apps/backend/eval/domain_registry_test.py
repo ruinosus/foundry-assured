@@ -92,8 +92,8 @@ def main() -> int:
 
     # Patch every heavy symbol the mount helpers import lazily, plus the adapter.
     saved = {}
-    import app.agents.concierge as concierge_mod
-    import app.agents.platform as platform_mod
+    import app.modules.grounded.internal.concierge as concierge_mod
+    import app.modules.platform_ops.internal.platform as platform_mod
     import app.workflow.graph as graph_mod
     import app.workflow.stream_fix as sf_mod
 

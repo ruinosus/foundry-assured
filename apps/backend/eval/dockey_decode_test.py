@@ -24,7 +24,7 @@ from __future__ import annotations
 import base64
 import sys
 
-from app.services.retrieval import _decode_dockey
+from app.modules.knowledge.internal.retrieval import _decode_dockey
 
 # (real docKey, expected filename) — dumped live from cockpit-si-kb (eval._dockey_investigate, 2026-07).
 # Mix of base64-segment lengths mod 4 so both the "used to work" and "used to fall back to raw" cases are

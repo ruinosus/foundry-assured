@@ -104,7 +104,7 @@ def main() -> int:
     # or the app modules that pull in framework dependencies.
     from azure.identity import DefaultAzureCredential
 
-    from app.agents.mcp.tools import build_from_connections, build_hosted_from_connections
+    from app.modules.platform_ops.internal.mcp_tools import build_from_connections, build_hosted_from_connections
     from app.core.tenant_store import Connection
 
     failures: list[str] = []
@@ -137,7 +137,7 @@ def main() -> int:
     _original_fn = _tenant_mod.tenant_config
     _tenant_mod.tenant_config = lambda: test_tenant_cfg  # type: ignore[assignment]
     # Also patch the reference already imported into tools (re-exported name).
-    import app.agents.mcp.tools as _tools_mod
+    import app.modules.platform_ops.internal.mcp_tools as _tools_mod
     _tools_mod_tenant_config_orig = _tools_mod.tenant_config
     _tools_mod.tenant_config = lambda: test_tenant_cfg  # type: ignore[assignment]
 
@@ -146,7 +146,7 @@ def main() -> int:
     _original_credential_fn = _auth_mod.credential_for_request
     _daz_cred = DefaultAzureCredential()
     _auth_mod.credential_for_request = lambda: _daz_cred  # type: ignore[assignment]
-    import app.agents.mcp.tools as _tools_mod2  # same object, already imported above
+    import app.modules.platform_ops.internal.mcp_tools as _tools_mod2  # same object, already imported above
     _tools_mod2_cred_orig = getattr(_tools_mod2, "credential_for_request", None)
     # credential_for_request is used inside the closures via the auth module import,
     # so patching _auth_mod is sufficient.

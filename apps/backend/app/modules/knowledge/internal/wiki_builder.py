@@ -28,7 +28,7 @@ by the validation above.
 
 D1: one component. Run:
     cd apps/backend
-    uv run python -m app.knowledge.wiki_builder \
+    uv run python -m app.modules.knowledge.internal.wiki_builder \
         --repo /path/to/cockpit/cockpit-openai-loadbalancer \
         --component cockpit-openai-loadbalancer --version v1.1.0 --out /tmp/wiki-out
 """
@@ -48,7 +48,18 @@ from agent_framework.foundry import FoundryChatClient
 from azure.identity import DefaultAzureCredential
 
 from app.core.tenant import tenant_config
-from app.knowledge.docbundle_schema import validate_manifest
+
+
+def _backend_root() -> Path:
+    """apps/backend, anchored on the `app` package.
+
+    NOT `parents[N]` from this file: the count was right at app/knowledge/ and silently
+    became wrong when ADR-017 moved the file two levels deeper. Anchoring survives moves.
+    """
+    import app as _app
+
+    return Path(_app.__file__).resolve().parent.parent
+from app.modules.knowledge.internal.docbundle_schema import validate_manifest
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +151,7 @@ def _fidelity_floor() -> float:
         import yaml
 
         cfg = yaml.safe_load(
-            (Path(__file__).resolve().parents[2] / "eval" / "assurance.yaml").read_text(encoding="utf-8")
+            (_backend_root() / "eval" / "assurance.yaml").read_text(encoding="utf-8")
         )
         return float(((cfg or {}).get("build") or {}).get("fidelity_min", 0.80))
     except Exception:  # noqa: BLE001 — gate falls back to a sane default if config is absent

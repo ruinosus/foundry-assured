@@ -37,7 +37,7 @@ from typing import Any
 
 import yaml
 
-from app.agents.definitions import (
+from app.modules.agentdefs.internal.definitions import (
     AgentNotFound,
     PromptPack,
     load_pack,

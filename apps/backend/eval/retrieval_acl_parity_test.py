@@ -42,7 +42,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from app.shared.settings import settings
 from app.core.tenant import tenant_config
-from app.services import retrieval
+from app.modules.knowledge.internal import retrieval
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _ROPC_CLIENT = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"  # Azure CLI public client (ROPC, test only)

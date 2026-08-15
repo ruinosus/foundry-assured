@@ -41,7 +41,7 @@ async def _aret(rows: list[dict]) -> list[dict]:
 
 
 async def _run() -> int:
-    from app.services import retrieval
+    from app.modules.knowledge.internal import retrieval
 
     rows = [
         {"index": 1, "source": "a.md", "url": "https://x/a.md", "snippet": "S1"},

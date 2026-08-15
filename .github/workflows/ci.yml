@@ -80,6 +80,13 @@ jobs:
       - name: Module dependency graph (no new coupling)
         run: uv run python -m tests.architecture.module_graph_test
 
+      # Filesystem anchors. Three paths computed as `parents[N]` from a file's own location
+      # broke during the module moves, TWO of them in silence — the tests that would have
+      # caught them were already failing for unrelated reasons. Anchoring on the `app`
+      # package survives any move; this forbids the fragile form outright.
+      - name: Filesystem anchors (no parents[N] path counting)
+        run: uv run python -m tests.architecture.filesystem_anchors_test
+
   frontend:
     name: Frontend · typecheck + build
     runs-on: ubuntu-latest

@@ -32,7 +32,7 @@ from pathlib import Path
 
 from agent_framework import EvalItem, EvalNotPassedError, LocalEvaluator, Message
 
-from app.agents.concierge import build_concierge_agent
+from app.modules.grounded.internal.concierge import build_concierge_agent
 from app.core.tenant import tenant_config
 from app.domains import _domains
 from eval.assertions import (
@@ -114,8 +114,8 @@ class _RetrieveAgent:
         return False
 
     async def run(self, query: str):
-        from app.services.grounded import build_synthesis_kwargs
-        from app.services.retrieval import retrieve
+        from app.modules.grounded.internal.grounded import build_synthesis_kwargs
+        from app.modules.knowledge.internal.retrieval import retrieve
 
         docs = await retrieve(query, user=None, domain=self._d)  # headless: no signed-in user
         kwargs = build_synthesis_kwargs(query, self._d, docs, model=tenant_config().foundry_model)

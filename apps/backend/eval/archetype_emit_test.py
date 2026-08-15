@@ -2,7 +2,7 @@
 
 No Azure, no credential, no network: we monkeypatch the two seams the archetype leans on —
 
-  - `app.services.retrieval.retrieve`  → 3 fixture docs (one snippet >800 chars);
+  - `app.modules.knowledge.internal.retrieval.retrieve`  → 3 fixture docs (one snippet >800 chars);
   - the Responses stream (`client.responses.create`) → yields 2 text deltas.
 
 Then we drive `stream_grounded(body, domain, user=None)`, collect the encoded AG-UI SSE events, and lock:
@@ -95,9 +95,10 @@ def _decode(events: list[str]) -> list[dict]:
 
 
 async def _run() -> int:
-    from app.services import grounded, retrieval
+    from app.modules.grounded.internal import grounded
+    from app.modules.knowledge.internal import retrieval
 
-    # Patch the retrieval seam (imported inside stream_grounded from app.services.retrieval).
+    # Patch the retrieval seam (imported inside stream_grounded from app.modules.knowledge.internal.retrieval).
     retrieval.retrieve = _fake_retrieve  # type: ignore[assignment]
     # Patch the Foundry client + credential so no infra is touched.
     import azure.ai.projects.aio as _aio_proj

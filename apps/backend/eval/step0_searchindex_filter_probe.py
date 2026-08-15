@@ -120,7 +120,7 @@ def _group_filter(group_ids: list[str]) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Non-destructive probe-KB creation (SDK idiom, mirrors app.knowledge.ingest_docbundles).
+# Non-destructive probe-KB creation (SDK idiom, mirrors app.modules.knowledge.internal.ingest_docbundles).
 # ---------------------------------------------------------------------------
 
 

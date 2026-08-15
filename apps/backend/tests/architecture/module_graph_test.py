@@ -29,48 +29,32 @@ APP = pathlib.Path(__file__).resolve().parents[2] / "app"
 FIXTURE = pathlib.Path(__file__).with_name("module_graph.json")
 
 # ADR-017's file → module map. Prefix rules cover the directories that move wholesale.
+# Files not yet moved into `modules/` still need an explicit entry; anything already under
+# `modules/<name>/` is derived by the prefix rule below, so a moved file needs no MAP change.
 MAP: dict[str, str] = {
-    "shared/settings.py": "shared",
-    "shared/auth.py": "shared",
     "core/tenant_resolution.py": "tenancy",
     "core/tenant.py": "tenancy",
     "core/tenant_store.py": "tenancy",
     "core/onboarding.py": "tenancy",
     "api/tenant.py": "tenancy",
-    "modules/admin/internal/graph.py": "admin",
-    "modules/admin/api_admin.py": "admin",
-    "modules/admin/api_me.py": "admin",
-    "services/retrieval.py": "knowledge",
-    "agents/secure_search.py": "knowledge",
-    "services/grounded.py": "grounded",
-    "agents/cockpit.py": "grounded",
-    "agents/selfwiki.py": "grounded",
-    "agents/concierge.py": "grounded",
-    "agents/per_request.py": "grounded",
-    "agents/platform.py": "platform_ops",
-    "agents/mcp/registry.py": "platform_ops",
-    "agents/mcp/tools.py": "platform_ops",
-    "modules/tickets/internal/tickets.py": "tickets",
-    "modules/tickets/api.py": "tickets",
-    "modules/tickets/public.py": "tickets",
-    "modules/hosted/internal/hosted.py": "hosted",
-    "modules/hosted/public.py": "hosted",
-    "modules/hosted/api.py": "hosted",
-    "modules/evaluation/internal/foundry_evals.py": "evaluation",
-    "modules/evaluation/public.py": "evaluation",
-    "modules/evaluation/api.py": "evaluation",
-    "modules/admin/public.py": "admin",
-    "agents/prompts.py": "agentdefs",
-    "agents/definitions.py": "agentdefs",
     "domains.py": "COMPOSITION",
     "main.py": "COMPOSITION",
     "api/health.py": "COMPOSITION",
     "api/__init__.py": "COMPOSITION",
 }
+
+# Every business module lives at `modules/<name>/`, so its name IS the mapping. Listed
+# explicitly rather than globbed so that a typo in a directory name fails the run instead of
+# silently inventing a module.
+MODULES = (
+    "tenancy", "admin", "knowledge", "helpdesk", "grounded",
+    "platform_ops", "tickets", "hosted", "evaluation", "agentdefs",
+)
+
 PREFIXES = (
     ("shared/", "shared"),  # incl. shared/telemetry/* — a package whose __init__ has real logic
-    ("knowledge/", "knowledge"),
-    ("workflow/", "helpdesk"),
+    ("workflow/", "helpdesk"),  # not yet moved
+    *((f"modules/{name}/", name) for name in MODULES),
 )
 
 # `__init__.py` files that are pure package markers carry no imports and are not worth a MAP

@@ -27,7 +27,7 @@ import urllib.request
 from azure.identity import DefaultAzureCredential
 
 from app.core.tenant import tenant_config
-from app.knowledge.acl_setup import _canonical, _component
+from app.modules.knowledge.internal.acl_setup import _canonical, _component
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _API = "2025-08-01-preview"

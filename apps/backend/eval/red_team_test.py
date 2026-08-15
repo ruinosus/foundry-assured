@@ -32,7 +32,7 @@ from agent_framework import Message
 from agent_framework.azure import AzureAISearchContextProvider
 from azure.identity import DefaultAzureCredential
 
-from app.agents.secure_search import _chunk_component, authorized_components, trim_agentic_content
+from app.modules.knowledge.internal.secure_search import _chunk_component, authorized_components, trim_agentic_content
 from app.shared.settings import settings
 from app.core.tenant import tenant_config
 

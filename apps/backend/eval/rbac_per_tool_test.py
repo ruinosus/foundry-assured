@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import sys
 
-from app.agents.mcp.registry import get_server, server_for_kind, visible_tools_for
+from app.modules.platform_ops.internal.mcp_registry import get_server, server_for_kind, visible_tools_for
 from app.core.tenant_store import Connection
 
 

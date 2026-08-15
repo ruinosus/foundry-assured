@@ -7,7 +7,7 @@ Asserts the deterministic post-stamp schema; the per-document A-vs-B proof is in
 
 Prereq (runbook): re-ingest with the minimal PoC classification —
   COCKPIT_DOCBUNDLES=… ACL_CLASSIFICATION=…/.cockpit-acl-poc.json \
-    uv run python -m app.knowledge.ingest_docbundles
+    uv run python -m app.modules.knowledge.internal.ingest_docbundles
 (needs tenant_config().acl_group_map to resolve `confidential` + `public` → object-ids).
 
     cd apps/backend && uv run python -m eval.cockpit_acl_stamp_test

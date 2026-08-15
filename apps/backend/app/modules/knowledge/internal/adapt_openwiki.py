@@ -27,7 +27,7 @@ Output structure (per ingest_docbundles.collect_pages):
     <out>/<component>/<version>/{manifest.json, pages/page-N.md, llms.txt}
 
 Run (from apps/backend):
-    uv run python -m app.knowledge.adapt_openwiki \
+    uv run python -m app.modules.knowledge.internal.adapt_openwiki \
         --repo /path/to/your/repo \
         --component foundry-helpdesk-backend --version v0.4.0 \
         --out /tmp/wiki-out-openwiki
@@ -41,7 +41,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from app.knowledge.docbundle_schema import validate_manifest
+from app.modules.knowledge.internal.docbundle_schema import validate_manifest
 
 # Navigation and scaffold files OpenWiki emits that are not content pages.
 # `index.md` is per-directory navigation; `_skeleton.md`/`_plan.md` are run scaffolding

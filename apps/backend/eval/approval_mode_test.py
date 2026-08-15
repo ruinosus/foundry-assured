@@ -8,8 +8,8 @@ from __future__ import annotations
 
 import sys
 
-from app.agents.mcp.registry import get_server
-from app.agents.mcp import tools as T
+from app.modules.platform_ops.internal.mcp_registry import get_server
+from app.modules.platform_ops.internal import mcp_tools as T
 from app.core.tenant_store import Connection
 
 

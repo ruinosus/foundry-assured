@@ -3,7 +3,7 @@
 Run once (and again whenever the corpus changes), after `azd up`:
 
     cd backend
-    uv run python -m app.knowledge.ingest
+    uv run python -m app.modules.knowledge.internal.ingest
 
 Steps:
   1. Upload every markdown in corpus/ to the blob container.

@@ -21,7 +21,7 @@ from __future__ import annotations
 
 from agent_framework import MCPStreamableHTTPTool
 
-from app.agents.mcp.registry import (
+from app.modules.platform_ops.internal.mcp_registry import (
     McpServer,
     enabled_servers,
     server_for_kind,

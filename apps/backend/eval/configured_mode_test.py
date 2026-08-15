@@ -25,15 +25,15 @@ def main() -> int:
         if not cond:
             failures.append(name)
 
-    import app.agents.concierge as _con
-    import app.agents.cockpit as _cok
-    import app.agents.selfwiki as _sw
-    import app.agents.platform as _plat
+    import app.modules.grounded.internal.concierge as _con
+    import app.modules.grounded.internal.cockpit as _cok
+    import app.modules.grounded.internal.selfwiki as _sw
+    import app.modules.platform_ops.internal.platform as _plat
 
-    from app.agents.concierge import _knowledge_configured
-    from app.agents.cockpit import cockpit_configured
-    from app.agents.selfwiki import selfwiki_configured
-    from app.agents.platform import platform_configured
+    from app.modules.grounded.internal.concierge import _knowledge_configured
+    from app.modules.grounded.internal.cockpit import cockpit_configured
+    from app.modules.grounded.internal.selfwiki import selfwiki_configured
+    from app.modules.platform_ops.internal.platform import platform_configured
 
     def _boom():
         raise RuntimeError("tenant_config() must not be called in shared mode at boot")

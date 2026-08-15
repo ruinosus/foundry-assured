@@ -1,6 +1,6 @@
 """Grounded structured-citations bridge — ONE archetype over the `retrieve()` seam.
 
-Four stations, one path (the old acl/MCP fork is gone — retrieval lives behind `app.services.retrieval`):
+Four stations, one path (the old acl/MCP fork is gone — retrieval lives behind `app.modules.knowledge.internal.retrieval`):
 
 1. **Identity (OBO):** the SYNTHESIS (Responses API) runs AS THE SIGNED-IN USER (OBO for
    `https://ai.azure.com/.default` → no 403 on inference). The `user` MUST be captured in the endpoint
@@ -94,7 +94,7 @@ async def stream_grounded(body: dict, domain, user=None) -> AsyncGenerator[str]:
     from azure.ai.projects.aio import AIProjectClient
 
     from app.modules.hosted.public import last_user_text as _last_user_text
-    from app.services.retrieval import retrieve
+    from app.modules.knowledge.internal.retrieval import retrieve
 
     user_text = _last_user_text(body.get("messages") or [])
     thread_id = body.get("threadId") or body.get("thread_id") or uuid.uuid4().hex
@@ -111,7 +111,7 @@ async def stream_grounded(body: dict, domain, user=None) -> AsyncGenerator[str]:
         endpoint=cfg.foundry_project_endpoint, credential=credential, allow_preview=True
     )
     try:
-        # Station 2 — retrieve: ONE line. The seam owns identity/ACL/dedupe (app.services.retrieval).
+        # Station 2 — retrieve: ONE line. The seam owns identity/ACL/dedupe (app.modules.knowledge.internal.retrieval).
         docs = await retrieve(user_text, user, domain)
 
         client = proj.get_openai_client()

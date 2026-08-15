@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import sys
 
-from app.services import retrieval
+from app.modules.knowledge.internal import retrieval
 
 # REAL native-retrieve response (cockpit-si-kb, includeReferenceSourceData=true, User A, live-dumped;
 # snippets truncated). sourceData carries {uid, blob_url, snippet}; response is the answerSynthesis prose.

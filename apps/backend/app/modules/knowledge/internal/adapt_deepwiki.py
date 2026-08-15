@@ -25,7 +25,7 @@ a sorted-path fallback) so it survives layout drift. Verify against your real ru
 
 Run:
     cd apps/backend
-    uv run python -m app.knowledge.adapt_deepwiki \
+    uv run python -m app.modules.knowledge.internal.adapt_deepwiki \
         --repo /path/to/your/repo \
         --component your-component --version vX.Y.Z \
         --out /tmp/wiki-out-copilot
@@ -39,7 +39,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
-from app.knowledge.docbundle_schema import validate_manifest
+from app.modules.knowledge.internal.docbundle_schema import validate_manifest
 
 # Nav/scaffold files deep-wiki may emit that are not content pages.
 _SKIP_NAMES = {"_sidebar.md", "summary.md", "index.md", "readme.md", "llms.txt", "llms-full.txt"}

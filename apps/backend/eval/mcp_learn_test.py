@@ -13,7 +13,7 @@ from __future__ import annotations
 import asyncio
 import sys
 
-from app.agents.platform import build_platform_agent, platform_configured
+from app.modules.platform_ops.internal.platform import build_platform_agent, platform_configured
 
 
 async def _run() -> int:

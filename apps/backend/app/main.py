@@ -16,7 +16,7 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.agents.mcp.registry import SERVERS
+from app.modules.platform_ops.internal.mcp_registry import SERVERS
 from app.api import api_router
 from app.core import tenant_resolution, tenant_store
 from app.domains import mount_domains

@@ -15,7 +15,7 @@ group(s) that can read its *source*, exactly like the corpus is the owner's data
 Groups are arbitrary (a GitHub team, an ADLS group), never a fixed tier. `_component()`
 is deterministic identity extraction (the key to look up), not classification.
 
-    ACL_CLASSIFICATION=/path/to/access.json uv run python -m app.knowledge.acl_setup
+    ACL_CLASSIFICATION=/path/to/access.json uv run python -m app.modules.knowledge.internal.acl_setup
 """
 
 from __future__ import annotations

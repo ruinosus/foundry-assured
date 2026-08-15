@@ -9,8 +9,11 @@ from app.modules.evaluation.public import list_eval_runs
 
 router = APIRouter()
 
-# backend/app/api/evals.py -> backend/eval/runs.jsonl
-_RUNS = Path(__file__).resolve().parents[2] / "eval" / "runs.jsonl"
+# apps/backend/eval/runs.jsonl, anchored on the `app` package rather than counted from this
+# file — the parents[2] this used to carry became app/modules/eval/ when ADR-017 moved it.
+import app as _app
+
+_RUNS = Path(_app.__file__).resolve().parent.parent / "eval" / "runs.jsonl"
 
 
 @router.get("/eval/runs", dependencies=auth_dependencies())

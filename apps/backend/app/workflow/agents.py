@@ -14,7 +14,7 @@ from agent_framework.azure import AzureAISearchContextProvider
 from agent_framework.foundry import FoundryChatClient
 from azure.core.credentials import TokenCredential
 
-from app.agents.prompts import (
+from app.modules.agentdefs.public import (
     RESOLVE_INSTRUCTIONS,
     RETRIEVE_INSTRUCTIONS,
     TRIAGE_INSTRUCTIONS,

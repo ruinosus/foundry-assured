@@ -38,7 +38,7 @@ class TenantRecord:
 
 
 # The MCP server catalog, injected by the composition root at boot (ADR-017). This file used
-# to `from app.agents.mcp.registry import SERVERS`, which was the cycle: tenancy imported the
+# to `from app.modules.platform_ops.internal.mcp_registry import SERVERS`, which was the cycle: tenancy imported the
 # platform domain while every agent imported tenancy. The catalog is platform data; tenancy
 # only needs the set of valid ids, so it receives them instead of reaching for them.
 _known_kinds: frozenset[str] | None = None

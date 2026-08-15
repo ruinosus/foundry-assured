@@ -1,7 +1,13 @@
 {
   "COMPOSITION": {
+    "admin": [
+      "api/__init__.py"
+    ],
     "agentdefs": [
       "domains.py"
+    ],
+    "evaluation": [
+      "api/__init__.py"
     ],
     "grounded": [
       "domains.py"
@@ -10,6 +16,7 @@
       "domains.py"
     ],
     "hosted": [
+      "api/__init__.py",
       "main.py"
     ],
     "platform_ops": [
@@ -23,6 +30,9 @@
     ],
     "tenancy": [
       "domains.py"
+    ],
+    "tickets": [
+      "api/__init__.py"
     ]
   },
   "admin": {
@@ -42,25 +52,25 @@
   },
   "grounded": {
     "agentdefs": [
-      "agents/concierge.py"
+      "modules/grounded/internal/concierge.py"
     ],
     "hosted": [
-      "services/grounded.py"
+      "modules/grounded/internal/grounded.py"
     ],
     "knowledge": [
-      "services/grounded.py"
+      "modules/grounded/internal/grounded.py"
     ],
     "shared": [
-      "agents/cockpit.py",
-      "agents/concierge.py",
-      "agents/selfwiki.py",
-      "services/grounded.py"
+      "modules/grounded/internal/cockpit.py",
+      "modules/grounded/internal/concierge.py",
+      "modules/grounded/internal/grounded.py",
+      "modules/grounded/internal/selfwiki.py"
     ],
     "tenancy": [
-      "agents/cockpit.py",
-      "agents/concierge.py",
-      "agents/selfwiki.py",
-      "services/grounded.py"
+      "modules/grounded/internal/cockpit.py",
+      "modules/grounded/internal/concierge.py",
+      "modules/grounded/internal/grounded.py",
+      "modules/grounded/internal/selfwiki.py"
     ]
   },
   "helpdesk": {
@@ -95,30 +105,30 @@
   },
   "knowledge": {
     "shared": [
-      "services/retrieval.py"
+      "modules/knowledge/internal/retrieval.py"
     ],
     "tenancy": [
-      "agents/secure_search.py",
-      "knowledge/acl_setup.py",
-      "knowledge/ingest.py",
-      "knowledge/ingest_docbundles.py",
-      "knowledge/wiki_builder.py"
+      "modules/knowledge/internal/acl_setup.py",
+      "modules/knowledge/internal/ingest.py",
+      "modules/knowledge/internal/ingest_docbundles.py",
+      "modules/knowledge/internal/secure_search.py",
+      "modules/knowledge/internal/wiki_builder.py"
     ]
   },
   "platform_ops": {
     "agentdefs": [
-      "agents/platform.py"
+      "modules/platform_ops/internal/platform.py"
     ],
     "grounded": [
-      "agents/platform.py"
+      "modules/platform_ops/internal/platform.py"
     ],
     "shared": [
-      "agents/mcp/tools.py",
-      "agents/platform.py"
+      "modules/platform_ops/internal/mcp_tools.py",
+      "modules/platform_ops/internal/platform.py"
     ],
     "tenancy": [
-      "agents/mcp/tools.py",
-      "agents/platform.py"
+      "modules/platform_ops/internal/mcp_tools.py",
+      "modules/platform_ops/internal/platform.py"
     ]
   },
   "tenancy": {

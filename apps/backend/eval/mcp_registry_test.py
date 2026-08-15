@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import sys
 
-from app.agents.mcp.registry import (
+from app.modules.platform_ops.internal.mcp_registry import (
     SERVERS,
     classify_tool,
     get_server,
