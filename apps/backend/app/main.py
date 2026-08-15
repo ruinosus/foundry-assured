@@ -30,8 +30,12 @@ setup_telemetry()
 
 # Wire tenancy into the auth flow (ADR-017). This used to be an import-time side effect of
 # app/core/auth.py; making it an explicit call is what lets the shared kernel stop importing a
-# business module. It MUST run before mount_domains(), which reads tenant_config() and would
-# otherwise see the default SingleTenant provider in shared mode. No-op outside shared.
+# business module. It must run before the first request, so that `require_user` finds the
+# post-authenticate hook registered. No-op outside shared.
+#
+# It used to say "before mount_domains(), which reads tenant_config()". That was true and was
+# the bug: reading tenant config while mounting is what stopped shared mode from booting at
+# all. mount_domains() now walks the static topology only — see registry.DOMAIN_KINDS.
 tenancy.install()
 
 # Break the core↔agents cycle (ADR-017 §the cycle): the MCP server catalog is platform data,
