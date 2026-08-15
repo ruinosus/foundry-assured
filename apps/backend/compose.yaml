@@ -1,18 +1,18 @@
 # Local container run for the backend — the no-rebuild prompt loop (ADR-014).
 #
-# The image ships a baked-in copy of the DNA runtime scope (`COPY .dna ./.dna`
+# The image ships a baked-in copy of the agent definitions (`COPY agents ./agents`
 # in the Dockerfile) so it stays self-contained for azd/ACA. This compose file
-# bind-mounts the working-tree `.dna/` OVER that copy, so editing a prompt
-# YAML in apps/backend/.dna/helpdesk/ on the host needs NO image rebuild:
+# bind-mounts the working-tree `agents/` OVER that copy, so editing a prompt
+# YAML in apps/backend/agents/helpdesk/ on the host needs NO image rebuild:
 #
 #   docker compose up -d            # build once, run
-#   $EDITOR .dna/helpdesk/agents/cockpit.yaml
+#   $EDITOR agents/helpdesk/cockpit.yaml
 #   docker compose restart backend  # restart, NOT rebuild — picks up the edit
 #
 # Refresh semantics are deliberately restart-grade: app/agents/prompts.py
 # composes the constants at import and the agents are built at boot, so a
 # process restart is the honest refresh unit (see ADR-014 for why hot-reload
-# is not wired). The mount is read-only — the runtime only reads the scope.
+# is not wired). The mount is read-only — the runtime only reads the definitions.
 services:
   backend:
     build: .
@@ -22,4 +22,4 @@ services:
       - path: .env
         required: false # boots without one; Azure-backed routes need real env
     volumes:
-      - ./.dna:/app/.dna:ro
+      - ./agents:/app/agents:ro

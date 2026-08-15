@@ -28,6 +28,9 @@ async def main() -> None:
         raise SystemExit("FOUNDRY_PROJECT_ENDPOINT is not set (see backend/.env).")
 
     name = tenant_config().foundry_memory_store
+    if not name:
+        raise SystemExit("FOUNDRY_MEMORY_STORE is not set (see backend/.env).")
+
     async with (
         DefaultAzureCredential() as credential,
         AIProjectClient(

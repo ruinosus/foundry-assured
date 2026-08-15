@@ -35,18 +35,21 @@ jobs:
         run: uv run python -m eval.run_eval --self-test
       - name: ACL attribution round-trip (chunk key == blob key)
         run: uv run python -m eval.test_attribution
-      # Prompt-invariant eval suite over the declarative .dna scope — THE guard
-      # of record for prompt contracts (ADR-013 phase 2; the byte-equivalence
-      # gate retired when the prompts started evolving as Soul + Guardrails).
-      # dna-cli comes from PyPI (it pins dna-sdk>=0.1,<0.2 itself — the same
-      # range the backend depends on). Offline + deterministic; exits 1 on any
-      # failed case.
-      - name: DNA prompt eval suite (dna eval run)
-        env:
-          DNA_BASE_DIR: ${{ github.workspace }}/apps/backend/.dna
-        run: >-
-          uvx --from "dna-cli>=0.1,<0.2"
-          dna eval run helpdesk-prompts --scope helpdesk
+      # Doc-bundle format contract: every manifest field this repo reads or writes
+      # must exist in the producer's schema (vendored). Offline + deterministic.
+      # It exists because the format already forked once — the ingest read an ACL
+      # field the producer's model never had, and a second generator grew from it.
+      - name: Doc-bundle contract (producer ↔ consumer field agreement)
+        run: uv run python -m eval.docbundle_contract_test
+      # Prompt-invariant eval suite over the declarative agent definitions — THE
+      # guard of record for prompt contracts (ADR-013 phase 2; the byte-equivalence
+      # gate retired when the prompts started evolving as persona + guardrails).
+      # Ran as `dna eval run` from dna-cli until ADR-015 replaced the DNA SDK with
+      # Microsoft's AgentSchema; the cases were always this repo's data, so they
+      # stayed and the runner moved in-tree. Offline + deterministic; exits 1 on
+      # any failed case.
+      - name: Prompt contract suite (composed AgentSchema definitions)
+        run: uv run python -m eval.prompt_contract_test
 
   frontend:
     name: Frontend · typecheck + build

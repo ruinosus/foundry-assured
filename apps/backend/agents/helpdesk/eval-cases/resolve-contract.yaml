@@ -1,0 +1,22 @@
+name: resolve-contract
+description: Resolve keeps the TICKET single-line escalation sentinel, grounded-only answering and citation duty
+target:
+  agent: resolve
+checks:
+- type: contains
+  value: 'TICKET: <one-line summary of the request>'
+- type: contains
+  value: ONLY the runbook content
+- type: contains
+  value: cite the source document title(s)
+- type: contains
+  value: never invent
+# A persona is worn only by the agents that REFERENCE it. This negative
+# invariant exists because the reader this replaced appended the shared
+# persona to every agent that did not override its prompt template.
+- type: not_contains
+  value: Helpdesk Concierge
+- type: min_length
+  value: 500
+expected: The RESOLVE prompt preserves the TICKET sentinel (workflow branches on it) and the cite-or-don't-know discipline.
+tags: [workflow, contract, escalation]

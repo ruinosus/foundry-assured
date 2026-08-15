@@ -42,7 +42,7 @@ param storageAccountName string
 @description('Azure Files share mounted into the backend at /app/data (tickets.jsonl).')
 param fileShareName string
 
-@description('Azure Files share holding the runtime DNA prompt scope, mounted read-only into the backend at /mnt/dna (ADR-014). Empty share = backend falls back to the scope baked into the image.')
+@description('Azure Files share holding the runtime agent definitions, mounted read-only into the backend at /mnt/agents (ADR-014). Empty share = backend falls back to the definitions baked into the image.')
 param promptsShareName string
 
 var placeholderImage = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
@@ -93,7 +93,7 @@ resource envDataStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' 
   }
 }
 
-// Runtime DNA prompt scope (ADR-014, production leg). Read-only: the runtime
+// Runtime agent definitions (ADR-014, production leg). Read-only: the runtime
 // only READS prompts; publishing goes through scripts/push-prompts.sh (upload
 // to the share + revision restart), never through the app.
 resource envPromptsStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
@@ -163,15 +163,15 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             // selfwiki audience: the app-users group is the self-wiki's private read audience;
             // retrieval sends the OBO ACL header only when this is set (else /selfwiki fails closed).
             { name: 'APP_USERS_GROUP_ID', value: appUsersGroupId }
-            // Runtime DNA prompt scope override (ADR-014, production leg): the
-            // backend composes prompts from $DNA_BASE_DIR/helpdesk when that
+            // Runtime agent-definition override (ADR-014, production leg): the
+            // backend composes prompts from $AGENTS_DIR/helpdesk when that
             // scope exists on the mounted share, else falls back (loudly) to
             // the copy baked into the image. Prompt update = push-prompts.sh.
-            { name: 'DNA_BASE_DIR', value: '/mnt/dna' }
+            { name: 'AGENTS_DIR', value: '/mnt/agents' }
           ]
           volumeMounts: [
             { volumeName: 'data', mountPath: '/app/data' } // tickets.jsonl persists here
-            { volumeName: 'prompts', mountPath: '/mnt/dna' } // DNA prompt scope (read-only share)
+            { volumeName: 'prompts', mountPath: '/mnt/agents' } // agent definitions (read-only share)
           ]
         }
       ]

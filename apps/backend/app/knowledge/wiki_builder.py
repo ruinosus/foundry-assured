@@ -11,6 +11,21 @@ Paced + bounded (read deterministically; one planner call + one call per page wi
 small delay) so it stays under the model deployment's rate limit — agentic tool loops
 burst over the TPM cap on a small deployment.
 
+**Common format, local pipeline.** The bundle FORMAT is not ours: it is the producer's
+contract, vendored as `docbundle.schema.json` and enforced here by `validate_manifest`
+before the manifest is written (see `docbundle_schema.py`). What stays local, and why it
+could not simply move into the producer:
+
+  • the fidelity gate + verifier pass (Foundry model calls, `assurance.yaml` floor);
+  • `llms.txt`, a sidecar this repo's other tooling reads — not a manifest field;
+  • the flat `--out/<component>/<version>/` layout: this is a blob-upload staging dir,
+    not the producer's `docbundles/element|platform/…` store;
+  • `--groups`, the CLI door for the source repo's read teams. The FIELD is now part of
+    the common contract; only the way this pipeline learns the value is local.
+
+Nothing above is a second dialect of the format — anything that would be gets rejected
+by the validation above.
+
 D1: one component. Run:
     cd apps/backend
     uv run python -m app.knowledge.wiki_builder \
@@ -33,6 +48,7 @@ from agent_framework.foundry import FoundryChatClient
 from azure.identity import DefaultAzureCredential
 
 from app.core.tenant import tenant_config
+from app.knowledge.docbundle_schema import validate_manifest
 
 logger = logging.getLogger(__name__)
 
@@ -399,10 +415,18 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
         "kind": "element", "component": component, "componentVersion": version,
         "releaseVersion": None, "pages": manifest_pages,
         # Access inherited from the source repo (its read teams) — the ingest stamps
-        # these as the document's allowed groups. Empty = the owner declares access
-        # elsewhere (external map) or it's fail-closed. NOT a classification guess.
-        "groups": groups or [],
+        # these as the document's allowed groups. NOT a classification guess.
+        # `None` (no --groups) means UNDECLARED, and must not collapse to `[]`:
+        # `[]` is the declaration "no group may read this" (fail-closed). This
+        # builder only knows what it was told, so silence stays silence.
+        "groups": groups if groups else None,
     }
+    # The format belongs to the producer, not to this builder — validate before
+    # writing so a divergence fails here, not as a wrong ACL after ingestion.
+    try:
+        validate_manifest(manifest)
+    except ValueError as exc:
+        raise SystemExit(f"❌ {exc}") from exc
     (bundle / "manifest.json").write_text(json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8")
     (bundle / "llms.txt").write_text("\n".join(llms) + "\n", encoding="utf-8")
     print(f"\n✅ Bundle: {bundle}  ({len(manifest_pages)} páginas + manifest.json + llms.txt)", flush=True)
@@ -455,7 +479,7 @@ def main() -> None:
     ap.add_argument("--out", default="/tmp/wiki-out")
     ap.add_argument("--model", default=None, help="Model deployment for the builder (default: FOUNDRY_MODEL)")
     ap.add_argument("--no-verify", action="store_true", help="Skip the fidelity verifier pass")
-    ap.add_argument("--groups", default="", help="Comma-separated read groups of the source repo (inherited access; written to the manifest)")
+    ap.add_argument("--groups", default="", help="Comma-separated read groups of the source repo (inherited access; written to the manifest). Omitted = access UNDECLARED (manifest carries null), which is not the same as declaring that nobody may read it.")
     ap.add_argument("--fidelity-root", default=None, help="Resolve fidelity citations against THIS dir instead of --repo (use the monorepo root for a sub-area bundle that cites other areas, e.g. docs/ citing apps/)")
     args = ap.parse_args()
     repo = Path(args.repo).expanduser().resolve()

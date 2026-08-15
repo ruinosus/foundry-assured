@@ -1,0 +1,20 @@
+name: retrieve-contract
+description: Retrieve surfaces runbook passages + exact source titles, never the final answer, NO_MATCH sentinel intact
+target:
+  agent: retrieve
+checks:
+- type: contains
+  value: Do NOT write the final answer
+- type: contains
+  value: exact source document titles
+- type: contains
+  value: "'NO_MATCH'"
+# A persona is worn only by the agents that REFERENCE it. This negative
+# invariant exists because the reader this replaced appended the shared
+# persona to every agent that did not override its prompt template.
+- type: not_contains
+  value: Helpdesk Concierge
+- type: min_length
+  value: 200
+expected: The RETRIEVE prompt keeps the sources + NO_MATCH sentinel contract the workflow edges rely on.
+tags: [workflow, contract]

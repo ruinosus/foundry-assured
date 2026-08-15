@@ -170,8 +170,10 @@ def collect_pages(docbundles: Path) -> tuple[list[tuple[str, bytes]], dict[str, 
 
     Returns (items, component_groups): the (blob_name, content) pages, and the
     {component-key: [groups]} map declared by each manifest (the read access inherited
-    from the source repo by wiki_builder) — fed to the ACL stamping. Access follows the
-    source; this code never classifies.
+    from the source repo by the bundle's generator) — fed to the ACL stamping. Access
+    follows the source; this code never classifies. Only manifests that DECLARE `groups`
+    enter the map (null/absent stays out; an explicit `[]` goes in as `[]` — see the
+    contract in `docbundle_schema.py`).
 
     Each page's generic H1 ("Visão Geral do Repositório") is replaced with a
     component+version-qualified one so the KB cites a meaningful source, e.g.
@@ -189,7 +191,13 @@ def collect_pages(docbundles: Path) -> tuple[list[tuple[str, bytes]], dict[str, 
         # Skip the legacy unversioned bundle (a duplicate of the versioned ones).
         if not component and not version:
             continue
-        if meta.get("groups"):
+        # ABSENT ≠ EMPTY (the manifest contract, docbundle_schema.py): a missing/null
+        # `groups` means the bundle declares no access → leave it out of the map so
+        # setup_acl falls back to the external map / tenant default. An explicit `[]`
+        # IS a declaration ("no group reads this") and must reach setup_acl as `[]`,
+        # which stamps the doc with no group = fail-closed. A truthiness test here
+        # collapsed the two and silently upgraded "nobody" to the default audience.
+        if meta.get("groups") is not None:
             component_groups[_component(f"{key}__x.md")] = meta["groups"]
         # Citation label: "component version" for elements; the manifest title for
         # the platform bundle (e.g. "Plataforma Cockpit 2.1.0").

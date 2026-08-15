@@ -1,0 +1,21 @@
+name: concierge-grounded-citation
+description: Grounded concierge composes the shared persona plus the citation + don't-guess duties via the grounded-citation guardrail (repo rule 4 / eval policy)
+target:
+  agent: concierge-grounded
+checks:
+- type: contains
+  value: Helpdesk Concierge
+# Pins that the guardrail document is actually WIRED on the agent (the section
+# header the composition renders), not merely phrased in prose.
+- type: contains
+  value: '## Guardrail: grounded-citation (error)'
+- type: contains
+  value: Cite the source document
+- type: contains
+  value: say you don't know instead of guessing
+- type: contains
+  value: never invent runbooks
+- type: min_length
+  value: 300
+expected: The grounded variant embeds the shared persona and enforces cite-every-claim (the ASSERT policy's contract).
+tags: [concierge, grounding, citation]

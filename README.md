@@ -247,6 +247,7 @@ apps/
       workflow/               graph · agents · escalation · memory · stream_fix (multi-agent)
       tools/tickets.py        real create_ticket tool + persistence
       knowledge/              corpus/*.md (~13 runbooks) · ingest.py
+    agents/helpdesk/          the agent DEFINITIONS — AgentSchema PromptAgent per agent (+ personas · guardrails · eval-cases)
     cli/                      data-plane scripts: provision_memory · provision_guardrail · provision_eval_rule
     eval/                     Phase 5 — offline harness (run_eval · assertions · datasets · rubrics)
   frontend/                   Next.js 15 (App Router) · CopilotKit v2 · MSAL

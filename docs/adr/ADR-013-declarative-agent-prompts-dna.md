@@ -1,7 +1,21 @@
 # ADR-013 — Agent instructions become declarative data (DNA), not deploy-coupled code
 
-- **Status:** Proposed
+- **Status:** Accepted; **mechanism superseded 2026-08-13** by
+  [ADR-015](./ADR-015-agentschema-replaces-the-dna-sdk.md)
 - **Date:** 2026-07-10
+
+> **Amendment (2026-08-13).** The decision below stands: agent instructions are
+> declarative data and `prompts.py` is a composition shim. What changed is what
+> reads that data — the documents are now
+> [AgentSchema](https://github.com/microsoft/AgentSchema) `PromptAgent` files in
+> `apps/backend/agents/helpdesk/`, read with Microsoft's official
+> `agent-framework-declarative`; `dna-sdk` is gone. Read every `.dna/helpdesk/`
+> path below as `agents/helpdesk/`, "Soul" as "persona", and "DNA scope" as "the
+> agent definitions". The record is kept as written, including the alternative
+> "a hand-rolled `prompts.yaml`" — which ADR-015 did **not** choose either: the
+> reader is official, only the composition of what the schema does not model is
+> ours. See [ADR-015](./ADR-015-agentschema-replaces-the-dna-sdk.md), and note
+> that it also found a prompt-content defect this ADR's phase 2 shipped.
 - **Context:** [`apps/backend/app/agents/prompts.py`](../../apps/backend/app/agents/prompts.py) and every agent built from it (workflow triage/retrieve/resolve, both concierge variants, cockpit, selfwiki, platform)
 
 ## Context
