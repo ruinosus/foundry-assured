@@ -459,18 +459,22 @@ Mesmo o par mais parecido — cockpit e selfwiki, os dois domínios `grounded` �
 
 ## 4. Definition of Done (global)
 
-- [ ] `app/{api,services,agents,workflow,core,tools}` não existem; estrutura = seção 2.2; **todo `.py` do backend tem exatamente um destino** (contagem fechada na Fase 1).
-- [ ] Zero ciclos; `lint-imports` estrito verde como gate de CI (10 contratos C2).
-- [ ] Snapshot de rotas idêntico ao baseline da Fase 0; fixtures AG-UI (`demo/fixtures/*.json`) com mesmo tipo/ordem de eventos; **latência/custo/erro dentro da faixa do baseline da 5.5a**.
-- [ ] Os **oito** módulos `eval.*` referenciados por workflow continuam resolvendo; `security-gates`, `wiki-freshness`, `wiki-regen`, `agent-evals` verdes.
-- [ ] `eval/` = produto-assurance apenas (10 arquivos); `tests/` por módulo (40); spikes em `scripts/spikes/`.
-- [ ] Política de aprovação e role de tool vivendo nos documentos AgentSchema, com **teste de paridade** provando conjunto gated idêntico ao de hoje; `min_role`/`min_role_write` fora do Python.
-- [ ] `agents/helpdesk/` no mesmo lugar; `AGENTS_DIR` + fallback baked + `push-prompts.sh` funcionando (I-7).
-- [ ] `shared/telemetry/` ativo atrás de env (default no-op); árvore gen_ai + modelo HITL (eventos + span links + métricas) + custo por tenant/domínio + elo trace↔eval; `docs/OBSERVABILITY.md` escrito.
-- [ ] **ADR-017** (fronteiras) e **ADR-018** (não-adoção do AHP + gatilho) escritos; CLAUDE.md com a Regra #7; README/docs sem paths mortos.
-- [ ] Nenhum port/adapter de orquestração criado; nenhum stub de runtime ausente do repo (§2.5).
-- [ ] History preservado (git mv verificável via `git log --follow` em 3 arquivos amostrais).
-- [ ] Fora das exceções declaradas (telemetria + leitura declarativa da política de aprovação), nenhuma linha de lógica de negócio alterada (diff ≈ imports, docstrings de path e re-exports).
+> **Estado em 2026-08-15**, após os PRs #154 e #155 (Fases 0, 1, 2, 5.5a, 3, 4, 5).
+> `[x]` feito · `[~]` parcial, com a lacuna nomeada · `[ ]` não feito.
+> As lacunas restantes dependem de credencial Azure — ver as notas em cada linha.
+
+- [x] `app/{api,services,agents,workflow,core,tools}` não existem; estrutura = seção 2.2; **todo `.py` do backend tem exatamente um destino** (contagem fechada na Fase 1).
+- [x] Zero ciclos; `lint-imports` estrito verde como gate de CI (**14** contratos, não 10).
+- [~] Snapshot de rotas idêntico (27 self_hosted / 35 shared) e fixtures AG-UI intocadas. **Falta:** o baseline de latência/custo/erro da 5.5a nunca foi gravado — precisa de exporter vivo + chamadas reais ao modelo. O refactor rodou com rede estrutural apenas.
+- [~] Os oito módulos `eval.*` resolvem. **Falta:** `security-gates` e `agent-evals` precisam de Azure (nunca rodaram); `wiki-freshness` reporta STALE (é reporter, não gate bloqueante); `wiki-regen` exige `rebuild=true` após um refactor que move todos os arquivos — incremental deixa citações mortas e reprova no piso de fidelidade.
+- [x] `eval/` = produto-assurance apenas (10 arquivos); `tests/` por módulo (40); spikes em `scripts/spikes/`.
+- [ ] **(Fase 3.5 — bloqueada no passo 0, precisa de Azure)** Política de aprovação e role de tool vivendo nos documentos AgentSchema, com **teste de paridade** provando conjunto gated idêntico ao de hoje; `min_role`/`min_role_write` fora do Python.
+- [x] `agents/helpdesk/` no mesmo lugar; `AGENTS_DIR` + fallback baked + `push-prompts.sh` funcionando (I-7).
+- [~] `shared/telemetry/` ativo atrás de env (default no-op), conventions pinadas, content policy e custo. `docs/OBSERVABILITY.md` escrito, com escopo declarado. **Falta (Fase 5.5b):** eventos HITL, span links, métricas de aprovação, elo trace↔eval.
+- [x] **ADR-017** (fronteiras) e **ADR-018** (não-adoção do AHP + gatilho) escritos; CLAUDE.md com a Regra #7; README/docs sem paths mortos.
+- [x] Nenhum port/adapter de orquestração criado; nenhum stub de runtime ausente do repo (§2.5).
+- [x] History preservado (git mv verificável via `git log --follow` em 3 arquivos amostrais).
+- [~] Quase tudo é import/docstring/re-export. **Três exceções reais, declaradas nos commits:** o split do `auth.py` (identidade vs. resolução de tenant), `price_for()` passando a resolver por prefixo mais longo (antes dependia da ordem do dict), e as âncoras de caminho. **Uma quarta, posterior:** o registry passou a separar topologia de config por tenant — correção do bug de boot do modo `shared`.
 
 ## 5. Riscos e mitigações
 
