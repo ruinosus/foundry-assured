@@ -28,8 +28,8 @@ from app.agents.mcp.registry import (
     visible_tools,
     visible_tools_for,
 )
-from app.core.auth import credential_for_request, current_roles
-from app.core.settings import settings  # platform-global (auth_enabled)
+from app.shared.auth import credential_for_request, current_roles
+from app.shared.settings import settings  # platform-global (auth_enabled)
 from app.core.tenant import tenant_config  # per-tenant (mcp ado/github/azure)
 
 
@@ -54,7 +54,7 @@ def _foundry_connection_header_provider(connection_id: str):
     def provider(_existing: dict) -> dict:
         from azure.ai.projects import AIProjectClient
 
-        from app.core.auth import credential_for_request
+        from app.shared.auth import credential_for_request
         from app.core.tenant import tenant_config
         client = AIProjectClient(
             endpoint=tenant_config().foundry_project_endpoint, credential=credential_for_request())
@@ -211,9 +211,9 @@ def build_hosted_from_connections(conns, roles: set[str], get_tool) -> list:
 
 
 def _current_tenant_connections():
-    from app.core import auth as _auth
+    from app.core import tenant_resolution as _tenant_resolution
     from app.core.tenant import current_tenant_id
-    store = _auth._tenant_store
+    store = _tenant_resolution.tenant_store()
     if store is None:
         return ()
     rec = store.get(current_tenant_id())

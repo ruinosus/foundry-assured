@@ -20,7 +20,7 @@ from app.agents.prompts import (
     CONCIERGE_GROUNDED_INSTRUCTIONS,
     CONCIERGE_UNGROUNDED_INSTRUCTIONS,
 )
-from app.core.settings import settings
+from app.shared.settings import settings
 from app.core.tenant import tenant_config
 
 

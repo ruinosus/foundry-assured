@@ -12,7 +12,7 @@ from types import SimpleNamespace
 
 from fastapi import HTTPException
 
-from app.core import auth as _auth
+from app.core import tenant_resolution as _tr
 import app.api.tenant as tapi
 from app.core.tenant import DOMAIN_IDS
 from app.core.tenant_store import InMemoryTenantStore
@@ -27,7 +27,7 @@ def main() -> int:
             failures.append(name)
 
     store = InMemoryTenantStore()
-    _auth._tenant_store = store
+    _tr._tenant_store = store
     tapi.current_tenant_id = lambda: "t-1"  # type: ignore[assignment]  # stub the resolved tenant
 
     tapi.onboard(tapi.OnboardBody(), SimpleNamespace(tid="t-1"))
@@ -51,7 +51,7 @@ def main() -> int:
     check("PUT rejects unknown domain id", rejects_unknown())
     check("rejected PUT did not mutate", store.get("t-1").enabled_domains == ("helpdesk", "platform"))
 
-    _auth._tenant_store = None
+    _tr._tenant_store = None
     if failures:
         print(f"\n❌ {len(failures)} assertion(s) failed.")
         return 1

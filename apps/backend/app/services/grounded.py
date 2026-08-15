@@ -23,7 +23,7 @@ import inspect
 import uuid
 from collections.abc import AsyncGenerator
 
-from app.core.settings import settings
+from app.shared.settings import settings
 from app.core.tenant import tenant_config
 
 # Prepended to the synthesis input — the model answers ONLY from the retrieved documents and cites them
@@ -56,7 +56,7 @@ def build_synthesis_kwargs(user_text: str, domain, docs: list[dict], *, model: s
 
 
 def _async_credential(user):
-    """Async credential AS THE SIGNED-IN USER (OBO), mirroring app.core.auth.credential_for_request.
+    """Async credential AS THE SIGNED-IN USER (OBO), mirroring app.shared.auth.credential_for_request.
     The `user` MUST be captured in the endpoint and passed in — the `current_user()` contextvar is
     LOST inside this StreamingResponse async generator (verified), so reading it here would return
     None and silently fall back to the app MI, which 403s on raw inference (the service-principal gap).

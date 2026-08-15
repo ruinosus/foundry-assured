@@ -30,7 +30,7 @@ from azure.ai.projects.models import (
 )
 from azure.identity import DefaultAzureCredential
 
-from app.core.settings import settings
+from app.shared.settings import settings
 from app.core.tenant import tenant_config
 
 _RULE_ID = "helpdesk-online-eval"

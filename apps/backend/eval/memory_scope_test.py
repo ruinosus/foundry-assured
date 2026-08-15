@@ -10,7 +10,8 @@ from __future__ import annotations
 import sys
 from types import SimpleNamespace
 
-from app.core import auth
+from app.core import tenant_resolution
+from app.shared import auth
 from app.core.tenant import set_current_tenant
 
 
@@ -25,16 +26,16 @@ def main() -> int:
     # Single-tenant: a user, no tenant set → bare oid (today's behavior).
     auth._current_user.set(SimpleNamespace(oid="user-123", roles=[]))
     set_current_tenant(None)
-    check("single-tenant scope is bare oid", auth.memory_scope() == "user-123")
+    check("single-tenant scope is bare oid", tenant_resolution.memory_scope() == "user-123")
 
     # Multi-tenant: a resolved tenant with a tid → prefixed.
     set_current_tenant(SimpleNamespace(tid="tenant-abc"))
-    check("multi-tenant scope is tid:oid", auth.memory_scope() == "tenant-abc:user-123")
+    check("multi-tenant scope is tid:oid", tenant_resolution.memory_scope() == "tenant-abc:user-123")
 
     # No user at all → dev-local (auth-off path), still works.
     auth._current_user.set(None)
     set_current_tenant(None)
-    check("no user → dev-local", auth.memory_scope() == "dev-local")
+    check("no user → dev-local", tenant_resolution.memory_scope() == "dev-local")
 
     set_current_tenant(None)
     if failures:

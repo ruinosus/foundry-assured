@@ -28,7 +28,7 @@ from agent_framework import (
     response_handler,
 )
 
-from app.core.auth import has_role
+from app.shared.auth import has_role
 from app.tools.tickets import create_ticket
 
 TICKET_PREFIX = "TICKET:"

@@ -16,11 +16,25 @@ import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.agents.mcp.registry import SERVERS
 from app.api import api_router
-from app.core.auth import azure_scheme
-from app.core.settings import settings
+from app.core import tenant_resolution, tenant_store
 from app.domains import mount_domains
 from app.services.hosted import aclose as hosted_aclose
+from app.shared.auth import azure_scheme
+from app.shared.settings import settings
+
+# Wire tenancy into the auth flow (ADR-017). This used to be an import-time side effect of
+# app/core/auth.py; making it an explicit call is what lets the shared kernel stop importing a
+# business module. It MUST run before mount_domains(), which reads tenant_config() and would
+# otherwise see the default SingleTenant provider in shared mode. No-op outside shared.
+tenant_resolution.install()
+
+# Break the core↔agents cycle (ADR-017 §the cycle): the MCP server catalog is platform data,
+# and tenancy only needs the valid ids to validate a connection kind. The composition root is
+# the one place allowed to know both, so it hands the ids over instead of tenancy importing
+# the platform registry.
+tenant_store.set_server_catalog(server.id for server in SERVERS)
 
 
 @asynccontextmanager

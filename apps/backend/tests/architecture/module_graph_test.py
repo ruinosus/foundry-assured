@@ -30,8 +30,9 @@ FIXTURE = pathlib.Path(__file__).with_name("module_graph.json")
 
 # ADR-017's file → module map. Prefix rules cover the directories that move wholesale.
 MAP: dict[str, str] = {
-    "core/settings.py": "shared",
-    "core/auth.py": "shared",
+    "shared/settings.py": "shared",
+    "shared/auth.py": "shared",
+    "core/tenant_resolution.py": "tenancy",
     "core/tenant.py": "tenancy",
     "core/tenant_store.py": "tenancy",
     "core/onboarding.py": "tenancy",

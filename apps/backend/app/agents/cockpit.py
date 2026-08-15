@@ -14,7 +14,7 @@ The Cockpit KB is org-wide (not per-user), so this runs under the app's own iden
 (DefaultAzureCredential), not OBO. The /cockpit endpoint still requires sign-in.
 """
 
-from app.core.settings import settings
+from app.shared.settings import settings
 from app.core.tenant import tenant_config
 
 

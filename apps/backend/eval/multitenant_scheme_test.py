@@ -10,7 +10,7 @@ import sys
 
 from fastapi_azure_auth import MultiTenantAzureAuthorizationCodeBearer
 
-from app.core.auth import _iss_callable
+from app.shared.auth import _iss_callable
 
 
 def main() -> int:

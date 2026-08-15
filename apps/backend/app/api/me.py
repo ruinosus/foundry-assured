@@ -10,15 +10,15 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends
 
-from app.core.auth import APP_ROLES, require_user
-from app.core.settings import settings
+from app.shared.auth import APP_ROLES, require_user
+from app.shared.settings import settings
 
 router = APIRouter()
 
 
 @router.get("/me", dependencies=[Depends(require_user)])
 def me():
-    from app.core.auth import current_user
+    from app.shared.auth import current_user
 
     if not settings.auth_enabled:
         return {"name": "dev", "oid": "dev-local", "roles": list(APP_ROLES), "auth": False}

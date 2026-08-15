@@ -9,7 +9,7 @@ from __future__ import annotations
 import sys
 from types import SimpleNamespace
 
-from app.core import auth as _auth
+from app.core import tenant_resolution as _tr
 import app.api.tenant as tapi
 from app.core.tenant import DOMAIN_IDS, TIER_DOMAINS, domains_for_tier
 from app.core.tenant_store import InMemoryTenantStore
@@ -32,10 +32,10 @@ def main() -> int:
 
     # onboard seeds from the tier passed in the body
     store = InMemoryTenantStore()
-    _auth._tenant_store = store
+    _tr._tenant_store = store
     tapi.onboard(tapi.OnboardBody(tier="shared"), SimpleNamespace(tid="t-1"))
     check("onboard seeds enabled_domains from tier", store.get("t-1").enabled_domains == domains_for_tier("shared"))
-    _auth._tenant_store = None
+    _tr._tenant_store = None
 
     if failures:
         print(f"\n❌ {len(failures)} assertion(s) failed.")

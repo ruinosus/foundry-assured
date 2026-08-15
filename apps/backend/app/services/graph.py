@@ -24,8 +24,8 @@ from functools import lru_cache
 
 from azure.identity import ClientSecretCredential
 
-from app.core.auth import APP_ROLES
-from app.core.settings import settings
+from app.shared.auth import APP_ROLES
+from app.shared.settings import settings
 
 _GRAPH = "https://graph.microsoft.com/v1.0"
 _SCOPE = "https://graph.microsoft.com/.default"

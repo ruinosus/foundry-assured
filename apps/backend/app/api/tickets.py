@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.core.auth import auth_dependencies
+from app.shared.auth import auth_dependencies
 from app.tools.tickets import list_tickets
 
 router = APIRouter()

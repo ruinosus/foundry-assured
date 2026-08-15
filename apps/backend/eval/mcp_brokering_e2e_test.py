@@ -142,7 +142,7 @@ def main() -> int:
     _tools_mod.tenant_config = lambda: test_tenant_cfg  # type: ignore[assignment]
 
     # Patch credential_for_request() so the header_provider closure uses DefaultAzureCredential.
-    import app.core.auth as _auth_mod
+    import app.shared.auth as _auth_mod
     _original_credential_fn = _auth_mod.credential_for_request
     _daz_cred = DefaultAzureCredential()
     _auth_mod.credential_for_request = lambda: _daz_cred  # type: ignore[assignment]

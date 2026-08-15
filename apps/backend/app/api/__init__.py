@@ -4,7 +4,7 @@ registered separately on the app in app/main.py."""
 from fastapi import APIRouter
 
 from app.api import admin, chat, evals, health, me, tickets
-from app.core.settings import settings
+from app.shared.settings import settings
 
 api_router = APIRouter()
 api_router.include_router(health.router)

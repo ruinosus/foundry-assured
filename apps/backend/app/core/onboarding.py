@@ -11,8 +11,8 @@ from __future__ import annotations
 from fastapi import HTTPException, Security
 from fastapi_azure_auth.user import User
 
-from app.core.auth import _current_user, azure_scheme
-from app.core.settings import settings
+from app.shared.auth import _current_user, azure_scheme
+from app.shared.settings import settings
 
 
 def onboarding_guard(user: User = Security(azure_scheme)) -> User:  # type: ignore[arg-type]

@@ -10,7 +10,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from app.core.auth import APP_ROLES, require_role
+from app.shared.auth import APP_ROLES, require_role
 from app.services import graph
 from app.services.graph import GraphError
 

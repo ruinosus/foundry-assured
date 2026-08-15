@@ -17,8 +17,8 @@ from agent_framework.foundry import FoundryChatClient
 from app.agents.mcp.tools import build_mcp_tools
 from app.agents.per_request import PerRequestAgent
 from app.agents.prompts import PLATFORM_INSTRUCTIONS
-from app.core.auth import credential_for_request
-from app.core.settings import settings  # platform-global (mcp_enabled)
+from app.shared.auth import credential_for_request
+from app.shared.settings import settings  # platform-global (mcp_enabled)
 from app.core.tenant import tenant_config  # per-tenant (foundry endpoint/model)
 
 

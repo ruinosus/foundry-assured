@@ -33,7 +33,7 @@ from agent_framework.azure import AzureAISearchContextProvider
 from azure.identity import DefaultAzureCredential
 
 from app.agents.secure_search import _chunk_component, authorized_components, trim_agentic_content
-from app.core.settings import settings
+from app.shared.settings import settings
 from app.core.tenant import tenant_config
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"

@@ -12,7 +12,7 @@ from types import SimpleNamespace
 
 from fastapi import HTTPException
 
-from app.core import auth
+from app.core import tenant_resolution
 from app.core.tenant import TenantConfig, current_tenant_id, set_current_tenant
 from app.core.tenant_store import InMemoryTenantStore, TenantRecord
 
@@ -32,13 +32,13 @@ def main() -> int:
                            data_plane=TenantConfig()))
 
     set_current_tenant(None)
-    auth.resolve_tenant(SimpleNamespace(tid="t-ok"), store)
+    tenant_resolution.resolve_tenant(SimpleNamespace(tid="t-ok"), store)
     check("onboarded tid resolves", current_tenant_id() == "t-ok")
 
     def denies(tid: str) -> bool:
         set_current_tenant(None)
         try:
-            auth.resolve_tenant(SimpleNamespace(tid=tid), store)
+            tenant_resolution.resolve_tenant(SimpleNamespace(tid=tid), store)
             return False
         except HTTPException as e:
             return e.status_code == 403

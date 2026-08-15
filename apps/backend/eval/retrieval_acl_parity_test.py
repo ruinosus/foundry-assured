@@ -40,7 +40,7 @@ import urllib.request
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from app.core.settings import settings
+from app.shared.settings import settings
 from app.core.tenant import tenant_config
 from app.services import retrieval
 

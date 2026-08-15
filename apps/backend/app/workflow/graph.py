@@ -4,7 +4,7 @@ Phase 3 makes the workflow per-request so each run uses the *signed-in user's*
 On-Behalf-Of credential (Foundry, KB, and memory called as that user) and their
 own memory scope. The AG-UI workflow factory receives only a thread_id, so the
 user identity comes from the request-scoped contextvar set by the auth dependency
-(see app.core.auth).
+(see app.shared.auth).
 
 When auth is disabled, credential_for_request() falls back to
 DefaultAzureCredential and memory_scope() to a dev scope, so this also works
@@ -15,7 +15,8 @@ WorkflowBuilder API verified against agent-framework 1.9.0.
 
 from agent_framework import Workflow, WorkflowBuilder
 
-from app.core.auth import credential_for_request, memory_scope
+from app.core.tenant_resolution import memory_scope
+from app.shared.auth import credential_for_request
 from app.workflow.agents import (
     build_resolve_agent,
     build_retrieve_agent,

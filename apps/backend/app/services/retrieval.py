@@ -39,7 +39,7 @@ from __future__ import annotations
 import base64
 import re
 
-from app.core.settings import settings
+from app.shared.settings import settings
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _KB_API = "2026-05-01-preview"  # verified in STEP 0.5 (the `messages`-schema retrieve)

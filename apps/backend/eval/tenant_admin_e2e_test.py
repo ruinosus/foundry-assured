@@ -112,7 +112,7 @@ def main() -> int:
     # Import here (after the gate) so offline runs never import azure-data-tables.
     from azure.identity import DefaultAzureCredential
 
-    from app.core.settings import settings
+    from app.shared.settings import settings
     from app.core.tenant import TenantConfig
     from app.core.tenant_store import (
         Connection,

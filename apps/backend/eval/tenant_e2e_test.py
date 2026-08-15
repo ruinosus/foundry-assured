@@ -67,7 +67,8 @@ from types import SimpleNamespace
 
 from fastapi import HTTPException
 
-from app.core import auth
+from app.core import tenant_resolution
+from app.shared import auth
 from app.core.tenant import (
     MultiTenantConfigProvider,
     TenantConfig,
@@ -199,13 +200,13 @@ def _seed_store(cfg: dict) -> InMemoryTenantStore:
 
 def _resolve_and_set(user_ns, store: InMemoryTenantStore) -> None:
     """Call resolve_tenant then MultiTenantConfigProvider.current() to set everything."""
-    auth.resolve_tenant(user_ns, store)
+    tenant_resolution.resolve_tenant(user_ns, store)
 
 
 def _assert_403(user_ns, store: InMemoryTenantStore) -> bool:
     set_current_tenant(None)
     try:
-        auth.resolve_tenant(user_ns, store)
+        tenant_resolution.resolve_tenant(user_ns, store)
         return False
     except HTTPException as exc:
         return exc.status_code == 403
@@ -300,14 +301,14 @@ def main() -> int:
     set_current_tenant(None)
     _resolve_and_set(user_a, store)
     auth._current_user.set(SimpleNamespace(oid=decoded_a_oid, roles=[]))
-    scope_a = auth.memory_scope()
+    scope_a = tenant_resolution.memory_scope()
     expected_scope_a = f"{cfg['a_tid']}:{decoded_a_oid}"
     check("(e) memory_scope for A is tid:oid", scope_a == expected_scope_a)
 
     set_current_tenant(None)
     _resolve_and_set(user_b, store)
     auth._current_user.set(SimpleNamespace(oid=decoded_b_oid, roles=[]))
-    scope_b = auth.memory_scope()
+    scope_b = tenant_resolution.memory_scope()
     expected_scope_b = f"{cfg['b_tid']}:{decoded_b_oid}"
     check("(e) memory_scope for B is tid:oid", scope_b == expected_scope_b)
     check("(e) A and B memory scopes are different", scope_a != scope_b)
@@ -315,7 +316,7 @@ def main() -> int:
     check("(e) scope B has B's tid prefix", scope_b.startswith(cfg["b_tid"] + ":"))
 
     print("\n  — test (f): _iss_callable issuer format —")
-    from app.core.auth import _iss_callable
+    from app.shared.auth import _iss_callable
     iss_a = _iss_callable(cfg["a_tid"])
     iss_b = _iss_callable(cfg["b_tid"])
     check("(f) issuer A is per-tenant v2 endpoint",

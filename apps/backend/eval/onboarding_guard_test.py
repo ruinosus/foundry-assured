@@ -11,8 +11,9 @@ from types import SimpleNamespace
 
 from fastapi import HTTPException
 
-from app.core import auth, onboarding
-from app.core.settings import settings
+from app.core import onboarding
+from app.shared import auth
+from app.shared.settings import settings
 
 
 def main() -> int:

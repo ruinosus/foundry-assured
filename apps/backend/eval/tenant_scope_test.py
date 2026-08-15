@@ -10,8 +10,13 @@ import sys
 
 from app.core.tenant import TenantConfig
 from app.core.tenant_store import (
-    Connection, InMemoryTenantStore, TenantRecord, validate_kind, with_connection,
+    Connection, InMemoryTenantStore, TenantRecord, set_server_catalog, validate_kind, with_connection,
 )
+# The catalog is injected by the composition root at boot (ADR-017); tests inject it too,
+# because tenancy no longer reaches into the platform registry for it.
+from app.agents.mcp.registry import SERVERS
+set_server_catalog(server.id for server in SERVERS)
+
 
 
 def main() -> int:

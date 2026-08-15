@@ -10,7 +10,6 @@ from dataclasses import dataclass, asdict, replace
 from typing import Protocol
 
 from app.core.tenant import TenantConfig
-from app.agents.mcp.registry import SERVERS
 
 
 @dataclass(frozen=True)
@@ -38,9 +37,32 @@ class TenantRecord:
     enabled_domains: tuple[str, ...] = ()   # NEW (D-runtime) — per-tenant license entitlement (ADR-010)
 
 
+# The MCP server catalog, injected by the composition root at boot (ADR-017). This file used
+# to `from app.agents.mcp.registry import SERVERS`, which was the cycle: tenancy imported the
+# platform domain while every agent imported tenancy. The catalog is platform data; tenancy
+# only needs the set of valid ids, so it receives them instead of reaching for them.
+_known_kinds: frozenset[str] | None = None
+
+
+def set_server_catalog(kinds) -> None:
+    """Register the valid connection kinds. Called once by the composition root."""
+    global _known_kinds
+    _known_kinds = frozenset(kinds)
+
+
 def validate_kind(kind: str) -> bool:
-    """True if `kind` is a registry server id (the catalog is the source of truth)."""
-    return any(s.id == kind for s in SERVERS)
+    """True if `kind` is a registry server id (the catalog is the source of truth).
+
+    Raises when no catalog was injected rather than rejecting everything: a silent False here
+    would turn a wiring mistake into "every connection kind is invalid", which reads like a
+    data problem and would be debugged in the wrong place.
+    """
+    if _known_kinds is None:
+        raise RuntimeError(
+            "connection-kind catalog not registered — the composition root must call "
+            "tenant_store.set_server_catalog() at boot"
+        )
+    return kind in _known_kinds
 
 
 def with_connection(rec: TenantRecord, conn: Connection) -> TenantRecord:

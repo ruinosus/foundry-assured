@@ -14,10 +14,10 @@ from fastapi import APIRouter, Depends, HTTPException, Security
 from fastapi_azure_auth.user import User
 from pydantic import BaseModel
 
-from app.core import auth as _auth
-from app.core.auth import _current_user, azure_scheme, require_role, require_user
+from app.core import tenant_resolution as _tenant_resolution
+from app.shared.auth import _current_user, azure_scheme, require_role, require_user
 from app.core.onboarding import onboarding_guard
-from app.core.settings import settings
+from app.shared.settings import settings
 from app.core.tenant import TenantConfig, current_tenant_id, DOMAIN_IDS, domains_for_tier
 from app.core.tenant_store import (
     Connection, TenantRecord, validate_kind, with_connection, without_connection,
@@ -29,9 +29,9 @@ _user_admin = [Depends(require_user), Depends(require_role("Admin"))]
 
 
 def _store():
-    if _auth._tenant_store is None:
+    if _tenant_resolution.tenant_store() is None:
         raise HTTPException(503, "tenant store unavailable")
-    return _auth._tenant_store
+    return _tenant_resolution.tenant_store()
 
 
 def _my_record() -> TenantRecord:

@@ -31,21 +31,33 @@ source_modules = [
 ]
 forbidden_modules = ["app.main"]
 
-# --- C0.2 — settings is the bottom of the world. It is the one file every layer reads, so it
-# must not read any of them back. This is the seed of the future `shared` kernel rule.
+# C0.2 (settings imports nothing from the app) was retired in Phase 2: settings moved to
+# app/shared/ and C2.1 below covers the whole shared kernel, which is strictly stronger.
+
+# --- C2.1 (Phase 2) — the shared kernel imports nothing from the app. This is the rule that
+# makes the other layers mean anything: `auth.py` was split (ADR-017) precisely so it holds.
 [[tool.importlinter.contracts]]
-name = "Settings imports nothing from the app"
+name = "Shared kernel imports no business module"
 type = "forbidden"
-source_modules = ["app.core.settings"]
+source_modules = ["app.shared"]
 forbidden_modules = [
     "app.api",
     "app.agents",
+    "app.core",
     "app.domains",
     "app.knowledge",
     "app.services",
     "app.tools",
     "app.workflow",
 ]
+
+# --- C2.2 (Phase 2) — the core<->agents cycle is dead. tenant_store used to import the MCP
+# registry for SERVERS; the composition root injects the ids now.
+[[tool.importlinter.contracts]]
+name = "core does not import agents (the dead cycle)"
+type = "forbidden"
+source_modules = ["app.core"]
+forbidden_modules = ["app.agents"]
 
 # =====================================================================================
 # TARGET CONTRACTS — enabled by the phase named on each. Kept here so the destination is

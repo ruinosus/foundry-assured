@@ -16,6 +16,11 @@ and read later in the same request task, so it propagates correctly.
 When Entra is not configured (settings.auth_enabled is False), everything falls
 back to DefaultAzureCredential + a dev scope so the app still boots locally.
 
+Shared kernel (ADR-017): this file knows about users, tokens and roles — never about
+tenants. Tenant resolution used to live here and now sits in
+`app/core/tenant_resolution.py`, plugged in through `set_post_authenticate()`. If you are
+about to import a business module from here, that is the seam you want instead.
+
 API verified: OnBehalfOfCredential(tenant_id, client_id, client_secret,
 user_assertion=...); fastapi-azure-auth User exposes .access_token + .oid.
 """
@@ -33,7 +38,7 @@ from fastapi_azure_auth import (
 )
 from fastapi_azure_auth.user import User
 
-from app.core.settings import settings
+from app.shared.settings import settings
 
 # App roles the app owns (Entra App Roles → token `roles` claim). The company maps its own
 # groups onto these; the app keeps the set small. See docs/RBAC-AND-USER-MANAGEMENT-PLAN.md.
@@ -74,58 +79,32 @@ if settings.auth_enabled:
         )
 
 
-def _make_tenant_store():
-    """Build the shared-mode store at boot. Uses the PLATFORM-global control-plane Storage
-    account (settings.tenant_store_account_url) — NOT per-tenant, since no tenant is resolved
-    at boot yet.
+# Post-authenticate hook — how tenancy plugs into the auth flow without the shared kernel
+# knowing what a tenant is (ADR-017). `app/core/tenant_resolution.install()` registers a
+# callback here in shared mode; the composition root calls it once at boot. When nothing is
+# registered (self_hosted/dedicated, auth off) `require_user` behaves exactly as before.
+_post_authenticate = None
 
-    settings.tenant_store_backend selects the impl: "table" (default, production — fail-fast if
-    no account URL) or "memory" (DEV/CI only — an ephemeral in-memory store so shared mode can
-    boot offline; NEVER use in production: it doesn't persist and isn't shared across instances).
+
+def set_post_authenticate(hook) -> None:
+    """Register a callable run with the validated User on every authenticated request.
+
+    Raises if a hook is already registered: two of them would mean two things silently
+    claiming the same choke point.
     """
-    if settings.tenant_store_backend == "memory":
-        from app.core.tenant_store import InMemoryTenantStore  # dev/CI: no Azure needed
-        return InMemoryTenantStore()
-    from app.core.tenant_store import TableStorageTenantStore  # lazy: shared mode only
-    if not settings.tenant_store_account_url:
-        raise RuntimeError("DEPLOYMENT_MODE=shared requires TENANT_STORE_ACCOUNT_URL")
-    return TableStorageTenantStore(
-        settings.tenant_store_account_url, settings.tenant_store_table, DefaultAzureCredential()
-    )
-
-
-def resolve_tenant(user, store) -> None:
-    """Authorization choke point: onboarded+active tid → set _current_tenant, else 403."""
-    from app.core.tenant import set_current_tenant
-    rec = store.get(getattr(user, "tid", None))
-    if rec is None or rec.status != "active":
-        raise HTTPException(status_code=403, detail="tenant not onboarded")
-    set_current_tenant(rec)
-
-
-# In shared mode only, switch the active config provider to MultiTenant and build the tenant
-# store once at boot (fail-fast if misconfigured). self_hosted/dedicated and auth-off NEVER
-# touch either — the default SingleTenant provider stays and no store is constructed.
-_tenant_store = None
-if settings.auth_enabled and settings.deployment_mode == "shared":
-    from app.core.tenant import MultiTenantConfigProvider, set_provider
-    set_provider(MultiTenantConfigProvider())
-    _tenant_store = _make_tenant_store()  # fail-fast at boot if misconfigured
+    global _post_authenticate
+    if _post_authenticate is not None and hook is not None:
+        raise RuntimeError("a post-authenticate hook is already registered")
+    _post_authenticate = hook
 
 
 if settings.auth_enabled:
-    if settings.deployment_mode == "shared":
 
-        async def require_user(user: User = Security(azure_scheme)) -> User:  # type: ignore[arg-type]
-            _current_user.set(user)
-            resolve_tenant(user, _tenant_store)
-            return user
-
-    else:
-
-        async def require_user(user: User = Security(azure_scheme)) -> User:  # type: ignore[arg-type]
-            _current_user.set(user)
-            return user
+    async def require_user(user: User = Security(azure_scheme)) -> User:  # type: ignore[arg-type]
+        _current_user.set(user)
+        if _post_authenticate is not None:
+            _post_authenticate(user)
+        return user
 
 else:
 
@@ -196,14 +175,5 @@ def credential_for_request() -> TokenCredential:
     return DefaultAzureCredential()
 
 
-def memory_scope() -> str:
-    """Per-user memory namespace, tenant-prefixed in multi-tenant mode.
-
-    SingleTenant keeps the bare user.oid (memory keys are persisted — prefixing would orphan
-    existing memories). Only MultiTenant prefixes by tid.
-    """
-    from app.core.tenant import current_tenant_id  # local import avoids a cycle
-    user = current_user()
-    base = user.oid if (user is not None and user.oid) else "dev-local"
-    tid = current_tenant_id()
-    return f"{tid}:{base}" if tid else base
+# `memory_scope()` moved to app/core/tenant_resolution.py — it needs the tenant, and the
+# shared kernel does not know what a tenant is (ADR-017).

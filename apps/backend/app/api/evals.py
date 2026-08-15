@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from app.core.auth import auth_dependencies
+from app.shared.auth import auth_dependencies
 from app.services.foundry_evals import list_eval_runs
 
 router = APIRouter()

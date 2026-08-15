@@ -241,7 +241,7 @@ def require_domain(domain_id: str):
     """
     from fastapi import Depends, HTTPException
 
-    from app.core.auth import require_user
+    from app.shared.auth import require_user
 
     async def _check(_user=Depends(require_user)) -> None:
         rec = _current_tenant.get()

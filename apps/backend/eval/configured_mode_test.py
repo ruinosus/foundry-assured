@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import sys
 
-from app.core.settings import settings
+from app.shared.settings import settings
 
 
 def main() -> int:

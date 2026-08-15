@@ -26,8 +26,8 @@ from agent_framework_ag_ui import add_agent_framework_fastapi_endpoint
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import StreamingResponse
 
-from app.core.auth import auth_dependencies
-from app.core.settings import settings
+from app.shared.auth import auth_dependencies
+from app.shared.settings import settings
 from app.core.tenant import require_domain, tenant_config
 
 
@@ -113,7 +113,7 @@ def _mount_grounded(app: FastAPI, d: DomainSpec) -> None:
     endpoint body (the contextvar is lost inside the StreamingResponse generator)."""
 
     async def endpoint(request: Request) -> StreamingResponse:
-        from app.core.auth import current_user
+        from app.shared.auth import current_user
         from app.services.grounded import stream_grounded
 
         return StreamingResponse(

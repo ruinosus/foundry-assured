@@ -71,8 +71,8 @@ def main() -> int:
     check("grounded guard allows search_index-only", ok_index)
 
     # --- _domain_deps: self_hosted → exactly auth_dependencies() (no domain gate) ---
-    from app.core.auth import auth_dependencies
-    from app.core.settings import settings
+    from app.shared.auth import auth_dependencies
+    from app.shared.settings import settings
 
     orig_mode = settings.deployment_mode
     try:

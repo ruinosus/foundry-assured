@@ -143,7 +143,7 @@ async def stream_platform_agui(body: dict) -> AsyncGenerator[str]:
 
         import httpx
 
-        from app.core.auth import credential_for_request
+        from app.shared.auth import credential_for_request
 
         # TODO(infra-gated): confirm the Foundry data-plane scope against the deployed agent.
         # `https://ai.azure.com/.default` is best-evidence (the AI Projects audience), NOT pinned

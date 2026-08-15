@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 
-from app.core.auth import auth_dependencies
+from app.shared.auth import auth_dependencies
 from app.core.tenant import tenant_config
 from app.domains import _domain_deps
 from app.services.hosted import stream_agui, stream_platform_agui

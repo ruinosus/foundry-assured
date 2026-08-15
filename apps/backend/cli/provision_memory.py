@@ -19,7 +19,7 @@ from azure.ai.projects.models import MemoryStoreDefaultDefinition
 from azure.core.exceptions import ResourceNotFoundError
 from azure.identity.aio import DefaultAzureCredential
 
-from app.core.settings import settings
+from app.shared.settings import settings
 from app.core.tenant import tenant_config
 
 

@@ -14,7 +14,7 @@ The /selfwiki endpoint still requires sign-in. APIs mirror app/agents/cockpit.py
 (agent-framework 1.9.0).
 """
 
-from app.core.settings import settings
+from app.shared.settings import settings
 from app.core.tenant import tenant_config
 
 

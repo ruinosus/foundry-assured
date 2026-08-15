@@ -13,7 +13,8 @@
       "main.py"
     ],
     "platform_ops": [
-      "domains.py"
+      "domains.py",
+      "main.py"
     ],
     "shared": [
       "api/__init__.py",
@@ -72,6 +73,7 @@
     ],
     "tenancy": [
       "workflow/agents.py",
+      "workflow/graph.py",
       "workflow/memory.py"
     ],
     "tickets": [
@@ -119,19 +121,12 @@
       "agents/platform.py"
     ]
   },
-  "shared": {
-    "tenancy": [
-      "core/auth.py"
-    ]
-  },
   "tenancy": {
-    "platform_ops": [
-      "core/tenant_store.py"
-    ],
     "shared": [
       "api/tenant.py",
       "core/onboarding.py",
-      "core/tenant.py"
+      "core/tenant.py",
+      "core/tenant_resolution.py"
     ]
   },
   "tickets": {
