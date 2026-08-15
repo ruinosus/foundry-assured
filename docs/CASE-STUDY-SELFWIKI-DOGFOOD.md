@@ -86,7 +86,7 @@ KB_KNOWLEDGE_SOURCE=selfwiki-docbundles-ks \
 COCKPIT_STORAGE_CONTAINER=selfwiki-corpus \
 COCKPIT_SEARCH_KNOWLEDGE_BASE=selfwiki-kb \
 COCKPIT_DOCBUNDLES=../../docs/wiki \
-  uv run python -m app.knowledge.ingest_docbundles
+  uv run python -m app.modules.knowledge.internal.ingest_docbundles
 ```
 
 The agent (`app/modules/grounded/internal/selfwiki.py`) is a thin mirror of the Cockpit agent pointed at a

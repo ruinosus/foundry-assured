@@ -164,7 +164,7 @@ azd up
 ./scripts/setup-entra.sh                    # opcional: sign-in Entra + OBO
 ./scripts/bootstrap.sh                      # preenche .env, ingesta a KB, provisiona memória
 # de apps/backend/:
-uv run python -m app.knowledge.ingest       # (re)constrói a Foundry IQ KB
+uv run python -m app.modules.knowledge.internal.ingest       # (re)constrói a Foundry IQ KB
 uv run python -m cli.provision_memory       # cria o memory store
 azd deploy helpdesk-concierge               # hosted agent (idem cockpit-expert/selfwiki-expert/platform-concierge)
 ```

@@ -121,7 +121,7 @@ jobs:
           uv sync --frozen
           VERSION="v0.$(date -u +%Y%m%d)"
           echo "BUNDLE_VERSION=$VERSION" >> "$GITHUB_ENV"
-          uv run python -m app.knowledge.adapt_openwiki \
+          uv run python -m app.modules.knowledge.internal.adapt_openwiki \
             --repo "$GITHUB_WORKSPACE" \
             --component "$COMPONENT" \
             --version "$VERSION" \

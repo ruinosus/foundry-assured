@@ -87,6 +87,13 @@ jobs:
       - name: Filesystem anchors (no parents[N] path counting)
         run: uv run python -m tests.architecture.filesystem_anchors_test
 
+      # Module invocations in YAML and shell. The other architecture gates all read Python,
+      # so none of them saw that ADR-017 broke four `python -m app.knowledge.*` calls in
+      # workflows and scripts. wiki-regen is workflow_dispatch, so the break only surfaced
+      # when someone dispatched it, hours after the merge. Invariant I-6, as a gate.
+      - name: Module invocations resolve (workflows + scripts)
+        run: uv run python -m tests.architecture.module_invocations_test
+
   frontend:
     name: Frontend · typecheck + build
     runs-on: ubuntu-latest

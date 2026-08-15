@@ -2,7 +2,7 @@
 # Convert non-Markdown source documents (PDF, Word, PowerPoint, Excel, HTML, images
 # with OCR, …) into Markdown for a knowledge base, using Microsoft MarkItDown.
 #
-# Real-world corpora are rarely Markdown. The Foundry IQ ingestion (app.knowledge.ingest)
+# Real-world corpora are rarely Markdown. The Foundry IQ ingestion (app.modules.knowledge.internal.ingest)
 # expects Markdown, so run this first, drop the .md into your corpus, then ingest.
 #
 #   ./scripts/to-markdown.sh handbook.pdf onboarding.docx        # → handbook.md, onboarding.md (beside each)

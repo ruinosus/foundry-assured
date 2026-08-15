@@ -56,7 +56,7 @@ echo "▸ Writing ${FRONT_ENV}…"
 upsert "$FRONT_ENV" AGUI_URL "http://localhost:8000/helpdesk"
 
 echo "▸ Ingesting the knowledge base (corpus → Foundry IQ KB; a few minutes)…"
-( cd "$BACK" && uv run python -m app.knowledge.ingest )
+( cd "$BACK" && uv run python -m app.modules.knowledge.internal.ingest )
 
 echo "▸ Provisioning the Foundry memory store…"
 ( cd "$BACK" && uv run python -m cli.provision_memory )

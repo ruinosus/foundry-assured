@@ -52,7 +52,7 @@ The grounded answers come from a Foundry IQ knowledge base built from markdown.
    `"Internal engineering runbooks and policies (helpdesk corpus)"`).
 3. Re-ingest so the cloud KB reflects the new corpus:
    ```bash
-   cd apps/backend && uv run python -m app.knowledge.ingest
+   cd apps/backend && uv run python -m app.modules.knowledge.internal.ingest
    ```
 
 That's the whole "what does it know" swap. No code changes.
