@@ -41,6 +41,14 @@ jobs:
       # field the producer's model never had, and a second generator grew from it.
       - name: Doc-bundle contract (producer ↔ consumer field agreement)
         run: uv run python -m eval.docbundle_contract_test
+      # The fidelity gate runs at GENERATION (wiki-regen.yml), on one bundle, once. The ingest
+      # then walks knowledge/wiki-bundle/** and uploads whatever is committed — so a bundle stays in
+      # the knowledge base long after the code it describes has moved. Two did: they scored
+      # 27.5% and 36.7% because ADR-017 relocated every backend module, and 19 pages were
+      # telling the agent about files that no longer exist. This re-measures the whole shelf on
+      # every push, so a stale bundle cannot sit there unnoticed. Offline + deterministic.
+      - name: Wiki shelf fidelity (every COMMITTED bundle, not just the newest)
+        run: uv run python -m eval.wiki_shelf_test
       # Prompt-invariant eval suite over the declarative agent definitions — THE
       # guard of record for prompt contracts (ADR-013 phase 2; the byte-equivalence
       # gate retired when the prompts started evolving as persona + guardrails).
