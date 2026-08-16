@@ -47,6 +47,7 @@ from pathlib import Path
 from agent_framework.foundry import FoundryChatClient
 from azure.identity import DefaultAzureCredential
 
+import app as _app
 from app.modules.tenancy.public import tenant_config
 
 
@@ -63,7 +64,10 @@ from app.modules.knowledge.internal.docbundle_schema import validate_manifest
 
 logger = logging.getLogger(__name__)
 
-_SKILLS_DIR = Path(__file__).parent / "skills"
+# Anchored on the `app` package (RULE #9): the skills live at `app/modules/knowledge/skills`,
+# beside `internal/`, not inside it. `Path(__file__).parent / "skills"` pointed at
+# `internal/skills`, which does not exist.
+_SKILLS_DIR = Path(_app.__file__).resolve().parent / "modules" / "knowledge" / "skills"
 _IGNORE = {
     "node_modules", "bin", "obj", "packages", ".vs", "target", "vendor",
     ".terraform", "dist", "build", ".venv", "__pycache__", ".git", ".idea",

@@ -44,6 +44,17 @@ PROFILES = {
 
 def main() -> int:
     profile = sys.argv[1]
+    # A profile must be HERMETIC, not merely additive. `settings` reads `.env` from the cwd,
+    # so a developer's local file was enough to change the captured surface: setting
+    # AZURE_OPENAI_ENDPOINT there mounted /oncall inside the `self_hosted` profile, whose
+    # entire job is to prove /oncall does NOT mount without one. The snapshot then reported a
+    # route change that existed only on that machine.
+    #
+    # Blanking every key any profile mentions makes each profile mean what it says: the keys
+    # it omits are absent, not inherited. Blank rather than deleted because `.env` is read
+    # after this and would put them back.
+    for key in {k for values in PROFILES.values() for k in values}:
+        os.environ[key] = ""
     for key, value in PROFILES[profile].items():
         os.environ[key] = value
 
