@@ -98,11 +98,29 @@ def _literal_segments(node: ast.AST) -> list[str] | None:
 
 
 def _resolve_base(node: ast.AST, path: pathlib.Path) -> pathlib.Path | None:
-    """The directory a `Path(__file__)` / `Path(<pkg>.__file__)` base with `.parent`s denotes."""
+    """The directory a `Path(__file__)` / `Path(<pkg>.__file__)` base with `.parent`s denotes.
+
+    Peels BOTH links in the chain: `.parent` (an Attribute) and no-argument calls like
+    `.resolve()` (a Call wrapping an Attribute). Stopping at the first Call is what let
+    `eval/run_eval.py` slip through — it reads
+
+        Path(__file__).resolve().parent.parent / "app" / "knowledge" / "corpus"
+
+    which is the pre-ADR-017 layout and resolves to nothing. `_corpus_by_title()` returned an
+    empty map, no eval item got a `context`, and Foundry's groundedness judge scored
+    `{'passed': 0, 'failed': 0}` — a whole assurance dimension silently switched off while the
+    run reported success. A gate that skips what it cannot parse reports the same green as a
+    gate that checked, which is the failure this file exists to prevent.
+    """
     attrs: list[str] = []
-    while isinstance(node, ast.Attribute):
-        attrs.append(node.attr)
-        node = node.value
+    while True:
+        if isinstance(node, ast.Attribute):
+            attrs.append(node.attr)
+            node = node.value
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and not node.args:
+            node = node.func  # `.resolve()` / `.absolute()` — transparent for this purpose
+        else:
+            break
     if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
         return None
     if node.func.id != "Path" or not node.args:

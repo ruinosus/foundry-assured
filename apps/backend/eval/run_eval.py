@@ -46,12 +46,19 @@ from eval.assertions import (
     selfwiki_cites_source,
 )
 
+import app as _app
+
 _DATASETS = Path(__file__).resolve().parent / "datasets"
 _GOLDEN = _DATASETS / "golden.jsonl"
 _TECHDOCS_GOLDEN = _DATASETS / "techdocs_golden.jsonl"
 _SELFWIKI_GOLDEN = _DATASETS / "selfwiki_golden.jsonl"
 _ADVERSARIAL = _DATASETS / "adversarial.jsonl"
-_CORPUS = Path(__file__).resolve().parent.parent / "app" / "knowledge" / "corpus"
+# Anchored on the `app` package (RULE #9), and pointing at the corpus's real home. This read
+# `.../app/knowledge/corpus` — the pre-ADR-017 layout — so it resolved to nothing, and nothing
+# failed: `_corpus_by_title()` just returned an empty map. The consequence only showed up in the
+# cloud run, as `groundedness: {'passed': 0, 'failed': 0}`, because with no context to check
+# against, the judge has nothing to score. The eval still printed a pass.
+_CORPUS = Path(_app.__file__).resolve().parents[3] / "knowledge" / "corpus"
 _RUNS = Path(__file__).resolve().parent / "runs.jsonl"
 _ASSURANCE = Path(__file__).resolve().parent / "assurance.yaml"
 
