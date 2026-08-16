@@ -29,8 +29,6 @@ def oncall_configured() -> bool:
     Fail-closed on shared mode: see the checkpointer warning in the module docstring. A domain
     that mounts but loses interrupts under load is worse than a domain that does not mount.
     """
-    import os
-
     if settings.deployment_mode == "shared":
         return False
-    return bool(os.environ.get("AZURE_OPENAI_ENDPOINT") and settings.oncall_model)
+    return bool(settings.azure_openai_endpoint and settings.oncall_model)

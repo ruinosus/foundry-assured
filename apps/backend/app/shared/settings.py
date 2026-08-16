@@ -39,6 +39,15 @@ class PlatformSettings(BaseSettings):
     # The LangGraph on-call domain's model (ADR-020). Azure OpenAI deployment name — that
     # runtime uses LangChain's own client, so it does not go through FoundryChatClient.
     oncall_model: str = "gpt-5-mini"
+    # LangChain's Azure client wants the OpenAI-shaped endpoint, not the Foundry project one.
+    # Read through settings (not os.environ) so a value in .env actually reaches the code —
+    # pydantic-settings loads .env into the model, never into the process environment.
+    azure_openai_endpoint: str = ""
+    # Probed against the deployed resource, not guessed: 2026-05-01-preview returns 404 on
+    # this account; 2025-04-01-preview and 2024-10-21 both return 200. An api-version that does
+    # not exist fails as "Resource not found", which reads like a wrong endpoint and sends you
+    # looking in the wrong place.
+    azure_openai_api_version: str = "2025-04-01-preview"
 
     # Telemetry content capture (I-10). OFF by default and meant to stay off outside
     # debugging: ON lets prompts, messages and tool arguments reach span EVENTS (never

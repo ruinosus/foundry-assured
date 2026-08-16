@@ -26,7 +26,6 @@ module's public docstring so nobody ships multi-tenant on top of it by accident.
 
 from __future__ import annotations
 
-import os
 from typing import Annotated
 
 from langchain.agents import create_agent
@@ -45,9 +44,14 @@ INTERRUPT_ON = {
 }
 
 ONCALL_INSTRUCTIONS = (
-    "You are an on-call triage assistant. Assess the severity of what the user reports, "
-    "state the immediate mitigation if there is one, and escalate only when a human needs to "
-    "act. Never claim an escalation happened unless the tool returned a ticket."
+    "Você é um assistente de triagem de plantão. Responda SEMPRE em português do Brasil.\n\n"
+    "Fluxo obrigatório:\n"
+    "1. Chame `assess_severity` com o sintoma relatado.\n"
+    "2. Se a severidade for sev1 ou sev2, OU se a pessoa pedir para escalar/abrir chamado, "
+    "chame `escalate_incident` imediatamente — NÃO peça confirmação em texto. A aprovação "
+    "humana já acontece fora do seu controle, antes da ferramenta executar; pedir confirmação "
+    "no chat duplica isso e trava o fluxo.\n"
+    "3. Nunca afirme que um chamado foi aberto sem que a ferramenta tenha retornado um ticket."
 )
 
 
@@ -55,11 +59,20 @@ ONCALL_INSTRUCTIONS = (
 def assess_severity(symptom: Annotated[str, "What the user reported."]) -> str:
     """Classify an incident's severity from its symptom. Read-only: never stops for approval."""
     lowered = symptom.lower()
-    if any(word in lowered for word in ("down", "outage", "data loss", "breach")):
-        return "sev1 — user-facing outage or data risk; escalate now"
-    if any(word in lowered for word in ("slow", "degraded", "error rate", "flaky")):
-        return "sev2 — degraded but serving; escalate if it persists"
-    return "sev3 — no user impact observed; handle in business hours"
+    # Keywords in BOTH languages: the product answers in Brazilian Portuguese, and an
+    # English-only keyword list silently classified "o checkout está fora do ar" as sev3 —
+    # the classifier was blind to the language its own users write in.
+    if any(w in lowered for w in (
+        "fora do ar", "indisponível", "caiu", "perda de dados", "vazamento", "invasão",
+        "down", "outage", "data loss", "breach",
+    )):
+        return "sev1 — indisponibilidade para o usuário ou risco a dados; escale agora"
+    if any(w in lowered for w in (
+        "lento", "lentidão", "degradado", "taxa de erro", "intermitente", "instável",
+        "slow", "degraded", "error rate", "flaky",
+    )):
+        return "sev2 — degradado mas servindo; escale se persistir"
+    return "sev3 — sem impacto observado ao usuário; tratar em horário comercial"
 
 
 @tool
@@ -89,8 +102,8 @@ def build_oncall_graph():
     )
     model = AzureChatOpenAI(
         azure_deployment=settings.oncall_model,
-        azure_endpoint=os.environ.get("AZURE_OPENAI_ENDPOINT", ""),
-        api_version=os.environ.get("AZURE_OPENAI_API_VERSION", "2026-05-01-preview"),
+        azure_endpoint=settings.azure_openai_endpoint,
+        api_version=settings.azure_openai_api_version,
         azure_ad_token_provider=token_provider,
     )
     return create_agent(

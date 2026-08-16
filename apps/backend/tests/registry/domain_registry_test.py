@@ -16,15 +16,43 @@ from app.registry import DomainSpec, domain_deps, _domains, mount_domains
 
 
 class _FakeApp:
-    """Records add_api_route calls (grounded branch) so we can assert the routes + their deps."""
+    """Records the routes `mount_domains` registers, by BOTH mechanisms it actually uses.
+
+    `add_api_route` is the grounded branch. `post` is the LangGraph one: ADR-020 mounts that
+    domain through `add_langgraph_fastapi_endpoint`, which registers with `@app.post(path)` — a
+    decorator, not a method call. A stub that only knew `add_api_route` raised AttributeError the
+    moment the second runtime mounted, and it did so ONLY on a machine with AZURE_OPENAI_ENDPOINT
+    set, because `oncall_configured()` gates the mount. Green in CI, red locally, for a stub gap
+    rather than a real defect — so the stub grew the second mechanism instead of the test
+    pretending one runtime is all there is.
+    """
 
     def __init__(self) -> None:
         self.routes: list[dict] = []
+        self.posted: list[str] = []
+        self.gotten: list[str] = []
 
     def add_api_route(self, path, endpoint, *, methods=None, dependencies=None, **kw) -> None:
         self.routes.append(
             {"path": path, "endpoint": endpoint, "methods": methods, "dependencies": dependencies}
         )
+
+    def post(self, path, **kw):
+        """`@app.post(path)` — record the path and hand the function straight back."""
+        return self._record(self.posted, path)
+
+    def get(self, path, **kw):
+        """`@app.get(path)` — the adapter also registers `<path>/health` beside the endpoint."""
+        return self._record(self.gotten, path)
+
+    @staticmethod
+    def _record(sink: list[str], path: str):
+        sink.append(path)
+
+        def decorator(fn):
+            return fn
+
+        return decorator
 
 
 def main() -> int:
