@@ -34,10 +34,21 @@ PROFILES = {
         "AZURE_SEARCH_KNOWLEDGE_BASE": "snapshot-kb",
         "AZURE_OPENAI_ENDPOINT": "https://snapshot.invalid",
     },
+    # Shared mode only comes alive when auth is ON: `tenancy.install()` returns early unless
+    # `auth_enabled and deployment_mode == "shared"`. Without the ENTRA_* keys below this profile
+    # took that early return and captured a shared-mode surface that had never resolved a tenant
+    # — green, and meaningless. It only surfaced when a developer ran setup-entra.sh and the real
+    # ENTRA_* leaked in from `.env`, at which point the profile started demanding a tenant store.
+    #
+    # So the profile now DECLARES what shared mode needs: synthetic Entra values to switch auth
+    # on, and the in-memory tenant store (the documented dev/CI backend) so it boots offline.
     "shared": {
         "DEPLOYMENT_MODE": "shared",
         "MCP_ENABLED": "true",
         "FOUNDRY_PROJECT_ENDPOINT": "https://snapshot.invalid/api/projects/snapshot",
+        "ENTRA_TENANT_ID": "00000000-0000-0000-0000-000000000000",
+        "ENTRA_API_CLIENT_ID": "00000000-0000-0000-0000-000000000001",
+        "TENANT_STORE_BACKEND": "memory",
     },
 }
 
