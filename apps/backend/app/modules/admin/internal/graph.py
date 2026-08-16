@@ -32,6 +32,31 @@ _SCOPE = "https://graph.microsoft.com/.default"
 
 
 def _token() -> str:
+    # Missing configuration is a GraphError, not a crash. `ClientSecretCredential` raises a bare
+    # `ValueError("client_id should be the id of a Microsoft Entra application")` when handed an
+    # empty client id — and that is not a GraphError, so it sails past `_guard` and reaches the
+    # browser as an opaque 500. Which is exactly what /admin/users did on any environment without
+    # Entra wired: a page that cannot work, failing in a way that tells nobody why.
+    #
+    # The same escape route was already patched once in `_graph` (see the URL-encoding note
+    # below); this is the other door into it.
+    missing = [
+        name
+        for name, value in (
+            ("ENTRA_TENANT_ID", settings.entra_tenant_id),
+            ("ENTRA_API_CLIENT_ID", settings.entra_api_client_id),
+            ("ENTRA_API_CLIENT_SECRET", settings.entra_api_client_secret),
+        )
+        if not value
+    ]
+    if missing:
+        raise GraphError(
+            503,
+            "User management needs Microsoft Graph app-only credentials, and "
+            f"{', '.join(missing)} {'is' if len(missing) == 1 else 'are'} not set. "
+            "Run ./scripts/setup-entra.sh, or use this environment without the admin pages.",
+        )
+
     cred = ClientSecretCredential(
         tenant_id=settings.entra_tenant_id,
         client_id=settings.entra_api_client_id,
