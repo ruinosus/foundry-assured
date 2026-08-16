@@ -148,8 +148,19 @@ def dangling() -> list[tuple[str, int, str]]:
             tree = ast.parse(path.read_text())
         except SyntaxError:
             continue
+        # `a / "x" / "y"` nests: the outer BinOp contains an inner one for `a / "x"`. Walking
+        # naively judges BOTH, so one line reports the full path AND every prefix of it — three
+        # findings for one mistake, and the prefixes are usually directories that legitimately
+        # do not exist on their own. Only the outermost expression is a real path.
+        inner = {
+            n.left
+            for n in ast.walk(tree)
+            if isinstance(n, ast.BinOp) and isinstance(n.op, ast.Div)
+        }
         for node in ast.walk(tree):
             if not (isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div)):
+                continue
+            if node in inner:
                 continue
             segments = _literal_segments(node)
             if not segments:
@@ -162,9 +173,16 @@ def dangling() -> list[tuple[str, int, str]]:
             if base is None:
                 continue
             target = base.joinpath(*segments)
-            # A file the app WRITES need not exist yet; its directory must.
-            probe = target.parent if target.suffix in _RUNTIME_SUFFIXES else target
-            if not probe.exists():
+            # A file the app WRITES is skipped entirely — not just the file, its directory too.
+            # The first version probed `target.parent`, reasoning that the file may not exist yet
+            # but its folder must. That was wrong for the common case: writers call
+            # `.parent.mkdir(parents=True, exist_ok=True)` and create the whole tree on first use.
+            # `tickets.py` does exactly that, so this gate went red on CI (where nobody had opened
+            # a ticket) while passing locally (where someone had) — a check that depends on
+            # whether the machine happened to run the feature is worse than no check.
+            if target.suffix in _RUNTIME_SUFFIXES or target.parent.suffix in _RUNTIME_SUFFIXES:
+                continue
+            if not target.exists():
                 found.append((str(path.relative_to(BACKEND)), node.lineno, str(target)))
     return found
 
