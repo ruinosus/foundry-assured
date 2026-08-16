@@ -52,6 +52,9 @@ param embeddingCapacity int = 100
 @description('Azure AI Search SKU. Basic is the floor for agentic retrieval (managed identity).')
 param searchSkuName string = 'basic'
 
+@description('Deploy Azure AI Search. TRUE by default — the grounded domains (selfwiki, techdocs) and the per-document ACL both need it. Set FALSE for an environment that only exercises the model-driven domains (helpdesk workflow, platform MCP, the LangGraph oncall domain): AI Search Basic bills ~US$74/month for merely existing, and it is the single largest fixed cost of this project.')
+param deploySearch bool = true
+
 @description('Region for Azure AI Search. Empty falls back to the main location; override if a region is out of Search capacity.')
 param searchLocation string = ''
 
@@ -236,7 +239,7 @@ resource promptsShare 'Microsoft.Storage/storageAccounts/fileServices/shares@202
 // Azure AI Search (the Foundry IQ knowledge base lives here)
 // ---------------------------------------------------------------------------
 
-resource search 'Microsoft.Search/searchServices@2024-06-01-preview' = {
+resource search 'Microsoft.Search/searchServices@2024-06-01-preview' = if (deploySearch) {
   name: searchName
   location: searchRegion
   tags: tags
@@ -299,7 +302,7 @@ resource appToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   }
 }
 
-resource appToSearch 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource appToSearch 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deploySearch) {
   name: guid(search.id, appIdentity.id, roleSearchIndexDataReader)
   scope: search
   properties: {
@@ -314,7 +317,7 @@ resource appToSearch 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
 // ---------------------------------------------------------------------------
 
 // Search MI -> call embedding + query-planning models on the Foundry account.
-resource searchToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource searchToFoundry 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deploySearch) {
   name: guid(account.id, search.id, roleCognitiveServicesUser)
   scope: account
   properties: {
@@ -350,7 +353,7 @@ resource projectToRegistry 'Microsoft.Authorization/roleAssignments@2022-04-01' 
 }
 
 // Search MI -> read corpus blobs during ingestion.
-resource searchToStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+resource searchToStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deploySearch) {
   name: guid(storage.id, search.id, roleStorageBlobDataReader)
   scope: storage
   properties: {
@@ -361,7 +364,7 @@ resource searchToStorage 'Microsoft.Authorization/roleAssignments@2022-04-01' = 
 }
 
 // Caller (deploying user) -> create knowledge base + knowledge source.
-resource userSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
+resource userSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deploySearch && !empty(principalId)) {
   name: guid(search.id, principalId, roleSearchServiceContributor)
   scope: search
   properties: {
@@ -376,7 +379,7 @@ resource userSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-
 // reconciliation (ingest_docbundles.purge_orphans) both need Search Index Data Contributor — Reader
 // can only query, so a from-scratch `azd up` would 403 on ACL stamping without this. Contributor
 // is a superset of Data Reader, so it also covers retrieval from the local backend.
-resource userSearchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
+resource userSearchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deploySearch && !empty(principalId)) {
   name: guid(search.id, principalId, roleSearchIndexDataContributor)
   scope: search
   properties: {
@@ -423,7 +426,7 @@ resource userAiUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!
 // assignment name, while these names are `guid(scope, principal, role)`. A later provision would try
 // to create the same triple under its deterministic name and fail with RoleAssignmentExists — so the
 // manual shortcut would break the next `azd up` rather than merely drift from it.
-resource ciSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(ciPrincipalId)) {
+resource ciSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deploySearch && !empty(ciPrincipalId)) {
   name: guid(search.id, ciPrincipalId, roleSearchServiceContributor)
   scope: search
   properties: {
@@ -433,7 +436,7 @@ resource ciSearchContributor 'Microsoft.Authorization/roleAssignments@2022-04-01
   }
 }
 
-resource ciSearchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(ciPrincipalId)) {
+resource ciSearchIndexContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (deploySearch && !empty(ciPrincipalId)) {
   name: guid(search.id, ciPrincipalId, roleSearchIndexDataContributor)
   scope: search
   properties: {
@@ -489,7 +492,7 @@ output AZURE_AI_PROJECT_ID string = project.id
 // grant each hosted agent's deploy-time instance identity its runtime roles (Azure AI User on the
 // account, Search Index Data Reader on search), which Bicep can't pre-assign (identity is minted at deploy).
 output AZURE_AI_ACCOUNT_ID string = account.id
-output AZURE_SEARCH_ID string = search.id
+output AZURE_SEARCH_ID string = deploySearch ? search.id : ''
 output AZURE_AI_ACCOUNT_ENDPOINT string = account.properties.endpoint
 output AZURE_AI_OPENAI_ENDPOINT string = 'https://${accountName}.openai.azure.com'
 output FOUNDRY_MODEL string = modelDeploymentName
@@ -498,7 +501,9 @@ output FOUNDRY_EMBEDDING_MODEL string = embeddingModelName
 // Observability — set in the local/app env to export gen_ai OTEL spans to App Insights.
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = appInsights.properties.ConnectionString
 
-output AZURE_SEARCH_ENDPOINT string = 'https://${searchName}.search.windows.net'
+// Empty when Search is not deployed — `_knowledge_configured()` reads this and falls
+// back to the ungrounded concierge, which is the correct behaviour without a KB.
+output AZURE_SEARCH_ENDPOINT string = deploySearch ? 'https://${searchName}.search.windows.net' : ''
 output AZURE_SEARCH_KNOWLEDGE_BASE string = 'helpdesk-kb'
 
 output AZURE_STORAGE_ACCOUNT string = storage.name

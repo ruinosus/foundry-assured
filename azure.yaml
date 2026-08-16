@@ -11,18 +11,6 @@ services:
         docker:
             path: Dockerfile
             remoteBuild: true
-    techdocs-expert:
-        project: apps/hosted-techdocs
-        host: azure.ai.agent
-        language: docker
-        docker:
-            remoteBuild: true
-        config:
-            container:
-                resources:
-                    cpu: "0.5"
-                    memory: 1Gi
-            startupCommand: python main.py
     helpdesk-concierge:
         project: apps/hosted-agent
         host: azure.ai.agent
@@ -49,6 +37,18 @@ services:
             startupCommand: python main.py
     selfwiki-expert:
         project: apps/hosted-selfwiki
+        host: azure.ai.agent
+        language: docker
+        docker:
+            remoteBuild: true
+        config:
+            container:
+                resources:
+                    cpu: "0.5"
+                    memory: 1Gi
+            startupCommand: python main.py
+    techdocs-expert:
+        project: apps/hosted-techdocs
         host: azure.ai.agent
         language: docker
         docker:

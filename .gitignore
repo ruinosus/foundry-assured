@@ -56,3 +56,8 @@ TEST-CREDENTIALS.local.md
 
 # DNA SDLC board — per-workstation pointer (written by `dna sdlc story start`)
 .dna/active-story.txt
+
+# Local ticket store written at runtime by the helpdesk/oncall approval flow. It lands inside
+# the package (app/modules/data/) because tickets.py anchors on its own file — worth fixing,
+# but the data itself is never repository content.
+apps/backend/app/modules/data/

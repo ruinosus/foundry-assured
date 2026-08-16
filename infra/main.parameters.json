@@ -8,6 +8,7 @@
     "principalType": { "value": "${AZURE_PRINCIPAL_TYPE}" },
     "ciPrincipalId": { "value": "${AZURE_CI_PRINCIPAL_ID}" },
     "searchLocation": { "value": "${AZURE_SEARCH_LOCATION}" },
+    "deploySearch": { "value": "${DEPLOY_SEARCH=true}" },
     "entraTenantId": { "value": "${ENTRA_TENANT_ID}" },
     "entraApiClientId": { "value": "${ENTRA_API_CLIENT_ID}" },
     "entraApiClientSecret": { "value": "${ENTRA_API_CLIENT_SECRET}" },
