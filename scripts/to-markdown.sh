@@ -6,7 +6,7 @@
 # expects Markdown, so run this first, drop the .md into your corpus, then ingest.
 #
 #   ./scripts/to-markdown.sh handbook.pdf onboarding.docx        # → handbook.md, onboarding.md (beside each)
-#   ./scripts/to-markdown.sh -o apps/backend/app/knowledge/corpus *.pdf   # → into the corpus dir
+#   ./scripts/to-markdown.sh -o knowledge/corpus *.pdf   # → into the corpus dir
 #
 # Needs uv (uvx); MarkItDown is fetched on demand. See docs/CUSTOMIZE.md › 1.
 set -euo pipefail

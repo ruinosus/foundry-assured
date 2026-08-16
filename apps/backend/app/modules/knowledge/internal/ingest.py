@@ -44,9 +44,19 @@ from azure.search.documents.indexes.models import (
 )
 from azure.storage.blob import BlobServiceClient
 
+import app as _app
 from app.modules.tenancy.public import tenant_config
 
-CORPUS_DIR = Path(__file__).parent / "corpus"
+# Anchored on the `app` package, NOT on this file (RULE #9). `Path(__file__).parent / "corpus"`
+# was correct while this module sat at `app/knowledge/ingest.py`; ADR-017 moved it one level
+# down into `internal/` and the path silently began pointing at `internal/corpus`, which does
+# not exist — the corpus stayed where it was. Ingestion then exited with "No markdown found"
+# instead of uploading the 13 runbooks. The fourth path to break this way in this repo.
+#
+# The corpus now lives at the repository root, in `knowledge/`, beside the wiki bundle. It is
+# CONTENT, not code: it was inside the Python package only by accident of history, which is why
+# nobody could find it. Nothing at runtime reads it — this module is a provisioning CLI.
+CORPUS_DIR = Path(_app.__file__).resolve().parents[3] / "knowledge" / "corpus"
 KNOWLEDGE_SOURCE_NAME = "helpdesk-runbooks-ks"
 
 # Per-call wall-clock budget. The create/update REST calls should return in

@@ -37,7 +37,7 @@ conhecimento que responde perguntas de usuários — a citação é o que torna 
 Duas coisas medidas neste repositório, para você não repetir:
 
 1. **Caminho relativo passa no gate e mesmo assim é ruim.** Ele resolve por sufixo, então pontua;
-   mas `../../apps/backend/...` a partir de `docs/wiki/<comp>/<versão>/pages/` não leva a lugar
+   mas `../../apps/backend/...` a partir de `knowledge/wiki-bundle/<comp>/<versão>/pages/` não leva a lugar
    nenhum quando renderizado, e perde o range de linha. Um run sem este arquivo produziu 58
    citações relativas e **zero** blob URLs, num repositório cujo bundle anterior tinha 244.
 2. **Link entre páginas da wiki não é citação.** O gate lê qualquer token `algo.md` como citação

@@ -20,7 +20,7 @@ the deploy pipeline — is reusable Foundry plumbing you keep as-is.
 
 | # | Swap point | Where | Kind |
 | - | ---------- | ----- | ---- |
-| 1 | **Knowledge corpus** | `apps/backend/app/modules/knowledge/corpus/*.md` | drop-in |
+| 1 | **Knowledge corpus** | `knowledge/corpus/*.md` | drop-in |
 | 2 | **Agent prompts** | `apps/backend/app/modules/agentdefs/public.py` | rewrite |
 | 3 | **The action** (ticket → yours) | `apps/backend/app/modules/tickets/internal/`, `modules/helpdesk/internal/escalation.py`, the `TICKET:` convention | rewrite |
 | 4 | **Identity / labels** | `apps/frontend/lib/branding.ts`, `app/page.tsx` | set |
@@ -41,10 +41,10 @@ The grounded answers come from a Foundry IQ knowledge base built from markdown.
 
 > **Corpus in PDF / Word / PowerPoint / HTML?** Convert it to Markdown first with
 > Microsoft **[MarkItDown](https://github.com/microsoft/markitdown)** — there's a
-> helper: `./scripts/to-markdown.sh -o apps/backend/app/modules/knowledge/corpus *.pdf`
+> helper: `./scripts/to-markdown.sh -o knowledge/corpus *.pdf`
 > (handles PDF, Office, HTML, and images via OCR). Then continue below.
 
-1. Replace the files in `apps/backend/app/modules/knowledge/corpus/` with **your** documents
+1. Replace the files in `knowledge/corpus/` with **your** documents
    (plain markdown; one topic per file; the **filename/H1 title is what gets cited**).
    Delete the helpdesk runbooks.
 2. *(optional)* Update the knowledge-source description in

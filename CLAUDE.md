@@ -55,12 +55,22 @@ apps/backend/
   importlinter.toml      os 14 contratos de fronteira
   cli/                   provision_*
 apps/frontend/           Next.js App Router: app/, components/<área>/, lib/ (registry + auth)
-apps/hosted-*/           containers dos hosted agents (helpdesk, cockpit, selfwiki, platform)
+apps/hosted-*/           containers dos hosted agents (helpdesk, techdocs, selfwiki, platform)
+knowledge/               CONTEÚDO que vira base de conhecimento (nunca código) — ver README lá
+  corpus/                13 runbooks fictícios → KB do helpdesk; congelado (base do eval)
+  wiki-bundle/           bundle indexável do selfwiki, derivado de openwiki/ pelo adapt
+openwiki/                a wiki gerada deste repo (formato da ferramenta) — fonte do bundle
 infra/                   bicep/azd (+ managed-app/ e lighthouse/ para o stamp dedicated)
 e2e/                     Playwright contra o app DEPLOYADO (sign-in Entra real)
 scripts/                 bootstrap, setup-entra, up-all, dev-shared, demo, push-prompts; spikes/
+docs/                    documentação PARA HUMANOS apenas — nada indexável mora aqui
 docs/adr/                ADR-001..018 — decisões de arquitetura
 ```
+
+Regra de conteúdo: **`apps/` é código, `knowledge/` é o que os agentes indexam, `docs/` é para
+pessoas.** O corpus vivia dentro do pacote Python e o bundle dentro de `docs/` — por isso
+ninguém achava nem um nem outro, e um bundle de modelo aposentado ficou meses sendo servido
+como atual.
 
 Regra de dependência, verificada em CI:
 

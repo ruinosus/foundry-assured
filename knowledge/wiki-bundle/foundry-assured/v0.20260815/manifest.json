@@ -1,0 +1,180 @@
+{
+  "key": "foundry-assured-v0.20260815",
+  "title": "foundry-assured v0.20260815",
+  "source": {
+    "type": "repo",
+    "ref": "/home/runner/work/foundry-assured/foundry-assured",
+    "commit": "08e078d7f2b6febbc5135f0b7928b5a204c667e3"
+  },
+  "language": "pt-br",
+  "model": "openwiki/gpt-5.4",
+  "generatedAt": "2026-08-15T20:14:54.558Z",
+  "kind": "element",
+  "component": "foundry-assured",
+  "componentVersion": "v0.20260815",
+  "releaseVersion": null,
+  "groups": null,
+  "pages": [
+    {
+      "id": "page-1",
+      "title": "OpenWiki quickstart",
+      "order": 1,
+      "file": "pages/page-1.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-2",
+      "title": "Testing and assurance overview",
+      "order": 2,
+      "file": "pages/page-2.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-3",
+      "title": "azd service graph and deployment hooks",
+      "order": 3,
+      "file": "pages/page-3.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-4",
+      "title": "Infrastructure topology",
+      "order": 4,
+      "file": "pages/page-4.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-5",
+      "title": "Operational scripts and end-to-end flows",
+      "order": 5,
+      "file": "pages/page-5.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-6",
+      "title": "Admin, tenant management, and tickets",
+      "order": 6,
+      "file": "pages/page-6.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-7",
+      "title": "Declarative agent definitions and prompt assets",
+      "order": 7,
+      "file": "pages/page-7.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-8",
+      "title": "Grounded domains archetype",
+      "order": 8,
+      "file": "pages/page-8.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-9",
+      "title": "Helpdesk workflow module",
+      "order": 9,
+      "file": "pages/page-9.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-10",
+      "title": "Hosted bridges and evaluation APIs",
+      "order": 10,
+      "file": "pages/page-10.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-11",
+      "title": "Knowledge ingestion and ACL stamping",
+      "order": 11,
+      "file": "pages/page-11.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-12",
+      "title": "Knowledge retrieval and ACL enforcement",
+      "order": 12,
+      "file": "pages/page-12.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-13",
+      "title": "Backend overview",
+      "order": 13,
+      "file": "pages/page-13.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-14",
+      "title": "Platform operations domain",
+      "order": 14,
+      "file": "pages/page-14.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-15",
+      "title": "Tenancy and deployment-mode seam",
+      "order": 15,
+      "file": "pages/page-15.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-16",
+      "title": "Wiki adaptation and docbundle contracts",
+      "order": 16,
+      "file": "pages/page-16.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-17",
+      "title": "Authentication and identity architecture",
+      "order": 17,
+      "file": "pages/page-17.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-18",
+      "title": "Domains and registry contract",
+      "order": 18,
+      "file": "pages/page-18.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-19",
+      "title": "Repository architecture overview",
+      "order": 19,
+      "file": "pages/page-19.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-20",
+      "title": "Frontend API proxies and admin surfaces",
+      "order": 20,
+      "file": "pages/page-20.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-21",
+      "title": "Frontend app and client runtime",
+      "order": 21,
+      "file": "pages/page-21.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-22",
+      "title": "Hosted platform agent over Invocations",
+      "order": 22,
+      "file": "pages/page-22.md",
+      "audience": "base"
+    },
+    {
+      "id": "page-23",
+      "title": "Responses-hosted agents",
+      "order": 23,
+      "file": "pages/page-23.md",
+      "audience": "base"
+    }
+  ]
+}

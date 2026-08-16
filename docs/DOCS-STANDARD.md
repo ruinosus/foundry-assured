@@ -48,10 +48,11 @@ updated: YYYY-MM-DD
 Root docs (`README.md`, `CONTRIBUTING.md`, `SECURITY.md`) keep their conventional shape
 (no front-matter) — GitHub treats them specially.
 
-**Exception — generated content.** Everything under [`docs/wiki/`](./wiki/) is the
-machine-generated deep-wiki (the `selfwiki` domain, in the ingest bundle format) and is
-**exempt from the front-matter + one-H1 rules** — it's not hand-written and is regenerated,
-not edited. See [`docs/wiki/README.md`](./wiki/README.md).
+**No generated content here.** `docs/` is hand-written documentation only. The
+machine-generated deep-wiki (the `selfwiki` domain, in the ingest bundle format) lives in
+[`knowledge/wiki-bundle/`](../knowledge/README.md), outside `docs/`, precisely so that this
+standard applies to everything in this directory without an exception carved into it —
+generated pages have no front-matter and are regenerated, not edited.
 
 ## 3. Diagrams are Mermaid, as code
 

@@ -12,7 +12,7 @@ this gate checks BOTH directions against it —
   1. every manifest field this repo READS exists in the contract (the direction that broke);
   2. every manifest field this repo WRITES exists in the contract (so a local generator
      cannot quietly invent a dialect);
-  3. the bundles committed under `docs/wiki/` still validate (real artifacts, not fixtures);
+  3. the bundles committed under `knowledge/wiki-bundle/` still validate (real artifacts, not fixtures);
   4. `[]` and null are distinguishable end to end — the ingest must treat "declares no
      group" and "declares nothing" differently, because one is an ACL and the other isn't.
 
@@ -39,7 +39,7 @@ from app.modules.knowledge.internal import docbundle_schema
 
 _BACKEND = Path(__file__).resolve().parents[1]
 _KNOWLEDGE = _BACKEND / "app" / "modules" / "knowledge" / "internal"  # ADR-017 moved it here
-_WIKI = _BACKEND.parents[1] / "docs" / "wiki"
+_WIKI = _BACKEND.parents[1] / "knowledge" / "wiki-bundle"
 
 # Modules that touch a manifest, and the local variable each one binds it to. Reading a
 # manifest is always "load the json, then poke at a dict" — so the variable name is the
@@ -170,7 +170,7 @@ def main() -> int:
     # 3. the committed bundles still satisfy the contract.
     manifests = sorted(_WIKI.rglob("manifest.json")) if _WIKI.is_dir() else []
     if not manifests:
-        print("⏭️  3. no committed bundles under docs/wiki — SKIPPED")
+        print("⏭️  3. no committed bundles under knowledge/wiki-bundle — SKIPPED")
         skips += 1
     else:
         bad = 0
