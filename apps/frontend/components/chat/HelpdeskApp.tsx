@@ -73,7 +73,7 @@ function Chat({ authorization }: { authorization?: string }) {
         {mode === "live" ? (
           <>
             <WorkflowSteps />
-            <TicketApproval />
+            <TicketApproval agentId="helpdesk" />
             <div style={{ flex: 1, minHeight: 0 }} className="copilotkit-chat-host">
               <CopilotChat agentId="helpdesk" />
             </div>

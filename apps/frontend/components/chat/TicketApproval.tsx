@@ -27,6 +27,12 @@ import { useEffect, useState } from "react";
 //   - "ticket": the helpdesk workflow's create_ticket HITL -> { data: { summary } }
 //   - "tool":   the platform agent's native MCP write-tool approval
 //               (agent-framework ToolApprovalRequestContent) -> tool name + args
+// LangGraph domains are NOT handled here. They go through `GraphApproval`, which uses
+// CopilotKit's own `useInterrupt` — the hook already implements this tap, and gets the resume
+// run right (it replays the interrupted `runId` instead of the thread's messages, which is
+// what made a hand-rolled resume interrupt a second time instead of executing). This file
+// stays for the Agent Framework domains, whose adapter emits `request_info`, which that hook
+// does not know about. ADR-020: two runtimes, two idioms, no normalizing layer.
 type Pending =
   | { kind: "ticket"; id: string; summary: string }
   | { kind: "tool"; id: string; toolName: string; args: unknown };
@@ -51,8 +57,11 @@ const btn = (bg: string): React.CSSProperties => ({
   fontWeight: 600,
 });
 
-export function TicketApproval() {
-  const { agent } = useAgent({ agentId: "helpdesk" });
+export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = {}) {
+  // The domain is a PROP, not a constant. It was hard-coded to "helpdesk", so on any other
+  // domain's page the card subscribed to the wrong agent and never saw the interrupt — the
+  // approval simply never appeared. Found by running it, not by reading it.
+  const { agent } = useAgent({ agentId });
   const [pending, setPending] = useState<Pending | null>(null);
   const [busy, setBusy] = useState(false);
   // The approver's corrected summary. Empty means "not editing" — the card only shows the

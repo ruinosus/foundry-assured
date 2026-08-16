@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
 import { getDomain, type Domain } from "@/lib/domains";
+import { GraphApproval } from "@/components/chat/GraphApproval";
 import { TicketApproval } from "@/components/chat/TicketApproval";
 import { EvidencePanel } from "@/components/console/EvidencePanel";
 import { MermaidZoom } from "@/components/console/MermaidZoom";
@@ -28,6 +29,25 @@ const WorkflowSteps = dynamic(
   () => import("@/components/chat/WorkflowSteps").then((m) => m.WorkflowSteps),
   { ssr: false },
 );
+
+// Which kinds stop for a human — and WHICH component asks. Three of the four interrupt;
+// only `grounded` never does. This used to read `kind === "workflow"`, which was true when
+// helpdesk was the only runtime and silently withheld the card from every runtime added
+// after it: the interrupt arrived on the wire with nothing mounted to receive it.
+//
+// The two components are not interchangeable, and ADR-020 is why they are not merged:
+// `graph` (LangGraph) goes through CopilotKit's own `useInterrupt`, while `workflow`/`tool`
+// (Agent Framework) emit a `request_info` event that hook does not know about.
+const AF_HITL_KINDS = new Set<Domain["kind"]>(["workflow", "tool"]);
+
+// The badge said "grounded Q&A" for anything that was not `workflow` — including two kinds
+// that are not grounded at all. Same stale `if`, same fix: name each kind.
+const KIND_LABEL: Record<Domain["kind"], string> = {
+  workflow: "workflow + HITL",
+  graph: "LangGraph + HITL",
+  tool: "tools + HITL",
+  grounded: "grounded Q&A",
+};
 
 function Console({ domain, authorization }: { domain: Domain; authorization?: string }) {
   // Live vs Hosted twin — registry-driven: only renders when the domain declares a
@@ -53,17 +73,16 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
               <h2>{domain.label}</h2>
               <p className="muted">{domain.blurb}</p>
             </div>
-            <span className={`pill ${domain.kind === "workflow" ? "neutral" : "ok"} console-kind`}>
-              {domain.kind === "workflow" ? "workflow + HITL" : "grounded Q&A"}
+            <span className={`pill ${domain.kind === "grounded" ? "ok" : "neutral"} console-kind`}>
+              {KIND_LABEL[domain.kind]}
             </span>
           </div>
 
-          {domain.kind === "workflow" && (
-            <>
-              <WorkflowSteps />
-              <TicketApproval />
-            </>
-          )}
+          {/* The steps panel reads the agent-framework workflow's state snapshots, so it
+              stays workflow-only; the approval card is for every kind that interrupts. */}
+          {domain.kind === "workflow" && <WorkflowSteps />}
+          {AF_HITL_KINDS.has(domain.kind) && <TicketApproval agentId={activeAgentId} />}
+          {domain.kind === "graph" && <GraphApproval agentId={activeAgentId} />}
 
           <SuggestedPrompts domain={domain} />
 
