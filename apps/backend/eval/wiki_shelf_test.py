@@ -112,6 +112,35 @@ def main() -> int:
         if not ok:
             failures.append((name, score, len(pages)))
 
+    # --- Third question: is it FRESH? -----------------------------------------------------
+    #
+    # This gate shipped asking two things — right model, and faithful — and that was not enough.
+    # The current bundle passes both (94.3%) and still describes a domain called `cockpit`, 76
+    # times, because it was generated 96 minutes BEFORE the commit that renamed cockpit to
+    # techdocs. Every citation resolves; the name is simply gone from the code. It is the exact
+    # failure this file was written to catch, and the gate walked past it.
+    #
+    # Reported, not enforced: regeneration needs the Foundry model, which basic CI does not have,
+    # so failing here would make a red gate nobody can turn green — the state that cost this
+    # repository eight weeks of signal once already. Staleness is a fact the operator must SEE
+    # before ingesting, not a merge blocker.
+    try:
+        from eval.wiki_freshness_test import main as freshness_main
+        import contextlib, io
+
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            stale = freshness_main() != 0
+        if stale:
+            print(
+                "\n⚠️  Bundle DESATUALIZADO em relação ao código (eval.wiki_freshness_test):\n"
+                + "\n".join(f"     {ln}" for ln in buf.getvalue().splitlines() if ln.strip())
+                + "\n     A fidelidade não vê isto — ela pergunta se a citação resolve, não se o\n"
+                "     nome ainda existe. Regenerar antes de reingerir, ou a base serve o passado."
+            )
+    except Exception as exc:  # noqa: BLE001 — a broken freshness check must not mask the rest
+        print(f"\n⚠️  não foi possível avaliar a atualidade do bundle: {exc}")
+
     if retired:
         pages_lost = sum(n for _, n in retired)
         print(
