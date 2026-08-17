@@ -329,5 +329,14 @@
     "skipped": "{count} were left out (extension or size).",
     "treeTruncated": "Heads up: GitHub truncated the listing — the repository is large and some files may be unseen.",
     "indexingNote": "Indexing runs on the service and takes a few minutes. Refresh the list to see the synchronization status."
+  },
+  "agentCreate": {
+    "newBtn": "New agent",
+    "title": "Create agent",
+    "help": "There is no \"create\" separate from \"version\": publishing the first version is what creates the agent. From then on, each publish adds a version and keeps the previous ones.",
+    "namePlaceholder": "agent-name",
+    "nameHelp": "Letters, numbers and hyphens in the middle, up to 63 characters.",
+    "descriptionPlaceholder": "Version description (optional)",
+    "createBtn": "Create and publish version"
   }
 }

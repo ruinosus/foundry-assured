@@ -18,7 +18,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authedFetch } from "@/lib/auth/api";
-import { useMyRoles, isAdmin } from "@/lib/auth/roles";
+import { useMyRoles, canAdmin } from "@/lib/auth/roles";
 
 type Version = {
   version: string | null;
@@ -55,7 +55,7 @@ export function AgentDetail({ name }: { name: string }) {
   const tc = useTranslations("common");
   const router = useRouter();
   const roles = useMyRoles();
-  const admin = isAdmin(roles);
+  const admin = canAdmin(roles);
 
   const [agent, setAgent] = useState<Agent | null>(null);
   const [error, setError] = useState<string | null>(null);

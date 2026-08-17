@@ -12,6 +12,8 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
+import { useMyRoles, canAdmin } from "@/lib/auth/roles";
+import { CreateAgent } from "@/components/agents/CreateAgent";
 
 type AgentVersion = {
   version: string | null;
@@ -53,6 +55,8 @@ export function AgentsView() {
   const [agents, setAgents] = useState<Agent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const roles = useMyRoles();
+  const admin = canAdmin(roles);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -90,6 +94,10 @@ export function AgentsView() {
           {loading ? tc("refreshing") : tc("refresh")}
         </button>
       </header>
+
+      {/* Criar vem antes da lista: numa tela sem agente nenhum, a lista não é o conteúdo — o
+          próximo passo é. */}
+      {admin && <CreateAgent onCreated={() => void load()} />}
 
       {/* Esqueleto, não spinner no meio do conteúdo: o register pede que o carregamento
           preserve a forma do que vem, para a página não saltar quando os dados chegam. */}

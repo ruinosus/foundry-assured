@@ -17,7 +17,7 @@
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
-import { useMyRoles, isAdmin } from "@/lib/auth/roles";
+import { useMyRoles, canAdmin } from "@/lib/auth/roles";
 import { CreateKnowledge } from "@/components/knowledge/CreateKnowledge";
 
 type Base = {
@@ -41,7 +41,7 @@ export function KnowledgeView() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const roles = useMyRoles();
-  const admin = isAdmin(roles);
+  const admin = canAdmin(roles);
 
   const load = useCallback(async () => {
     setLoading(true);
