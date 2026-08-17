@@ -24,14 +24,6 @@ function AuthGate({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-const loader: React.CSSProperties = {
-  display: "flex",
-  height: "100vh",
-  alignItems: "center",
-  justifyContent: "center",
-  fontFamily: "system-ui",
-  color: "#64748b",
-};
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -47,7 +39,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // No Entra configured → render directly (stable across SSR/CSR).
   if (!authConfigured) return <>{children}</>;
   // Configured but MSAL not yet initialized (also the SSR state) → brief splash.
-  if (!ready || !msalInstance) return <div style={loader}>Loading…</div>;
+  if (!ready || !msalInstance) return <div className="console-center">Loading…</div>;
   return (
     <MsalProvider instance={msalInstance}>
       <AuthGate>{children}</AuthGate>

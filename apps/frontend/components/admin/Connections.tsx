@@ -123,25 +123,25 @@ export function Connections() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    <div className="stack">
       <div>
-        <h1 style={{ margin: "0 0 4px" }}>Connections</h1>
-        <p className="muted" style={{ margin: 0, fontSize: 14 }}>
+        <h1>Connections</h1>
+        <p className="muted t-sm">
           Onboard this tenant, point it at your Foundry data plane, and wire up the source
           connections. Secrets live in Foundry / Key Vault — only references are stored here.
         </p>
       </div>
 
-      {err && <div className="card" style={{ borderColor: "var(--bad)", color: "var(--bad)" }}>⚠️ {err}</div>}
-      {msg && <div className="card" style={{ borderColor: "var(--ok)", color: "var(--ok)" }}>✓ {msg}</div>}
+      {err && <div className="card btn btn-reject">⚠️ {err}</div>}
+      {msg && <div className="card btn btn-approve">✓ {msg}</div>}
 
       {/* Onboarding banner */}
       {tenant && !onboarded && (
         <section className="card">
-          <h3 style={{ marginTop: 0 }}>Tenant not onboarded</h3>
+          <h3>Tenant not onboarded</h3>
           {tenant.can_onboard ? (
             <>
-              <p className="muted" style={{ marginTop: 0 }}>
+              <p className="muted">
                 This tenant is enabled but hasn't been set up yet. Onboard it to create its data
                 plane and start adding connections.
               </p>
@@ -151,7 +151,7 @@ export function Connections() {
               </button>
             </>
           ) : (
-            <p className="muted" style={{ margin: 0 }}>
+            <p className="muted">
               This tenant isn't enabled — contact us to get it provisioned.
             </p>
           )}
@@ -161,26 +161,26 @@ export function Connections() {
       {/* Data-plane form */}
       {onboarded && record && (
         <section className="card">
-          <h3 style={{ marginTop: 0 }}>Data plane</h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            <label className="muted" style={{ fontSize: 12 }}>Foundry project endpoint</label>
-            <input className="acct-btn" style={{ cursor: "text" }} placeholder="https://…"
+          <h3>Data plane</h3>
+          <div className="stack-sm">
+            <label className="muted t-xs">Foundry project endpoint</label>
+            <input className="acct-btn" placeholder="https://…"
               value={dp.foundry_project_endpoint || ""}
               onChange={(e) => setDp({ ...dp, foundry_project_endpoint: e.target.value })} />
-            <label className="muted" style={{ fontSize: 12 }}>Foundry model</label>
-            <input className="acct-btn" style={{ cursor: "text" }} placeholder="gpt-5-mini"
+            <label className="muted t-xs">Foundry model</label>
+            <input className="acct-btn" placeholder="gpt-5-mini"
               value={dp.foundry_model || ""}
               onChange={(e) => setDp({ ...dp, foundry_model: e.target.value })} />
-            <label className="muted" style={{ fontSize: 12 }}>Azure Search endpoint</label>
-            <input className="acct-btn" style={{ cursor: "text" }} placeholder="https://….search.windows.net"
+            <label className="muted t-xs">Azure Search endpoint</label>
+            <input className="acct-btn" placeholder="https://….search.windows.net"
               value={dp.azure_search_endpoint || ""}
               onChange={(e) => setDp({ ...dp, azure_search_endpoint: e.target.value })} />
-            <label className="muted" style={{ fontSize: 12 }}>Azure Search knowledge base</label>
-            <input className="acct-btn" style={{ cursor: "text" }} placeholder="knowledge base name"
+            <label className="muted t-xs">Azure Search knowledge base</label>
+            <input className="acct-btn" placeholder="knowledge base name"
               value={dp.azure_search_knowledge_base || ""}
               onChange={(e) => setDp({ ...dp, azure_search_knowledge_base: e.target.value })} />
           </div>
-          <div style={{ marginTop: 12 }}>
+          <div>
             <button className="btn btn-solid" disabled={busy}
               onClick={() => run(() => call("config", {
                 method: "PUT",
@@ -200,8 +200,8 @@ export function Connections() {
       {/* Connections table + add form */}
       {onboarded && (
         <section className="card">
-          <h3 style={{ marginTop: 0 }}>Connections</h3>
-          <div className="table-wrap" style={{ marginTop: 8 }}>
+          <h3>Connections</h3>
+          <div className="table-wrap">
             <table className="evals">
               <thead>
                 <tr>
@@ -219,7 +219,7 @@ export function Connections() {
                     <td><span className="pill ok">{c.min_role_read || "—"}</span></td>
                     <td><span className="pill ok">{c.min_role_write || "—"}</span></td>
                     <td><span className={`pill ${c.enabled ? "ok" : "bad"}`}>{c.enabled ? "yes" : "no"}</span></td>
-                    <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                    <td className="right nowrap">
                       <button className="acct-btn" disabled={busy} onClick={() => editConn(c)}>Edit</button>
                       <button className="acct-btn" disabled={busy} style={{ marginLeft: 6 }}
                         onClick={() => { if (confirm(`Delete connection ${c.label || c.id}?`)) run(() => call(`connections/${c.id}`, { method: "DELETE" }), "Connection deleted."); }}>
@@ -232,53 +232,53 @@ export function Connections() {
             </table>
           </div>
 
-          <div style={{ marginTop: 16 }}>
-            <h4 style={{ margin: "0 0 8px" }}>{form.id ? "Edit connection" : "Add connection"}</h4>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <div>
+            <h4>{form.id ? "Edit connection" : "Add connection"}</h4>
+            <div className="grid g2">
               <div>
-                <label className="muted" style={{ fontSize: 12 }}>Kind</label>
-                <select className="acct-btn" style={{ width: "100%" }} value={form.kind}
+                <label className="muted t-xs">Kind</label>
+                <select className="acct-btn input" value={form.kind}
                   onChange={(e) => setForm({ ...form, kind: e.target.value })}>
                   {KINDS.map((k) => <option key={k} value={k}>{k}</option>)}
                 </select>
               </div>
               <div>
-                <label className="muted" style={{ fontSize: 12 }}>Label</label>
-                <input className="acct-btn" style={{ width: "100%", cursor: "text" }} placeholder="Display label"
+                <label className="muted t-xs">Label</label>
+                <input className="acct-btn input" placeholder="Display label"
                   value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} />
               </div>
               <div>
-                <label className="muted" style={{ fontSize: 12 }}>Foundry connection id</label>
-                <input className="acct-btn" style={{ width: "100%", cursor: "text" }} placeholder="foundry connection id"
+                <label className="muted t-xs">Foundry connection id</label>
+                <input className="acct-btn input" placeholder="foundry connection id"
                   value={form.foundry_connection_id} onChange={(e) => setForm({ ...form, foundry_connection_id: e.target.value })} />
               </div>
               <div>
-                <label className="muted" style={{ fontSize: 12 }}>Key Vault reference</label>
-                <input className="acct-btn" style={{ width: "100%", cursor: "text" }} placeholder="keyvault secret ref"
+                <label className="muted t-xs">Key Vault reference</label>
+                <input className="acct-btn input" placeholder="keyvault secret ref"
                   value={form.keyvault_ref} onChange={(e) => setForm({ ...form, keyvault_ref: e.target.value })} />
               </div>
               <div>
-                <label className="muted" style={{ fontSize: 12 }}>Min role (read)</label>
-                <select className="acct-btn" style={{ width: "100%" }} value={form.min_role_read}
+                <label className="muted t-xs">Min role (read)</label>
+                <select className="acct-btn input" value={form.min_role_read}
                   onChange={(e) => setForm({ ...form, min_role_read: e.target.value })}>
                   {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
               <div>
-                <label className="muted" style={{ fontSize: 12 }}>Min role (write)</label>
-                <select className="acct-btn" style={{ width: "100%" }} value={form.min_role_write}
+                <label className="muted t-xs">Min role (write)</label>
+                <select className="acct-btn input" value={form.min_role_write}
                   onChange={(e) => setForm({ ...form, min_role_write: e.target.value })}>
                   {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
             </div>
-            <div style={{ display: "flex", gap: 12, marginTop: 12, alignItems: "center" }}>
-              <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 14 }}>
+            <div className="row">
+              <label className="row-tight t-sm">
                 <input type="checkbox" checked={form.enabled}
                   onChange={(e) => setForm({ ...form, enabled: e.target.checked })} />
                 Enabled
               </label>
-              <div style={{ flex: 1 }} />
+              <div className="grow" />
               {form.id && (
                 <button className="acct-btn" disabled={busy} onClick={() => setForm({ ...emptyForm })}>
                   Cancel
@@ -301,7 +301,7 @@ export function Connections() {
                 {form.id ? "Update" : "Add"} connection
               </button>
             </div>
-            <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+            <p className="muted t-xs">
               No secret is entered here — store the secret in Foundry or Key Vault and reference it
               by id / ref above.
             </p>

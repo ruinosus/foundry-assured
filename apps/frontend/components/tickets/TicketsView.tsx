@@ -39,10 +39,10 @@ export function TicketsView() {
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div className="between">
         <div>
-          <h2 style={{ margin: "0 0 4px" }}>Tickets</h2>
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+          <h2>Tickets</h2>
+          <p className="muted t-sm">
             Real tickets opened by the concierge — the <code>create_ticket</code> tool runs
             only after you approve the escalation in the chat.
           </p>
@@ -53,7 +53,7 @@ export function TicketsView() {
       </div>
 
       {error && (
-        <p className="muted" style={{ marginTop: 12 }}>
+        <p className="muted">
           ⚠️ {error}
         </p>
       )}
@@ -82,7 +82,7 @@ export function TicketsView() {
             <tbody>
               {tickets.map((t) => (
                 <tr key={t.id}>
-                  <td style={{ fontWeight: 600 }}>{t.id}</td>
+                  <td className="strong">{t.id}</td>
                   <td>{t.summary}</td>
                   <td>
                     <span className={`pill ${SEV[t.severity] ?? "neutral"}`}>{t.severity}</span>
@@ -90,7 +90,7 @@ export function TicketsView() {
                   <td>
                     <span className="pill ok">{t.status}</span>
                   </td>
-                  <td style={{ whiteSpace: "nowrap" }}>{new Date(t.created_at).toLocaleString()}</td>
+                  <td className="nowrap">{new Date(t.created_at).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

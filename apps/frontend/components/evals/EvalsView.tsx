@@ -47,15 +47,15 @@ export function EvalsView() {
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div className="between">
         <div>
-          <h2 style={{ margin: "0 0 4px" }}>Evaluations</h2>
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>
+          <h2>Evaluations</h2>
+          <p className="muted t-sm">
             Live from the Foundry project — hosted groundedness/relevance/coherence judges.
             Each run links to its full report in the portal.
           </p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="row-tight">
           <a className="btn" href={portalLink} target="_blank" rel="noreferrer">
             Foundry portal ↗
           </a>
@@ -66,7 +66,7 @@ export function EvalsView() {
       </div>
 
       {error && (
-        <p className="muted" style={{ marginTop: 12 }}>
+        <p className="muted">
           ⚠️ {error}
         </p>
       )}
@@ -102,7 +102,7 @@ export function EvalsView() {
                 const ok = run.status === "completed" && run.failed === 0;
                 return (
                   <tr key={run.id}>
-                    <td style={{ whiteSpace: "nowrap" }}>
+                    <td className="nowrap">
                       {run.created_at ? new Date(run.created_at * 1000).toLocaleString() : "—"}
                     </td>
                     <td>{run.eval_name}</td>

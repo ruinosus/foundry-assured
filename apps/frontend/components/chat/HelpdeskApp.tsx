@@ -44,11 +44,11 @@ function Chat({ authorization }: { authorization?: string }) {
           margin: "0 auto",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 4px" }}>
+        <div className="row">
           {demoMode ? (
             // Demo mode talks to a recorded aimock fixture — only the Live AG-UI path
             // is replayed, so hide the engine toggle and flag that it's mocked.
-            <span className="pill" style={{ fontSize: 12 }}>
+            <span className="pill t-xs">
               ● Demo · replayed fixture, no Azure
             </span>
           ) : (
@@ -61,7 +61,7 @@ function Chat({ authorization }: { authorization?: string }) {
                   Hosted agent
                 </button>
               </div>
-              <span className="muted" style={{ fontSize: 12 }}>
+              <span className="muted t-xs">
                 {mode === "live"
                   ? "AG-UI · live steps, approval, per-user OBO + memory"
                   : "Foundry Agent Service · managed, Responses protocol"}
@@ -74,14 +74,14 @@ function Chat({ authorization }: { authorization?: string }) {
           <>
             <WorkflowSteps />
             <TicketApproval agentId="helpdesk" />
-            <div style={{ flex: 1, minHeight: 0 }} className="copilotkit-chat-host">
+            <div className="fill copilotkit-chat-host">
               <CopilotChat agentId="helpdesk" />
             </div>
           </>
         ) : (
           // Hosted agent rendered through the same CopilotChat, via the AG-UI
           // bridge (backend /helpdesk-hosted). Streams, but no steps/approval.
-          <div style={{ flex: 1, minHeight: 0 }} className="copilotkit-chat-host">
+          <div className="fill copilotkit-chat-host">
             <CopilotChat agentId="helpdesk-hosted" />
           </div>
         )}
@@ -90,16 +90,6 @@ function Chat({ authorization }: { authorization?: string }) {
   );
 }
 
-const center: React.CSSProperties = {
-  display: "flex",
-  height: "100%",
-  minHeight: 360,
-  alignItems: "center",
-  justifyContent: "center",
-  fontFamily: "system-ui",
-  flexDirection: "column",
-  gap: 16,
-};
 
 function AuthedChat() {
   const { instance, accounts } = useMsal();
@@ -128,26 +118,18 @@ function AuthedChat() {
 
   if (!isAuthenticated) {
     return (
-      <div style={center}>
+      <div className="console-center">
         <p>Sign in to use {branding.product}.</p>
         <button
           onClick={() => instance.loginRedirect({ scopes: apiScopes })}
-          style={{
-            padding: "10px 16px",
-            borderRadius: 8,
-            border: "1px solid #2563eb",
-            background: "#2563eb",
-            color: "white",
-            cursor: "pointer",
-            fontSize: 14,
-          }}
+          className="btn btn-primary"
         >
           Sign in with Microsoft
         </button>
       </div>
     );
   }
-  if (!token) return <div style={center}>Acquiring token…</div>;
+  if (!token) return <div className="console-center">Acquiring token…</div>;
   return <Chat authorization={`Bearer ${token}`} />;
 }
 

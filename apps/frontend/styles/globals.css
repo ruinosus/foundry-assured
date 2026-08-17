@@ -1084,3 +1084,116 @@ table.evals tr:last-child td {
   outline-offset: 1px;
   border-color: var(--accent);
 }
+
+/* ---------- Utilitários de layout e formulário ---------- */
+/* Existem para matar os padrões que apareciam cravados nos componentes: `display:flex` com
+   `gap` numérico repetido 16 vezes, `fontSize` em pixel 24 vezes, `marginTop` 18 vezes. Cada
+   um desses era uma decisão de espaçamento tomada de novo, sem relação com as outras — a razão
+   de a interface não ter ritmo. */
+.stack { display: flex; flex-direction: column; gap: var(--space-5); }
+.stack-sm { display: flex; flex-direction: column; gap: var(--space-2); }
+.row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.row-tight { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.right { text-align: right; }
+.nowrap { white-space: nowrap; }
+
+/* Escala tipográfica utilitária — usar estas em vez de fontSize solto. */
+.t-xs { font-size: var(--text-xs); }
+.t-sm { font-size: var(--text-sm); }
+.t-mono { font-family: var(--font-mono); font-size: var(--text-xs); }
+
+/* ---------- Formulário ---------- */
+/* Vocabulário único de controles: mesma altura, mesma borda, mesmo foco em toda a interface.
+   Sem invenção — o register premia o controle familiar sobre o customizado. */
+.field { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.field-label {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.input,
+.select {
+  appearance: none;
+  width: 100%;
+  padding: var(--space-3);
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+/* Placeholder precisa dos mesmos 4.5:1 do corpo — o cinza-claro padrão do browser não passa. */
+.input::placeholder { color: var(--muted); opacity: 1; }
+
+.input:focus-visible,
+.select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.input:disabled,
+.select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.select {
+  /* Seta própria porque `appearance:none` remove a nativa; desenhada com a cor do texto para
+     seguir o tema. */
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 1rem center, right 0.7rem center;
+  background-size: 0.3rem 0.3rem, 0.3rem 0.3rem;
+  background-repeat: no-repeat;
+  padding-right: var(--space-6);
+  cursor: pointer;
+}
+
+/* ---------- Tabela ---------- */
+/* `table.evals` estava acoplada a uma página e era usada também no admin. `.tbl` é o nome do
+   que a coisa é; o seletor antigo continua valendo enquanto houver consumidor. */
+.tbl,
+table.evals {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.tbl th,
+.tbl td,
+table.evals th,
+table.evals td {
+  text-align: left;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.tbl th,
+table.evals th {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--sunk);
+  white-space: nowrap;
+}
+
+.tbl tr:last-child td,
+table.evals tr:last-child td { border-bottom: none; }
+
+/* Dígitos que se comparam em coluna precisam alinhar. */
+.tbl .num, .num { font-variant-numeric: tabular-nums; }
+
+/* Distribui extremos numa linha — cabeçalho de seção com ação à direita. */
+.between { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+/* Preenche o espaço vertical restante (painéis de chat dentro de coluna flex). */
+.fill { flex: 1; min-height: 0; }
+.strong { font-weight: 600; }

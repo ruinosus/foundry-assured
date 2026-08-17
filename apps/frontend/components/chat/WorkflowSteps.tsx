@@ -23,11 +23,14 @@ const STEPS = [
 
 type StepState = "idle" | "active" | "done" | "pending";
 
+// Estado do passo é semântica, não enfeite: "rodando agora" usa o accent (a atenção está
+// ali) e "concluído" usa --pass (o mesmo verde que diz "o gate aprovou" em toda a interface).
+// Antes eram hex cravados — #cbd5e1/#2563eb/#16a34a — que no tema escuro sumiam ou brigavam.
 const DOT: Record<StepState, string> = {
-  idle: "#cbd5e1",
-  pending: "#cbd5e1",
-  active: "#2563eb",
-  done: "#16a34a",
+  idle: "var(--faint)",
+  pending: "var(--faint)",
+  active: "var(--accent)",
+  done: "var(--pass)",
 };
 
 export function WorkflowSteps() {
@@ -76,7 +79,7 @@ export function WorkflowSteps() {
         fontFamily: "system-ui",
       }}
     >
-      <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>
+      <div className="t-xs">
         Workflow {running ? "· running…" : hasAny ? "· done" : "· idle"}
       </div>
       <ol
@@ -99,18 +102,18 @@ export function WorkflowSteps() {
                 alignItems: "center",
                 gap: 8,
                 padding: "6px 10px",
-                border: `1px solid ${st === "active" ? DOT.active : "#e5e7eb"}`,
+                border: `1px solid ${st === "active" ? DOT.active : "var(--line)"}`,
                 borderRadius: 8,
                 background:
-                  st === "active" ? "#eff6ff" : st === "done" ? "#f0fdf4" : "transparent",
+                  st === "active" ? "var(--accent-wash)" : st === "done" ? "var(--pass-wash)" : "transparent",
                 opacity: st === "pending" || st === "idle" ? 0.6 : 1,
               }}
             >
               <span aria-hidden style={{ fontSize: 13, color: DOT[st] }}>
                 {st === "done" ? "✓" : "●"}
               </span>
-              <span style={{ fontSize: 13, fontWeight: 600 }}>{s.label}</span>
-              <span style={{ fontSize: 12, color: "#94a3b8" }}>{s.desc}</span>
+              <span className="t-sm">{s.label}</span>
+              <span className="t-xs">{s.desc}</span>
             </li>
           );
         })}

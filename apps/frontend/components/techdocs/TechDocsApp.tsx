@@ -27,13 +27,13 @@ function Chat({ authorization }: { authorization?: string }) {
           margin: "0 auto",
         }}
       >
-        <div style={{ padding: "12px 4px" }}>
-          <span className="muted" style={{ fontSize: 12 }}>
+        <div >
+          <span className="muted t-xs">
             TechDocs expert · grounded in the TechDocs platform knowledge base (cites the
             component + doc)
           </span>
         </div>
-        <div style={{ flex: 1, minHeight: 0 }} className="copilotkit-chat-host">
+        <div className="fill copilotkit-chat-host">
           <CopilotChat agentId="techdocs" />
         </div>
       </main>
@@ -41,14 +41,6 @@ function Chat({ authorization }: { authorization?: string }) {
   );
 }
 
-const center: React.CSSProperties = {
-  display: "flex",
-  height: "100%",
-  minHeight: 360,
-  alignItems: "center",
-  justifyContent: "center",
-  fontFamily: "system-ui",
-};
 
 function AuthedChat() {
   const { instance, accounts } = useMsal();
@@ -73,7 +65,7 @@ function AuthedChat() {
     };
   }, [isAuthenticated, accounts, instance]);
 
-  if (!token) return <div style={center}>Acquiring token…</div>;
+  if (!token) return <div className="console-center">Acquiring token…</div>;
   return <Chat authorization={`Bearer ${token}`} />;
 }
 
