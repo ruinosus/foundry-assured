@@ -13,6 +13,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
 import { useMyRoles, canAdmin } from "@/lib/auth/roles";
+import { SkillWizard } from "@/components/skills/SkillWizard";
 
 type Version = { version: string | null; description: string | null; created_at: string | null };
 
@@ -25,11 +26,6 @@ type Skill = {
   latest_is_default: boolean;
 };
 
-/** O exemplo do campo: estrutura aqui, frase do dicionário — `{}` no dicionário quebra o ICU. */
-function exampleSkill(instructions: string): string {
-  return JSON.stringify({ instructions, license: "MIT" }, null, 2);
-}
-
 export function SkillsView() {
   const t = useTranslations("skills");
   const tc = useTranslations("common");
@@ -40,9 +36,6 @@ export function SkillsView() {
   const admin = canAdmin(roles);
 
   const [open, setOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [doc, setDoc] = useState("");
-  const [busy, setBusy] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -69,44 +62,6 @@ export function SkillsView() {
     void load();
   }, [load]);
 
-  const publish = async () => {
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(doc);
-    } catch {
-      setNotice(t("invalidJson"));
-      return;
-    }
-    setBusy(true);
-    setNotice(null);
-    try {
-      const r = await authedFetch("/api/foundry/skills", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, content: parsed, default: true }),
-      });
-      const body = await r.json().catch(() => ({}));
-      if (!r.ok) {
-        setNotice(body?.error ?? `HTTP ${r.status}`);
-        return;
-      }
-      const ignored = (body?.ignored_fields ?? []) as string[];
-      setNotice(
-        ignored.length
-          ? `${t("published")} ${t("ignoredFields", { fields: ignored.join(", ") })}`
-          : t("published"),
-      );
-      setOpen(false);
-      setDoc("");
-      setName("");
-      void load();
-    } catch {
-      setNotice(tc("backendUnreachable"));
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <section className="stack">
       <header className="between">
@@ -127,39 +82,15 @@ export function SkillsView() {
 
       {admin &&
         (open ? (
-          <section className="card stack-sm">
-            <h3 className="section-title">{t("createTitle")}</h3>
-            <p className="muted t-sm">{t("createHelp")}</p>
-            <input
-              className="acct-btn"
-              placeholder={t("namePlaceholder")}
-              value={name}
-              disabled={busy}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <textarea
-              className="acct-btn"
-              rows={8}
-              spellCheck={false}
-              placeholder={exampleSkill(t("exampleInstructions"))}
-              value={doc}
-              disabled={busy}
-              onChange={(e) => setDoc(e.target.value)}
-            />
-            <div className="row">
-              <button
-                type="button"
-                className="btn btn-solid"
-                disabled={busy || !name.trim() || !doc.trim()}
-                onClick={() => void publish()}
-              >
-                {t("createBtn")}
-              </button>
-              <button type="button" className="btn" disabled={busy} onClick={() => setOpen(false)}>
-                {tc("cancel")}
-              </button>
-            </div>
-          </section>
+          <SkillWizard
+            existentes={(skills ?? []).map((s) => s.name)}
+            onCancelar={() => setOpen(false)}
+            onConcluido={() => {
+              setOpen(false);
+              setNotice(t("published"));
+              void load();
+            }}
+          />
         ) : (
           <button type="button" className="btn btn-solid" onClick={() => setOpen(true)}>
             {t("newBtn")}
@@ -192,35 +123,29 @@ export function SkillsView() {
       )}
 
       {!error && skills !== null && skills.length > 0 && (
-        <div className="table-wrap">
-          <table className="tbl">
-            <thead>
-              <tr>
-                <th>{t("colName")}</th>
-                <th>{t("colDefault")}</th>
-                <th>{t("colLatest")}</th>
-                <th>{t("colSync")}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {skills.map((s) => (
-                <tr key={s.name}>
-                  <td>
-                    <span className="strong">{s.name}</span>
-                    {s.description && <p className="t-xs muted-line">{s.description}</p>}
-                  </td>
-                  {/* Os dois lado a lado, sempre. É o que explica "publiquei e nada mudou". */}
-                  <td className="t-mono t-sm">{s.default?.version ?? "—"}</td>
-                  <td className="t-mono t-sm">{s.latest?.version ?? "—"}</td>
-                  <td>
-                    <span className={`pill ${s.latest_is_default ? "ok" : "wait"}`}>
-                      {s.latest_is_default ? t("inUsePill") : t("notDefaultPill")}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="grid">
+          {skills.map((s) => (
+            <article key={s.name} className="card skill-card">
+              <header className="between">
+                <h3 className="skill-name">{s.name}</h3>
+                {/* Os dois lado a lado, sempre: é o que explica "publiquei e nada mudou". */}
+                <span className={`pill ${s.latest_is_default ? "ok" : "wait"}`}>
+                  {s.latest_is_default ? t("inUsePill") : t("notDefaultPill")}
+                </span>
+              </header>
+              {s.description && <p className="t-sm muted-line">{s.description}</p>}
+              <dl className="skill-versions">
+                <div>
+                  <dt>{t("colDefault")}</dt>
+                  <dd className="t-mono">{s.default?.version ?? "—"}</dd>
+                </div>
+                <div>
+                  <dt>{t("colLatest")}</dt>
+                  <dd className="t-mono">{s.latest?.version ?? "—"}</dd>
+                </div>
+              </dl>
+            </article>
+          ))}
         </div>
       )}
     </section>
