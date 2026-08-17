@@ -18,6 +18,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authedFetch } from "@/lib/auth/api";
+import { exampleDefinition } from "@/lib/agentExample";
 import { useMyRoles, canAdmin } from "@/lib/auth/roles";
 
 type Version = {
@@ -263,7 +264,7 @@ export function AgentDetail({ name }: { name: string }) {
                 className="acct-btn"
                 rows={10}
                 spellCheck={false}
-                placeholder={t("examplePlaceholder")}
+                placeholder={exampleDefinition(t("exampleInstructions"))}
                 value={doc}
                 onChange={(e) => setDoc(e.target.value)}
               />

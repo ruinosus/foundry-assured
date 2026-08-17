@@ -30,10 +30,30 @@ from typing import Any
 
 from app.modules.foundry.internal.names import qualify
 
-# Campos que aceitamos do documento e que têm equivalente direto em PromptAgentDefinition.
-# O que não está aqui é ignorado com aviso — silenciar seria pior: o usuário acharia que
-# configurou algo que não chegou ao serviço.
-_PASSTHROUGH = ("temperature", "top_p")
+# Campos com equivalente direto em `PromptAgentDefinition`, repassados como vêm.
+#
+# São TODOS os campos que o tipo aceita, menos `model` e `instructions` (obrigatórios, tratados
+# à parte) e `kind` (é o próprio objeto). Antes eram só `temperature` e `top_p`, e a diferença
+# importa: sem `tools` o agente criado não alcança nada — nem a base de conhecimento que o
+# usuário acabou de criar na tela vizinha. O produto tinha as duas metades e nenhuma ponte.
+_PASSTHROUGH = (
+    "temperature",
+    "top_p",
+    "tools",
+    "tool_choice",
+    "reasoning",
+    "text",
+    "structured_inputs",
+)
+
+# Atalho de alto nível: `knowledge_base: <nome>` no documento vira o `AzureAISearchTool` completo.
+#
+# É a única conveniência nossa aqui, e existe porque a alternativa é pedir ao usuário final que
+# escreva à mão a forma de `AzureAISearchTool(azure_ai_search=AzureAISearchToolResource(
+# indexes=[AzureAISearchIndex(index_name=..., connection_name=...)]))`. Quem sabe montar isso não
+# precisa deste produto; quem precisa deste produto não sabe. `tools` continua aceito cru para
+# quem quiser controle total — o atalho ADICIONA, não substitui.
+_KB_SHORTCUT = "knowledge_base"
 
 
 class InvalidDefinition(ValueError):
@@ -98,9 +118,48 @@ def parse_definition(doc: dict) -> dict:
         if key in doc and doc[key] is not None:
             out[key] = doc[key]
 
-    known = {"kind", "type", "model", "instructions", "name", "description", "metadata", *_PASSTHROUGH}
+    # O atalho da base entra como uma tool a mais, preservando as que o documento já traz.
+    kb = doc.get(_KB_SHORTCUT)
+    if kb:
+        if not isinstance(kb, str):
+            raise InvalidDefinition(
+                f"`{_KB_SHORTCUT}` deve ser o nome da base de conhecimento, como texto."
+            )
+        tools = list(out.get("tools") or [])
+        tools.append(_search_tool_spec(kb))
+        out["tools"] = tools
+
+    known = {
+        "kind",
+        "type",
+        "model",
+        "instructions",
+        "name",
+        "description",
+        "metadata",
+        _KB_SHORTCUT,
+        *_PASSTHROUGH,
+    }
     ignored = sorted(set(doc) - known)
     return {"definition": out, "ignored": ignored}
+
+
+def _search_tool_spec(kb_name: str) -> dict:
+    """A forma de `AzureAISearchTool` para uma base, como dicionário.
+
+    Dicionário e não o objeto do SDK para que `parse_definition` permaneça testável offline — o
+    gate roda em todo push, inclusive onde não há `azure.ai.projects` autenticável. A conversão
+    para os tipos acontece em `create_agent_version`.
+
+    `index_name` recebe o nome da base porque, no caminho que este produto cria, base e índice
+    têm o mesmo nome: `create_knowledge` nomeia a knowledge base com o nome que o usuário deu.
+    """
+    return {
+        "type": "azure_ai_search",
+        "name": f"buscar_{kb_name}".replace("-", "_"),
+        "description": f"Busca na base de conhecimento {kb_name} e devolve trechos com a fonte.",
+        "azure_ai_search": {"indexes": [{"index_name": kb_name, "type": "azure_ai_search_index"}]},
+    }
 
 
 def create_agent_version(name: str, doc: dict, *, description: str = "") -> dict:

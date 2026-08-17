@@ -14,6 +14,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
+import { exampleDefinition } from "@/lib/agentExample";
 
 export function CreateAgent({ onCreated }: { onCreated: () => void }) {
   const t = useTranslations("agentCreate");
@@ -25,6 +26,7 @@ export function CreateAgent({ onCreated }: { onCreated: () => void }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [doc, setDoc] = useState("");
+  const [kb, setKb] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,10 +41,15 @@ export function CreateAgent({ onCreated }: { onCreated: () => void }) {
     setBusy(true);
     setError(null);
     try {
+      // `knowledge_base` é o atalho que o backend expande para a tool de busca do Azure AI
+      // Search. Sem ele o agente responde só do modelo — não alcança a base que a pessoa criou.
+      const definition = kb.trim()
+        ? { ...(parsed as Record<string, unknown>), knowledge_base: kb.trim() }
+        : parsed;
       const r = await authedFetch(`/api/foundry/agents/${encodeURIComponent(name)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ definition: parsed, description }),
+        body: JSON.stringify({ definition, description }),
       });
       const body = await r.json().catch(() => ({}));
       if (!r.ok) {
@@ -96,11 +103,20 @@ export function CreateAgent({ onCreated }: { onCreated: () => void }) {
         onChange={(e) => setDescription(e.target.value)}
       />
 
+      <input
+        className="acct-btn"
+        placeholder={t("kbPlaceholder")}
+        value={kb}
+        disabled={busy}
+        onChange={(e) => setKb(e.target.value)}
+      />
+      <p className="muted t-xs">{t("kbHelp")}</p>
+
       <textarea
         className="acct-btn"
         rows={10}
         spellCheck={false}
-        placeholder={td("examplePlaceholder")}
+        placeholder={exampleDefinition(td("exampleInstructions"))}
         value={doc}
         disabled={busy}
         onChange={(e) => setDoc(e.target.value)}

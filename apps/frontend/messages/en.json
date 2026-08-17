@@ -201,7 +201,8 @@
     "evals": "Evaluations",
     "admin": "Admin",
     "connections": "Connections",
-    "knowledge": "Knowledge"
+    "knowledge": "Knowledge",
+    "skills": "Skills"
   },
   "overview": {
     "title": "Overview",
@@ -303,7 +304,7 @@
     "dangerBody": "This removes the agent and its whole version history. There is no undo. Type the name to confirm.",
     "confirmPlaceholder": "type {name}",
     "deleted": "Agent deleted.",
-    "examplePlaceholder": "{\n  \"kind\": \"prompt\",\n  \"model\": \"gpt-5-mini\",\n  \"instructions\": \"You answer engineering questions citing the source. If the answer is not in the knowledge base, say you do not know.\"\n}"
+    "exampleInstructions": "You answer engineering questions citing the source. If the answer is not in the knowledge base, say you do not know."
   },
   "knowledgeCreate": {
     "title": "Create knowledge base",
@@ -337,6 +338,30 @@
     "namePlaceholder": "agent-name",
     "nameHelp": "Letters, numbers and hyphens in the middle, up to 63 characters.",
     "descriptionPlaceholder": "Version description (optional)",
-    "createBtn": "Create and publish version"
+    "createBtn": "Create and publish version",
+    "kbPlaceholder": "knowledge base to query (optional)",
+    "kbHelp": "Name a base so the agent can cite it. Without one it answers from the model alone, with no source. You can also declare `tools` in the document — including MCP servers."
+  },
+  "skills": {
+    "title": "Skills",
+    "subtitle": "Reusable instructions agents load. The format is the open agentskills.io standard.",
+    "newBtn": "New skill",
+    "createTitle": "Create skill",
+    "createHelp": "Publishing the first version is what creates the skill, and it becomes the version in use.",
+    "namePlaceholder": "skill-name",
+    "createBtn": "Create and publish",
+    "published": "Skill published.",
+    "ignoredFields": "Ignored fields (they did not reach the service): {fields}.",
+    "invalidJson": "The document is not valid JSON. Check the keys and commas.",
+    "exampleInstructions": "When reviewing a PR, start with the tests, then the error handling.",
+    "colName": "Name",
+    "colDefault": "In use",
+    "colLatest": "Latest",
+    "colSync": "Status",
+    "inUsePill": "up to date",
+    "notDefaultPill": "new version not in use",
+    "errorTitle": "Could not read the skills",
+    "emptyTitle": "No skills yet",
+    "emptyBody": "A skill holds instructions several agents reuse — like how to review a PR or handle an incident."
   }
 }

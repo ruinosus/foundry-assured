@@ -15,13 +15,17 @@ from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
 from app.modules.foundry.public import (
     create_agent_version,
     create_knowledge,
+    create_skill,
     delete_agent,
     delete_knowledge,
+    delete_skill,
     get_agent,
     get_knowledge,
+    get_skill,
     ingest_repo,
     list_agents,
     list_knowledge,
+    list_skills,
     set_agent_enabled,
     upload_files,
 )
@@ -48,12 +52,13 @@ def _guard(fn):
     from app.modules.foundry.internal.github_source import GitHubError
     from app.modules.foundry.internal.knowledge_write import UploadRejected
     from app.modules.foundry.internal.names import InvalidName
+    from app.modules.foundry.internal.skills import InvalidSkill
 
     try:
         return fn()
     except HTTPException:
         raise
-    except (InvalidName, InvalidDefinition, UploadRejected) as exc:
+    except (InvalidName, InvalidDefinition, InvalidSkill, UploadRejected) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except GitHubError as exc:
         # 502: a falha é do serviço de terceiro, não do pedido — e a mensagem já é legível.
@@ -176,3 +181,31 @@ def add_github(name: str, body: dict) -> dict:
         )
     )
 
+
+# ── Skills ────────────────────────────────────────────────────────────────────────────────
+#
+# Skill é recurso versionado como o agente, e com uma diferença que a tela precisa mostrar:
+# `default_version` e `latest_version` são campos SEPARADOS. Publicar não troca o que está em uso
+# se `default` não acompanhar — e é a explicação de "publiquei e nada mudou".
+
+
+@router.get("/skills")
+def skills(limit: int = Query(50, ge=1, le=100)) -> dict:
+    return {"skills": _guard(lambda: list_skills(limit))}
+
+
+@router.get("/skills/{name}")
+def skill(name: str) -> dict:
+    return _guard(lambda: get_skill(name))
+
+
+@router.post("/skills/{name}", dependencies=_admin)
+def publish_skill(name: str, body: dict) -> dict:
+    """Cria ou versiona uma skill a partir de um documento no formato agentskills.io."""
+    doc = body.get("content") if isinstance(body.get("content"), dict) else body
+    return _guard(lambda: create_skill(name, doc, make_default=bool(body.get("default", True))))
+
+
+@router.delete("/skills/{name}", dependencies=_admin)
+def remove_skill(name: str) -> dict:
+    return _guard(lambda: delete_skill(name))

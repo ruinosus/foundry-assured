@@ -28,6 +28,7 @@ from app.modules.foundry.internal.knowledge_write import (
     check_upload,
 )
 from app.modules.foundry.internal.names import InvalidName, qualify, validate
+from app.modules.foundry.internal.skills import InvalidSkill, _project, parse_skill
 
 
 def main() -> int:
@@ -78,6 +79,52 @@ def main() -> int:
     check("temperature/top_p passam quando presentes",
           parse_definition({"model": "m", "instructions": "i", "temperature": 0.2})["definition"]["temperature"] == 0.2)
     check("documento que não é objeto é recusado", recusa(lambda: parse_definition([1, 2]), InvalidDefinition))
+
+    print("\n— tools: a ponte entre agente e base")
+    # Sem `tools` o agente criado não alcança nada — nem a base que o usuário acabou de criar.
+    # Era a lacuna mais grave: o produto tinha as duas metades e nenhuma ponte.
+    com_kb = parse_definition({"model": "m", "instructions": "i", "knowledge_base": "minha-kb"})
+    tools = com_kb["definition"]["tools"]
+    check("o atalho knowledge_base vira uma tool de busca", len(tools) == 1)
+    check("a tool aponta para o índice da base",
+          tools[0]["azure_ai_search"]["indexes"][0]["index_name"] == "minha-kb")
+    check("o tipo da tool é azure_ai_search", tools[0]["type"] == "azure_ai_search")
+    # Nome de tool não aceita hífen no serviço; o atalho normaliza.
+    check("o nome da tool troca hífen por underscore", "-" not in tools[0]["name"])
+    # O atalho ADICIONA: quem já manda tools próprias não as perde.
+    ambos = parse_definition({"model": "m", "instructions": "i", "knowledge_base": "kb",
+                              "tools": [{"type": "mcp", "server_label": "learn"}]})
+    check("tools do documento SOBREVIVEM ao atalho", len(ambos["definition"]["tools"]) == 2)
+    check("MCP passa cru (é tool de primeira parte, não precisa de tradução)",
+          any(t.get("type") == "mcp" for t in ambos["definition"]["tools"]))
+    check("knowledge_base que não é texto é recusado",
+          recusa(lambda: parse_definition({"model": "m", "instructions": "i", "knowledge_base": 1}), InvalidDefinition))
+    # Os 10 campos de PromptAgentDefinition, menos os 3 tratados à parte: nenhum fica de fora.
+    todos = parse_definition({"model": "m", "instructions": "i", "temperature": 1, "top_p": 1,
+                              "tools": [], "tool_choice": "auto", "reasoning": {}, "text": {},
+                              "structured_inputs": []})
+    check("nenhum campo do tipo é ignorado em silêncio", todos["ignored"] == [])
+
+    print("\n— skill (formato agentskills.io)")
+    ok_skill = parse_skill({"instructions": "Como revisar um PR."})
+    check("documento mínimo de skill é aceito", ok_skill["content"]["instructions"].startswith("Como"))
+    check("sem instructions é recusado", recusa(lambda: parse_skill({}), InvalidSkill))
+    check("PowerFx é recusado em skill também",
+          recusa(lambda: parse_skill({"instructions": "=Env.X"}), InvalidSkill))
+    check("campos do padrão aberto passam",
+          "license" in parse_skill({"instructions": "i", "license": "MIT"})["content"])
+
+    class _Skill:
+        def __init__(self, d, l):
+            self.name, self.id, self.description, self.created_at = "s", "sk_1", None, None
+            self.default_version = type("V", (), {"version": d, "description": None, "created_at": None})()
+            self.latest_version = type("V", (), {"version": l, "description": None, "created_at": None})()
+
+    # A pergunta "publiquei e nada mudou, por quê?" — respondida por dois campos SEPARADOS.
+    check("default igual a latest é sinalizado como sincronizado",
+          _project(_Skill("2", "2"))["latest_is_default"] is True)
+    check("default DIFERENTE de latest é sinalizado (a nova versão não está em uso)",
+          _project(_Skill("1", "2"))["latest_is_default"] is False)
 
     print("\n— arquivo e container")
     check("nome simples sobrevive", _safe_blob_name("runbook.md") == "runbook.md")

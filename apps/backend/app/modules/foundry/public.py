@@ -27,17 +27,27 @@ from app.modules.foundry.internal.knowledge_write import (
     delete_knowledge,
     upload_files,
 )
+from app.modules.foundry.internal.skills import (
+    create_skill,
+    delete_skill,
+    get_skill,
+    list_skills,
+)
 
 __all__ = [
     "create_agent_version",
     "create_knowledge",
+    "create_skill",
     "delete_agent",
     "delete_knowledge",
+    "delete_skill",
     "get_agent",
     "get_knowledge",
+    "get_skill",
     "ingest_repo",
     "list_agents",
     "list_knowledge",
+    "list_skills",
     "set_agent_enabled",
     "upload_files",
 ]
