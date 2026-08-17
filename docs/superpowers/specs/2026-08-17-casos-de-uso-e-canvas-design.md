@@ -170,6 +170,31 @@ esconde a premissa é propaganda.**
 `WorkflowFactory` neste backend. Se isso não funcionar, as fases 4–5 não fazem sentido — e é
 barato descobrir agora.
 
+### Fase 3 — o que já foi PROVADO, contra o serviço real
+
+Três camadas, cada uma verificada antes da seguinte:
+
+| # | Verificação | Resultado |
+|---|---|---|
+| 1 | YAML mínimo carrega pelo `WorkflowFactory` | ✅ devolve `Workflow`, com `as_agent` |
+| 2 | O workflow EXECUTA | ✅ `WorkflowAgent.run()` devolveu a resposta |
+| 3 | `InvokeAzureAgent` com agente REAL do repo | ✅ o `TriageAgent`, com o prompt do AgentSchema, classificou de verdade |
+
+A camada 3 é a que importa: o agente veio do **mesmo documento AgentSchema** que o resto do
+produto usa, montado com o **mesmo `FoundryChatClient`** que o helpdesk monta hoje. O YAML declara
+a ORDEM; o conteúdo continua vindo de onde sempre veio.
+
+**Duas descobertas do caminho:**
+
+`responseObject` espera JSON. O `TriageAgent` devolve texto (`Intent: … / Urgency: …`), e o runtime
+avisa e guarda como string — degradação limpa, não erro. Mas significa que um passo cujo resultado
+alimenta uma CONDIÇÃO precisa de saída estruturada: o canvas terá de exigir isso do agente
+escolhido, ou a decisão que vier depois não terá o que comparar.
+
+O nome da classe do cliente não é o que a documentação de outros contextos sugere — é
+`FoundryChatClient`, com `model=` e `credential=`, exatamente como `modules/helpdesk` já faz. Ler
+o repositório foi mais rápido que ler a documentação.
+
 ## O gate que transforma "editor decorativo" em invariante
 
 O serializador canvas→YAML é nosso e não tem equivalente de primeira parte. Sem verificação, ele

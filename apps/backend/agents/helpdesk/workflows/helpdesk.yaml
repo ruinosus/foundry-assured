@@ -1,0 +1,58 @@
+# Fluxo declarativo do helpdesk — linguagem do Microsoft Agent Framework.
+#
+# É O MESMO fluxo que `app/modules/helpdesk/` monta em Python (triagem → busca → resposta →
+# escalar com aprovação), escrito na linguagem que o canvas vai emitir. Existe para provar o
+# runtime ANTES de alguém construir um editor: um canvas que produz YAML que não roda é um editor
+# decorativo, e descobrir isso depois do editor pronto seria caro.
+#
+# Os agentes referenciados por `agent.name` são registrados no `WorkflowFactory` a partir dos
+# documentos AgentSchema — a mesma fonte de prompt do resto do produto (ADR-013). O YAML não
+# duplica instrução nenhuma; ele diz a ORDEM, não o conteúdo.
+#
+# `requireApproval: true` no `create_ticket` é HITL NATIVO do runtime: emite `request_info`, que é
+# exatamente o mecanismo por trás do approval card que o frontend já renderiza. Não há adaptador.
+kind: Workflow
+trigger:
+  kind: OnConversationStart
+  id: helpdesk_declarativo
+  actions:
+
+    # 1 — TRIAGEM: classifica e reformula. Não responde.
+    - kind: InvokeAzureAgent
+      id: triagem
+      displayName: Triagem
+      agent:
+        name: TriageAgent
+      output:
+        autoSend: false
+        responseObject: Local.Triagem
+
+    # 2 — BUSCA: o passo que fundamenta. Sem ele a resposta não teria fonte, e a regra 4 do
+    #     projeto (toda resposta cita a fonte ou declina) não teria como ser cumprida.
+    - kind: InvokeAzureAgent
+      id: busca
+      displayName: Buscar na base
+      agent:
+        name: RetrieveAgent
+      input:
+        arguments:
+          pergunta: =Local.Triagem
+      output:
+        autoSend: false
+        responseObject: Local.Documentos
+
+    # 3 — RESPOSTA fundamentada nos documentos recuperados.
+    - kind: InvokeAzureAgent
+      id: resposta
+      displayName: Redigir resposta
+      agent:
+        name: ResolveAgent
+      input:
+        arguments:
+          documentos: =Local.Documentos
+      output:
+        autoSend: true
+        responseObject: Local.Resposta
+
+    - kind: EndWorkflow
+      id: fim
