@@ -9,7 +9,7 @@ DE ONDE VEM CADA COISA, e nada aqui é declarado duas vezes (SEGUNDA MÁXIMA):
 
     quais casos existem   →  os AGENTES PUBLICADOS, agrupados por `metadata.use_case`
     quais peças cada um tem →  os agentes publicados, agrupados pelo caso
-    qual o fluxo          →  o YAML declarativo em `agents/helpdesk/workflows/<caso>.yaml`
+    qual o fluxo          →  o Dataset `<caso>-flow` no Foundry (disco só como reserva de boot)
     como ele se chama     →  `metadata.use_case_name`, editável pela tela
 
 Um caso de uso não é uma tabela nossa: é uma LEITURA sobre o que já existe, mais um punhado de
@@ -24,9 +24,14 @@ from pathlib import Path
 
 import app
 
-#: Onde vivem os fluxos declarativos. Ao lado dos documentos de prompt, e pelo mesmo motivo:
-#: `AGENTS_DIR` já é montado do Azure Files em produção (ADR-014), então publicar um fluxo novo
-#: não exige rebuild. Ancorado no pacote `app`, nunca contado por `parents[N]` (regra 9).
+#: CACHE local dos fluxos — a FONTE é o Foundry.
+#:
+#: O fluxo do canvas era gravado só aqui, e isso estava errado de duas formas: em produção o disco
+#: do container é efêmero (um fluxo montado sumia no restart), e um recurso fora do Foundry viola a
+#: SEGUNDA MÁXIMA. Agora `write_flow` publica um Dataset versionado no projeto e grava aqui só
+#: para o repositório continuar tendo os fluxos em git — quem lê, lê do serviço primeiro.
+#:
+#: Ancorado no pacote `app`, nunca contado por `parents[N]` (regra 9).
 _BACKEND_ROOT = Path(app.__file__).resolve().parent.parent
 WORKFLOWS_DIR = _BACKEND_ROOT / "agents" / "helpdesk" / "workflows"
 
@@ -72,7 +77,22 @@ def _flow_path(case_id: str) -> Path:
 
 
 def read_flow(case_id: str) -> str | None:
-    """O YAML do fluxo, se houver. Um caso sem fluxo é um caso de passo único — não um erro."""
+    """O YAML do fluxo. FOUNDRY primeiro, disco como reserva.
+
+    A ordem é o ponto: o serviço é a fonte, e um fluxo publicado pelo canvas só existe lá. O
+    arquivo continua sendo lido porque os fluxos que vêm no repositório (versionados em git) ainda
+    não foram publicados num ambiente novo — e uma tela vazia logo depois do `azd up` seria pior
+    que ler o que o repositório traz.
+
+    Um caso sem fluxo em lugar nenhum é um caso de passo único, não um erro.
+    """
+    with contextlib.suppress(Exception):
+        from app.modules.foundry.public import load_flow
+
+        publicado = load_flow(f"{case_id}-flow")
+        if publicado:
+            return publicado
+
     caminho = _flow_path(case_id)
     if not caminho.is_file():
         return None
@@ -96,9 +116,26 @@ def write_flow(case_id: str, yaml_text: str) -> dict:
     except Exception as exc:
         raise ValueError(f"O fluxo não é válido: {exc}") from exc
 
-    WORKFLOWS_DIR.mkdir(parents=True, exist_ok=True)
-    _flow_path(case_id).write_text(yaml_text, encoding="utf-8")
-    return {"case": case_id, "bytes": len(yaml_text.encode("utf-8"))}
+    # PUBLICA NO FOUNDRY — é onde o fluxo passa a existir. Cada gravação é uma versão nova do
+    # dataset, e versões não se sobrescrevem: o histórico do fluxo vem de graça, e o portal
+    # mostra o mesmo que a tela.
+    from app.modules.foundry.public import save_flow
+
+    publicado = save_flow(f"{case_id}-flow", yaml_text, description=f"Fluxo do caso {case_id}")
+
+    # O disco é CACHE, e a gravação é best-effort de propósito: em produção ele é read-only ou
+    # efêmero, e falhar aqui depois de publicar com sucesso transformaria uma publicação boa num
+    # erro. O que importa já aconteceu.
+    with contextlib.suppress(OSError):
+        WORKFLOWS_DIR.mkdir(parents=True, exist_ok=True)
+        _flow_path(case_id).write_text(yaml_text, encoding="utf-8")
+
+    return {
+        "case": case_id,
+        "bytes": len(yaml_text.encode("utf-8")),
+        "dataset": publicado.get("name"),
+        "version": publicado.get("version"),
+    }
 
 
 def _steps_of(yaml_text: str | None) -> list[dict]:
