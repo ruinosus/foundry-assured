@@ -219,7 +219,8 @@
     "admin": "Administração",
     "connections": "Conexões",
     "knowledge": "Conhecimento",
-    "skills": "Skills"
+    "skills": "Skills",
+    "usecases": "Casos de uso"
   },
   "overview": {
     "title": "Visão geral",
@@ -478,5 +479,49 @@
   "agentChat": {
     "subtitle": "Este agente é um recurso do seu projeto no Foundry — não um exemplo embutido no produto.",
     "signInFirst": "Entre para conversar com este agente."
+  },
+  "useCases": {
+    "title": "Casos de uso",
+    "subtitle": "O que cada assistente faz, em vez de quais peças o compõem.",
+    "errorTitle": "Não foi possível ler os casos de uso",
+    "emptyTitle": "Nenhum caso de uso ainda",
+    "emptyBody": "Um caso de uso aparece quando há agente publicado no Foundry. Publique os do repositório com `uv run python -m cli.provision_agents`, ou crie um agente pela tela de agentes.",
+    "waitsForHuman": "espera aprovação",
+    "singleStep": "Responde direto, sem etapas intermediárias.",
+    "piecesCount": "{count} peça(s)",
+    "runtime_declarative": "fluxo montado",
+    "runtime_foundry": "roda no Foundry",
+    "runtime_backend": "roda neste backend",
+    "runtime_grounded": "roda no Foundry",
+    "runtime_tool": "roda no Foundry",
+    "runtime_graph": "roda neste backend",
+    "runtime_workflow": "roda neste backend"
+  },
+  "useCaseDetail": {
+    "flowTitle": "O que acontece",
+    "canvasTitle": "Montar o fluxo",
+    "canvasHelp": "Os passos acontecem em ordem. Um passo de aprovação para e espera uma pessoa antes de seguir.",
+    "noFlow": "Este assistente responde direto, sem etapas intermediárias.",
+    "editFlow": "Editar fluxo",
+    "saveFlow": "Publicar fluxo",
+    "saving": "Publicando…",
+    "saved": "Fluxo publicado.",
+    "invalidFlow": "Há {count} problema(s) no fluxo — confira os campos vazios antes de publicar.",
+    "readOnly": "Este fluxo tem condições ou repetições que o editor visual ainda não representa. Ele está em leitura para que nada se perca — edite o YAML diretamente, se precisar.",
+    "readOnlyHint": "O editor visual não representa todas as construções deste fluxo.",
+    "showYaml": "Ver o arquivo gerado",
+    "stepLabel": "Nome do passo",
+    "stepText": "O texto",
+    "approvalPrompt": "O que perguntar antes de continuar",
+    "pickAgent": "escolha um agente",
+    "kind_agent": "Agente",
+    "kind_message": "Mensagem",
+    "kind_approval": "Aprovação",
+    "kind_question": "Pergunta",
+    "piecesTitle": "Peças",
+    "piecesHelp": "Os agentes que este caso de uso usa. Cada um é um recurso do seu projeto no Foundry.",
+    "colAgent": "Agente",
+    "colVersion": "Versão",
+    "colRuntime": "Execução"
   }
 }

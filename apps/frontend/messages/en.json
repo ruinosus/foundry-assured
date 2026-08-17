@@ -219,7 +219,8 @@
     "admin": "Admin",
     "connections": "Connections",
     "knowledge": "Knowledge",
-    "skills": "Skills"
+    "skills": "Skills",
+    "usecases": "Use cases"
   },
   "overview": {
     "title": "Overview",
@@ -478,5 +479,49 @@
   "agentChat": {
     "subtitle": "This agent is a resource in your Foundry project — not an example bundled with the product.",
     "signInFirst": "Sign in to chat with this agent."
+  },
+  "useCases": {
+    "title": "Use cases",
+    "subtitle": "What each assistant does, instead of which pieces it is made of.",
+    "errorTitle": "Could not read the use cases",
+    "emptyTitle": "No use cases yet",
+    "emptyBody": "A use case appears once there is an agent published in Foundry. Publish the repository's with `uv run python -m cli.provision_agents`, or create an agent from the agents screen.",
+    "waitsForHuman": "waits for approval",
+    "singleStep": "Answers directly, with no intermediate steps.",
+    "piecesCount": "{count} piece(s)",
+    "runtime_declarative": "assembled flow",
+    "runtime_foundry": "runs on Foundry",
+    "runtime_backend": "runs on this backend",
+    "runtime_grounded": "runs on Foundry",
+    "runtime_tool": "runs on Foundry",
+    "runtime_graph": "runs on this backend",
+    "runtime_workflow": "runs on this backend"
+  },
+  "useCaseDetail": {
+    "flowTitle": "What happens",
+    "canvasTitle": "Assemble the flow",
+    "canvasHelp": "Steps run in order. An approval step stops and waits for a person before moving on.",
+    "noFlow": "This assistant answers directly, with no intermediate steps.",
+    "editFlow": "Edit flow",
+    "saveFlow": "Publish flow",
+    "saving": "Publishing…",
+    "saved": "Flow published.",
+    "invalidFlow": "There are {count} problem(s) in the flow — check the empty fields before publishing.",
+    "readOnly": "This flow has conditions or loops the visual editor does not represent yet. It is read-only so nothing is lost — edit the YAML directly if you need to.",
+    "readOnlyHint": "The visual editor does not represent every construct in this flow.",
+    "showYaml": "See the generated file",
+    "stepLabel": "Step name",
+    "stepText": "The text",
+    "approvalPrompt": "What to ask before continuing",
+    "pickAgent": "pick an agent",
+    "kind_agent": "Agent",
+    "kind_message": "Message",
+    "kind_approval": "Approval",
+    "kind_question": "Question",
+    "piecesTitle": "Pieces",
+    "piecesHelp": "The agents this use case uses. Each one is a resource in your Foundry project.",
+    "colAgent": "Agent",
+    "colVersion": "Version",
+    "colRuntime": "Runs on"
   }
 }

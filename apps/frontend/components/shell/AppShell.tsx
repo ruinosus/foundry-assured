@@ -26,6 +26,7 @@ import { ChatDockProvider, useChatDock } from "@/lib/chat-dock";
 // nome vivia aqui como constante, o que tornava a navegação intraduzível por construção.
 const WORKSPACE_NAV = [
   { href: "/", key: "overview", icon: "▦" },
+  { href: "/usecases", key: "usecases", icon: "◎" },
   { href: "/agents", key: "agents", icon: "◆" },
   { href: "/knowledge", key: "knowledge", icon: "▤" },
   { href: "/skills", key: "skills", icon: "✦" },
@@ -43,6 +44,7 @@ const ADMIN_NAV = [
 // então nav e título não podem mais divergir.
 const TITLE_KEYS: Record<string, string> = {
   "/": "overview",
+  "/usecases": "usecases",
   "/agents": "agents",
   "/knowledge": "knowledge",
   "/skills": "skills",

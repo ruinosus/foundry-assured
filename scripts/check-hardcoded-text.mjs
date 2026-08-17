@@ -70,6 +70,12 @@ for (const file of [...DIRS].flatMap((d) => [...walk(join(ROOT, d))])) {
   const rel = relative(ROOT, file);
   if (SKIP_PATH.test(rel)) continue;
 
+  // Um arquivo que GERA formato externo (YAML de workflow, template de outra ferramenta) contém
+  // palavras que são contrato daquele formato, não texto de tela — traduzi-las quebraria a saída.
+  // A marca viaja com o arquivo; uma lista de caminhos aqui ficaria desatualizada no primeiro
+  // rename.
+  if (src.includes("@gera-formato-externo")) continue;
+
   let inBlock = false;
   src.split("\n").forEach((line, i) => {
     // Comentário não é interface — nem o de linha, nem o bloco, nem o {/* */} do JSX.
