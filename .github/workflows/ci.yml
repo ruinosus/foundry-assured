@@ -112,6 +112,12 @@ jobs:
       # which the Agent Framework cannot express — its approval is a boolean. Editing runs the
       # action, so it needs the same role as approving; these two guard that it does, and that
       # a malformed answer becomes a reject rather than an approval.
+      # MÁXIMA MAIOR: o módulo `foundry` é fino porque a gestão já é do SDK. O pouco que ele faz
+      # — projetar o recurso para a interface — é onde dá para errar: vazar vocabulário de
+      # plataforma, ou esconder que agente é recurso VERSIONADO. Offline.
+      - name: Projeção de agente (versão visível, plataforma escondida)
+        run: uv run python -m tests.foundry.agent_projection_test
+
       - name: Approval decisions (edit is not a loophole)
         run: uv run python -m tests.hitl.decision_test
       - name: Edit round-trips end to end

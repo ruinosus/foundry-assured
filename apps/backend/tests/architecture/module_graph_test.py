@@ -46,6 +46,9 @@ MODULES = (
     "tenancy", "admin", "knowledge", "helpdesk", "grounded",
     "platform_ops", "tickets", "hosted", "evaluation", "agentdefs",
     "oncall",  # ADR-020: the LangGraph domain — a different runtime, same guarantees
+    # Recursos do Foundry (agentes, e depois bases e skills) expostos ao usuário final. Fino
+    # por construção: a gestão é do SDK, aqui mora projeção e autorização.
+    "foundry",
     "hitl",  # ADR-019: approve/edit/reject/respond + the role gate neither framework has
 )
 

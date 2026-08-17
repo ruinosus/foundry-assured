@@ -9,6 +9,9 @@
     "evaluation": [
       "registry.py"
     ],
+    "foundry": [
+      "registry.py"
+    ],
     "grounded": [
       "registry.py"
     ],
@@ -51,6 +54,14 @@
     ],
     "tenancy": [
       "modules/evaluation/internal/foundry_evals.py"
+    ]
+  },
+  "foundry": {
+    "shared": [
+      "modules/foundry/api.py"
+    ],
+    "tenancy": [
+      "modules/foundry/internal/agents.py"
     ]
   },
   "grounded": {

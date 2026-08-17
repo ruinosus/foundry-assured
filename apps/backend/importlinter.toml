@@ -298,3 +298,29 @@ source_modules = [
     "app.shared",
 ]
 forbidden_modules = ["app.modules.oncall.internal"]
+
+# O módulo que expõe recursos do Foundry (agentes, e depois bases e skills) ao usuário final.
+# O SDK da plataforma — AIProjectClient, AgentsOperations — fica dentro do internal/, pelo mesmo
+# motivo dos demais: um upgrade da superfície do Foundry deve ser contido por construção, não
+# por disciplina. É também o que mantém honesta a MÁXIMA MAIOR: se a chamada oficial vazasse
+# para outros módulos, a "cola fina" viraria acoplamento espalhado.
+[[tool.importlinter.contracts]]
+name = "foundry internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.modules.hitl",
+    "app.modules.oncall",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.foundry.internal"]

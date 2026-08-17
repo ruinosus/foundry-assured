@@ -38,6 +38,14 @@
     ],
     [
       "GET",
+      "/foundry/agents"
+    ],
+    [
+      "GET",
+      "/foundry/agents/{name}"
+    ],
+    [
+      "GET",
       "/healthz"
     ],
     [
@@ -145,6 +153,14 @@
     [
       "GET",
       "/eval/runs"
+    ],
+    [
+      "GET",
+      "/foundry/agents"
+    ],
+    [
+      "GET",
+      "/foundry/agents/{name}"
     ],
     [
       "GET",
@@ -267,6 +283,14 @@
     [
       "GET",
       "/eval/runs"
+    ],
+    [
+      "GET",
+      "/foundry/agents"
+    ],
+    [
+      "GET",
+      "/foundry/agents/{name}"
     ],
     [
       "GET",
