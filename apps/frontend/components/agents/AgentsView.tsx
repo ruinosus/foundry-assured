@@ -150,6 +150,7 @@ export function AgentsView() {
                 <th>{t("colVersion")}</th>
                 <th className="right">{t("colVersions")}</th>
                 <th>{t("colPublished")}</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -170,6 +171,12 @@ export function AgentsView() {
                   {/* O recurso é versionado; a contagem é o que torna isso visível na lista. */}
                   <td className="right num">{a.version_count}</td>
                   <td className="t-sm">{whenLabel(a.version?.created_at ?? null, locale)}</td>
+                  <td className="right nowrap">
+                    {/* O que fechava o ciclo: criar um agente e poder usá-lo. */}
+                    <Link className="acct-btn" href={`/agents/${encodeURIComponent(a.name)}/chat`}>
+                      {t("chat")}
+                    </Link>
+                  </td>
                 </tr>
               ))}
             </tbody>

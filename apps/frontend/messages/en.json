@@ -32,7 +32,7 @@
   },
   "agents": {
     "title": "Agents",
-    "subtitle": "The agents in this Microsoft Foundry project. Creating and publishing versions happens here — no portal needed.",
+    "subtitle": "The agents in your Foundry project — created here or in the portal, and usable from this screen.",
     "colName": "Agent",
     "colState": "State",
     "colVersion": "Version",
@@ -42,7 +42,8 @@
     "emptyBody": "An agent brings together instructions, tools and a knowledge base. Once you publish the first one, it shows up here with its version history.",
     "errorTitle": "Could not read the catalogue",
     "errorUnreachable": "Could not reach the service.",
-    "newBtn": "New agent"
+    "newBtn": "New agent",
+    "chat": "Chat"
   },
   "approval": {
     "waiting": "Awaiting approval",
@@ -207,8 +208,8 @@
   },
   "nav": {
     "workspace": "Workspace",
-    "agents": "Agents",
-    "aiAgents": "Assistants",
+    "agents": "My agents",
+    "aiAgents": "Product examples",
     "overview": "Overview",
     "tickets": "Tickets",
     "evals": "Evaluations",
@@ -470,5 +471,9 @@
     "open": "Open assistant",
     "close": "Close assistant",
     "agentLabel": "Which agent answers"
+  },
+  "agentChat": {
+    "subtitle": "This agent is a resource in your Foundry project — not an example bundled with the product.",
+    "signInFirst": "Sign in to chat with this agent."
   }
 }

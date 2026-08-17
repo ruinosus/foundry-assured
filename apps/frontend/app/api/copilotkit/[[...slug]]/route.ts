@@ -83,20 +83,58 @@ const registryAgents = Object.fromEntries(
 // SINGLE-route only (envelope { method } at /api/copilotkit) and 400s the agent-run sub-path with
 // "Missing method field", which silently resets the chat. `basePath` strips the route prefix so the
 // catch-all [[...slug]] segments match the multi-route patterns. (Diagnosed via the e2e harness.)
-const runtime = new CopilotRuntime({
-  // helpdesk + platform keep their hosted twins; grounded domains (techdocs, selfwiki) run live via OBO.
-  // platform-hosted carries HITL (write-approval interrupt), so it uses the resume bridge.
-  agents: {
-    ...registryAgents,
-    "helpdesk-hosted": helpdeskHosted,
-    "platform-hosted": platformHosted,
-  },
-});
 
-const handler = createCopilotRuntimeHandler({
-  runtime,
-  basePath: "/api/copilotkit",
-});
+
+const staticAgents = {
+  ...registryAgents,
+  "helpdesk-hosted": helpdeskHosted,
+  "platform-hosted": platformHosted,
+};
+
+/** O agente que a requisição está pedindo, extraído do caminho do runtime v2.
+ *
+ * O cliente v2 chama `/api/copilotkit/agent/<id>/run`. O id está ali, e é a única informação de
+ * que precisamos para atender um agente que o registry não conhece.
+ */
+function requestedAgentId(url: string): string | null {
+  const m = new URL(url).pathname.match(/\/agent\/([^/]+)\//);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+// Cache de processo dos agentes montados sob demanda. Sem ele, cada mensagem construiria um
+// HttpAgent novo e o runtime perderia continuidade entre chamadas do mesmo agente.
+const dynamicAgents: Record<string, HttpAgent> = {};
+
+/** Um agente do FOUNDRY, montado na hora.
+ *
+ * ISTO FECHA O CICLO QUE ESTAVA ABERTO. O produto tinha um caminho para CRIAR agente (o wizard,
+ * que publica no Foundry) e nenhum para USAR o que foi criado: o agent map nasce no import, a
+ * partir do registry de código, então um agente criado depois não existia para o runtime. Quem
+ * criasse pela tela o veria na lista e não teria o que fazer com ele.
+ *
+ * Registrar sob demanda evita o problema oposto — listar os agentes aqui exigiria autenticar no
+ * backend a cada requisição do runtime, que roda sem o token do usuário. O id que o cliente pede
+ * é suficiente: o backend valida o nome e recusa o que não existe.
+ */
+function agentFor(id: string): HttpAgent {
+  dynamicAgents[id] ??= new HttpAgent({
+    url: `${BACKEND}/foundry-agent/${encodeURIComponent(id)}`,
+  });
+  return dynamicAgents[id];
+}
+
+async function handler(req: Request): Promise<Response> {
+  const id = requestedAgentId(req.url);
+  // Um id conhecido do registry sempre ganha: os domínios do showcase têm runtime próprio
+  // (workflow, grounded, graph) e não devem ser desviados para o caminho genérico.
+  const agents =
+    id && !(id in staticAgents) ? { ...staticAgents, [id]: agentFor(id) } : staticAgents;
+
+  return createCopilotRuntimeHandler({
+    runtime: new CopilotRuntime({ agents }),
+    basePath: "/api/copilotkit",
+  })(req);
+}
 
 export const GET = handler;
 export const POST = handler;

@@ -142,6 +142,10 @@
     ],
     [
       "POST",
+      "/foundry-agent/{name}"
+    ],
+    [
+      "POST",
       "/foundry/agents/{name}/disable"
     ],
     [
@@ -357,6 +361,10 @@
     [
       "POST",
       "/deepcall"
+    ],
+    [
+      "POST",
+      "/foundry-agent/{name}"
     ],
     [
       "POST",
@@ -583,6 +591,10 @@
     [
       "POST",
       "/admin/users/invite"
+    ],
+    [
+      "POST",
+      "/foundry-agent/{name}"
     ],
     [
       "POST",

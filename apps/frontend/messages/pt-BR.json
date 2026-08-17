@@ -32,7 +32,7 @@
   },
   "agents": {
     "title": "Agentes",
-    "subtitle": "Os agentes deste projeto no Microsoft Foundry. Criar e publicar versões acontece aqui — sem abrir o portal.",
+    "subtitle": "Os agentes do seu projeto no Foundry — criados aqui ou no portal, e conversáveis por esta tela.",
     "colName": "Agente",
     "colState": "Estado",
     "colVersion": "Versão",
@@ -42,7 +42,8 @@
     "emptyBody": "Um agente reúne instruções, ferramentas e uma base de conhecimento. Quando você publicar o primeiro, ele aparece aqui com o histórico de versões.",
     "errorTitle": "Não foi possível ler o catálogo",
     "errorUnreachable": "Não foi possível falar com o serviço.",
-    "newBtn": "Novo agente"
+    "newBtn": "Novo agente",
+    "chat": "Conversar"
   },
   "approval": {
     "waiting": "Aguardando aprovação",
@@ -207,8 +208,8 @@
   },
   "nav": {
     "workspace": "Workspace",
-    "agents": "Agentes",
-    "aiAgents": "Assistentes",
+    "agents": "Meus agentes",
+    "aiAgents": "Exemplos do produto",
     "overview": "Visão geral",
     "tickets": "Chamados",
     "evals": "Avaliações",
@@ -470,5 +471,9 @@
     "open": "Abrir assistente",
     "close": "Fechar assistente",
     "agentLabel": "Qual agente responde"
+  },
+  "agentChat": {
+    "subtitle": "Este agente é um recurso do seu projeto no Foundry — não um exemplo embutido no produto.",
+    "signInFirst": "Entre para conversar com este agente."
   }
 }

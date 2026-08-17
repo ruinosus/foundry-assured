@@ -28,6 +28,7 @@ from app.modules.foundry.internal.knowledge_write import (
     delete_knowledge,
     upload_files,
 )
+from app.modules.foundry.internal.names import qualify as qualify_agent_name
 from app.modules.foundry.internal.skills import (
     create_skill,
     create_skill_from_files,
@@ -63,6 +64,7 @@ __all__ = [
     "list_skills",
     "list_toolboxes",
     "mcp_url",
+    "qualify_agent_name",
     "set_agent_enabled",
     "suggest",
     "upload_files",
