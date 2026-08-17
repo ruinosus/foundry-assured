@@ -1,0 +1,354 @@
+"use client";
+
+// Wizard de agente — quatro etapas, substituindo o campo que pedia JSON cru.
+//
+// A ETAPA 3 É A RAZÃO DE ELE EXISTIR. "Adicionar uma capacidade" era, até aqui, escrever à mão
+// um objeto como
+//
+//     {"type":"azure_ai_search","azure_ai_search":{"indexes":[{"index_name":"…"}]}}
+//
+// Quem sabe escrever isso não precisa deste produto. Agora a etapa lê o catálogo REAL — as bases
+// que existem, os toolboxes que existem — e a pessoa escolhe da lista. O documento sai montado.
+//
+// O que cada capacidade exige foi medido no SDK e confirmado na documentação:
+//   * base de conhecimento → AzureAISearchTool, direto em `tools` (atalho `knowledge_base`)
+//   * toolbox (e as skills dentro dele) → o toolbox É um servidor MCP: um `mcp` tool com a URL
+//   * MCP externo → o mesmo `mcp` tool, com a URL do servidor de terceiro
+//   * code interpreter, web search → tools de primeira parte, só o `type`
+
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { authedFetch } from "@/lib/auth/api";
+
+const NOME_RECURSO = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+/** Tools de primeira parte que só precisam do `type` — nada a configurar. */
+const TOOLS_SIMPLES = ["code_interpreter", "web_search"] as const;
+
+type Base = { name: string };
+type Toolbox = { name: string; default_version: string | null };
+
+export function AgentWizard({
+  existentes,
+  onCancelar,
+}: {
+  existentes: string[];
+  onCancelar: () => void;
+}) {
+  const t = useTranslations("agentWizard");
+  const tc = useTranslations("common");
+  const router = useRouter();
+
+  const [passo, setPasso] = useState<1 | 2 | 3 | 4>(1);
+  const [nome, setNome] = useState("");
+  const [descricao, setDescricao] = useState("");
+  const [instrucoes, setInstrucoes] = useState("");
+  const [modelo, setModelo] = useState("gpt-5-mini");
+
+  const [kb, setKb] = useState("");
+  const [toolbox, setToolbox] = useState("");
+  const [simples, setSimples] = useState<Set<string>>(new Set());
+  const [mcpLabel, setMcpLabel] = useState("");
+  const [mcpUrl, setMcpUrl] = useState("");
+
+  const [bases, setBases] = useState<Base[]>([]);
+  const [toolboxes, setToolboxes] = useState<Toolbox[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [erro, setErro] = useState<string | null>(null);
+
+  // O catálogo real é carregado assim que o wizard abre: a etapa 3 oferece o que EXISTE, e uma
+  // lista vazia ali é informação (não criei base nenhuma ainda), não um campo em branco.
+  useEffect(() => {
+    void Promise.all([
+      authedFetch("/api/foundry/knowledge", { cache: "no-store" })
+        .then((r) => r.json())
+        .catch(() => ({})),
+      authedFetch("/api/foundry/toolboxes", { cache: "no-store" })
+        .then((r) => r.json())
+        .catch(() => ({})),
+    ]).then(([k, tb]) => {
+      setBases(k?.bases ?? []);
+      setToolboxes(tb?.toolboxes ?? []);
+    });
+  }, []);
+
+  const problemaNome = useCallback((): string | null => {
+    const n = nome.trim();
+    if (!n) return t("erroNomeVazio");
+    if (!NOME_RECURSO.test(n)) return t("erroNomeFormato");
+    if (n.length > 63) return t("erroNomeLongo");
+    // Nome existente não é erro de digitação: é outra operação (publica versão do agente que já
+    // existe). Dizer isso na etapa 1 evita a surpresa na etapa 4.
+    if (existentes.includes(n)) return t("erroNomeExiste", { name: n });
+    return null;
+  }, [nome, existentes, t]);
+
+  /** As tools declaradas diretamente (os atalhos são expandidos pelo backend). */
+  const tools = () => {
+    const out: Record<string, unknown>[] = [];
+    for (const tipo of simples) out.push({ type: tipo });
+    if (mcpUrl.trim() && mcpLabel.trim()) {
+      out.push({
+        type: "mcp",
+        server_label: mcpLabel.trim().replace(/-/g, "_"),
+        server_url: mcpUrl.trim(),
+        // Default seguro. A documentação avisa que o endpoint NÃO bloqueia a chamada — quem
+        // precisa honrar isto é o runtime do agente. Nasce em "always" mesmo assim.
+        require_approval: "always",
+      });
+    }
+    return out;
+  };
+
+  /** O documento exato, como vai ser enviado. */
+  const documento = () => {
+    const doc: Record<string, unknown> = {
+      kind: "prompt",
+      model: modelo.trim(),
+      instructions: instrucoes.trim(),
+    };
+    if (kb) doc.knowledge_base = kb;
+    // Atalhos: o backend expande os dois para o tool completo, porque montar a URL do toolbox
+    // exigiria conhecer o endpoint do project — informação de quem opera, não de quem usa.
+    if (toolbox) doc.toolbox = toolbox;
+    const ts = tools();
+    if (ts.length) doc.tools = ts;
+    return doc;
+  };
+
+  const publicar = async () => {
+    setBusy(true);
+    setErro(null);
+    try {
+      const alvo = `/api/foundry/agents/${encodeURIComponent(nome.trim())}`;
+      const r = await authedFetch(alvo, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ definition: documento(), description: descricao.trim() }),
+      });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok) {
+        setErro(body?.error ?? `HTTP ${r.status}`);
+        return;
+      }
+      router.push(`/agents/${encodeURIComponent(body.name ?? nome.trim())}`);
+    } catch {
+      setErro(tc("backendUnreachable"));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggle = (tipo: string) =>
+    setSimples((s) => {
+      const n = new Set(s);
+      n.has(tipo) ? n.delete(tipo) : n.add(tipo);
+      return n;
+    });
+
+  const podeAvancar =
+    (passo === 1 && !problemaNome()) ||
+    (passo === 2 && instrucoes.trim().length > 0 && modelo.trim().length > 0) ||
+    passo === 3;
+
+  return (
+    <section className="card stack-sm">
+      <header className="between">
+        <h3 className="section-title">{t("title")}</h3>
+        <button type="button" className="btn" disabled={busy} onClick={onCancelar}>
+          {tc("cancel")}
+        </button>
+      </header>
+
+      <ol className="steps" aria-label={t("stepsLabel")}>
+        {([1, 2, 3, 4] as const).map((p) => (
+          <li key={p} className={`step ${passo === p ? "on" : passo > p ? "done" : ""}`}>
+            <span className="step-num">{p}</span>
+            <span className="step-label">{t(`step${p}`)}</span>
+          </li>
+        ))}
+      </ol>
+
+      {erro && (
+        <div className="notice notice-block">
+          <p className="notice-body">{erro}</p>
+        </div>
+      )}
+
+      {passo === 1 && (
+        <div className="stack-sm">
+          <input
+            className="acct-btn"
+            placeholder={t("namePlaceholder")}
+            value={nome}
+            disabled={busy}
+            onChange={(e) => setNome(e.target.value)}
+          />
+          {nome.trim() && problemaNome() && <p className="t-xs bad-line">{problemaNome()}</p>}
+          <p className="muted t-xs">{t("nameHelp")}</p>
+          <input
+            className="acct-btn"
+            placeholder={t("descriptionPlaceholder")}
+            value={descricao}
+            disabled={busy}
+            onChange={(e) => setDescricao(e.target.value)}
+          />
+        </div>
+      )}
+
+      {passo === 2 && (
+        <div className="stack-sm">
+          <p className="muted t-sm">{t("behaviorHelp")}</p>
+          <textarea
+            className="acct-btn"
+            rows={9}
+            placeholder={t("instructionsPlaceholder")}
+            value={instrucoes}
+            disabled={busy}
+            onChange={(e) => setInstrucoes(e.target.value)}
+          />
+          {/* Nome de deployment do modelo: não se traduz, é o que a pessoa vê no portal. */}
+          <label className="muted t-xs">{t("modelLabel")}</label>
+          <input
+            className="acct-btn"
+            value={modelo}
+            disabled={busy}
+            onChange={(e) => setModelo(e.target.value)}
+          />
+        </div>
+      )}
+
+      {passo === 3 && (
+        <div className="stack-sm">
+          <p className="muted t-sm">{t("capabilitiesHelp")}</p>
+
+          <div className="stack-sm">
+            <p className="t-xs strong">{t("kbTitle")}</p>
+            {bases.length === 0 ? (
+              <p className="muted t-xs">{t("kbEmpty")}</p>
+            ) : (
+              <select
+                className="acct-btn"
+                value={kb}
+                disabled={busy}
+                onChange={(e) => setKb(e.target.value)}
+              >
+                <option value="">{t("kbNone")}</option>
+                {bases.map((b) => (
+                  <option key={b.name} value={b.name}>
+                    {b.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            <p className="muted t-xs">{t("kbHelp")}</p>
+          </div>
+
+          <div className="stack-sm">
+            <p className="t-xs strong">{t("toolboxTitle")}</p>
+            {toolboxes.length === 0 ? (
+              <p className="muted t-xs">{t("toolboxEmpty")}</p>
+            ) : (
+              <select
+                className="acct-btn"
+                value={toolbox}
+                disabled={busy}
+                onChange={(e) => setToolbox(e.target.value)}
+              >
+                <option value="">{t("toolboxNone")}</option>
+                {toolboxes.map((x) => (
+                  <option key={x.name} value={x.name}>
+                    {x.name}
+                  </option>
+                ))}
+              </select>
+            )}
+            {/* A ressalva honesta: skills dentro do toolbox chegam como MCP Resources, e não foi
+                verificado se o agente server-side as lê. Dizer isso é melhor que prometer. */}
+            <p className="muted t-xs">{t("toolboxHelp")}</p>
+          </div>
+
+          <div className="stack-sm">
+            <p className="t-xs strong">{t("toolsTitle")}</p>
+            <div className="row-tight">
+              {TOOLS_SIMPLES.map((tipo) => (
+                <label key={tipo} className="row-tight t-sm">
+                  <input
+                    type="checkbox"
+                    checked={simples.has(tipo)}
+                    disabled={busy}
+                    onChange={() => toggle(tipo)}
+                  />
+                  {t(`tool_${tipo}`)}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="stack-sm">
+            <p className="t-xs strong">{t("mcpTitle")}</p>
+            <div className="row-tight">
+              <input
+                className="acct-btn grow"
+                placeholder={t("mcpLabelPlaceholder")}
+                value={mcpLabel}
+                disabled={busy}
+                onChange={(e) => setMcpLabel(e.target.value)}
+              />
+              <input
+                className="acct-btn grow"
+                placeholder="https://…/mcp"
+                value={mcpUrl}
+                disabled={busy}
+                onChange={(e) => setMcpUrl(e.target.value)}
+              />
+            </div>
+            <p className="muted t-xs">{t("mcpHelp")}</p>
+          </div>
+        </div>
+      )}
+
+      {passo === 4 && (
+        <div className="stack-sm">
+          <p className="muted t-sm">{t("reviewHelp")}</p>
+          <pre className="doc-preview">{JSON.stringify(documento(), null, 2)}</pre>
+          {toolbox && <p className="muted t-xs">{t("toolboxResolved", { name: toolbox })}</p>}
+        </div>
+      )}
+
+      <div className="row">
+        {passo > 1 && (
+          <button
+            type="button"
+            className="btn"
+            disabled={busy}
+            onClick={() => setPasso((p) => (p - 1) as 1 | 2 | 3)}
+          >
+            {t("back")}
+          </button>
+        )}
+        <div className="grow" />
+        {passo < 4 ? (
+          <button
+            type="button"
+            className="btn btn-solid"
+            disabled={busy || !podeAvancar}
+            onClick={() => setPasso((p) => (p + 1) as 2 | 3 | 4)}
+          >
+            {t("next")}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="btn btn-solid"
+            disabled={busy}
+            onClick={() => void publicar()}
+          >
+            {busy ? t("publishing") : t("publish")}
+          </button>
+        )}
+      </div>
+    </section>
+  );
+}

@@ -41,7 +41,8 @@
     "emptyTitle": "No agents yet",
     "emptyBody": "An agent brings together instructions, tools and a knowledge base. Once you publish the first one, it shows up here with its version history.",
     "errorTitle": "Could not read the catalogue",
-    "errorUnreachable": "Could not reach the service."
+    "errorUnreachable": "Could not reach the service.",
+    "newBtn": "New agent"
   },
   "approval": {
     "waiting": "Awaiting approval",
@@ -87,7 +88,9 @@
     "delete": "Delete",
     "modeLive": "Live workflow",
     "modeHosted": "Hosted agent",
-    "demoMode": "● Demo · replayed fixture, no Azure"
+    "demoMode": "● Demo · replayed fixture, no Azure",
+    "project": "Project",
+    "projectHint": "Every agent, base and skill on these screens lives inside this Foundry project."
   },
   "connections": {
     "tenantOnboarded": "Tenant onboarded.",
@@ -396,6 +399,45 @@
     "back": "Back",
     "next": "Next",
     "publish": "Publish skill",
+    "publishing": "Publishing…"
+  },
+  "agentWizard": {
+    "title": "New agent",
+    "stepsLabel": "Creation steps",
+    "step1": "Identity",
+    "step2": "Behaviour",
+    "step3": "Capabilities",
+    "step4": "Review",
+    "namePlaceholder": "agent-name",
+    "nameHelp": "Lowercase letters, numbers and hyphens in the middle — for example, hr-support.",
+    "descriptionPlaceholder": "Version description (optional)",
+    "erroNomeVazio": "Enter a name.",
+    "erroNomeFormato": "Use only lowercase letters, numbers and hyphens in the middle.",
+    "erroNomeLongo": "The name is over 63 characters.",
+    "erroNomeExiste": "An agent named {name} already exists. Publishing with this name creates a new version of it, not a new agent.",
+    "behaviorHelp": "What the agent does and how it answers. Write it as if explaining to a new teammate.",
+    "instructionsPlaceholder": "You answer HR questions citing the source policy. If the answer is not in the knowledge base, say you do not know…",
+    "modelLabel": "Model (deployment)",
+    "capabilitiesHelp": "What this agent can reach. With no capability it answers from the model alone, with no source.",
+    "kbTitle": "Knowledge base",
+    "kbNone": "none",
+    "kbEmpty": "No base created yet — create one under Knowledge so the agent can cite sources.",
+    "kbHelp": "The agent searches this base and cites the source document.",
+    "toolboxTitle": "Toolbox",
+    "toolboxNone": "none",
+    "toolboxEmpty": "No toolbox created yet. A toolbox groups tools and skills.",
+    "toolboxHelp": "A toolbox is an MCP server: the agent reaches its tools through the URL. Skills inside the toolbox arrive as MCP resources — we have not yet verified whether the Foundry-hosted agent reads them.",
+    "toolboxResolved": "The address for toolbox {name} will be built by the server, pointing at the version in use.",
+    "toolsTitle": "Built-in tools",
+    "tool_code_interpreter": "Code interpreter",
+    "tool_web_search": "Web search",
+    "mcpTitle": "External MCP server",
+    "mcpLabelPlaceholder": "label",
+    "mcpHelp": "For an MCP server outside Foundry. Write actions start out requiring approval — but the agent runtime enforces that, not the server.",
+    "reviewHelp": "This is the document that will be sent. Publishing creates the agent and its first version.",
+    "back": "Back",
+    "next": "Next",
+    "publish": "Create and publish version",
     "publishing": "Publishing…"
   }
 }

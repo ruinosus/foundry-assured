@@ -13,7 +13,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
 import { useMyRoles, canAdmin } from "@/lib/auth/roles";
-import { CreateAgent } from "@/components/agents/CreateAgent";
+import { AgentWizard } from "@/components/agents/AgentWizard";
 
 type AgentVersion = {
   version: string | null;
@@ -57,6 +57,7 @@ export function AgentsView() {
   const [loading, setLoading] = useState(true);
   const roles = useMyRoles();
   const admin = canAdmin(roles);
+  const [criando, setCriando] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -97,7 +98,17 @@ export function AgentsView() {
 
       {/* Criar vem antes da lista: numa tela sem agente nenhum, a lista não é o conteúdo — o
           próximo passo é. */}
-      {admin && <CreateAgent onCreated={() => void load()} />}
+      {admin &&
+        (criando ? (
+          <AgentWizard
+            existentes={(agents ?? []).map((a) => a.name)}
+            onCancelar={() => setCriando(false)}
+          />
+        ) : (
+          <button type="button" className="btn btn-solid" onClick={() => setCriando(true)}>
+            {t("newBtn")}
+          </button>
+        ))}
 
       {/* Esqueleto, não spinner no meio do conteúdo: o register pede que o carregamento
           preserve a forma do que vem, para a página não saltar quando os dados chegam. */}

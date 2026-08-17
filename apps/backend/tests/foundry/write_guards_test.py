@@ -98,6 +98,16 @@ def main() -> int:
     check("tools do documento SOBREVIVEM ao atalho", len(ambos["definition"]["tools"]) == 2)
     check("MCP passa cru (é tool de primeira parte, não precisa de tradução)",
           any(t.get("type") == "mcp" for t in ambos["definition"]["tools"]))
+    # O segundo atalho: `toolbox: <nome>` vira o `mcp` tool com a URL. É o vínculo que a pesquisa
+    # revelou — o toolbox É um servidor MCP, e o agente aponta para ele pela URL.
+    com_tb = parse_definition({"model": "m", "instructions": "i", "toolbox": "minha-tb"})
+    check("o atalho toolbox vira um mcp tool", com_tb["definition"]["tools"][0]["type"] == "mcp")
+    check("a URL do toolbox é a consumer (sem versão fixa)",
+          "/versions/" not in com_tb["definition"]["tools"][0]["server_url"])
+    dois = parse_definition({"model": "m", "instructions": "i", "knowledge_base": "kb", "toolbox": "tb"})
+    check("os dois atalhos convivem", len(dois["definition"]["tools"]) == 2)
+    check("toolbox que não é texto é recusado",
+          recusa(lambda: parse_definition({"model": "m", "instructions": "i", "toolbox": 1}), InvalidDefinition))
     check("knowledge_base que não é texto é recusado",
           recusa(lambda: parse_definition({"model": "m", "instructions": "i", "knowledge_base": 1}), InvalidDefinition))
     # Os 10 campos de PromptAgentDefinition, menos os 3 tratados à parte: nenhum fica de fora.

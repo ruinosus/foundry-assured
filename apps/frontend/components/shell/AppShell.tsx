@@ -11,6 +11,7 @@ import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
 import { DOMAINS } from "@/lib/domains";
+import { authedFetch } from "@/lib/auth/api";
 import { useMyRoles, isAdmin } from "@/lib/auth/roles";
 import { useTranslations } from "next-intl";
 import { LanguageToggle } from "@/components/shell/LanguageToggle";
@@ -48,6 +49,30 @@ const TITLE_KEYS: Record<string, string> = {
   "/admin/users": "admin",
   "/admin/connections": "connections",
 };
+
+function ProjectBadge() {
+  const t = useTranslations("common");
+  const [project, setProject] = useState<{ name: string | null } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    authedFetch("/api/foundry/project")
+      .then((r) => r.json())
+      .then((d) => alive && setProject(d))
+      .catch(() => alive && setProject(null));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  // Sem project resolvido não há o que mostrar — e um rótulo vazio seria pior que nenhum.
+  if (!project?.name) return null;
+  return (
+    <div className="project-badge" title={t("projectHint")}>
+      <span className="project-label">{t("project")}</span>
+      <span className="project-name">{project.name}</span>
+    </div>
+  );
+}
 
 function BackendStatus() {
   const t = useTranslations("common");

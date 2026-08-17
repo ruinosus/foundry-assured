@@ -1370,3 +1370,30 @@ table.evals tr:last-child td { border-bottom: none; }
 
 /* Erro de validação inline: vermelho semântico, não decoração. */
 .bad-line { color: var(--block); }
+
+/* O project é CONTEXTO, não destino: fica sob a marca, sempre visível, sem ser item de menu.
+   Todos os recursos das telas abaixo vivem dentro dele — quem vê uma lista vazia precisa saber
+   se está no lugar certo. */
+.project-badge {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  margin: 0 var(--space-2) var(--space-3);
+  background: var(--sunk);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.project-label {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+}
+
+.project-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}

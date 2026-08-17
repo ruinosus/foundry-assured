@@ -41,7 +41,8 @@
     "emptyTitle": "Nenhum agente ainda",
     "emptyBody": "Um agente reúne instruções, ferramentas e uma base de conhecimento. Quando você publicar o primeiro, ele aparece aqui com o histórico de versões.",
     "errorTitle": "Não foi possível ler o catálogo",
-    "errorUnreachable": "Não foi possível falar com o serviço."
+    "errorUnreachable": "Não foi possível falar com o serviço.",
+    "newBtn": "Novo agente"
   },
   "approval": {
     "waiting": "Aguardando aprovação",
@@ -87,7 +88,9 @@
     "delete": "Remover",
     "modeLive": "Workflow ao vivo",
     "modeHosted": "Agente hospedado",
-    "demoMode": "● Demo · fixture gravada, sem Azure"
+    "demoMode": "● Demo · fixture gravada, sem Azure",
+    "project": "Projeto",
+    "projectHint": "Todos os agentes, bases e skills desta tela vivem dentro deste projeto do Foundry."
   },
   "connections": {
     "tenantOnboarded": "Tenant integrado.",
@@ -396,6 +399,45 @@
     "back": "Voltar",
     "next": "Avançar",
     "publish": "Publicar skill",
+    "publishing": "Publicando…"
+  },
+  "agentWizard": {
+    "title": "Novo agente",
+    "stepsLabel": "Etapas da criação",
+    "step1": "Identidade",
+    "step2": "Comportamento",
+    "step3": "Capacidades",
+    "step4": "Revisão",
+    "namePlaceholder": "nome-do-agente",
+    "nameHelp": "Letras minúsculas, números e hífens no meio — por exemplo, suporte-rh.",
+    "descriptionPlaceholder": "Descrição da versão (opcional)",
+    "erroNomeVazio": "Informe um nome.",
+    "erroNomeFormato": "Use apenas letras minúsculas, números e hífens no meio.",
+    "erroNomeLongo": "O nome passa de 63 caracteres.",
+    "erroNomeExiste": "Já existe um agente chamado {name}. Publicar com este nome cria uma versão nova dele, não um agente novo.",
+    "behaviorHelp": "O que o agente faz e como responde. Escreva como quem explica a um colega novo.",
+    "instructionsPlaceholder": "Você responde dúvidas de RH citando a política de origem. Se a resposta não estiver na base, diga que não sabe…",
+    "modelLabel": "Modelo (deployment)",
+    "capabilitiesHelp": "O que este agente pode alcançar. Sem nenhuma capacidade ele responde só do modelo, sem fonte.",
+    "kbTitle": "Base de conhecimento",
+    "kbNone": "nenhuma",
+    "kbEmpty": "Nenhuma base criada ainda — crie uma em Conhecimento para o agente poder citar fontes.",
+    "kbHelp": "O agente busca nesta base e cita o documento de origem.",
+    "toolboxTitle": "Toolbox",
+    "toolboxNone": "nenhum",
+    "toolboxEmpty": "Nenhum toolbox criado ainda. Um toolbox agrupa ferramentas e skills.",
+    "toolboxHelp": "O toolbox é um servidor MCP: o agente alcança as ferramentas dele pela URL. As skills dentro do toolbox chegam como recursos MCP — ainda não verificamos se o agente hospedado no Foundry as lê.",
+    "toolboxResolved": "O endereço do toolbox {name} será montado pelo servidor, apontando para a versão em uso.",
+    "toolsTitle": "Ferramentas prontas",
+    "tool_code_interpreter": "Interpretador de código",
+    "tool_web_search": "Busca na web",
+    "mcpTitle": "Servidor MCP externo",
+    "mcpLabelPlaceholder": "rótulo",
+    "mcpHelp": "Para um servidor MCP fora do Foundry. Ações de escrita nascem exigindo aprovação — mas quem aplica isso é o runtime do agente, não o servidor.",
+    "reviewHelp": "Este é o documento que será enviado. Publicar cria o agente e a primeira versão.",
+    "back": "Voltar",
+    "next": "Avançar",
+    "publish": "Criar e publicar versão",
     "publishing": "Publicando…"
   }
 }

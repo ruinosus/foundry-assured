@@ -55,6 +55,12 @@ _PASSTHROUGH = (
 # quem quiser controle total — o atalho ADICIONA, não substitui.
 _KB_SHORTCUT = "knowledge_base"
 
+# Segundo atalho, pelo mesmo motivo: `toolbox: <nome>` vira o `mcp` tool com a URL do toolbox.
+# O toolbox É um servidor MCP (confirmado na documentação), então "usar este toolbox" é apontar
+# para a URL dele. Montá-la à mão exige saber o endpoint do project e o formato da querystring —
+# conhecimento de quem opera a plataforma, não de quem usa o produto.
+_TOOLBOX_SHORTCUT = "toolbox"
+
 
 class InvalidDefinition(ValueError):
     """Documento que não vira agente, com o motivo."""
@@ -129,6 +135,15 @@ def parse_definition(doc: dict) -> dict:
         tools.append(_search_tool_spec(kb))
         out["tools"] = tools
 
+    # O atalho do toolbox entra como mais uma tool, preservando as anteriores.
+    tbx = doc.get(_TOOLBOX_SHORTCUT)
+    if tbx:
+        if not isinstance(tbx, str):
+            raise InvalidDefinition(f"`{_TOOLBOX_SHORTCUT}` deve ser o nome do toolbox, como texto.")
+        tools = list(out.get("tools") or [])
+        tools.append(_toolbox_tool_spec(tbx))
+        out["tools"] = tools
+
     known = {
         "kind",
         "type",
@@ -138,10 +153,26 @@ def parse_definition(doc: dict) -> dict:
         "description",
         "metadata",
         _KB_SHORTCUT,
+        _TOOLBOX_SHORTCUT,
         *_PASSTHROUGH,
     }
     ignored = sorted(set(doc) - known)
     return {"definition": out, "ignored": ignored}
+
+
+def _toolbox_tool_spec(name: str) -> dict:
+    """A forma do `mcp` tool que aponta para um toolbox.
+
+    Usa o endpoint CONSUMER (sem versão no caminho), que serve sempre a `default_version`. É a
+    escolha certa para agente: promover uma versão do toolbox — ou da skill dentro dele — passa a
+    valer sem tocar no agente. Fixar a versão aqui transformaria cada promoção numa edição de
+    agente.
+
+    Import tardio para `parse_definition` continuar testável offline sem tocar em configuração.
+    """
+    from app.modules.foundry.internal.toolboxes import mcp_url
+
+    return mcp_url(name)["tool"]
 
 
 def _search_tool_spec(kb_name: str) -> dict:
