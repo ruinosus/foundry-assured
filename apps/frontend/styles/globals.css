@@ -1210,3 +1210,93 @@ table.evals tr:last-child td { border-bottom: none; }
   --accent: var(--sunk);
   --border: var(--line);
 }
+
+/* ---------- Cabeçalho de página ---------- */
+.page-title {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 640;
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.page-sub {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--muted);
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+.muted-line { margin: var(--space-1) 0 0; color: var(--muted); }
+
+/* ---------- Carregando ---------- */
+/* Esqueleto em vez de spinner no meio do conteúdo: preserva a forma do que vem, então a página
+   não salta quando os dados chegam. A pulsação respeita quem pediu menos movimento. */
+.skeleton-list { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.skeleton-row {
+  height: 3rem;
+  border-radius: var(--radius);
+  background: var(--sunk);
+  border: 1px solid var(--line);
+  animation: skeleton-pulse 1.4s var(--ease-out) infinite;
+}
+.skeleton-row:nth-child(2) { animation-delay: 0.12s; }
+.skeleton-row:nth-child(3) { animation-delay: 0.24s; }
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-row { animation: none; }
+}
+
+/* ---------- Estado vazio ---------- */
+/* Ensina o próximo passo em vez de anunciar a ausência. "Nada aqui" é a versão preguiçosa e
+   não ajuda ninguém a sair do zero. */
+.empty {
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.empty-title { margin: 0; font-size: var(--text-md); font-weight: 620; color: var(--ink); }
+.empty-body {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--muted);
+  max-width: 48ch;
+  text-wrap: pretty;
+}
+
+/* ---------- Aviso / falha ---------- */
+/* Falha de leitura NUNCA se disfarça de vazio: usa --block, diz o que houve e oferece a ação.
+   Uma tela vazia e tranquila esconderia falta de permissão, que é o oposto de um produto cuja
+   tese é procedência. */
+.notice {
+  border: 1px solid var(--block);
+  background: var(--block-wash);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+}
+
+.notice-block { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
+.notice-title { margin: 0; font-weight: 640; font-size: var(--text-base); color: var(--ink); }
+.notice-body {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+  text-wrap: pretty;
+}

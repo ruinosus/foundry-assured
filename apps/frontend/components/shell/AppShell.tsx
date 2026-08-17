@@ -19,6 +19,7 @@ import { ThemeToggle } from "@/components/shell/ThemeToggle";
 const AGENT_NAV = DOMAINS.map((d) => ({ href: `/d/${d.id}`, label: d.label, icon: d.icon }));
 const WORKSPACE_NAV = [
   { href: "/", label: "Overview", icon: "▦" },
+  { href: "/agents", label: "Agentes", icon: "◆" },
   { href: "/tickets", label: "Tickets", icon: "🎫" },
   { href: "/evals", label: "Evaluations", icon: "✓" },
 ];
@@ -30,6 +31,7 @@ const ADMIN_NAV = [
 
 const TITLES: Record<string, string> = {
   "/": "Overview",
+  "/agents": "Agentes",
   "/tickets": "Tickets",
   "/evals": "Evaluations",
   "/admin/users": "Admin",
