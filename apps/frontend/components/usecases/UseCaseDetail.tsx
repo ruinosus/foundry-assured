@@ -16,6 +16,7 @@ import { useCallback, useEffect, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
 import { useMyRoles, canAdmin } from "@/lib/auth/roles";
 import { type Flow, type FlowStep, fromYaml, toYaml, validate } from "@/lib/flowCanvas";
+import { Outcomes } from "@/components/usecases/Outcomes";
 
 type UseCase = {
   id: string;
@@ -300,6 +301,10 @@ export function UseCaseDetail({ id }: { id: string }) {
           </div>
         </div>
       )}
+
+      {/* Resultados ANTES das peças: quem é de negócio quer saber se funciona, e só depois de
+          que é feito. A ordem da tela responde as perguntas na ordem em que aparecem. */}
+      <Outcomes caseId={id} />
 
       <div className="stack-sm">
         <h3 className="section-title">{t("piecesTitle")}</h3>

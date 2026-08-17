@@ -6,6 +6,7 @@ peças, e quem é de negócio precisa ver "o helpdesk". Nada aqui é uma tabela 
 de campos no `metadata` do agente (SEGUNDA MÁXIMA: tudo fica no Foundry).
 """
 
+from app.modules.usecases.internal.outcomes import outcomes, parse_assumption
 from app.modules.usecases.internal.usecases import (
     get_use_case,
     list_use_cases,
@@ -17,6 +18,8 @@ from app.modules.usecases.internal.usecases import (
 __all__ = [
     "get_use_case",
     "list_use_cases",
+    "outcomes",
+    "parse_assumption",
     "read_flow",
     "rename_use_case",
     "write_flow",

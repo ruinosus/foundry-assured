@@ -217,6 +217,10 @@
       "/techdocs"
     ],
     [
+      "POST",
+      "/usecases/{case_id}/outcomes"
+    ],
+    [
       "PUT",
       "/usecases/{case_id}"
     ],
@@ -457,6 +461,10 @@
     [
       "POST",
       "/techdocs"
+    ],
+    [
+      "POST",
+      "/usecases/{case_id}/outcomes"
     ],
     [
       "PUT",
@@ -707,6 +715,10 @@
     [
       "POST",
       "/tenant/onboard"
+    ],
+    [
+      "POST",
+      "/usecases/{case_id}/outcomes"
     ],
     [
       "PUT",

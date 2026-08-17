@@ -1561,3 +1561,28 @@ table.evals tr:last-child td { border-bottom: none; }
   border: 1px solid var(--border);
   border-radius: var(--radius);
 }
+
+/* Métrica: o número primeiro, o rótulo depois — é a ordem em que se lê um painel.
+   O que é MEDIDO e o que é ESTIMADO ficam em blocos separados; misturá-los faria um cálculo
+   parecer uma medida, que é como um painel de ROI vira propaganda. */
+.grid.g3 { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+
+.metric {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3);
+  background: var(--sunk);
+  border-radius: var(--radius-sm);
+}
+
+.metric-value {
+  font-size: var(--text-xl);
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-tight);
+}
+
+.metric-label {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}

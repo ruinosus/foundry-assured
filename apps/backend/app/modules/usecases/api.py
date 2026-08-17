@@ -11,6 +11,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from app.modules.usecases.public import (
     get_use_case,
     list_use_cases,
+    outcomes,
+    parse_assumption,
     rename_use_case,
     write_flow,
 )
@@ -77,3 +79,20 @@ async def save_flow(case_id: str, request: Request) -> dict:
     if not yaml_text.strip():
         raise HTTPException(status_code=400, detail="O fluxo está vazio.")
     return _guard(lambda: write_flow(case_id, yaml_text))
+
+
+@router.post("/{case_id}/outcomes")
+def case_outcomes(case_id: str, body: dict | None = None) -> dict:
+    """O que este caso produziu, e o retorno sob a premissa informada.
+
+    É POST e não GET porque a premissa vai no corpo — e ela é o parâmetro que muda o número. Um
+    GET com os valores na querystring os colocaria no log de acesso e no histórico do browser,
+    e "custo da hora da equipe" é dado que a empresa não escolheu publicar.
+
+    A resposta traz o que é CONTADO e o que é ESTIMADO em campos separados. Sem essa separação, um
+    número calculado sobre uma premissa se parece com uma medida — que é exatamente como um painel
+    de ROI vira propaganda.
+    """
+    premissa = parse_assumption(body or {}) if body else None
+    caso = _guard(lambda: get_use_case(case_id))
+    return _guard(lambda: outcomes(caso, premissa))

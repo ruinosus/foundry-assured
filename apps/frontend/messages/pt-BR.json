@@ -523,5 +523,19 @@
     "colAgent": "Agente",
     "colVersion": "Versão",
     "colRuntime": "Execução"
+  },
+  "outcomes": {
+    "title": "Resultados",
+    "measuredLabel": "Medido",
+    "estimatedLabel": "Estimado — depende da premissa abaixo",
+    "conversations": "conversas atendidas",
+    "resolved": "resolvidas sem escalar",
+    "rate": "taxa de resolução",
+    "formula": "{cases} atendimentos × {minutes} min × {cost}/hora",
+    "minutesLabel": "minutos por atendimento",
+    "costLabel": "custo da hora",
+    "recalculate": "Recalcular",
+    "calculating": "Calculando…",
+    "defaultAssumption": "A premissa acima é um valor inicial conservador — troque pelos números da sua operação para o cálculo valer alguma coisa."
   }
 }

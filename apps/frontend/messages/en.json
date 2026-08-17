@@ -523,5 +523,19 @@
     "colAgent": "Agent",
     "colVersion": "Version",
     "colRuntime": "Runs on"
+  },
+  "outcomes": {
+    "title": "Results",
+    "measuredLabel": "Measured",
+    "estimatedLabel": "Estimated — depends on the assumption below",
+    "conversations": "conversations handled",
+    "resolved": "resolved without escalating",
+    "rate": "resolution rate",
+    "formula": "{cases} cases × {minutes} min × {cost}/hour",
+    "minutesLabel": "minutes per case",
+    "costLabel": "hourly cost",
+    "recalculate": "Recalculate",
+    "calculating": "Calculating…",
+    "defaultAssumption": "The assumption above is a conservative starting value — replace it with your own numbers for the figure to mean anything."
   }
 }
