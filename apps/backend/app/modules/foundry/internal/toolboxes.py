@@ -197,11 +197,30 @@ def create_toolbox_version(name: str, body: dict) -> dict:
             or None,
             description=str(body.get("description") or "") or None,
         )
+        # A connection nasce junto com o toolbox: sem ela o agente que o usar recebe 401 na
+        # primeira chamada, e o usuário final não deveria precisar saber o que é uma connection.
+        # Falha aqui NÃO desfaz o toolbox — ele é válido e utilizável por cliente MCP autenticado
+        # de outra forma; o que se perde é o atalho. Por isso o motivo sobe na resposta em vez de
+        # virar exceção.
+        conn: str | None = None
+        conn_error: str | None = None
+        try:
+            from app.modules.foundry.internal.connections import (
+                ensure_toolbox_connection,
+            )
+
+            info = mcp_url(name)
+            conn = ensure_toolbox_connection(qualified, info["url"])["name"]
+        except Exception as exc:  # noqa: BLE001 — o toolbox vale mais que o atalho
+            conn_error = str(exc)
+
         return {
             "name": qualified,
             "version": getattr(version, "version", None),
             "tools": len(parsed["tools"]),
             "skills": len(parsed["skills"]),
+            "connection": conn,
+            "connection_error": conn_error,
         }
     finally:
         with contextlib.suppress(Exception):
@@ -219,7 +238,7 @@ def delete_toolbox(name: str) -> dict:
             client.close()
 
 
-def mcp_url(name: str, version: str = "") -> dict:
+def mcp_url(name: str, version: str = "", *, connection: str | None = None) -> dict:
     """A URL MCP deste toolbox — o que liga um agente a ele.
 
     Duas variantes, e a diferença é operacional:
@@ -240,17 +259,22 @@ def mcp_url(name: str, version: str = "") -> dict:
         if version
         else f"{endpoint}/toolboxes/{qualified}/mcp?api-version=v1"
     )
+    tool = {
+        "type": "mcp",
+        "server_label": qualified.replace("-", "_"),
+        "server_url": path,
+        # A doc é explícita: o endpoint do toolbox NÃO bloqueia `tools/call`. Este campo é
+        # declaração que o runtime do agente precisa honrar — não é gate do serviço. Mantê-lo em
+        # "always" é o default seguro, e o aviso está aqui para ninguém confundir os dois.
+        "require_approval": "always",
+    }
+    # A connection é o que faz o agente autenticar no endpoint. Sem ela: 401 na primeira chamada.
+    if connection:
+        tool["project_connection_id"] = connection
     return {
         "name": qualified,
         "version": version or None,
         "url": path,
-        "tool": {
-            "type": "mcp",
-            "server_label": qualified.replace("-", "_"),
-            "server_url": path,
-            # A doc é explícita: o endpoint do toolbox NÃO bloqueia `tools/call`. Este campo é
-            # declaração que o runtime do agente precisa honrar — não é gate do serviço. Mantê-lo
-            # em "always" é o default seguro, e o aviso está aqui para ninguém confundir os dois.
-            "require_approval": "always",
-        },
+        "connection": connection,
+        "tool": tool,
     }

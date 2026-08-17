@@ -170,9 +170,12 @@ def _toolbox_tool_spec(name: str) -> dict:
 
     Import tardio para `parse_definition` continuar testável offline sem tocar em configuração.
     """
+    from app.modules.foundry.internal.names import qualify as _q
     from app.modules.foundry.internal.toolboxes import mcp_url
 
-    return mcp_url(name)["tool"]
+    # A connection segue a convenção de nome de `ensure_toolbox_connection`: `<toolbox>-mcp`.
+    # Referenciá-la aqui é o que evita o 401 na primeira chamada do agente.
+    return mcp_url(name, connection=f"{_q(name)}-mcp")["tool"]
 
 
 def _search_tool_spec(kb_name: str) -> dict:
