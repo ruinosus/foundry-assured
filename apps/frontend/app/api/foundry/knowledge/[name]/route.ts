@@ -8,6 +8,19 @@ export const dynamic = "force-dynamic";
 
 const BACKEND = process.env.BACKEND_URL ?? "http://localhost:8000";
 
+/** Traduz o status do backend em vez de achatar tudo em 502.
+ *
+ * 404 é o caso que custou tempo: significa "esta rota não existe no backend", quase sempre porque
+ * o processo está rodando código anterior à rota. Devolver 502 ("Bad Gateway") mandava procurar
+ * falha de serviço quando bastava reiniciar o backend. Agora a mensagem diz isso.
+ */
+function statusFor(backendStatus: number): number {
+  if (backendStatus === 401 || backendStatus === 403) return backendStatus;
+  if (backendStatus === 400) return 400;
+  if (backendStatus === 404) return 404;
+  return 502;
+}
+
 function fail(status: number, error: string) {
   return NextResponse.json({ error }, { status });
 }
@@ -17,7 +30,7 @@ async function relay(r: Response) {
   if (!r.ok) {
     return fail(
       r.status === 401 || r.status === 403 ? r.status : r.status === 400 ? 400 : 502,
-      data?.detail ?? `backend ${r.status}`,
+      data?.detail ?? (r.status === 404 ? "rota não encontrada no backend (ele está rodando código anterior a ela?)" : `backend ${r.status}`),
     );
   }
   return NextResponse.json(data);
