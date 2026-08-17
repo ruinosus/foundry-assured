@@ -4,6 +4,7 @@ description: Como estruturar agentes, skills, bases, MCPs e project numa interfa
 type: design
 audience: contributor
 status: draft
+research: vínculo agente↔toolbox resolvido em 2026-08-17 — o toolbox é um servidor MCP
 updated: 2026-08-17
 ---
 
@@ -116,23 +117,45 @@ técnica mais importante — a próxima seção.
 | Base de conhecimento | `AzureAISearchTool` direto em `tools` | ✅ implementado (atalho `knowledge_base`) |
 | MCP | `MCPTool` direto em `tools` (`server_url` **ou** `connector_id`) | ✅ backend aceita; falta seleção na tela |
 | Code interpreter, web search, file search… | tools de primeira parte em `tools` | ✅ passa cru; falta oferecer na tela |
-| **Skill** | **só via toolbox** — não entra em `tools` | ⚠️ **bloqueado**, ver abaixo |
+| **Skill** | via toolbox, que é um **servidor MCP** — `mcp` tool com a URL do toolbox | ✅ **desbloqueado**, ver abaixo |
 
-**A incógnita que precisa ser resolvida antes de prometer skills no agente.** `ToolboxVersionObject`
-agrupa `{tools[], skills[]}`, e `ToolboxSkillReference` aponta skill por nome+versão. Mas **não há,
-nesta versão do SDK Python, campo no lado do agente que aponte para um toolbox nomeado** — existe
-`ToolSearchToolParam` (`execution: server|client`), sem ponteiro para um toolbox específico.
+**RESOLVIDO — e as três hipóteses estavam erradas.** A pesquisa na documentação oficial respondeu:
 
-Três hipóteses, em ordem de probabilidade:
-1. o vínculo é resolvido no nível do **projeto** (todo toolbox do projeto fica disponível, e
-   `tool_search` é como o agente descobre);
-2. está em superfície REST que o SDK Python ainda não expõe;
-3. exige o portal.
+> **O toolbox É um servidor MCP.** O agente aponta para ele pelo `mcp` tool comum, com
+> `server_url` — não há campo dedicado, e não falta nada no SDK Python. **O vínculo é a URL.**
 
-**Isto se resolve pesquisando `learn.microsoft.com` e `foundry-samples` antes de desenhar a etapa
-3 por completo** — é exatamente o que a MÁXIMA MAIOR manda fazer, e é o próximo passo, não uma
-suposição a embutir. Até lá a tela oferece base + MCP + tools de primeira parte, e skills aparecem
-no catálogo com o vínculo declarado como pendente. **Nunca um botão que finge funcionar.**
+```
+{project_endpoint}/toolboxes/{nome}/mcp?api-version=v1              ← consumer: serve a default_version
+{project_endpoint}/toolboxes/{nome}/versions/{v}/mcp?api-version=v1  ← developer: testar antes de promover
+```
+
+A cadeia completa fica:
+
+**Skill → `ToolboxSkillReference` → versão do toolbox → URL `/mcp` → `mcp` tool em
+`PromptAgentDefinition.tools` → agente.**
+
+O endpoint *consumer* serve sempre a `default_version`, então **promover uma skill é rollout sem
+tocar em código de agente nem em toolbox** — é o que dá sentido ao `default` vs `latest` que a
+tela já mostra.
+
+**Skills chegam como MCP Resources**, não como tools: `skill://{nome}`, descobertas por
+`resources/list` e lidas por `resources/read` (SEP-2640). Qualquer cliente MCP consome — inclusive
+sem SDK do Foundry. A API de skills exige o header `Foundry-Features: Skills=V1Preview`.
+
+**O ponto que continua aberto, e vale teste empírico:** nenhum exemplo mostra o `mcp` tool
+*server-side* do Foundry fazendo `resources/list`. Todos os exemplos de consumo de skill são
+client-side. É provável que um PromptAgent puro apontando para o toolbox receba as **tools** mas
+não as **skills**. Antes de prometer skills no agente pela via do toolbox, testar.
+
+### O caminho alternativo que casa com a ADR-013
+
+**Direct injection**, documentado: `GET {endpoint}/skills/{nome}/content` devolve um ZIP; o runtime
+extrai, lê os `SKILL.md` no startup e injeta o conteúdo como instruções extras da sessão.
+**Funciona sem toolbox.**
+
+Isto é exatamente o modelo que este repositório já usa para prompts (ADR-013/014): documento
+montado na composição, publicável sem rebuild. Para os agentes que rodam no NOSSO backend, é o
+caminho mais curto e o mais alinhado ao que já existe.
 
 ### O meta-agente "arquiteto"
 
@@ -170,7 +193,22 @@ Cada fase entrega valor sozinha e não depende da seguinte.
 | **4** | Etapa 3 do wizard: base + MCP + tools, por seleção do catálogo | nada |
 | **5** | AIFieldBlock nas etapas 2 e 3 | fase 3 |
 | **6** | Meta-agente arquiteto | fase 5 |
-| **7** | Skills no agente | **resolver a incógnita do toolbox primeiro** |
+| **7** | Skills no agente: montar a URL `/mcp` do toolbox e oferecê-la como capacidade | testar se o agente server-side lê MCP Resources |
+
+## Uma descoberta de SEGURANÇA, fora do escopo desta spec
+
+A documentação diz, sobre o endpoint MCP do toolbox:
+
+> "The toolbox MCP endpoint doesn't block `tools/call` […] Your agent runtime must enforce the
+> setting."
+
+Ou seja: **`require_approval: "always"` no `mcp` tool NÃO é enforçado pelo endpoint.** É uma
+declaração que o runtime do agente precisa honrar — um aviso, não um gate.
+
+Isto importa além desta spec: se a governança de escrita do sub-projeto C (RBAC por tool, tools de
+WRITE atrás da aprovação) estiver contando com esse campo como trava, ela está contando com um
+aviso. **Vale uma verificação separada de onde a aprovação é realmente aplicada hoje** — no nosso
+runtime (que seria correto) ou na expectativa de que o serviço bloqueie (que não bloqueia).
 
 ## O que NÃO vamos fazer
 

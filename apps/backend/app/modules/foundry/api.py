@@ -31,6 +31,7 @@ from app.modules.foundry.public import (
     list_knowledge,
     list_skills,
     list_toolboxes,
+    mcp_url,
     set_agent_enabled,
     upload_files,
 )
@@ -74,6 +75,28 @@ def _guard(fn):
 
 
 # ── Agentes ───────────────────────────────────────────────────────────────────────────────
+
+
+@router.get("/project")
+def project() -> dict:
+    """Qual project do Foundry este ambiente está usando.
+
+    Existe porque todos os recursos — agentes, bases, skills, toolboxes, connections — vivem
+    DENTRO de um project, e a interface não dizia qual. Sem isso, alguém olhando uma lista vazia
+    não sabe se não há nada ou se está olhando o lugar errado.
+
+    Devolve o NOME e o host, nunca o endpoint completo com credencial de caminho: o endpoint é
+    configuração de infraestrutura, e a tela só precisa do rótulo.
+    """
+    from urllib.parse import urlparse
+
+    from app.modules.tenancy.public import tenant_config
+
+    raw = (tenant_config().foundry_project_endpoint or "").rstrip("/")
+    parsed = urlparse(raw)
+    # `.../api/projects/<nome>` — o nome é o último segmento.
+    name = raw.rsplit("/", 1)[-1] if "/projects/" in raw else ""
+    return {"name": name or None, "host": parsed.netloc or None}
 
 
 @router.get("/agents")
@@ -261,3 +284,14 @@ def publish_toolbox(name: str, body: dict) -> dict:
 @router.delete("/toolboxes/{name}", dependencies=_admin)
 def remove_toolbox(name: str) -> dict:
     return _guard(lambda: delete_toolbox(name))
+
+
+@router.get("/toolboxes/{name}/mcp")
+def toolbox_mcp(name: str, version: str = Query("", description="Fixa uma versão; vazio usa a default")) -> dict:
+    """A URL MCP do toolbox e o `mcp` tool pronto para colar num agente.
+
+    É ISTO que liga um agente a um toolbox: não há campo dedicado, o toolbox é um servidor MCP e o
+    agente aponta para a URL. Sem versão, o endpoint serve a `default_version` — promover passa a
+    valer sem tocar no agente.
+    """
+    return _guard(lambda: mcp_url(name, version))

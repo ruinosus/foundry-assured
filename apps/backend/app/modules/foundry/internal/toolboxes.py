@@ -1,7 +1,6 @@
 """Toolbox — o que junta tools e skills num pacote que o agente alcança.
 
-ISTO ESTAVA FALTANDO, e a falta tornava skill decorativa. O levantamento (feito depois de a
-pergunta certa ser feita) mostrou o modelo do Foundry:
+ISTO ESTAVA FALTANDO, e a falta tornava skill decorativa. O modelo do Foundry:
 
     ToolboxVersionObject → { tools: [ToolboxTool], skills: [ToolboxSkillReference], policies }
 
@@ -14,12 +13,21 @@ dois lugares — direto no agente OU no toolbox — mas skill, só aqui.
 `latest` lado a lado: publicar versão nova não muda o que o toolbox entrega se a default não
 acompanhar.
 
-O QUE NÃO CONSEGUI DETERMINAR, e prefiro declarar a chutar: no SDK instalado não achei o campo
-que amarra um agente a um toolbox NOMEADO. Existe `ToolSearchToolParam` (type `tool_search`) do
-lado do agente, com `execution: server | client`, mas ele não aponta para um toolbox específico.
-Ou o vínculo é resolvido no nível do projeto, ou está em superfície que esta versão do SDK Python
-ainda não expõe. Até isso ser confirmado contra a documentação, a tela mostra o toolbox como
-catálogo — e NÃO promete um botão "usar este toolbox neste agente" que eu não sei implementar.
+COMO O AGENTE ALCANÇA UM TOOLBOX — respondido pela documentação, depois de o SDK não responder:
+**o toolbox É um servidor MCP.** Não existe campo `toolbox_id` no agente, e não falta nada no SDK:
+o vínculo é a URL. O agente recebe um `mcp` tool comum apontando para
+
+    {project_endpoint}/toolboxes/{nome}/mcp?api-version=v1
+
+O endpoint *consumer* (sem versão no caminho) serve sempre a `default_version` — por isso promover
+uma skill é rollout sem tocar em código de agente nem no toolbox. Há também o endpoint
+*developer*, com a versão explícita, para testar antes de promover.
+
+Skills dentro do toolbox aparecem como **MCP Resources** (`skill://{nome}`), descobertas por
+`resources/list`. RESSALVA que vale teste: nenhum exemplo mostra o `mcp` tool server-side do
+Foundry fazendo `resources/list` — é provável que um PromptAgent puro receba as *tools* do toolbox
+mas não as *skills*. Enquanto isso não for verificado empiricamente, a interface oferece a URL
+como capacidade e diz o que se sabe, em vez de prometer o que não foi testado.
 
 Verificado contra o SDK INSTALADO (RULE #1): `ToolboxesOperations` (8 operações),
 `ToolboxVersionObject`, `ToolboxSkillReference`.
@@ -194,3 +202,40 @@ def delete_toolbox(name: str) -> dict:
     finally:
         with contextlib.suppress(Exception):
             client.close()
+
+
+def mcp_url(name: str, version: str = "") -> dict:
+    """A URL MCP deste toolbox — o que liga um agente a ele.
+
+    Duas variantes, e a diferença é operacional:
+
+      * **consumer** (sem versão): serve sempre a `default_version`. É a que se usa em agente de
+        produção, porque promover uma versão nova passa a valer sem tocar no agente.
+      * **developer** (com versão): fixa uma versão, para testar antes de promover.
+
+    Devolve também o corpo pronto do `mcp` tool, porque montá-lo à mão é exatamente o tipo de
+    coisa que este produto existe para evitar: quem sabe escrever esse JSON não precisa da tela.
+    """
+    from app.modules.tenancy.public import tenant_config
+
+    qualified = qualify(name)
+    endpoint = (tenant_config().foundry_project_endpoint or "").rstrip("/")
+    path = (
+        f"{endpoint}/toolboxes/{qualified}/versions/{version}/mcp?api-version=v1"
+        if version
+        else f"{endpoint}/toolboxes/{qualified}/mcp?api-version=v1"
+    )
+    return {
+        "name": qualified,
+        "version": version or None,
+        "url": path,
+        "tool": {
+            "type": "mcp",
+            "server_label": qualified.replace("-", "_"),
+            "server_url": path,
+            # A doc é explícita: o endpoint do toolbox NÃO bloqueia `tools/call`. Este campo é
+            # declaração que o runtime do agente precisa honrar — não é gate do serviço. Mantê-lo
+            # em "always" é o default seguro, e o aviso está aqui para ninguém confundir os dois.
+            "require_approval": "always",
+        },
+    }

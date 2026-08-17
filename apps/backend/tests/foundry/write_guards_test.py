@@ -29,7 +29,7 @@ from app.modules.foundry.internal.knowledge_write import (
 )
 from app.modules.foundry.internal.names import InvalidName, qualify, validate
 from app.modules.foundry.internal.skills import InvalidSkill, _project, parse_skill
-from app.modules.foundry.internal.toolboxes import InvalidToolbox, parse_toolbox
+from app.modules.foundry.internal.toolboxes import InvalidToolbox, mcp_url, parse_toolbox
 
 
 def main() -> int:
@@ -144,6 +144,20 @@ def main() -> int:
           recusa(lambda: parse_toolbox({"skills": [{"sem_nome": 1}]}), InvalidToolbox))
     check("tools que não é lista é recusado",
           recusa(lambda: parse_toolbox({"tools": "mcp"}), InvalidToolbox))
+
+    # O vínculo agente↔toolbox é a URL: o toolbox É um servidor MCP. Sem versão, o endpoint serve
+    # a default_version — é o que faz promover uma skill valer sem tocar no agente.
+    consumer = mcp_url("minha-toolbox")
+    check("a URL consumer não fixa versão (segue a default)",
+          "/versions/" not in consumer["url"] and consumer["url"].endswith("/mcp?api-version=v1"))
+    check("a URL developer fixa a versão pedida", "/versions/2/mcp" in mcp_url("minha-toolbox", "2")["url"])
+    check("o tool pronto é do tipo mcp", consumer["tool"]["type"] == "mcp")
+    # server_label não aceita hífen no serviço.
+    check("server_label troca hífen por underscore", "-" not in consumer["tool"]["server_label"])
+    # A doc é explícita: o endpoint NÃO bloqueia tools/call. O default seguro é declarar always.
+    check("require_approval nasce em always", consumer["tool"]["require_approval"] == "always")
+    check("nome inválido é recusado antes de montar URL",
+          recusa(lambda: mcp_url("../outro"), InvalidName))
 
     print("\n— arquivo e container")
     check("nome simples sobrevive", _safe_blob_name("runbook.md") == "runbook.md")

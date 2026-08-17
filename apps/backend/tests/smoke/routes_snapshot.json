@@ -70,6 +70,10 @@
     ],
     [
       "GET",
+      "/foundry/project"
+    ],
+    [
+      "GET",
       "/foundry/skills"
     ],
     [
@@ -83,6 +87,10 @@
     [
       "GET",
       "/foundry/toolboxes/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes/{name}/mcp"
     ],
     [
       "GET",
@@ -264,6 +272,10 @@
     ],
     [
       "GET",
+      "/foundry/project"
+    ],
+    [
+      "GET",
       "/foundry/skills"
     ],
     [
@@ -277,6 +289,10 @@
     [
       "GET",
       "/foundry/toolboxes/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes/{name}/mcp"
     ],
     [
       "GET",
@@ -470,6 +486,10 @@
     ],
     [
       "GET",
+      "/foundry/project"
+    ],
+    [
+      "GET",
       "/foundry/skills"
     ],
     [
@@ -483,6 +503,10 @@
     [
       "GET",
       "/foundry/toolboxes/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes/{name}/mcp"
     ],
     [
       "GET",

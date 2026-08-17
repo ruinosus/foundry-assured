@@ -39,6 +39,7 @@ from app.modules.foundry.internal.toolboxes import (
     delete_toolbox,
     get_toolbox,
     list_toolboxes,
+    mcp_url,
 )
 
 __all__ = [
@@ -60,6 +61,7 @@ __all__ = [
     "list_knowledge",
     "list_skills",
     "list_toolboxes",
+    "mcp_url",
     "set_agent_enabled",
     "upload_files",
 ]
