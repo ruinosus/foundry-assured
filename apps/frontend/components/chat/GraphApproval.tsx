@@ -35,25 +35,6 @@ import { useState } from "react";
 
 type ActionRequest = { name: string; args: Record<string, unknown> };
 
-const card: React.CSSProperties = {
-  border: "1px solid #2563eb33",
-  borderLeft: "3px solid #2563eb",
-  borderRadius: 8,
-  padding: 12,
-  margin: "0 24px 8px",
-  background: "#eff6ff",
-  fontFamily: "system-ui",
-};
-const btn = (bg: string): React.CSSProperties => ({
-  padding: "6px 14px",
-  borderRadius: 6,
-  border: "none",
-  background: bg,
-  color: "white",
-  cursor: "pointer",
-  fontSize: 13,
-  fontWeight: 600,
-});
 
 /** Pull the middleware's action request out of either transport. */
 function readActionRequest(event: { value?: unknown }, interrupt: unknown): ActionRequest | null {
@@ -118,42 +99,36 @@ function ApprovalCard({
   };
 
   return (
-        <div style={card}>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>Run {req.name}?</div>
+        <div className="approval">
+          <div className="approval-head">
+        <span className="approval-eyebrow">Aguardando aprovação</span>
+        <h3 className="approval-title">Executar {req.name}?</h3>
+      </div>
 
           {editing ? (
-            <div style={{ marginBottom: 10 }}>
-              <label htmlFor="graph-summary" style={{ fontSize: 13, fontWeight: 600 }}>
-                Summary
+            <div className="approval-edit">
+              <label htmlFor="graph-summary" className="approval-eyebrow">
+                Resumo
               </label>
               <textarea
                 id="graph-summary"
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 rows={3}
-                style={{
-                  width: "100%",
-                  marginTop: 4,
-                  padding: 8,
-                  borderRadius: 6,
-                  border: "1px solid #2563eb55",
-                  fontFamily: "inherit",
-                  fontSize: 13,
-                  resize: "vertical",
-                }}
               />
             </div>
           ) : (
-            <div style={{ fontSize: 13, marginBottom: 10 }}>
-              <b>Summary:</b> {summary || JSON.stringify(req.args)}
-            </div>
+            <dl className="approval-body">
+              <dt>Resumo</dt>
+              <dd>{summary || JSON.stringify(req.args)}</dd>
+            </dl>
           )}
 
-          <div style={{ display: "flex", gap: 8 }}>
+          <div className="approval-actions">
             {editing ? (
               <>
                 <button
-                  style={btn("#16a34a")}
+                  className="btn btn-approve"
                   disabled={busy || !draft.trim()}
                   onClick={() =>
                     // An edit that changes nothing IS an approval — the backend refuses an
@@ -171,19 +146,19 @@ function ApprovalCard({
                     )
                   }
                 >
-                  Save &amp; approve
+                  Salvar e aprovar
                 </button>
-                <button style={btn("#6b7280")} onClick={() => setEditing(false)}>
+                <button className="btn" onClick={() => setEditing(false)}>
                   Cancel
                 </button>
               </>
             ) : (
               <>
-                <button style={btn("#16a34a")} disabled={busy} onClick={() => send({ type: "approve" })}>
+                <button className="btn btn-approve" disabled={busy} onClick={() => send({ type: "approve" })}>
                   Approve
                 </button>
                 <button
-                  style={btn("#2563eb")}
+                  className="btn"
                   disabled={busy}
                   onClick={() => {
                     setDraft(summary);
@@ -192,7 +167,7 @@ function ApprovalCard({
                 >
                   Edit
                 </button>
-                <button style={btn("#dc2626")} disabled={busy} onClick={() => send({ type: "reject" })}>
+                <button className="btn btn-reject" disabled={busy} onClick={() => send({ type: "reject" })}>
                   Reject
                 </button>
               </>

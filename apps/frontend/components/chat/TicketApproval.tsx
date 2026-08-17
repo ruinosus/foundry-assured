@@ -37,25 +37,6 @@ type Pending =
   | { kind: "ticket"; id: string; summary: string }
   | { kind: "tool"; id: string; toolName: string; args: unknown };
 
-const card: React.CSSProperties = {
-  border: "1px solid #2563eb33",
-  borderLeft: "3px solid #2563eb",
-  borderRadius: 8,
-  padding: 12,
-  margin: "0 24px 8px",
-  background: "#eff6ff",
-  fontFamily: "system-ui",
-};
-const btn = (bg: string): React.CSSProperties => ({
-  padding: "6px 14px",
-  borderRadius: 6,
-  border: "none",
-  background: bg,
-  color: "white",
-  cursor: "pointer",
-  fontSize: 13,
-  fontWeight: 600,
-});
 
 export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = {}) {
   // The domain is a PROP, not a constant. It was hard-coded to "helpdesk", so on any other
@@ -125,60 +106,59 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
   };
 
   return (
-    <div style={card}>
+    <div className="approval">
       {pending.kind === "tool" ? (
         <>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>
-            Run write tool <code>{pending.toolName}</code>?
+          <div className="approval-head">
+            <span className="approval-eyebrow">Aguardando aprovação</span>
+            <h3 className="approval-title">
+              Executar <code>{pending.toolName}</code>?
+            </h3>
           </div>
-          <div style={{ fontSize: 13, marginBottom: 10 }}>
-            <b>Arguments:</b>{" "}
-            <code style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+          <dl className="approval-body">
+            <dt>Argumentos</dt>
+            <dd>
+              <code>
               {typeof pending.args === "string"
                 ? pending.args
                 : JSON.stringify(pending.args ?? {}, null, 2)}
-            </code>
-          </div>
+              </code>
+            </dd>
+          </dl>
         </>
       ) : (
         <>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>Open a support ticket?</div>
+          <div className="approval-head">
+            <span className="approval-eyebrow">Aguardando aprovação</span>
+            <h3 className="approval-title">Abrir chamado?</h3>
+          </div>
           {editing ? (
-            <div style={{ marginBottom: 10 }}>
-              <label htmlFor="ticket-summary" style={{ fontSize: 13, fontWeight: 600 }}>
-                Summary
+            <div className="approval-edit">
+              <label htmlFor="ticket-summary" className="approval-eyebrow">
+                Resumo
               </label>
               <textarea
                 id="ticket-summary"
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 rows={3}
-                style={{
-                  width: "100%",
-                  marginTop: 4,
-                  padding: 8,
-                  borderRadius: 6,
-                  border: "1px solid #2563eb55",
-                  fontFamily: "inherit",
-                  fontSize: 13,
-                  resize: "vertical",
-                }}
               />
             </div>
           ) : (
-            <div style={{ fontSize: 13, marginBottom: 10 }}>
-              <b>Summary:</b> {pending.summary}
-            </div>
+            <dl className="approval-body">
+              <dt>Resumo</dt>
+              <dd>{pending.summary}</dd>
+            </dl>
           )}
         </>
       )}
-      <div style={{ display: "flex", gap: 8 }}>
+      <div className="approval-actions">
         {editing ? (
           <>
             {/* An edit that changes nothing is an approval — the backend refuses an empty
                 edit, so send the plain approval rather than a no-op correction. */}
             <button
-              style={btn("#16a34a")}
+              className="btn btn-approve"
               disabled={busy || !draft.trim()}
               onClick={() =>
                 respond(
@@ -188,22 +168,22 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
                 )
               }
             >
-              Save &amp; approve
+              Salvar e aprovar
             </button>
-            <button style={btn("#6b7280")} disabled={busy} onClick={() => setEditing(false)}>
+            <button className="btn" disabled={busy} onClick={() => setEditing(false)}>
               Cancel
             </button>
           </>
         ) : (
           <>
-            <button style={btn("#16a34a")} disabled={busy} onClick={() => respond(true)}>
+            <button className="btn btn-approve" disabled={busy} onClick={() => respond(true)}>
               Approve
             </button>
             {pending.kind === "ticket" && (
               // Editing is only offered where the backend can apply it. The platform agent's
               // native tool approval is still accept/refuse (ADR-019).
               <button
-                style={btn("#2563eb")}
+                className="btn"
                 disabled={busy}
                 onClick={() => {
                   setDraft(pending.summary);
@@ -213,7 +193,7 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
                 Edit
               </button>
             )}
-            <button style={btn("#dc2626")} disabled={busy} onClick={() => respond(false)}>
+            <button className="btn btn-reject" disabled={busy} onClick={() => respond(false)}>
               Reject
             </button>
           </>

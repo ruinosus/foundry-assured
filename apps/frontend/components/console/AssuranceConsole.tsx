@@ -40,15 +40,6 @@ const WorkflowSteps = dynamic(
 // (Agent Framework) emit a `request_info` event that hook does not know about.
 const AF_HITL_KINDS = new Set<Domain["kind"]>(["workflow", "tool"]);
 
-// The badge said "grounded Q&A" for anything that was not `workflow` — including two kinds
-// that are not grounded at all. Same stale `if`, same fix: name each kind.
-const KIND_LABEL: Record<Domain["kind"], string> = {
-  workflow: "workflow + HITL",
-  graph: "LangGraph + HITL",
-  tool: "tools + HITL",
-  grounded: "grounded Q&A",
-};
-
 function Console({ domain, authorization }: { domain: Domain; authorization?: string }) {
   // Live vs Hosted twin — registry-driven: only renders when the domain declares a
   // hostedAgentId, so any domain that later gains a Foundry hosted twin gets the toggle
@@ -71,11 +62,16 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
             </span>
             <div className="console-head-meta">
               <h2>{domain.label}</h2>
-              <p className="muted">{domain.blurb}</p>
+              <p className="console-blurb">{domain.blurb}</p>
             </div>
-            <span className={`pill ${domain.kind === "grounded" ? "ok" : "neutral"} console-kind`}>
-              {KIND_LABEL[domain.kind]}
-            </span>
+            {/* O que este domínio PROVA, não com que runtime foi feito. Antes lia
+                KIND_LABEL[kind] — "grounded Q&A", "LangGraph + HITL" — vocabulário de
+                implementação, que descreve o código para quem já o conhece e não diz nada a
+                quem está avaliando se as garantias são reais. */}
+            <p className="console-demo">
+              <span className="console-demo-label">Demonstra</span>
+              {domain.demonstrates}
+            </p>
           </div>
 
           {/* The steps panel reads the agent-framework workflow's state snapshots, so it
@@ -87,7 +83,7 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
           <SuggestedPrompts domain={domain} />
 
           {domain.hostedAgentId && (
-            <div style={{ display: "flex", alignItems: "center", gap: 12, margin: "8px 0" }}>
+            <div className="console-mode">
               <div className="seg">
                 <button className={mode === "live" ? "on" : ""} onClick={() => setMode("live")}>
                   Live
@@ -99,7 +95,7 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
                   Hosted
                 </button>
               </div>
-              <span className="muted" style={{ fontSize: 12 }}>
+              <span className="console-mode-note">
                 {mode === "live"
                   ? "AG-UI · live tool steps + write-approval"
                   : "Foundry Agent Service · managed hosted agent"}
@@ -118,16 +114,6 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
     </CopilotKitProvider>
   );
 }
-
-const center: React.CSSProperties = {
-  display: "flex",
-  height: "100%",
-  minHeight: 360,
-  alignItems: "center",
-  justifyContent: "center",
-  flexDirection: "column",
-  gap: 16,
-};
 
 function AuthedConsole({ domain }: { domain: Domain }) {
   const { instance, accounts } = useMsal();
@@ -155,15 +141,15 @@ function AuthedConsole({ domain }: { domain: Domain }) {
 
   if (!isAuthenticated) {
     return (
-      <div style={center}>
+      <div className="console-center">
         <p>Entre para usar {branding.product}.</p>
-        <button className="btn btn-solid" onClick={() => instance.loginRedirect({ scopes: apiScopes })}>
+        <button className="btn btn-primary" onClick={() => instance.loginRedirect({ scopes: apiScopes })}>
           Entrar com a Microsoft
         </button>
       </div>
     );
   }
-  if (!token) return <div style={center}>Adquirindo token…</div>;
+  if (!token) return <div className="console-center">Adquirindo token…</div>;
   return <Console domain={domain} authorization={`Bearer ${token}`} />;
 }
 
@@ -171,7 +157,7 @@ export default function AssuranceConsole({ domainId }: { domainId: string }) {
   const domain = getDomain(domainId);
   if (!domain) {
     return (
-      <div style={center}>
+      <div className="console-center">
         <p className="muted">Domínio “{domainId}” não encontrado.</p>
       </div>
     );

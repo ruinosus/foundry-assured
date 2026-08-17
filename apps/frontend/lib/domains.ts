@@ -23,11 +23,20 @@ export interface Domain {
   endpoint: string;
   /** Optional Foundry hosted twin agent id (enables the live-vs-hosted toggle). */
   hostedAgentId?: string;
+  /** O que ESTE domínio prova, em linguagem de garantia — não de implementação.
+   *
+   * O badge do console mostrava `kind` ("grounded Q&A", "LangGraph + HITL"): vocabulário de
+   * quem escreveu o código, não de quem avalia o produto. Quem abre a tela não quer saber qual
+   * runtime está por baixo; quer saber o que ali está sendo provado. É a lacuna de informação
+   * apontada no PRODUCT.md, e ela vive no registry porque é dado, não estilo. */
+  demonstrates: string;
 }
 
 export const DOMAINS: Domain[] = [
   {
     id: "helpdesk",
+    demonstrates:
+      "Vários agentes em sequência, memória entre sessões e aprovação humana antes de abrir chamado",
     icon: "💬",
     label: "Helpdesk concierge",
     kind: "workflow",
@@ -64,6 +73,8 @@ export const DOMAINS: Domain[] = [
   // },
   {
     id: "selfwiki",
+    demonstrates:
+      "Documentação escrita pela IA a partir do código, com gate de fidelidade e acesso por documento",
     icon: "📖",
     label: "Project wiki",
     kind: "grounded",
@@ -79,6 +90,8 @@ export const DOMAINS: Domain[] = [
   },
   {
     id: "oncall",
+    demonstrates:
+      "Um segundo runtime no mesmo app, e aprovação que deixa CORRIGIR a ação antes de executar",
     icon: "🚨",
     label: "On-call triage",
     kind: "graph",
@@ -94,6 +107,8 @@ export const DOMAINS: Domain[] = [
   },
   {
     id: "platform",
+    demonstrates:
+      "Ferramentas Microsoft de primeira parte, com aprovação humana em toda escrita",
     icon: "🛠️",
     label: "Platform ops",
     kind: "tool",
