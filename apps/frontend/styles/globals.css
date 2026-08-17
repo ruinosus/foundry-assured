@@ -1439,3 +1439,62 @@ table.evals tr:last-child td { border-bottom: none; }
 }
 
 .assisted-text { margin: 0; font-size: var(--text-sm); white-space: pre-wrap; }
+
+/* Chat lateral — o dock.
+ *
+ * Ele divide a área de conteúdo em vez de flutuar por cima: sobreposição esconderia justamente o
+ * formulário sobre o qual se está perguntando. Em tela estreita vira sobreposição, porque aí não
+ * há largura para os dois e o chat é o que a pessoa acabou de pedir. */
+.dock-toggle {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+  line-height: 1;
+  transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+
+.dock-toggle:hover { color: var(--text); border-color: var(--line-strong); }
+.dock-toggle.on { color: var(--accent); border-color: var(--accent); }
+
+.content:has(.chat-dock) .page {
+  /* O conteúdo cede espaço ao dock sem reflow do shell inteiro. */
+  padding-right: 0;
+}
+
+.chat-dock {
+  position: fixed;
+  top: var(--topbar-h);
+  right: 0;
+  bottom: 0;
+  width: min(420px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  z-index: var(--z-sticky);
+}
+
+.chat-dock-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.chat-dock-head select { flex: 1; min-width: 0; }
+.chat-dock-body { flex: 1; min-height: 0; overflow: hidden; }
+
+/* Abaixo de 1100px o dock cobre a página: não há largura para os dois, e quem abriu o chat quer
+   o chat. */
+@media (max-width: 1100px) {
+  .chat-dock { width: min(420px, 100vw); box-shadow: var(--shadow-pop); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock-toggle { transition: none; }
+}

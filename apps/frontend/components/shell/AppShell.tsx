@@ -16,6 +16,8 @@ import { useMyRoles, isAdmin } from "@/lib/auth/roles";
 import { useTranslations } from "next-intl";
 import { LanguageToggle } from "@/components/shell/LanguageToggle";
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
+import { ChatDock } from "@/components/shell/ChatDock";
+import { ChatDockProvider, useChatDock } from "@/lib/chat-dock";
 
 // The domain agents are config-driven from the registry → /d/<id>. Workspace pages are
 // static. Two sections so the sidebar reads as "tools" + "agents".
@@ -71,6 +73,48 @@ function ProjectBadge() {
       <span className="project-label">{t("project")}</span>
       <span className="project-name">{project.name}</span>
     </div>
+  );
+}
+
+/** O chat lateral e o botão que o alterna. O token é adquirido aqui pelo mesmo caminho do
+ *  console: silencioso, com refresh antes da expiração de ~1h. Sem auth configurada não há token
+ *  e o chat sobe sem Authorization — que é o modo local. */
+function DockHost() {
+  const { open, toggle } = useChatDock();
+  const t = useTranslations("chatDock");
+  const { instance, accounts } = useMsal();
+  const [token, setToken] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authConfigured || !accounts[0]) return;
+    let alive = true;
+    const acquire = () =>
+      instance
+        .acquireTokenSilent({ scopes: apiScopes, account: accounts[0] })
+        .then((r) => alive && setToken(r.accessToken))
+        .catch(() => {});
+    void acquire();
+    const id = setInterval(acquire, 4 * 60 * 1000);
+    return () => {
+      alive = false;
+      clearInterval(id);
+    };
+  }, [instance, accounts]);
+
+  return (
+    <>
+      <button
+        type="button"
+        className={`dock-toggle${open ? " on" : ""}`}
+        onClick={toggle}
+        aria-expanded={open}
+        title={open ? t("close") : t("open")}
+      >
+        <span aria-hidden>💬</span>
+        <span className="sr-only">{open ? t("close") : t("open")}</span>
+      </button>
+      <ChatDock authorization={token ? `Bearer ${token}` : undefined} />
+    </>
   );
 }
 
@@ -160,6 +204,7 @@ export function AppShell({
   const workspace = isAdmin(roles) ? [...WORKSPACE_NAV, ...ADMIN_NAV] : WORKSPACE_NAV;
 
   return (
+    <ChatDockProvider>
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">
@@ -212,9 +257,11 @@ export function AppShell({
               </>
             )}
           </nav>
+          <DockHost />
         </header>
         <main className={`page${flush ? " flush" : ""}`}>{children}</main>
       </div>
     </div>
+    </ChatDockProvider>
   );
 }

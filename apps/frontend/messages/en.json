@@ -454,5 +454,11 @@
     "use": "Use this text",
     "discard": "Discard",
     "empty": "The model returned no text. Try asking differently."
+  },
+  "chatDock": {
+    "title": "Assistant",
+    "open": "Open assistant",
+    "close": "Close assistant",
+    "agentLabel": "Which agent answers"
   }
 }

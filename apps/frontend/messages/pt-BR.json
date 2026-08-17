@@ -454,5 +454,11 @@
     "use": "Usar este texto",
     "discard": "Descartar",
     "empty": "O modelo não devolveu texto. Tente pedir de outro jeito."
+  },
+  "chatDock": {
+    "title": "Assistente",
+    "open": "Abrir assistente",
+    "close": "Fechar assistente",
+    "agentLabel": "Qual agente responde"
   }
 }
