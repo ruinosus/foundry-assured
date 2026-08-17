@@ -40,18 +40,50 @@ def _iso(value: Any) -> Any:
     return value.isoformat() if hasattr(value, "isoformat") else value
 
 
+def _versions_map(details: Any) -> dict:
+    """`versions` como mapa.
+
+    NÃO é uma lista, embora o nome sugira: é `AgentObjectVersions`, um mapa cuja chave `latest`
+    traz a versão corrente. Escrevi `versions[-1]` e passou meses sem quebrar — porque o projeto
+    não tinha agente nenhum. Na primeira publicação real: `KeyError: -1`.
+
+    A lição é sobre o gate, não sobre o índice: `agent_projection_test` planta uma LISTA de
+    versões, que é a forma que eu supus, então validava a suposição em vez do serviço. Um objeto
+    falso só protege se tiver a forma do real.
+    """
+    versions = getattr(details, "versions", None)
+    if versions is None:
+        return {}
+    if hasattr(versions, "items"):
+        return dict(versions.items())
+    # Lista (a forma que o gate planta, e que alguma versão do SDK pode devolver).
+    return {"latest": versions[-1]} if versions else {}
+
+
+def _field(obj: Any, name: str, default=None):
+    """Campo de objeto OU de dict — as versões chegam como dict dentro do mapa."""
+    if isinstance(obj, dict):
+        return obj.get(name, default)
+    return getattr(obj, name, default)
+
+
 def _latest_version(details: Any) -> dict | None:
-    """A versão corrente, achatada. Agente é recurso VERSIONADO: `versions` é o histórico, e o
-    que a lista mostra é o topo dele. Esconder isso faria a interface mentir sobre o recurso."""
-    versions = getattr(details, "versions", None) or []
-    if not versions:
+    """A versão corrente, achatada. Agente é recurso VERSIONADO: o que a lista mostra é o topo."""
+    top = _versions_map(details).get("latest")
+    if top is None:
         return None
-    top = versions[-1]
+    # `runtime` diz ONDE o agente executa: `foundry` roda no serviço; `backend` significa que o
+    # recurso guarda identidade, prompt e histórico, mas quem orquestra é o nosso backend (um
+    # workflow de três passos não cabe num PromptAgentDefinition). Sem este campo a tela trataria
+    # os dois como iguais, e prometeria execução que não acontece lá.
+    metadata = _field(top, "metadata") or {}
     return {
-        "version": getattr(top, "version", None),
-        "description": getattr(top, "description", None),
-        "created_at": _iso(getattr(top, "created_at", None)),
-        "status": str(getattr(top, "status", "") or "") or None,
+        "version": _field(top, "version"),
+        "description": _field(top, "description") or _field(metadata, "description"),
+        "created_at": _iso(_field(top, "created_at")),
+        "status": str(_field(top, "status", "") or "") or None,
+        "runtime": _field(metadata, "runtime"),
+        "source": _field(metadata, "source"),
     }
 
 
@@ -64,7 +96,7 @@ def _project(details: Any) -> dict:
         "kind": str(getattr(details, "object", "") or "") or None,
         "endpoint": getattr(details, "agent_endpoint", None),
         "version": _latest_version(details),
-        "version_count": len(getattr(details, "versions", None) or []),
+        "version_count": len(_versions_map(details)),
     }
 
 
@@ -94,10 +126,10 @@ def _project_version(v: Any) -> dict:
     """Uma versão do histórico. Mesma forma da versão corrente, para a tela não precisar de dois
     formatos ao mostrar "atual" e "anteriores" na mesma lista."""
     return {
-        "version": getattr(v, "version", None),
-        "description": getattr(v, "description", None),
-        "created_at": _iso(getattr(v, "created_at", None)),
-        "status": str(getattr(v, "status", "") or "") or None,
+        "version": _field(v, "version"),
+        "description": _field(v, "description"),
+        "created_at": _iso(_field(v, "created_at")),
+        "status": str(_field(v, "status", "") or "") or None,
     }
 
 
@@ -138,7 +170,7 @@ def get_agent(name: str, *, sessions_limit: int = 20) -> dict:
     try:
         details = client.agents.get(name)
         out = _project(details)
-        out["versions"] = [_project_version(v) for v in (getattr(details, "versions", None) or [])]
+        out["versions"] = [_project_version(v) for v in _versions_map(details).values()]
         try:
             out["sessions"] = [
                 _project_session(s)

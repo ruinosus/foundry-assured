@@ -209,12 +209,19 @@ def create_agent_version(name: str, doc: dict, *, description: str = "") -> dict
     fields = dict(parsed["definition"])
     fields.pop("kind", None)  # o tipo é o próprio objeto
 
+    # O `metadata` do documento sobe para a VERSÃO. Antes era reconhecido pelo parser e descartado
+    # aqui — o campo passava pela validação e sumia, que é o pior dos dois mundos: o usuário via
+    # que foi aceito e o serviço nunca o recebia. É por ele que a tela sabe onde o agente executa.
+    metadados = {k: str(v)[:512] for k, v in (doc.get("metadata") or {}).items()}
+    if description:
+        metadados["description"] = description[:512]
+
     client = _client()
     try:
         version = client.agents.create_version(
             qualified,
             definition=PromptAgentDefinition(**fields),
-            metadata={"description": description[:512]} if description else None,
+            metadata=metadados or None,
         )
         return {
             "name": qualified,

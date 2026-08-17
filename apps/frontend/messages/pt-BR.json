@@ -39,11 +39,14 @@
     "colVersions": "Versões",
     "colPublished": "Publicada em",
     "emptyTitle": "Nenhum agente ainda",
-    "emptyBody": "Um agente reúne instruções, ferramentas e uma base de conhecimento. Quando você publicar o primeiro, ele aparece aqui com o histórico de versões.",
+    "emptyBody": "Publique os agentes do repositório com `uv run python -m cli.provision_agents`, ou crie o primeiro pelo botão acima.",
     "errorTitle": "Não foi possível ler o catálogo",
     "errorUnreachable": "Não foi possível falar com o serviço.",
     "newBtn": "Novo agente",
-    "chat": "Conversar"
+    "chat": "Conversar",
+    "colRuntime": "Execução",
+    "runsInFoundry": "no Foundry",
+    "runsInBackend": "neste backend"
   },
   "approval": {
     "waiting": "Aguardando aprovação",

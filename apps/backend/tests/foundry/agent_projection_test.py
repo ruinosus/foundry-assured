@@ -27,6 +27,19 @@ class _Version:
         self.description = f"versão {v}"
         self.created_at = datetime(2026, 8, 17, 12, 0, tzinfo=UTC)
         self.status = status
+        # O metadata carrega ONDE o agente executa — o campo que separa um recurso executável no
+        # Foundry de um que guarda identidade enquanto o nosso backend orquestra.
+        self.metadata = {"runtime": "backend", "source": "repo"}
+
+
+class _Versions(dict):
+    """A forma REAL de `AgentObjectVersions`: um MAPA com a chave `latest`, não uma lista.
+
+    Este falso foi corrigido depois de o código quebrar em produção com `KeyError: -1`. A versão
+    anterior plantava uma lista — a forma que eu tinha SUPOSTO —, então o gate validava a
+    suposição em vez do serviço e passava verde enquanto o código estava errado. Passou meses
+    assim porque o projeto não tinha agente nenhum para exercitar o caminho.
+    """
 
 
 class _Agent:
@@ -37,7 +50,8 @@ class _Agent:
         self.id = "agt_123"
         self.name = "meu-agente"
         self.state = "enabled"
-        self.versions = versions
+        # Mapa, não lista: `{"latest": <versão do topo>}` — e vazio quando não há versão.
+        self.versions = _Versions({"latest": versions[-1]} if versions else {})
         self.agent_endpoint = "https://x/agents/meu-agente"
         self.instance_identity = "não deve vazar"
         self.blueprint = "não deve vazar"
@@ -59,7 +73,11 @@ def main() -> int:
 
     # O ponto: o recurso é versionado, e a projeção mostra o TOPO, não a primeira.
     check("a versão corrente é a última, não a primeira", p["version"]["version"] == "2")
-    check("a contagem de versões aparece (o histórico existe)", p["version_count"] == 2)
+    # O serviço expõe só `latest` no mapa; a contagem reflete o que o mapa traz.
+    check("a contagem de versões aparece (o histórico existe)", p["version_count"] == 1)
+    # A marca que diz ONDE o agente executa — sem ela a tela promete execução no Foundry para um
+    # agente cujo runtime é o nosso backend.
+    check("o runtime do metadata sobe para a interface", p["version"]["runtime"] == "backend")
     check("a data vira string ISO (o objeto datetime não atravessa JSON)",
           isinstance(p["version"]["created_at"], str) and "2026-08-17" in p["version"]["created_at"])
 

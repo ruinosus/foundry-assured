@@ -20,6 +20,9 @@ type AgentVersion = {
   description: string | null;
   created_at: string | null;
   status: string | null;
+  /** Onde o agente REALMENTE executa: "foundry" roda no serviço, "backend" é orquestrado aqui. */
+  runtime: string | null;
+  source: string | null;
 };
 
 type Agent = {
@@ -147,6 +150,7 @@ export function AgentsView() {
               <tr>
                 <th>{t("colName")}</th>
                 <th>{t("colState")}</th>
+                <th>{t("colRuntime")}</th>
                 <th>{t("colVersion")}</th>
                 <th className="right">{t("colVersions")}</th>
                 <th>{t("colPublished")}</th>
@@ -166,6 +170,15 @@ export function AgentsView() {
                   </td>
                   <td>
                     <span className={`pill ${stateTone(a.state)}`}>{a.state ?? "—"}</span>
+                  </td>
+                  {/* A distinção que impede a promessa falsa: um agente com runtime `backend`
+                      existe no Foundry com versão e histórico, mas quem o executa somos nós — um
+                      workflow de três passos não cabe num PromptAgentDefinition. Mostrar os dois
+                      como iguais faria a tela prometer execução que não acontece lá. */}
+                  <td>
+                    <span className={`pill ${a.version?.runtime === "foundry" ? "ok" : "neutral"}`}>
+                      {a.version?.runtime === "foundry" ? t("runsInFoundry") : t("runsInBackend")}
+                    </span>
                   </td>
                   <td className="t-mono">{a.version?.version ?? "—"}</td>
                   {/* O recurso é versionado; a contagem é o que torna isso visível na lista. */}

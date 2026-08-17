@@ -39,11 +39,14 @@
     "colVersions": "Versions",
     "colPublished": "Published",
     "emptyTitle": "No agents yet",
-    "emptyBody": "An agent brings together instructions, tools and a knowledge base. Once you publish the first one, it shows up here with its version history.",
+    "emptyBody": "Publish the repository's agents with `uv run python -m cli.provision_agents`, or create the first one with the button above.",
     "errorTitle": "Could not read the catalogue",
     "errorUnreachable": "Could not reach the service.",
     "newBtn": "New agent",
-    "chat": "Chat"
+    "chat": "Chat",
+    "colRuntime": "Runs on",
+    "runsInFoundry": "Foundry",
+    "runsInBackend": "this backend"
   },
   "approval": {
     "waiting": "Awaiting approval",
