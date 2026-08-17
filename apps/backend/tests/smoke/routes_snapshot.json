@@ -9,6 +9,14 @@
       "/admin/users/{user_id}"
     ],
     [
+      "DELETE",
+      "/foundry/agents/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/knowledge/{name}"
+    ],
+    [
       "GET",
       "/admin/role-assignments"
     ],
@@ -102,6 +110,30 @@
     ],
     [
       "POST",
+      "/foundry/agents/{name}/disable"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/enable"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/versions"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge/{name}/files"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge/{name}/github"
+    ],
+    [
+      "POST",
       "/helpdesk"
     ],
     [
@@ -133,6 +165,14 @@
     [
       "DELETE",
       "/admin/users/{user_id}"
+    ],
+    [
+      "DELETE",
+      "/foundry/agents/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/knowledge/{name}"
     ],
     [
       "GET",
@@ -232,6 +272,30 @@
     ],
     [
       "POST",
+      "/foundry/agents/{name}/disable"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/enable"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/versions"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge/{name}/files"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge/{name}/github"
+    ],
+    [
+      "POST",
       "/helpdesk"
     ],
     [
@@ -267,6 +331,14 @@
     [
       "DELETE",
       "/admin/users/{user_id}"
+    ],
+    [
+      "DELETE",
+      "/foundry/agents/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/knowledge/{name}"
     ],
     [
       "DELETE",
@@ -375,6 +447,30 @@
     [
       "POST",
       "/admin/users/invite"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/disable"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/enable"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/versions"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge/{name}/files"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge/{name}/github"
     ],
     [
       "POST",

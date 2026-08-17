@@ -4,11 +4,40 @@ Este módulo existe pela frase que define o produto: *preencher lacunas e trazer
 de usuário para consumir recursos Microsoft*. O portal do Foundry atende quem tem RBAC no
 Azure; aqui a mesma capacidade chega a quem não tem e não vai ter.
 
-Por isso o módulo é fino por construção: a gestão está no SDK (`AgentsOperations` e os grupos
-vizinhos), e o que escrevemos é projeção e autorização.
+Por isso o módulo é fino por construção: a gestão está no SDK (45 operações entre
+`AgentsOperations` e as de knowledge no `SearchIndexClient`), e o que escrevemos é projeção,
+validação e autorização.
+
+A ÚNICA exceção é `ingest_repo`: não existe knowledge source de GitHub em primeira parte, e as
+três alternativas plausíveis falham — o conector do Logic Apps lê issues e PRs, não a árvore de
+arquivos; `WebKnowledgeSource` é Bing público; a galeria de data sources não tem GitHub. Ela lê
+os arquivos e escreve no blob, e do blob em diante volta a ser oficial.
 """
 
+from app.modules.foundry.internal.agent_write import (
+    create_agent_version,
+    delete_agent,
+    set_agent_enabled,
+)
 from app.modules.foundry.internal.agents import get_agent, list_agents
+from app.modules.foundry.internal.github_source import ingest_repo
 from app.modules.foundry.internal.knowledge_catalog import get_knowledge, list_knowledge
+from app.modules.foundry.internal.knowledge_write import (
+    create_knowledge,
+    delete_knowledge,
+    upload_files,
+)
 
-__all__ = ["get_agent", "get_knowledge", "list_agents", "list_knowledge"]
+__all__ = [
+    "create_agent_version",
+    "create_knowledge",
+    "delete_agent",
+    "delete_knowledge",
+    "get_agent",
+    "get_knowledge",
+    "ingest_repo",
+    "list_agents",
+    "list_knowledge",
+    "set_agent_enabled",
+    "upload_files",
+]

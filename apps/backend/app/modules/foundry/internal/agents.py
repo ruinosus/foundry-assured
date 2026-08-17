@@ -90,13 +90,63 @@ def list_agents(limit: int = 50) -> list[dict]:
             client.close()
 
 
-def get_agent(name: str) -> dict:
-    """Um agente pelo nome. Levanta o erro do SDK — a camada HTTP o traduz."""
+def _project_version(v: Any) -> dict:
+    """Uma versão do histórico. Mesma forma da versão corrente, para a tela não precisar de dois
+    formatos ao mostrar "atual" e "anteriores" na mesma lista."""
+    return {
+        "version": getattr(v, "version", None),
+        "description": getattr(v, "description", None),
+        "created_at": _iso(getattr(v, "created_at", None)),
+        "status": str(getattr(v, "status", "") or "") or None,
+    }
+
+
+def _project_session(s: Any) -> dict:
+    """Uma sessão, na forma que a tela consome.
+
+    Campos verificados em `AgentSessionResource`: agent_session_id, created_at, expires_at,
+    last_accessed_at, status, version_indicator. `version_indicator` é o que amarra a sessão à
+    versão que a atendeu — é a pergunta "com qual versão isso rodou?", que é o motivo de a tela
+    de detalhe existir.
+    """
+    return {
+        "id": getattr(s, "agent_session_id", None),
+        "status": str(getattr(s, "status", "") or "") or None,
+        "created_at": _iso(getattr(s, "created_at", None)),
+        "last_accessed_at": _iso(getattr(s, "last_accessed_at", None)),
+        "expires_at": _iso(getattr(s, "expires_at", None)),
+        "version": str(getattr(s, "version_indicator", "") or "") or None,
+    }
+
+
+def get_agent(name: str, *, sessions_limit: int = 20) -> dict:
+    """Um agente pelo nome, com o histórico de versões e as sessões recentes.
+
+    A lista traz só a versão do topo; aqui vem o histórico inteiro, porque é o que responde a
+    pergunta da tela de detalhe: *o que mudou, quando, e o que estava no ar quando aquela
+    conversa aconteceu*. Agente é recurso versionado — esconder o histórico faria a interface
+    prometer edição in-place, que não é o que o serviço faz.
+
+    Falha ao listar sessões NÃO derruba a página: nem todo agente tem sessões, e a permissão
+    para ler o agente não implica permissão para ler as sessões dele. `sessions` vira `null` e
+    o resto continua legível — perder a página por causa de uma seção seria pior que mostrar a
+    página com a lacuna visível.
+    """
+    import contextlib
+
     client = _client()
     try:
-        return _project(client.agents.get(name))
+        details = client.agents.get(name)
+        out = _project(details)
+        out["versions"] = [_project_version(v) for v in (getattr(details, "versions", None) or [])]
+        try:
+            out["sessions"] = [
+                _project_session(s)
+                for s in client.agents.list_sessions(name, limit=sessions_limit)
+            ]
+        except Exception:  # noqa: BLE001 — o agente vale mais que a lista de sessões
+            out["sessions"] = None
+        return out
     finally:
-        import contextlib
-
         with contextlib.suppress(Exception):
             client.close()
