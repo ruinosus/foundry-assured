@@ -113,6 +113,14 @@
       "/tickets"
     ],
     [
+      "GET",
+      "/usecases"
+    ],
+    [
+      "GET",
+      "/usecases/{case_id}"
+    ],
+    [
       "HEAD",
       "/docs"
     ],
@@ -207,6 +215,14 @@
     [
       "POST",
       "/techdocs"
+    ],
+    [
+      "PUT",
+      "/usecases/{case_id}"
+    ],
+    [
+      "PUT",
+      "/usecases/{case_id}/flow"
     ]
   ],
   "self_hosted_oncall": [
@@ -331,6 +347,14 @@
       "/tickets"
     ],
     [
+      "GET",
+      "/usecases"
+    ],
+    [
+      "GET",
+      "/usecases/{case_id}"
+    ],
+    [
       "HEAD",
       "/docs"
     ],
@@ -433,6 +457,14 @@
     [
       "POST",
       "/techdocs"
+    ],
+    [
+      "PUT",
+      "/usecases/{case_id}"
+    ],
+    [
+      "PUT",
+      "/usecases/{case_id}/flow"
     ]
   ],
   "shared": [
@@ -565,6 +597,14 @@
       "/tickets"
     ],
     [
+      "GET",
+      "/usecases"
+    ],
+    [
+      "GET",
+      "/usecases/{case_id}"
+    ],
+    [
       "HEAD",
       "/docs"
     ],
@@ -675,6 +715,14 @@
     [
       "PUT",
       "/tenant/domains"
+    ],
+    [
+      "PUT",
+      "/usecases/{case_id}"
+    ],
+    [
+      "PUT",
+      "/usecases/{case_id}/flow"
     ]
   ]
 }

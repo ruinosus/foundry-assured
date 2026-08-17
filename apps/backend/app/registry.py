@@ -296,8 +296,9 @@ def include_routers(app) -> None:
     from app.modules.foundry import api as foundry
     from app.modules.hosted import api as chat
     from app.modules.tickets import api as tickets
+    from app.modules.usecases import api as usecases
 
-    for module in (api_health, tickets, evals, chat, api_admin, api_me, foundry):
+    for module in (api_health, tickets, evals, chat, api_admin, api_me, foundry, usecases):
         app.include_router(module.router)
 
     if settings.deployment_mode == "shared":

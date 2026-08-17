@@ -49,6 +49,9 @@ MODULES = (
     # Gêmeo do oncall no harness deepagents. Existe para MEDIR a diferença entre os dois, não
     # para substituir: mesmas tools, mesmo prompt, mesmo contrato de HITL.
     "deepcall",
+    # A camada de negócio sobre os agentes: casos de uso são LEITURA sobre o registry, os agentes
+    # publicados e os fluxos — não uma tabela nova (SEGUNDA MÁXIMA).
+    "usecases",
     # Recursos do Foundry (agentes, e depois bases e skills) expostos ao usuário final. Fino
     # por construção: a gestão é do SDK, aqui mora projeção e autorização.
     "foundry",

@@ -42,6 +42,9 @@
     ],
     "tickets": [
       "registry.py"
+    ],
+    "usecases": [
+      "registry.py"
     ]
   },
   "admin": {
@@ -204,6 +207,20 @@
   "tickets": {
     "shared": [
       "modules/tickets/api.py"
+    ]
+  },
+  "usecases": {
+    "agentdefs": [
+      "modules/usecases/internal/usecases.py"
+    ],
+    "foundry": [
+      "modules/usecases/internal/usecases.py"
+    ],
+    "shared": [
+      "modules/usecases/api.py"
+    ],
+    "tenancy": [
+      "modules/usecases/internal/usecases.py"
     ]
   }
 }
