@@ -90,6 +90,36 @@ shared/                             →  nada de dentro do app
 - **PowerFx (`=Env.X`) é recusado no load**, não usado — o reader devolveria a string literal quando o runtime .NET falta. Ver docstring de `definitions.py`.
 - Mudou contrato de prompt? Atualize o caso correspondente em `agents/helpdesk/eval-cases/` **no mesmo PR** — `uv run python -m eval.prompt_contract_test` é o guarda de CI.
 
+## MÁXIMA MAIOR — a Microsoft já resolveu; nosso trabalho é ligar
+
+**Esta regra governa todas as outras.** Quando ela e qualquer regra abaixo discordarem, ela vence.
+
+Se existe capacidade equivalente no Azure / Foundry / AI Search / Agent Framework / MCP oficial,
+**ela ganha do nosso código por definição** — mesmo que o nosso ficasse mais elegante, mais curto
+ou mais adaptado. O teto do que se escreve aqui é a **cola**: endpoints finos que orquestram
+serviços e SDKs de primeira parte.
+
+**Ordem de trabalho, invertida em relação ao instinto:**
+
+1. **Pesquisar primeiro** — `learn.microsoft.com`, `Azure-Samples`, `microsoft-foundry`, o
+   **código do pacote instalado** (fonte de verdade sobre a versão em uso), release notes.
+2. **Mapear o que já existe** — qual API/tipo/serviço cobre cada pedaço do pedido.
+3. **Só então** propor a cola mínima, dizendo qual peça oficial cada parte usa.
+
+**O ônus da prova é invertido.** Escrever código nosso exige *demonstrar que se procurou e não
+existe* — não basta achar que dá menos trabalho fazer à mão. "Não achei" só vale depois de
+procurar nos quatro lugares acima.
+
+**Quando a plataforma cobre parcialmente, diga o tamanho da lacuna** em vez de escrever o resto
+em silêncio: *"existe X, cobre 80%, faltam estes 20% e custam N linhas"* é decisão do
+desenvolvedor, não do agente.
+
+**A única exceção, calibrada explicitamente:** a **camada de assurance é nossa** — os gates
+(`eval/`, `tests/architecture/`), a resolubilidade de citações, o contrato de decisão HITL. É o
+diferencial do projeto, foi pesquisada (não há equivalente de primeira parte — ver
+`docs/superpowers/specs/2026-08-16-citation-resolvability-as-a-product-design.md`) e por isso
+sobrevive à máxima. Tudo que for **produto** segue a máxima sem exceção.
+
 ## Regras inegociáveis
 
 1. **NÃO invente assinaturas de SDK.** A superfície dos SDKs muda rápido — em especial o namespace `.beta` de `azure-ai-projects`. Antes de fixar qualquer chamada a `azure-ai-projects`, `agent-framework`, `agent-framework-ag-ui` ou `agent-framework-declarative`, verifique contra `learn.microsoft.com/azure/foundry` e o repo `microsoft-foundry/foundry-samples`. Se não conseguir confirmar, deixe um `# TODO: verificar assinatura` explícito em vez de chutar.

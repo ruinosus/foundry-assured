@@ -51,6 +51,20 @@ ensure_app() { # DISPLAY_NAME -> echoes "objectId appId"
   else
     appid="$(az ad app show --id "$objid" --query appId -o tsv)"
   fi
+  # Emit the SECURITY GROUP claim. Not cosmetic: per-document ACL is enforced by Azure AI Search,
+  # which "extracts the user, group, and scope claims from the token" (learn.microsoft.com,
+  # search-query-access-control-rbac-enforcement). Without this the token carries no `groups`, the
+  # user belongs to nothing as far as Search is concerned, and every ACL'd document is trimmed away.
+  #
+  # The failure is silent and expensive: retrieval returns ZERO documents, the agent answers "no
+  # authorized documents found", and nothing logs an error — fail-closed behaving correctly on
+  # missing information. It cost an hour to find, and the fix is this one line.
+  #
+  # Caveat worth knowing: a user in more than ~150 groups gets an overage claim (a pointer, not the
+  # list) and the trim stops working. Not a concern at this scale; it would be at enterprise scale.
+  az rest --method PATCH --url "$GRAPH/$objid" --headers "Content-Type=application/json" \
+    --body '{"groupMembershipClaims":"SecurityGroup"}' 2>/dev/null \
+    && echo "  ✔ group claim (SecurityGroup) — required by the per-document ACL" >&2
   echo "$objid $appid"
 }
 # user_impersonation delegated scope id of a resource app (resolved, not hardcoded).
@@ -128,8 +142,47 @@ az ad app permission admin-consent --id "$API_APPID" 2>/dev/null && echo "  ✔ 
 az ad app permission admin-consent --id "$SPA_APPID" 2>/dev/null && echo "  ✔ SPA consented" \
   || echo "  ⚠ consent the SPA app in the portal (Entra → $SPA_NAME → API permissions → Grant admin consent)"
 
+# ---- Audience group for the per-document ACL --------------------------------
+# The selfwiki is a single-audience knowledge base: everyone with app access may read it. That
+# audience is a security group, and its object id has to reach the backend as APP_USERS_GROUP_ID.
+#
+# Two things break without it, and neither says so:
+#   * the ingest indexes the documents but does NOT stamp them, leaving whatever groups they had;
+#   * `acl_group_map` is empty, so retrieval never sends the ACL header at all.
+# The visible symptom is identical to the missing group claim — the agent says it found no
+# authorized documents — which is exactly why both are set here, together, by the same script.
+#
+# Reuses an existing group by display name (idempotent) and adds the signed-in user, because a
+# stamped index that nobody belongs to is fail-closed for everyone, including whoever just ran
+# this. Non-fatal: without permission to create groups, the script says so and moves on.
+GROUP_NAME="${APP_USERS_GROUP_NAME:-foundry-assured-app-users}"
+echo "▸ Audience group ($GROUP_NAME)…"
+GROUP_ID="$(az ad group list --display-name "$GROUP_NAME" --query "[0].id" -o tsv 2>/dev/null || true)"
+if [ -z "${GROUP_ID:-}" ]; then
+  GROUP_ID="$(az ad group create --display-name "$GROUP_NAME" --mail-nickname "$GROUP_NAME" \
+    --query id -o tsv 2>/dev/null || true)"
+  [ -n "${GROUP_ID:-}" ] && echo "  ✔ group created"
+else
+  echo "  · group already exists (reused)"
+fi
+if [ -n "${GROUP_ID:-}" ]; then
+  ME="$(az ad signed-in-user show --query id -o tsv 2>/dev/null || true)"
+  if [ -n "${ME:-}" ]; then
+    if az ad group member check --group "$GROUP_ID" --member-id "$ME" --query value -o tsv 2>/dev/null | grep -qi true; then
+      echo "  · you are already a member"
+    else
+      az ad group member add --group "$GROUP_ID" --member-id "$ME" 2>/dev/null \
+        && echo "  ✔ added you to the group (an index nobody belongs to is closed to everyone)"
+    fi
+  fi
+else
+  echo "  ⚠ could not create/find the group — set APP_USERS_GROUP_ID by hand, or the selfwiki ACL"
+  echo "    will index without stamping and retrieval will return nothing."
+fi
+
 # ---- Write env -------------------------------------------------------------
 echo "▸ Writing env files…"
+[ -n "${GROUP_ID:-}" ] && upsert "$BACK_ENV" APP_USERS_GROUP_ID "$GROUP_ID"
 upsert "$BACK_ENV"  ENTRA_TENANT_ID         "$TENANT"
 upsert "$BACK_ENV"  ENTRA_API_CLIENT_ID     "$API_APPID"
 upsert "$BACK_ENV"  ENTRA_API_CLIENT_SECRET "$API_SECRET"
