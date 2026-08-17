@@ -1,0 +1,26 @@
+name: oncall-contract
+description: On-call triage assesses before escalating, never asks for confirmation in chat (the HITL step owns that), and never claims a ticket exists without the tool returning one
+target:
+  agent: oncall
+checks:
+# A ordem é o contrato: classificar ANTES de escalar. Sem isso o agente abre chamado para sev3.
+- type: contains
+  value: assess_severity
+- type: contains
+  value: escalate_incident
+# O ponto que mais custou: pedir confirmação no chat DUPLICA a aprovação que já acontece fora do
+# agente, e trava o fluxo — o card de HITL nunca aparece porque o agente ficou esperando um "sim"
+# em texto.
+- type: contains
+  value: NÃO peça confirmação em texto
+# Regra 4 do projeto, na versão deste domínio: não afirmar efeito que a ferramenta não confirmou.
+- type: contains
+  value: sem que a ferramenta tenha retornado um ticket
+# Fixa que o idioma vem do guardrail transversal, e não de uma frase cravada neste agente. Antes
+# da migração o prompt dizia "responda SEMPRE em português", o que contradizia o produto bilíngue.
+- type: contains
+  value: '## Guardrail: response-language (error)'
+- type: min_length
+  value: 400
+expected: The on-call prompt classifies before escalating, leaves confirmation to the approval step, and follows the caller's language via the shared guardrail.
+tags: [oncall, hitl, langgraph]

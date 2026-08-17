@@ -48,6 +48,11 @@
       "modules/admin/internal/graph.py"
     ]
   },
+  "agentdefs": {
+    "tenancy": [
+      "modules/agentdefs/internal/skill_injection.py"
+    ]
+  },
   "evaluation": {
     "shared": [
       "modules/evaluation/api.py"
@@ -61,7 +66,16 @@
       "modules/foundry/api.py"
     ],
     "tenancy": [
-      "modules/foundry/internal/agents.py"
+      "modules/foundry/api.py",
+      "modules/foundry/internal/agent_write.py",
+      "modules/foundry/internal/agents.py",
+      "modules/foundry/internal/assist.py",
+      "modules/foundry/internal/connections.py",
+      "modules/foundry/internal/knowledge_catalog.py",
+      "modules/foundry/internal/knowledge_write.py",
+      "modules/foundry/internal/names.py",
+      "modules/foundry/internal/skills.py",
+      "modules/foundry/internal/toolboxes.py"
     ]
   },
   "grounded": {
@@ -134,6 +148,9 @@
     ]
   },
   "oncall": {
+    "agentdefs": [
+      "modules/oncall/internal/graph.py"
+    ],
     "shared": [
       "modules/oncall/internal/graph.py",
       "modules/oncall/public.py"

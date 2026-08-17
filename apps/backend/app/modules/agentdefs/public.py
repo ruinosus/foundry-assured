@@ -101,6 +101,7 @@ _AGENT_FOR_CONSTANT = {
     "CONCIERGE_UNGROUNDED_INSTRUCTIONS": "concierge-ungrounded",
     "TECHDOCS_INSTRUCTIONS": "techdocs",
     "SELFWIKI_INSTRUCTIONS": "selfwiki",
+    "ONCALL_INSTRUCTIONS": "oncall",
     "PLATFORM_INSTRUCTIONS": "platform",
 }
 
@@ -156,6 +157,10 @@ TECHDOCS_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["TECHDOCS_INSTRUCTIO
 
 # --- Third domain: this project's own deep-wiki (the "selfwiki" — dogfood) -----
 SELFWIKI_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["SELFWIKI_INSTRUCTIONS"])
+
+# O oncall roda em LangGraph, não em agent-framework — e isso não importa aqui. O que define
+# se um agente entra nesta composição é ONDE O PROMPT É MONTADO, não qual runtime o executa.
+ONCALL_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["ONCALL_INSTRUCTIONS"])
 
 # --- Fourth domain: tool-driven engineering-platform concierge -----------------
 PLATFORM_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["PLATFORM_INSTRUCTIONS"])

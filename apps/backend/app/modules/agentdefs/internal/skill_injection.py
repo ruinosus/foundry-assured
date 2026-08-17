@@ -20,6 +20,16 @@ mudar nada:
 Ou seja: não é "todos os runtimes", é "todos que compõem prompt por aqui". A fronteira não é o
 runtime — é onde o prompt é montado.
 
+O ACOPLAMENTO NOVO, declarado porque o gate de arquitetura o pegou (ADR-017): `agentdefs` passa a
+depender de `tenancy` (para o endpoint do project). Até aqui a composição era pura — arquivos do
+disco, nada de rede. A dependência é inerente ao desenho: o conteúdo da skill vive no serviço, e
+compor sem buscá-lo seria compor sem a skill.
+
+Uma mitigação vale registro: a rede só acontece se ALGUM agente declarar `skills`. Nenhum declara
+hoje, então `agentdefs` segue offline na prática, e os gates que o exercitam continuam
+determinísticos. Quando o primeiro agente declarar, a composição daquele agente passa a depender
+do serviço — e é aí que o cache e a degradação suave abaixo importam.
+
 QUANDO A REDE ACONTECE. `agentdefs` compõe no import, e fazer I/O de rede em import time faria o
 app não subir quando o Azure estivesse fora. Então a resolução é preguiçosa e cacheada: a primeira
 composição que precisar de skill busca, as seguintes reusam. Falha de rede NÃO derruba o agente —
