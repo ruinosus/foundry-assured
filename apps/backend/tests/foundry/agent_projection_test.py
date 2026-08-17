@@ -16,7 +16,7 @@ Offline: nada de rede, nada de credencial — objetos falsos com a forma que o S
 from __future__ import annotations
 
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from app.modules.foundry.internal.agents import _latest_version, _project
 
@@ -25,7 +25,7 @@ class _Version:
     def __init__(self, v, status="published"):
         self.version = v
         self.description = f"versão {v}"
-        self.created_at = datetime(2026, 8, 17, 12, 0, tzinfo=timezone.utc)
+        self.created_at = datetime(2026, 8, 17, 12, 0, tzinfo=UTC)
         self.status = status
 
 

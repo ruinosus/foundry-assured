@@ -9,5 +9,6 @@ vizinhos), e o que escrevemos é projeção e autorização.
 """
 
 from app.modules.foundry.internal.agents import get_agent, list_agents
+from app.modules.foundry.internal.knowledge_catalog import get_knowledge, list_knowledge
 
-__all__ = ["get_agent", "list_agents"]
+__all__ = ["get_agent", "get_knowledge", "list_agents", "list_knowledge"]

@@ -167,14 +167,31 @@ validação de formato, ou dois clientes colidem.
 - conectores de SharePoint, OneLake, Web — tipos de primeira parte
 - extração de texto de PDF/Office — o blob source suporta
 
-## Ordem sugerida
+## Ordem sugerida, e onde estamos
 
-1. `GET /agents` + `GET /knowledge` — listar é o menor passo que já entrega valor e prova a
-   ligação com o Foundry
-2. Detalhe do agente (versões, sessões)
+1. ✅ **`GET /agents` + `GET /knowledge`** — listar é o menor passo que já entrega valor e prova
+   a ligação com o Foundry. As duas telas existem (`/agents`, `/knowledge`), com projeção
+   testada offline em `tests/foundry/`.
+2. Detalhe do agente (versões, sessões) — `GET /agents/{name}` já responde; falta a tela
 3. Criar base por upload
 4. Criar agente por manifesto
 5. GitHub (a peça nossa)
+
+### O que o passo 1 ensinou, contra o serviço real
+
+**Fonte órfã é um problema de verdade, e apareceu no primeiro uso.** O ambiente tem
+`selfwiki-docbundles-ks` (azureBlob) que nenhuma base referencia — resquício da migração para
+`selfwiki-docbundles-si-ks` (searchIndex). Cada fonte mantém um indexador rodando, então isso é
+custo sem resposta. O catálogo marca (`orphan`) e a tela avisa ANTES das tabelas. Não estava na
+spec; é lacuna que o portal também não mostra bem, e virou parte do produto.
+
+**`get_knowledge_source_status` é uma chamada POR FONTE.** O status não vem no objeto da base, e
+é ele que responde "esta base está atualizada?". Falha de status não derruba a página: a fonte
+aparece com status ausente e a base continua legível.
+
+**O objeto de estado não sobrevive a `str()`.** `last_synchronization_state` serializado com
+`str()` atravessa o JSON como o repr do dict do SDK. Contra objeto vazio parecia certo; só o dado
+real mostrou. O gate offline planta a forma real para a regressão não voltar.
 
 ## Referências
 

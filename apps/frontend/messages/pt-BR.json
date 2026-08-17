@@ -200,7 +200,8 @@
     "tickets": "Chamados",
     "evals": "Avaliações",
     "admin": "Administração",
-    "connections": "Conexões"
+    "connections": "Conexões",
+    "knowledge": "Conhecimento"
   },
   "overview": {
     "title": "Visão geral",
@@ -256,5 +257,23 @@
     "triageLabel": "Triagem",
     "retrieveLabel": "Busca",
     "resolveLabel": "Resposta"
+  },
+  "knowledge": {
+    "title": "Bases de conhecimento",
+    "subtitle": "As bases do seu projeto e as fontes que as alimentam — lidas direto do serviço, sem abrir o portal.",
+    "basesTitle": "Bases",
+    "sourcesTitle": "Fontes",
+    "colName": "Nome",
+    "colSources": "Fontes",
+    "colSourceCount": "Qtd.",
+    "colKind": "Tipo",
+    "colUsage": "Uso",
+    "orphanPill": "sem uso",
+    "inUsePill": "em uso",
+    "orphanTitle": "{count} fonte(s) que nenhuma base usa",
+    "orphanBody": "Cada fonte mantém um indexador rodando. Fonte que nenhuma base referencia gera custo sem responder nada — apague ou ligue a uma base.",
+    "errorTitle": "Não foi possível ler as bases",
+    "emptyTitle": "Nenhuma base ainda",
+    "emptyBody": "Uma base de conhecimento é o que dá ao agente algo para citar. Crie a primeira apontando para arquivos ou um repositório."
   }
 }

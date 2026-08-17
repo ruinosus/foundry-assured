@@ -24,6 +24,7 @@ import { ThemeToggle } from "@/components/shell/ThemeToggle";
 const WORKSPACE_NAV = [
   { href: "/", key: "overview", icon: "▦" },
   { href: "/agents", key: "agents", icon: "◆" },
+  { href: "/knowledge", key: "knowledge", icon: "▤" },
   { href: "/tickets", key: "tickets", icon: "🎫" },
   { href: "/evals", key: "evals", icon: "✓" },
 ];
@@ -39,6 +40,7 @@ const ADMIN_NAV = [
 const TITLE_KEYS: Record<string, string> = {
   "/": "overview",
   "/agents": "agents",
+  "/knowledge": "knowledge",
   "/tickets": "tickets",
   "/evals": "evals",
   "/admin/users": "admin",

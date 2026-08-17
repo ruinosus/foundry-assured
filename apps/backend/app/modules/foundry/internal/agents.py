@@ -35,6 +35,11 @@ def _client():
     )
 
 
+def _iso(value: Any) -> Any:
+    """`datetime` não atravessa JSON; ISO atravessa."""
+    return value.isoformat() if hasattr(value, "isoformat") else value
+
+
 def _latest_version(details: Any) -> dict | None:
     """A versão corrente, achatada. Agente é recurso VERSIONADO: `versions` é o histórico, e o
     que a lista mostra é o topo dele. Esconder isso faria a interface mentir sobre o recurso."""
@@ -45,9 +50,7 @@ def _latest_version(details: Any) -> dict | None:
     return {
         "version": getattr(top, "version", None),
         "description": getattr(top, "description", None),
-        "created_at": (lambda v: v.isoformat() if hasattr(v, "isoformat") else v)(
-            getattr(top, "created_at", None)
-        ),
+        "created_at": _iso(getattr(top, "created_at", None)),
         "status": str(getattr(top, "status", "") or "") or None,
     }
 

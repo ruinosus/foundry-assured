@@ -46,6 +46,14 @@
     ],
     [
       "GET",
+      "/foundry/knowledge"
+    ],
+    [
+      "GET",
+      "/foundry/knowledge/{name}"
+    ],
+    [
+      "GET",
       "/healthz"
     ],
     [
@@ -161,6 +169,14 @@
     [
       "GET",
       "/foundry/agents/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/knowledge"
+    ],
+    [
+      "GET",
+      "/foundry/knowledge/{name}"
     ],
     [
       "GET",
@@ -291,6 +307,14 @@
     [
       "GET",
       "/foundry/agents/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/knowledge"
+    ],
+    [
+      "GET",
+      "/foundry/knowledge/{name}"
     ],
     [
       "GET",

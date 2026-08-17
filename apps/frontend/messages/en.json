@@ -200,7 +200,8 @@
     "tickets": "Tickets",
     "evals": "Evaluations",
     "admin": "Admin",
-    "connections": "Connections"
+    "connections": "Connections",
+    "knowledge": "Knowledge"
   },
   "overview": {
     "title": "Overview",
@@ -256,5 +257,23 @@
     "triageLabel": "Triage",
     "retrieveLabel": "Retrieve",
     "resolveLabel": "Resolve"
+  },
+  "knowledge": {
+    "title": "Knowledge bases",
+    "subtitle": "Your project's bases and the sources feeding them — read straight from the service, without opening the portal.",
+    "basesTitle": "Bases",
+    "sourcesTitle": "Sources",
+    "colName": "Name",
+    "colSources": "Sources",
+    "colSourceCount": "Count",
+    "colKind": "Kind",
+    "colUsage": "Usage",
+    "orphanPill": "unused",
+    "inUsePill": "in use",
+    "orphanTitle": "{count} source(s) no base uses",
+    "orphanBody": "Each source keeps an indexer running. A source no base references costs money without answering anything — delete it or attach it to a base.",
+    "errorTitle": "Could not read the bases",
+    "emptyTitle": "No bases yet",
+    "emptyBody": "A knowledge base is what gives the agent something to cite. Create the first one by pointing at files or a repository."
   }
 }
