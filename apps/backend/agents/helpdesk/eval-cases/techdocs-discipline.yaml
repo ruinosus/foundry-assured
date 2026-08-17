@@ -1,10 +1,16 @@
 name: techdocs-discipline
-description: TechDocs expert answers in pt-BR, grounds exclusively on retrieved KB docs, cites component+doc, admits gaps
+description: TechDocs expert answers in the user's language, grounds exclusively on retrieved KB docs, cites component+doc, admits gaps
 target:
   agent: techdocs
 checks:
+# O idioma deixou de ser cravado no prompt de cada agente e virou guardrail
+# (guardrails/response-language.md): a resposta segue quem pergunta. A invariante não
+# desapareceu — mudou de "promete pt-BR" para "segue o usuário E não traduz a citação".
+# A segunda metade é a que protege a procedência.
 - type: contains
-  value: português (pt-BR)
+  value: Responda no idioma do usuário
+- type: contains
+  value: NÃO muda o idioma das citações
 - type: contains
   value: '**exclusivamente**'
 - type: contains

@@ -17,5 +17,6 @@ metadata:
     persona: concierge
     guardrails:
       - grounded-citation
+      - response-language
 instructions: |-
   Answer using the runbook knowledge base.

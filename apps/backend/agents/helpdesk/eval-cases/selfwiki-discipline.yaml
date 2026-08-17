@@ -1,12 +1,18 @@
 name: selfwiki-discipline
-description: Selfwiki expert grounds exclusively on the project deep-wiki, cites area+doc, degrades gracefully on gaps
+description: Selfwiki expert answers in the user's language, grounds exclusively on the project deep-wiki, cites area+doc, degrades gracefully on gaps
 target:
   agent: selfwiki
 checks:
 - type: contains
   value: foundry-assured
+# O idioma deixou de ser cravado no prompt de cada agente e virou guardrail
+# (guardrails/response-language.md): a resposta segue quem pergunta. A invariante não
+# desapareceu — mudou de "promete pt-BR" para "segue o usuário E não traduz a citação".
+# A segunda metade é a que protege a procedência.
 - type: contains
-  value: português (pt-BR)
+  value: Responda no idioma do usuário
+- type: contains
+  value: NÃO muda o idioma das citações
 - type: contains
   value: '**exclusivamente**'
 - type: contains
