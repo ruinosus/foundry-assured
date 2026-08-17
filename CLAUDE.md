@@ -114,6 +114,20 @@ procurar nos quatro lugares acima.
 em silêncio: *"existe X, cobre 80%, faltam estes 20% e custam N linhas"* é decisão do
 desenvolvedor, não do agente.
 
+**O que isto NÃO significa.** A máxima proíbe reimplementar capacidade, não proíbe construir
+produto. A frase que define a diferença, do dono do projeto:
+
+> **"Não é recriar nada da Microsoft, é preencher lacunas e trazer outros perfis de usuário para
+> consumir recursos Microsoft."**
+
+O portal do Foundry atende quem tem conta e RBAC no Azure. Este produto atende quem **não tem e
+não vai ter** — usuário final que precisa criar, usar e manter agentes, bases e skills sem
+nunca abrir o portal. Construir essa camada de acesso é preencher lacuna; reescrever o que o
+portal faz por baixo dela é violar a máxima.
+
+O teste, quando surgir a dúvida: **estou expondo uma capacidade a um perfil que não a alcança,
+ou reimplementando a capacidade?** O primeiro é o produto. O segundo é proibido.
+
 **A única exceção, calibrada explicitamente:** a **camada de assurance é nossa** — os gates
 (`eval/`, `tests/architecture/`), a resolubilidade de citações, o contrato de decisão HITL. É o
 diferencial do projeto, foi pesquisada (não há equivalente de primeira parte — ver

@@ -12,6 +12,7 @@ import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
 import { DOMAINS } from "@/lib/domains";
 import { useMyRoles, isAdmin } from "@/lib/auth/roles";
+import { ThemeToggle } from "@/components/shell/ThemeToggle";
 
 // The domain agents are config-driven from the registry → /d/<id>. Workspace pages are
 // static. Two sections so the sidebar reads as "tools" + "agents".
@@ -138,6 +139,7 @@ export function AppShell({
         <div className="sidebar-foot-group">
           {authConfigured && <AccountChip />}
           <BackendStatus />
+          <ThemeToggle />
         </div>
       </aside>
 
