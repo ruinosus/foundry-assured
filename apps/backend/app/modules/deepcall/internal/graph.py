@@ -40,6 +40,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
+from langchain.agents.middleware import AgentMiddleware
 from langchain_core.tools import tool
 
 from app.modules.agentdefs.public import ONCALL_INSTRUCTIONS
@@ -88,6 +89,28 @@ def escalate_incident(
     return f'ticket {ticket["id"]} opened: {ticket["summary"]}'
 
 
+class _AlwaysRubric(AgentMiddleware):
+    """Injeta a rubrica no estado antes do agente rodar — é o que liga o self-eval sem depender
+    do cliente.
+
+    O `RubricMiddleware` só age quando o estado da invocação traz `rubric`. Deixar isso a cargo de
+    quem chama significaria que o AG-UI teria de mandá-la em cada mensagem — e o CopilotKit não
+    manda, porque `rubric` não é campo do protocolo. O agente então rodaria SEM autoavaliação e
+    ninguém notaria: não há erro, só a ausência silenciosa do que se queria medir.
+
+    `before_agent` devolve um patch de estado, então a rubrica entra por aqui e vale para toda
+    invocação. Se o cliente mandar a própria, ela ganha — o default não deve sobrescrever escolha
+    explícita de quem chama.
+    """
+
+    name = "always_rubric"
+
+    def before_agent(self, state, runtime):
+        if state.get("rubric"):
+            return None
+        return {"rubric": ONCALL_RUBRIC}
+
+
 def build_deepcall_graph():
     """Um deep agent compilado — mesma forma de retorno do `oncall`.
 
@@ -121,8 +144,13 @@ def build_deepcall_graph():
         # Mesmo contrato do gêmeo. `interrupt_on` é açúcar: por baixo é o
         # `HumanInTheLoopMiddleware` do langchain, o mesmo que o `oncall` instancia à mão.
         interrupt_on=INTERRUPT_ON,
-        # Self-eval em runtime. Inerte sem `rubric` no estado — ver o cabeçalho.
-        middleware=[RubricMiddleware(model=model, on_evaluation=_log_evaluation)],
+        # A ORDEM IMPORTA: `_AlwaysRubric` vem primeiro para o estado já ter a rubrica quando o
+        # `RubricMiddleware` decidir se atua. Invertido, ele leria o estado sem rubrica, sairia
+        # sem fazer nada, e o self-eval nunca aconteceria — falha silenciosa, sem erro nenhum.
+        middleware=[
+            _AlwaysRubric(),
+            RubricMiddleware(model=model, on_evaluation=_log_evaluation),
+        ],
         checkpointer=InMemorySaver(),
     )
 
@@ -143,13 +171,18 @@ def _log_evaluation(evaluation) -> None:
     Existe porque a alternativa é o rubric agir em silêncio: quando ele reescreve, quem lê o log
     precisa saber que a primeira resposta foi reprovada e por quê — do contrário a diferença entre
     os dois harnesses vira anedota em vez de medição.
+
+    `RubricEvaluation` é um TypedDict, não um objeto. Escrevi `getattr(evaluation, "status")` de
+    início e o log saiu com "status=?" em toda invocação — sem erro, só vazio. Os nomes vieram de
+    `__annotations__`, não de suposição: grading_run_id, iteration, result, explanation, criteria.
     """
     import logging
 
     logging.getLogger(__name__).info(
-        "rubric: status=%s feedback=%s",
-        getattr(evaluation, "status", "?"),
-        str(getattr(evaluation, "feedback", ""))[:300],
+        "rubric: iteração=%s resultado=%s · %s",
+        evaluation.get("iteration"),
+        evaluation.get("result"),
+        str(evaluation.get("explanation") or "")[:280],
     )
 
 
