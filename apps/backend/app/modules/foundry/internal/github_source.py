@@ -63,11 +63,16 @@ class GitHubError(RuntimeError):
 
 
 def _headers(token: str) -> dict:
-    return {
-        "Authorization": f"Bearer {token}",
+    cabecalhos = {
         "Accept": "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
     }
+    # Sem token, NÃO manda o header: `Bearer ` vazio faz o GitHub responder 401 mesmo em
+    # repositório público. O catálogo de skills é público e navega sem token (60 chamadas/h);
+    # a ingestão de repositório privado continua passando o dela.
+    if token:
+        cabecalhos["Authorization"] = f"Bearer {token}"
+    return cabecalhos
 
 
 def _get(url: str, token: str) -> dict:

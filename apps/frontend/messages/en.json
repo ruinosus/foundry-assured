@@ -411,6 +411,15 @@
     "g3Title": "Continuously evaluated",
     "g3Body": "Every answer cites its source or declines. Deterministic gate in CI + Foundry groundedness judges, wired to the traces."
   },
+  "skillCatalog": {
+    "searchPlaceholder": "Search by name or group…",
+    "count": "{shown} of {total}",
+    "pickOne": "Pick a skill on the left to read the document before publishing.",
+    "import": "Import into Foundry",
+    "importing": "Importing…",
+    "imported": "Skill {name} published with {files} file(s).",
+    "importedPartial": "Skill {name} published with {files} file(s) — {skipped} left out for size."
+  },
   "skillWizard": {
     "title": "New skill",
     "stepsLabel": "Creation steps",
@@ -466,7 +475,8 @@
     "notDefaultPill": "new version not in use",
     "errorTitle": "Could not read the skills",
     "emptyTitle": "No skills yet",
-    "emptyBody": "A skill holds instructions several agents reuse — like how to review a PR or handle an incident."
+    "emptyBody": "A skill holds instructions several agents reuse — like how to review a PR or handle an incident.",
+    "importBtn": "Import from a catalog"
   },
   "theme": {
     "label": "Theme",

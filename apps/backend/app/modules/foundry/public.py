@@ -30,6 +30,12 @@ from app.modules.foundry.internal.knowledge_write import (
     upload_files,
 )
 from app.modules.foundry.internal.names import qualify as qualify_agent_name
+from app.modules.foundry.internal.skill_catalog import (
+    KNOWN_CATALOGS,
+    import_skill,
+    list_catalog,
+    preview_skill,
+)
 from app.modules.foundry.internal.skills import (
     create_skill,
     create_skill_from_files,
@@ -46,6 +52,7 @@ from app.modules.foundry.internal.toolboxes import (
 )
 
 __all__ = [
+    "KNOWN_CATALOGS",
     "create_agent_version",
     "create_knowledge",
     "create_skill",
@@ -59,13 +66,16 @@ __all__ = [
     "get_knowledge",
     "get_skill",
     "get_toolbox",
+    "import_skill",
     "ingest_repo",
     "list_agents",
+    "list_catalog",
     "list_knowledge",
     "list_skills",
     "list_toolboxes",
     "load_flow",
     "mcp_url",
+    "preview_skill",
     "qualify_agent_name",
     "save_flow",
     "set_agent_enabled",

@@ -1673,3 +1673,35 @@ table.evals tr:last-child td { border-bottom: none; }
   font-size: var(--text-2xs);
   color: var(--muted);
 }
+
+/* ── Catálogo de skills ────────────────────────────────────────────────────────────────────
+   Lista à esquerda, documento à direita. A proporção é deliberada: a lista tem 198 linhas de
+   um nome curto, e o documento é o que decide a importação — ele ganha o espaço. */
+.cat-split {
+  display: grid;
+  grid-template-columns: minmax(200px, 300px) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+@media (max-width: 780px) { .cat-split { grid-template-columns: 1fr; } }
+
+.cat-list {
+  list-style: none; margin: 0; padding: 0;
+  max-height: 60vh; overflow-y: auto;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+}
+.cat-item {
+  width: 100%; text-align: left; display: flex; flex-direction: column; gap: 1px;
+  padding: var(--space-2) var(--space-3);
+  border: 0; border-bottom: 1px solid var(--line);
+  background: transparent; color: inherit; cursor: pointer;
+}
+.cat-item:hover { background: var(--sunken); }
+/* Selecionado por fundo + barra, nunca só por cor. */
+.cat-item.on { background: var(--sunken); box-shadow: inset 2px 0 0 var(--accent); font-weight: 600; }
+.cat-name { font-size: var(--text-sm); }
+.cat-path { font-family: var(--font-mono); }
+
+.cat-preview { min-width: 0; }
+/* O SKILL.md inteiro rola dentro do próprio bloco — a página não rola de lado por causa dele. */
+.cat-preview .doc-preview { max-height: 46vh; overflow: auto; }

@@ -82,6 +82,18 @@
     ],
     [
       "GET",
+      "/foundry/skill-catalog"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalog/preview"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalogs"
+    ],
+    [
+      "GET",
       "/foundry/skills"
     ],
     [
@@ -187,6 +199,10 @@
     [
       "POST",
       "/foundry/knowledge/{name}/github"
+    ],
+    [
+      "POST",
+      "/foundry/skill-catalog/import"
     ],
     [
       "POST",
@@ -324,6 +340,18 @@
     ],
     [
       "GET",
+      "/foundry/skill-catalog"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalog/preview"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalogs"
+    ],
+    [
+      "GET",
       "/foundry/skills"
     ],
     [
@@ -437,6 +465,10 @@
     [
       "POST",
       "/foundry/knowledge/{name}/github"
+    ],
+    [
+      "POST",
+      "/foundry/skill-catalog/import"
     ],
     [
       "POST",
@@ -578,6 +610,18 @@
     ],
     [
       "GET",
+      "/foundry/skill-catalog"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalog/preview"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalogs"
+    ],
+    [
+      "GET",
       "/foundry/skills"
     ],
     [
@@ -695,6 +739,10 @@
     [
       "POST",
       "/foundry/knowledge/{name}/github"
+    ],
+    [
+      "POST",
+      "/foundry/skill-catalog/import"
     ],
     [
       "POST",

@@ -411,6 +411,15 @@
     "g3Title": "Continuamente avaliada",
     "g3Body": "Toda resposta cita a fonte ou declina. Gate determinístico no CI + juízes de groundedness do Foundry, ligados aos traces."
   },
+  "skillCatalog": {
+    "searchPlaceholder": "Buscar por nome ou grupo…",
+    "count": "{shown} de {total}",
+    "pickOne": "Escolha uma skill à esquerda para ler o documento antes de publicar.",
+    "import": "Importar para o Foundry",
+    "importing": "Importando…",
+    "imported": "Skill {name} publicada com {files} arquivo(s).",
+    "importedPartial": "Skill {name} publicada com {files} arquivo(s) — {skipped} ficaram de fora por tamanho."
+  },
   "skillWizard": {
     "title": "Nova skill",
     "stepsLabel": "Etapas da criação",
@@ -466,7 +475,8 @@
     "notDefaultPill": "versão nova não está em uso",
     "errorTitle": "Não foi possível ler as skills",
     "emptyTitle": "Nenhuma skill ainda",
-    "emptyBody": "Uma skill guarda instruções que vários agentes reaproveitam — como revisar um PR ou responder um incidente."
+    "emptyBody": "Uma skill guarda instruções que vários agentes reaproveitam — como revisar um PR ou responder um incidente.",
+    "importBtn": "Importar de um catálogo"
   },
   "theme": {
     "label": "Tema",

@@ -13,6 +13,7 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
 import { useMyRoles, canAdmin } from "@/lib/auth/roles";
+import { SkillCatalog } from "@/components/skills/SkillCatalog";
 import { SkillWizard } from "@/components/skills/SkillWizard";
 
 type Version = { version: string | null; description: string | null; created_at: string | null };
@@ -32,6 +33,7 @@ export function SkillsView() {
   const [skills, setSkills] = useState<Skill[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [importOpen, setImport_] = useState(false);
   const roles = useMyRoles();
   const admin = canAdmin(roles);
 
@@ -92,10 +94,26 @@ export function SkillsView() {
             }}
           />
         ) : (
-          <button type="button" className="btn btn-solid" onClick={() => setOpen(true)}>
-            {t("newBtn")}
-          </button>
+          <div className="row-tight">
+            <button type="button" className="btn btn-solid" onClick={() => setOpen(true)}>
+              {t("newBtn")}
+            </button>
+            {/* Importar vem ao lado de criar, não escondido: para a maioria dos casos a skill
+                que a pessoa quer JÁ EXISTE num catálogo público, e escrever do zero é a opção
+                mais cara das duas. */}
+            <button type="button" className="btn" onClick={() => setImport_(v => !v)}>
+              {importOpen ? tc("cancel") : t("importBtn")}
+            </button>
+          </div>
         ))}
+
+      {admin && importOpen && !open && (
+        <SkillCatalog
+          onImported={() => {
+            void load();
+          }}
+        />
+      )}
 
       {loading && skills === null && !error && (
         <div className="skeleton-list" aria-hidden>

@@ -15,6 +15,7 @@ import logging
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 
 from app.modules.foundry.public import (
+    KNOWN_CATALOGS,
     create_agent_version,
     create_knowledge,
     create_skill,
@@ -28,12 +29,15 @@ from app.modules.foundry.public import (
     get_knowledge,
     get_skill,
     get_toolbox,
+    import_skill,
     ingest_repo,
     list_agents,
+    list_catalog,
     list_knowledge,
     list_skills,
     list_toolboxes,
     mcp_url,
+    preview_skill,
     set_agent_enabled,
     suggest,
     upload_files,
@@ -346,3 +350,53 @@ async def assist(body: dict, request: Request) -> dict:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Foundry: {exc}") from exc
+
+
+# ── Catálogos públicos de skills ────────────────────────────────────────────────────────────
+#
+# Ler catálogo é LEITURA e vale para qualquer usuário autenticado: escolher o que importar é uma
+# pesquisa, não uma mudança. IMPORTAR publica no Foundry, então exige Admin como as demais
+# escritas deste módulo.
+
+
+@router.get("/skill-catalogs")
+def skill_catalogs() -> dict:
+    """Os catálogos conhecidos. Repositório de terceiro no formato agentskills.io."""
+    return {"catalogs": list(KNOWN_CATALOGS)}
+
+
+@router.get("/skill-catalog")
+def skill_catalog(
+    repo: str = Query(..., description="org/nome — ex.: microsoft/skills"),
+    ref: str = Query("main"),
+) -> dict:
+    """As skills de um catálogo. Uma chamada ao GitHub; nome e grupo saem do caminho."""
+    return {"skills": _guard(lambda: list_catalog(repo, ref))}
+
+
+@router.get("/skill-catalog/preview")
+def skill_catalog_preview(
+    repo: str = Query(...),
+    path: str = Query(..., description="diretório da skill dentro do repositório"),
+    ref: str = Query("main"),
+) -> dict:
+    """O SKILL.md inteiro, para ler ANTES de publicar. O corpo não é resumido de propósito."""
+    return _guard(lambda: preview_skill(repo, path, ref))
+
+
+@router.post("/skill-catalog/import", dependencies=_admin)
+def skill_catalog_import(body: dict) -> dict:
+    """Publica a skill do catálogo no Foundry, com o bundle inteiro do diretório dela.
+
+    O token do GitHub, quando enviado, vem no CORPO — nunca em querystring (NORDOR-122: dado
+    sensível não trafega em URL, que vai para log, trace e APM). Catálogo público dispensa token.
+    """
+    return _guard(
+        lambda: import_skill(
+            str(body.get("repo") or ""),
+            str(body.get("path") or ""),
+            str(body.get("ref") or "main"),
+            str(body.get("token") or ""),
+            str(body.get("name") or ""),
+        )
+    )
