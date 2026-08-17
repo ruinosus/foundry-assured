@@ -18,8 +18,8 @@ import { ThemeToggle } from "@/components/shell/ThemeToggle";
 
 // The domain agents are config-driven from the registry → /d/<id>. Workspace pages are
 // static. Two sections so the sidebar reads as "tools" + "agents".
-const AGENT_NAV = DOMAINS.map((d) => ({ href: `/d/${d.id}`, label: d.label, icon: d.icon }));
-// Os rótulos saem do dicionário; a lista guarda só o que NÃO é texto (rota e ícone). Antes o
+//
+// Os rótulos saem do dicionário; as listas guardam só o que NÃO é texto (rota e ícone). Antes o
 // nome vivia aqui como constante, o que tornava a navegação intraduzível por construção.
 const WORKSPACE_NAV = [
   { href: "/", key: "overview", icon: "▦" },
@@ -33,17 +33,20 @@ const ADMIN_NAV = [
   { href: "/admin/connections", key: "connections", icon: "🔌" },
 ];
 
-const TITLES: Record<string, string> = {
-  "/": "Overview",
-  "/agents": "Agentes",
-  "/tickets": "Tickets",
-  "/evals": "Evaluations",
-  "/admin/users": "Admin",
-  "/admin/connections": "Connections",
-  ...Object.fromEntries(DOMAINS.map((d) => [`/d/${d.id}`, d.label])),
+// O título da barra superior repetia o rótulo da navegação numa tabela paralela — e em três
+// línguas ao mesmo tempo ("Overview", "Agentes", "Tickets"). Agora deriva das mesmas chaves,
+// então nav e título não podem mais divergir.
+const TITLE_KEYS: Record<string, string> = {
+  "/": "overview",
+  "/agents": "agents",
+  "/tickets": "tickets",
+  "/evals": "evals",
+  "/admin/users": "admin",
+  "/admin/connections": "connections",
 };
 
 function BackendStatus() {
+  const t = useTranslations("common");
   const [ok, setOk] = useState<boolean | null>(null);
   useEffect(() => {
     let alive = true;
@@ -55,7 +58,8 @@ function BackendStatus() {
     };
   }, []);
   const cls = ok === null ? "" : ok ? "ok" : "bad";
-  const label = ok === null ? "checking…" : ok ? "backend online" : "backend offline";
+  const label =
+    ok === null ? t("checking") : ok ? t("backendOnline") : t("backendOffline");
   return (
     <div className="sidebar-foot">
       <span className={`dot ${cls}`} /> {label}
@@ -66,19 +70,20 @@ function BackendStatus() {
 // Account chip + sign in/out. Only rendered when Entra is configured (so MsalProvider
 // exists), so the MSAL hooks are always inside a provider.
 function AccountChip() {
+  const tc = useTranslations("common");
   const { instance, accounts } = useMsal();
   const isAuthenticated = useIsAuthenticated();
 
   if (!isAuthenticated) {
     return (
       <button className="acct-btn" onClick={() => instance.loginRedirect({ scopes: apiScopes })}>
-        Sign in with Microsoft
+        {tc("signIn")}
       </button>
     );
   }
 
   const account = accounts[0];
-  const name = account?.name || account?.username || "Signed in";
+  const name = account?.name || account?.username || tc("signedIn");
   return (
     <div className="acct">
       <div className="acct-id" title={account?.username}>
@@ -89,7 +94,7 @@ function AccountChip() {
         </div>
       </div>
       <button className="acct-btn" onClick={() => instance.logoutRedirect()}>
-        Sign out
+        {tc("signOut")}
       </button>
     </div>
   );
@@ -103,9 +108,25 @@ export function AppShell({
   flush?: boolean;
 }) {
   const t = useTranslations("nav");
+  const td = useTranslations("domains");
+  const tc = useTranslations("common");
+  const tb = useTranslations("branding");
   const pathname = usePathname() || "/";
-  const title = TITLES[pathname] ?? "";
   const roles = useMyRoles();
+
+  // Construídos no componente, não no módulo: rótulo é texto, e texto depende do idioma
+  // escolhido — uma constante avaliada no import nasce numa língua só e nunca mais muda.
+  const agentNav = DOMAINS.map((d) => ({
+    href: `/d/${d.id}`,
+    label: td(`${d.id}.label`),
+    icon: d.icon,
+  }));
+  const domainTitle = DOMAINS.find((d) => pathname.startsWith(`/d/${d.id}`));
+  const title = domainTitle
+    ? td(`${domainTitle.id}.label`)
+    : TITLE_KEYS[pathname]
+      ? t(TITLE_KEYS[pathname])
+      : "";
   // Show Admin in the nav only to Admins (the page + every endpoint re-check server-side).
   const workspace = isAdmin(roles) ? [...WORKSPACE_NAV, ...ADMIN_NAV] : WORKSPACE_NAV;
 
@@ -116,13 +137,13 @@ export function AppShell({
           <span className="brand-mark">⚡</span>
           <span>
             {branding.product}
-            <small>{branding.tagline}</small>
+            <small>{tb("tagline")}</small>
           </span>
         </div>
 
         {[
           { section: t("workspace"), items: workspace },
-          { section: t("aiAgents"), items: AGENT_NAV },
+          { section: t("aiAgents"), items: agentNav },
         ].map(({ section, items }) => (
           <div key={section}>
             <div className="nav-section">{section}</div>
@@ -154,8 +175,8 @@ export function AppShell({
       <div className="content">
         <header className="topbar">
           <nav className="crumbs">
-            <Link href="/">Home</Link>
-            {title && title !== "Overview" && (
+            <Link href="/">{t("overview")}</Link>
+            {title && pathname !== "/" && (
               <>
                 <span className="sep">/</span>
                 <b>{title}</b>

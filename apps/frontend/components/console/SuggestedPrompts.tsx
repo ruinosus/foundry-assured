@@ -12,6 +12,7 @@ import type { Domain } from "@/lib/domains";
 
 export function SuggestedPrompts({ domain }: { domain: Domain }) {
   const t = useTranslations("console");
+  const td = useTranslations("domains");
   const { agent } = useAgent({ agentId: domain.id });
   const [hasMessages, setHasMessages] = useState(false);
 
@@ -43,7 +44,10 @@ export function SuggestedPrompts({ domain }: { domain: Domain }) {
     <div className="suggest">
       <span className="suggest-label">{t("suggested")}</span>
       <div className="suggest-chips">
-        {domain.suggested.map((q) => (
+        {/* `raw` porque a chave é uma LISTA, não uma frase: `t()` devolveria texto formatado e
+            perderia os itens. Os prompts precisam viver no dicionário como os demais — em
+            inglês, "abre um chamado pra mim?" não convida ninguém a clicar. */}
+        {(td.raw(`${domain.id}.suggested`) as string[]).map((q) => (
           <button key={q} className="suggest-chip" onClick={() => send(q)}>
             {q}
           </button>

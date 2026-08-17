@@ -32,7 +32,7 @@ export function TicketsView() {
       if (data.error) setError(data.error);
     } catch {
       setTickets([]);
-      setError("could not reach the backend");
+      setError(tc("backendUnreachable"));
     }
   }
 
@@ -46,8 +46,7 @@ export function TicketsView() {
         <div>
           <h2>{t("title")}</h2>
           <p className="muted t-sm">
-            Real tickets opened by the concierge — the <code>create_ticket</code> tool runs
-            only after you approve the escalation in the chat.
+            {t.rich("subtitleLong", { code: (c) => <code>{c}</code> })}
           </p>
         </div>
         <button className="btn btn-solid" onClick={load}>

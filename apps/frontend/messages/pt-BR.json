@@ -1,90 +1,4 @@
 {
-  "nav": {
-    "workspace": "Workspace",
-    "agents": "Agentes",
-    "aiAgents": "Assistentes",
-    "overview": "Visão geral",
-    "tickets": "Chamados",
-    "evals": "Avaliações",
-    "admin": "Administração",
-    "connections": "Conexões"
-  },
-  "common": {
-    "refresh": "Atualizar",
-    "refreshing": "Atualizando…",
-    "retry": "Tentar de novo",
-    "signOut": "Sair",
-    "signIn": "Entrar com a Microsoft",
-    "backendOnline": "serviço no ar",
-    "backendOffline": "serviço fora do ar",
-    "loading": "Carregando…",
-    "label": "Rótulo",
-    "reference": "Referência",
-    "write": "Escrita",
-    "enabled": "Ativo",
-    "opened": "Aberto em",
-    "acquiringToken": "Obtendo credencial…"
-  },
-  "theme": {
-    "label": "Tema",
-    "light": "Claro",
-    "dark": "Escuro",
-    "system": "Sistema"
-  },
-  "language": {
-    "label": "Idioma",
-    "pt-BR": "Português",
-    "en": "English",
-    "system": "Automático"
-  },
-  "agents": {
-    "title": "Agentes",
-    "subtitle": "Os agentes deste projeto no Microsoft Foundry. Criar e publicar versões acontece aqui — sem abrir o portal.",
-    "colName": "Agente",
-    "colState": "Estado",
-    "colVersion": "Versão",
-    "colVersions": "Versões",
-    "colPublished": "Publicada em",
-    "emptyTitle": "Nenhum agente ainda",
-    "emptyBody": "Um agente reúne instruções, ferramentas e uma base de conhecimento. Quando você publicar o primeiro, ele aparece aqui com o histórico de versões.",
-    "errorTitle": "Não foi possível ler o catálogo",
-    "errorUnreachable": "Não foi possível falar com o serviço."
-  },
-  "login": {
-    "note": "As respostas citam a fonte e respeitam o acesso de cada documento. Por isso é preciso saber quem está perguntando."
-  },
-  "console": {
-    "demonstrates": "Demonstra",
-    "try": "Experimente:",
-    "sources": "Fontes",
-    "guarantees": "Garantias",
-    "sourcesEmpty": "As fontes que a resposta citar aparecem aqui — cada afirmação fundamentada na base, não em suposição.",
-    "suggested": "Experimente:"
-  },
-  "tickets": {
-    "title": "Chamados",
-    "subtitle": "Chamados reais abertos pelo fluxo de aprovação humana — a ferramenta create_ticket só dispara depois de alguém aprovar.",
-    "colTicket": "Chamado",
-    "colSummary": "Resumo",
-    "colSeverity": "Severidade",
-    "colStatus": "Situação",
-    "colCreated": "Aberto em",
-    "emptyTitle": "Nenhum chamado ainda",
-    "emptyBody": "Quando um agente propuser abrir um chamado e alguém aprovar, ele aparece aqui.",
-    "errorTitle": "Não foi possível ler os chamados"
-  },
-  "evals": {
-    "title": "Avaliações",
-    "subtitle": "Resultados dos gates: política determinística e juízes do Foundry sobre o conjunto dourado.",
-    "colRun": "Execução",
-    "colStatus": "Situação",
-    "colScores": "Notas",
-    "colReport": "Relatório",
-    "emptyTitle": "Nenhuma execução ainda",
-    "emptyBody": "Rode o eval na nuvem para popular esta página — os resultados ficam no portal do Foundry e aqui.",
-    "errorTitle": "Não foi possível ler as avaliações",
-    "runHint": "de apps/backend/"
-  },
   "admin": {
     "usersTitle": "Usuários e papéis",
     "usersSubtitle": "Papéis do Entra que governam quem aprova, quem edita e quem só lê.",
@@ -108,13 +22,26 @@
     "create": "Criar (membro interno)",
     "noConnections": "Nenhuma conexão ainda.",
     "minRoleRead": "Papel mínimo (leitura)",
-    "minRoleWrite": "Papel mínimo (escrita)"
+    "minRoleWrite": "Papel mínimo (escrita)",
+    "notOnboardedBody": "Este tenant está habilitado, mas ainda não foi configurado. Faça o onboarding para criar o plano de dados e começar a adicionar conexões.",
+    "onboardBtn": "Fazer onboarding do tenant",
+    "notEnabled": "Este tenant não está habilitado — fale com a gente para provisioná-lo.",
+    "needAdminUsers": "Você precisa do papel <b>Admin</b> para gerenciar usuários. Peça a um administrador que o atribua e depois saia e entre de novo, para o seu token carregar o papel.",
+    "needAdminConnections": "Você precisa do papel <b>Admin</b> para gerenciar conexões. Peça a um administrador que o atribua e depois saia e entre de novo, para o seu token carregar o papel.",
+    "assignRole": "Atribuir papel"
   },
-  "overview": {
-    "title": "Visão geral",
-    "tagline": "Um mecanismo de garantia sobre o Microsoft Foundry.",
-    "agents": "Agentes",
-    "guarantees": "Garantias"
+  "agents": {
+    "title": "Agentes",
+    "subtitle": "Os agentes deste projeto no Microsoft Foundry. Criar e publicar versões acontece aqui — sem abrir o portal.",
+    "colName": "Agente",
+    "colState": "Estado",
+    "colVersion": "Versão",
+    "colVersions": "Versões",
+    "colPublished": "Publicada em",
+    "emptyTitle": "Nenhum agente ainda",
+    "emptyBody": "Um agente reúne instruções, ferramentas e uma base de conhecimento. Quando você publicar o primeiro, ele aparece aqui com o histórico de versões.",
+    "errorTitle": "Não foi possível ler o catálogo",
+    "errorUnreachable": "Não foi possível falar com o serviço."
   },
   "approval": {
     "waiting": "Aguardando aprovação",
@@ -127,5 +54,207 @@
     "reject": "Recusar",
     "cancel": "Cancelar",
     "saveApprove": "Salvar e aprovar"
+  },
+  "branding": {
+    "tagline": "Suporte de engenharia",
+    "description": "Concierge interno de suporte de engenharia"
+  },
+  "common": {
+    "refresh": "Atualizar",
+    "refreshing": "Atualizando…",
+    "retry": "Tentar de novo",
+    "signOut": "Sair",
+    "signIn": "Entrar com a Microsoft",
+    "backendOnline": "backend no ar",
+    "backendOffline": "backend fora do ar",
+    "loading": "Carregando…",
+    "label": "Rótulo",
+    "reference": "Referência",
+    "write": "Escrita",
+    "enabled": "Habilitada",
+    "opened": "Aberto em",
+    "acquiringToken": "Obtendo credencial…",
+    "backendUnreachable": "não foi possível falar com o backend",
+    "signedIn": "Autenticado",
+    "signInToUse": "Entre para usar {product}.",
+    "fullscreen": "Tela cheia",
+    "noSummary": "(sem resumo)",
+    "checking": "Verificando…",
+    "domainNotFound": "Domínio “{id}” não encontrado.",
+    "save": "Salvar",
+    "cancel": "Cancelar",
+    "edit": "Editar",
+    "delete": "Remover",
+    "modeLive": "Workflow ao vivo",
+    "modeHosted": "Agente hospedado",
+    "demoMode": "● Demo · fixture gravada, sem Azure"
+  },
+  "connections": {
+    "tenantOnboarded": "Tenant integrado.",
+    "dataPlaneSaved": "Plano de dados salvo.",
+    "deleted": "Conexão removida.",
+    "updated": "Conexão atualizada.",
+    "added": "Conexão adicionada.",
+    "edit": "Editar conexão",
+    "add": "Adicionar conexão",
+    "displayLabel": "Rótulo de exibição",
+    "confirmDelete": "Remover a conexão {name}?",
+    "kbNamePlaceholder": "nome da base de conhecimento",
+    "foundryIdPlaceholder": "id da conexão do Foundry",
+    "keyvaultPlaceholder": "referência do segredo no Key Vault",
+    "updateBtn": "Atualizar conexão",
+    "addBtn": "Adicionar conexão",
+    "noSecretNote": "Nenhum segredo é digitado aqui — guarde o segredo no Foundry ou no Key Vault e referencie por id / ref acima."
+  },
+  "console": {
+    "demonstrates": "Demonstra",
+    "try": "Experimente:",
+    "sources": "Fontes",
+    "guarantees": "Garantias",
+    "sourcesEmpty": "As fontes que a resposta citar aparecem aqui — cada afirmação fundamentada na base, não em suposição.",
+    "suggested": "Experimente:"
+  },
+  "domains": {
+    "helpdesk": {
+      "label": "Helpdesk concierge",
+      "blurb": "Triagem → fundamenta → resolve → escala, com aprovação humana antes de abrir um chamado.",
+      "demonstrates": "Vários agentes em sequência, memória entre sessões e aprovação humana antes de abrir chamado",
+      "suggested": [
+        "Como faço rollback de um deploy em produção?",
+        "Preciso de acesso de produção — abre um chamado pra mim?",
+        "Meu pod está em CrashLoopBackOff, por onde começo?"
+      ]
+    },
+    "selfwiki": {
+      "label": "Wiki do projeto",
+      "blurb": "Pergunte sobre este próprio repositório — a deep-wiki gerada do código real do monorepo.",
+      "demonstrates": "Documentação escrita pela IA a partir do código, com gate de fidelidade e acesso por documento",
+      "suggested": [
+        "Quais endpoints AG-UI o backend expõe?",
+        "Como funciona o controle de acesso por documento?",
+        "Quais são as fases de implementação do projeto?"
+      ]
+    },
+    "oncall": {
+      "label": "Triagem de plantão",
+      "blurb": "Triagem de incidente em LangGraph — o aprovador pode CORRIGIR a escalação antes de abrir, não só aceitar ou recusar.",
+      "demonstrates": "Um segundo runtime no mesmo app, e aprovação que deixa CORRIGIR a ação antes de executar",
+      "suggested": [
+        "O checkout está fora do ar para todos os usuários.",
+        "A taxa de erro do serviço de pagamentos subiu para 8%.",
+        "Um job noturno falhou, mas ninguém foi impactado."
+      ]
+    },
+    "platform": {
+      "label": "Operações de plataforma",
+      "blurb": "Concierge de plataforma sobre as ferramentas Microsoft (Learn, Azure, Entra, DevOps, GitHub) — com aprovação humana antes de qualquer ação de escrita.",
+      "demonstrates": "Ferramentas Microsoft de primeira parte, com aprovação humana em toda escrita",
+      "suggested": [
+        "O que é o Azure AI Foundry Agent Service? (via Microsoft Learn)",
+        "Liste os recursos do meu resource group.",
+        "Quanto gastei em AI Search neste mês?"
+      ]
+    }
+  },
+  "evals": {
+    "title": "Avaliações",
+    "subtitle": "Resultados dos gates: política determinística e juízes do Foundry sobre o conjunto dourado.",
+    "colRun": "Execução",
+    "colStatus": "Situação",
+    "colScores": "Notas",
+    "colReport": "Relatório",
+    "emptyTitle": "Nenhuma execução ainda",
+    "emptyBody": "Rode o eval na nuvem para popular esta página — os resultados ficam no portal do Foundry e aqui.",
+    "errorTitle": "Não foi possível ler as avaliações",
+    "runHint": "de apps/backend/",
+    "subtitleLong": "Ao vivo do projeto Foundry — juízes hospedados de groundedness, relevância e coerência. Cada execução leva ao relatório completo no portal."
+  },
+  "evidence": {
+    "fidelity": "A wiki foi gerada do código real; ≥80% das citações resolvem para um arquivo que existe.",
+    "access": "Recuperação aparada por documento — o acesso segue a fonte (groups), à prova de injeção.",
+    "evaluated": "Toda resposta cita a fonte ou declina; gate determinístico + juízes de groundedness.",
+    "clickSource": "Clique para ver a fonte",
+    "sourceFile": "Fonte (arquivo)",
+    "sourceComponent": "Fonte (componente)",
+    "fidelityTitle": "Fidelidade",
+    "accessTitle": "Acesso",
+    "evaluatedTitle": "Avaliação",
+    "internalDoc": "documento interno (recuperação segura; sem prévia)",
+    "empty": "As fontes que a resposta citar aparecem aqui — cada afirmação fundamentada na base, não em suposição.",
+    "sources": "Fontes"
+  },
+  "language": {
+    "label": "Idioma",
+    "pt-BR": "Português",
+    "en": "English",
+    "system": "Automático"
+  },
+  "login": {
+    "note": "As respostas citam a fonte e respeitam o acesso de cada documento. Por isso é preciso saber quem está perguntando."
+  },
+  "nav": {
+    "workspace": "Workspace",
+    "agents": "Agentes",
+    "aiAgents": "Assistentes",
+    "overview": "Visão geral",
+    "tickets": "Chamados",
+    "evals": "Avaliações",
+    "admin": "Administração",
+    "connections": "Conexões"
+  },
+  "overview": {
+    "title": "Visão geral",
+    "tagline": "Um mecanismo de garantia sobre o Microsoft Foundry.",
+    "agents": "Agentes",
+    "guarantees": "Garantias",
+    "lede": "Aponte para um repositório ou base de conhecimento e ganhe três garantias: a KB é construída da melhor forma, o agente responde com citações fundamentadas, e o acesso é seguro por documento. O domínio é trocável — aqui estão quatro.",
+    "ctaOpen": "Abrir um agente",
+    "ctaEvals": "Ver avaliações",
+    "kindWorkflow": "workflow + aprovação humana",
+    "kindGrounded": "Q&A fundamentado",
+    "g1Title": "Construída com fidelidade",
+    "g1Body": "A base de conhecimento é gerada do código real e bloqueada por um gate: ≥80% das citações têm que resolver para um arquivo que existe.",
+    "g2Title": "Acesso que segue a fonte",
+    "g2Body": "A recuperação é aparada por documento pelos grupos de leitura da origem — sem classificação no código, à prova de injeção.",
+    "g3Title": "Continuamente avaliada",
+    "g3Body": "Toda resposta cita a fonte ou declina. Gate determinístico no CI + juízes de groundedness do Foundry, ligados aos traces."
+  },
+  "theme": {
+    "label": "Tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema"
+  },
+  "tickets": {
+    "title": "Chamados",
+    "subtitle": "Chamados reais abertos pelo fluxo de aprovação humana — a ferramenta create_ticket só dispara depois de alguém aprovar.",
+    "colTicket": "Chamado",
+    "colSummary": "Resumo",
+    "colSeverity": "Severidade",
+    "colStatus": "Situação",
+    "colCreated": "Aberto em",
+    "emptyTitle": "Nenhum chamado ainda",
+    "emptyBody": "Quando um agente propuser abrir um chamado e alguém aprovar, ele aparece aqui.",
+    "errorTitle": "Não foi possível ler os chamados",
+    "subtitleLong": "Chamados reais abertos pelo concierge — a tool <code>create_ticket</code> só roda depois que você aprova a escalação no chat."
+  },
+  "users": {
+    "roleRevoked": "Papel revogado.",
+    "roleAssigned": "Papel atribuído.",
+    "removed": "Usuário removido.",
+    "invited": "Convite enviado.",
+    "created": "Usuário criado.",
+    "principalId": "Object-id do principal (usuário ou grupo)",
+    "displayName": "Nome de exibição",
+    "tempPassword": "Senha temporária",
+    "confirmRemove": "Remover {name}?"
+  },
+  "workflow": {
+    "triage": "Classifica intenção e urgência",
+    "retrieve": "Busca na base de conhecimento",
+    "resolve": "Redige a resposta fundamentada, com citações",
+    "triageLabel": "Triagem",
+    "retrieveLabel": "Busca",
+    "resolveLabel": "Resposta"
   }
 }

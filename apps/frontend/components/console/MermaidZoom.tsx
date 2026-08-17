@@ -12,6 +12,7 @@
 // native fullscreen — all via explicit inline styles, robust to the missing utilities. We hide
 // streamdown's own (broken) control bar and suppress its pan handlers (capture + stopPropagation).
 
+import { useTranslations } from "next-intl";
 import { useEffect, useRef } from "react";
 
 const BLOCK = '[data-streamdown="mermaid-block"]';
@@ -47,6 +48,7 @@ function hideNativeControls(block: HTMLElement) {
 }
 
 export function MermaidZoom({ hostSelector = ".copilotkit-chat-host" }: { hostSelector?: string }) {
+  const t = useTranslations("common");
   const anchor = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
@@ -169,7 +171,7 @@ export function MermaidZoom({ hostSelector = ".copilotkit-chat-host" }: { hostSe
           const c = mid();
           zoomAt(c.cx, c.cy, 1.2);
         }),
-        mk("⛶", "Tela cheia", () => {
+        mk("⛶", t("fullscreen"), () => {
           if (document.fullscreenElement) document.exitFullscreen();
           else block.requestFullscreen?.().then(() => fit(ctl, block)).catch(() => {});
         }),

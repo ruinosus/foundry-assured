@@ -13,13 +13,12 @@
 // is shared — importing useAgent from /v2/headless uses a separate context copy
 // and throws "useCopilotKit must be used within CopilotKitProvider".
 import { useAgent } from "@copilotkit/react-core/v2";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-const STEPS = [
-  { id: "triage", label: "Triage", desc: "Classify intent & urgency" },
-  { id: "retrieve", label: "Retrieve", desc: "Search the runbook knowledge base" },
-  { id: "resolve", label: "Resolve", desc: "Write the grounded, cited answer" },
-] as const;
+// O `id` é contrato: é o nome do passo no snapshot de estado que o workflow emite. Rótulo e
+// descrição são texto, e por isso vivem no dicionário sob a mesma chave.
+const STEPS = ["triage", "retrieve", "resolve"] as const;
 
 type StepState = "idle" | "active" | "done" | "pending";
 
@@ -34,6 +33,7 @@ const DOT: Record<StepState, string> = {
 };
 
 export function WorkflowSteps() {
+  const t = useTranslations("workflow");
   const { agent } = useAgent({ agentId: "helpdesk" });
   const [status, setStatus] = useState<Record<string, string>>({});
   const [running, setRunning] = useState(false);
@@ -55,7 +55,7 @@ export function WorkflowSteps() {
         setRunning(false);
         // The run finished successfully, so every step ran — mark them all done
         // (the terminal step never emits a clean "completed" activity).
-        setStatus(() => Object.fromEntries(STEPS.map((s) => [s.id, "completed"])));
+        setStatus(() => Object.fromEntries(STEPS.map((id) => [id, "completed"])));
       },
       onRunFailed: () => setRunning(false),
     });
@@ -92,11 +92,11 @@ export function WorkflowSteps() {
           flexWrap: "wrap",
         }}
       >
-        {STEPS.map((s) => {
-          const st = stateFor(s.id);
+        {STEPS.map((id) => {
+          const st = stateFor(id);
           return (
             <li
-              key={s.id}
+              key={id}
               style={{
                 display: "flex",
                 alignItems: "center",
@@ -112,8 +112,8 @@ export function WorkflowSteps() {
               <span aria-hidden style={{ fontSize: 13, color: DOT[st] }}>
                 {st === "done" ? "✓" : "●"}
               </span>
-              <span className="t-sm">{s.label}</span>
-              <span className="t-xs">{s.desc}</span>
+              <span className="t-sm">{t(`${id}Label`)}</span>
+              <span className="t-xs">{t(id)}</span>
             </li>
           );
         })}

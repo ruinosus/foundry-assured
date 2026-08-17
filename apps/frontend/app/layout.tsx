@@ -2,14 +2,17 @@ import type { Metadata } from "next";
 import "@copilotkit/react-core/v2/styles.css";
 import "@/styles/globals.css";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, getMessages } from "next-intl/server";
+import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { Providers } from "@/components/shell/Providers";
 import { branding } from "@/lib/branding";
 
-export const metadata: Metadata = {
-  title: branding.product,
-  description: branding.description,
-};
+// Metadata precisa ser função, não constante: a descrição vem do dicionário, e um objeto
+// avaliado no import nasceria numa língua só — a mesma para todo mundo, inclusive na aba do
+// navegador e no cartão de compartilhamento.
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("branding");
+  return { title: branding.product, description: t("description") };
+}
 
 export default async function RootLayout({
   children,

@@ -43,6 +43,7 @@ const AF_HITL_KINDS = new Set<Domain["kind"]>(["workflow", "tool"]);
 
 function Console({ domain, authorization }: { domain: Domain; authorization?: string }) {
   const t = useTranslations("console");
+  const td = useTranslations("domains");
   const locale = useLocale();
   // Live vs Hosted twin — registry-driven: only renders when the domain declares a
   // hostedAgentId, so any domain that later gains a Foundry hosted twin gets the toggle
@@ -70,8 +71,8 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
               {domain.icon}
             </span>
             <div className="console-head-meta">
-              <h2>{domain.label}</h2>
-              <p className="console-blurb">{domain.blurb}</p>
+              <h2>{td(`${domain.id}.label`)}</h2>
+              <p className="console-blurb">{td(`${domain.id}.blurb`)}</p>
             </div>
             {/* O que este domínio PROVA, não com que runtime foi feito. Antes lia
                 KIND_LABEL[kind] — "grounded Q&A", "LangGraph + HITL" — vocabulário de
@@ -79,7 +80,7 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
                 quem está avaliando se as garantias são reais. */}
             <p className="console-demo">
               <span className="console-demo-label">{t("demonstrates")}</span>
-              {domain.demonstrates}
+              {td(`${domain.id}.demonstrates`)}
             </p>
           </div>
 
@@ -125,6 +126,7 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
 }
 
 function AuthedConsole({ domain }: { domain: Domain }) {
+  const tc = useTranslations("common");
   const { instance, accounts } = useMsal();
   const isAuthenticated = useIsAuthenticated();
   const [token, setToken] = useState<string | null>(null);
@@ -151,23 +153,24 @@ function AuthedConsole({ domain }: { domain: Domain }) {
   if (!isAuthenticated) {
     return (
       <div className="console-center">
-        <p>Entre para usar {branding.product}.</p>
+        <p>{tc("signInToUse", { product: branding.product })}</p>
         <button className="btn btn-primary" onClick={() => instance.loginRedirect({ scopes: apiScopes })}>
-          Entrar com a Microsoft
+          {tc("signIn")}
         </button>
       </div>
     );
   }
-  if (!token) return <div className="console-center">{useTranslations("common")("acquiringToken")}</div>;
+  if (!token) return <div className="console-center">{tc("acquiringToken")}</div>;
   return <Console domain={domain} authorization={`Bearer ${token}`} />;
 }
 
 export default function AssuranceConsole({ domainId }: { domainId: string }) {
+  const tc = useTranslations("common");
   const domain = getDomain(domainId);
   if (!domain) {
     return (
       <div className="console-center">
-        <p className="muted">Domínio “{domainId}” não encontrado.</p>
+        <p className="muted">{tc("domainNotFound", { id: domainId })}</p>
       </div>
     );
   }

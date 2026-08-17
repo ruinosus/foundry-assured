@@ -32,6 +32,7 @@ async function call(path: string, init?: RequestInit) {
 
 export function AdminUsers() {
   const t = useTranslations("admin");
+  const tu = useTranslations("users");
   const [users, setUsers] = useState<User[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
@@ -110,7 +111,7 @@ export function AdminUsers() {
                   <td><span className="pill ok">{a.role}</span></td>
                   <td className="right">
                     <button className="acct-btn" disabled={busy}
-                      onClick={() => run(() => call(`role-assignments/${a.id}`, { method: "DELETE" }), "Role revoked.")}>
+                      onClick={() => run(() => call(`role-assignments/${a.id}`, { method: "DELETE" }), tu("roleRevoked"))}>
                       Revoke
                     </button>
                   </td>
@@ -120,14 +121,14 @@ export function AdminUsers() {
           </table>
         </div>
         <div className="row-tight">
-          <input className="acct-btn grow" placeholder="Principal object-id (user or group)"
+          <input className="acct-btn grow" placeholder={tu("principalId")}
             value={aPrincipal} onChange={(e) => setAPrincipal(e.target.value)} />
           <select className="acct-btn" value={aRole} onChange={(e) => setARole(e.target.value)}>
             {roles.map((r) => <option key={r} value={r}>{r}</option>)}
           </select>
           <button className="btn btn-solid" disabled={busy || !aPrincipal}
-            onClick={() => run(() => call("role-assignments", { method: "POST", body: JSON.stringify({ principal_id: aPrincipal, role: aRole }) }), "Role assigned.")}>
-            Assign role
+            onClick={() => run(() => call("role-assignments", { method: "POST", body: JSON.stringify({ principal_id: aPrincipal, role: aRole }) }), tu("roleAssigned"))}>
+            {t("assignRole")}
           </button>
         </div>
         <p className="muted t-xs">
@@ -150,7 +151,7 @@ export function AdminUsers() {
                   <td><span className={`pill ${u.accountEnabled ? "ok" : "bad"}`}>{u.accountEnabled ? "yes" : "no"}</span></td>
                   <td className="right">
                     <button className="acct-btn" disabled={busy}
-                      onClick={() => { if (confirm(`Remove ${u.displayName || u.id}?`)) run(() => call(`users/${u.id}`, { method: "DELETE" }), "User removed."); }}>
+                      onClick={() => { if (confirm(tu("confirmRemove", { name: u.displayName || u.id }))) run(() => call(`users/${u.id}`, { method: "DELETE" }), tu("removed")); }}>
                       Remove
                     </button>
                   </td>
@@ -167,7 +168,7 @@ export function AdminUsers() {
               <input className="acct-btn grow" placeholder="email@company.com"
                 value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
               <button className="btn btn-solid" disabled={busy || !inviteEmail}
-                onClick={() => run(() => call("users/invite", { method: "POST", body: JSON.stringify({ email: inviteEmail }) }), "Invitation sent.")}>
+                onClick={() => run(() => call("users/invite", { method: "POST", body: JSON.stringify({ email: inviteEmail }) }), tu("invited"))}>
                 Invite
               </button>
             </div>
@@ -175,12 +176,12 @@ export function AdminUsers() {
           <div>
             <h4>{t("create")}</h4>
             <div className="stack-sm">
-              <input className="acct-btn" placeholder="Display name" value={cName} onChange={(e) => setCName(e.target.value)} />
+              <input className="acct-btn" placeholder={tu("displayName")} value={cName} onChange={(e) => setCName(e.target.value)} />
               <input className="acct-btn" placeholder="user@tenant.onmicrosoft.com" value={cUpn} onChange={(e) => setCUpn(e.target.value)} />
               <div className="row-tight">
-                <input className="acct-btn grow" type="password" placeholder="Temp password" value={cPwd} onChange={(e) => setCPwd(e.target.value)} />
+                <input className="acct-btn grow" type="password" placeholder={tu("tempPassword")} value={cPwd} onChange={(e) => setCPwd(e.target.value)} />
                 <button className="btn btn-solid" disabled={busy || !cName || !cUpn || !cPwd}
-                  onClick={() => run(() => call("users", { method: "POST", body: JSON.stringify({ display_name: cName, user_principal_name: cUpn, password: cPwd }) }), "User created.")}>
+                  onClick={() => run(() => call("users", { method: "POST", body: JSON.stringify({ display_name: cName, user_principal_name: cUpn, password: cPwd }) }), tu("created"))}>
                   Create
                 </button>
               </div>

@@ -1,90 +1,4 @@
 {
-  "nav": {
-    "workspace": "Workspace",
-    "agents": "Agents",
-    "aiAgents": "Assistants",
-    "overview": "Overview",
-    "tickets": "Tickets",
-    "evals": "Evaluations",
-    "admin": "Admin",
-    "connections": "Connections"
-  },
-  "common": {
-    "refresh": "Refresh",
-    "refreshing": "Refreshing…",
-    "retry": "Try again",
-    "signOut": "Sign out",
-    "signIn": "Sign in with Microsoft",
-    "backendOnline": "service online",
-    "backendOffline": "service offline",
-    "loading": "Loading…",
-    "label": "Label",
-    "reference": "Reference",
-    "write": "Write",
-    "enabled": "Enabled",
-    "opened": "Opened",
-    "acquiringToken": "Acquiring token…"
-  },
-  "theme": {
-    "label": "Theme",
-    "light": "Light",
-    "dark": "Dark",
-    "system": "System"
-  },
-  "language": {
-    "label": "Language",
-    "pt-BR": "Português",
-    "en": "English",
-    "system": "Automatic"
-  },
-  "agents": {
-    "title": "Agents",
-    "subtitle": "The agents in this Microsoft Foundry project. Creating and publishing versions happens here — no portal needed.",
-    "colName": "Agent",
-    "colState": "State",
-    "colVersion": "Version",
-    "colVersions": "Versions",
-    "colPublished": "Published",
-    "emptyTitle": "No agents yet",
-    "emptyBody": "An agent brings together instructions, tools and a knowledge base. Once you publish the first one, it shows up here with its version history.",
-    "errorTitle": "Could not read the catalogue",
-    "errorUnreachable": "Could not reach the service."
-  },
-  "login": {
-    "note": "Answers cite their source and respect each document's access. That is why we need to know who is asking."
-  },
-  "console": {
-    "demonstrates": "Demonstrates",
-    "try": "Try:",
-    "sources": "Sources",
-    "guarantees": "Guarantees",
-    "sourcesEmpty": "The sources an answer cites appear here — every claim grounded in the base, never assumed.",
-    "suggested": "Try:"
-  },
-  "tickets": {
-    "title": "Tickets",
-    "subtitle": "Real tickets opened by the human approval flow — the create_ticket tool only fires after someone approves.",
-    "colTicket": "Ticket",
-    "colSummary": "Summary",
-    "colSeverity": "Severity",
-    "colStatus": "Status",
-    "colCreated": "Opened",
-    "emptyTitle": "No tickets yet",
-    "emptyBody": "When an agent proposes opening a ticket and someone approves it, it shows up here.",
-    "errorTitle": "Could not read the tickets"
-  },
-  "evals": {
-    "title": "Evaluations",
-    "subtitle": "Gate results: the deterministic policy and the Foundry judges over the golden set.",
-    "colRun": "Run",
-    "colStatus": "Status",
-    "colScores": "Scores",
-    "colReport": "Report",
-    "emptyTitle": "No runs yet",
-    "emptyBody": "Run the cloud eval to populate this page — results land in the Foundry portal and here.",
-    "errorTitle": "Could not read the evaluations",
-    "runHint": "from apps/backend/"
-  },
   "admin": {
     "usersTitle": "Users & roles",
     "usersSubtitle": "The Entra roles that govern who approves, who edits and who only reads.",
@@ -108,13 +22,26 @@
     "create": "Create (internal member)",
     "noConnections": "No connections yet.",
     "minRoleRead": "Min role (read)",
-    "minRoleWrite": "Min role (write)"
+    "minRoleWrite": "Min role (write)",
+    "notOnboardedBody": "This tenant is enabled but hasn't been set up yet. Onboard it to create its data plane and start adding connections.",
+    "onboardBtn": "Onboard tenant",
+    "notEnabled": "This tenant isn't enabled — contact us to get it provisioned.",
+    "needAdminUsers": "You need the <b>Admin</b> role to manage users. Ask an administrator to assign it, then sign out and back in so your token carries the role.",
+    "needAdminConnections": "You need the <b>Admin</b> role to manage connections. Ask an administrator to assign it, then sign out and back in so your token carries the role.",
+    "assignRole": "Assign role"
   },
-  "overview": {
-    "title": "Overview",
-    "tagline": "An assurance mechanism on top of Microsoft Foundry.",
-    "agents": "Agents",
-    "guarantees": "Guarantees"
+  "agents": {
+    "title": "Agents",
+    "subtitle": "The agents in this Microsoft Foundry project. Creating and publishing versions happens here — no portal needed.",
+    "colName": "Agent",
+    "colState": "State",
+    "colVersion": "Version",
+    "colVersions": "Versions",
+    "colPublished": "Published",
+    "emptyTitle": "No agents yet",
+    "emptyBody": "An agent brings together instructions, tools and a knowledge base. Once you publish the first one, it shows up here with its version history.",
+    "errorTitle": "Could not read the catalogue",
+    "errorUnreachable": "Could not reach the service."
   },
   "approval": {
     "waiting": "Awaiting approval",
@@ -127,5 +54,207 @@
     "reject": "Reject",
     "cancel": "Cancel",
     "saveApprove": "Save & approve"
+  },
+  "branding": {
+    "tagline": "Engineering support",
+    "description": "Internal engineering support concierge"
+  },
+  "common": {
+    "refresh": "Refresh",
+    "refreshing": "Refreshing…",
+    "retry": "Try again",
+    "signOut": "Sign out",
+    "signIn": "Sign in with Microsoft",
+    "backendOnline": "backend online",
+    "backendOffline": "backend offline",
+    "loading": "Loading…",
+    "label": "Label",
+    "reference": "Reference",
+    "write": "Write",
+    "enabled": "Enabled",
+    "opened": "Opened",
+    "acquiringToken": "Acquiring token…",
+    "backendUnreachable": "could not reach the backend",
+    "signedIn": "Signed in",
+    "signInToUse": "Sign in to use {product}.",
+    "fullscreen": "Full screen",
+    "noSummary": "(no summary)",
+    "checking": "checking…",
+    "domainNotFound": "Domain “{id}” not found.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "modeLive": "Live workflow",
+    "modeHosted": "Hosted agent",
+    "demoMode": "● Demo · replayed fixture, no Azure"
+  },
+  "connections": {
+    "tenantOnboarded": "Tenant onboarded.",
+    "dataPlaneSaved": "Data plane saved.",
+    "deleted": "Connection deleted.",
+    "updated": "Connection updated.",
+    "added": "Connection added.",
+    "edit": "Edit connection",
+    "add": "Add connection",
+    "displayLabel": "Display label",
+    "confirmDelete": "Delete connection {name}?",
+    "kbNamePlaceholder": "knowledge base name",
+    "foundryIdPlaceholder": "foundry connection id",
+    "keyvaultPlaceholder": "keyvault secret ref",
+    "updateBtn": "Update connection",
+    "addBtn": "Add connection",
+    "noSecretNote": "No secret is entered here — store the secret in Foundry or Key Vault and reference it by id / ref above."
+  },
+  "console": {
+    "demonstrates": "Demonstrates",
+    "try": "Try:",
+    "sources": "Sources",
+    "guarantees": "Guarantees",
+    "sourcesEmpty": "The sources an answer cites appear here — every claim grounded in the base, never assumed.",
+    "suggested": "Try:"
+  },
+  "domains": {
+    "helpdesk": {
+      "label": "Helpdesk concierge",
+      "blurb": "Triage → ground → resolve → escalate, with human approval before opening a ticket.",
+      "demonstrates": "Several agents in sequence, memory across sessions, and human approval before opening a ticket",
+      "suggested": [
+        "How do I roll back a production deploy?",
+        "I need production access — can you open a ticket for me?",
+        "My pod is in CrashLoopBackOff, where do I start?"
+      ]
+    },
+    "selfwiki": {
+      "label": "Project wiki",
+      "blurb": "Ask about this very repository — the deep-wiki generated from the monorepo's real code.",
+      "demonstrates": "Documentation written by AI from the code, with a fidelity gate and per-document access",
+      "suggested": [
+        "Which AG-UI endpoints does the backend expose?",
+        "How does per-document access control work?",
+        "What are the project's implementation phases?"
+      ]
+    },
+    "oncall": {
+      "label": "On-call triage",
+      "blurb": "Incident triage in LangGraph — the approver can EDIT the escalation before it opens, not just accept or decline.",
+      "demonstrates": "A second runtime in the same app, and an approval that lets you EDIT the action before it runs",
+      "suggested": [
+        "Checkout is down for all users.",
+        "The payments service error rate climbed to 8%.",
+        "A nightly job failed, but nobody was affected."
+      ]
+    },
+    "platform": {
+      "label": "Platform ops",
+      "blurb": "Platform concierge over the Microsoft tools (Learn, Azure, Entra, DevOps, GitHub) — with human approval before any write action.",
+      "demonstrates": "First-party Microsoft tools, with human approval on every write",
+      "suggested": [
+        "What is the Azure AI Foundry Agent Service? (via Microsoft Learn)",
+        "List the resources in my resource group.",
+        "How much did I spend on AI Search this month?"
+      ]
+    }
+  },
+  "evals": {
+    "title": "Evaluations",
+    "subtitle": "Gate results: the deterministic policy and the Foundry judges over the golden set.",
+    "colRun": "Run",
+    "colStatus": "Status",
+    "colScores": "Scores",
+    "colReport": "Report",
+    "emptyTitle": "No runs yet",
+    "emptyBody": "Run the cloud eval to populate this page — results land in the Foundry portal and here.",
+    "errorTitle": "Could not read the evaluations",
+    "runHint": "from apps/backend/",
+    "subtitleLong": "Live from the Foundry project — hosted groundedness, relevance and coherence judges. Each run links to its full report in the portal."
+  },
+  "evidence": {
+    "fidelity": "The wiki was generated from real code; ≥80% of citations resolve to a file that exists.",
+    "access": "Retrieval trimmed per document — access follows the source (groups), injection-proof.",
+    "evaluated": "Every answer cites its source or declines; deterministic gate + groundedness judges.",
+    "clickSource": "Click to see the source",
+    "sourceFile": "Source (file)",
+    "sourceComponent": "Source (component)",
+    "fidelityTitle": "Fidelity",
+    "accessTitle": "Access",
+    "evaluatedTitle": "Evaluation",
+    "internalDoc": "internal document (secure retrieval; no preview)",
+    "empty": "The sources the answer cites show up here — every claim grounded in the knowledge base, not in guesswork.",
+    "sources": "Sources"
+  },
+  "language": {
+    "label": "Language",
+    "pt-BR": "Português",
+    "en": "English",
+    "system": "Automatic"
+  },
+  "login": {
+    "note": "Answers cite their source and respect each document's access. That is why we need to know who is asking."
+  },
+  "nav": {
+    "workspace": "Workspace",
+    "agents": "Agents",
+    "aiAgents": "Assistants",
+    "overview": "Overview",
+    "tickets": "Tickets",
+    "evals": "Evaluations",
+    "admin": "Admin",
+    "connections": "Connections"
+  },
+  "overview": {
+    "title": "Overview",
+    "tagline": "An assurance mechanism on top of Microsoft Foundry.",
+    "agents": "Agents",
+    "guarantees": "Guarantees",
+    "lede": "Point it at a repository or knowledge base and get three guarantees: the KB is built faithfully, the agent answers with grounded citations, and access is secure per document. The domain is swappable — here are four.",
+    "ctaOpen": "Open an agent",
+    "ctaEvals": "See evaluations",
+    "kindWorkflow": "workflow + human approval",
+    "kindGrounded": "grounded Q&A",
+    "g1Title": "Built with fidelity",
+    "g1Body": "The knowledge base is generated from real code and locked by a gate: ≥80% of citations must resolve to a file that exists.",
+    "g2Title": "Access follows the source",
+    "g2Body": "Retrieval is trimmed per document by the source's own read groups — no classification in code, injection-proof.",
+    "g3Title": "Continuously evaluated",
+    "g3Body": "Every answer cites its source or declines. Deterministic gate in CI + Foundry groundedness judges, wired to the traces."
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "tickets": {
+    "title": "Tickets",
+    "subtitle": "Real tickets opened by the human approval flow — the create_ticket tool only fires after someone approves.",
+    "colTicket": "Ticket",
+    "colSummary": "Summary",
+    "colSeverity": "Severity",
+    "colStatus": "Status",
+    "colCreated": "Opened",
+    "emptyTitle": "No tickets yet",
+    "emptyBody": "When an agent proposes opening a ticket and someone approves it, it shows up here.",
+    "errorTitle": "Could not read the tickets",
+    "subtitleLong": "Real tickets opened by the concierge — the <code>create_ticket</code> tool runs only after you approve the escalation in the chat."
+  },
+  "users": {
+    "roleRevoked": "Role revoked.",
+    "roleAssigned": "Role assigned.",
+    "removed": "User removed.",
+    "invited": "Invitation sent.",
+    "created": "User created.",
+    "principalId": "Principal object-id (user or group)",
+    "displayName": "Display name",
+    "tempPassword": "Temp password",
+    "confirmRemove": "Remove {name}?"
+  },
+  "workflow": {
+    "triage": "Classify intent and urgency",
+    "retrieve": "Search the knowledge base",
+    "resolve": "Write the grounded, cited answer",
+    "triageLabel": "Triage",
+    "retrieveLabel": "Retrieve",
+    "resolveLabel": "Resolve"
   }
 }

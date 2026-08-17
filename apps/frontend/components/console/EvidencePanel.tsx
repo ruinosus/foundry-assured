@@ -51,26 +51,12 @@ function extractTextSources(text: string): TextSource[] {
   return out;
 }
 
-const GUARANTEES = [
-  {
-    icon: "✓",
-    title: "Fidelidade",
-    body: "A wiki foi gerada do código real; ≥80% das citações resolvem para um arquivo existente (gate de build).",
-  },
-  {
-    icon: "✓",
-    title: "Acesso",
-    body: "Recuperação aparada por documento — o acesso segue a fonte (groups), à prova de injeção.",
-  },
-  {
-    icon: "✓",
-    title: "Avaliação",
-    body: "Toda resposta cita a fonte ou declina; gate determinístico + juízes de groundedness.",
-  },
-];
+// Mesmo padrão da visão geral: o array guarda a chave, o dicionário guarda a frase.
+const GUARANTEES = ["fidelity", "access", "evaluated"] as const;
 
 export function EvidencePanel({ domain }: { domain: Domain }) {
   const t = useTranslations("console");
+  const te = useTranslations("evidence");
   const { agent } = useAgent({ agentId: domain.id });
   // Structured citations (grounded stream) take precedence; text-derived sources are the fallback.
   const [citations, setCitations] = useState<Citation[]>([]);
@@ -114,7 +100,7 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
   return (
     <aside className="evidence">
       <div className="evidence-section">
-        <div className="evidence-title">Fontes{count > 0 ? ` (${count})` : ""}</div>
+        <div className="evidence-title">{te("sources")}{count > 0 ? ` (${count})` : ""}</div>
 
         {citations.length > 0 ? (
           // Structured, numbered, clickable citations — click reveals the source (path + link).
@@ -128,7 +114,7 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
                   className="citation-btn"
                   aria-expanded={openIdx === c.index}
                   onClick={() => setOpenIdx(openIdx === c.index ? null : c.index)}
-                  title="Clique para ver a fonte"
+                  title={te("clickSource")}
                 >
                   <span className="citation-idx" aria-hidden>
                     {c.index}
@@ -142,7 +128,7 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
                       <p className="citation-content">{c.content}</p>
                     ) : (
                       <span className="muted">
-                        {c.source} — documento interno (recuperação segura; sem prévia)
+                        {c.source} — {te("internalDoc")}
                       </span>
                     )}
                   </div>
@@ -153,7 +139,7 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
         ) : textSources.length > 0 ? (
           <div className="evidence-sources">
             {textSources.map((s) => (
-              <span key={s.label} className={`source-chip ${s.kind}`} title={`Fonte ${s.kind === "file" ? "(arquivo)" : "(componente)"}`}>
+              <span key={s.label} className={`source-chip ${s.kind}`} title={te(s.kind === "file" ? "sourceFile" : "sourceComponent")}>
                 <span className="source-ico" aria-hidden>
                   {s.kind === "file" ? "📄" : "📦"}
                 </span>
@@ -163,8 +149,7 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
           </div>
         ) : (
           <p className="evidence-empty muted">
-            As fontes que a resposta citar aparecem aqui — cada afirmação fundamentada na
-            base, não em suposição.
+            {te("empty")}
           </p>
         )}
       </div>
@@ -173,13 +158,13 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
         <div className="evidence-title">{t("guarantees")}</div>
         <ul className="evidence-guarantees">
           {GUARANTEES.map((g) => (
-            <li key={g.title}>
+            <li key={g}>
               <span className="guarantee-icon" aria-hidden>
-                {g.icon}
+                ✓
               </span>
               <div>
-                <b>{g.title}</b>
-                <p className="muted">{g.body}</p>
+                <b>{te(`${g}Title`)}</b>
+                <p className="muted">{te(g)}</p>
               </div>
             </li>
           ))}

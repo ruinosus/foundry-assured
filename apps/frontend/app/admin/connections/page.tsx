@@ -13,6 +13,7 @@ const Connections = dynamic(() => import("@/components/admin/Connections").then(
 
 export default function AdminConnectionsPage() {
   const t = useTranslations("common");
+  const ta = useTranslations("admin");
   const roles = useMyRoles();
   return (
     <AppShell>
@@ -22,8 +23,7 @@ export default function AdminConnectionsPage() {
         <Connections />
       ) : (
         <div className="card">
-          You need the <b>Admin</b> role to manage connections. Ask an administrator to assign it,
-          then sign out and back in so your token carries the role.
+          {ta.rich("needAdminConnections", { b: (c) => <b>{c}</b> })}
         </div>
       )}
     </AppShell>

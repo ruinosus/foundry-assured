@@ -38,7 +38,7 @@ export function EvalsView() {
       if (data.error) setError(data.error);
     } catch {
       setRuns([]);
-      setError("could not reach the backend");
+      setError(tc("backendUnreachable"));
     }
   }
 
@@ -54,8 +54,7 @@ export function EvalsView() {
         <div>
           <h2>{t("title")}</h2>
           <p className="muted t-sm">
-            Live from the Foundry project — hosted groundedness/relevance/coherence judges.
-            Each run links to its full report in the portal.
+            {t("subtitleLong")}
           </p>
         </div>
         <div className="row-tight">

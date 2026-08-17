@@ -163,6 +163,12 @@ jobs:
       - name: Paridade dos dicionários de idioma
         run: node ../../scripts/check-messages.mjs
 
+      # Paridade não é cobertura: uma string que nunca virou chave está ausente dos DOIS
+      # dicionários, e a comparação entre eles passa tranquila. Foi assim que a visão geral
+      # ficou em português fixo depois de a tradução ser declarada completa.
+      - name: Nenhum texto de interface fora do dicionário
+        run: node ../../scripts/check-hardcoded-text.mjs
+
       - name: Typecheck
         run: npm run typecheck
       # Advisory ON PURPOSE, and this is the first run that means anything: until now

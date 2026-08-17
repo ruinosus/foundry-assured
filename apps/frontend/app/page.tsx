@@ -7,41 +7,29 @@ import { DOMAINS } from "@/lib/domains";
 // (Foundry showcase + the assurance mechanism), then offers the domains as role-cards
 // (config-driven from the registry) and the three guarantees the mechanism enforces.
 
+// Só o ícone e a chave: o texto de cada garantia vem do dicionário. Um array de dados é
+// exatamente onde a tradução costuma passar batido — não é texto entre tags, então nenhum
+// grep de JSX o encontra, e a tela fica numa língua só sem ninguém notar.
 const GUARANTEES = [
-  {
-    icon: "🏗️",
-    title: "Construída com fidelidade",
-    body: "A base de conhecimento é gerada do código real e bloqueada por um gate: ≥80% das citações têm que resolver para um arquivo que existe.",
-  },
-  {
-    icon: "🔒",
-    title: "Acesso que segue a fonte",
-    body: "A recuperação é aparada por documento pelos grupos de leitura da origem — sem classificação no código, à prova de injeção.",
-  },
-  {
-    icon: "✓",
-    title: "Continuamente avaliada",
-    body: "Toda resposta cita a fonte ou declina. Gate determinístico no CI + juízes de groundedness do Foundry, ligados aos traces.",
-  },
-];
+  { icon: "🏗️", key: "g1" },
+  { icon: "🔒", key: "g2" },
+  { icon: "✓", key: "g3" },
+] as const;
 
 export default function Page() {
   const t = useTranslations("overview");
+  const td = useTranslations("domains");
   return (
     <AppShell>
       <section className="hero">
         <h1>{t("tagline")}</h1>
-        <p>
-          Aponte para um repositório ou base de conhecimento e ganhe três garantias: a KB é
-          construída da melhor forma, o agente responde com citações fundamentadas, e o
-          acesso é seguro por documento. O domínio é trocável — aqui estão três.
-        </p>
+        <p>{t("lede")}</p>
         <div className="hero-cta">
           <Link href={`/d/${DOMAINS[0].id}`} className="btn btn-primary">
-            💬 Abrir um agente
+            <span aria-hidden>💬</span> {t("ctaOpen")}
           </Link>
           <Link href="/evals" className="btn btn-ghost">
-            ✓ Ver avaliações
+            <span aria-hidden>✓</span> {t("ctaEvals")}
           </Link>
         </div>
       </section>
@@ -54,11 +42,11 @@ export default function Page() {
               <span className="domain-card-icon" aria-hidden>
                 {d.icon}
               </span>
-              <h3>{d.label}</h3>
+              <h3>{td(`${d.id}.label`)}</h3>
             </div>
-            <p>{d.blurb}</p>
+            <p>{td(`${d.id}.blurb`)}</p>
             <span className={`tag ${d.kind === "workflow" ? "tag-neutral" : ""}`}>
-              {d.kind === "workflow" ? "workflow + aprovação humana" : "Q&A fundamentado"}
+              {t(d.kind === "workflow" ? "kindWorkflow" : "kindGrounded")}
             </span>
           </Link>
         ))}
@@ -67,14 +55,14 @@ export default function Page() {
       <div className="section-title">{t("guarantees")}</div>
       <div className="grid">
         {GUARANTEES.map((g) => (
-          <div key={g.title} className="card">
+          <div key={g.key} className="card">
             <div className="domain-card-head">
               <span className="domain-card-icon" aria-hidden>
                 {g.icon}
               </span>
-              <h3>{g.title}</h3>
+              <h3>{t(`${g.key}Title`)}</h3>
             </div>
-            <p>{g.body}</p>
+            <p>{t(`${g.key}Body`)}</p>
           </div>
         ))}
       </div>

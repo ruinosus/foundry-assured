@@ -63,6 +63,7 @@ const emptyForm = {
 
 export function Connections() {
   const t = useTranslations("admin");
+  const tn = useTranslations("connections");
   const tc = useTranslations("common");
   const [tenant, setTenant] = useState<TenantResponse | null>(null);
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -145,17 +146,16 @@ export function Connections() {
           {tenant.can_onboard ? (
             <>
               <p className="muted">
-                This tenant is enabled but hasn't been set up yet. Onboard it to create its data
-                plane and start adding connections.
+                {t("notOnboardedBody")}
               </p>
               <button className="btn btn-solid" disabled={busy}
-                onClick={() => run(() => call("onboard", { method: "POST" }), "Tenant onboarded.")}>
-                Onboard tenant
+                onClick={() => run(() => call("onboard", { method: "POST" }), tn("tenantOnboarded"))}>
+                {t("onboardBtn")}
               </button>
             </>
           ) : (
             <p className="muted">
-              This tenant isn't enabled — contact us to get it provisioned.
+              {t("notEnabled")}
             </p>
           )}
         </section>
@@ -179,7 +179,7 @@ export function Connections() {
               value={dp.azure_search_endpoint || ""}
               onChange={(e) => setDp({ ...dp, azure_search_endpoint: e.target.value })} />
             <label className="muted t-xs">Azure Search knowledge base</label>
-            <input className="acct-btn" placeholder="knowledge base name"
+            <input className="acct-btn" placeholder={tn("kbNamePlaceholder")}
               value={dp.azure_search_knowledge_base || ""}
               onChange={(e) => setDp({ ...dp, azure_search_knowledge_base: e.target.value })} />
           </div>
@@ -193,8 +193,8 @@ export function Connections() {
                   azure_search_endpoint: dp.azure_search_endpoint || "",
                   azure_search_knowledge_base: dp.azure_search_knowledge_base || "",
                 }),
-              }), "Data plane saved.")}>
-              Save
+              }), tn("dataPlaneSaved"))}>
+              {tc("save")}
             </button>
           </div>
         </section>
@@ -223,10 +223,10 @@ export function Connections() {
                     <td><span className="pill ok">{c.min_role_write || "—"}</span></td>
                     <td><span className={`pill ${c.enabled ? "ok" : "bad"}`}>{c.enabled ? "yes" : "no"}</span></td>
                     <td className="right nowrap">
-                      <button className="acct-btn" disabled={busy} onClick={() => editConn(c)}>Edit</button>
+                      <button className="acct-btn" disabled={busy} onClick={() => editConn(c)}>{tc("edit")}</button>
                       <button className="acct-btn" disabled={busy} style={{ marginLeft: 6 }}
-                        onClick={() => { if (confirm(`Delete connection ${c.label || c.id}?`)) run(() => call(`connections/${c.id}`, { method: "DELETE" }), "Connection deleted."); }}>
-                        Delete
+                        onClick={() => { if (confirm(tn("confirmDelete", { name: c.label || c.id }))) run(() => call(`connections/${c.id}`, { method: "DELETE" }), tn("deleted")); }}>
+                        {tc("delete")}
                       </button>
                     </td>
                   </tr>
@@ -236,7 +236,7 @@ export function Connections() {
           </div>
 
           <div>
-            <h4>{form.id ? "Edit connection" : "Add connection"}</h4>
+            <h4>{form.id ? tn("edit") : tn("add")}</h4>
             <div className="grid g2">
               <div>
                 <label className="muted t-xs">Kind</label>
@@ -247,17 +247,17 @@ export function Connections() {
               </div>
               <div>
                 <label className="muted t-xs">{tc("label")}</label>
-                <input className="acct-btn input" placeholder="Display label"
+                <input className="acct-btn input" placeholder={tn("displayLabel")}
                   value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} />
               </div>
               <div>
                 <label className="muted t-xs">Foundry connection id</label>
-                <input className="acct-btn input" placeholder="foundry connection id"
+                <input className="acct-btn input" placeholder={tn("foundryIdPlaceholder")}
                   value={form.foundry_connection_id} onChange={(e) => setForm({ ...form, foundry_connection_id: e.target.value })} />
               </div>
               <div>
                 <label className="muted t-xs">Key Vault reference</label>
-                <input className="acct-btn input" placeholder="keyvault secret ref"
+                <input className="acct-btn input" placeholder={tn("keyvaultPlaceholder")}
                   value={form.keyvault_ref} onChange={(e) => setForm({ ...form, keyvault_ref: e.target.value })} />
               </div>
               <div>
@@ -279,12 +279,12 @@ export function Connections() {
               <label className="row-tight t-sm">
                 <input type="checkbox" checked={form.enabled}
                   onChange={(e) => setForm({ ...form, enabled: e.target.checked })} />
-                Enabled
+                {tc("enabled")}
               </label>
               <div className="grow" />
               {form.id && (
                 <button className="acct-btn" disabled={busy} onClick={() => setForm({ ...emptyForm })}>
-                  Cancel
+                  {tc("cancel")}
                 </button>
               )}
               <button className="btn btn-solid" disabled={busy || !form.label}
@@ -300,13 +300,12 @@ export function Connections() {
                     min_role_write: form.min_role_write,
                     enabled: form.enabled,
                   }),
-                }), form.id ? "Connection updated." : "Connection added.").then(() => setForm({ ...emptyForm }))}>
-                {form.id ? "Update" : "Add"} connection
+                }), form.id ? tn("updated") : tn("added")).then(() => setForm({ ...emptyForm }))}>
+                {form.id ? tn("updateBtn") : tn("addBtn")}
               </button>
             </div>
             <p className="muted t-xs">
-              No secret is entered here — store the secret in Foundry or Key Vault and reference it
-              by id / ref above.
+              {tn("noSecretNote")}
             </p>
           </div>
         </section>

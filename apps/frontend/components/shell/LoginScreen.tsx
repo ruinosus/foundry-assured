@@ -26,7 +26,7 @@ export function LoginScreen() {
           ⚡
         </span>
         <h1 className="login-title">{branding.product}</h1>
-        <p className="login-sub">{branding.description}</p>
+        <p className="login-sub">{t("branding.description")}</p>
 
         <button
           type="button"

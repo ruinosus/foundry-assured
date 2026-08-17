@@ -13,6 +13,7 @@ const AdminUsers = dynamic(() => import("@/components/admin/AdminUsers").then((m
 
 export default function AdminUsersPage() {
   const t = useTranslations("common");
+  const ta = useTranslations("admin");
   const roles = useMyRoles();
   return (
     <AppShell>
@@ -22,8 +23,7 @@ export default function AdminUsersPage() {
         <AdminUsers />
       ) : (
         <div className="card">
-          You need the <b>Admin</b> role to manage users. Ask an administrator to assign it,
-          then sign out and back in so your token carries the role.
+          {ta.rich("needAdminUsers", { b: (c) => <b>{c}</b> })}
         </div>
       )}
     </AppShell>

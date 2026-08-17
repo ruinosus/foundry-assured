@@ -20,6 +20,7 @@ const WorkflowSteps = dynamic(
 );
 
 function Chat({ authorization }: { authorization?: string }) {
+  const tc = useTranslations("common");
   const locale = useLocale();
   // Engine selector: the live AG-UI workflow (steps/HITL/OBO/memory) vs the Phase 6
   // Foundry hosted agent (managed, Responses protocol). Same agent, two delivery
@@ -57,16 +58,16 @@ function Chat({ authorization }: { authorization?: string }) {
             // Demo mode talks to a recorded aimock fixture — only the Live AG-UI path
             // is replayed, so hide the engine toggle and flag that it's mocked.
             <span className="pill t-xs">
-              ● Demo · replayed fixture, no Azure
+              {tc("demoMode")}
             </span>
           ) : (
             <>
               <div className="seg">
                 <button className={mode === "live" ? "on" : ""} onClick={() => setMode("live")}>
-                  Live workflow
+                  {tc("modeLive")}
                 </button>
                 <button className={mode === "hosted" ? "on" : ""} onClick={() => setMode("hosted")}>
-                  Hosted agent
+                  {tc("modeHosted")}
                 </button>
               </div>
               <span className="muted t-xs">
@@ -128,12 +129,12 @@ function AuthedChat() {
   if (!isAuthenticated) {
     return (
       <div className="console-center">
-        <p>Sign in to use {branding.product}.</p>
+        <p>{tc("signInToUse", { product: branding.product })}</p>
         <button
           onClick={() => instance.loginRedirect({ scopes: apiScopes })}
           className="btn btn-primary"
         >
-          Sign in with Microsoft
+          {tc("signIn")}
         </button>
       </div>
     );

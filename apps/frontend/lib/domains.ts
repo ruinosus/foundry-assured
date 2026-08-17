@@ -4,6 +4,15 @@
 // frontend is too. This registry drives the agent map (api/copilotkit route), the
 // sidebar nav, the generic console route (/d/[domain]), the landing role-cards, and the
 // per-domain starter prompts. Adding a domain = one entry here (+ a backend agent).
+//
+// O TEXTO NÃO MORA AQUI. Rótulo, descrição, o que o domínio prova e os prompts sugeridos vivem
+// em `messages/<locale>.json` sob `domains.<id>`, lidos com `useTranslations("domains")`. O que
+// fica é o que é CONTRATO com o backend (id, kind, endpoint) e não muda com o idioma.
+//
+// A divisão não é estética: este módulo é importado pela rota do CopilotKit, que roda no
+// servidor sem contexto de idioma. Um campo de texto aqui é um campo que nasce numa língua só —
+// foi assim que a tela de visão geral ficou em português fixo para quem escolheu inglês.
+// `scripts/check-hardcoded-text.mjs` é o gate que impede a volta.
 
 export type DomainKind = "workflow" | "grounded" | "tool" | "graph";
 
@@ -11,42 +20,20 @@ export interface Domain {
   /** Stable id — matches the backend agentId + the AG-UI endpoint path segment. */
   id: string;
   icon: string;
-  label: string;
   /** "workflow" = triage→retrieve→resolve→escalate with steps + HITL; "grounded" = pure cited
    * Q&A; "tool" = tool-driven (Microsoft MCP servers) with HITL on write actions. */
   kind: DomainKind;
-  /** One line for the switcher + landing card. */
-  blurb: string;
-  /** Starter prompts shown as chips — avoids the "blank box, prompt paralysis" anti-pattern. */
-  suggested: string[];
   /** Backend AG-UI path (default; per-domain env override resolved in the runtime route). */
   endpoint: string;
   /** Optional Foundry hosted twin agent id (enables the live-vs-hosted toggle). */
   hostedAgentId?: string;
-  /** O que ESTE domínio prova, em linguagem de garantia — não de implementação.
-   *
-   * O badge do console mostrava `kind` ("grounded Q&A", "LangGraph + HITL"): vocabulário de
-   * quem escreveu o código, não de quem avalia o produto. Quem abre a tela não quer saber qual
-   * runtime está por baixo; quer saber o que ali está sendo provado. É a lacuna de informação
-   * apontada no PRODUCT.md, e ela vive no registry porque é dado, não estilo. */
-  demonstrates: string;
 }
 
 export const DOMAINS: Domain[] = [
   {
     id: "helpdesk",
-    demonstrates:
-      "Vários agentes em sequência, memória entre sessões e aprovação humana antes de abrir chamado",
     icon: "💬",
-    label: "Helpdesk concierge",
     kind: "workflow",
-    blurb:
-      "Triagem → fundamenta → resolve → escala, com aprovação humana antes de abrir um chamado.",
-    suggested: [
-      "Como faço rollback de um deploy em produção?",
-      "Preciso de acesso de produção — abre um chamado pra mim?",
-      "Meu pod está em CrashLoopBackOff, por onde começo?",
-    ],
     endpoint: "/helpdesk",
     // Foundry hosted twin (backend /helpdesk-hosted). The hosted agent runs inside Foundry, so the
     // backend invokes it via the agent endpoint (/agents/<name>/.../responses) — a path the MI IS
@@ -73,52 +60,22 @@ export const DOMAINS: Domain[] = [
   // },
   {
     id: "selfwiki",
-    demonstrates:
-      "Documentação escrita pela IA a partir do código, com gate de fidelidade e acesso por documento",
     icon: "📖",
-    label: "Project wiki",
     kind: "grounded",
-    blurb:
-      "Pergunte sobre este próprio repositório — a deep-wiki gerada do código real do monorepo.",
-    suggested: [
-      "Quais endpoints AG-UI o backend expõe?",
-      "Como funciona o controle de acesso por documento?",
-      "Quais são as fases de implementação do projeto?",
-    ],
     endpoint: "/selfwiki",
     // Grounded runs live via OBO — no hosted twin needed.
   },
   {
     id: "oncall",
-    demonstrates:
-      "Um segundo runtime no mesmo app, e aprovação que deixa CORRIGIR a ação antes de executar",
     icon: "🚨",
-    label: "On-call triage",
     kind: "graph",
-    blurb:
-      "Triagem de incidente em LangGraph — o aprovador pode CORRIGIR a escalação antes de abrir, não só aceitar ou recusar.",
-    suggested: [
-      "O checkout está fora do ar para todos os usuários.",
-      "A taxa de erro do serviço de pagamentos subiu para 8%.",
-      "Um job noturno falhou, mas ninguém foi impactado.",
-    ],
     endpoint: "/oncall",
     // No hosted twin: LangGraph runs in this backend, not inside Foundry.
   },
   {
     id: "platform",
-    demonstrates:
-      "Ferramentas Microsoft de primeira parte, com aprovação humana em toda escrita",
     icon: "🛠️",
-    label: "Platform ops",
     kind: "tool",
-    blurb:
-      "Concierge de plataforma sobre as ferramentas Microsoft (Learn, Azure, Entra, DevOps, GitHub) — com aprovação humana antes de qualquer ação de escrita.",
-    suggested: [
-      "O que é o Azure AI Foundry Agent Service? (via Microsoft Learn)",
-      "Liste os recursos do meu resource group.",
-      "Quanto gastei em AI Search neste mês?",
-    ],
     endpoint: "/platform",
     hostedAgentId: "platform-hosted",
   },
