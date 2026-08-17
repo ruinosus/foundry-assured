@@ -1,10 +1,3 @@
----
-type: service
-title: Platform Ops Domain
-description: "Tool-driven platform concierge over Microsoft MCP servers, including per-request tool assembly, role filtering, approval middleware, Foundry connection brokering, and hosted/live differences."
-tags: [backend, platform, mcp, tools]
----
-
 # Platform ops domain
 
 `platform` is the backend’s tool-driven domain. Unlike grounded domains, it answers by assembling and calling MCP tools instead of retrieving corpus passages. The module docstring states the contract: tools are assembled per request from Microsoft first-party MCP servers, filtered by caller roles, and for OBO-capable servers run as the signed-in user. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/platform.py#L1-L9) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/platform.py#L25-L29)

@@ -1,10 +1,3 @@
----
-type: service
-title: Grounded Domains
-description: "Grounded question-answering domains such as selfwiki and techdocs, including the shared archetype, per-domain configuration, retrieval path, and declarative instruction ownership."
-tags: [backend, grounded, retrieval, citations]
----
-
 # Grounded domains
 
 The backend’s grounded domains are `techdocs` and `selfwiki`. In the registry they are `kind: "grounded"` domains that resolve per-request tenant config and stream cited Q&A through the common `stream_grounded` archetype. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/registry.py#L73-L75) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/registry.py#L96-L132) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/registry.py#L137-L160)

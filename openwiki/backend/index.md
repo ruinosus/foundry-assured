@@ -1,13 +1,11 @@
 # Files
 
-- [Admin, tenant management, and tickets](admin-and-tickets.md) - Administrative HTTP surfaces for Graph-backed user management, tenant-scoped connection management, and persisted ticket records opened by the helpdesk workflow.
-- [Declarative agent definitions and prompt assets](agentdefs.md) - How the backend loads AgentSchema prompt documents, composes personas and guardrails, selects baked versus mounted prompt directories, and publishes runtime prompt updates.
-- [Grounded domains archetype](grounded-domains.md) - Shared serving archetype for cockpit and selfwiki, including request-scoped user capture, retrieval-to-synthesis flow, AG-UI event emission, and structured citation delivery.
-- [Helpdesk workflow module](helpdesk.md) - The helpdesk domain’s workflow runtime, including per-request agent construction, memory wiring, escalation approval, and stream-order invariants.
-- [Hosted bridges and evaluation APIs](hosted-bridges-and-evals.md) - Backend support for hosted-agent invocation, AG-UI bridging, lifecycle cleanup, and evaluation data endpoints, including verified versus infra-gated behavior.
-- [Knowledge ingestion and ACL stamping](knowledge-ingestion.md) - Ingestion lifecycle for helpdesk and docbundle-based corpora, including blob upload, knowledge source and base creation, explicit indexer triggering, and ACL metadata stamping.
-- [Knowledge retrieval and ACL enforcement](knowledge-retrieval.md) - Retrieval seam for grounded domains, including native and direct-search paths, per-user search tokens, docKey decoding, centralized dedupe, and fail-closed ACL behavior.
-- [Backend overview](overview.md) - Composition-root map for the FastAPI backend, including lifecycle ordering, module boundaries, router inclusion, and domain mounting. Start here before changing any backend module.
-- [Platform operations domain](platform-ops.md) - Tool-driven platform concierge over MCP servers, including registry-as-data, per-tool RBAC, connection-driven builds, and the split between internal and hosted tool acquisition.
-- [Tenancy and deployment-mode seam](tenancy.md) - How the backend selects single-tenant versus shared behavior, resolves per-request tenant config, stores connection metadata, gates enabled domains, and scopes memory.
-- [Wiki adaptation and docbundle contracts](wiki-and-docbundles.md) - How generated wiki outputs become ingestable docbundles, how OpenWiki and deep-wiki producers are adapted, and how the repository preserves freshness and fidelity contracts.
+- [Backend Overview](backend-overview.md) - Composition root and module map for the FastAPI backend, including boot order, domain mounting, declarative agent-definition seams, and shared-kernel boundaries.
+- [Backend Evaluation and Tests](evaluation-and-tests.md) - Offline assurance gates, architecture tests, and backend-focused validation suites that define what the repository considers faithful, secure, and complete behavior.
+- [Grounded Domains](grounded-domains.md) - Grounded question-answering domains such as selfwiki and techdocs, including the shared archetype, per-domain configuration, retrieval path, and declarative instruction ownership.
+- [Helpdesk Workflow Domain](helpdesk-workflow.md) - The helpdesk runtime: per-request triage, retrieval, resolution, escalation, memory, OBO identity, and the hosted twin that drops live-step and HITL behavior.
+- [Knowledge Pipeline](knowledge-pipeline.md) - Source-grounded wiki and docbundle generation, adaptation, ingest, ACL stamping, and fidelity gating that feed the repository’s grounded knowledge domains.
+- [Oncall LangGraph Domain](oncall-graph.md) - LangGraph-based on-call triage runtime, including its edit-capable human approval flow, checkpointer requirements, mount gating, and coupling to the frontend graph approval UI.
+- [Platform Ops Domain](platform-ops.md) - Tool-driven platform concierge over Microsoft MCP servers, including per-request tool assembly, role filtering, approval middleware, Foundry connection brokering, and hosted/live differences.
+- [Backend State and Persistence](state-and-persistence.md) - State ownership map for backend runtime data: memory, tenant records, connections, tickets, hosted client caches, and interrupt/checkpointer durability constraints.
+- [Tenancy and Admin](tenancy-and-admin.md) - Tenant resolution, control-plane persistence, onboarding and admin APIs, and the invariants that make shared mode safe without moving business domains into the shared kernel.

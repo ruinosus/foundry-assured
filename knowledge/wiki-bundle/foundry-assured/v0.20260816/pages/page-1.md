@@ -1,10 +1,3 @@
----
-type: guide
-title: OpenWiki Quickstart
-description: "Entry point to the repository wiki, with a task-routing map for backend, frontend, hosted agents, infrastructure, scripts, and validation flows."
-tags: [quickstart, navigation]
----
-
 # OpenWiki quickstart
 
 Use this wiki as a source-grounded map of the whole repository.
