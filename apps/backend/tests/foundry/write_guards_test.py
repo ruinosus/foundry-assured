@@ -117,13 +117,18 @@ def main() -> int:
     check("nenhum campo do tipo é ignorado em silêncio", todos["ignored"] == [])
 
     print("\n— skill (formato agentskills.io)")
-    ok_skill = parse_skill({"instructions": "Como revisar um PR."})
+    ok_skill = parse_skill({"instructions": "Como revisar um PR.", "description": "Revisão de PR"})
     check("documento mínimo de skill é aceito", ok_skill["content"]["instructions"].startswith("Como"))
     check("sem instructions é recusado", recusa(lambda: parse_skill({}), InvalidSkill))
+    # Descoberto contra o serviço: `description` é obrigatório, embora o SDK o declare opcional.
+    # Sem ele o Foundry devolve "invalid_payload: The request field is required" — sem nomear o
+    # campo. Recusar aqui transforma isso numa frase que diz o que preencher.
+    check("sem description é recusado (o serviço exige, o SDK não diz)",
+          recusa(lambda: parse_skill({"instructions": "i"}), InvalidSkill))
     check("PowerFx é recusado em skill também",
-          recusa(lambda: parse_skill({"instructions": "=Env.X"}), InvalidSkill))
+          recusa(lambda: parse_skill({"instructions": "=Env.X", "description": "d"}), InvalidSkill))
     check("campos do padrão aberto passam",
-          "license" in parse_skill({"instructions": "i", "license": "MIT"})["content"])
+          "license" in parse_skill({"instructions": "i", "description": "d", "license": "MIT"})["content"])
 
     class _Skill:
         def __init__(self, d, l):

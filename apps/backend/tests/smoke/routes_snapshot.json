@@ -154,6 +154,10 @@
     ],
     [
       "POST",
+      "/foundry/assist"
+    ],
+    [
+      "POST",
       "/foundry/knowledge"
     ],
     [
@@ -357,6 +361,10 @@
     [
       "POST",
       "/foundry/agents/{name}/versions"
+    ],
+    [
+      "POST",
+      "/foundry/assist"
     ],
     [
       "POST",
@@ -579,6 +587,10 @@
     [
       "POST",
       "/foundry/agents/{name}/versions"
+    ],
+    [
+      "POST",
+      "/foundry/assist"
     ],
     [
       "POST",

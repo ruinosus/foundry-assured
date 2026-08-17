@@ -127,8 +127,21 @@ def parse_skill(doc: dict) -> dict:
             "literal ao serviço. Use o valor direto."
         )
 
-    out: dict[str, Any] = {"instructions": str(instructions).strip()}
-    for key in ("description", "allowed_tools", "compatibility", "license", "metadata"):
+    # `description` é OBRIGATÓRIO no serviço, e o SDK não diz isso: `SkillInlineContent` o
+    # declara opcional. Sem ele o Foundry responde `invalid_payload: The request field is
+    # required` — mensagem que não nomeia o campo faltante e manda procurar no lugar errado.
+    # Descoberto empiricamente: a mesma chamada passa com description e falha sem.
+    descricao = doc.get("description")
+    if not descricao or not str(descricao).strip():
+        raise InvalidSkill(
+            "Falta `description` — uma frase dizendo para que serve a skill. O serviço a exige."
+        )
+
+    out: dict[str, Any] = {
+        "instructions": str(instructions).strip(),
+        "description": str(descricao).strip(),
+    }
+    for key in ("allowed_tools", "compatibility", "license", "metadata"):
         if doc.get(key) is not None:
             out[key] = doc[key]
 

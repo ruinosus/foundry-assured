@@ -10,7 +10,7 @@ mesmo com a interface escondendo o botão. A interface não é fronteira de segu
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, File, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 
 from app.modules.foundry.public import (
     create_agent_version,
@@ -33,6 +33,7 @@ from app.modules.foundry.public import (
     list_toolboxes,
     mcp_url,
     set_agent_enabled,
+    suggest,
     upload_files,
 )
 from app.shared.auth import auth_dependencies, require_role
@@ -55,6 +56,7 @@ def _guard(fn):
     Azure quando o problema é o campo que ela preencheu.
     """
     from app.modules.foundry.internal.agent_write import InvalidDefinition
+    from app.modules.foundry.internal.assist import AssistRejected
     from app.modules.foundry.internal.github_source import GitHubError
     from app.modules.foundry.internal.knowledge_write import UploadRejected
     from app.modules.foundry.internal.names import InvalidName
@@ -65,7 +67,14 @@ def _guard(fn):
         return fn()
     except HTTPException:
         raise
-    except (InvalidName, InvalidDefinition, InvalidSkill, InvalidToolbox, UploadRejected) as exc:
+    except (
+        AssistRejected,
+        InvalidName,
+        InvalidDefinition,
+        InvalidSkill,
+        InvalidToolbox,
+        UploadRejected,
+    ) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except GitHubError as exc:
         # 502: a falha é do serviço de terceiro, não do pedido — e a mensagem já é legível.
@@ -85,8 +94,14 @@ def project() -> dict:
     DENTRO de um project, e a interface não dizia qual. Sem isso, alguém olhando uma lista vazia
     não sabe se não há nada ou se está olhando o lugar errado.
 
-    Devolve o NOME e o host, nunca o endpoint completo com credencial de caminho: o endpoint é
-    configuração de infraestrutura, e a tela só precisa do rótulo.
+    Devolve o NOME e o host, nunca o endpoint completo: o endpoint é configuração de
+    infraestrutura, e a tela só precisa do rótulo.
+
+    Não há rota para CRIAR project aqui, e a razão não é falta de API — ela existe, no management
+    plane (`PUT .../Microsoft.CognitiveServices/accounts/{conta}/projects/{nome}`). É que criar
+    exige `Foundry Account Owner` ou superior, que o público-alvo deste produto não tem; fazê-lo
+    com a identidade do serviço gravaria recurso ARM em nome do cliente, o que é fronteira de
+    confiança nova. O produto opera DENTRO de um project provisionado.
     """
     from urllib.parse import urlparse
 
@@ -295,3 +310,28 @@ def toolbox_mcp(name: str, version: str = Query("", description="Fixa uma versã
     valer sem tocar no agente.
     """
     return _guard(lambda: mcp_url(name, version))
+
+
+@router.post("/assist", dependencies=_admin)
+async def assist(body: dict, request: Request) -> dict:
+    """Sugere o conteúdo de um campo do wizard, com o catálogo real como contexto.
+
+    A resposta é PROPOSTA: a tela mostra e a pessoa aceita ou descarta. Nada é gravado por esta
+    rota — ela não escreve recurso nenhum.
+
+    Exige Admin porque consome modelo, e porque só quem pode criar agente precisa dela.
+    """
+    from app.modules.foundry.internal.assist import AssistRejected
+
+    acao = str(body.get("action") or "")
+    campo = str(body.get("field") or "")
+    valor = str(body.get("value") or "")
+    contexto = body.get("context") if isinstance(body.get("context"), dict) else {}
+    idioma = (request.headers.get("accept-language") or "").split(",")[0].strip()[:12]
+
+    try:
+        return await suggest(acao, campo, valor, contexto, language=idioma)
+    except AssistRejected as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Foundry: {exc}") from exc

@@ -95,8 +95,36 @@ Projeto  <nome>                     ← contexto, no topo do shell (não é item
 
 **Project é contexto, não item.** Todos os recursos vivem dentro de um `FOUNDRY_PROJECT_ENDPOINT`
 (`.../api/projects/<projeto>`). Ele aparece no cabeçalho do shell, como o seletor de tenant
-aparece num SaaS — sempre visível, nunca uma tela. Não há operação de criar project no SDK: é
-recurso do Azure, criado por `azd`/portal.
+aparece num SaaS — sempre visível, nunca uma tela.
+
+**Correção de uma afirmação anterior desta spec.** Eu havia escrito que "não há operação de criar
+project no SDK". Isso estava errado: eu confundi **data plane** (`AIProjectClient`, que de fato não
+cria) com **management plane**. Project é recurso ARM e se cria por ARM —
+`PUT .../Microsoft.CognitiveServices/accounts/{conta}/projects/{nome}?api-version=2026-05-01`,
+`azure-mgmt-cognitiveservices` (`client.projects.begin_create`),
+`az cognitiveservices account project create`, ou Bicep.
+
+**A decisão continua a mesma, por razões melhores:**
+
+1. **Permissão é o gargalo, não a API.** Criar project exige `Foundry Account Owner`, `Foundry
+   Owner`, `Contributor` ou `Owner`. O público-alvo — quem "não tem e não vai ter" RBAC — não pode
+   disparar essa chamada com a própria identidade. Fazê-lo com a identidade do produto significaria
+   gravar recurso ARM em nome do cliente: fronteira de confiança nova, e gatilho de threat model.
+2. **O primeiro project é assimétrico.** Só ele é `isDefault`, e só ele suporta OpenAI Batch,
+   fine-tuning e stored completions. "Um project por cliente" produziria clientes de primeira e de
+   segunda classe — o oposto do isolamento simétrico que um SaaS precisa.
+3. **Project é recurso ARM.** Entra em Azure Policy, cota, convenção de nome, tag de custo, e a
+   deleção é irreversível. Transferir isso a quem não tem contexto de infra transfere risco, não
+   autonomia.
+
+Se surgir demanda de "um project por cliente", ela pertence ao modo **`dedicated`** (stamp
+Managed Application), onde o provisionamento já é ARM e feito por identidade com RBAC.
+
+**O que serve para agrupar dentro de um project**, e vale um spike:
+`Microsoft.CognitiveServices/accounts/projects/applications` — agrupa um conjunto de agentes sob
+`baseUrl` próprio, `authorizationPolicy` e identidades Entra próprias. É sub-agrupamento com
+fronteira de autorização real, sem multiplicar recursos ARM. Há também RBAC no escopo de um agente
+individual (`.../projects/{p}/agents/{nome}`), avaliado só para acesso ao endpoint do agente.
 
 ### O wizard de agente, em quatro etapas
 
@@ -142,10 +170,22 @@ tela já mostra.
 `resources/list` e lidas por `resources/read` (SEP-2640). Qualquer cliente MCP consome — inclusive
 sem SDK do Foundry. A API de skills exige o header `Foundry-Features: Skills=V1Preview`.
 
-**O ponto que continua aberto, e vale teste empírico:** nenhum exemplo mostra o `mcp` tool
-*server-side* do Foundry fazendo `resources/list`. Todos os exemplos de consumo de skill são
-client-side. É provável que um PromptAgent puro apontando para o toolbox receba as **tools** mas
-não as **skills**. Antes de prometer skills no agente pela via do toolbox, testar.
+**TESTADO — e o que falta é autenticação, não o mecanismo.** Criei skill → toolbox → agente e
+perguntei ao agente. Ele tentou conectar ao toolbox (a URL está certa) e recebeu **401
+PermissionDenied**. O `mcp` tool sozinho não autentica no endpoint: falta uma **project
+connection** referenciada por `project_connection_id`, criada com
+`azd ai connection create <nome> --kind remote-tool --target <url> --auth-type user-entra-token
+--audience https://ai.azure.com`.
+
+**Consequência para o produto:** oferecer o toolbox como capacidade sem essa connection produz um
+agente que falha na primeira chamada. A fase 7 fica com o caminho mapeado ponta a ponta e um passo
+de infraestrutura a resolver — ou automatizando a criação da connection (o repositório já gerencia
+connections, sub-projeto B), ou documentando-a como pré-requisito do operador.
+
+Dois achados menores do mesmo teste: `description` é **obrigatório** ao criar skill, embora o SDK
+o declare opcional (sem ele: `invalid_payload: The request field is required`, sem nomear o
+campo); e ao invocar um agente pelo `responses.create`, o `model` precisa ser o modelo do agente,
+não o nome dele.
 
 ### O caminho alternativo que casa com a ADR-013
 

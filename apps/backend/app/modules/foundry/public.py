@@ -20,6 +20,7 @@ from app.modules.foundry.internal.agent_write import (
     set_agent_enabled,
 )
 from app.modules.foundry.internal.agents import get_agent, list_agents
+from app.modules.foundry.internal.assist import suggest
 from app.modules.foundry.internal.github_source import ingest_repo
 from app.modules.foundry.internal.knowledge_catalog import get_knowledge, list_knowledge
 from app.modules.foundry.internal.knowledge_write import (
@@ -63,5 +64,6 @@ __all__ = [
     "list_toolboxes",
     "mcp_url",
     "set_agent_enabled",
+    "suggest",
     "upload_files",
 ]

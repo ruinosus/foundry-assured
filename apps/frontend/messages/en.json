@@ -376,7 +376,7 @@
     "step4": "Review",
     "namePlaceholder": "skill-name",
     "nameHelp": "Lowercase letters, numbers and hyphens in the middle — for example, review-pull-request.",
-    "descriptionPlaceholder": "Short description (optional)",
+    "descriptionPlaceholder": "What this skill is for",
     "erroNomeVazio": "Enter a name.",
     "erroNomeFormato": "Use only lowercase letters, numbers and hyphens in the middle.",
     "erroNomeLongo": "The name is over 63 characters.",
@@ -399,7 +399,8 @@
     "back": "Back",
     "next": "Next",
     "publish": "Publish skill",
-    "publishing": "Publishing…"
+    "publishing": "Publishing…",
+    "erroDescricaoVazia": "Write a description — the service requires a sentence saying what the skill is for."
   },
   "agentWizard": {
     "title": "New agent",
@@ -426,7 +427,7 @@
     "toolboxTitle": "Toolbox",
     "toolboxNone": "none",
     "toolboxEmpty": "No toolbox created yet. A toolbox groups tools and skills.",
-    "toolboxHelp": "A toolbox is an MCP server: the agent reaches its tools through the URL. Skills inside the toolbox arrive as MCP resources — we have not yet verified whether the Foundry-hosted agent reads them.",
+    "toolboxHelp": "A toolbox is an MCP server and the agent reaches it by URL — but the endpoint needs a project connection to authenticate. Without one, the agent fails on its first call. Verified by test.",
     "toolboxResolved": "The address for toolbox {name} will be built by the server, pointing at the version in use.",
     "toolsTitle": "Built-in tools",
     "tool_code_interpreter": "Code interpreter",
@@ -438,6 +439,20 @@
     "back": "Back",
     "next": "Next",
     "publish": "Create and publish version",
-    "publishing": "Publishing…"
+    "publishing": "Publishing…",
+    "tool_image_generation": "Image generation"
+  },
+  "assist": {
+    "generate": "✨ Write",
+    "review": "✎ Improve",
+    "working": "Thinking…",
+    "custom": "Ask differently",
+    "customIcon": "💬",
+    "customPlaceholder": "Say how you want it — for example, shorter and more formal",
+    "send": "Ask",
+    "suggestionTitle": "Suggestion — nothing changes in the field until you use it",
+    "use": "Use this text",
+    "discard": "Discard",
+    "empty": "The model returned no text. Try asking differently."
   }
 }

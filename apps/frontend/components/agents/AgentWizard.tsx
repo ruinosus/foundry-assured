@@ -20,11 +20,17 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authedFetch } from "@/lib/auth/api";
+import { AssistedField } from "@/components/shell/AssistedField";
 
 const NOME_RECURSO = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
-/** Tools de primeira parte que só precisam do `type` — nada a configurar. */
-const TOOLS_SIMPLES = ["code_interpreter", "web_search"] as const;
+/** Tools de primeira parte cujo ÚNICO campo obrigatório é `type`.
+ *
+ * A lista foi verificada no SDK, não escolhida: cada uma tem `:ivar type: … Required.` e nenhum
+ * outro campo obrigatório. Oferecer aqui uma que precise de configuração (bing_grounding exige
+ * `bing_grounding`, file_search exige vector store, mcp exige URL) produziria um agente que falha
+ * na primeira chamada — o pior tipo de erro, porque acontece longe de onde foi causado. */
+const TOOLS_SIMPLES = ["code_interpreter", "web_search", "image_generation"] as const;
 
 type Base = { name: string };
 type Toolbox = { name: string; default_version: string | null };
@@ -200,14 +206,29 @@ export function AgentWizard({
       {passo === 2 && (
         <div className="stack-sm">
           <p className="muted t-sm">{t("behaviorHelp")}</p>
-          <textarea
-            className="acct-btn"
-            rows={9}
-            placeholder={t("instructionsPlaceholder")}
+          {/* O catálogo entra no contexto: sugerir instruções sabendo que existe uma base
+              chamada helpdesk-kb produz texto útil; sem isso, produz texto genérico. */}
+          <AssistedField
+            field="instructions"
+            label={t("step2")}
             value={instrucoes}
-            disabled={busy}
-            onChange={(e) => setInstrucoes(e.target.value)}
-          />
+            context={{
+              nome: nome.trim(),
+              descricao: descricao.trim(),
+              bases: bases.map((b) => b.name),
+              toolboxes: toolboxes.map((x) => x.name),
+            }}
+            onAccept={setInstrucoes}
+          >
+            <textarea
+              className="acct-btn"
+              rows={9}
+              placeholder={t("instructionsPlaceholder")}
+              value={instrucoes}
+              disabled={busy}
+              onChange={(e) => setInstrucoes(e.target.value)}
+            />
+          </AssistedField>
           {/* Nome de deployment do modelo: não se traduz, é o que a pessoa vê no portal. */}
           <label className="muted t-xs">{t("modelLabel")}</label>
           <input

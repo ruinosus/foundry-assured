@@ -1397,3 +1397,45 @@ table.evals tr:last-child td { border-bottom: none; }
   color: var(--text);
   overflow-wrap: anywhere;
 }
+
+/* Campo assistido: as ações aparecem no hover/foco, como no aap-kb — presentes quando se precisa
+   delas, invisíveis quando não. A sugestão fica ABAIXO e separada: substituir o campo direto
+   tiraria da pessoa a chance de comparar com o que ela escreveu. */
+.assisted { display: grid; gap: var(--space-2); }
+
+.assisted-label {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+}
+
+.assisted-actions {
+  display: flex;
+  gap: var(--space-2);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.assisted:hover .assisted-actions,
+.assisted:focus-within .assisted-actions { opacity: 1; }
+
+/* Sem hover (toque), as ações ficam sempre visíveis — do contrário seriam inalcançáveis. */
+@media (hover: none) {
+  .assisted-actions { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assisted-actions { transition: none; }
+}
+
+.assisted-suggestion {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--accent-wash);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.assisted-text { margin: 0; font-size: var(--text-sm); white-space: pre-wrap; }

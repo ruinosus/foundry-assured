@@ -376,7 +376,7 @@
     "step4": "Revisão",
     "namePlaceholder": "nome-da-skill",
     "nameHelp": "Letras minúsculas, números e hífens no meio — por exemplo, revisar-pull-request.",
-    "descriptionPlaceholder": "Descrição curta (opcional)",
+    "descriptionPlaceholder": "Para que serve esta skill",
     "erroNomeVazio": "Informe um nome.",
     "erroNomeFormato": "Use apenas letras minúsculas, números e hífens no meio.",
     "erroNomeLongo": "O nome passa de 63 caracteres.",
@@ -399,7 +399,8 @@
     "back": "Voltar",
     "next": "Avançar",
     "publish": "Publicar skill",
-    "publishing": "Publicando…"
+    "publishing": "Publicando…",
+    "erroDescricaoVazia": "Escreva uma descrição — o serviço exige uma frase dizendo para que a skill serve."
   },
   "agentWizard": {
     "title": "Novo agente",
@@ -426,7 +427,7 @@
     "toolboxTitle": "Toolbox",
     "toolboxNone": "nenhum",
     "toolboxEmpty": "Nenhum toolbox criado ainda. Um toolbox agrupa ferramentas e skills.",
-    "toolboxHelp": "O toolbox é um servidor MCP: o agente alcança as ferramentas dele pela URL. As skills dentro do toolbox chegam como recursos MCP — ainda não verificamos se o agente hospedado no Foundry as lê.",
+    "toolboxHelp": "O toolbox é um servidor MCP e o agente o alcança pela URL — mas o endpoint exige uma connection do projeto para autenticar. Sem ela, o agente falha na primeira chamada. Verificado em teste.",
     "toolboxResolved": "O endereço do toolbox {name} será montado pelo servidor, apontando para a versão em uso.",
     "toolsTitle": "Ferramentas prontas",
     "tool_code_interpreter": "Interpretador de código",
@@ -438,6 +439,20 @@
     "back": "Voltar",
     "next": "Avançar",
     "publish": "Criar e publicar versão",
-    "publishing": "Publicando…"
+    "publishing": "Publicando…",
+    "tool_image_generation": "Geração de imagem"
+  },
+  "assist": {
+    "generate": "✨ Escrever",
+    "review": "✎ Melhorar",
+    "working": "Pensando…",
+    "custom": "Pedir de outro jeito",
+    "customIcon": "💬",
+    "customPlaceholder": "Diga como quer o texto — por exemplo, mais curto e formal",
+    "send": "Pedir",
+    "suggestionTitle": "Sugestão — nada muda no campo até você usar",
+    "use": "Usar este texto",
+    "discard": "Descartar",
+    "empty": "O modelo não devolveu texto. Tente pedir de outro jeito."
   }
 }

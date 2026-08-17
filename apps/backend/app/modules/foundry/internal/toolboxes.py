@@ -24,10 +24,25 @@ uma skill é rollout sem tocar em código de agente nem no toolbox. Há também 
 *developer*, com a versão explícita, para testar antes de promover.
 
 Skills dentro do toolbox aparecem como **MCP Resources** (`skill://{nome}`), descobertas por
-`resources/list`. RESSALVA que vale teste: nenhum exemplo mostra o `mcp` tool server-side do
-Foundry fazendo `resources/list` — é provável que um PromptAgent puro receba as *tools* do toolbox
-mas não as *skills*. Enquanto isso não for verificado empiricamente, a interface oferece a URL
-como capacidade e diz o que se sabe, em vez de prometer o que não foi testado.
+`resources/list`.
+
+VERIFICADO EMPIRICAMENTE, e o resultado muda o que falta fazer. Criei skill → toolbox → agente
+com este código e perguntei ao agente. Ele **tentou conectar ao toolbox** — o mecanismo da URL
+está certo — e recebeu:
+
+    Authentication failed when connecting to the MCP server: …/toolboxes/{nome}/mcp:
+    Response status code does not indicate success: 401 (PermissionDenied).
+
+Ou seja: o `mcp` tool sozinho não autentica no endpoint do toolbox. Falta uma **project
+connection** que guarde a credencial, referenciada por `project_connection_id` no tool — o que a
+documentação mostra criando com
+
+    azd ai connection create <nome> --kind remote-tool \
+        --target "<url do toolbox>" --auth-type user-entra-token --audience https://ai.azure.com
+
+Enquanto essa connection não existir, oferecer o toolbox como capacidade produz um agente que
+falha na primeira chamada. Por isso `mcp_url` devolve a URL e o tool PRONTOS, mas quem monta a
+connection ainda é o operador — e a interface diz isso em vez de prometer.
 
 Verificado contra o SDK INSTALADO (RULE #1): `ToolboxesOperations` (8 operações),
 `ToolboxVersionObject`, `ToolboxSkillReference`.

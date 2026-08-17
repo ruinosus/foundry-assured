@@ -18,6 +18,7 @@
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
+import { AssistedField } from "@/components/shell/AssistedField";
 
 /** Os arquivos são agrupados por função — o serviço preserva o caminho, então o grupo vira pasta. */
 const GRUPOS = ["scripts", "references"] as const;
@@ -64,8 +65,11 @@ export function SkillWizard({
     if (!NOME_RECURSO.test(n)) return t("erroNomeFormato");
     if (n.length > 63) return t("erroNomeLongo");
     if (existentes.includes(n)) return t("erroNomeExiste", { name: n });
+    // O serviço exige descrição (o SDK a declara opcional, mas o Foundry recusa sem ela). Pedir
+    // no passo 1 evita descobrir na publicação, depois de escrever instruções e anexar arquivos.
+    if (!descricao.trim()) return t("erroDescricaoVazia");
     return null;
-  }, [nome, existentes, t]);
+  }, [nome, descricao, existentes, t]);
 
   const addArquivos = (grupo: Grupo, lista: FileList | null) => {
     if (!lista?.length) return;
@@ -104,7 +108,7 @@ export function SkillWizard({
   /** O documento que vai ser enviado — mostrado no passo 4 antes de qualquer chamada. */
   const documento = {
     instructions: instrucoes.trim(),
-    ...(descricao.trim() ? { description: descricao.trim() } : {}),
+    description: descricao.trim(),
   };
 
   const publicar = async () => {
@@ -204,14 +208,22 @@ export function SkillWizard({
       {passo === 2 && (
         <div className="stack-sm">
           <p className="muted t-sm">{t("instructionsHelp")}</p>
-          <textarea
-            className="acct-btn"
-            rows={10}
-            placeholder={t("instructionsPlaceholder")}
+          <AssistedField
+            field="instructions"
+            label={t("step2")}
             value={instrucoes}
-            disabled={busy}
-            onChange={(e) => setInstrucoes(e.target.value)}
-          />
+            context={{ nome: nome.trim(), descricao: descricao.trim() }}
+            onAccept={setInstrucoes}
+          >
+            <textarea
+              className="acct-btn"
+              rows={10}
+              placeholder={t("instructionsPlaceholder")}
+              value={instrucoes}
+              disabled={busy}
+              onChange={(e) => setInstrucoes(e.target.value)}
+            />
+          </AssistedField>
         </div>
       )}
 
