@@ -92,6 +92,24 @@ def main() -> int:
     failures: list[tuple[str, float, int]] = []
     retired: list[tuple[str, int]] = []
 
+    # --- Fourth question: is it the ONLY version of its component? ------------------------
+    #
+    # `adapt_openwiki` writes a new version directory; it does not remove the previous one. So a
+    # regeneration ADDS to the shelf, and `collect_pages` — which walks everything — uploads both.
+    # The knowledge base then serves two generations of the same pages at once, and the older one
+    # wins whenever it happens to rank higher.
+    #
+    # This was not caught by the three questions above, and it is the same bug they exist for:
+    # after regenerating to remove 76 mentions of `cockpit`, v0.20260815 (76 mentions) and
+    # v0.20260816 (zero) sat side by side, BOTH passing — right model, 93.2% and 97.9% fidelity.
+    # A stale bundle does not need to be broken to do damage; it only needs to still be there.
+    versions: dict[str, list[str]] = {}
+    for manifest_path in manifests:
+        meta = json.loads(manifest_path.read_text(encoding="utf-8"))
+        if meta.get("component"):
+            versions.setdefault(meta["component"], []).append(manifest_path.parent.name)
+    multi = {c: sorted(v) for c, v in versions.items() if len(v) > 1}
+
     for manifest_path in manifests:
         meta = json.loads(manifest_path.read_text(encoding="utf-8"))
         component = meta.get("component")
@@ -153,6 +171,16 @@ def main() -> int:
             "   Remova-os de knowledge/wiki-bundle/ (o git preserva o histórico).\n"
         )
 
+    if multi:
+        print(
+            f"\n❌ {len(multi)} componente(s) com MAIS DE UMA versão na prateleira:\n"
+            + "\n".join(f"     {c}: {', '.join(v)}" for c, v in multi.items())
+            + "\n\n   `collect_pages` varre tudo, então a base receberia as duas gerações das\n"
+            "   mesmas páginas e serviria a mais antiga sempre que ela ranquear melhor. Um\n"
+            "   bundle velho não precisa estar quebrado para fazer estrago — basta continuar ali.\n"
+            "   Mantenha só a versão corrente (o git guarda o resto).\n"
+        )
+
     if failures:
         pages_lost = sum(n for _, _, n in failures)
         print(
@@ -165,7 +193,7 @@ def main() -> int:
         )
         return 1
 
-    if retired:
+    if retired or multi:
         return 1
 
     print("\n✅ todo bundle commitado pertence ao modelo atual e continua fiel ao código.")
