@@ -1705,3 +1705,100 @@ table.evals tr:last-child td { border-bottom: none; }
 .cat-preview { min-width: 0; }
 /* O SKILL.md inteiro rola dentro do próprio bloco — a página não rola de lado por causa dele. */
 .cat-preview .doc-preview { max-height: 46vh; overflow: auto; }
+
+/* ── Console redesenhado ───────────────────────────────────────────────────────────────────
+   Quatro mudanças, uma razão só: a tela mostrava TUDO o tempo todo em vez do que vale agora.
+   O chat era a coluna mais estreita da tela sendo o que a pessoa veio usar. */
+
+/* 1 · Barra de topo — substitui o cabeçalho de quatro blocos. */
+.console-bar {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--line); background: var(--surface);
+}
+.console-bar-end { margin-left: auto; display: flex; align-items: center; gap: var(--space-3); }
+.seg-sm button { padding: 2px var(--space-2); font-size: var(--text-xs); }
+
+/* Seletor de assistente, agrupado por framework. */
+.dom-picker { position: relative; }
+.dom-trigger {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  background: transparent; color: inherit; cursor: pointer; font: inherit;
+}
+.dom-trigger:hover { border-color: var(--line); background: var(--sunken); }
+.dom-trigger b { font-weight: 600; }
+.dom-trigger .caret { color: var(--faint); font-size: var(--text-xs); }
+
+.dom-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; width: 320px;
+  max-height: 60vh; overflow-y: auto; padding: var(--space-1);
+  background: var(--surface); border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-pop, 0 8px 24px rgb(0 0 0 / 0.14));
+}
+.dom-group {
+  display: flex; align-items: baseline; gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  font-size: var(--text-2xs); font-weight: 700;
+  letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--muted);
+}
+.dom-by { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--faint); }
+.dom-opt {
+  display: flex; gap: var(--space-2); align-items: flex-start; width: 100%; text-align: left;
+  padding: var(--space-2); border: 0; border-radius: var(--radius-sm);
+  background: transparent; color: inherit; cursor: pointer; font: inherit;
+}
+.dom-opt:hover { background: var(--sunken); }
+.dom-opt.on { background: var(--accent-wash); }
+.dom-opt b { display: block; font-size: var(--text-sm); font-weight: 600; }
+.dom-opt i { display: block; font-style: normal; font-size: var(--text-xs); color: var(--muted); }
+
+/* 2 · Trilho de uma coluna com abas. */
+.seg-tabs { display: flex; gap: 2px; padding: var(--space-2) var(--space-3) 0; border-bottom: 1px solid var(--line); }
+.seg-tabs button {
+  border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent;
+  padding: var(--space-2); color: var(--muted); font: inherit; font-size: var(--text-xs);
+  cursor: pointer;
+}
+.seg-tabs button.on { color: var(--ink); font-weight: 600; border-bottom-color: var(--accent); }
+/* A aba inativa fica MONTADA e escondida: o EvidencePanel assina o stream, e desmontá-lo
+   perderia as citações que chegam com a aba de conversas aberta. */
+.tab-off { display: none; }
+
+.console-side { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.console-side .conv-panel { max-height: none; border-bottom: 0; }
+
+/* Garantias recolhidas. */
+.evidence-guar summary {
+  cursor: pointer; list-style: none; display: flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-xs); color: var(--muted);
+}
+.evidence-guar summary::-webkit-details-marker { display: none; }
+.evidence-guar[open] summary { color: var(--ink); font-weight: 600; margin-bottom: var(--space-2); }
+
+/* 4 · Passos como fita de uma linha, só durante a execução. */
+.steps-strip {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--sunken); border-bottom: 1px solid var(--line);
+  font-size: var(--text-xs);
+}
+.steps-label { color: var(--muted); white-space: nowrap; }
+.steps-flow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
+.steps-flow li { display: flex; align-items: center; gap: var(--space-2); color: var(--muted); }
+.step-arrow { color: var(--faint); }
+/* Estado por FORMA e cor, não só cor. */
+.step-pip { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); flex: none; }
+.step-done .step-pip { background: var(--pass); }
+.step-done .step-name { color: var(--ink); }
+.step-active .step-pip { background: var(--wait); box-shadow: 0 0 0 3px var(--wait-wash); }
+.step-active .step-name { color: var(--ink); font-weight: 600; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .steps-strip.running .step-active .step-pip { animation: pip-pulse 1.4s ease-in-out infinite; }
+}
+@keyframes pip-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--wait-wash); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}

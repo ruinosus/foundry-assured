@@ -24,14 +24,20 @@ import { ChatDockProvider, useChatDock } from "@/lib/chat-dock";
 //
 // Os rótulos saem do dicionário; as listas guardam só o que NÃO é texto (rota e ícone). Antes o
 // nome vivia aqui como constante, o que tornava a navegação intraduzível por construção.
+// Casos de uso ABRE a lista: o público é de negócio, e "que problema isto resolve" é a pergunta
+// que essa pessoa faz primeiro. Visão geral desce — ela é resumo de sistema, não porta de entrada.
 const WORKSPACE_NAV = [
-  { href: "/", key: "overview", icon: "▦" },
   { href: "/usecases", key: "usecases", icon: "◎" },
+  // UM item para os assistentes, não seis. Os seis viraram o seletor no topo do console — mas
+  // sem esta linha não haveria caminho até uma conversa a partir das telas de gestão, e o
+  // redesenho teria escondido o produto.
+  { href: `/d/${DOMAINS[0].id}`, key: "assistants", icon: "💬" },
   { href: "/agents", key: "agents", icon: "◆" },
   { href: "/knowledge", key: "knowledge", icon: "▤" },
   { href: "/skills", key: "skills", icon: "✦" },
   { href: "/tickets", key: "tickets", icon: "🎫" },
   { href: "/evals", key: "evals", icon: "✓" },
+  { href: "/", key: "overview", icon: "▦" },
 ];
 
 const ADMIN_NAV = [
@@ -191,11 +197,6 @@ export function AppShell({
 
   // Construídos no componente, não no módulo: rótulo é texto, e texto depende do idioma
   // escolhido — uma constante avaliada no import nasce numa língua só e nunca mais muda.
-  const agentNav = DOMAINS.map((d) => ({
-    href: `/d/${d.id}`,
-    label: td(`${d.id}.label`),
-    icon: d.icon,
-  }));
   const domainTitle = DOMAINS.find((d) => pathname.startsWith(`/d/${d.id}`));
   const title = domainTitle
     ? td(`${domainTitle.id}.label`)
@@ -217,12 +218,13 @@ export function AppShell({
           </span>
         </div>
 
-        {[
-          { section: t("workspace"), items: workspace },
-          { section: t("aiAgents"), items: agentNav },
-        ].map(({ section, items }) => (
-          <div key={section}>
-            <div className="nav-section">{section}</div>
+        {/* UMA lista, sem rótulo de grupo. Antes eram duas — "Workspace" e "Exemplos do
+            produto" —, 14 links no total, misturando ONDE SE CONFIGURA com ONDE SE USA. Os
+            assistentes viraram o seletor no topo do console: trocar de assistente é ação de
+            dentro da conversa, não navegação de aplicação. E o rótulo "Exemplos do produto"
+            dizia ao usuário que aqueles assistentes eram demonstração. */}
+        {[{ section: "", items: workspace }].map(({ section, items }) => (
+          <div key={section || "nav"}>
             {items.map((item) => {
               const active =
                 item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
@@ -233,7 +235,7 @@ export function AppShell({
                   className={`nav-item ${active ? "active" : ""}`}
                 >
                   <span className="ico">{item.icon}</span>
-                  {"key" in item ? t(item.key as string) : item.label}
+                  {t(item.key)}
                 </Link>
               );
             })}

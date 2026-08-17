@@ -16,6 +16,11 @@
 
 export type DomainKind = "workflow" | "grounded" | "tool" | "graph";
 
+/** O runtime que executa o domínio. É CONTRATO, não estética: o seletor de assistente agrupa por
+ *  ele, e o agrupamento é o argumento de que o mesmo produto, com as mesmas garantias, roda em
+ *  runtimes diferentes (ADR-020). O RÓTULO fica em `messages.frameworks.<id>`, como todo texto. */
+export type Framework = "agent-framework" | "langgraph" | "deepagents";
+
 export interface Domain {
   /** Stable id — matches the backend agentId + the AG-UI endpoint path segment. */
   id: string;
@@ -27,11 +32,13 @@ export interface Domain {
   endpoint: string;
   /** Optional Foundry hosted twin agent id (enables the live-vs-hosted toggle). */
   hostedAgentId?: string;
+  framework: Framework;
 }
 
 export const DOMAINS: Domain[] = [
   {
     id: "helpdesk",
+    framework: "agent-framework",
     icon: "💬",
     kind: "workflow",
     endpoint: "/helpdesk",
@@ -45,6 +52,7 @@ export const DOMAINS: Domain[] = [
   // (and ingest the KB) to bring it back.
   // {
   //   id: "techdocs",
+  //   framework: "agent-framework",
   //   icon: "🛰️",
   //   label: "TechDocs expert",
   //   kind: "grounded",
@@ -60,6 +68,7 @@ export const DOMAINS: Domain[] = [
   // },
   {
     id: "selfwiki",
+    framework: "agent-framework",
     icon: "📖",
     kind: "grounded",
     endpoint: "/selfwiki",
@@ -67,6 +76,7 @@ export const DOMAINS: Domain[] = [
   },
   {
     id: "oncall",
+    framework: "langgraph",
     icon: "🚨",
     kind: "graph",
     endpoint: "/oncall",
@@ -76,12 +86,14 @@ export const DOMAINS: Domain[] = [
     // Gêmeo do oncall no harness deepagents — os dois no ar para comparação prática, não para
     // um substituir o outro. Ver app/modules/deepcall/public.py.
     id: "deepcall",
+    framework: "deepagents",
     icon: "🧪",
     kind: "graph",
     endpoint: "/deepcall",
   },
   {
     id: "platform",
+    framework: "agent-framework",
     icon: "🛠️",
     kind: "tool",
     endpoint: "/platform",
@@ -91,3 +103,7 @@ export const DOMAINS: Domain[] = [
 
 export const getDomain = (id: string | undefined): Domain | undefined =>
   DOMAINS.find((d) => d.id === id);
+
+/** A ordem em que os grupos aparecem no seletor. Microsoft primeiro porque é a plataforma do
+ *  produto; os demais existem para provar que o mecanismo não depende dela. */
+export const FRAMEWORK_ORDER: Framework[] = ["agent-framework", "langgraph", "deepagents"];

@@ -16,6 +16,7 @@ import { CopilotChat, CopilotKitProvider } from "@copilotkit/react-core/v2";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { useLocale, useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
@@ -23,6 +24,7 @@ import { getDomain, type Domain } from "@/lib/domains";
 import { GraphApproval } from "@/components/chat/GraphApproval";
 import { TicketApproval } from "@/components/chat/TicketApproval";
 import { ConversationsPanel } from "@/components/console/ConversationsPanel";
+import { DomainPicker } from "@/components/console/DomainPicker";
 import { EvidencePanel } from "@/components/console/EvidencePanel";
 import { MermaidZoom } from "@/components/console/MermaidZoom";
 import { SuggestedPrompts } from "@/components/console/SuggestedPrompts";
@@ -50,6 +52,8 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
   // Live vs Hosted twin — registry-driven: only renders when the domain declares a
   // hostedAgentId, so any domain that later gains a Foundry hosted twin gets the toggle
   // for free (no per-domain special-casing here).
+  const router = useRouter();
+  const [tab, setTab] = useState<"conv" | "ev">("conv");
   const [mode, setMode] = useState<"live" | "hosted">("live");
   const activeAgentId =
     mode === "hosted" && domain.hostedAgentId ? domain.hostedAgentId : domain.id;
@@ -76,22 +80,28 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
     >
       <div className="console">
         <div className="console-main">
-          <div className="console-head">
-            <span className="console-icon" aria-hidden>
-              {domain.icon}
-            </span>
-            <div className="console-head-meta">
-              <h2>{td(`${domain.id}.label`)}</h2>
-              <p className="console-blurb">{td(`${domain.id}.blurb`)}</p>
+          {/* BARRA DE TOPO. Antes eram quatro blocos antes de qualquer conversa: ícone,
+              título, subtítulo e "Demonstra" + parágrafo. O nome agora está no seletor; o
+              `kind` fica discreto à direita; e o texto de vitrine desceu para a página de
+              Casos de uso, que existe exatamente para isso. */}
+          <div className="console-bar">
+            <DomainPicker current={domain} onPick={(id) => router.push(`/d/${id}`)} />
+            <div className="console-bar-end">
+              <span className="t-xs t-mono muted-line">{domain.kind}</span>
+              {domain.hostedAgentId && (
+                <div className="seg seg-sm">
+                  <button className={mode === "live" ? "on" : ""} onClick={() => setMode("live")}>
+                    Live
+                  </button>
+                  <button
+                    className={mode === "hosted" ? "on" : ""}
+                    onClick={() => setMode("hosted")}
+                  >
+                    Hosted
+                  </button>
+                </div>
+              )}
             </div>
-            {/* O que este domínio PROVA, não com que runtime foi feito. Antes lia
-                KIND_LABEL[kind] — "grounded Q&A", "LangGraph + HITL" — vocabulário de
-                implementação, que descreve o código para quem já o conhece e não diz nada a
-                quem está avaliando se as garantias são reais. */}
-            <p className="console-demo">
-              <span className="console-demo-label">{t("demonstrates")}</span>
-              {td(`${domain.id}.demonstrates`)}
-            </p>
           </div>
 
           {/* The steps panel reads the agent-framework workflow's state snapshots, so it
@@ -102,26 +112,6 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
 
           <SuggestedPrompts domain={domain} />
 
-          {domain.hostedAgentId && (
-            <div className="console-mode">
-              <div className="seg">
-                <button className={mode === "live" ? "on" : ""} onClick={() => setMode("live")}>
-                  Live
-                </button>
-                <button
-                  className={mode === "hosted" ? "on" : ""}
-                  onClick={() => setMode("hosted")}
-                >
-                  Hosted
-                </button>
-              </div>
-              <span className="console-mode-note">
-                {mode === "live"
-                  ? "AG-UI · live tool steps + write-approval"
-                  : "Foundry Agent Service · managed hosted agent"}
-              </span>
-            </div>
-          )}
 
           <div className="console-chat copilotkit-chat-host">
             <ThreadSeeder
@@ -134,14 +124,46 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
           </div>
         </div>
 
+        {/* UM painel, duas abas. Antes eram três blocos empilhados disputando a mesma coluna,
+            e dois deles só têm conteúdo DEPOIS de uma resposta com citação — ocupavam metade da
+            altura exibindo o texto que explica o que apareceria ali.
+
+            A aba não troca sozinha quando chega citação: troca de contexto automática tira o
+            usuário de onde ele estava. O contador na aba avisa que há fonte nova. */}
         <div className="console-side">
-          <ConversationsPanel
-            agent={conversationKey}
-            activeId={threadId}
-            onOpen={setThreadId}
-            onNew={() => setThreadId(crypto.randomUUID())}
-          />
-          <EvidencePanel domain={domain} />
+          <div className="seg-tabs" role="tablist">
+            <button
+              role="tab"
+              aria-selected={tab === "conv"}
+              className={tab === "conv" ? "on" : ""}
+              onClick={() => setTab("conv")}
+            >
+              {t("tabConversations")}
+            </button>
+            <button
+              role="tab"
+              aria-selected={tab === "ev"}
+              className={tab === "ev" ? "on" : ""}
+              onClick={() => setTab("ev")}
+            >
+              {t("tabEvidence")}
+            </button>
+          </div>
+
+          {/* Os dois ficam MONTADOS e um é escondido por CSS: o EvidencePanel assina o stream do
+              agente, e desmontá-lo perderia as citações que chegam enquanto a aba de conversas
+              está aberta — o contador nunca acenderia. */}
+          <div className={tab === "conv" ? "" : "tab-off"}>
+            <ConversationsPanel
+              agent={conversationKey}
+              activeId={threadId}
+              onOpen={setThreadId}
+              onNew={() => setThreadId(crypto.randomUUID())}
+            />
+          </div>
+          <div className={tab === "ev" ? "" : "tab-off"}>
+            <EvidencePanel domain={domain} />
+          </div>
         </div>
       </div>
     </CopilotKitProvider>

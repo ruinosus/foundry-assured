@@ -222,7 +222,10 @@
     "sources": "Sources",
     "guarantees": "Guarantees",
     "sourcesEmpty": "The sources an answer cites appear here — every claim grounded in the base, never assumed.",
-    "suggested": "Try:"
+    "suggested": "Try:",
+    "tabConversations": "Conversations",
+    "tabEvidence": "Evidence",
+    "guaranteesCount": "{count} guarantees active"
   },
   "conversations": {
     "title": "Conversations",
@@ -311,6 +314,20 @@
     "empty": "The sources the answer cites show up here — every claim grounded in the knowledge base, not in guesswork.",
     "sources": "Sources"
   },
+  "frameworks": {
+    "agent-framework": {
+      "name": "Agent Framework",
+      "vendor": "Microsoft"
+    },
+    "langgraph": {
+      "name": "LangGraph",
+      "vendor": "LangChain"
+    },
+    "deepagents": {
+      "name": "deepagents",
+      "vendor": "LangChain"
+    }
+  },
   "knowledge": {
     "title": "Knowledge bases",
     "subtitle": "Your project's bases and the sources feeding them — read straight from the service, without opening the portal.",
@@ -366,7 +383,6 @@
   "nav": {
     "workspace": "Workspace",
     "agents": "My agents",
-    "aiAgents": "Product examples",
     "overview": "Overview",
     "tickets": "Tickets",
     "evals": "Evaluations",
@@ -374,7 +390,8 @@
     "connections": "Connections",
     "knowledge": "Knowledge",
     "skills": "Skills",
-    "usecases": "Use cases"
+    "usecases": "Use cases",
+    "assistants": "Assistants"
   },
   "outcomes": {
     "title": "Results",
@@ -558,6 +575,8 @@
     "resolve": "Write the grounded, cited answer",
     "triageLabel": "Triage",
     "retrieveLabel": "Retrieve",
-    "resolveLabel": "Resolve"
+    "resolveLabel": "Resolve",
+    "running": "Running…",
+    "done": "Done"
   }
 }

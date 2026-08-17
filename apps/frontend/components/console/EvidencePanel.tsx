@@ -154,8 +154,14 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
         )}
       </div>
 
-      <div className="evidence-section">
-        <div className="evidence-title">{t("guarantees")}</div>
+      {/* RECOLHIDO por padrão. O texto das três garantias é estático e não muda com a resposta —
+          mantê-lo aberto gastava metade da coluna dizendo sempre a mesma coisa. Como SINAL
+          (quantas garantias estão ativas) elas continuam visíveis o tempo todo; como TEXTO, só
+          quando alguém quer ler. */}
+      <details className="evidence-section evidence-guar">
+        <summary>
+          <span aria-hidden>▸</span> {t("guaranteesCount", { count: GUARANTEES.length })}
+        </summary>
         <ul className="evidence-guarantees">
           {GUARANTEES.map((g) => (
             <li key={g}>
@@ -169,7 +175,7 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
             </li>
           ))}
         </ul>
-      </div>
+      </details>
     </aside>
   );
 }

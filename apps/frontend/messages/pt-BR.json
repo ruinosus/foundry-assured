@@ -222,7 +222,10 @@
     "sources": "Fontes",
     "guarantees": "Garantias",
     "sourcesEmpty": "As fontes que a resposta citar aparecem aqui — cada afirmação fundamentada na base, não em suposição.",
-    "suggested": "Experimente:"
+    "suggested": "Experimente:",
+    "tabConversations": "Conversas",
+    "tabEvidence": "Evidência",
+    "guaranteesCount": "{count} garantias ativas"
   },
   "conversations": {
     "title": "Conversas",
@@ -311,6 +314,20 @@
     "empty": "As fontes que a resposta citar aparecem aqui — cada afirmação fundamentada na base, não em suposição.",
     "sources": "Fontes"
   },
+  "frameworks": {
+    "agent-framework": {
+      "name": "Agent Framework",
+      "vendor": "Microsoft"
+    },
+    "langgraph": {
+      "name": "LangGraph",
+      "vendor": "LangChain"
+    },
+    "deepagents": {
+      "name": "deepagents",
+      "vendor": "LangChain"
+    }
+  },
   "knowledge": {
     "title": "Bases de conhecimento",
     "subtitle": "As bases do seu projeto e as fontes que as alimentam — lidas direto do serviço, sem abrir o portal.",
@@ -366,7 +383,6 @@
   "nav": {
     "workspace": "Workspace",
     "agents": "Meus agentes",
-    "aiAgents": "Exemplos do produto",
     "overview": "Visão geral",
     "tickets": "Chamados",
     "evals": "Avaliações",
@@ -374,7 +390,8 @@
     "connections": "Conexões",
     "knowledge": "Conhecimento",
     "skills": "Skills",
-    "usecases": "Casos de uso"
+    "usecases": "Casos de uso",
+    "assistants": "Assistentes"
   },
   "outcomes": {
     "title": "Resultados",
@@ -558,6 +575,8 @@
     "resolve": "Redige a resposta fundamentada, com citações",
     "triageLabel": "Triagem",
     "retrieveLabel": "Busca",
-    "resolveLabel": "Resposta"
+    "resolveLabel": "Resposta",
+    "running": "Executando…",
+    "done": "Concluído"
   }
 }
