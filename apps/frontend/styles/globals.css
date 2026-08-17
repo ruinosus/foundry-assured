@@ -1197,3 +1197,16 @@ table.evals tr:last-child td { border-bottom: none; }
 /* Preenche o espaço vertical restante (painéis de chat dentro de coluna flex). */
 .fill { flex: 1; min-height: 0; }
 .strong { font-weight: 600; }
+
+/* ---------- Convivência com o CSS do CopilotKit ---------- */
+/* Dois sistemas de token no mesmo documento, e eles COLIDEM em dois nomes: `--accent` e
+   `--border`. No vocabulário shadcn que o CopilotKit usa, `--accent` é um cinza de hover e
+   `--border` é a linha dos controles dele; no nosso, `--accent` é a cor de ação e `--border`
+   um apelido de `--line`. Como nosso CSS é importado depois, estávamos sobrescrevendo os dele
+   — silenciosamente, e com valores de outra semântica.
+   Aqui devolvemos a semântica DELE dentro do container do chat, usando nossos neutros para
+   que ainda siga o tema. Fora deste escopo, os nomes seguem sendo nossos. */
+.copilotkit-chat-host {
+  --accent: var(--sunk);
+  --border: var(--line);
+}

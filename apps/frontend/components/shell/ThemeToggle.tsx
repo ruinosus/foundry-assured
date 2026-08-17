@@ -3,25 +3,14 @@
 // Seletor de tema — claro · escuro · sistema.
 //
 // Três estados, não dois. "Sistema" não é o mesmo que "claro": ele acompanha o SO e muda
-// sozinho ao anoitecer, que é exatamente o caso de uso deste produto (o mesmo console é
-// operado num incidente de madrugada e apresentado numa sala clara à tarde — ver PRODUCT.md).
+// sozinho ao anoitecer, que é exatamente o caso deste produto (o mesmo console é operado num
+// incidente de madrugada e apresentado numa sala clara à tarde — ver PRODUCT.md).
 //
-// A escolha explícita estampa `data-theme` na raiz; "sistema" REMOVE o atributo, deixando
-// `prefers-color-scheme` decidir. Os tokens em tokens.css cobrem os três casos: `:root` define
-// o claro completo, a media query redefine sob `:not([data-theme="light"])`, e
-// `[data-theme="dark"]` redefine de novo para o botão vencer nos dois sentidos.
+// A aplicação em si mora em lib/theme.ts, porque precisa estampar DOIS sistemas: o nosso
+// (`data-theme`) e o do CopilotKit (a classe `.dark`).
 
 import { useEffect, useState } from "react";
-
-type Theme = "light" | "dark" | "system";
-const KEY = "fa-theme";
-
-/** Aplica na raiz. `system` remove o atributo em vez de escrever um valor. */
-function apply(theme: Theme) {
-  const root = document.documentElement;
-  if (theme === "system") root.removeAttribute("data-theme");
-  else root.setAttribute("data-theme", theme);
-}
+import { applyTheme, readTheme, THEME_KEY, type Theme } from "@/lib/theme";
 
 const OPTIONS: { value: Theme; label: string; icon: string }[] = [
   { value: "light", label: "Claro", icon: "☀" },
@@ -30,21 +19,33 @@ const OPTIONS: { value: Theme; label: string; icon: string }[] = [
 ];
 
 export function ThemeToggle() {
-  // Começa em `system` no servidor e no primeiro render do cliente; o valor salvo entra no
-  // efeito. Ler localStorage durante o render quebraria a hidratação (servidor e cliente
-  // chegariam a marcações diferentes). O script inline em layout.tsx já pintou a tela certa
-  // antes disto rodar, então não há piscada — este estado só sincroniza o controle.
+  // Começa em `system` no servidor e no primeiro render; o valor salvo entra no efeito. Ler
+  // localStorage durante o render quebraria a hidratação. O script inline em layout.tsx já
+  // pintou a tela certa antes disto, então não há piscada — este estado só sincroniza o
+  // controle com o que já está aplicado.
   const [theme, setTheme] = useState<Theme>("system");
 
+  useEffect(() => setTheme(readTheme()), []);
+
+  // Em "sistema", o tema efetivo muda sem ninguém clicar em nada. A classe `.dark` é DOM, não
+  // CSS, então nenhum seletor a coloca sozinho: sem este listener o chat continuaria claro
+  // depois que o SO virasse escuro às 18h.
   useEffect(() => {
-    const saved = localStorage.getItem(KEY) as Theme | null;
-    if (saved === "light" || saved === "dark" || saved === "system") setTheme(saved);
-  }, []);
+    if (theme !== "system") return;
+    const mq = window.matchMedia("(prefers-color-scheme: dark)");
+    const sync = () => applyTheme("system");
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, [theme]);
 
   const choose = (next: Theme) => {
     setTheme(next);
-    localStorage.setItem(KEY, next);
-    apply(next);
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch {
+      /* modo privado / storage bloqueado: o tema vale para esta sessão e pronto */
+    }
+    applyTheme(next);
   };
 
   return (
