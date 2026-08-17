@@ -15,6 +15,7 @@ WorkflowBuilder API verified against agent-framework 1.9.0.
 
 from agent_framework import Workflow, WorkflowBuilder
 
+from app.modules.conversations.public import build_history_provider, conversation_user
 from app.modules.helpdesk.internal.agents import (
     build_resolve_agent,
     build_retrieve_agent,
@@ -32,11 +33,18 @@ def build_helpdesk_workflow(thread_id: str | None = None) -> Workflow:
     scope = memory_scope()
 
     memory = build_memory_provider(credential, scope)
+    # O histórico entra no MESMO ponto que a memória, e os dois são coisas diferentes: memória são
+    # fatos extraídos que valem entre conversas; histórico é esta conversa, para o usuário poder
+    # voltar a ela. Fica no `resolve` porque é o agente que fala com a pessoa — triage e retrieve
+    # são passos internos, e gravá-los encheria a transcrição de ruído que ninguém vai reler.
+    historico = build_history_provider(conversation_user(), "helpdesk", thread_id or "")
+
+    providers = [p for p in (memory, historico) if p]
 
     triage = build_triage_agent(credential)
     retrieve = build_retrieve_agent(credential)
     resolve = build_resolve_agent(
-        credential, context_providers=[memory] if memory else None
+        credential, context_providers=providers or None
     )
     escalate = EscalationExecutor()
 

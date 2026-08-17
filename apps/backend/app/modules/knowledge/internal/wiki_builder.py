@@ -61,6 +61,7 @@ def _backend_root() -> Path:
 
     return Path(_app.__file__).resolve().parent.parent
 from app.modules.knowledge.internal.docbundle_schema import validate_manifest
+from app.shared.telemetry.cost import CostMeter
 
 logger = logging.getLogger(__name__)
 
@@ -215,56 +216,10 @@ def _page_context(files: dict[str, str], wanted: list[str]) -> str:
 #   B) Cost report — we read response.raw_representation.usage_details per call and
 #      print a run-scoped tokens+R$ rollup (the money number dashboards don't compute).
 
-# USD per 1M tokens (input, output). TOKENS are measured exactly; these PRICES are
-# editable estimates (Azure/OpenAI list, 2026) — confirm against your billing.
-_PRICE_USD_PER_1M: dict[str, tuple[float, float]] = {
-    "gpt-5-codex":  (1.25, 10.00),
-    "gpt-5-mini":   (0.25,  2.00),
-    "gpt-5":        (1.25, 10.00),
-    "gpt-4.1-mini": (0.40,  1.60),
-    "gpt-4.1":      (2.00,  8.00),
-}
-_DEFAULT_PRICE = (1.25, 10.00)  # conservative fallback for unknown deployments
-_USD_BRL = float(os.environ.get("USD_BRL", "5.40"))
-
-
-def _price_for(model: str) -> tuple[float, float]:
-    m = model.lower()
-    for key, price in _PRICE_USD_PER_1M.items():
-        if m.startswith(key):
-            return price
-    return _DEFAULT_PRICE
-
-
-def _usage(response) -> tuple[int, int]:
-    """(input, output) tokens from a response's gen_ai usage details."""
-    raw = getattr(response, "raw_representation", None)
-    u = getattr(raw, "usage_details", None) or {}
-    return int(u.get("input_token_count", 0) or 0), int(u.get("output_token_count", 0) or 0)
-
-
-class _CostMeter:
-    """Run-scoped token + cost rollup, fed one agent response at a time."""
-
-    def __init__(self, model: str) -> None:
-        self.model = model
-        self.input = self.output = self.calls = 0
-
-    def add(self, response) -> None:
-        i, o = _usage(response)
-        self.input += i
-        self.output += o
-        self.calls += 1
-
-    def report(self) -> str:
-        pin, pout = _price_for(self.model)
-        usd = self.input / 1e6 * pin + self.output / 1e6 * pout
-        return (
-            f"💰 Custo ({self.model}, {self.calls} chamadas): "
-            f"{self.input / 1000:.1f}K in + {self.output / 1000:.1f}K out "
-            f"= ${usd:.2f} (~R${usd * _USD_BRL:.2f})  "
-            f"[preço {pin}/{pout} USD/1M · USD_BRL={_USD_BRL} — configurável]"
-        )
+# A aritmética de custo saiu daqui: `app.shared.telemetry.cost` é a mesma conta, promovida ao
+# shared kernel na Phase 5.5a. Este arquivo mantinha uma CÓPIA privada dela — a promoção
+# aconteceu, a migração do chamador não —, e duas tabelas de preço divergem no primeiro modelo
+# novo, sem dar erro: os dois relatórios simplesmente passam a discordar.
 
 
 def _maybe_setup_observability() -> bool:
@@ -326,7 +281,7 @@ async def _run_resilient(agent, prompt: str, *, label: str, retries: int = 7, ba
 async def build_component_wiki(repo: Path, component: str, version: str, out_dir: Path, model: str | None = None, verify: bool = True, groups: list[str] | None = None, fidelity_root: Path | None = None) -> Path:
     credential = DefaultAzureCredential()
     resolved_model = model or tenant_config().foundry_model
-    meter = _CostMeter(resolved_model)
+    meter = CostMeter(resolved_model)
     _maybe_setup_observability()
 
     def _agent(name: str, instructions: str):

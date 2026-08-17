@@ -56,6 +56,10 @@ MODULES = (
     # por construção: a gestão é do SDK, aqui mora projeção e autorização.
     "foundry",
     "hitl",  # ADR-019: approve/edit/reject/respond + the role gate neither framework has
+    # Onde uma conversa fica depois que a aba fecha. O store (blobs de apêndice) e o
+    # HistoryProvider do agent-framework; o caminho do blob começa no object-id do usuário, que é
+    # o que isola uma pessoa da outra.
+    "conversations",
 )
 
 PREFIXES = (

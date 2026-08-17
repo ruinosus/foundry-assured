@@ -5,9 +5,14 @@ vai olhar, e é onde é mais fácil produzir algo bonito e falso.
 
 O QUE MEDIMOS DE VERDADE:
 
-    conversas atendidas   →  sessões dos agentes do caso (`list_sessions`)
+    conversas atendidas   →  o store de conversas (+ sessões do Foundry, quando houver)
+    tokens gastos         →  o uso que o serviço devolve no fim de cada stream
     escalações abertas    →  os tickets, que o produto grava
     respostas com fonte   →  o gate de eval, quando houver execução no período
+
+A primeira linha já foi `list_sessions` e SÓ isso — e media nada: o runtime executa aqui, não no
+Foundry, então eram zero sessões e portanto R$ 0,00 de economia em qualquer cenário. Ver
+`_sessions_of`.
 
 O QUE NÃO TEMOS, e sem o que "ROI" seria ficção: a LINHA DE BASE. Quanto tempo um atendimento
 levava antes, quantos desses teriam virado ticket sem o assistente, quanto custa a hora de quem
@@ -39,27 +44,62 @@ DEFAULT_ASSUMPTION = {
 }
 
 
-def _sessions_of(agent_names: list[str]) -> tuple[int, str | None]:
-    """Quantas conversas os agentes deste caso atenderam.
+def _sessions_of(case_id: str, agent_names: list[str]) -> tuple[int, int, int, str | None]:
+    """Conversas e tokens deste caso: `(conversas, tokens_in, tokens_out, motivo)`.
+
+    ISTO ESTAVA MEDINDO NADA. A versão anterior contava só `list_sessions` dos agentes
+    publicados, e uma medição contra o projeto real mostrou **zero sessões nos 10 agentes** —
+    porque o runtime executa aqui, não no Foundry (`grounded/internal/per_request.py`:
+    `use_service_session=False`). Com conversas sempre zero, `resolvidos` era zero e a economia
+    estimada era R$ 0,00 em qualquer cenário. O painel parecia funcionar.
+
+    Agora a fonte primária é o STORE DE CONVERSAS, que é onde as conversas de fato acontecem, e
+    as sessões do Foundry continuam somando por cima — para o dia em que um agente hospedado
+    atender. As duas origens não se sobrepõem: nenhuma conversa nossa vira sessão do serviço.
 
     Erro NÃO vira zero: zero conversas e "não consegui contar" levam a conclusões opostas — a
     primeira diz que ninguém usa, a segunda não diz nada. O motivo sobe junto.
     """
+    from app.modules.conversations.public import usage_totals
+
+    motivo: str | None = None
+
+    # O caso de uso é a chave do store: o `record_turn`/HistoryProvider grava sob o id do
+    # DOMÍNIO, que é o mesmo id do caso para os casos de um domínio só.
+    totais = usage_totals(case_id)
+    if totais.get("error"):
+        motivo = "Não foi possível ler as conversas gravadas."
+    conversas = int(totais.get("conversations", 0))
+    tokens_in = int(totais.get("input_tokens", 0))
+    tokens_out = int(totais.get("output_tokens", 0))
+
     from app.modules.foundry.public import get_agent
 
-    total = 0
-    motivo: str | None = None
     for nome in agent_names:
         try:
             detalhe = get_agent(nome, sessions_limit=100)
             sessoes = detalhe.get("sessions")
             if sessoes is None:
-                motivo = motivo or "As sessões de alguns agentes não puderam ser lidas."
-                continue
-            total += len(sessoes)
+                continue  # sem permissão para ler sessões não é falha de medição hoje
+            conversas += len(sessoes)
         except Exception as exc:  # noqa: BLE001 — um agente ilegível não zera a contagem
-            motivo = motivo or f"Não foi possível ler as sessões: {exc}"
-    return total, motivo
+            motivo = motivo or f"Não foi possível ler as sessões do Foundry: {exc}"
+    return conversas, tokens_in, tokens_out, motivo
+
+
+def _modelo() -> str:
+    """O modelo que atende os domínios — é dele que sai o preço por token.
+
+    Vem da config do TENANT, não de uma constante: em `shared` cada cliente pode ter o seu, e um
+    preço fixo aqui cobraria de todos pelo modelo de um. Falhar cai num nome vazio, e o preço de
+    modelo desconhecido em `cost.py` é o CONSERVADOR (o mais caro) — errar superestima o custo em
+    vez de escondê-lo, que é o lado certo para errar num painel de retorno.
+    """
+    with contextlib.suppress(Exception):
+        from app.modules.tenancy.public import tenant_config
+
+        return tenant_config().foundry_model or ""
+    return ""
 
 
 def _tickets_of(case_id: str, agent_names: list[str]) -> int:
@@ -85,7 +125,7 @@ def outcomes(case: dict, assumption: dict | None = None) -> dict:
     premissa = {**DEFAULT_ASSUMPTION, **(assumption or {})}
     nomes = [a["name"] for a in case.get("agents", []) if a.get("name")]
 
-    conversas, motivo = _sessions_of(nomes)
+    conversas, tokens_in, tokens_out, motivo = _sessions_of(case["id"], nomes)
     escalados = _tickets_of(case["id"], nomes)
 
     # Resolvido sem escalar: a métrica que responde "o assistente resolveu, ou só encaminhou?".
@@ -97,9 +137,25 @@ def outcomes(case: dict, assumption: dict | None = None) -> dict:
     minutos = resolvidos * float(premissa["minutes_per_case"])
     economia = round((minutos / 60.0) * float(premissa["hourly_cost"]), 2)
 
+    # CUSTO REAL — a terceira faixa, e a única que não depende de premissa nenhuma. Tokens são
+    # medidos exatamente (o serviço devolve o uso no evento final do stream); o PREÇO por 1M é
+    # tabela editável, e `cost.py` diz isso no cabeçalho. Sem esta linha o painel só mostrava
+    # ganho, o que faz qualquer projeto parecer lucrativo.
+    from app.shared.telemetry.cost import price_for, usd_brl
+
+    preco_in, preco_out = price_for(_modelo())
+    custo_usd = tokens_in / 1e6 * preco_in + tokens_out / 1e6 * preco_out
+    custo = round(custo_usd * usd_brl(), 2)
+
     return {
         "case": case["id"],
         "conversations": conversas,
+        "input_tokens": tokens_in,
+        "output_tokens": tokens_out,
+        "actual_cost": custo,
+        # O retorno LÍQUIDO. Pode ser negativo, e um número negativo aqui é informação — significa
+        # que este caso gastou mais em modelo do que economizou sob a premissa informada.
+        "net_saved": round(economia - custo, 2),
         "escalated": escalados,
         "resolved_without_escalation": resolvidos,
         "resolution_rate": taxa,
@@ -109,12 +165,19 @@ def outcomes(case: dict, assumption: dict | None = None) -> dict:
         "estimated_cost_saved": economia,
         "assumption": premissa,
         # A honestidade que separa medida de propaganda: dizer o que é CONTADO e o que é ASSUMIDO.
-        "measured": ["conversations", "escalated", "resolved_without_escalation"],
-        "estimated": ["estimated_minutes_saved", "estimated_cost_saved"],
+        "measured": [
+            "conversations", "escalated", "resolved_without_escalation",
+            # Tokens são MEDIDOS. O preço por token é tabela — por isso `actual_cost` fica numa
+            # faixa própria na tela, nem com o contado nem com o estimado.
+            "input_tokens", "output_tokens",
+        ],
+        "estimated": ["estimated_minutes_saved", "estimated_cost_saved", "net_saved"],
         "caveat": (
             "Conversas e escalações são contadas. A economia é uma ESTIMATIVA calculada sobre a "
-            "premissa acima — troque-a pelos números da sua operação. As escalações são o total "
-            "do período, não só as deste caso: o ticket não registra qual assistente o abriu."
+            "premissa acima — troque-a pelos números da sua operação. O custo é medido em "
+            "tokens reais, convertido por uma tabela de preços editável. As escalações são o "
+            "total do período, não só as deste caso: o ticket não registra qual assistente o "
+            "abriu."
         ),
         "reason": motivo,
     }

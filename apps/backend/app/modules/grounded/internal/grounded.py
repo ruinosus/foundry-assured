@@ -116,6 +116,9 @@ async def stream_grounded(body: dict, domain, user=None, language: str | None = 
     from ag_ui.encoder import EventEncoder
     from azure.ai.projects.aio import AIProjectClient
 
+    from app.modules.conversations.public import conversation_user as _conversation_user
+    from app.modules.conversations.public import record_turn as _record_turn
+    from app.modules.conversations.public import record_usage as _record_usage
     from app.modules.hosted.public import last_user_text as _last_user_text
     from app.modules.knowledge.public import retrieve
 
@@ -187,12 +190,33 @@ async def stream_grounded(body: dict, domain, user=None, language: str | None = 
         ]
 
         stream = await client.responses.create(**kwargs)
+        # O texto é acumulado enquanto já está sendo transmitido: gravar a conversa não pode
+        # custar uma segunda chamada ao modelo nem atrasar o que o usuário está lendo.
+        resposta: list[str] = []
+        tokens_in = tokens_out = 0
         async for ev in stream:
-            if getattr(ev, "type", "") == "response.output_text.delta":
+            tipo = getattr(ev, "type", "")
+            if tipo == "response.output_text.delta":
                 delta = getattr(ev, "delta", "") or ""
                 if delta:
+                    resposta.append(delta)
                     yield enc.encode(TextMessageContentEvent(message_id=message_id, delta=delta))
+            elif tipo == "response.completed":
+                # O uso só existe no evento FINAL do stream — os deltas não o carregam. É a
+                # única medida exata de token que temos neste caminho; o resto seria estimativa
+                # por contagem de caracteres, que erra por tokenizador.
+                uso = getattr(getattr(ev, "response", None), "usage", None)
+                tokens_in = int(getattr(uso, "input_tokens", 0) or 0)
+                tokens_out = int(getattr(uso, "output_tokens", 0) or 0)
         yield enc.encode(TextMessageEndEvent(message_id=message_id))
+
+        # Persiste o turno. Este caminho não constrói agente do `agent_framework` — fala com a API
+        # de respostas — então não há `context_providers` onde plugar o HistoryProvider, e o
+        # registro é explícito. Ver `conversations.record_turn`.
+        _conversa = agent_name or getattr(domain, "id", "") or "grounded"
+        _usuario = _conversation_user()
+        _record_turn(_usuario, _conversa, thread_id, user_text, "".join(resposta))
+        _record_usage(_usuario, _conversa, thread_id, tokens_in, tokens_out)
         if sources:
             yield enc.encode(CustomEvent(name="sources", value=sources))
         yield enc.encode(RunFinishedEvent(thread_id=thread_id, run_id=run_id))

@@ -38,6 +38,14 @@
     ],
     [
       "GET",
+      "/conversations"
+    ],
+    [
+      "GET",
+      "/conversations/{agent}/{conversation_id}"
+    ],
+    [
+      "GET",
       "/docs"
     ],
     [
@@ -265,6 +273,14 @@
     [
       "GET",
       "/admin/users"
+    ],
+    [
+      "GET",
+      "/conversations"
+    ],
+    [
+      "GET",
+      "/conversations/{agent}/{conversation_id}"
     ],
     [
       "GET",
@@ -515,6 +531,14 @@
     [
       "GET",
       "/admin/users"
+    ],
+    [
+      "GET",
+      "/conversations"
+    ],
+    [
+      "GET",
+      "/conversations/{agent}/{conversation_id}"
     ],
     [
       "GET",

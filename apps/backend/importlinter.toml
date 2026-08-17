@@ -380,3 +380,31 @@ source_modules = [
     "app.shared",
 ]
 forbidden_modules = ["app.modules.foundry.internal"]
+
+# As conversas. O `internal/` guarda o store (blobs de apêndice) e o `HistoryProvider` que os
+# agentes recebem; de fora só se importa `public`. O motivo aqui é concreto: o caminho do blob
+# começa no object-id do usuário, e é ele que faz o isolamento entre pessoas. Um módulo que
+# montasse esse caminho por conta própria poderia escrever a conversa de alguém na pasta de
+# outro — então quem monta o caminho é um lugar só, por construção.
+[[tool.importlinter.contracts]]
+name = "conversations internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.modules.usecases",
+    "app.modules.hitl",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.conversations.internal"]

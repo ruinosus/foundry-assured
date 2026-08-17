@@ -22,9 +22,11 @@ import { branding } from "@/lib/branding";
 import { getDomain, type Domain } from "@/lib/domains";
 import { GraphApproval } from "@/components/chat/GraphApproval";
 import { TicketApproval } from "@/components/chat/TicketApproval";
+import { ConversationsPanel } from "@/components/console/ConversationsPanel";
 import { EvidencePanel } from "@/components/console/EvidencePanel";
 import { MermaidZoom } from "@/components/console/MermaidZoom";
 import { SuggestedPrompts } from "@/components/console/SuggestedPrompts";
+import { ThreadSeeder } from "@/components/console/ThreadSeeder";
 
 const WorkflowSteps = dynamic(
   () => import("@/components/chat/WorkflowSteps").then((m) => m.WorkflowSteps),
@@ -51,6 +53,14 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
   const [mode, setMode] = useState<"live" | "hosted">("live");
   const activeAgentId =
     mode === "hosted" && domain.hostedAgentId ? domain.hostedAgentId : domain.id;
+
+  // A conversa ativa. Começa vazia e o CopilotKit cria a sua; ao abrir uma anterior, o id passa a
+  // ser prop-controlado e o backend continua NAQUELA conversa (o HistoryProvider carrega o
+  // histórico pelo mesmo id).
+  const [threadId, setThreadId] = useState<string>(() => crypto.randomUUID());
+  // A gravação é por DOMÍNIO, não pelo gêmeo hospedado: live e hosted são a mesma conversa do
+  // ponto de vista de quem conversa, e separá-las esconderia metade do histórico ao alternar.
+  const conversationKey = domain.id;
 
   return (
     <CopilotKitProvider
@@ -114,12 +124,25 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
           )}
 
           <div className="console-chat copilotkit-chat-host">
-            <CopilotChat agentId={activeAgentId} />
+            <ThreadSeeder
+              agentId={activeAgentId}
+              agentKey={conversationKey}
+              threadId={threadId}
+            />
+            <CopilotChat agentId={activeAgentId} threadId={threadId} />
             <MermaidZoom />
           </div>
         </div>
 
-        <EvidencePanel domain={domain} />
+        <div className="console-side">
+          <ConversationsPanel
+            agent={conversationKey}
+            activeId={threadId}
+            onOpen={setThreadId}
+            onNew={() => setThreadId(crypto.randomUUID())}
+          />
+          <EvidencePanel domain={domain} />
+        </div>
       </div>
     </CopilotKitProvider>
   );

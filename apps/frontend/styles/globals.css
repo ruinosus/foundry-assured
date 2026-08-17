@@ -1586,3 +1586,90 @@ table.evals tr:last-child td { border-bottom: none; }
   font-size: var(--text-xs);
   color: var(--muted);
 }
+
+/* ── Conversas ─────────────────────────────────────────────────────────────────────────────
+   A coluna da direita passou a ter DUAS coisas: as conversas anteriores em cima e a evidência
+   embaixo. Elas dividem a mesma largura porque respondem perguntas do mesmo momento — "onde eu
+   estava" e "de onde veio essa resposta" — e uma terceira coluna espremeria o chat, que é o que
+   a pessoa veio usar.
+
+   A lista rola sozinha e tem teto de altura: com trinta conversas, a evidência sairia da tela e o
+   painel de fontes viraria algo que só existe em quem nunca conversou. */
+.console-side {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.conv-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--line);
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+/* A evidência já tinha a borda da esquerda; agora quem a desenha é o `.console-side`, senão
+   apareceriam duas linhas coladas. */
+.console-side .evidence {
+  border-left: 0;
+}
+
+.conv-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.conv-item {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.conv-item:hover {
+  background: var(--sunken);
+}
+
+/* A conversa aberta. Fundo afundado + peso, NUNCA só cor: quem não distingue matiz precisa
+   enxergar qual está aberta. */
+.conv-item.on {
+  background: var(--sunken);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.conv-item.on .conv-title {
+  font-weight: 600;
+}
+
+.conv-title {
+  display: block;
+  font-size: var(--text-sm);
+  /* Uma pergunta longa não pode empurrar a largura da coluna. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conv-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-2xs);
+  color: var(--muted);
+}

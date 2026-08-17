@@ -21,6 +21,10 @@ type Result = {
   resolution_rate: number | null;
   estimated_minutes_saved: number;
   estimated_cost_saved: number;
+  input_tokens: number;
+  output_tokens: number;
+  actual_cost: number;
+  net_saved: number;
   assumption: { minutes_per_case: number; hourly_cost: number; currency: string; source: string };
   caveat: string;
   reason: string | null;
@@ -121,6 +125,32 @@ export function Outcomes({ caseId }: { caseId: string }) {
                 cost: moeda(data.assumption.hourly_cost),
               })}
             </p>
+          </div>
+
+          {/* CUSTO REAL — faixa própria, nem com o contado nem com o estimado. Os tokens são
+              medidos; o preço por token é tabela editável. Misturá-lo com a economia estimada
+              faria a conta parecer toda medida, e misturá-lo com o contado esconderia que o
+              preço é premissa. */}
+          <p className="lead-in">{t("costLabelBand")}</p>
+          <div className="grid g3">
+            <div className="metric">
+              <span className="metric-value num">{moeda(data.actual_cost)}</span>
+              <span className="metric-label">{t("actualCost")}</span>
+            </div>
+            <div className="metric">
+              <span className="metric-value num">
+                {((data.input_tokens + data.output_tokens) / 1000).toFixed(1)}K
+              </span>
+              <span className="metric-label">{t("tokens")}</span>
+            </div>
+            <div className="metric">
+              {/* Líquido negativo é INFORMAÇÃO, não erro: este caso gastou mais em modelo do que
+                  economizou sob a premissa. Marcado, não escondido. */}
+              <span className={`metric-value num${data.net_saved < 0 ? " bad-line" : ""}`}>
+                {moeda(data.net_saved)}
+              </span>
+              <span className="metric-label">{t("netSaved")}</span>
+            </div>
           </div>
 
           <div className="row-tight">
