@@ -35,12 +35,28 @@ SYNTHESIS_DIRECTIVE = (
 )
 
 
-def build_synthesis_kwargs(user_text: str, domain, docs: list[dict], *, model: str) -> dict:
+# O pedido de idioma que viaja com a requisição. Curto e imperativo de propósito: cada
+# instrução dinâmica anexada disputa contexto com as regras já compostas, então esta diz uma
+# coisa só. A regra COMPLETA (incluindo não traduzir citação) mora no guardrail
+# `response-language`, que já está no prompt composto — aqui só chega o valor.
+def _language_directive(language: str | None) -> str:
+    if not language:
+        return ""
+    return f"\n\nIdioma da resposta: {language}."
+
+
+def build_synthesis_kwargs(
+    user_text: str, domain, docs: list[dict], *, model: str, language: str | None = None
+) -> dict:
     """The synthesis `responses.create(**kwargs)` payload. Pure — no I/O.
 
     `docs` is the list of retrieved (already ACL-trimmed + deduped) documents, each
     `{index, source, url, snippet}`. The snippets become the model's ONLY grounding context.
-    `domain` is duck-typed: reads `.instructions`."""
+    `domain` is duck-typed: reads `.instructions`.
+
+    `language` é a preferência de quem perguntou (de `Accept-Language`). Opcional: sem ela o
+    agente segue o idioma da pergunta, que é o que o guardrail manda. O Foundry não tem campo
+    de idioma para agentes de texto — procurado e não encontrado —, então isto é instrução."""
     context = "\n\n".join(f"[{d['index']}] {d['source']}:\n{d.get('snippet', '')}" for d in docs)
     body = (
         f"{SYNTHESIS_DIRECTIVE}\n\n=== DOCUMENTOS ===\n{context}\n\n=== PERGUNTA ===\n{user_text}"
@@ -50,7 +66,7 @@ def build_synthesis_kwargs(user_text: str, domain, docs: list[dict], *, model: s
     return {
         "model": model,
         "input": body,
-        "instructions": getattr(domain, "instructions", "") or "",
+        "instructions": (getattr(domain, "instructions", "") or "") + _language_directive(language),
         "stream": True,
     }
 
@@ -73,14 +89,17 @@ def _async_credential(user):
     return DefaultAzureCredential()
 
 
-async def stream_grounded(body: dict, domain, user=None) -> AsyncGenerator[str]:
+async def stream_grounded(body: dict, domain, user=None, language: str | None = None) -> AsyncGenerator[str]:
     """Stream a grounded answer (as the user) as AG-UI SSE: text deltas + a `sources` CUSTOM event.
 
     ONE archetype: retrieve via the `retrieve()` seam (per-user ACL / dedupe live there), then
     synthesize from ONLY those docs and emit their sources as citations.
 
     `user` is the signed-in User, CAPTURED IN THE ENDPOINT and passed in (the current_user() contextvar
-    doesn't survive into this generator — see _async_credential). None → app identity (dev/no-auth)."""
+    doesn't survive into this generator — see _async_credential). None → app identity (dev/no-auth).
+
+    `language` chega do endpoint pelo mesmo motivo que `user`: é dado da requisição, e a
+    requisição não sobrevive dentro do gerador do StreamingResponse."""
     from ag_ui.core import (
         CustomEvent,
         RunErrorEvent,
@@ -118,7 +137,9 @@ async def stream_grounded(body: dict, domain, user=None) -> AsyncGenerator[str]:
         client = await client if inspect.isawaitable(client) else client
 
         # Station 3 — synthesize: the retrieved docs are the ONLY grounding context (RULE #4).
-        kwargs = build_synthesis_kwargs(user_text, domain, docs, model=cfg.foundry_model)
+        kwargs = build_synthesis_kwargs(
+            user_text, domain, docs, model=cfg.foundry_model, language=language
+        )
 
         # Station 4 — emit: include the retrieved snippet as `content` so the UI can show the source
         # INLINE on click (the blob URLs are private — allowBlobPublicAccess=false — so opening 403s).

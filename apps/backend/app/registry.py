@@ -134,6 +134,21 @@ def _domains() -> list[DomainSpec]:
 
 
 
+def _preferred_language(request) -> str | None:
+    """O idioma preferido do chamador, de `Accept-Language`.
+
+    Fica na primeira escolha e ignora os pesos: o modelo não precisa da lista de fallback, e
+    passar "pt-BR,pt;q=0.9,en;q=0.8" inteiro só gastaria contexto. Sem o header, devolve None e
+    o agente segue o idioma da pergunta — que é o que o guardrail `response-language` manda.
+    """
+    raw = (request.headers.get("accept-language") or "").strip()
+    if not raw:
+        return None
+    first = raw.split(",")[0].split(";")[0].strip()
+    # Um header malformado não deve virar instrução: só passa o que tem cara de tag BCP-47.
+    return first if 2 <= len(first) <= 12 and all(c.isalnum() or c == "-" for c in first) else None
+
+
 def _mount_grounded(app: FastAPI, domain_id: str) -> None:
     """POST /{id} → stream the grounded archetype (cited Q&A). Captures current_user() in the
     endpoint body (the contextvar is lost inside the StreamingResponse generator).
@@ -148,8 +163,17 @@ def _mount_grounded(app: FastAPI, domain_id: str) -> None:
         from app.shared.auth import current_user
         from app.modules.grounded.public import stream_grounded
 
+        # `Accept-Language` é o padrão da web para isto — o browser já o envia e o seletor de
+        # idioma da interface o sobrescreve. Inventar um campo no corpo seria criar vocabulário
+        # onde já existe um. Lido AQUI porque, como `current_user()`, a requisição não sobrevive
+        # dentro do gerador do StreamingResponse.
         return StreamingResponse(
-            stream_grounded(await request.json(), domain_spec(domain_id), current_user()),
+            stream_grounded(
+                await request.json(),
+                domain_spec(domain_id),
+                current_user(),
+                language=_preferred_language(request),
+            ),
             media_type="text/event-stream",
         )
 

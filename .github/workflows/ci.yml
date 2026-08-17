@@ -115,6 +115,12 @@ jobs:
       # MÁXIMA MAIOR: o módulo `foundry` é fino porque a gestão já é do SDK. O pouco que ele faz
       # — projetar o recurso para a interface — é onde dá para errar: vazar vocabulário de
       # plataforma, ou esconder que agente é recurso VERSIONADO. Offline.
+      # Accept-Language é entrada do usuário e termina DENTRO de um prompt — a superfície mais
+      # cara para se injetar texto. O gate cobre o parsing (recusa o malformado) e o payload
+      # (ausência não inventa idioma).
+      - name: Idioma da resposta (segue quem pergunta; header hostil não vira instrução)
+        run: uv run python -m tests.grounded.language_test
+
       - name: Projeção de agente (versão visível, plataforma escondida)
         run: uv run python -m tests.foundry.agent_projection_test
 
