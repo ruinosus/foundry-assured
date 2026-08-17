@@ -140,6 +140,9 @@
     ]
   },
   "hosted": {
+    "foundry": [
+      "modules/hosted/api.py"
+    ],
     "shared": [
       "modules/hosted/api.py",
       "modules/hosted/internal/hosted.py"

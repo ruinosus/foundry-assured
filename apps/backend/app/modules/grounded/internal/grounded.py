@@ -20,6 +20,7 @@ Verified live in the STEP 0 / STEP 0.5 findings (docs/superpowers/plans/).
 from __future__ import annotations
 
 import inspect
+import logging
 import uuid
 from collections.abc import AsyncGenerator
 
@@ -28,6 +29,9 @@ from app.shared.settings import settings
 
 # Prepended to the synthesis input — the model answers ONLY from the retrieved documents and cites them
 # by their [n] number.
+logger = logging.getLogger(__name__)
+
+
 SYNTHESIS_DIRECTIVE = (
     "Responda APENAS com base nos DOCUMENTOS fornecidos abaixo — nunca use conhecimento próprio. "
     "Cite a fonte de cada afirmação pelo seu número entre colchetes, ex.: [1]. Se os documentos não "
@@ -133,13 +137,45 @@ async def stream_grounded(body: dict, domain, user=None, language: str | None = 
         # Station 2 — retrieve: ONE line. The seam owns identity/ACL/dedupe (app.modules.knowledge.internal.retrieval).
         docs = await retrieve(user_text, user, domain)
 
-        client = proj.get_openai_client()
-        client = await client if inspect.isawaitable(client) else client
+        # SEGUNDA MÁXIMA: quem responde é o AGENTE PUBLICADO no Foundry, não um cliente anônimo
+        # com o prompt colado na requisição. A diferença não é estética — antes desta linha o
+        # recurso publicado era catálogo: aparecia no portal, tinha versão e histórico, e nunca
+        # atendia ninguém. A versão que o portal mostra passa a ser a que responde.
+        #
+        # Fallback deliberado: se o agente não existir (projeto ainda sem ingest, nome renomeado),
+        # cai no caminho anônimo com as instruções embutidas. Um domínio que para de responder
+        # porque falta um recurso de catálogo seria pior que um que responde pelo caminho antigo —
+        # e o aviso no log diz o que republicar.
+        agent_name = getattr(domain, "id", None) or getattr(domain, "name", None)
+        client = None
+        if agent_name:
+            try:
+                client = proj.get_openai_client(agent_name=agent_name)
+                client = await client if inspect.isawaitable(client) else client
+            except Exception as exc:  # noqa: BLE001 — o domínio vale mais que a via preferida
+                logger.warning(
+                    "agente '%s' indisponível no Foundry (%s); usando o caminho anônimo. "
+                    "Republique com `uv run python -m cli.provision_agents`.",
+                    agent_name, exc,
+                )
+                client = None
+        usando_agente = client is not None
+        if client is None:
+            client = proj.get_openai_client()
+            client = await client if inspect.isawaitable(client) else client
 
         # Station 3 — synthesize: the retrieved docs are the ONLY grounding context (RULE #4).
         kwargs = build_synthesis_kwargs(
             user_text, domain, docs, model=cfg.foundry_model, language=language
         )
+        if usando_agente:
+            # As instruções JÁ estão no agente publicado — mandá-las de novo as duplicaria no
+            # contexto e, pior, deixaria o prompt do repositório vencer o do serviço em silêncio
+            # quando os dois divergissem. A versão publicada é a fonte quando o agente atende.
+            kwargs.pop("instructions", None)
+            # E o modelo precisa ser o DO AGENTE: o serviço recusa com "Model must match the
+            # agent's model" quando um agente é especificado e o modelo diverge. Verificado.
+            kwargs["model"] = cfg.foundry_model
 
         # Station 4 — emit: include the retrieved snippet as `content` so the UI can show the source
         # INLINE on click (the blob URLs are private — allowBlobPublicAccess=false — so opening 403s).
