@@ -134,6 +134,33 @@ diferencial do projeto, foi pesquisada (não há equivalente de primeira parte �
 `docs/superpowers/specs/2026-08-16-citation-resolvability-as-a-product-design.md`) e por isso
 sobrevive à máxima. Tudo que for **produto** segue a máxima sem exceção.
 
+## SEGUNDA MÁXIMA — tudo fica no Foundry; muda quem colocou e como
+
+Não existe "agente de código" e "agente do Foundry". Existe **um lugar** — o Foundry — e dois
+caminhos até ele:
+
+```
+dev      →  documento AgentSchema no repo  →  cli.provision_agents  →  Foundry
+usuário  →  wizard na tela                 →  POST /agents/…        →  Foundry
+```
+
+Depois de publicado, ninguém precisa saber por qual caminho veio: mesma lista, mesma versão,
+mesmo histórico, mesmo portal. O mesmo vale para base de conhecimento, skill e toolbox.
+
+**O que isso proíbe.** Manter no código uma lista de recursos que também existem no serviço. Duas
+listas divergem no primeiro item novo — e a divergência não dá erro, só faz a tela mentir. Se
+algo precisa ser publicado, o publicador **deriva** da fonte que já existe (os documentos
+AgentSchema para prompt; o `registry.py` para runtime), nunca declara uma cópia.
+
+**O que isso NÃO proíbe.** Um recurso publicado cujo comportamento roda aqui. Um workflow de três
+passos ou um grafo LangGraph com HITL não cabem num `PromptAgentDefinition` — publicá-los registra
+identidade, prompt e versão, e a execução continua no backend. Isso é legítimo **desde que dito**:
+`metadata.runtime` carrega `foundry` ou `backend`, e a interface mostra. Um recurso que mente
+sobre onde executa é pior que um recurso ausente.
+
+Esta máxima nasceu de um sintoma concreto: a tela "Meus agentes" mostrava zero enquanto o produto
+exibia seis assistentes — porque os assistentes viviam só como configuração de código.
+
 ## Regras inegociáveis
 
 1. **NÃO invente assinaturas de SDK.** A superfície dos SDKs muda rápido — em especial o namespace `.beta` de `azure-ai-projects`. Antes de fixar qualquer chamada a `azure-ai-projects`, `agent-framework`, `agent-framework-ag-ui` ou `agent-framework-declarative`, verifique contra `learn.microsoft.com/azure/foundry` e o repo `microsoft-foundry/foundry-samples`. Se não conseguir confirmar, deixe um `# TODO: verificar assinatura` explícito em vez de chutar.
@@ -142,7 +169,7 @@ sobrevive à máxima. Tudo que for **produto** segue a máxima sem exceção.
 4. Toda resposta do resolver **DEVE** conter ao menos uma citação de fonte. É policy de eval (ASSERT pega violação).
 5. A tool `create_ticket` só pode disparar **após aprovação humana explícita** — e a aprovação HITL exige o papel **Approver** (ou **Admin**). Autorização vem de App Roles do Entra (Admin / Author / Approver / Reader) no claim `roles` do token; gestão de usuários + papéis fica em `/admin/users` (via Microsoft Graph, app-only). Plano: [`docs/RBAC-AND-USER-MANAGEMENT-PLAN.md`](./docs/RBAC-AND-USER-MANAGEMENT-PLAN.md).
 6. **Controle de acesso é DADO** (os grupos de leitura de cada fonte), **nunca lógica de classificação no código**. O acesso segue a fonte: grupos vêm do manifesto/`COCKPIT_ACL_CLASSIFICATION`, nomes resolvem para object-IDs via `COCKPIT_ACL_GROUP_MAP`; doc sem acesso declarado → fail-closed. Ver [`docs/METHOD.md`](./docs/METHOD.md).
-7. **Prompt muda no documento AgentSchema**, nunca em `app/modules/agentdefs/public.py` (ver seção acima).
+7. **Prompt muda no documento AgentSchema**, nunca em `app/modules/agentdefs/public.py` (ver seção acima). Depois de mudar, republique com `uv run python -m cli.provision_agents` — o Foundry é onde o agente existe (SEGUNDA MÁXIMA), e um prompt que mudou só aqui deixa o portal mostrando a versão anterior.
 8. **Fronteiras de módulo são verificadas por `import-linter`** (ADR-017). Código novo entra DENTRO de um módulo existente ou cria módulo novo com `public.py`/`internal/`; import cross-module só via `public`. O shared kernel (`app/shared/`) não importa nenhum módulo. Rode `uv run lint-imports --config importlinter.toml` antes de commitar.
 9. **Nunca calcule caminho contando `parents[N]` a partir do próprio arquivo** — ancore no pacote `app` (`Path(app.__file__).resolve().parent.parent`). Três caminhos quebraram assim durante a ADR-017, dois em silêncio. `tests/architecture/filesystem_anchors_test.py` é o gate.
 10. Nunca commitar segredo ou valor de `.env` (`TEST-CREDENTIALS.local.md` é gitignored).
