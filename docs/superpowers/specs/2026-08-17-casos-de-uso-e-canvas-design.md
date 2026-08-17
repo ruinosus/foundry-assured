@@ -184,6 +184,28 @@ A camada 3 é a que importa: o agente veio do **mesmo documento AgentSchema** qu
 produto usa, montado com o **mesmo `FoundryChatClient`** que o helpdesk monta hoje. O YAML declara
 a ORDEM; o conteúdo continua vindo de onde sempre veio.
 
+**A DESCOBERTA MAIS IMPORTANTE: Power Fx exige .NET, e sem ele o fluxo TRAVA EM SILÊNCIO.**
+
+O fluxo de três passos com `input.arguments: {pergunta: =Local.Triagem}` **não completa**: nenhuma
+exceção, nenhuma mensagem, apenas nunca responde. O mesmo fluxo **sem as expressões** executa
+inteiro e devolve resposta real. O log traz `Microsoft.NETCore.App, version '8.0.0'` não
+encontrado — o avaliador de Power Fx é .NET, carregado por `clr_loader`.
+
+Isto muda o desenho de duas formas, e as duas são duras:
+
+1. **O container que executar workflows declarativos precisa de .NET.** Não é opcional: passar
+   dado de um nó para outro é a razão de existir do canvas, e passar dado é Power Fx.
+2. **A falha é silenciosa, que é a pior classe.** Um fluxo publicado num ambiente sem .NET não
+   dá erro — apenas nunca responde. Ninguém olharia o runtime .NET ao investigar "o assistente
+   não responde".
+
+O gate de round-trip (`YAML → WorkflowFactory.build`) NÃO pega isso: o build passa, a execução é
+que trava. Então o gate precisa ser de **execução**, não de build — um fluxo mínimo com uma
+expressão Power Fx, executado no CI, que falha se a resposta não vier.
+
+Isto ecoa a nota do `CLAUDE.md` sobre o reader de prompts recusar PowerFx quando falta .NET. O
+mesmo runtime, o mesmo buraco, agora numa superfície onde ele custa mais.
+
 **Duas descobertas do caminho:**
 
 `responseObject` espera JSON. O `TriageAgent` devolve texto (`Intent: … / Urgency: …`), e o runtime
