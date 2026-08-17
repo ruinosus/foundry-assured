@@ -21,6 +21,10 @@
       "/foundry/skills/{name}"
     ],
     [
+      "DELETE",
+      "/foundry/toolboxes/{name}"
+    ],
+    [
       "GET",
       "/admin/role-assignments"
     ],
@@ -71,6 +75,14 @@
     [
       "GET",
       "/foundry/skills/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes/{name}"
     ],
     [
       "GET",
@@ -150,6 +162,14 @@
     ],
     [
       "POST",
+      "/foundry/skills/{name}/files"
+    ],
+    [
+      "POST",
+      "/foundry/toolboxes/{name}"
+    ],
+    [
+      "POST",
       "/helpdesk"
     ],
     [
@@ -193,6 +213,10 @@
     [
       "DELETE",
       "/foundry/skills/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/toolboxes/{name}"
     ],
     [
       "GET",
@@ -245,6 +269,14 @@
     [
       "GET",
       "/foundry/skills/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes/{name}"
     ],
     [
       "GET",
@@ -328,6 +360,14 @@
     ],
     [
       "POST",
+      "/foundry/skills/{name}/files"
+    ],
+    [
+      "POST",
+      "/foundry/toolboxes/{name}"
+    ],
+    [
+      "POST",
       "/helpdesk"
     ],
     [
@@ -375,6 +415,10 @@
     [
       "DELETE",
       "/foundry/skills/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/toolboxes/{name}"
     ],
     [
       "DELETE",
@@ -431,6 +475,14 @@
     [
       "GET",
       "/foundry/skills/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes/{name}"
     ],
     [
       "GET",
@@ -519,6 +571,14 @@
     [
       "POST",
       "/foundry/skills/{name}"
+    ],
+    [
+      "POST",
+      "/foundry/skills/{name}/files"
+    ],
+    [
+      "POST",
+      "/foundry/toolboxes/{name}"
     ],
     [
       "POST",

@@ -16,16 +16,21 @@ from app.modules.foundry.public import (
     create_agent_version,
     create_knowledge,
     create_skill,
+    create_skill_from_files,
+    create_toolbox_version,
     delete_agent,
     delete_knowledge,
     delete_skill,
+    delete_toolbox,
     get_agent,
     get_knowledge,
     get_skill,
+    get_toolbox,
     ingest_repo,
     list_agents,
     list_knowledge,
     list_skills,
+    list_toolboxes,
     set_agent_enabled,
     upload_files,
 )
@@ -53,12 +58,13 @@ def _guard(fn):
     from app.modules.foundry.internal.knowledge_write import UploadRejected
     from app.modules.foundry.internal.names import InvalidName
     from app.modules.foundry.internal.skills import InvalidSkill
+    from app.modules.foundry.internal.toolboxes import InvalidToolbox
 
     try:
         return fn()
     except HTTPException:
         raise
-    except (InvalidName, InvalidDefinition, InvalidSkill, UploadRejected) as exc:
+    except (InvalidName, InvalidDefinition, InvalidSkill, InvalidToolbox, UploadRejected) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except GitHubError as exc:
         # 502: a falha é do serviço de terceiro, não do pedido — e a mensagem já é legível.
@@ -209,3 +215,49 @@ def publish_skill(name: str, body: dict) -> dict:
 @router.delete("/skills/{name}", dependencies=_admin)
 def remove_skill(name: str) -> dict:
     return _guard(lambda: delete_skill(name))
+
+
+@router.post("/skills/{name}/files", dependencies=_admin)
+async def publish_skill_files(
+    name: str,
+    files: list[UploadFile] = File(...),  # noqa: B008 — idioma do FastAPI
+) -> dict:
+    """Publica uma versão de skill a partir de um BUNDLE — um zip, ou vários arquivos.
+
+    É o caminho que a versão inline não cobre: skill de verdade tem scripts, templates e
+    referências, não só uma string de instruções. O serviço extrai e valida o zip do lado dele.
+    """
+    payload = [(f.filename or "arquivo", await f.read()) for f in files]
+    return _guard(lambda: create_skill_from_files(name, payload))
+
+
+# ── Toolboxes ─────────────────────────────────────────────────────────────────────────────
+#
+# É o que junta tools e skills num pacote. Skill NÃO entra em `PromptAgentDefinition.tools` —
+# uma skill só chega a um agente passando por aqui. Tools (MCP, Azure AI Search…) entram nos dois
+# lugares; skill, só no toolbox.
+
+
+@router.get("/toolboxes")
+def toolboxes(limit: int = Query(50, ge=1, le=100)) -> dict:
+    return {"toolboxes": _guard(lambda: list_toolboxes(limit))}
+
+
+@router.get("/toolboxes/{name}")
+def toolbox(name: str) -> dict:
+    """Um toolbox com as versões e o que cada uma entrega."""
+    return _guard(lambda: get_toolbox(name))
+
+
+@router.post("/toolboxes/{name}", dependencies=_admin)
+def publish_toolbox(name: str, body: dict) -> dict:
+    """Publica uma versão com as tools e as skills informadas.
+
+    `skills` aceita nome solto ou {name, version}. Sem versão, o serviço usa a default da skill.
+    """
+    return _guard(lambda: create_toolbox_version(name, body))
+
+
+@router.delete("/toolboxes/{name}", dependencies=_admin)
+def remove_toolbox(name: str) -> dict:
+    return _guard(lambda: delete_toolbox(name))

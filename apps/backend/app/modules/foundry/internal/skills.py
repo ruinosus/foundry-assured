@@ -26,6 +26,10 @@ from typing import Any
 
 from app.modules.foundry.internal.names import qualify
 
+# Teto do bundle. O serviço extrai e valida o zip do lado dele; isto só impede que um upload
+# absurdo ocupe memória do processo antes de chegar lá.
+MAX_BUNDLE_BYTES = 25 * 1024 * 1024
+
 
 class InvalidSkill(ValueError):
     """Documento de skill que não vira recurso, com o motivo."""
@@ -156,6 +160,43 @@ def create_skill(name: str, doc: dict, *, make_default: bool = True) -> dict:
             "version": getattr(version, "version", None),
             "default": make_default,
             "ignored_fields": parsed["ignored"],
+        }
+    finally:
+        with contextlib.suppress(Exception):
+            client.close()
+
+
+def create_skill_from_files(name: str, files: list[tuple[str, bytes]], *, make_default: bool = True) -> dict:
+    """Cria uma versão de skill a partir de um BUNDLE de arquivos.
+
+    É o caminho que a versão inline não cobre, e a diferença é grande: uma skill séria não é uma
+    string de instruções — tem scripts, referências, exemplos, templates. `create_from_files`
+    aceita **um zip** (o serviço extrai e valida o conteúdo) **ou vários arquivos soltos** (upload
+    de diretório, validados como estão). Os dois formatos são do serviço, não nossos.
+
+    Nada aqui interpreta o conteúdo: os arquivos são dados que o serviço valida. O que fazemos é
+    recusar o que nem vale a viagem (vazio, ou acima do teto) e repassar.
+    """
+    if not files:
+        raise InvalidSkill("Envie ao menos um arquivo.")
+    total = sum(len(d) for _, d in files)
+    if total > MAX_BUNDLE_BYTES:
+        raise InvalidSkill(
+            f"O bundle tem {total // (1024 * 1024)} MB e o limite é {MAX_BUNDLE_BYTES // (1024 * 1024)} MB."
+        )
+
+    qualified = qualify(name)
+    client = _client()
+    try:
+        version = client.beta.skills.create_from_files(
+            qualified,
+            {"files": [(fname, data) for fname, data in files], "default": make_default},
+        )
+        return {
+            "name": qualified,
+            "version": getattr(version, "version", None),
+            "default": make_default,
+            "files": [f for f, _ in files],
         }
     finally:
         with contextlib.suppress(Exception):

@@ -29,6 +29,7 @@ from app.modules.foundry.internal.knowledge_write import (
 )
 from app.modules.foundry.internal.names import InvalidName, qualify, validate
 from app.modules.foundry.internal.skills import InvalidSkill, _project, parse_skill
+from app.modules.foundry.internal.toolboxes import InvalidToolbox, parse_toolbox
 
 
 def main() -> int:
@@ -125,6 +126,24 @@ def main() -> int:
           _project(_Skill("2", "2"))["latest_is_default"] is True)
     check("default DIFERENTE de latest é sinalizado (a nova versão não está em uso)",
           _project(_Skill("1", "2"))["latest_is_default"] is False)
+
+    print("\n— toolbox: onde skill e tool viram um pacote")
+    # Skill NÃO entra em PromptAgentDefinition.tools. Um toolbox é o único caminho de uma skill
+    # até um agente — sem ele a skill criada é decorativa.
+    tb = parse_toolbox({"tools": [{"type": "mcp", "server_label": "learn"}], "skills": ["revisar-pr"]})
+    check("nome solto de skill vira referência", tb["skills"] == [{"name": "revisar-pr"}])
+    check("a tool do pedido é preservada", tb["tools"][0]["type"] == "mcp")
+    com_versao = parse_toolbox({"skills": [{"name": "s", "version": "2"}]})
+    check("skill com versão explícita mantém a versão", com_versao["skills"][0]["version"] == "2")
+    # Sem versão o serviço usa a default da skill — é por isso que a tela de skills mostra
+    # `default` e `latest` lado a lado.
+    check("skill sem versão não inventa uma", "version" not in parse_toolbox({"skills": ["s"]})["skills"][0])
+    check("toolbox vazio é recusado (não entrega nada)",
+          recusa(lambda: parse_toolbox({}), InvalidToolbox))
+    check("skill malformada é recusada",
+          recusa(lambda: parse_toolbox({"skills": [{"sem_nome": 1}]}), InvalidToolbox))
+    check("tools que não é lista é recusado",
+          recusa(lambda: parse_toolbox({"tools": "mcp"}), InvalidToolbox))
 
     print("\n— arquivo e container")
     check("nome simples sobrevive", _safe_blob_name("runbook.md") == "runbook.md")
