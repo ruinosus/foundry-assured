@@ -10,6 +10,8 @@ mesmo com a interface escondendo o botão. A interface não é fronteira de segu
 
 from __future__ import annotations
 
+import logging
+
 from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile
 
 from app.modules.foundry.public import (
@@ -37,6 +39,8 @@ from app.modules.foundry.public import (
     upload_files,
 )
 from app.shared.auth import auth_dependencies, require_role
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/foundry", tags=["foundry"], dependencies=auth_dependencies())
 
@@ -266,7 +270,14 @@ async def publish_skill_files(
     referências, não só uma string de instruções. O serviço extrai e valida o zip do lado dele.
     """
     payload = [(f.filename or "arquivo", await f.read()) for f in files]
-    return _guard(lambda: create_skill_from_files(name, payload))
+    # A descrição da skill alimenta o frontmatter que o serviço exige no SKILL.md. Buscá-la aqui
+    # evita pedir de novo o que a pessoa já informou ao criar a skill.
+    descricao = ""
+    try:
+        descricao = str(get_skill(name).get("description") or "")
+    except Exception as exc:  # noqa: BLE001 — sem descrição o gerador cai no nome
+        logger.debug("descrição de '%s' indisponível para o frontmatter: %s", name, exc)
+    return _guard(lambda: create_skill_from_files(name, payload, description=descricao))
 
 
 # ── Toolboxes ─────────────────────────────────────────────────────────────────────────────

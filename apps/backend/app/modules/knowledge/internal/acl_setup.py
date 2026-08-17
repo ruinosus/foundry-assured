@@ -32,7 +32,7 @@ from app.modules.tenancy.public import tenant_config
 
 _API = "2025-08-01-preview"
 _SEARCH_SCOPE = "https://search.azure.com/.default"
-_GUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
+_GUID = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.IGNORECASE)
 
 
 def _canonical(name: str) -> str:

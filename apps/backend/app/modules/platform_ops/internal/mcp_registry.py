@@ -147,7 +147,7 @@ def visible_tools(server: McpServer, roles: set[str]) -> tuple[list[str], list[s
     return reads, writes
 
 
-def server_for_kind(kind: str) -> "McpServer | None":
+def server_for_kind(kind: str) -> McpServer | None:
     """Map a Connection.kind to its registry server (the catalog is the source of truth)."""
     for s in SERVERS:
         if s.id == kind:
@@ -155,7 +155,7 @@ def server_for_kind(kind: str) -> "McpServer | None":
     return None
 
 
-def visible_tools_for(server: "McpServer", conn, roles: set[str]) -> tuple[list[str], list[str]]:
+def visible_tools_for(server: McpServer, conn, roles: set[str]) -> tuple[list[str], list[str]]:
     """Tools visible to this caller — stricter-of-both: the registry's min-role AND the
     Connection's min-role must both be satisfied (the tenant can only tighten, never loosen).
 

@@ -186,14 +186,14 @@ def _decode_dockey(dockey: str) -> str:
       1. The base64 alphabet is **standard** (`+`/`/`), NOT url-safe — for keys where the two alphabets
          diverge, only `base64.b64decode` recovers the URL.
       2. The middle segment encodes `blob_url` PLUS a glued trailing byte (a page-number char / `\r`), so
-         raw decode yields the URL followed by 1-3 garbage chars past `.md` — we extract the `…​.md` URL.
+         raw decode yields the URL followed by 1-3 garbage chars past `.md` — we extract the `…\u200b.md` URL.
       3. Padding is stripped in the wire form, and the segment length is sometimes ≡ 1 (mod 4), which is
          structurally invalid base64 → the old code threw and fell back to raw. Dropping the glued tail
          byte(s) (try trims 0..3) restores a valid, decodable segment.
 
     Strategy: strip the `<12hex>_` prefix and the trailing `_pages_<M>` suffix (regex — NOT split-and-take,
     which would mangle a base64 body that contained the delimiter), then decode standard base64 tolerating
-    the glued tail byte, and return the first `https://…​.md` URL found. Safe readable fallback (the raw
+    the glued tail byte, and return the first `https://…\u200b.md` URL found. Safe readable fallback (the raw
     docKey) only if nothing plausible decodes."""
     seg = _DOCKEY_PAGES_SUFFIX.sub("", _DOCKEY_HEX_PREFIX.sub("", dockey, count=1))
     for trim in range(4):  # tolerate the glued page-number/tail byte: try dropping 0..3 trailing chars

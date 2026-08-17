@@ -10,9 +10,12 @@ boundary, so they are named for what they are. ADR-017 asked for exactly this: p
 really public surface instead of leaving an underscore that lies.
 """
 
-from app.modules.knowledge.internal.retrieval import _decode_dockey as decode_dockey, retrieve
+from app.modules.knowledge.internal.retrieval import _decode_dockey as decode_dockey
+from app.modules.knowledge.internal.retrieval import retrieve
 from app.modules.knowledge.internal.secure_search import (
     _chunk_component as chunk_component,
+)
+from app.modules.knowledge.internal.secure_search import (
     authorized_components,
     trim_agentic_content,
 )

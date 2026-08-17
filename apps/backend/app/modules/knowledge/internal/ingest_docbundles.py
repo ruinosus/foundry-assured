@@ -46,7 +46,6 @@ from azure.search.documents.indexes.models import (
 )
 from azure.storage.blob import BlobServiceClient
 
-from app.modules.tenancy.public import tenant_config
 from app.modules.knowledge.internal.ingest import (
     CALL_TIMEOUT_S,
     _require,
@@ -54,6 +53,7 @@ from app.modules.knowledge.internal.ingest import (
     _validate_storage_resource_id,
     _with_timeout,
 )
+from app.modules.tenancy.public import tenant_config
 
 # The mechanism is domain-generic: the SAME pipeline serves any doc-bundle corpus by
 # pointing it at a different knowledge source / container / KB. Defaults are the TechDocs

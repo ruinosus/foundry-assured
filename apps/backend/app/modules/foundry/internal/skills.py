@@ -179,7 +179,31 @@ def create_skill(name: str, doc: dict, *, make_default: bool = True) -> dict:
             client.close()
 
 
-def create_skill_from_files(name: str, files: list[tuple[str, bytes]], *, make_default: bool = True) -> dict:
+def _ensure_frontmatter(name: str, description: str, conteudo: bytes) -> bytes:
+    """Garante o frontmatter YAML que o serviço exige no `SKILL.md`.
+
+    O upload multipart falha com "requires a 'description' field in the SKILL.md YAML frontmatter"
+    quando ele falta — mensagem correta para quem conhece o formato agentskills.io, e inútil para
+    quem só arrastou um arquivo. Como já temos nome e descrição da skill, montamos o cabeçalho.
+
+    Sem aspas nos valores: com elas o serviço responde `invalid_payload`. É exigência do parser
+    dele, não escolha de estilo.
+    """
+    texto = conteudo.decode("utf-8", errors="replace")
+    if texto.lstrip().startswith("---"):
+        return conteudo  # já tem cabeçalho; respeitamos o que a pessoa escreveu
+    limpo = description.replace("\n", " ").replace('"', "").strip() or name
+    cabecalho = f"---\nname: {name}\ndescription: {limpo}\n---\n\n"
+    return (cabecalho + texto).encode("utf-8")
+
+
+def create_skill_from_files(
+    name: str,
+    files: list[tuple[str, bytes]],
+    *,
+    make_default: bool = True,
+    description: str = "",
+) -> dict:
     """Cria uma versão de skill a partir de um BUNDLE de arquivos.
 
     É o caminho que a versão inline não cobre, e a diferença é grande: uma skill séria não é uma
@@ -199,11 +223,17 @@ def create_skill_from_files(name: str, files: list[tuple[str, bytes]], *, make_d
         )
 
     qualified = qualify(name)
+    preparados = [
+        (fname, _ensure_frontmatter(qualified, description, data)
+         if fname.lower().endswith("skill.md") else data)
+        for fname, data in files
+    ]
+
     client = _client()
     try:
         version = client.beta.skills.create_from_files(
             qualified,
-            {"files": [(fname, data) for fname, data in files], "default": make_default},
+            {"files": preparados, "default": make_default},
         )
         return {
             "name": qualified,

@@ -15,8 +15,6 @@ WorkflowBuilder API verified against agent-framework 1.9.0.
 
 from agent_framework import Workflow, WorkflowBuilder
 
-from app.modules.tenancy.public import memory_scope
-from app.shared.auth import credential_for_request
 from app.modules.helpdesk.internal.agents import (
     build_resolve_agent,
     build_retrieve_agent,
@@ -24,6 +22,8 @@ from app.modules.helpdesk.internal.agents import (
 )
 from app.modules.helpdesk.internal.escalation import EscalationExecutor
 from app.modules.helpdesk.internal.memory import build_memory_provider
+from app.modules.tenancy.public import memory_scope
+from app.shared.auth import credential_for_request
 
 
 def build_helpdesk_workflow(thread_id: str | None = None) -> Workflow:

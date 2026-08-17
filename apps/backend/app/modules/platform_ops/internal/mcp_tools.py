@@ -28,9 +28,11 @@ from app.modules.platform_ops.internal.mcp_registry import (
     visible_tools,
     visible_tools_for,
 )
+from app.modules.tenancy.public import (
+    tenant_config,  # per-tenant (mcp ado/github/azure)
+)
 from app.shared.auth import credential_for_request, current_roles
 from app.shared.settings import settings  # platform-global (auth_enabled)
-from app.modules.tenancy.public import tenant_config  # per-tenant (mcp ado/github/azure)
 
 
 def _obo_header_provider(scope: str):
@@ -54,8 +56,8 @@ def _foundry_connection_header_provider(connection_id: str):
     def provider(_existing: dict) -> dict:
         from azure.ai.projects import AIProjectClient
 
-        from app.shared.auth import credential_for_request
         from app.modules.tenancy.public import tenant_config
+        from app.shared.auth import credential_for_request
         client = AIProjectClient(
             endpoint=tenant_config().foundry_project_endpoint, credential=credential_for_request())
         conn = client.connections.get(connection_id, include_credentials=True)

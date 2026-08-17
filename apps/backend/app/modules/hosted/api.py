@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import StreamingResponse
 
-from app.shared.auth import auth_dependencies
-from app.modules.tenancy.public import tenant_config
-from app.modules.tenancy.public import domain_deps
 from app.modules.hosted.public import stream_agui, stream_platform_agui
+from app.modules.tenancy.public import domain_deps, tenant_config
+from app.shared.auth import auth_dependencies
 
 router = APIRouter()
 

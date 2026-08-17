@@ -28,8 +28,17 @@ from app.modules.foundry.internal.knowledge_write import (
     check_upload,
 )
 from app.modules.foundry.internal.names import InvalidName, qualify, validate
-from app.modules.foundry.internal.skills import InvalidSkill, _project, parse_skill
-from app.modules.foundry.internal.toolboxes import InvalidToolbox, mcp_url, parse_toolbox
+from app.modules.foundry.internal.skills import (
+    InvalidSkill,
+    _ensure_frontmatter,
+    _project,
+    parse_skill,
+)
+from app.modules.foundry.internal.toolboxes import (
+    InvalidToolbox,
+    mcp_url,
+    parse_toolbox,
+)
 
 
 def main() -> int:
@@ -141,6 +150,19 @@ def main() -> int:
           _project(_Skill("2", "2"))["latest_is_default"] is True)
     check("default DIFERENTE de latest é sinalizado (a nova versão não está em uso)",
           _project(_Skill("1", "2"))["latest_is_default"] is False)
+
+    # O upload multipart falha sem frontmatter YAML no SKILL.md — exigência do serviço que o SDK
+    # não declara, e cuja mensagem fala de um formato que o usuário final não conhece.
+    gerado = _ensure_frontmatter("revisar-pr", "Revisão de PR", b"# Conteudo\n").decode()
+    check("frontmatter é gerado quando falta", gerado.startswith("---\nname: revisar-pr"))
+    check("a descrição entra no frontmatter", "description: Revisão de PR" in gerado)
+    # Com aspas o serviço responde invalid_payload — é o parser dele, não estilo.
+    check("o valor não leva aspas", '"' not in gerado.split("---")[1])
+    ja_tem = b"---\nname: outro\ndescription: ja tinha\n---\n\n# X\n"
+    check("frontmatter existente é respeitado",
+          _ensure_frontmatter("revisar-pr", "nova", ja_tem) == ja_tem)
+    check("sem descrição, o nome vira a descrição",
+          "description: revisar-pr" in _ensure_frontmatter("revisar-pr", "", b"# X").decode())
 
     print("\n— toolbox: onde skill e tool viram um pacote")
     # Skill NÃO entra em PromptAgentDefinition.tools. Um toolbox é o único caminho de uma skill

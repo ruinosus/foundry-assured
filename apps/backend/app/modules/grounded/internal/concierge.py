@@ -20,8 +20,8 @@ from app.modules.agentdefs.public import (
     CONCIERGE_GROUNDED_INSTRUCTIONS,
     CONCIERGE_UNGROUNDED_INSTRUCTIONS,
 )
-from app.shared.settings import settings
 from app.modules.tenancy.public import tenant_config
+from app.shared.settings import settings
 
 
 def _knowledge_configured() -> bool:

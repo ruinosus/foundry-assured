@@ -14,8 +14,8 @@ The TechDocs KB is org-wide (not per-user), so this runs under the app's own ide
 (DefaultAzureCredential), not OBO. The /techdocs endpoint still requires sign-in.
 """
 
-from app.shared.settings import settings
 from app.modules.tenancy.public import tenant_config
+from app.shared.settings import settings
 
 
 def techdocs_configured() -> bool:

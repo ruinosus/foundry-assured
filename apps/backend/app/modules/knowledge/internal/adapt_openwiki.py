@@ -38,7 +38,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from app.modules.knowledge.internal.docbundle_schema import validate_manifest
@@ -190,7 +190,7 @@ def adapt(repo: Path, component: str, version: str, out_dir: Path, wiki_dir: str
         "language": language,
         "model": f"openwiki/{receipt.get('model', 'unknown')}",
         "generatedAt": receipt.get("updatedAt")
-        or datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        or datetime.now(UTC).isoformat(timespec="seconds"),
         "kind": "element",
         "component": component,
         "componentVersion": version,

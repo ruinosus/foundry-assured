@@ -4,8 +4,8 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from app.shared.auth import auth_dependencies
 from app.modules.evaluation.public import list_eval_runs
+from app.shared.auth import auth_dependencies
 
 router = APIRouter()
 

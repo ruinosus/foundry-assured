@@ -14,12 +14,14 @@ from __future__ import annotations
 from agent_framework import Agent, ToolApprovalMiddleware
 from agent_framework.foundry import FoundryChatClient
 
-from app.modules.platform_ops.internal.mcp_tools import build_mcp_tools
-from app.modules.grounded.public import PerRequestAgent
 from app.modules.agentdefs.public import PLATFORM_INSTRUCTIONS
+from app.modules.grounded.public import PerRequestAgent
+from app.modules.platform_ops.internal.mcp_tools import build_mcp_tools
+from app.modules.tenancy.public import (
+    tenant_config,  # per-tenant (foundry endpoint/model)
+)
 from app.shared.auth import credential_for_request
 from app.shared.settings import settings  # platform-global (mcp_enabled)
-from app.modules.tenancy.public import tenant_config  # per-tenant (foundry endpoint/model)
 
 
 def platform_configured() -> bool:

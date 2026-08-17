@@ -10,9 +10,9 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from app.shared.auth import APP_ROLES, require_role
 from app.modules.admin.internal import graph
 from app.modules.admin.public import GraphError
+from app.shared.auth import APP_ROLES, require_role
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 

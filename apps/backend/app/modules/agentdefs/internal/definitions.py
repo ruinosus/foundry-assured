@@ -74,7 +74,7 @@ AGENTS_DIRECTORY = "agents"
 EXTENSION_KEY = "x-foundry-assured"
 #: Keys this repository understands under :data:`EXTENSION_KEY`. Anything else is
 #: a typo that would otherwise be ignored in silence, so it is refused.
-_EXTENSION_KEYS = frozenset({"persona", "guardrails"})
+_EXTENSION_KEYS = frozenset({"persona", "guardrails", "skills"})
 
 
 class AgentNotFound(LookupError):
@@ -141,7 +141,12 @@ class PromptPack:
         """Compose one agent's full instruction text.
 
         Order is fixed: persona, ``instructions``, ``additionalInstructions``,
-        then one section per wired guardrail.
+        one section per wired guardrail, then the wired skills.
+
+        Skills come LAST, and that is deliberate: they are published content that changes without
+        a deploy, while persona and guardrails are this repository's own rules. Putting them after
+        keeps the repository's rules first in the model's context — a skill that contradicts a
+        guardrail must not read as the later, overriding word.
         """
         definition = self.agent(name)
         extensions = host_extensions(definition)
@@ -152,6 +157,14 @@ class PromptPack:
         parts.append(effective_instructions(definition))
         for guardrail in extensions.get("guardrails") or []:
             parts.append(self.guardrail(str(guardrail)).render())
+        # Direct injection (ver internal/skill_injection.py): o conteúdo publicado da skill entra
+        # como instrução. Falha de rede devolve string vazia e some daqui — o agente responde sem
+        # a skill em vez de não responder.
+        skills = [str(x) for x in (extensions.get("skills") or [])]
+        if skills:
+            from app.modules.agentdefs.internal.skill_injection import compose_skills
+
+            parts.append(compose_skills(skills))
         composed = "\n\n".join(part for part in parts if part.strip())
         if not composed.strip():
             raise ValueError(

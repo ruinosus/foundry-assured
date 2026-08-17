@@ -14,8 +14,8 @@ The /selfwiki endpoint still requires sign-in. APIs mirror app/agents/techdocs.p
 (agent-framework 1.9.0).
 """
 
-from app.shared.settings import settings
 from app.modules.tenancy.public import tenant_config
+from app.shared.settings import settings
 
 
 def selfwiki_configured() -> bool:

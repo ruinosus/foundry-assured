@@ -41,7 +41,7 @@ import json
 import logging
 import os
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from agent_framework.foundry import FoundryChatClient
@@ -313,7 +313,7 @@ async def _run_resilient(agent, prompt: str, *, label: str, retries: int = 7, ba
     for attempt in range(retries):
         try:
             return await agent.run(prompt)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             s = str(exc).lower()
             if attempt < retries - 1 and any(m in s for m in _TRANSIENT_MARKERS):
                 print(f"  ⏳ {label}: transient ({s[:60]}…); retry {attempt + 1}/{retries - 1} in {delay}s", flush=True)
@@ -426,7 +426,7 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
         "key": f"{component}-{version}", "title": f"{component} {version}",
         "source": {"type": "repo", "ref": str(repo), "commit": ""},
         "language": "pt-br", "model": resolved_model,
-        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generatedAt": datetime.now(UTC).isoformat(timespec="seconds"),
         "kind": "element", "component": component, "componentVersion": version,
         "releaseVersion": None, "pages": manifest_pages,
         # Access inherited from the source repo (its read teams) — the ingest stamps

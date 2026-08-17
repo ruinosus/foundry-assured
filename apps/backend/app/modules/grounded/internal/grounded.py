@@ -23,8 +23,8 @@ import inspect
 import uuid
 from collections.abc import AsyncGenerator
 
-from app.shared.settings import settings
 from app.modules.tenancy.public import tenant_config
+from app.shared.settings import settings
 
 # Prepended to the synthesis input — the model answers ONLY from the retrieved documents and cites them
 # by their [n] number.

@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from agent_framework import tool
@@ -39,7 +39,7 @@ def create_ticket(summary: str, severity: str = "medium") -> dict:
         "summary": summary.strip() or "Escalation requested",
         "severity": severity if severity in ("low", "medium", "high") else "medium",
         "status": "open",
-        "created_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "created_at": datetime.now(UTC).isoformat(timespec="seconds"),
     }
     _STORE.parent.mkdir(parents=True, exist_ok=True)
     with _STORE.open("a", encoding="utf-8") as fh:

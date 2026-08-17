@@ -28,7 +28,11 @@ import os
 from pathlib import Path
 
 import app as _app_package
-from app.modules.agentdefs.internal.definitions import AGENTS_DIRECTORY, PromptPack, load_pack
+from app.modules.agentdefs.internal.definitions import (
+    AGENTS_DIRECTORY,
+    PromptPack,
+    load_pack,
+)
 
 _logger = logging.getLogger(__name__)
 
