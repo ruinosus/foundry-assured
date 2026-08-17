@@ -103,16 +103,19 @@ def _modelo() -> str:
 
 
 def _tickets_of(case_id: str, agent_names: list[str]) -> int:
-    """Escalações que este caso gerou.
+    """Escalações que ESTE caso gerou.
 
-    O ticket não guarda o caso de uso que o abriu — então a contagem é do TOTAL do período, e a
-    tela diz isso. Atribuir por heurística (adivinhar pelo texto) produziria um número que parece
-    preciso e não é; melhor um número honesto e mais grosso.
+    O chamado passou a gravar o domínio que o abriu, então a contagem é dele — não mais o total
+    do período. Antes, três chamados de plantão zeravam o resultado do helpdesk: `resolvidos` é
+    `conversas - escalações`, e escalações de outro assistente comiam as conversas deste.
+
+    Chamado ANTIGO, gravado antes do campo existir, não entra em contagem nenhuma. É o preço de
+    não adivinhar: incluí-lo em todos os casos inflaria a escalação de cada um.
     """
     with contextlib.suppress(Exception):
         from app.modules.tickets.public import list_tickets
 
-        return len(list_tickets())
+        return len(list_tickets(limit=10_000, domain=case_id))
     return 0
 
 
@@ -175,9 +178,9 @@ def outcomes(case: dict, assumption: dict | None = None) -> dict:
         "caveat": (
             "Conversas e escalações são contadas. A economia é uma ESTIMATIVA calculada sobre a "
             "premissa acima — troque-a pelos números da sua operação. O custo é medido em "
-            "tokens reais, convertido por uma tabela de preços editável. As escalações são o "
-            "total do período, não só as deste caso: o ticket não registra qual assistente o "
-            "abriu."
+            "tokens reais, convertido por uma tabela de preços editável. Escalações abertas "
+            "antes de o chamado passar a registrar o assistente de origem não entram em "
+            "contagem nenhuma."
         ),
         "reason": motivo,
     }

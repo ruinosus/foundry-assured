@@ -117,7 +117,7 @@ class EscalationExecutor(Executor):
         # `edit` supplies a corrected summary; `approve` keeps the one the model proposed.
         summary = decision.args.get("summary", request.summary) if decision.type == "edit" else request.summary
 
-        ticket = create_ticket(summary)
+        ticket = create_ticket(summary, domain="helpdesk")
         edited_note = " (editado pelo aprovador)" if decision.type == "edit" else ""
         await ctx.yield_output(
             f'✅ Ticket {ticket["id"]} opened — "{ticket["summary"]}"{edited_note}. '

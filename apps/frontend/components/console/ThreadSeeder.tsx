@@ -60,8 +60,13 @@ export function ThreadSeeder({
           { cache: "no-store" },
         );
         if (!vivo) return;
-        // 404 é o caso normal de conversa NOVA — não há o que semear, e não é erro.
+        // 404 é o caso normal de conversa NOVA. Não há o que semear — mas há o que LIMPAR: o
+        // agente é compartilhado e ainda segura as mensagens da conversa anterior. Sem esta
+        // linha, "+ Nova" trocava o threadId e deixava a tela cheia do papo antigo, e os prompts
+        // sugeridos (que só aparecem com a conversa vazia) nunca mais voltavam.
         if (!r.ok) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ver nota abaixo
+          (agent as any).setMessages?.([]);
           semeado.current = threadId;
           return;
         }
@@ -75,7 +80,7 @@ export function ThreadSeeder({
           }))
           .filter((m) => m.content);
 
-        if (vivo && mapeadas.length) {
+        if (vivo) {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any -- setMessages aceita o
           // Message do AG-UI; o tipo exportado é um union grande de Zod e não vale importá-lo só
           // para dois campos.

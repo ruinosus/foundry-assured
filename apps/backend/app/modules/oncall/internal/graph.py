@@ -76,7 +76,7 @@ def escalate_incident(
     severity: Annotated[str, "sev1 | sev2 | sev3"],
 ) -> str:
     """Escalate an incident by opening a ticket. WRITE — always stops for human approval."""
-    ticket = create_ticket(f"[{severity}] {summary}")
+    ticket = create_ticket(f"[{severity}] {summary}", domain="oncall")
     return f'ticket {ticket["id"]} opened: {ticket["summary"]}'
 
 
