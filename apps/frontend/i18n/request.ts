@@ -9,11 +9,14 @@
 // inglês inconsistente que isto veio corrigir.
 
 //
-// GOTCHA DO DEV SERVER: os catálogos entram por `import()` dinâmico, e o Next cacheia o módulo em
-// desenvolvimento. Editar `messages/*.json` com o servidor no ar NÃO recarrega — a tela quebra com
-// `MISSING_MESSAGE: Could not resolve <chave>` para uma chave que está no arquivo. Aconteceu duas
-// vezes nesta base antes de alguém escrever isto aqui. Se a chave existe no JSON e o erro insiste,
-// reinicie `npm run dev` em vez de procurar defeito na chave.
+// POR QUE O CATÁLOGO É LIDO DO DISCO EM DESENVOLVIMENTO. Com `import()` dinâmico, o Next cacheia
+// o módulo: editar `messages/*.json` com o servidor no ar não recarrega, e a tela quebra com
+// `MISSING_MESSAGE: Could not resolve <chave>` apontando para uma chave que ESTÁ no arquivo.
+// Isso aconteceu três vezes nesta base. Documentar não resolveu — quem tropeça na quarta vez vai
+// depurar a chave, não o cache, porque o erro acusa a chave.
+//
+// Em produção o `import()` continua, e deve continuar: ele embute o catálogo no bundle, que é
+// mais rápido e não depende do sistema de arquivos (o container pode nem ter os JSON soltos).
 import { getRequestConfig } from "next-intl/server";
 import { cookies, headers } from "next/headers";
 
@@ -37,14 +40,24 @@ export function pickLocale(cookieValue: string | undefined, acceptLanguage: stri
   return DEFAULT_LOCALE;
 }
 
+/** O catálogo do idioma. Em dev vem do disco (sem cache); em produção, do bundle. */
+async function loadMessages(locale: Locale) {
+  if (process.env.NODE_ENV === "development") {
+    // `readFile` a cada requisição é irrelevante em desenvolvimento e elimina a classe inteira
+    // de "editei o JSON e a tela não viu".
+    const { readFile } = await import("node:fs/promises");
+    const { join } = await import("node:path");
+    const raw = await readFile(join(process.cwd(), "messages", `${locale}.json`), "utf8");
+    return JSON.parse(raw);
+  }
+  return (await import(`../messages/${locale}.json`)).default;
+}
+
 export default getRequestConfig(async () => {
   const [cookieStore, headerList] = await Promise.all([cookies(), headers()]);
   const locale = pickLocale(
     cookieStore.get(LOCALE_COOKIE)?.value,
     headerList.get("accept-language"),
   );
-  return {
-    locale,
-    messages: (await import(`../messages/${locale}.json`)).default,
-  };
+  return { locale, messages: await loadMessages(locale) };
 });
