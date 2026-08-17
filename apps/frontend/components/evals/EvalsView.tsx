@@ -35,7 +35,10 @@ export function EvalsView() {
       const r = await authedFetch("/api/evals", { cache: "no-store" });
       const data = await r.json();
       setRuns(data.runs ?? []);
-      if (data.error) setError(data.error);
+      // `reason` vem do backend quando a lista está vazia por falha (sem permissão, serviço fora).
+      // Sem ele, a tela dizia "nenhuma execução — rode o eval", que é conselho errado quando o
+      // problema é permissão: rodar o eval não resolve, e a pessoa tenta várias vezes.
+      if (data.error || data.reason) setError(data.error ?? data.reason);
     } catch {
       setRuns([]);
       setError(tc("backendUnreachable"));

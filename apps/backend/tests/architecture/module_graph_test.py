@@ -46,6 +46,9 @@ MODULES = (
     "tenancy", "admin", "knowledge", "helpdesk", "grounded",
     "platform_ops", "tickets", "hosted", "evaluation", "agentdefs",
     "oncall",  # ADR-020: the LangGraph domain — a different runtime, same guarantees
+    # Gêmeo do oncall no harness deepagents. Existe para MEDIR a diferença entre os dois, não
+    # para substituir: mesmas tools, mesmo prompt, mesmo contrato de HITL.
+    "deepcall",
     # Recursos do Foundry (agentes, e depois bases e skills) expostos ao usuário final. Fino
     # por construção: a gestão é do SDK, aqui mora projeção e autorização.
     "foundry",

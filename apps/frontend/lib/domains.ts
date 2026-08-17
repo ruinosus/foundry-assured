@@ -73,6 +73,14 @@ export const DOMAINS: Domain[] = [
     // No hosted twin: LangGraph runs in this backend, not inside Foundry.
   },
   {
+    // Gêmeo do oncall no harness deepagents — os dois no ar para comparação prática, não para
+    // um substituir o outro. Ver app/modules/deepcall/public.py.
+    id: "deepcall",
+    icon: "🧪",
+    kind: "graph",
+    endpoint: "/deepcall",
+  },
+  {
     id: "platform",
     icon: "🛠️",
     kind: "tool",

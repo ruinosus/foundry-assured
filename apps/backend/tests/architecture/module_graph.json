@@ -6,6 +6,9 @@
     "agentdefs": [
       "registry.py"
     ],
+    "deepcall": [
+      "registry.py"
+    ],
     "evaluation": [
       "registry.py"
     ],
@@ -51,6 +54,17 @@
   "agentdefs": {
     "tenancy": [
       "modules/agentdefs/internal/skill_injection.py"
+    ]
+  },
+  "deepcall": {
+    "agentdefs": [
+      "modules/deepcall/internal/graph.py"
+    ],
+    "shared": [
+      "modules/deepcall/internal/graph.py"
+    ],
+    "tickets": [
+      "modules/deepcall/internal/graph.py"
     ]
   },
   "evaluation": {

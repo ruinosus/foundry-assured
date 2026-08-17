@@ -157,6 +157,16 @@
         "Liste os recursos do meu resource group.",
         "Quanto gastei em AI Search neste mês?"
       ]
+    },
+    "deepcall": {
+      "label": "Plantão (deepagents)",
+      "blurb": "O mesmo problema do plantão, no harness deepagents — para comparar os dois na prática.",
+      "demonstrates": "Dois harnesses resolvendo o mesmo problema, com autoavaliação por rubrica no runtime",
+      "suggested": [
+        "O checkout está fora do ar para todos os usuários.",
+        "A taxa de erro do serviço de pagamentos subiu para 8%.",
+        "Um job noturno falhou, mas ninguém foi impactado."
+      ]
     }
   },
   "evals": {

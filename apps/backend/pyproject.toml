@@ -43,6 +43,7 @@ dependencies = [
     "langgraph>=1.2.11",
     "ag-ui-langgraph>=0.0.43.dev1786716392",
     "langchain-openai>=1.5.1",
+    "deepagents>=0.7,<0.8",
 ]
 
 [tool.uv]

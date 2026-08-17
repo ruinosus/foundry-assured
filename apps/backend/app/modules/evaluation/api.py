@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from app.modules.evaluation.public import list_eval_runs
+from app.modules.evaluation.public import read_eval_runs
 from app.shared.auth import auth_dependencies
 
 router = APIRouter()
@@ -42,4 +42,4 @@ def foundry_eval_runs(limit: int = 8) -> dict[str, list[dict]]:
     store) — groundedness/relevance/coherence pass counts per run, each linking to
     its portal report. This is what the /evals page renders.
     """
-    return {"runs": list_eval_runs(limit)}
+    return read_eval_runs(limit)

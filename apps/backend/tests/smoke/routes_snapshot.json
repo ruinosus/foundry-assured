@@ -244,6 +244,10 @@
     ],
     [
       "GET",
+      "/deepcall/health"
+    ],
+    [
+      "GET",
       "/docs"
     ],
     [
@@ -349,6 +353,10 @@
     [
       "POST",
       "/admin/users/invite"
+    ],
+    [
+      "POST",
+      "/deepcall"
     ],
     [
       "POST",

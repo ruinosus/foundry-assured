@@ -15,8 +15,19 @@ export async function GET(req: NextRequest) {
       headers: auth ? { Authorization: auth } : undefined,
     });
     if (!r.ok) {
-      return NextResponse.json({ runs: [], error: `backend ${r.status}` }, { status: 502 });
+      return NextResponse.json(
+        {
+          runs: [],
+          error:
+            r.status === 404
+              ? "rota não encontrada no backend (ele está rodando código anterior a ela?)"
+              : `backend ${r.status}`,
+        },
+        { status: r.status === 401 || r.status === 403 ? r.status : 502 },
+      );
     }
+    // O corpo traz `reason` quando a lista está vazia por FALHA — distinto de vazia porque não há
+    // execução. A tela precisa dos dois para não dar o conselho errado.
     return NextResponse.json(await r.json());
   } catch {
     return NextResponse.json({ runs: [], error: "backend unreachable" }, { status: 502 });

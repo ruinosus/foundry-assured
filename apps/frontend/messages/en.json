@@ -157,6 +157,16 @@
         "List the resources in my resource group.",
         "How much did I spend on AI Search this month?"
       ]
+    },
+    "deepcall": {
+      "label": "On-call (deepagents)",
+      "blurb": "The same on-call problem on the deepagents harness — to compare the two in practice.",
+      "demonstrates": "Two harnesses solving the same problem, with runtime self-evaluation against a rubric",
+      "suggested": [
+        "Checkout is down for all users.",
+        "The payments service error rate climbed to 8%.",
+        "A nightly job failed, but nobody was affected."
+      ]
     }
   },
   "evals": {

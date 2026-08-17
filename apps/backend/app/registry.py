@@ -26,8 +26,8 @@ from agent_framework_ag_ui import add_agent_framework_fastapi_endpoint
 from fastapi import FastAPI, Request
 from fastapi.responses import StreamingResponse
 
-from app.shared.settings import settings
 from app.modules.tenancy.public import domain_deps, tenant_config
+from app.shared.settings import settings
 
 
 @dataclass(frozen=True)
@@ -78,6 +78,8 @@ DOMAIN_KINDS: dict[str, str] = {
     # making them look alike, because the frameworks move faster than such an adapter could be
     # maintained. `oncall` is LangGraph; the four above are Agent Framework.
     "oncall": "graph",
+    # Gêmeo em deepagents — mesmo problema, harness diferente. Ver modules/deepcall/public.py.
+    "deepcall": "graph",
 }
 
 
@@ -96,7 +98,10 @@ def domain_spec(domain_id: str) -> DomainSpec:
 def _domains() -> list[DomainSpec]:
     """The four domain specs, built from the current request's tenant config (read LAZILY here —
     NOT at import). Mirrors domains.ts row-for-row."""
-    from app.modules.agentdefs.public import TECHDOCS_INSTRUCTIONS, SELFWIKI_INSTRUCTIONS
+    from app.modules.agentdefs.public import (
+        SELFWIKI_INSTRUCTIONS,
+        TECHDOCS_INSTRUCTIONS,
+    )
 
     cfg = tenant_config()
     return [
@@ -160,8 +165,8 @@ def _mount_grounded(app: FastAPI, domain_id: str) -> None:
     """
 
     async def endpoint(request: Request) -> StreamingResponse:
-        from app.shared.auth import current_user
         from app.modules.grounded.public import stream_grounded
+        from app.shared.auth import current_user
 
         # `Accept-Language` é o padrão da web para isto — o browser já o envia e o seletor de
         # idioma da interface o sobrescreve. Inventar um campo no corpo seria criar vocabulário
@@ -189,7 +194,10 @@ def _mount_helpdesk(app: FastAPI, domain_id: str) -> None:
     """AG-UI workflow endpoint. With a KB wired, the per-request factory streams the Phase 2 steps
     + Phase 3 OBO/memory; without one, fall back to the single concierge agent."""
     from app.modules.grounded.public import build_concierge_agent, knowledge_configured
-    from app.modules.helpdesk.public import OrderedAgentFrameworkWorkflow, build_helpdesk_workflow
+    from app.modules.helpdesk.public import (
+        OrderedAgentFrameworkWorkflow,
+        build_helpdesk_workflow,
+    )
 
     if knowledge_configured():
         add_agent_framework_fastapi_endpoint(
@@ -208,7 +216,10 @@ def _mount_platform(app: FastAPI, domain_id: str) -> None:
     """Tool-driven ops concierge over the Microsoft first-party MCP servers. The platform_agent_proxy
     (a PerRequestAgent) rebuilds the agent on each run so tools are filtered under the caller's roles +
     OBO credential. Only mounted when platform is configured."""
-    from app.modules.platform_ops.public import platform_agent_proxy, platform_configured
+    from app.modules.platform_ops.public import (
+        platform_agent_proxy,
+        platform_configured,
+    )
 
     if platform_configured():
         add_agent_framework_fastapi_endpoint(
@@ -229,18 +240,28 @@ def _mount_graph(app: FastAPI, domain_id: str) -> None:
     """
     from ag_ui_langgraph import LangGraphAgent, add_langgraph_fastapi_endpoint
 
-    from app.modules.oncall.public import build_oncall_graph, oncall_configured
+    # Dois grafos LangGraph, um caminho de montagem — porque `create_deep_agent` devolve o mesmo
+    # `CompiledStateGraph` que `create_agent`. Se precisasse de adaptador, a comparação já estaria
+    # contaminada pelo adaptador.
+    if domain_id == "deepcall":
+        from app.modules.deepcall.public import (
+            build_deepcall_graph,
+            deepcall_configured,
+        )
 
-    if not oncall_configured():
-        return
+        if not deepcall_configured():
+            return
+        build, descricao = build_deepcall_graph, "On-call triage on the deepagents harness."
+    else:
+        from app.modules.oncall.public import build_oncall_graph, oncall_configured
+
+        if not oncall_configured():
+            return
+        build, descricao = build_oncall_graph, "On-call triage with human-in-the-loop on escalation."
 
     add_langgraph_fastapi_endpoint(
         app=app,
-        agent=LangGraphAgent(
-            name=domain_id,
-            description="On-call triage with human-in-the-loop on escalation.",
-            graph=build_oncall_graph(),
-        ),
+        agent=LangGraphAgent(name=domain_id, description=descricao, graph=build()),
         path=f"/{domain_id}",
     )
 
@@ -271,8 +292,8 @@ def include_routers(app) -> None:
     """
     from app import api_health
     from app.modules.admin import api_admin, api_me
-    from app.modules.foundry import api as foundry
     from app.modules.evaluation import api as evals
+    from app.modules.foundry import api as foundry
     from app.modules.hosted import api as chat
     from app.modules.tickets import api as tickets
 

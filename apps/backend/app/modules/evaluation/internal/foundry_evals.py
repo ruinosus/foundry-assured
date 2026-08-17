@@ -34,13 +34,24 @@ def _openai_client():
 
 
 def list_eval_runs(limit: int = 8) -> list[dict]:
-    """Recent Foundry eval runs (newest first) with per-criterion pass counts.
+    """Compatibilidade: só as execuções. Prefira `read_eval_runs`, que diz o que houve."""
+    return read_eval_runs(limit)["runs"]
 
-    Returns [] when Foundry isn't configured or unreachable — the page degrades to
-    a "view in portal" prompt rather than erroring.
+
+def read_eval_runs(limit: int = 8) -> dict:
+    """As execuções recentes E o motivo, quando não há nenhuma.
+
+    POR QUE ISTO MUDOU. A versão anterior devolvia `[]` para tudo: projeto sem execução, credencial
+    sem permissão, serviço fora do ar. A tela então dizia "nenhuma execução encontrada, rode o
+    eval" — conselho errado em dois dos três casos, e impossível de distinguir. É o mesmo defeito
+    que as telas de agentes e conhecimento já haviam corrigido: **erro de leitura não é lista
+    vazia**.
+
+    Agora `reason` vem preenchido quando a lista está vazia por falha, e `null` quando está vazia
+    porque realmente não há execução.
     """
     if not tenant_config().foundry_project_endpoint:
-        return []
+        return {"runs": [], "reason": "O endpoint do projeto do Foundry não está configurado."}
     try:
         oai = _openai_client()
         evals = sorted(
@@ -74,7 +85,11 @@ def list_eval_runs(limit: int = 8) -> list[dict]:
                     }
                 )
         runs.sort(key=lambda x: x["created_at"] or 0, reverse=True)
-        return runs[:limit]
-    except Exception as ex:  # noqa: BLE001 — read-only view, never 500 the page
+        # Lista vazia SEM falha é informação legítima: o projeto não tem execução ainda, e aí o
+        # conselho de rodar o eval está certo. Só neste caso `reason` fica nulo.
+        return {"runs": runs[:limit], "reason": None}
+    except Exception as ex:  # noqa: BLE001 — leitura, nunca derruba a página
         logger.warning("Foundry eval listing failed: %s", ex)
-        return []
+        # A mensagem do serviço sobe: "sem permissão" e "não achei nada" pedem ações diferentes,
+        # e esconder qual é os torna o mesmo problema insolúvel.
+        return {"runs": [], "reason": f"Não foi possível ler as avaliações do Foundry: {ex}"}
