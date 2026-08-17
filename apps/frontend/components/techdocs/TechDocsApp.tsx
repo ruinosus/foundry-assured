@@ -7,14 +7,22 @@
 
 import { CopilotChat, CopilotKitProvider } from "@copilotkit/react-core/v2";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+import { useLocale } from "next-intl";
 import { useEffect, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 
 function Chat({ authorization }: { authorization?: string }) {
+  const locale = useLocale();
   return (
     <CopilotKitProvider
       runtimeUrl="/api/copilotkit"
-      headers={authorization ? { Authorization: authorization } : undefined}
+      // O chat sai do SERVIDOR Next para o backend, então o Accept-Language do navegador não
+      // é repassado sozinho. `useLocale()` já é o idioma efetivo (escolha explícita ou o que o
+      // navegador pediu), e mandá-lo aqui é o que faz o AGENTE responder na língua da tela.
+      headers={{
+        ...(authorization ? { Authorization: authorization } : {}),
+        "Accept-Language": locale,
+      }}
       showDevConsole={process.env.NODE_ENV !== "production"}
     >
       <main
@@ -70,6 +78,7 @@ function AuthedChat() {
 }
 
 export default function TechDocsApp() {
+  const locale = useLocale();
   if (!authConfigured) return <Chat />;
   return <AuthedChat />;
 }

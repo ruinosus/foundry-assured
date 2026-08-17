@@ -158,6 +158,11 @@ jobs:
           cache-dependency-path: apps/frontend/package-lock.json
       - name: Install dependencies
         run: npm ci
+      # Uma chave presente só num dicionário aparece como o próprio identificador na tela do
+      # outro idioma — falha silenciosa que passa no build e só quem abre aquela tela percebe.
+      - name: Paridade dos dicionários de idioma
+        run: node ../../scripts/check-messages.mjs
+
       - name: Typecheck
         run: npm run typecheck
       # Advisory ON PURPOSE, and this is the first run that means anything: until now

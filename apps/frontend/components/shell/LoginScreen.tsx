@@ -10,12 +10,14 @@
 // escolhe o tema antes de entrar, não depois.
 
 import { useMsal } from "@azure/msal-react";
+import { useTranslations } from "next-intl";
 import { apiScopes } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 
 export function LoginScreen() {
   const { instance } = useMsal();
+  const t = useTranslations();
 
   return (
     <div className="login">
@@ -31,16 +33,13 @@ export function LoginScreen() {
           className="btn btn-primary btn-block"
           onClick={() => instance.loginRedirect({ scopes: apiScopes })}
         >
-          Entrar com a Microsoft
+          {t("common.signIn")}
         </button>
 
         {/* Diz o que exige a entrada, não que ela é exigida — o usuário já percebeu isso ao
             ver esta tela. A informação útil é POR QUE: as respostas carregam procedência, e
             procedência precisa de identidade. */}
-        <p className="login-note">
-          As respostas citam a fonte e respeitam o acesso de cada documento. Por isso é
-          preciso saber quem está perguntando.
-        </p>
+        <p className="login-note">{t("login.note")}</p>
       </main>
 
       <footer className="login-foot">

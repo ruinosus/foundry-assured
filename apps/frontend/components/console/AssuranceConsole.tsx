@@ -14,6 +14,7 @@
 
 import { CopilotChat, CopilotKitProvider } from "@copilotkit/react-core/v2";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+import { useLocale } from "next-intl";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
@@ -41,6 +42,7 @@ const WorkflowSteps = dynamic(
 const AF_HITL_KINDS = new Set<Domain["kind"]>(["workflow", "tool"]);
 
 function Console({ domain, authorization }: { domain: Domain; authorization?: string }) {
+  const locale = useLocale();
   // Live vs Hosted twin — registry-driven: only renders when the domain declares a
   // hostedAgentId, so any domain that later gains a Foundry hosted twin gets the toggle
   // for free (no per-domain special-casing here).
@@ -51,7 +53,13 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
   return (
     <CopilotKitProvider
       runtimeUrl="/api/copilotkit"
-      headers={authorization ? { Authorization: authorization } : undefined}
+      // O chat sai do SERVIDOR Next para o backend, então o Accept-Language do navegador não
+      // é repassado sozinho. `useLocale()` já é o idioma efetivo (escolha explícita ou o que o
+      // navegador pediu), e mandá-lo aqui é o que faz o AGENTE responder na língua da tela.
+      headers={{
+        ...(authorization ? { Authorization: authorization } : {}),
+        "Accept-Language": locale,
+      }}
       showDevConsole={process.env.NODE_ENV !== "production"}
     >
       <div className="console">

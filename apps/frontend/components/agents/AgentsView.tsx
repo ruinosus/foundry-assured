@@ -8,6 +8,7 @@
 // agente criado" e "não foi possível ler" são coisas diferentes, e confundi-las esconderia
 // falta de permissão atrás de uma tela vazia e tranquila.
 
+import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
 
@@ -36,13 +37,18 @@ function stateTone(state: string | null): string {
   return "neutral";
 }
 
-function whenLabel(iso: string | null): string {
+function whenLabel(iso: string | null, locale: string): string {
   if (!iso) return "—";
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString("pt-BR");
+  // Locale do usuário, não cravado: traduzir o texto e deixar a data em dd/mm quando a pessoa
+  // escolheu inglês é o erro clássico de i18n — a metade que ninguém revisa.
+  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString(locale);
 }
 
 export function AgentsView() {
+  const t = useTranslations("agents");
+  const tc = useTranslations("common");
+  const locale = useLocale();
   const [agents, setAgents] = useState<Agent[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -56,17 +62,17 @@ export function AgentsView() {
       if (!r.ok) {
         // Um erro de leitura NÃO vira lista vazia: `agents` fica null e a tela diz o que houve.
         setAgents(null);
-        setError(data?.error ?? `Não foi possível ler o catálogo (HTTP ${r.status}).`);
+        setError(data?.error ?? `${t("errorTitle")} (HTTP ${r.status}).`);
       } else {
         setAgents(data.agents ?? []);
       }
     } catch {
       setAgents(null);
-      setError("Não foi possível falar com o serviço.");
+      setError(t("errorUnreachable"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void load();
@@ -76,14 +82,11 @@ export function AgentsView() {
     <section className="stack">
       <header className="between">
         <div>
-          <h2 className="page-title">Agentes</h2>
-          <p className="page-sub">
-            Os agentes deste projeto no Microsoft Foundry. Criar e publicar versões acontece
-            aqui — sem abrir o portal.
-          </p>
+          <h2 className="page-title">{t("title")}</h2>
+<p className="page-sub">{t("subtitle")}</p>
         </div>
         <button type="button" className="btn" onClick={() => void load()} disabled={loading}>
-          {loading ? "Atualizando…" : "Atualizar"}
+          {loading ? tc("refreshing") : tc("refresh")}
         </button>
       </header>
 
@@ -100,10 +103,10 @@ export function AgentsView() {
       {/* Falha de leitura. Diz o que houve e oferece a ação — nunca se disfarça de "vazio". */}
       {error && (
         <div className="notice notice-block">
-          <p className="notice-title">Não foi possível ler o catálogo</p>
+          <p className="notice-title">{t("errorTitle")}</p>
           <p className="notice-body">{error}</p>
           <button type="button" className="btn" onClick={() => void load()}>
-            Tentar de novo
+            {tc("retry")}
           </button>
         </div>
       )}
@@ -112,11 +115,8 @@ export function AgentsView() {
           anunciar a ausência. */}
       {!error && agents !== null && agents.length === 0 && (
         <div className="empty">
-          <p className="empty-title">Nenhum agente ainda</p>
-          <p className="empty-body">
-            Um agente reúne instruções, ferramentas e uma base de conhecimento. Quando você
-            publicar o primeiro, ele aparece aqui com o histórico de versões.
-          </p>
+          <p className="empty-title">{t("emptyTitle")}</p>
+<p className="empty-body">{t("emptyBody")}</p>
         </div>
       )}
 
@@ -125,11 +125,11 @@ export function AgentsView() {
           <table className="tbl">
             <thead>
               <tr>
-                <th>Agente</th>
-                <th>Estado</th>
-                <th>Versão</th>
-                <th className="right">Versões</th>
-                <th>Publicada em</th>
+                <th>{t("colName")}</th>
+                <th>{t("colState")}</th>
+                <th>{t("colVersion")}</th>
+                <th className="right">{t("colVersions")}</th>
+                <th>{t("colPublished")}</th>
               </tr>
             </thead>
             <tbody>
@@ -147,7 +147,7 @@ export function AgentsView() {
                   <td className="t-mono">{a.version?.version ?? "—"}</td>
                   {/* O recurso é versionado; a contagem é o que torna isso visível na lista. */}
                   <td className="right num">{a.version_count}</td>
-                  <td className="t-sm">{whenLabel(a.version?.created_at ?? null)}</td>
+                  <td className="t-sm">{whenLabel(a.version?.created_at ?? null, locale)}</td>
                 </tr>
               ))}
             </tbody>

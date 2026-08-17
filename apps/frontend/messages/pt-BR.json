@@ -1,0 +1,57 @@
+{
+  "nav": {
+    "workspace": "Workspace",
+    "agents": "Agentes",
+    "aiAgents": "Assistentes",
+    "overview": "Visão geral",
+    "tickets": "Chamados",
+    "evals": "Avaliações",
+    "admin": "Administração",
+    "connections": "Conexões"
+  },
+  "common": {
+    "refresh": "Atualizar",
+    "refreshing": "Atualizando…",
+    "retry": "Tentar de novo",
+    "signOut": "Sair",
+    "signIn": "Entrar com a Microsoft",
+    "backendOnline": "serviço no ar",
+    "backendOffline": "serviço fora do ar",
+    "loading": "Carregando…"
+  },
+  "theme": {
+    "label": "Tema",
+    "light": "Claro",
+    "dark": "Escuro",
+    "system": "Sistema"
+  },
+  "language": {
+    "label": "Idioma",
+    "pt-BR": "Português",
+    "en": "English",
+    "system": "Automático"
+  },
+  "agents": {
+    "title": "Agentes",
+    "subtitle": "Os agentes deste projeto no Microsoft Foundry. Criar e publicar versões acontece aqui — sem abrir o portal.",
+    "colName": "Agente",
+    "colState": "Estado",
+    "colVersion": "Versão",
+    "colVersions": "Versões",
+    "colPublished": "Publicada em",
+    "emptyTitle": "Nenhum agente ainda",
+    "emptyBody": "Um agente reúne instruções, ferramentas e uma base de conhecimento. Quando você publicar o primeiro, ele aparece aqui com o histórico de versões.",
+    "errorTitle": "Não foi possível ler o catálogo",
+    "errorUnreachable": "Não foi possível falar com o serviço."
+  },
+  "login": {
+    "note": "As respostas citam a fonte e respeitam o acesso de cada documento. Por isso é preciso saber quem está perguntando."
+  },
+  "console": {
+    "demonstrates": "Demonstra",
+    "try": "Experimente:",
+    "sources": "Fontes",
+    "guarantees": "Garantias",
+    "sourcesEmpty": "As fontes que a resposta citar aparecem aqui — cada afirmação fundamentada na base, não em suposição."
+  }
+}

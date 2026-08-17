@@ -1,0 +1,57 @@
+{
+  "nav": {
+    "workspace": "Workspace",
+    "agents": "Agents",
+    "aiAgents": "Assistants",
+    "overview": "Overview",
+    "tickets": "Tickets",
+    "evals": "Evaluations",
+    "admin": "Admin",
+    "connections": "Connections"
+  },
+  "common": {
+    "refresh": "Refresh",
+    "refreshing": "Refreshing…",
+    "retry": "Try again",
+    "signOut": "Sign out",
+    "signIn": "Sign in with Microsoft",
+    "backendOnline": "service online",
+    "backendOffline": "service offline",
+    "loading": "Loading…"
+  },
+  "theme": {
+    "label": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "label": "Language",
+    "pt-BR": "Português",
+    "en": "English",
+    "system": "Automatic"
+  },
+  "agents": {
+    "title": "Agents",
+    "subtitle": "The agents in this Microsoft Foundry project. Creating and publishing versions happens here — no portal needed.",
+    "colName": "Agent",
+    "colState": "State",
+    "colVersion": "Version",
+    "colVersions": "Versions",
+    "colPublished": "Published",
+    "emptyTitle": "No agents yet",
+    "emptyBody": "An agent brings together instructions, tools and a knowledge base. Once you publish the first one, it shows up here with its version history.",
+    "errorTitle": "Could not read the catalogue",
+    "errorUnreachable": "Could not reach the service."
+  },
+  "login": {
+    "note": "Answers cite their source and respect each document's access. That is why we need to know who is asking."
+  },
+  "console": {
+    "demonstrates": "Demonstrates",
+    "try": "Try:",
+    "sources": "Sources",
+    "guarantees": "Guarantees",
+    "sourcesEmpty": "The sources an answer cites appear here — every claim grounded in the base, never assumed."
+  }
+}

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import "@copilotkit/react-core/v2/styles.css";
 import "@/styles/globals.css";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { Providers } from "@/components/shell/Providers";
 import { branding } from "@/lib/branding";
 
@@ -9,13 +11,19 @@ export const metadata: Metadata = {
   description: branding.description,
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  // O locale é resolvido no servidor (cookie → Accept-Language → padrão) e vira o `lang` do
+  // documento. Deixar "pt-BR" fixo aqui diria ao leitor de tela e ao corretor do browser a
+  // língua errada quando o conteúdo estivesse em inglês.
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <head>
         {/*
           Aplica o tema salvo ANTES da primeira pintura. Sem isto a página pinta no tema padrão
@@ -34,7 +42,9 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <Providers>{children}</Providers>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

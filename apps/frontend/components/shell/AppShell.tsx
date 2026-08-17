@@ -12,21 +12,25 @@ import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
 import { DOMAINS } from "@/lib/domains";
 import { useMyRoles, isAdmin } from "@/lib/auth/roles";
+import { useTranslations } from "next-intl";
+import { LanguageToggle } from "@/components/shell/LanguageToggle";
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 
 // The domain agents are config-driven from the registry → /d/<id>. Workspace pages are
 // static. Two sections so the sidebar reads as "tools" + "agents".
 const AGENT_NAV = DOMAINS.map((d) => ({ href: `/d/${d.id}`, label: d.label, icon: d.icon }));
+// Os rótulos saem do dicionário; a lista guarda só o que NÃO é texto (rota e ícone). Antes o
+// nome vivia aqui como constante, o que tornava a navegação intraduzível por construção.
 const WORKSPACE_NAV = [
-  { href: "/", label: "Overview", icon: "▦" },
-  { href: "/agents", label: "Agentes", icon: "◆" },
-  { href: "/tickets", label: "Tickets", icon: "🎫" },
-  { href: "/evals", label: "Evaluations", icon: "✓" },
+  { href: "/", key: "overview", icon: "▦" },
+  { href: "/agents", key: "agents", icon: "◆" },
+  { href: "/tickets", key: "tickets", icon: "🎫" },
+  { href: "/evals", key: "evals", icon: "✓" },
 ];
 
 const ADMIN_NAV = [
-  { href: "/admin/users", label: "Admin", icon: "🛡️" },
-  { href: "/admin/connections", label: "Connections", icon: "🔌" },
+  { href: "/admin/users", key: "admin", icon: "🛡️" },
+  { href: "/admin/connections", key: "connections", icon: "🔌" },
 ];
 
 const TITLES: Record<string, string> = {
@@ -98,6 +102,7 @@ export function AppShell({
   children: React.ReactNode;
   flush?: boolean;
 }) {
+  const t = useTranslations("nav");
   const pathname = usePathname() || "/";
   const title = TITLES[pathname] ?? "";
   const roles = useMyRoles();
@@ -116,8 +121,8 @@ export function AppShell({
         </div>
 
         {[
-          { section: "Workspace", items: workspace },
-          { section: "AI agents", items: AGENT_NAV },
+          { section: t("workspace"), items: workspace },
+          { section: t("aiAgents"), items: AGENT_NAV },
         ].map(({ section, items }) => (
           <div key={section}>
             <div className="nav-section">{section}</div>
@@ -131,7 +136,7 @@ export function AppShell({
                   className={`nav-item ${active ? "active" : ""}`}
                 >
                   <span className="ico">{item.icon}</span>
-                  {item.label}
+                  {"key" in item ? t(item.key as string) : item.label}
                 </Link>
               );
             })}
@@ -142,6 +147,7 @@ export function AppShell({
           {authConfigured && <AccountChip />}
           <BackendStatus />
           <ThemeToggle />
+          <LanguageToggle />
         </div>
       </aside>
 

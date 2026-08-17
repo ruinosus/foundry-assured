@@ -9,16 +9,19 @@
 // A aplicação em si mora em lib/theme.ts, porque precisa estampar DOIS sistemas: o nosso
 // (`data-theme`) e o do CopilotKit (a classe `.dark`).
 
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { applyTheme, readTheme, THEME_KEY, type Theme } from "@/lib/theme";
 
-const OPTIONS: { value: Theme; label: string; icon: string }[] = [
-  { value: "light", label: "Claro", icon: "☀" },
-  { value: "dark", label: "Escuro", icon: "☾" },
-  { value: "system", label: "Sistema", icon: "◐" },
+// Só o que NÃO é texto fica aqui; o rótulo vem do dicionário.
+const OPTIONS: { value: Theme; icon: string }[] = [
+  { value: "light", icon: "☀" },
+  { value: "dark", icon: "☾" },
+  { value: "system", icon: "◐" },
 ];
 
 export function ThemeToggle() {
+  const t = useTranslations("theme");
   // Começa em `system` no servidor e no primeiro render; o valor salvo entra no efeito. Ler
   // localStorage durante o render quebraria a hidratação. O script inline em layout.tsx já
   // pintou a tela certa antes disto, então não há piscada — este estado só sincroniza o
@@ -49,18 +52,18 @@ export function ThemeToggle() {
   };
 
   return (
-    <div className="theme-toggle" role="group" aria-label="Tema">
+    <div className="theme-toggle" role="group" aria-label={t("label")}>
       {OPTIONS.map((opt) => (
         <button
           key={opt.value}
           type="button"
           className={`theme-opt${theme === opt.value ? " on" : ""}`}
           aria-pressed={theme === opt.value}
-          title={opt.label}
+          title={t(opt.value)}
           onClick={() => choose(opt.value)}
         >
           <span aria-hidden>{opt.icon}</span>
-          <span className="sr-only">{opt.label}</span>
+          <span className="sr-only">{t(opt.value)}</span>
         </button>
       ))}
     </div>
