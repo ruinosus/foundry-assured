@@ -26,23 +26,29 @@ uma skill é rollout sem tocar em código de agente nem no toolbox. Há também 
 Skills dentro do toolbox aparecem como **MCP Resources** (`skill://{nome}`), descobertas por
 `resources/list`.
 
-VERIFICADO EMPIRICAMENTE, e o resultado muda o que falta fazer. Criei skill → toolbox → agente
-com este código e perguntei ao agente. Ele **tentou conectar ao toolbox** — o mecanismo da URL
-está certo — e recebeu:
+VERIFICADO EMPIRICAMENTE, em três rodadas, e cada erro moveu o problema um passo adiante:
 
-    Authentication failed when connecting to the MCP server: …/toolboxes/{nome}/mcp:
-    Response status code does not indicate success: 401 (PermissionDenied).
+  1. sem connection → `401 PermissionDenied` ao conectar no endpoint;
+  2. com connection malformada (`authType: AAD`, api-version GA) → `Connection resolution failed`;
+  3. com a connection correta e um toolbox só de skills →
+     `McpProtocolException: List of tool configs not provided in _meta.tools`;
+  4. com a connection correta e um toolbox COM tool → **o agente conectou, enumerou e respondeu.**
 
-Ou seja: o `mcp` tool sozinho não autentica no endpoint do toolbox. Falta uma **project
-connection** que guarde a credencial, referenciada por `project_connection_id` no tool — o que a
-documentação mostra criando com
+`ensure_toolbox_connection` cria a connection automaticamente na publicação, então nada disso
+recai sobre quem usa o produto.
 
-    azd ai connection create <nome> --kind remote-tool \
-        --target "<url do toolbox>" --auth-type user-entra-token --audience https://ai.azure.com
+O QUE A RODADA 4 RESPONDEU, e é a conclusão que faltava: o agente respondeu, mas **NÃO soube o
+conteúdo da skill** que estava no toolbox. Ou seja — o `mcp` tool server-side do Foundry enumera
+as TOOLS do toolbox e as usa; as SKILLS, que chegam como MCP Resources (`resources/list`), NÃO são
+lidas por um PromptAgent. A hipótese levantada na pesquisa se confirmou no teste.
 
-Enquanto essa connection não existir, oferecer o toolbox como capacidade produz um agente que
-falha na primeira chamada. Por isso `mcp_url` devolve a URL e o tool PRONTOS, mas quem monta a
-connection ainda é o operador — e a interface diz isso em vez de prometer.
+CONSEQUÊNCIA PRÁTICA:
+  * toolbox como fonte de TOOLS para um agente do Foundry: funciona;
+  * skill chegando a um agente do Foundry por essa via: não funciona;
+  * para skill, o caminho é **direct injection** — `GET /skills/{nome}/content` devolve um ZIP, o
+    runtime lê o `SKILL.md` no startup e injeta como instrução da sessão. Funciona sem toolbox, e
+    é o mesmo modelo da ADR-013/014 deste repositório. Vale para os agentes que rodam no NOSSO
+    backend, que é onde o produto tem controle do runtime.
 
 Verificado contra o SDK INSTALADO (RULE #1): `ToolboxesOperations` (8 operações),
 `ToolboxVersionObject`, `ToolboxSkillReference`.

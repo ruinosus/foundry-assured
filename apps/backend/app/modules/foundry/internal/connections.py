@@ -27,7 +27,12 @@ import os
 import re
 
 _ARM = "https://management.azure.com"
-_API_VERSION = "2025-06-01"
+# PREVIEW de propósito, e isto não é descuido: os valores que o Foundry exige em `authType`
+# (UserEntraToken, ProjectManagedIdentity…) e o campo `audience` NÃO existem no schema ARM das
+# versões GA. Com `2025-06-01` o PUT é aceito e a connection fica inútil — persistida no ARM, não
+# materializada como RemoteTool no data plane. Foi exatamente o que aconteceu na primeira
+# tentativa, e o sintoma era "Connection resolution failed" com a connection existindo.
+_API_VERSION = "2025-10-01-preview"
 
 # O resource ID do storage carrega subscription e resource group, e é o único lugar do ambiente
 # atual onde eles aparecem juntos. Preferimos uma variável explícita quando ela existir.
@@ -82,35 +87,45 @@ def _url(name: str) -> str:
     )
 
 
-def ensure_toolbox_connection(toolbox_name: str, target_url: str) -> dict:
+def ensure_toolbox_connection(
+    toolbox_name: str, target_url: str, *, auth_type: str = "UserEntraToken"
+) -> dict:
     """Garante a connection que autentica o agente no endpoint MCP do toolbox.
 
     Idempotente: o PUT do ARM cria ou atualiza, então chamar de novo com o mesmo alvo não falha —
     o que importa porque isto roda toda vez que o toolbox é publicado.
 
-    `authType: "AAD"` faz a chamada usar Entra em vez de chave: o endpoint do toolbox é do próprio
-    Foundry, então autenticar com credencial da plataforma é o caminho certo — e mantém a RULE #2
-    (nenhuma chave no caminho).
+    O corpo abaixo é o que a documentação mostra, campo a campo — e cada um foi errado antes:
+
+      * `category: RemoteTool` — é o que o resolver de `mcp` tool procura;
+      * `authType: UserEntraToken` — o token do usuário final atravessa até o toolbox. Não é
+        "AAD": o Foundry tem um conjunto próprio de authType que não aparece no schema ARM GA;
+      * `audience` — obrigatório com UserEntraToken, e vai em `properties`, não em `metadata`;
+      * `group` e `metadata.ApiType` — o que os exemplos oficiais trazem.
+
+    `isSharedToAll: true` porque a connection serve a qualquer agente do project que aponte para
+    este toolbox; restringi-la exigiria manter uma lista de usuários que ninguém pediu.
+
+    O `target` da connection SOBRESCREVE o `server_url` do tool (documentado). Por isso os dois
+    precisam ser a mesma URL — e é `mcp_url` quem produz ambos, para não divergirem.
     """
     import httpx
 
     name = f"{toolbox_name}-mcp"
     body = {
+        "name": name,
         "properties": {
-            # RemoteTool é a categoria que o Foundry resolve para um `mcp` tool. Criei antes como
-            # CustomKeys e o agente respondeu "Connection resolution failed" — encontrava a
-            # connection e não sabia o que fazer com ela. A categoria É o contrato.
             "category": "RemoteTool",
+            "authType": auth_type,
+            "group": "ServicesAndApps",
             "target": target_url,
-            "authType": "AAD",
-            "isSharedToAll": False,
-            "metadata": {
-                # Marca de origem: uma connection criada por nós é distinguível das que o operador
-                # criou à mão, o que importa na hora de saber o que pode ser removido.
-                "createdBy": "foundry-assured",
-                "toolbox": toolbox_name,
-            },
-        }
+            # Obrigatório com UserEntraToken, e é o público do TOOLBOX (não o do dado final):
+            # agente→toolbox usa a identidade do agente; tool→dado usa o token do usuário.
+            "audience": "https://ai.azure.com",
+            "isSharedToAll": True,
+            "sharedUserList": [],
+            "metadata": {"ApiType": "Azure", "createdBy": "foundry-assured"},
+        },
     }
 
     try:
@@ -129,7 +144,7 @@ def ensure_toolbox_connection(toolbox_name: str, target_url: str) -> dict:
         raise ConnectionError_(
             "Sem permissão para criar a connection do toolbox. A identidade da aplicação precisa "
             "de escrita em Microsoft.CognitiveServices/accounts/projects/connections "
-            "(papel Azure AI Project Manager ou Contributor na conta do Foundry)."
+            "(papel Foundry Project Manager ou Contributor na conta do Foundry)."
         )
     if r.status_code >= 400:
         raise ConnectionError_(f"Azure respondeu {r.status_code} ao criar a connection.")
