@@ -4,6 +4,7 @@
 // (backend create_ticket tool → data/tickets.jsonl), served via /api/tickets.
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { authedFetch } from "@/lib/auth/api";
 
 type Ticket = {
@@ -17,6 +18,8 @@ type Ticket = {
 const SEV: Record<string, string> = { low: "neutral", medium: "ok", high: "bad" };
 
 export function TicketsView() {
+  const t = useTranslations("tickets");
+  const tc = useTranslations("common");
   const [tickets, setTickets] = useState<Ticket[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,7 +44,7 @@ export function TicketsView() {
     <>
       <div className="between">
         <div>
-          <h2>Tickets</h2>
+          <h2>{t("title")}</h2>
           <p className="muted t-sm">
             Real tickets opened by the concierge — the <code>create_ticket</code> tool runs
             only after you approve the escalation in the chat.
@@ -59,7 +62,7 @@ export function TicketsView() {
       )}
 
       {tickets === null ? (
-        <div className="empty">Loading…</div>
+        <div className="empty">{tc("loading")}</div>
       ) : tickets.length === 0 ? (
         <div className="table-wrap">
           <div className="empty">
@@ -72,11 +75,11 @@ export function TicketsView() {
           <table className="evals">
             <thead>
               <tr>
-                <th>Ticket</th>
-                <th>Summary</th>
-                <th>Severity</th>
-                <th>Status</th>
-                <th>Opened</th>
+                <th>{t("colTicket")}</th>
+                <th>{t("colSummary")}</th>
+                <th>{t("colSeverity")}</th>
+                <th>{t("colStatus")}</th>
+                <th>{t("colCreated")}</th>
               </tr>
             </thead>
             <tbody>

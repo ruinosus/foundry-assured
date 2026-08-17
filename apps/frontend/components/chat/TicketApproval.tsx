@@ -21,6 +21,7 @@
 // runAgent({ resume }) mechanism.
 
 import { useAgent } from "@copilotkit/react-core/v2";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 // Two shapes of interrupt arrive over the SAME request_info/CUSTOM-event tap:
@@ -39,6 +40,7 @@ type Pending =
 
 
 export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = {}) {
+  const t = useTranslations("approval");
   // The domain is a PROP, not a constant. It was hard-coded to "helpdesk", so on any other
   // domain's page the card subscribed to the wrong agent and never saw the interrupt — the
   // approval simply never appeared. Found by running it, not by reading it.
@@ -110,13 +112,13 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
       {pending.kind === "tool" ? (
         <>
           <div className="approval-head">
-            <span className="approval-eyebrow">Aguardando aprovação</span>
+            <span className="approval-eyebrow">{t("waiting")}</span>
             <h3 className="approval-title">
               Executar <code>{pending.toolName}</code>?
             </h3>
           </div>
           <dl className="approval-body">
-            <dt>Argumentos</dt>
+            <dt>{t("arguments")}</dt>
             <dd>
               <code>
               {typeof pending.args === "string"
@@ -129,8 +131,8 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
       ) : (
         <>
           <div className="approval-head">
-            <span className="approval-eyebrow">Aguardando aprovação</span>
-            <h3 className="approval-title">Abrir chamado?</h3>
+            <span className="approval-eyebrow">{t("waiting")}</span>
+            <h3 className="approval-title">{t("openTicket")}</h3>
           </div>
           {editing ? (
             <div className="approval-edit">
@@ -146,7 +148,7 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
             </div>
           ) : (
             <dl className="approval-body">
-              <dt>Resumo</dt>
+              <dt>{t("summary")}</dt>
               <dd>{pending.summary}</dd>
             </dl>
           )}
@@ -168,7 +170,7 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
                 )
               }
             >
-              Salvar e aprovar
+              {t("saveApprove")}
             </button>
             <button className="btn" disabled={busy} onClick={() => setEditing(false)}>
               Cancel

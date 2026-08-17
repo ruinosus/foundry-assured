@@ -17,7 +17,13 @@
     "signIn": "Sign in with Microsoft",
     "backendOnline": "service online",
     "backendOffline": "service offline",
-    "loading": "Loading…"
+    "loading": "Loading…",
+    "label": "Label",
+    "reference": "Reference",
+    "write": "Write",
+    "enabled": "Enabled",
+    "opened": "Opened",
+    "acquiringToken": "Acquiring token…"
   },
   "theme": {
     "label": "Theme",
@@ -52,6 +58,74 @@
     "try": "Try:",
     "sources": "Sources",
     "guarantees": "Guarantees",
-    "sourcesEmpty": "The sources an answer cites appear here — every claim grounded in the base, never assumed."
+    "sourcesEmpty": "The sources an answer cites appear here — every claim grounded in the base, never assumed.",
+    "suggested": "Try:"
+  },
+  "tickets": {
+    "title": "Tickets",
+    "subtitle": "Real tickets opened by the human approval flow — the create_ticket tool only fires after someone approves.",
+    "colTicket": "Ticket",
+    "colSummary": "Summary",
+    "colSeverity": "Severity",
+    "colStatus": "Status",
+    "colCreated": "Opened",
+    "emptyTitle": "No tickets yet",
+    "emptyBody": "When an agent proposes opening a ticket and someone approves it, it shows up here.",
+    "errorTitle": "Could not read the tickets"
+  },
+  "evals": {
+    "title": "Evaluations",
+    "subtitle": "Gate results: the deterministic policy and the Foundry judges over the golden set.",
+    "colRun": "Run",
+    "colStatus": "Status",
+    "colScores": "Scores",
+    "colReport": "Report",
+    "emptyTitle": "No runs yet",
+    "emptyBody": "Run the cloud eval to populate this page — results land in the Foundry portal and here.",
+    "errorTitle": "Could not read the evaluations",
+    "runHint": "from apps/backend/"
+  },
+  "admin": {
+    "usersTitle": "Users & roles",
+    "usersSubtitle": "The Entra roles that govern who approves, who edits and who only reads.",
+    "assignments": "Role assignments",
+    "principal": "Principal",
+    "role": "Role",
+    "actions": "Actions",
+    "noAssignments": "No assignments yet.",
+    "users": "Users",
+    "upn": "UPN / mail",
+    "enabled": "Enabled",
+    "noUsers": "No users loaded.",
+    "connectionsTitle": "Connections",
+    "connectionsSubtitle": "The Foundry connections this tenant uses. We never store a secret — we reference the connection.",
+    "notOnboarded": "Tenant not onboarded",
+    "dataPlane": "Data plane",
+    "remove": "Remove",
+    "add": "Add",
+    "save": "Save",
+    "invite": "Invite (external guest)",
+    "create": "Create (internal member)",
+    "noConnections": "No connections yet.",
+    "minRoleRead": "Min role (read)",
+    "minRoleWrite": "Min role (write)"
+  },
+  "overview": {
+    "title": "Overview",
+    "tagline": "An assurance mechanism on top of Microsoft Foundry.",
+    "agents": "Agents",
+    "guarantees": "Guarantees"
+  },
+  "approval": {
+    "waiting": "Awaiting approval",
+    "openTicket": "Open a ticket?",
+    "run": "Run {tool}?",
+    "summary": "Summary",
+    "arguments": "Arguments",
+    "approve": "Approve",
+    "edit": "Edit",
+    "reject": "Reject",
+    "cancel": "Cancel",
+    "saveApprove": "Save & approve"
   }
 }

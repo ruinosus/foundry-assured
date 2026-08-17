@@ -6,10 +6,12 @@
 // of the way.
 
 import { useAgent } from "@copilotkit/react-core/v2";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import type { Domain } from "@/lib/domains";
 
 export function SuggestedPrompts({ domain }: { domain: Domain }) {
+  const t = useTranslations("console");
   const { agent } = useAgent({ agentId: domain.id });
   const [hasMessages, setHasMessages] = useState(false);
 
@@ -39,7 +41,7 @@ export function SuggestedPrompts({ domain }: { domain: Domain }) {
 
   return (
     <div className="suggest">
-      <span className="suggest-label">Experimente:</span>
+      <span className="suggest-label">{t("suggested")}</span>
       <div className="suggest-chips">
         {domain.suggested.map((q) => (
           <button key={q} className="suggest-chip" onClick={() => send(q)}>

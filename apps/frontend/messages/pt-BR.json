@@ -17,7 +17,13 @@
     "signIn": "Entrar com a Microsoft",
     "backendOnline": "serviço no ar",
     "backendOffline": "serviço fora do ar",
-    "loading": "Carregando…"
+    "loading": "Carregando…",
+    "label": "Rótulo",
+    "reference": "Referência",
+    "write": "Escrita",
+    "enabled": "Ativo",
+    "opened": "Aberto em",
+    "acquiringToken": "Obtendo credencial…"
   },
   "theme": {
     "label": "Tema",
@@ -52,6 +58,74 @@
     "try": "Experimente:",
     "sources": "Fontes",
     "guarantees": "Garantias",
-    "sourcesEmpty": "As fontes que a resposta citar aparecem aqui — cada afirmação fundamentada na base, não em suposição."
+    "sourcesEmpty": "As fontes que a resposta citar aparecem aqui — cada afirmação fundamentada na base, não em suposição.",
+    "suggested": "Experimente:"
+  },
+  "tickets": {
+    "title": "Chamados",
+    "subtitle": "Chamados reais abertos pelo fluxo de aprovação humana — a ferramenta create_ticket só dispara depois de alguém aprovar.",
+    "colTicket": "Chamado",
+    "colSummary": "Resumo",
+    "colSeverity": "Severidade",
+    "colStatus": "Situação",
+    "colCreated": "Aberto em",
+    "emptyTitle": "Nenhum chamado ainda",
+    "emptyBody": "Quando um agente propuser abrir um chamado e alguém aprovar, ele aparece aqui.",
+    "errorTitle": "Não foi possível ler os chamados"
+  },
+  "evals": {
+    "title": "Avaliações",
+    "subtitle": "Resultados dos gates: política determinística e juízes do Foundry sobre o conjunto dourado.",
+    "colRun": "Execução",
+    "colStatus": "Situação",
+    "colScores": "Notas",
+    "colReport": "Relatório",
+    "emptyTitle": "Nenhuma execução ainda",
+    "emptyBody": "Rode o eval na nuvem para popular esta página — os resultados ficam no portal do Foundry e aqui.",
+    "errorTitle": "Não foi possível ler as avaliações",
+    "runHint": "de apps/backend/"
+  },
+  "admin": {
+    "usersTitle": "Usuários e papéis",
+    "usersSubtitle": "Papéis do Entra que governam quem aprova, quem edita e quem só lê.",
+    "assignments": "Atribuições de papel",
+    "principal": "Pessoa",
+    "role": "Papel",
+    "actions": "Ações",
+    "noAssignments": "Nenhuma atribuição ainda.",
+    "users": "Usuários",
+    "upn": "UPN / e-mail",
+    "enabled": "Ativo",
+    "noUsers": "Nenhum usuário carregado.",
+    "connectionsTitle": "Conexões",
+    "connectionsSubtitle": "As conexões do Foundry que este tenant usa. Nunca guardamos segredo — referenciamos a conexão.",
+    "notOnboarded": "Tenant ainda não integrado",
+    "dataPlane": "Plano de dados",
+    "remove": "Remover",
+    "add": "Adicionar",
+    "save": "Salvar",
+    "invite": "Convidar (convidado externo)",
+    "create": "Criar (membro interno)",
+    "noConnections": "Nenhuma conexão ainda.",
+    "minRoleRead": "Papel mínimo (leitura)",
+    "minRoleWrite": "Papel mínimo (escrita)"
+  },
+  "overview": {
+    "title": "Visão geral",
+    "tagline": "Um mecanismo de garantia sobre o Microsoft Foundry.",
+    "agents": "Agentes",
+    "guarantees": "Garantias"
+  },
+  "approval": {
+    "waiting": "Aguardando aprovação",
+    "openTicket": "Abrir chamado?",
+    "run": "Executar {tool}?",
+    "summary": "Resumo",
+    "arguments": "Argumentos",
+    "approve": "Aprovar",
+    "edit": "Corrigir",
+    "reject": "Recusar",
+    "cancel": "Cancelar",
+    "saveApprove": "Salvar e aprovar"
   }
 }

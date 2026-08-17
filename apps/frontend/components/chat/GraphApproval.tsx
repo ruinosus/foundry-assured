@@ -31,6 +31,7 @@
 // is the abstraction ADR-020 refuses.
 
 import { useInterrupt } from "@copilotkit/react-core/v2";
+import { useTranslations } from "next-intl";
 import { useState } from "react";
 
 type ActionRequest = { name: string; args: Record<string, unknown> };
@@ -82,6 +83,7 @@ function ApprovalCard({
   req: ActionRequest;
   resolve: (payload: unknown) => void | Promise<unknown>;
 }) {
+  const t = useTranslations("approval");
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
@@ -101,7 +103,7 @@ function ApprovalCard({
   return (
         <div className="approval">
           <div className="approval-head">
-        <span className="approval-eyebrow">Aguardando aprovação</span>
+        <span className="approval-eyebrow">{t("waiting")}</span>
         <h3 className="approval-title">Executar {req.name}?</h3>
       </div>
 
@@ -119,7 +121,7 @@ function ApprovalCard({
             </div>
           ) : (
             <dl className="approval-body">
-              <dt>Resumo</dt>
+              <dt>{t("summary")}</dt>
               <dd>{summary || JSON.stringify(req.args)}</dd>
             </dl>
           )}
@@ -146,7 +148,7 @@ function ApprovalCard({
                     )
                   }
                 >
-                  Salvar e aprovar
+                  {t("saveApprove")}
                 </button>
                 <button className="btn" onClick={() => setEditing(false)}>
                   Cancel

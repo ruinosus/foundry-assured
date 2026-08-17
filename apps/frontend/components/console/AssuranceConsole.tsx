@@ -14,7 +14,7 @@
 
 import { CopilotChat, CopilotKitProvider } from "@copilotkit/react-core/v2";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
@@ -42,6 +42,7 @@ const WorkflowSteps = dynamic(
 const AF_HITL_KINDS = new Set<Domain["kind"]>(["workflow", "tool"]);
 
 function Console({ domain, authorization }: { domain: Domain; authorization?: string }) {
+  const t = useTranslations("console");
   const locale = useLocale();
   // Live vs Hosted twin — registry-driven: only renders when the domain declares a
   // hostedAgentId, so any domain that later gains a Foundry hosted twin gets the toggle
@@ -77,7 +78,7 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
                 implementação, que descreve o código para quem já o conhece e não diz nada a
                 quem está avaliando se as garantias são reais. */}
             <p className="console-demo">
-              <span className="console-demo-label">Demonstra</span>
+              <span className="console-demo-label">{t("demonstrates")}</span>
               {domain.demonstrates}
             </p>
           </div>
@@ -157,7 +158,7 @@ function AuthedConsole({ domain }: { domain: Domain }) {
       </div>
     );
   }
-  if (!token) return <div className="console-center">Adquirindo token…</div>;
+  if (!token) return <div className="console-center">{useTranslations("common")("acquiringToken")}</div>;
   return <Console domain={domain} authorization={`Bearer ${token}`} />;
 }
 

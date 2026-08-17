@@ -6,7 +6,7 @@
 
 import { CopilotChat, CopilotKitProvider } from "@copilotkit/react-core/v2";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
@@ -100,6 +100,7 @@ function Chat({ authorization }: { authorization?: string }) {
 
 
 function AuthedChat() {
+  const tc = useTranslations("common");
   const { instance, accounts } = useMsal();
   const isAuthenticated = useIsAuthenticated();
   const [token, setToken] = useState<string | null>(null);
@@ -137,7 +138,7 @@ function AuthedChat() {
       </div>
     );
   }
-  if (!token) return <div className="console-center">Acquiring token…</div>;
+  if (!token) return <div className="console-center">{tc("acquiringToken")}</div>;
   return <Chat authorization={`Bearer ${token}`} />;
 }
 

@@ -5,6 +5,7 @@
 // pass counts per run, each linking to its portal report.
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { authedFetch } from "@/lib/auth/api";
 
 const FOUNDRY_PORTAL = "https://ai.azure.com";
@@ -23,6 +24,8 @@ type Run = {
 };
 
 export function EvalsView() {
+  const tc = useTranslations("common");
+  const t = useTranslations("evals");
   const [runs, setRuns] = useState<Run[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,7 +52,7 @@ export function EvalsView() {
     <>
       <div className="between">
         <div>
-          <h2>Evaluations</h2>
+          <h2>{t("title")}</h2>
           <p className="muted t-sm">
             Live from the Foundry project — hosted groundedness/relevance/coherence judges.
             Each run links to its full report in the portal.
@@ -72,7 +75,7 @@ export function EvalsView() {
       )}
 
       {runs === null ? (
-        <div className="empty">Loading…</div>
+        <div className="empty">{tc("loading")}</div>
       ) : runs.length === 0 ? (
         <div className="table-wrap">
           <div className="empty">
@@ -92,9 +95,9 @@ export function EvalsView() {
               <tr>
                 <th>When</th>
                 <th>Eval</th>
-                <th>Status</th>
-                <th>Scores</th>
-                <th>Report</th>
+                <th>{t("colStatus")}</th>
+                <th>{t("colScores")}</th>
+                <th>{t("colReport")}</th>
               </tr>
             </thead>
             <tbody>

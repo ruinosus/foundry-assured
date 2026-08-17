@@ -5,6 +5,7 @@
 // by the Admin role; this UI is the convenience layer.
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { authedFetch } from "@/lib/auth/api";
 
 interface User {
@@ -30,6 +31,7 @@ async function call(path: string, init?: RequestInit) {
 }
 
 export function AdminUsers() {
+  const t = useTranslations("admin");
   const [users, setUsers] = useState<User[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
@@ -83,7 +85,7 @@ export function AdminUsers() {
   return (
     <div className="stack">
       <div>
-        <h1>Users & roles</h1>
+        <h1>{t("usersTitle")}</h1>
         <p className="muted t-sm">
           Managed in Microsoft Entra via Graph — the app owns the roles
           ({roles.join(" · ") || "…"}); your company maps its groups onto them.
@@ -95,12 +97,12 @@ export function AdminUsers() {
 
       {/* Role assignments */}
       <section className="card">
-        <h3>Role assignments</h3>
+        <h3>{t("assignments")}</h3>
         <div className="table-wrap">
           <table className="evals">
-            <thead><tr><th>Principal</th><th>Type</th><th>Role</th><th></th></tr></thead>
+            <thead><tr><th>{t("principal")}</th><th>Type</th><th>{t("role")}</th><th></th></tr></thead>
             <tbody>
-              {assignments.length === 0 && <tr><td colSpan={4} className="muted">No assignments yet.</td></tr>}
+              {assignments.length === 0 && <tr><td colSpan={4} className="muted">{t("noAssignments")}</td></tr>}
               {assignments.map((a) => (
                 <tr key={a.id}>
                   <td>{a.principalDisplayName || a.principalId}</td>
@@ -135,12 +137,12 @@ export function AdminUsers() {
 
       {/* Users */}
       <section className="card">
-        <h3>Users</h3>
+        <h3>{t("users")}</h3>
         <div className="table-wrap">
           <table className="evals">
-            <thead><tr><th>Name</th><th>UPN / mail</th><th>Enabled</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>{t("upn")}</th><th>{t("enabled")}</th><th></th></tr></thead>
             <tbody>
-              {users.length === 0 && <tr><td colSpan={4} className="muted">No users loaded.</td></tr>}
+              {users.length === 0 && <tr><td colSpan={4} className="muted">{t("noUsers")}</td></tr>}
               {users.map((u) => (
                 <tr key={u.id}>
                   <td>{u.displayName || "—"}</td>
@@ -160,7 +162,7 @@ export function AdminUsers() {
 
         <div className="grid g2 grid g2">
           <div>
-            <h4>Invite (external guest)</h4>
+            <h4>{t("invite")}</h4>
             <div className="row-tight">
               <input className="acct-btn grow" placeholder="email@company.com"
                 value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
@@ -171,7 +173,7 @@ export function AdminUsers() {
             </div>
           </div>
           <div>
-            <h4>Create (internal member)</h4>
+            <h4>{t("create")}</h4>
             <div className="stack-sm">
               <input className="acct-btn" placeholder="Display name" value={cName} onChange={(e) => setCName(e.target.value)} />
               <input className="acct-btn" placeholder="user@tenant.onmicrosoft.com" value={cUpn} onChange={(e) => setCUpn(e.target.value)} />

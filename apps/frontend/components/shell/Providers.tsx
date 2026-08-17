@@ -10,6 +10,7 @@
 // so there's no hydration mismatch; msalInstance is null during SSR by design.
 
 import { MsalProvider, useIsAuthenticated } from "@azure/msal-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { authConfigured, msalInstance } from "@/lib/auth/msal";
 import { LoginScreen } from "@/components/shell/LoginScreen";
@@ -26,6 +27,7 @@ function AuthGate({ children }: { children: React.ReactNode }) {
 
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const t = useTranslations("common");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   // No Entra configured → render directly (stable across SSR/CSR).
   if (!authConfigured) return <>{children}</>;
   // Configured but MSAL not yet initialized (also the SSR state) → brief splash.
-  if (!ready || !msalInstance) return <div className="console-center">Loading…</div>;
+  if (!ready || !msalInstance) return <div className="console-center">{t("loading")}</div>;
   return (
     <MsalProvider instance={msalInstance}>
       <AuthGate>{children}</AuthGate>

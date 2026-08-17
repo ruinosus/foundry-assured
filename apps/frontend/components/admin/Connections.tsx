@@ -6,6 +6,7 @@
 // connection references a Foundry connection or a Key Vault secret by id/ref, never the value.
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { authedFetch } from "@/lib/auth/api";
 
 const KINDS = ["github", "azdo", "azure", "entra", "learn", "m365"] as const;
@@ -61,6 +62,8 @@ const emptyForm = {
 };
 
 export function Connections() {
+  const t = useTranslations("admin");
+  const tc = useTranslations("common");
   const [tenant, setTenant] = useState<TenantResponse | null>(null);
   const [connections, setConnections] = useState<Connection[]>([]);
   const [busy, setBusy] = useState(false);
@@ -125,7 +128,7 @@ export function Connections() {
   return (
     <div className="stack">
       <div>
-        <h1>Connections</h1>
+        <h1>{t("connectionsTitle")}</h1>
         <p className="muted t-sm">
           Onboard this tenant, point it at your Foundry data plane, and wire up the source
           connections. Secrets live in Foundry / Key Vault — only references are stored here.
@@ -138,7 +141,7 @@ export function Connections() {
       {/* Onboarding banner */}
       {tenant && !onboarded && (
         <section className="card">
-          <h3>Tenant not onboarded</h3>
+          <h3>{t("notOnboarded")}</h3>
           {tenant.can_onboard ? (
             <>
               <p className="muted">
@@ -161,7 +164,7 @@ export function Connections() {
       {/* Data-plane form */}
       {onboarded && record && (
         <section className="card">
-          <h3>Data plane</h3>
+          <h3>{t("dataPlane")}</h3>
           <div className="stack-sm">
             <label className="muted t-xs">Foundry project endpoint</label>
             <input className="acct-btn" placeholder="https://…"
@@ -200,17 +203,17 @@ export function Connections() {
       {/* Connections table + add form */}
       {onboarded && (
         <section className="card">
-          <h3>Connections</h3>
+          <h3>{t("connectionsTitle")}</h3>
           <div className="table-wrap">
             <table className="evals">
               <thead>
                 <tr>
-                  <th>Kind</th><th>Label</th><th>Reference</th>
-                  <th>Read</th><th>Write</th><th>Enabled</th><th></th>
+                  <th>Kind</th><th>{tc("label")}</th><th>{tc("reference")}</th>
+                  <th>Read</th><th>{tc("write")}</th><th>{tc("enabled")}</th><th></th>
                 </tr>
               </thead>
               <tbody>
-                {connections.length === 0 && <tr><td colSpan={7} className="muted">No connections yet.</td></tr>}
+                {connections.length === 0 && <tr><td colSpan={7} className="muted">{t("noConnections")}</td></tr>}
                 {connections.map((c) => (
                   <tr key={c.id}>
                     <td><span className="pill neutral">{c.kind}</span></td>
@@ -243,7 +246,7 @@ export function Connections() {
                 </select>
               </div>
               <div>
-                <label className="muted t-xs">Label</label>
+                <label className="muted t-xs">{tc("label")}</label>
                 <input className="acct-btn input" placeholder="Display label"
                   value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} />
               </div>
@@ -258,14 +261,14 @@ export function Connections() {
                   value={form.keyvault_ref} onChange={(e) => setForm({ ...form, keyvault_ref: e.target.value })} />
               </div>
               <div>
-                <label className="muted t-xs">Min role (read)</label>
+                <label className="muted t-xs">{t("minRoleRead")}</label>
                 <select className="acct-btn input" value={form.min_role_read}
                   onChange={(e) => setForm({ ...form, min_role_read: e.target.value })}>
                   {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}
                 </select>
               </div>
               <div>
-                <label className="muted t-xs">Min role (write)</label>
+                <label className="muted t-xs">{t("minRoleWrite")}</label>
                 <select className="acct-btn input" value={form.min_role_write}
                   onChange={(e) => setForm({ ...form, min_role_write: e.target.value })}>
                   {ROLES.map((r) => <option key={r} value={r}>{r}</option>)}

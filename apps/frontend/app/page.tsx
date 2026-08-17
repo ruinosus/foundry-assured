@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { AppShell } from "@/components/shell/AppShell";
 import { DOMAINS } from "@/lib/domains";
 
@@ -25,10 +26,11 @@ const GUARANTEES = [
 ];
 
 export default function Page() {
+  const t = useTranslations("overview");
   return (
     <AppShell>
       <section className="hero">
-        <h1>Um mecanismo de garantia sobre o Microsoft Foundry.</h1>
+        <h1>{t("tagline")}</h1>
         <p>
           Aponte para um repositório ou base de conhecimento e ganhe três garantias: a KB é
           construída da melhor forma, o agente responde com citações fundamentadas, e o
@@ -44,7 +46,7 @@ export default function Page() {
         </div>
       </section>
 
-      <div className="section-title">Agentes</div>
+      <div className="section-title">{t("agents")}</div>
       <div className="grid">
         {DOMAINS.map((d) => (
           <Link key={d.id} href={`/d/${d.id}`} className="card domain-card">
@@ -62,7 +64,7 @@ export default function Page() {
         ))}
       </div>
 
-      <div className="section-title">Garantias</div>
+      <div className="section-title">{t("guarantees")}</div>
       <div className="grid">
         {GUARANTEES.map((g) => (
           <div key={g.title} className="card">

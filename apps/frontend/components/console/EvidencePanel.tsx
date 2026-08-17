@@ -13,6 +13,7 @@
 // that derives sources from the answer TEXT, so the panel degrades gracefully.
 
 import { useAgent } from "@copilotkit/react-core/v2";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import type { Domain } from "@/lib/domains";
 
@@ -69,6 +70,7 @@ const GUARANTEES = [
 ];
 
 export function EvidencePanel({ domain }: { domain: Domain }) {
+  const t = useTranslations("console");
   const { agent } = useAgent({ agentId: domain.id });
   // Structured citations (grounded stream) take precedence; text-derived sources are the fallback.
   const [citations, setCitations] = useState<Citation[]>([]);
@@ -168,7 +170,7 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
       </div>
 
       <div className="evidence-section">
-        <div className="evidence-title">Garantias</div>
+        <div className="evidence-title">{t("guarantees")}</div>
         <ul className="evidence-guarantees">
           {GUARANTEES.map((g) => (
             <li key={g.title}>
