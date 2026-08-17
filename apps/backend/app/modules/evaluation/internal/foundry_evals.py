@@ -33,6 +33,22 @@ def _openai_client():
     return project.get_openai_client()
 
 
+def _field(obj, name: str, default=None):
+    """Lê um campo tanto de objeto quanto de dict.
+
+    O SDK devolve modelos tipados aqui (`EvalListResponse`, `RunListResponse`, `ResultCounts`) —
+    verifiquei. Mas a tela quebrou em produção com `'dict' object has no attribute 'created_at'`,
+    e eu NÃO consegui reproduzir: no mesmo projeto, com a mesma credencial, sempre vieram objetos.
+
+    Sem reproduzir, não dá para corrigir a causa. O que dá é parar de depender da forma: a API é
+    preview, e um cliente que aceita as duas não quebra quando ela muda de ideia. Se a causa
+    aparecer depois, esta função não atrapalha.
+    """
+    if isinstance(obj, dict):
+        return obj.get(name, default)
+    return getattr(obj, name, default)
+
+
 def list_eval_runs(limit: int = 8) -> list[dict]:
     """Compatibilidade: só as execuções. Prefira `read_eval_runs`, que diz o que houve."""
     return read_eval_runs(limit)["runs"]
@@ -55,36 +71,41 @@ def read_eval_runs(limit: int = 8) -> dict:
     try:
         oai = _openai_client()
         evals = sorted(
-            oai.evals.list(), key=lambda e: e.created_at or 0, reverse=True
+            oai.evals.list(), key=lambda e: _field(e, "created_at") or 0, reverse=True
         )[:6]
         runs: list[dict] = []
         for ev in evals:
-            for r in list(oai.evals.runs.list(ev.id))[:3]:
-                rc = r.result_counts
-                # Skip empty/no-score runs (e.g. continuous-eval probes with 0 items).
-                if not getattr(rc, "total", 0) and not r.per_testing_criteria_results:
+            for r in list(oai.evals.runs.list(_field(ev, "id")))[:3]:
+                rc = _field(r, "result_counts")
+                criterios = _field(r, "per_testing_criteria_results") or []
+                # Execução sem pontuação nenhuma (sonda de eval contínuo com 0 itens) não é
+                # resultado — mostrá-la encheria a tela de linhas vazias.
+                if not _field(rc, "total", 0) and not criterios:
                     continue
                 runs.append(
                     {
-                        "id": r.id,
-                        "eval_name": ev.name,
-                        "status": r.status,
-                        "created_at": r.created_at,
-                        "report_url": r.report_url,
-                        "total": getattr(rc, "total", 0),
-                        "passed": getattr(rc, "passed", 0),
-                        "failed": getattr(rc, "failed", 0),
+                        "id": _field(r, "id"),
+                        "eval_name": _field(ev, "name"),
+                        "status": _field(r, "status"),
+                        "created_at": _field(r, "created_at"),
+                        "report_url": _field(r, "report_url"),
+                        "total": _field(rc, "total", 0),
+                        "passed": _field(rc, "passed", 0),
+                        "failed": _field(rc, "failed", 0),
                         "criteria": [
                             {
-                                "name": c.testing_criteria,
-                                "passed": c.passed,
-                                "total": c.passed + c.failed + c.errored + c.skipped,
+                                "name": _field(c, "testing_criteria"),
+                                "passed": _field(c, "passed", 0),
+                                "total": sum(
+                                    _field(c, k, 0) or 0
+                                    for k in ("passed", "failed", "errored", "skipped")
+                                ),
                             }
-                            for c in (r.per_testing_criteria_results or [])
+                            for c in criterios
                         ],
                     }
                 )
-        runs.sort(key=lambda x: x["created_at"] or 0, reverse=True)
+        runs.sort(key=lambda x: x.get("created_at") or 0, reverse=True)
         # Lista vazia SEM falha é informação legítima: o projeto não tem execução ainda, e aí o
         # conselho de rodar o eval está certo. Só neste caso `reason` fica nulo.
         return {"runs": runs[:limit], "reason": None}

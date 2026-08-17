@@ -12,7 +12,13 @@ checks:
 # agente, e trava o fluxo — o card de HITL nunca aparece porque o agente ficou esperando um "sim"
 # em texto.
 - type: contains
-  value: NÃO peça confirmação em texto
+  value: NUNCA peça confirmação em texto
+# O buraco que o rubric encontrou em runtime: a regra estava presa a sev1/sev2, e em sev3 o agente
+# oferecia abrir chamado e perguntava. Agora sev3 tem instrução própria, e a proibição é universal.
+- type: contains
+  value: sev3
+- type: contains
+  value: NUNCA instrua a pessoa sobre o que dizer
 # Regra 4 do projeto, na versão deste domínio: não afirmar efeito que a ferramenta não confirmou.
 - type: contains
   value: sem que a ferramenta tenha retornado um ticket
