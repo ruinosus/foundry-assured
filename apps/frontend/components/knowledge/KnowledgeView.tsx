@@ -17,6 +17,8 @@
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
+import { useMyRoles, isAdmin } from "@/lib/auth/roles";
+import { CreateKnowledge } from "@/components/knowledge/CreateKnowledge";
 
 type Base = {
   name: string;
@@ -38,6 +40,8 @@ export function KnowledgeView() {
   const [data, setData] = useState<{ bases: Base[]; sources: Source[] } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const roles = useMyRoles();
+  const admin = isAdmin(roles);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -105,8 +109,12 @@ export function KnowledgeView() {
         </div>
       )}
 
-      {/* O aviso vem ANTES das tabelas: é a informação acionável da tela, e enterrá-la embaixo
-          de duas listas faria com que só quem já sabia procurar a encontrasse. */}
+      {/* Criar vem antes das listas para quem PODE criar: numa tela vazia, a lista não é o
+          conteúdo — o próximo passo é. */}
+      {admin && <CreateKnowledge onCreated={() => void load()} />}
+
+      {/* O aviso vem ANTES das tabelas: é a informação acionável da tela, e enterrá-lo embaixo
+          de duas listas faria com que só quem já sabia procurar o encontrasse. */}
       {!error && orphans.length > 0 && (
         <div className="notice notice-wait">
           <p className="notice-title">{t("orphanTitle", { count: orphans.length })}</p>

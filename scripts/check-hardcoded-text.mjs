@@ -37,7 +37,7 @@ const TECHNICAL = [
 // da seguinte), diretiva do Next, valor de CSS ou tipo do TypeScript. Nada disso é interface.
 const NOT_TEXT = [
   /^use (client|server)$/,
-  /[{}<>]|=>|\$\{/,
+  /[{}<>]|=>|\$\{|\w+\(|^,|: \w+\.\w+/,
   /^\d|px |#[0-9a-f]{3,8}\b|\b(solid|rgba?|var|calc|flex|grid)\b/i,
   /\|\s*\w+$/, // união de tipos: void | Promise
   /^\(|prefers-color-scheme|^:scope|ease-out|ease-in|\b\d*\.?\d+m?s\b/, // media query, seletor, transição

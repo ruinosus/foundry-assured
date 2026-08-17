@@ -32,3 +32,31 @@ export async function GET(req: NextRequest) {
     );
   }
 }
+
+export async function POST(req: NextRequest) {
+  try {
+    const auth = req.headers.get("authorization");
+    const body = await req.json().catch(() => ({}));
+    const r = await fetch(`${BACKEND}/foundry/knowledge`, {
+      method: "POST",
+      headers: {
+        ...(auth ? { Authorization: auth } : {}),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      return NextResponse.json(
+        { error: data?.detail ?? `backend ${r.status}` },
+        {
+          status:
+            r.status === 401 || r.status === 403 ? r.status : r.status === 400 ? 400 : 502,
+        },
+      );
+    }
+    return NextResponse.json(data);
+  } catch {
+    return NextResponse.json({ error: "backend inacessível" }, { status: 502 });
+  }
+}

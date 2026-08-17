@@ -46,18 +46,19 @@ def _iso(value: Any) -> Any:
     return value.isoformat() if hasattr(value, "isoformat") else value
 
 
-def _state_name(state: Any) -> str | None:
-    """Nome do estado, quando há um."""
-    return (str(state) or None) if state else None
-
-
 def _run(state: Any) -> dict | None:
-    """A última sincronização, com os campos que respondem "esta base está atualizada?".
+    """Uma execução de sincronização, com os campos que respondem "esta base está atualizada?".
 
-    Chamar `str()` neste objeto devolveria o dict do SDK serializado — `{'additional_properties':
-    {'errors': []}, 'start_time': datetime.datetime(...)}` — que atravessa o JSON como texto e
-    chega ilegível na tela. Foi o que a primeira chamada contra o serviço real mostrou, e é o
-    tipo de defeito que só aparece com dado de verdade: com o objeto vazio, `str()` parecia bem.
+    Serve para os DOIS campos de estado, e essa é a lição: `current_synchronization_state` e
+    `last_synchronization_state` são o MESMO tipo de objeto. Eu tratei o primeiro como se fosse
+    um enum e chamei `str()` nele — o que devolve o dict do SDK serializado,
+    `{'additional_properties': {...}, 'start_time': datetime.datetime(...)}`, atravessando o JSON
+    como texto.
+
+    O defeito passou pelo gate offline porque plantei a forma real só no campo `last_`. E passou
+    pela primeira chamada real porque não havia sincronização em curso — o campo vinha vazio, e
+    `str(None)` não denuncia nada. Só apareceu ao subir um arquivo, quando o `current_` finalmente
+    teve conteúdo. Um campo opcional só mostra o defeito no dia em que vem preenchido.
     """
     if state is None:
         return None
@@ -162,7 +163,7 @@ def get_knowledge(name: str) -> dict:
                         "source": source_name,
                         # Só existe enquanto uma sincronização está EM CURSO; ausente é o caso
                         # normal (a última terminou), não um erro.
-                        "state": _state_name(getattr(st, "current_synchronization_state", None)),
+                        "running": _run(getattr(st, "current_synchronization_state", None)),
                         "last_run": _run(getattr(st, "last_synchronization_state", None)),
                         "interval": str(getattr(st, "synchronization_interval", "") or "") or None,
                         "total_synchronizations": getattr(stats, "total_synchronization", None),

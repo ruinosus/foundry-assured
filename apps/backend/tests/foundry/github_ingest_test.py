@@ -126,7 +126,7 @@ def main() -> int:
             fn()
         except gh.GitHubError:
             return True
-        except Exception:
+        except Exception:  # noqa: BLE001 — outro tipo de erro É falha do teste, não sucesso
             return False
         return False
 

@@ -3,7 +3,7 @@ title: 'Design: agentes, bases e skills que o usuário final cria e mantém'
 description: Trazer um perfil de usuário que não tem acesso ao portal do Foundry para consumir os recursos do Foundry — criar, usar e manter agentes, bases de conhecimento e skills. Levantamento feito ANTES do desenho, pela MÁXIMA MAIOR do CLAUDE.md, e o resultado é que praticamente tudo já existe como API oficial: 23 operações de agente (incluindo versionamento e sessões), 11 de skill, 11 de knowledge. A única lacuna real é o GitHub.
 type: design
 audience: contributor
-status: draft
+status: shipped
 updated: 2026-08-17
 ---
 
@@ -189,9 +189,21 @@ spec; é lacuna que o portal também não mostra bem, e virou parte do produto.
 é ele que responde "esta base está atualizada?". Falha de status não derruba a página: a fonte
 aparece com status ausente e a base continua legível.
 
-**O objeto de estado não sobrevive a `str()`.** `last_synchronization_state` serializado com
-`str()` atravessa o JSON como o repr do dict do SDK. Contra objeto vazio parecia certo; só o dado
-real mostrou. O gate offline planta a forma real para a regressão não voltar.
+**O objeto de estado não sobrevive a `str()` — e o gate não bastou na primeira tentativa.**
+`current_synchronization_state` e `last_synchronization_state` são o MESMO tipo. Corrigi o `last_`
+e plantei a forma real só nele, então o `current_` continuou com `str()` e o gate passou verde. O
+defeito só apareceu ao subir um arquivo de verdade, quando o campo finalmente veio preenchido.
+**Um campo opcional só mostra o defeito no dia em que vem cheio** — o gate agora cobre os dois.
+
+### O que os passos 3 a 5 ensinaram, contra o serviço real
+
+**O container tem de existir ANTES da knowledge source.** A fonte é validada no momento em que é
+criada, e o Search responde `Unable to retrieve blob container for account '<conta>' using your
+managed identity` — mensagem que soa como falta de permissão e manda procurar no lugar errado. Meu
+desenho criava o container só no primeiro upload. Corrigido com `ensure_container`.
+
+**Ciclo completo verificado no Azure:** criar → aparecer no catálogo → subir arquivo → status de
+sincronização em curso → apagar base, fonte e container. Nenhum resíduo ficou.
 
 ## Referências
 

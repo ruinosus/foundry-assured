@@ -109,6 +109,17 @@ def main() -> int:
 
     check("estado ausente é None, não string vazia", _run(None) is None)
 
+    # A lacuna que deixou o defeito passar: o MESMO tipo de objeto chega nos dois campos, então
+    # os dois precisam da mesma projeção. Cobrir só um é o que aconteceu, e não bastou.
+    em_curso = _LastRun()
+    em_curso.end_time = None  # sincronização em ANDAMENTO: começou, não terminou
+    r_curso = _run(em_curso)
+    check("estado EM CURSO também é objeto (o mesmo tipo do last_)", isinstance(r_curso, dict))
+    check("em curso tem início mas não fim",
+          r_curso["started_at"] is not None and r_curso["ended_at"] is None)
+    check("em curso não vaza repr de dict",
+          not any(isinstance(v, str) and "additional_properties" in v for v in r_curso.values()))
+
     # Órfã: a marcação é o que revela custo rodando sem uso.
     bases = [_project_base(_Base("kb", ["usada-ks"]))]
     fontes = [_project_source(_Source(n, "azureBlob")) for n in ("usada-ks", "esquecida-ks")]

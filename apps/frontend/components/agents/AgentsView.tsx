@@ -8,6 +8,7 @@
 // agente criado" e "não foi possível ler" são coisas diferentes, e confundi-las esconderia
 // falta de permissão atrás de uma tela vazia e tranquila.
 
+import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
@@ -136,7 +137,9 @@ export function AgentsView() {
               {agents.map((a) => (
                 <tr key={a.name}>
                   <td>
-                    <span className="strong">{a.name}</span>
+                    <Link className="strong" href={`/agents/${encodeURIComponent(a.name)}`}>
+                      {a.name}
+                    </Link>
                     {a.version?.description && (
                       <p className="t-xs muted-line">{a.version.description}</p>
                     )}

@@ -111,6 +111,28 @@ def check_upload(filename: str, size: int) -> str:
     return name
 
 
+def ensure_container(qualified_name: str) -> str:
+    """Garante que o container desta base existe, e devolve o nome dele.
+
+    ORDEM QUE O SERVIÇO IMPÕE, e que só a chamada real revelou: a knowledge source é validada no
+    momento em que é criada. Se o container ainda não existe, o Search responde
+
+        Unable to retrieve blob container for account '<conta>' using your managed identity
+
+    — mensagem que soa como problema de permissão e manda procurar no lugar errado. Então o
+    container nasce ANTES da fonte, não no primeiro upload.
+    """
+    service = _blob_service()
+    try:
+        container = _container_for(qualified_name)
+        with contextlib.suppress(Exception):  # já existe é o caso normal
+            service.get_container_client(container).create_container()
+        return container
+    finally:
+        with contextlib.suppress(Exception):
+            service.close()
+
+
 def upload_files(name: str, files: list[tuple[str, bytes]]) -> dict:
     """Sobe arquivos para o container desta base, criando o container se preciso.
 
@@ -121,13 +143,10 @@ def upload_files(name: str, files: list[tuple[str, bytes]]) -> dict:
         raise UploadRejected(f"Máximo de {MAX_FILES} arquivos por envio (recebidos {len(files)}).")
 
     qualified = qualify(name)
-    container = _container_for(qualified)
+    container = ensure_container(qualified)
     service = _blob_service()
     try:
         cc = service.get_container_client(container)
-        with contextlib.suppress(Exception):  # já existe é o caso normal
-            cc.create_container()
-
         written = []
         for filename, data in files:
             blob = check_upload(filename, len(data))
@@ -160,7 +179,8 @@ def create_knowledge(name: str, description: str = "", answer_instructions: str 
 
     qualified = qualify(name)
     source_name = f"{qualified}-ks"
-    container = _container_for(qualified)
+    # Antes da fonte: o Search valida o container no momento da criação (ver `ensure_container`).
+    container = ensure_container(qualified)
     cfg = tenant_config()
     storage_id = cfg.azure_storage_resource_id
 
