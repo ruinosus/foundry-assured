@@ -49,6 +49,7 @@ def _construcoes_diretas() -> list[str]:
 def main() -> int:
     from app.modules.conversations.public import (
         bind_conversation,
+        bind_dependency,
         current_conversation,
         usage_recorder,
     )
@@ -113,6 +114,41 @@ def main() -> int:
         falhas.append(
             "  nenhuma dependência de `conversations` em domain_deps — sem a amarração, os "
             "domínios seguem servindo e param de ser medidos, em silêncio"
+        )
+
+    # ── a amarração RODA, e sobrevive ao StreamingResponse ────────────────────────────────
+    #
+    # Dois modos de falha silenciosa, os dois já observados:
+    #
+    #   · sem a anotação `request: Request`, o FastAPI trata o parâmetro como QUERY PARAM e
+    #     devolve 422 antes de chamar a função. Nas rotas reais isso fica mascarado, porque a
+    #     autenticação responde 401 primeiro — a amarração simplesmente nunca roda, e nada falha;
+    #   · toda resposta de agente é um `StreamingResponse`, e o corpo é iterado DEPOIS do handler.
+    #     Se o contextvar não atravessasse, o gravador leria `None` em cada chamada de modelo e
+    #     gravaria zero para sempre.
+    from fastapi import Depends, FastAPI
+    from fastapi.responses import StreamingResponse
+    from fastapi.testclient import TestClient
+
+    sonda = FastAPI()
+
+    @sonda.post("/sonda", dependencies=[Depends(bind_dependency("sonda"))])
+    async def _sonda():
+        async def gerar():
+            yield str(current_conversation())
+
+        return StreamingResponse(gerar(), media_type="text/plain")
+
+    resposta = TestClient(sonda).post("/sonda", json={"threadId": "t-1"})
+    if resposta.status_code != 200:
+        falhas.append(
+            f"  a dependência de amarração não roda (HTTP {resposta.status_code}) — provável falta"
+            " da anotação `request: Request`, que o FastAPI lê como query param"
+        )
+    elif resposta.text != "('sonda', 't-1')":
+        falhas.append(
+            f"  a conversa não sobreviveu ao StreamingResponse: {resposta.text!r} — o gravador"
+            " leria None em toda chamada de modelo e gravaria zero em silêncio"
         )
 
     if falhas:

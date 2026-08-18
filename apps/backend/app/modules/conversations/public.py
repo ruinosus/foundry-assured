@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from app.modules.conversations.internal.langchain_recording import usage_callback
 from app.modules.conversations.internal.listing import (
     find_conversation,
     get_conversation,
@@ -34,6 +35,7 @@ __all__ = [
     "list_conversations",
     "record_turn",
     "record_usage",
+    "usage_callback",
     "usage_recorder",
     "usage_totals",
 ]

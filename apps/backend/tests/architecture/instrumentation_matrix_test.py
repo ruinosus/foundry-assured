@@ -54,7 +54,7 @@ MATRIZ: dict[str, dict[str, object]] = {
         "caso_de_uso": True,
     },
     "/platform": {
-        "conversa": "sem HistoryProvider — o token chega e não tem onde pousar",
+        "conversa": True,
         "tokens": True,
         "referencias": "n/a: tool-driven, sem base de conhecimento",
         "chamado": "n/a: não abre chamado",
@@ -62,12 +62,12 @@ MATRIZ: dict[str, dict[str, object]] = {
         "caso_de_uso": "depende da conversa",
     },
     "/builder": {
-        "conversa": "sem HistoryProvider — o token chega e não tem onde pousar",
+        "conversa": True,
         "tokens": True,
         "referencias": "n/a: assistente de formulário, sem base",
         "chamado": "n/a: não abre chamado",
         "trilha": True,
-        "caso_de_uso": "depende da conversa",
+        "caso_de_uso": True,
     },
     # ── runtime B · Responses API · laço de SSE escrito aqui ────────────────────────────────
     "/techdocs": {
@@ -88,20 +88,26 @@ MATRIZ: dict[str, dict[str, object]] = {
     },
     # ── runtime C · LangChain / LangGraph · fora da fábrica ─────────────────────────────────
     "/oncall": {
-        "conversa": "AzureChatOpenAI não passa pela fábrica; falta o callback do LangChain",
-        "tokens": "idem",
-        "referencias": "idem",
+        # O turno visível é do GRAFO, não da chamada de modelo: `on_llm_end` veria também os
+        # passos internos do HITL, que ninguém quer reler. Gravar isso como conversa encheria a
+        # transcrição de ruído — lacuna deliberada, não esquecimento.
+        "conversa": "o turno é do grafo, não da chamada; on_llm_end veria os passos internos",
+        "tokens": True,
+        "referencias": "n/a: triagem por tools, sem base de conhecimento",
         "chamado": True,
         "trilha": True,
-        "caso_de_uso": "só indireto, pelo chamado",
+        "caso_de_uso": True,
     },
     "/deepcall": {
-        "conversa": "AzureChatOpenAI não passa pela fábrica; falta o callback do LangChain",
-        "tokens": "idem",
-        "referencias": "idem",
+        # O turno visível é do GRAFO, não da chamada de modelo: `on_llm_end` veria também os
+        # passos internos do HITL, que ninguém quer reler. Gravar isso como conversa encheria a
+        # transcrição de ruído — lacuna deliberada, não esquecimento.
+        "conversa": "o turno é do grafo, não da chamada; on_llm_end veria os passos internos",
+        "tokens": True,
+        "referencias": "n/a: triagem por tools, sem base de conhecimento",
         "chamado": True,
         "trilha": True,
-        "caso_de_uso": "só indireto, pelo chamado",
+        "caso_de_uso": True,
     },
     # ── runtime D · hosted no Foundry · execução fora daqui ─────────────────────────────────
     "/helpdesk-hosted": {

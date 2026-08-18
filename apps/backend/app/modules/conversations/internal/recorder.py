@@ -29,6 +29,7 @@ import logging
 from typing import Any
 
 from agent_framework import ChatMiddleware
+from fastapi import Request
 
 logger = logging.getLogger(__name__)
 
@@ -62,12 +63,17 @@ def bind_dependency(agent: str = "", *, path_param: str = ""):
     conhece por requisição (`/foundry-agent/{name}`). Sem isso, ou a rota genérica ficaria sem
     amarração, ou todas as conversas de agentes diferentes cairiam sob a mesma chave.
 
+    A ANOTAÇÃO `request: Request` NÃO É DECORAÇÃO. Sem ela o FastAPI trata o parâmetro como query
+    param obrigatório e devolve 422 antes de chamar a função — a amarração nunca roda, e nas rotas
+    reais o erro fica MASCARADO porque a autenticação responde 401 primeiro. Foi assim que ela
+    passou despercebida no commit anterior.
+
     `request.json()` guarda o corpo em cache no próprio objeto (`Request._body`), então lê-lo aqui
     não consome o stream que o adapter vai ler depois. Corpo que não é JSON — ou sem thread —
     simplesmente não amarra, e o gravador vira no-op.
     """
 
-    async def _amarrar(request) -> None:
+    async def _amarrar(request: Request) -> None:
         nome = agent
         if path_param:
             nome = str(request.path_params.get(path_param, "") or "") or agent

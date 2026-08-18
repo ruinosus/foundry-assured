@@ -120,6 +120,9 @@
     "agentdefs": [
       "modules/deepcall/internal/graph.py"
     ],
+    "conversations": [
+      "modules/deepcall/internal/graph.py"
+    ],
     "hitl": [
       "modules/deepcall/internal/graph.py"
     ],
@@ -165,7 +168,8 @@
       "modules/grounded/internal/concierge.py"
     ],
     "conversations": [
-      "modules/grounded/internal/grounded.py"
+      "modules/grounded/internal/grounded.py",
+      "modules/grounded/internal/per_request.py"
     ],
     "foundry": [
       "modules/grounded/internal/concierge.py"
@@ -261,6 +265,9 @@
   },
   "oncall": {
     "agentdefs": [
+      "modules/oncall/internal/graph.py"
+    ],
+    "conversations": [
       "modules/oncall/internal/graph.py"
     ],
     "hitl": [

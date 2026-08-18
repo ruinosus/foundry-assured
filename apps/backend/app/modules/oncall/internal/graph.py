@@ -99,11 +99,19 @@ def build_oncall_graph():
     token_provider = get_bearer_token_provider(
         DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
     )
+    # O MESMO `record_usage` do resto do backend, pelo ponto canônico do LangChain. Estes dois
+    # domínios não passam pela fábrica de cliente do agent-framework, então o `ChatMiddleware` que
+    # mede todo o resto não os alcança — ficavam inteiramente fora da contabilidade. `callbacks` é
+    # a superfície de observabilidade do próprio LangChain (ADR-020: cada framework do jeito dele),
+    # e o destino é compartilhado: uma contabilidade, dois pontos de entrada.
+    from app.modules.conversations.public import usage_callback
+
     model = AzureChatOpenAI(
         azure_deployment=settings.oncall_model,
         azure_endpoint=settings.azure_openai_endpoint,
         api_version=settings.azure_openai_api_version,
         azure_ad_token_provider=token_provider,
+        callbacks=[usage_callback()],
     )
     return create_agent(
         model=model,
