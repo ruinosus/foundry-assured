@@ -333,6 +333,9 @@
       "modules/usecases/internal/outcomes.py",
       "modules/usecases/internal/usecases.py"
     ],
+    "pricing": [
+      "modules/usecases/internal/outcomes.py"
+    ],
     "shared": [
       "modules/usecases/api.py",
       "modules/usecases/internal/outcomes.py"

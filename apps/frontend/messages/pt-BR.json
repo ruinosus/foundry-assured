@@ -493,7 +493,8 @@
     "references": "referências de conhecimento citadas",
     "multiplierSource": "multiplicador: {source}",
     "hourlySource": "valor da hora: {source}",
-    "referencesPartial": "Nenhuma conversa deste caso tem contagem de referências gravada — elas são anteriores a esta medição. A parcela de referências da fórmula está zerada por falta de dado, não por falta de citação, então o valor acima está subestimado."
+    "referencesPartial": "Nenhuma conversa deste caso tem contagem de referências gravada — elas são anteriores a esta medição. A parcela de referências da fórmula está zerada por falta de dado, não por falta de citação, então o valor acima está subestimado.",
+    "priceSource": "Preço de {model} lido da lista de preços da própria Azure — meters: {meters}"
   },
   "overview": {
     "title": "Visão geral",

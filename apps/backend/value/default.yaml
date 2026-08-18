@@ -1,0 +1,76 @@
+# O MODELO DE VALOR — como horas assistidas e retorno são calculados, e de onde cada
+# constante veio. Isto é DADO, não código: mudar a premissa da sua operação é editar este
+# arquivo (ou apontar VALUE_MODEL para outro), não mexer em Python.
+#
+# POR QUE DECLARATIVO. Mesmo movimento que os prompts já fizeram neste repositório (ADR-013/015):
+# o que é conteúdo de negócio sai do código, ganha procedência explícita e passa a poder variar
+# por cliente sem fork. Um número de ROI sem a premissa visível é propaganda; um com a premissa
+# visível E citável é argumento.
+#
+# NÃO EXISTE PADRÃO ABERTO PARA ISTO — foi pesquisado. Os specs declarativos de agente (Microsoft
+# AgentSchema, `agent.yaml` do Foundry, Open Agent Spec, Agent Format) modelam o AGENTE, nunca o
+# valor que ele gera; a FinOps Foundation publica o VOCABULÁRIO (unit economics) mas não um
+# schema, e anunciou na FinOps X 2026 a intenção de formar a Tokenomics Foundation para
+# padronizar billing de IA — ou seja, o padrão está sendo escrito. Este arquivo usa a fórmula da
+# Microsoft e a taxonomia da FinOps para não inventar nem conta nem vocabulário.
+
+schema: foundry-assured/value-model/v1
+name: default
+
+# ── A FÓRMULA ────────────────────────────────────────────────────────────────────────────
+# Agent Assisted Hours, publicada pela Microsoft. NÃO é nossa, e é isso que a torna defensável
+# numa conversa de negócio: a premissa é de terceiro e tem fonte.
+#
+#   AAH   = (referências de conhecimento + sessões sem referência ponderadas) × mult ÷ 60
+#   valor = AAH × custo da hora
+formula:
+  id: agent-assisted-hours
+  label: Agent Assisted Hours (Microsoft)
+  doc: https://learn.microsoft.com/microsoft-copilot-studio/guidance/agent-business-value-measure-impact
+
+constants:
+  # Minutos economizados por referência de conhecimento citada. 6 é o default PUBLICADO pela
+  # Microsoft; trocar por um número seu é legítimo e esperado — trocar sem trocar a procedência
+  # abaixo não é, porque o número deixa de ser o que a tela diz que é.
+  minutes_per_reference:
+    value: 6.0
+    source: microsoft
+    note: Microsoft Work Trend Index — pesquisa sobre tarefas de recuperação de informação
+
+  # Peso por DESFECHO das sessões que não citaram fonte. Fazem parte da fórmula publicada, não da
+  # premissa da empresa: editá-los deixa de ser "adaptar à minha operação" e passa a ser "ajustar
+  # a AAH até o número agradar", com o crachá da Microsoft sobre a conta da casa.
+  resolved_weight:
+    value: 1.0
+    source: microsoft
+    locked: true
+  unresolved_weight:
+    value: 0.7
+    source: microsoft
+    locked: true
+
+  # Custo da hora. Este é NOSSO e admite ser: o default da Microsoft é US$ 72/h (US Bureau of
+  # Labor Statistics, custo total do empregador), que convertido não representa suporte interno
+  # no Brasil. É a primeira constante que uma instalação deve trocar.
+  hourly_cost:
+    value: 90.0
+    currency: BRL
+    source: local
+    note: >-
+      definido por esta instalação; o default da Microsoft é US$ 72/h, do US BLS
+
+# ── COMO AS MÉTRICAS SE CHAMAM ───────────────────────────────────────────────────────────
+# Vocabulário da FinOps Foundation (capability "Unit Economics"), não inventado aqui. Ela separa
+# métricas de EFICIÊNCIA DE RECURSO (custo por token) de métricas de UNIDADE DE NEGÓCIO (custo por
+# caso resolvido, por caso deflectido). O painel calcula as duas, e nomeá-las com o vocabulário de
+# terceiro é o que permite comparar este número com o de qualquer outra instalação.
+# https://www.finops.org/framework/capabilities/measure-unit-costs/
+metrics:
+  resource_efficiency:
+    - id: cost_per_1m_tokens
+      label: custo por 1M tokens
+  business_unit:
+    - id: cost_per_case_resolved
+      label: custo por caso resolvido
+    - id: cost_per_case_deflected
+      label: custo por caso deflectido

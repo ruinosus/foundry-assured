@@ -143,6 +143,14 @@ jobs:
       - name: Uso medido por construção (nenhum cliente fora da fábrica)
         run: uv run python -m tests.conversations.usage_seam_test
 
+      # Preço por token. O casamento por prefixo mais longo fazia `gpt-5-pro` herdar o preço de
+      # `gpt-5` (12× menos que o real) e `gpt-4.1-nano` herdar o de `gpt-4.1` (20× mais) — e nem
+      # um nem outro chegava ao "fallback conservador", porque variante nova casa com o prefixo
+      # curto antes. Este gate roda offline sobre uma captura real de `prices.azure.com` e cobra
+      # que a tabela de reserva concorde com a Azure e que desconhecido devolva None.
+      - name: Preço por token confere com a lista da Azure
+        run: uv run python -m tests.pricing.azure_prices_test
+
       - name: Approval decisions (edit is not a loophole)
         run: uv run python -m tests.hitl.decision_test
       - name: Edit round-trips end to end
