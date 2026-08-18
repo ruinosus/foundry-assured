@@ -74,9 +74,12 @@ def main() -> int:
             "techdocs": "grounded",
             "selfwiki": "grounded",
             "platform": "tool",
+            # O assistente do wizard é domínio como qualquer outro — tool-driven, sem base.
+            "builder": "tool",
             # ADR-020: a LangGraph domain in the same registry. The topology now carries the
             # RUNTIME as well, and is still readable with no tenant resolved.
             "oncall": "graph",
+            "deepcall": "graph",
         },
     )
 

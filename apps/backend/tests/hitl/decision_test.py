@@ -69,8 +69,17 @@ def main() -> int:
             "the edit carries the CORRECTED arguments",
             edited.args["summary"] == "Kubernetes pod in CrashLoopBackOff",
         )
-        check("the decision records the approver's ROLE, not their identity",
-              edited.approver_roles == ("Approver",) and "u-1" not in str(edited))
+        # A identidade do aprovador AGORA é registrada — de propósito, e só na trilha (ADR-023):
+        # a RULE #5 diz que o chamado só abre após aprovação de um Approver, e antes disso não
+        # havia artefato nenhum que comprovasse isso. O invariante que ESTE caso guarda é o outro
+        # lado da mesma moeda, e continua valendo: a identidade fica no evento imutável e NÃO
+        # vaza para o que volta ao modelo e à interface. `args` reentra na execução da tool e
+        # `message` vai para o histórico da conversa — oid de quem aprovou em qualquer um dos dois
+        # é PII num lugar mutável e legível por quem conversa.
+        fora_da_trilha = (edited.type, edited.args, edited.message, edited.approver_roles)
+        check("a decisão registra o PAPEL para quem lê", edited.approver_roles == ("Approver",))
+        check("a identidade não vaza para args/message/roles", "u-1" not in str(fora_da_trilha))
+        check("…e a trilha registra QUEM aprovou", "u-1" in str(edited.audit))
 
         # --- An empty edit is not an approval in disguise -----------------------------------
         check("an edit with no arguments is refused", refuses(lambda: decide(request, "edit", args={})))

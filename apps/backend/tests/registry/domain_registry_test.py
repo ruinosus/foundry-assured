@@ -98,17 +98,41 @@ def main() -> int:
         ok_index = False
     check("grounded guard allows search_index-only", ok_index)
 
-    # --- domain_deps: self_hosted → exactly auth_dependencies() (no domain gate) ---
+    # --- domain_deps: duas funções com o mesmo nome, e a distinção importa ---------------
+    #
+    # `tenancy.domain_deps` guarda a promessa da ADR-017: em self_hosted é BYTE-IDÊNTICO a
+    # `auth_dependencies()`, e só o modo shared acrescenta o gate de entitlement. Isso continua
+    # valendo e é verificado abaixo.
+    #
+    # `registry.domain_deps` é o composto que os endpoints recebem, e ele acrescenta UMA
+    # dependência em TODO modo: a amarração da conversa, que é como a medição de uso passou a ser
+    # uniforme por construção em vez de cada agente lembrar de se instrumentar. Essa é a única
+    # diferença entre os dois, e o teste fixa exatamente ela — se alguém remover a amarração, os
+    # domínios continuam servindo e param de ser medidos, sem nada mais falhar.
+    from app.modules.tenancy.public import domain_deps as tenancy_deps
     from app.shared.auth import auth_dependencies
     from app.shared.settings import settings
 
     orig_mode = settings.deployment_mode
     try:
         settings.deployment_mode = "self_hosted"
-        check("domain_deps == auth_dependencies() in self_hosted", domain_deps("techdocs") == auth_dependencies())
+        check(
+            "tenancy.domain_deps == auth_dependencies() in self_hosted (ADR-017)",
+            tenancy_deps("techdocs") == auth_dependencies(),
+        )
+        check(
+            "registry.domain_deps acrescenta a amarração da conversa em self_hosted",
+            len(domain_deps("techdocs")) == len(auth_dependencies()) + 1,
+        )
         settings.deployment_mode = "shared"
-        shared_deps = domain_deps("techdocs")
-        check("domain_deps adds a gate in shared mode", len(shared_deps) == len(auth_dependencies()) + 1)
+        check(
+            "tenancy.domain_deps adds a gate in shared mode",
+            len(tenancy_deps("techdocs")) == len(auth_dependencies()) + 1,
+        )
+        check(
+            "registry.domain_deps carrega gate + amarração em shared",
+            len(domain_deps("techdocs")) == len(auth_dependencies()) + 2,
+        )
     finally:
         settings.deployment_mode = orig_mode
 
