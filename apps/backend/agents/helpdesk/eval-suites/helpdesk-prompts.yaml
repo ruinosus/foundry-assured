@@ -25,3 +25,5 @@ cases:
 - techdocs-discipline
 - selfwiki-discipline
 - platform-write-safety
+- oncall-contract
+- builder-contract

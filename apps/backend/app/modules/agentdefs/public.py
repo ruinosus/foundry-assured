@@ -103,6 +103,7 @@ _AGENT_FOR_CONSTANT = {
     "SELFWIKI_INSTRUCTIONS": "selfwiki",
     "ONCALL_INSTRUCTIONS": "oncall",
     "PLATFORM_INSTRUCTIONS": "platform",
+    "BUILDER_INSTRUCTIONS": "builder",
 }
 
 
@@ -164,6 +165,7 @@ ONCALL_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["ONCALL_INSTRUCTIONS"]
 
 # --- Fourth domain: tool-driven engineering-platform concierge -----------------
 PLATFORM_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["PLATFORM_INSTRUCTIONS"])
+BUILDER_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["BUILDER_INSTRUCTIONS"])
 
 del _pack
 

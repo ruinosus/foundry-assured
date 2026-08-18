@@ -178,6 +178,10 @@
     ],
     [
       "POST",
+      "/builder"
+    ],
+    [
+      "POST",
       "/foundry-agent/{name}"
     ],
     [
@@ -453,6 +457,10 @@
     [
       "POST",
       "/admin/users/invite"
+    ],
+    [
+      "POST",
+      "/builder"
     ],
     [
       "POST",
@@ -747,6 +755,10 @@
     [
       "POST",
       "/admin/users/invite"
+    ],
+    [
+      "POST",
+      "/builder"
     ],
     [
       "POST",

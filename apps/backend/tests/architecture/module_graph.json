@@ -6,6 +6,9 @@
     "agentdefs": [
       "registry.py"
     ],
+    "builder": [
+      "registry.py"
+    ],
     "conversations": [
       "registry.py"
     ],
@@ -63,6 +66,20 @@
   "agentdefs": {
     "tenancy": [
       "modules/agentdefs/internal/skill_injection.py"
+    ]
+  },
+  "builder": {
+    "agentdefs": [
+      "modules/builder/internal/builder.py"
+    ],
+    "grounded": [
+      "modules/builder/internal/builder.py"
+    ],
+    "shared": [
+      "modules/builder/internal/builder.py"
+    ],
+    "tenancy": [
+      "modules/builder/internal/builder.py"
     ]
   },
   "conversations": {

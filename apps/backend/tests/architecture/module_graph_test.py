@@ -63,6 +63,9 @@ MODULES = (
     # ADR-022: rascunha e mostra a otimização do Foundry. NUNCA publica — e isso é
     # verificado por `proposer_read_only_test`, não prometido em comentário.
     "proposer",
+    # O assistente do WIZARD (não do chat de domínio). `tool` porque só o caminho do adapter
+    # repassa a tool de frontend que ele precisa chamar; sem tools de servidor, ele só propõe.
+    "builder",
 )
 
 PREFIXES = (

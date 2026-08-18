@@ -73,6 +73,11 @@ DOMAIN_KINDS: dict[str, str] = {
     "techdocs": "grounded",
     "selfwiki": "grounded",
     "platform": "tool",
+    # O assistente do WIZARD (não do chat de domínio): ajuda a preencher o formulário de criação
+    # e propõe valores pela tool de frontend `propose_field`. `tool` e não `grounded` porque só o
+    # caminho do adapter repassa as tools do cliente ao agente — medido, ver
+    # `modules/builder/internal/builder.py`.
+    "builder": "tool",
     # ADR-020: a domain on a DIFFERENT runtime, mounted by the same loop. The registry
     # dispatches by kind and each branch calls its framework's own idiom — there is no adapter
     # making them look alike, because the frameworks move faster than such an adapter could be
@@ -212,6 +217,20 @@ def _mount_helpdesk(app: FastAPI, domain_id: str) -> None:
         )
 
 
+def _mount_builder(app: FastAPI, domain_id: str) -> None:
+    """O assistente do wizard. Mesmo arquétipo do platform — adapter oficial, agente por
+    requisição — mas sem tools de servidor: tudo que ele faz é propor, e propor é tool do
+    cliente."""
+    from app.modules.builder.public import builder_agent_proxy
+
+    add_agent_framework_fastapi_endpoint(
+        app,
+        agent=builder_agent_proxy,
+        path=f"/{domain_id}",
+        dependencies=domain_deps(domain_id),
+    )
+
+
 def _mount_platform(app: FastAPI, domain_id: str) -> None:
     """Tool-driven ops concierge over the Microsoft first-party MCP servers. The platform_agent_proxy
     (a PerRequestAgent) rebuilds the agent on each run so tools are filtered under the caller's roles +
@@ -279,7 +298,9 @@ def mount_domains(app: FastAPI) -> None:
         elif kind == "workflow":
             _mount_helpdesk(app, domain_id)
         elif kind == "tool":
-            _mount_platform(app, domain_id)
+            # Dois domínios de tool hoje, e o despacho é por ID porque eles montam agentes
+            # diferentes. Um terceiro pede um mapa; dois ainda cabem numa condição legível.
+            (_mount_builder if domain_id == "builder" else _mount_platform)(app, domain_id)
         elif kind == "graph":
             _mount_graph(app, domain_id)
 

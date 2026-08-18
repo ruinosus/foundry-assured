@@ -83,6 +83,21 @@ def _run_suite(pack: PromptPack, suite_name: str) -> int:
         print(f"❌ suite '{suite_name}' lists no cases — an empty suite passes for the wrong reason")
         return 1
 
+    # TODO CASO NO DISCO PRECISA ESTAR NA SUÍTE.
+    #
+    # Um arquivo em `eval-cases/` que ninguém lista simplesmente não roda — e passa despercebido
+    # justamente porque a suíte fica VERDE. Foi o que aconteceu com `oncall-contract`: escrito,
+    # commitado, e sem rodar uma vez sequer. Um contrato que não roda é pior que contrato nenhum,
+    # porque dá a sensação de estar guardado.
+    no_disco = {p.stem for p in (_BASE_DIR / _SCOPE / "eval-cases").glob("*.yaml")}
+    orfaos = sorted(no_disco - set(case_names))
+    if orfaos:
+        print(f"❌ {len(orfaos)} caso(s) existem em eval-cases/ e não estão na suíte:")
+        for o in orfaos:
+            print(f"     {o}.yaml")
+        print("   Adicione à suíte ou apague o arquivo — um caso que não roda engana quem o leu.")
+        return 1
+
     failures = 0
     for case_name in case_names:
         path = _BASE_DIR / _SCOPE / "eval-cases" / f"{case_name}.yaml"
