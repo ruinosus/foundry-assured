@@ -220,3 +220,27 @@
   --bad: var(--block);
   --bad-tint: var(--block-wash);
 }
+
+/* ── Aliases para o que renderiza DENTRO do CopilotKit ─────────────────────────────────────
+   O CopilotKit declara os PRÓPRIOS tokens em `[data-copilotkit]`, e alguns nomes coincidem com
+   os nossos — `--muted`, `--border`, `--radius`. Os valores não coincidem: o `--muted` dele é um
+   FUNDO quase branco (`oklch(97% 0 0)`), o nosso é uma cor de TEXTO. Um componente nosso
+   renderizado dentro do chat (o card de proposta, o card de aprovação, a linha de tool) resolve
+   `var(--muted)` para o valor DELE — e o texto some no claro.
+
+   Custom property resolve no ponto de USO, mas um alias declarado aqui resolve NO :root, onde o
+   valor é o nosso — e desce herdado já resolvido, imune à redeclaração lá dentro.
+
+   Regra: componente que pode aparecer dentro do chat usa `--fa-*`. */
+:root {
+  --fa-ink: var(--ink);
+  --fa-muted: var(--muted);
+  --fa-faint: var(--faint);
+  --fa-surface: var(--surface);
+  --fa-sunken: var(--sunken);
+  --fa-line: var(--line);
+  --fa-accent: var(--accent);
+  --fa-wait: var(--wait);
+  --fa-pass: var(--pass);
+  --fa-block: var(--block);
+}

@@ -27,39 +27,49 @@ export function DockBridge() {
 
   useEffect(() => {
     // ESPERA O DOCK ABRIR. O `ChatDock` devolve null enquanto fechado, então o `<CopilotChat>` —
-    // que é quem assina o agente e renderiza as mensagens — só monta depois. Entregar antes disso
-    // fazia o primeiro clique rodar o agente com ninguém escutando: a resposta acontecia e não
-    // aparecia, e a pessoa clicava de novo. O segundo clique "funcionava" porque o chat já estava
-    // montado — sintoma clássico de corrida que parece intermitência.
-    if (!open || !isReady || !pending || pending.nonce === entregue.current)
-      return;
+    // que assina o agente e renderiza as mensagens — só monta depois.
+    if (!open || !isReady || !pending || pending.nonce === entregue.current) return;
     entregue.current = pending.nonce;
 
-    // ESPERA UM QUADRO antes de entregar. Só `open` não bastou: o `<CopilotChat>` monta no MESMO
-    // commit em que `open` vira true, e os efeitos rodam de filho para pai — esta ponte é irmã do
-    // conteúdo e roda ANTES de o chat assinar o agente. Um quadro depois, ele já assinou.
-    //
-    // Um `setTimeout(0)` faria o mesmo na maioria das vezes; `requestAnimationFrame` é o que
-    // garante que o React já pintou o commit em que o chat montou.
-    const quadro = requestAnimationFrame(() => {
-      const id =
-        typeof crypto !== "undefined" && crypto.randomUUID
-          ? crypto.randomUUID()
-          : `${Date.now()}`;
-      agent.addMessage({ id, role: "user", content: pending.prompt });
+    let vivo = true;
+    const prompt = pending.prompt;
+    clearPending();
 
-      // Roda pelo CORE, não pelo agente. Medido, e foi o defeito: quem monta a lista de tools do
-      // frontend é o core —
-      //
-      //     core.runAgent({agent})  →  tools: this.buildFrontendTools(agent.agentId)  →  agent.runAgent(input)
-      //
-      // Chamar `agent.runAgent()` direto pula essa montagem e a requisição sai com `tools: []`. O
-      // sintoma no chat era o modelo IMITANDO a chamada em texto: ele fora instruído a usar
-      // `propose_field`, a ferramenta nunca chegou, e ele escreveu o que teria chamado.
-      void copilotkit.runAgent({ agent });
-      clearPending();
-    });
-    return () => cancelAnimationFrame(quadro);
+    // O CAMINHO É O MESMO DO COMPOSER do CopilotKit, verificado no bundle:
+    //
+    //     agent.addMessage({id, role:"user", content}) ;  await copilotkit.runAgent({agent})
+    //
+    // O que faltava era ESPERAR e TRATAR. `void runAgent(...)` engolia a rejeição, e quando ela
+    // acontecia — o agente ainda não terminou de sincronizar com o runtime no primeiro clique — a
+    // mensagem ficava na tela sem resposta, exatamente como "enviei e não aconteceu nada". O
+    // segundo clique funcionava porque a sincronização já havia terminado.
+    const enviar = async (tentativa: number): Promise<void> => {
+      if (!vivo) return;
+      try {
+        if (tentativa === 0) {
+          const id =
+            typeof crypto !== "undefined" && crypto.randomUUID
+              ? crypto.randomUUID()
+              : `${Date.now()}`;
+          agent.addMessage({ id, role: "user", content: prompt });
+        }
+        await copilotkit.runAgent({ agent });
+      } catch (erro) {
+        // Três tentativas com espera crescente. Um agente que nunca sincroniza é problema de
+        // conexão, e aí o erro precisa APARECER — silêncio aqui foi o que custou duas rodadas de
+        // depuração.
+        if (tentativa < 2 && vivo) {
+          await new Promise((r) => setTimeout(r, 150 * (tentativa + 1)));
+          return enviar(tentativa + 1);
+        }
+        console.error("[DockBridge] não foi possível rodar o agente", erro);
+      }
+    };
+
+    void enviar(0);
+    return () => {
+      vivo = false;
+    };
   }, [agent, isReady, open, pending, clearPending, copilotkit]);
 
   return null;
