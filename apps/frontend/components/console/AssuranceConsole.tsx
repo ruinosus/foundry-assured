@@ -29,6 +29,7 @@ import { EvidencePanel } from "@/components/console/EvidencePanel";
 import { MermaidZoom } from "@/components/console/MermaidZoom";
 import { SuggestedPrompts } from "@/components/console/SuggestedPrompts";
 import { ThreadSeeder } from "@/components/console/ThreadSeeder";
+import { ToolActivity } from "@/components/console/ToolActivity";
 
 const WorkflowSteps = dynamic(
   () => import("@/components/chat/WorkflowSteps").then((m) => m.WorkflowSteps),
@@ -114,6 +115,9 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
 
 
           <div className="console-chat copilotkit-chat-host">
+            {/* Vale para TODOS os domínios, não só os tool-driven: qualquer tool sem
+                renderizador próprio passa a aparecer em vez de virar spinner. */}
+            <ToolActivity />
             <ThreadSeeder
               agentId={activeAgentId}
               agentKey={conversationKey}

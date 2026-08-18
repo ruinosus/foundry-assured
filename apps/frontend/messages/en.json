@@ -533,6 +533,11 @@
     "errorTitle": "Could not read the tickets",
     "subtitleLong": "Real tickets opened by the concierge — the <code>create_ticket</code> tool runs only after you approve the escalation in the chat."
   },
+  "toolActivity": {
+    "running": "running…",
+    "done": "done",
+    "resultTruncated": "Result truncated — the full content is in the trace"
+  },
   "useCaseDetail": {
     "flowTitle": "What happens",
     "canvasTitle": "Assemble the flow",

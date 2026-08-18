@@ -533,6 +533,11 @@
     "errorTitle": "Não foi possível ler os chamados",
     "subtitleLong": "Chamados reais abertos pelo concierge — a tool <code>create_ticket</code> só roda depois que você aprova a escalação no chat."
   },
+  "toolActivity": {
+    "running": "executando…",
+    "done": "concluída",
+    "resultTruncated": "Resultado resumido — o conteúdo completo está no trace"
+  },
   "useCaseDetail": {
     "flowTitle": "O que acontece",
     "canvasTitle": "Montar o fluxo",
