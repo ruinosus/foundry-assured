@@ -88,10 +88,10 @@ MATRIZ: dict[str, dict[str, object]] = {
     },
     # ── runtime C · LangChain / LangGraph · fora da fábrica ─────────────────────────────────
     "/oncall": {
-        # O turno visível é do GRAFO, não da chamada de modelo: `on_llm_end` veria também os
-        # passos internos do HITL, que ninguém quer reler. Gravar isso como conversa encheria a
-        # transcrição de ruído — lacuna deliberada, não esquecimento.
-        "conversa": "o turno é do grafo, não da chamada; on_llm_end veria os passos internos",
+        # O turno é do GRAFO, e é lá que ele é gravado: `on_chain_end` na RAIZ
+        # (`parent_run_id is None`), que vê o estado final com a transcrição. O token continua
+        # vindo do `on_llm_end`, que vê a chamada de modelo. Dois níveis, duas perguntas.
+        "conversa": True,
         "tokens": True,
         "referencias": "n/a: triagem por tools, sem base de conhecimento",
         "chamado": True,
@@ -99,10 +99,10 @@ MATRIZ: dict[str, dict[str, object]] = {
         "caso_de_uso": True,
     },
     "/deepcall": {
-        # O turno visível é do GRAFO, não da chamada de modelo: `on_llm_end` veria também os
-        # passos internos do HITL, que ninguém quer reler. Gravar isso como conversa encheria a
-        # transcrição de ruído — lacuna deliberada, não esquecimento.
-        "conversa": "o turno é do grafo, não da chamada; on_llm_end veria os passos internos",
+        # O turno é do GRAFO, e é lá que ele é gravado: `on_chain_end` na RAIZ
+        # (`parent_run_id is None`), que vê o estado final com a transcrição. O token continua
+        # vindo do `on_llm_end`, que vê a chamada de modelo. Dois níveis, duas perguntas.
+        "conversa": True,
         "tokens": True,
         "referencias": "n/a: triagem por tools, sem base de conhecimento",
         "chamado": True,

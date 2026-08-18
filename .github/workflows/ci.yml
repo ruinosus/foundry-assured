@@ -177,6 +177,14 @@ jobs:
       - name: A conversa é gravada de fato (provider invocado pelo framework)
         run: uv run python -m tests.conversations.provider_invoked_test
 
+      # Os domínios de grafo gravam o TURNO, e uma vez só. O ponto não é o mesmo do token:
+      # `on_llm_end` vê a chamada de MODELO (onde o token existe) e `on_chain_end` na RAIZ vê o
+      # estado final do GRAFO (onde o turno existe). O filtro de raiz é o que impede duplicata —
+      # `on_chain_end` dispara para cada sub-cadeia, e transcrição com resposta repetida é pior
+      # que ausente, porque parece correta.
+      - name: Domínios de grafo gravam o turno (uma vez, no nível certo)
+        run: uv run python -m tests.conversations.langgraph_recording_test
+
       - name: Approval decisions (edit is not a loophole)
         run: uv run python -m tests.hitl.decision_test
       - name: Edit round-trips end to end
