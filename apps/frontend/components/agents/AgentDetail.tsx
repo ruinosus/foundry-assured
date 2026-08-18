@@ -204,8 +204,10 @@ export function AgentDetail({ name }: { name: string }) {
                   </thead>
                   <tbody>
                     {/* Mais recente primeiro: o topo da lista é o que está no ar. */}
-                    {[...agent.versions].reverse().map((v) => (
-                      <tr key={v.version ?? Math.random()}>
+                    {/* A posição é a chave quando não há versão: `Math.random()` gerava chave
+                        NOVA a cada render, e o React remontava a linha inteira toda vez. */}
+                    {[...agent.versions].reverse().map((v, i) => (
+                      <tr key={v.version ?? `sem-versao-${i}`}>
                         <td className="t-mono">{v.version ?? "—"}</td>
                         <td>
                           <span className="pill neutral">{v.status ?? "—"}</span>
@@ -240,8 +242,8 @@ export function AgentDetail({ name }: { name: string }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {agent.sessions.map((s) => (
-                      <tr key={s.id ?? Math.random()}>
+                    {agent.sessions.map((s, i) => (
+                      <tr key={s.id ?? `sem-id-${i}`}>
                         <td className="t-mono t-sm">{s.id ?? "—"}</td>
                         <td>
                           <span className="pill neutral">{s.status ?? "—"}</span>

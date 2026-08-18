@@ -67,9 +67,7 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
     if (!agent) return;
     const refreshFallback = () => {
       const msgs = agent.messages ?? [];
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const lastAssistant = [...msgs].reverse().find((m: any) => m.role === "assistant" && m.content);
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       setTextSources(lastAssistant ? extractTextSources((lastAssistant as any).content) : []);
     };
     refreshFallback();
@@ -77,7 +75,6 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
       // The AG-UI CUSTOM `sources` event carries the structured citations. RUN_STARTED clears the
       // previous answer's citations so the panel tracks the current turn. (onEvent fires for every
       // event — same pattern as components/chat/TicketApproval.tsx.)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onEvent: ({ event }: any) => {
         if (event?.type === "RUN_STARTED") {
           setCitations([]);

@@ -73,9 +73,9 @@ export function AuditView() {
     void carregar();
   }, [carregar]);
   useEffect(() => {
+    // Só na montagem. Trocar de escopo chama `abrir` diretamente, então `escopo` fora das
+    // dependências é intencional: reagir a ele aqui abriria o escopo duas vezes.
     void abrir(escopo);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- só na montagem; trocar de escopo
-    // chama `abrir` diretamente.
   }, []);
 
   const fechar = async (s: string) => {

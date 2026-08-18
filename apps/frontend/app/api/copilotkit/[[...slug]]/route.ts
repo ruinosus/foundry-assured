@@ -53,7 +53,6 @@ function withResumeBridge(url: string): HttpAgent {
           if (Array.isArray(body.resume)) {
             body.resume = {
               interrupts: body.resume.map(
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 (r: any) => ({ id: r.interruptId ?? r.id, value: r.payload ?? r.value }),
               ),
             };
@@ -171,7 +170,6 @@ class ThreadHistoryRunner extends InMemoryAgentRunner {
         // O tipo do evento vem de um schema Zod do AG-UI, e o nosso construtor é puro (sem
         // importar o pacote de eventos, para continuar testável fora do runtime). O cast é o
         // preço dessa separação — e é onde ele fica, num lugar só, em vez de espalhado.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         for (const e of eventos) subscriber.next(e as any);
         subscriber.complete();
       })();

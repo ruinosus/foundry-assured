@@ -39,7 +39,6 @@ export function WorkflowSteps() {
         setStatus({});
         setRunning(true);
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onActivitySnapshotEvent: ({ event }: any) => {
         const content = event?.content ?? event?.payload?.content;
         const id: string | undefined = content?.executor_id;

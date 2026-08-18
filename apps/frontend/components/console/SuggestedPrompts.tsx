@@ -32,10 +32,10 @@ export function SuggestedPrompts({ domain }: { domain: Domain }) {
 
   const send = (text: string) => {
     if (!agent) return;
-    const id =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+    // `crypto.randomUUID()` direto, como em `send-to-dock.ts`, que é o mesmo caminho. O
+    // fallback com `Math.random()` protegia de um navegador que este app não suporta, e em
+    // troca fazia o corpo do componente chamar função impura.
+    const id = crypto.randomUUID();
     agent.addMessage({ id, role: "user", content: text });
     setHasMessages(true);
     // Pelo CORE, não pelo agente: é o core que monta a lista de tools do frontend. Aqui não havia

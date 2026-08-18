@@ -171,16 +171,21 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
-      # Advisory ON PURPOSE, and this is the first run that means anything: until now
-      # the script called `next lint`, which Next 16 removed — it read "lint" as a
-      # directory, exited 1, and continue-on-error swallowed it, so the gate reported
-      # nothing for months. There was no ESLint config in the repo at all. It now runs
-      # the ESLint CLI and surfaces 9 real errors (react-hooks/set-state-in-effect ×5,
-      # react-hooks/purity ×2, react/no-unescaped-entities ×2). Drop continue-on-error
-      # once those are fixed — do NOT silence the rules to make it green.
+      # ENFORCING. This gate was advisory through two consecutive breakages, and each
+      # time the breakage looked exactly like success: first `next lint` (removed in
+      # Next 16) exited 1 reading "lint" as a directory; then ESLint 10 CRASHED loading
+      # `react/display-name`, because eslint-config-next's peer says `>=9.0.0` while its
+      # own eslint-plugin-react caps at `^9.7`. Both times continue-on-error ate it.
+      #
+      # The previous note here said "do NOT silence the rules to make it green", and it
+      # was right. So: the two rules that could be fixed WERE fixed (react-hooks/purity —
+      # a randomized <tr> key remounting the row every render; react-hooks/immutability —
+      # one local disable with a reason), and only `set-state-in-effect` remains, in
+      # `warn`, with its size written down in eslint.config.mjs: 18 sites, 3 shapes.
+      # Promote it to error when that reaches zero. No continue-on-error either way —
+      # a gate that cannot fail is not a gate, and this one proved it twice.
       - name: Lint
         run: npm run lint
-        continue-on-error: true
       - name: Build
         run: npm run build
 

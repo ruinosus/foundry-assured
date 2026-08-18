@@ -55,7 +55,6 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
   useEffect(() => {
     if (!agent) return;
     const sub = agent.subscribe({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onEvent: ({ event }: any) => {
         if (event?.type === "CUSTOM" && event?.name === "request_info") {
           const v = event.value ?? {};

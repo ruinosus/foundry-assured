@@ -33,6 +33,10 @@ export function LanguageToggle() {
 
   const choose = (value: Locale | "system") => {
     // `system` apaga o cookie: a ausência é o que devolve a decisão ao Accept-Language.
+    // Escrever no cookie É o efeito deste handler: o locale é decidido no servidor, e não há
+    // estado de React que o substitua. (O `disable` fica na última linha antes do código —
+    // `disable-next-line` vale só para a linha seguinte, e um comentário no meio o desarma.)
+    // eslint-disable-next-line react-hooks/immutability
     document.cookie =
       value === "system"
         ? `${LOCALE_COOKIE}=; path=/; max-age=0; samesite=lax`
