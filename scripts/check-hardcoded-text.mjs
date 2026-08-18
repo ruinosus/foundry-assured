@@ -83,6 +83,11 @@ for (const file of [...DIRS].flatMap((d) => [...walk(join(ROOT, d))])) {
     // motivo devolvido numa chamada. Marcar o arquivo inteiro ali deixaria texto de tela futuro
     // passar em silêncio, que é o oposto do que este gate faz.
     if (line.includes("@texto-para-modelo")) return;
+    // Mensagem de CONSOLE não é interface: ela é escrita para quem depura, em qualquer idioma
+    // que o time depure. Regra estrutural em vez de marcador porque ela não pode ser abusada —
+    // não se renderiza tela a partir de `console.error`, então o que passa por aqui não é texto
+    // que o usuário vá ler.
+    if (/\bconsole\.(log|warn|error|info|debug)\s*\(/.test(line)) return;
     // Comentário não é interface — nem o de linha, nem o bloco, nem o {/* */} do JSX.
     if (inBlock) {
       if (line.includes("*/")) inBlock = false;
