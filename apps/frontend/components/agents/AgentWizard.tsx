@@ -35,24 +35,38 @@ const TOOLS_SIMPLES = ["code_interpreter", "web_search", "image_generation"] as 
 type Base = { name: string };
 type Toolbox = { name: string; default_version: string | null };
 
+/** Valores que o wizard pode abrir preenchidos. Existe para o rascunho do propositor (ADR-022)
+ *  entrar por AQUI, e não por um segundo caminho de publicação: a proposta preenche o formulário,
+ *  e quem publica continua sendo esta tela, com o papel Admin. */
+export type AgentSeed = {
+  nome?: string;
+  descricao?: string;
+  instrucoes?: string;
+  kb?: string;
+};
+
 export function AgentWizard({
   existentes,
   onCancelar,
+  inicial,
 }: {
   existentes: string[];
   onCancelar: () => void;
+  inicial?: AgentSeed;
 }) {
   const t = useTranslations("agentWizard");
   const tc = useTranslations("common");
   const router = useRouter();
 
   const [passo, setPasso] = useState<1 | 2 | 3 | 4>(1);
-  const [nome, setNome] = useState("");
-  const [descricao, setDescricao] = useState("");
-  const [instrucoes, setInstrucoes] = useState("");
+  // O rascunho entra como VALOR INICIAL de campo editável, nunca como algo já gravado: o estado
+  // continua sendo do formulário, e cada campo pode ser mudado antes de publicar.
+  const [nome, setNome] = useState(inicial?.nome ?? "");
+  const [descricao, setDescricao] = useState(inicial?.descricao ?? "");
+  const [instrucoes, setInstrucoes] = useState(inicial?.instrucoes ?? "");
   const [modelo, setModelo] = useState("gpt-5-mini");
 
-  const [kb, setKb] = useState("");
+  const [kb, setKb] = useState(inicial?.kb ?? "");
   const [toolbox, setToolbox] = useState("");
   const [simples, setSimples] = useState<Set<string>>(new Set());
   const [mcpLabel, setMcpLabel] = useState("");

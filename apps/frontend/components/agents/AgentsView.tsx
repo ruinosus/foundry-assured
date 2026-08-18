@@ -13,7 +13,8 @@ import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
 import { useMyRoles, canAdmin } from "@/lib/auth/roles";
-import { AgentWizard } from "@/components/agents/AgentWizard";
+import { AgentProposer } from "@/components/agents/AgentProposer";
+import { AgentWizard, type AgentSeed } from "@/components/agents/AgentWizard";
 
 type AgentVersion = {
   version: string | null;
@@ -61,6 +62,8 @@ export function AgentsView() {
   const roles = useMyRoles();
   const admin = canAdmin(roles);
   const [criando, setCriando] = useState(false);
+  const [propondo, setPropondo] = useState(false);
+  const [seed, setSeed] = useState<AgentSeed | undefined>(undefined);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -105,12 +108,34 @@ export function AgentsView() {
         (criando ? (
           <AgentWizard
             existentes={(agents ?? []).map((a) => a.name)}
-            onCancelar={() => setCriando(false)}
+            onCancelar={() => {
+              setCriando(false);
+              setSeed(undefined);
+            }}
+            inicial={seed}
+          />
+        ) : propondo ? (
+          // O rascunho NÃO publica: ao usar, ele abre o wizard preenchido, e é o wizard que
+          // publica — com Admin, como sempre foi. É a ADR-022 na interface.
+          <AgentProposer
+            onCancel={() => setPropondo(false)}
+            onUse={(s) => {
+              setSeed(s);
+              setPropondo(false);
+              setCriando(true);
+            }}
           />
         ) : (
-          <button type="button" className="btn btn-solid" onClick={() => setCriando(true)}>
-            {t("newBtn")}
-          </button>
+          <div className="row-tight">
+            <button type="button" className="btn btn-solid" onClick={() => setCriando(true)}>
+              {t("newBtn")}
+            </button>
+            {/* Propor vem ao lado de criar, não escondido: para quem não sabe por onde começar,
+                descrever a necessidade é mais fácil que preencher um formulário em branco. */}
+            <button type="button" className="btn" onClick={() => setPropondo(true)}>
+              {t("proposeBtn")}
+            </button>
+          </div>
         ))}
 
       {/* Esqueleto, não spinner no meio do conteúdo: o register pede que o carregamento

@@ -130,7 +130,8 @@
     "chat": "Conversar",
     "colRuntime": "Execução",
     "runsInFoundry": "no Foundry",
-    "runsInBackend": "neste backend"
+    "runsInBackend": "neste backend",
+    "proposeBtn": "Propor com IA"
   },
   "approval": {
     "waiting": "Aguardando aprovação",
@@ -427,6 +428,22 @@
     "g2Body": "A recuperação é aparada por documento pelos grupos de leitura da origem — sem classificação no código, à prova de injeção.",
     "g3Title": "Continuamente avaliada",
     "g3Body": "Toda resposta cita a fonte ou declina. Gate determinístico no CI + juízes de groundedness do Foundry, ligados aos traces."
+  },
+  "proposer": {
+    "title": "Propor um assistente",
+    "help": "Descreva o que precisa ser atendido. A proposta é montada a partir das bases, skills e agentes que existem neste projeto — e diz quando algo que já existe resolve.",
+    "needPlaceholder": "Ex.: responder dúvidas de férias e benefícios citando a política oficial",
+    "draft": "Propor",
+    "drafting": "Montando a proposta…",
+    "isDraft": "Isto é um rascunho. Nada foi criado — revise e use o formulário de criação para publicar.",
+    "reuseTitle": "Já existe e cobre parte disso",
+    "fName": "Nome",
+    "fDescription": "Descrição",
+    "fKnowledge": "Bases",
+    "fSkills": "Skills",
+    "showInstructions": "Ver as instruções propostas",
+    "dropped": "Ignorado por não existir neste projeto: {names}",
+    "useDraft": "Usar este rascunho"
   },
   "skillCatalog": {
     "searchPlaceholder": "Buscar por nome ou grupo…",

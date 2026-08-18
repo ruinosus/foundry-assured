@@ -130,7 +130,8 @@
     "chat": "Chat",
     "colRuntime": "Runs on",
     "runsInFoundry": "Foundry",
-    "runsInBackend": "this backend"
+    "runsInBackend": "this backend",
+    "proposeBtn": "Propose with AI"
   },
   "approval": {
     "waiting": "Awaiting approval",
@@ -427,6 +428,22 @@
     "g2Body": "Retrieval is trimmed per document by the source's own read groups — no classification in code, injection-proof.",
     "g3Title": "Continuously evaluated",
     "g3Body": "Every answer cites its source or declines. Deterministic gate in CI + Foundry groundedness judges, wired to the traces."
+  },
+  "proposer": {
+    "title": "Propose an assistant",
+    "help": "Describe what needs to be handled. The proposal is built from the knowledge bases, skills and agents that exist in this project — and says when something that already exists solves it.",
+    "needPlaceholder": "e.g. answer questions about time off and benefits, citing the official policy",
+    "draft": "Propose",
+    "drafting": "Building the proposal…",
+    "isDraft": "This is a draft. Nothing was created — review it and use the creation form to publish.",
+    "reuseTitle": "Already exists and covers part of this",
+    "fName": "Name",
+    "fDescription": "Description",
+    "fKnowledge": "Knowledge bases",
+    "fSkills": "Skills",
+    "showInstructions": "Show the proposed instructions",
+    "dropped": "Ignored because it does not exist in this project: {names}",
+    "useDraft": "Use this draft"
   },
   "skillCatalog": {
     "searchPlaceholder": "Search by name or group…",
