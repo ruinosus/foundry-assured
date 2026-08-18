@@ -44,6 +44,7 @@ from langchain.agents.middleware import AgentMiddleware
 from langchain_core.tools import tool
 
 from app.modules.agentdefs.public import ONCALL_INSTRUCTIONS
+from app.modules.hitl.public import recording_hitl
 from app.modules.tickets.public import create_ticket
 from app.shared.settings import settings
 
@@ -149,13 +150,21 @@ def build_deepcall_graph():
         system_prompt=ONCALL_INSTRUCTIONS,
         # Mesmo contrato do gêmeo. `interrupt_on` é açúcar: por baixo é o
         # `HumanInTheLoopMiddleware` do langchain, o mesmo que o `oncall` instancia à mão.
-        interrupt_on=INTERRUPT_ON,
+        # `interrupt_on=` NÃO é passado de propósito: com ele, o `create_deep_agent` monta o
+        # `HumanInTheLoopMiddleware` DELE por dentro (graph.py:876) e a decisão passa por uma
+        # máquina que não registra. Sem ele, o middleware que entra é o nosso — mesma classe do
+        # LangGraph, só observando —, e o gêmeo passa a produzir a mesma trilha que o `oncall`.
+        # Sem isso, comparar os dois harnesses pela trilha seria impossível justamente na métrica
+        # que mais importa: quem aprovou o quê.
+        #
         # A ORDEM IMPORTA: `_AlwaysRubric` vem primeiro para o estado já ter a rubrica quando o
         # `RubricMiddleware` decidir se atua. Invertido, ele leria o estado sem rubrica, sairia
-        # sem fazer nada, e o self-eval nunca aconteceria — falha silenciosa, sem erro nenhum.
+        # sem fazer nada, e o self-eval nunca aconteceria — falha silenciosa, sem erro nenhum. O
+        # HITL vai por último, na mesma posição em que o `deepagents` o acrescentava.
         middleware=[
             _AlwaysRubric(),
             RubricMiddleware(model=model, on_evaluation=_log_evaluation),
+            recording_hitl(INTERRUPT_ON, "deepcall"),
         ],
         checkpointer=InMemorySaver(),
     )

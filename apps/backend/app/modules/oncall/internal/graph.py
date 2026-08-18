@@ -29,10 +29,10 @@ from __future__ import annotations
 from typing import Annotated
 
 from langchain.agents import create_agent
-from langchain.agents.middleware.human_in_the_loop import HumanInTheLoopMiddleware
 from langchain_core.tools import tool
 from langgraph.checkpoint.memory import InMemorySaver
 
+from app.modules.hitl.public import recording_hitl
 from app.modules.tickets.public import create_ticket
 from app.shared.settings import settings
 
@@ -109,6 +109,6 @@ def build_oncall_graph():
         model=model,
         tools=[assess_severity, escalate_incident],
         system_prompt=ONCALL_INSTRUCTIONS,
-        middleware=[HumanInTheLoopMiddleware(interrupt_on=INTERRUPT_ON)],
+        middleware=[recording_hitl(INTERRUPT_ON, "oncall")],
         checkpointer=InMemorySaver(),
     )

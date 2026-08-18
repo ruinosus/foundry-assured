@@ -117,6 +117,9 @@
     "agentdefs": [
       "modules/deepcall/internal/graph.py"
     ],
+    "hitl": [
+      "modules/deepcall/internal/graph.py"
+    ],
     "shared": [
       "modules/deepcall/internal/graph.py"
     ],
@@ -203,6 +206,7 @@
   },
   "hitl": {
     "audit": [
+      "modules/hitl/internal/langgraph_recording.py",
       "modules/hitl/public.py"
     ],
     "shared": [
@@ -240,6 +244,9 @@
   },
   "oncall": {
     "agentdefs": [
+      "modules/oncall/internal/graph.py"
+    ],
+    "hitl": [
       "modules/oncall/internal/graph.py"
     ],
     "shared": [

@@ -28,6 +28,7 @@ import logging
 from dataclasses import dataclass, field, replace
 from typing import Literal
 
+from app.modules.hitl.internal.langgraph_recording import recording_hitl
 from app.shared.auth import current_roles, has_role
 
 logger = logging.getLogger(__name__)
@@ -40,6 +41,7 @@ __all__ = [
     "DecisionType",
     "NotAuthorized",
     "decide",
+    "recording_hitl",
 ]
 
 
