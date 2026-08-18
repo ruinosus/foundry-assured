@@ -1875,3 +1875,14 @@ table.evals tr:last-child td { border-bottom: none; }
   padding: var(--space-3);
 }
 .proposal .doc-preview { max-height: 30vh; overflow: auto; margin: 0; }
+
+/* Cartões de escopo da auditoria: são botões, e precisam parecer clicáveis sem virar botão
+   grande demais — a informação é o número, não a ação. */
+.metric.as-button {
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface); cursor: pointer; text-align: left; padding: var(--space-3);
+}
+.metric.as-button:hover { border-color: var(--line-strong); }
+.metric.as-button.on { border-color: var(--accent); background: var(--accent-wash); }
+.ok-line { color: var(--pass); }
+.wait-line { color: var(--wait); }

@@ -18,7 +18,8 @@
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
-import { AssistedField } from "@/components/shell/AssistedField";
+import { AiField } from "@/components/shell/AiField";
+import { FieldProposalTool, type FieldProposal } from "@/components/shell/FieldProposal";
 
 /** Os arquivos são agrupados por função — o serviço preserva o caminho, então o grupo vira pasta. */
 const GRUPOS = ["scripts", "references"] as const;
@@ -56,6 +57,8 @@ export function SkillWizard({
   const [instrucoes, setInstrucoes] = useState("");
   const [arquivos, setArquivos] = useState<Arquivo[]>([]);
   const [busy, setBusy] = useState(false);
+  // A procedência por campo (ADR-023): de onde veio o texto que o agente escreveu.
+  const [origens, setOrigens] = useState<Record<string, string[]>>({});
   const [erro, setErro] = useState<string | null>(null);
 
   /** O que impede de avançar, dito na hora — não no fim. */
@@ -106,10 +109,17 @@ export function SkillWizard({
     setArquivos((a) => a.filter((x) => !(x.grupo === grupo && x.nome === nomeArq)));
 
   /** O documento que vai ser enviado — mostrado no passo 4 antes de qualquer chamada. */
-  const documento = {
-    instructions: instrucoes.trim(),
-    description: descricao.trim(),
-  };
+  const documento = (() => {
+    const doc: Record<string, unknown> = {
+      instructions: instrucoes.trim(),
+      description: descricao.trim(),
+    };
+    // A procedência viaja com o recurso publicado (ADR-023): "de onde veio esta instrução" passa
+    // a ter resposta no Foundry, não só na memória de quem estava na tela.
+    const comOrigem = Object.entries(origens).filter(([, f]) => f.length);
+    if (comOrigem.length) doc.metadata = { provenance: Object.fromEntries(comOrigem) };
+    return doc;
+  })();
 
   const publicar = async () => {
     setBusy(true);
@@ -158,8 +168,19 @@ export function SkillWizard({
   const podeAvancar =
     (passo === 1 && !problemaNome()) || (passo === 2 && instrucoes.trim().length > 0) || passo === 3;
 
+  /** Aplica a proposta aceita: valor no campo, fonte na procedência. Sempre os dois. */
+  const aplicar = (p: FieldProposal) => {
+    if (p.field === "instructions") setInstrucoes(p.value);
+    else if (p.field === "description") setDescricao(p.value);
+    else if (p.field === "name") setNome(p.value);
+    setOrigens((o) => ({ ...o, [p.field]: p.sources }));
+  };
+
   return (
     <section className="card stack-sm">
+      {/* A tool vive enquanto o formulário está aberto — fechado, ela some, e o agente deixa de
+          poder propor para um formulário que ninguém está vendo. */}
+      <FieldProposalTool onAccept={aplicar} fields={["name", "description", "instructions"]} />
       <header className="between">
         <h3 className="section-title">{t("title")}</h3>
         <button type="button" className="btn" disabled={busy} onClick={onCancelar}>
@@ -208,12 +229,11 @@ export function SkillWizard({
       {passo === 2 && (
         <div className="stack-sm">
           <p className="muted t-sm">{t("instructionsHelp")}</p>
-          <AssistedField
+          <AiField
             field="instructions"
             label={t("step2")}
             value={instrucoes}
-            context={{ nome: nome.trim(), descricao: descricao.trim() }}
-            onAccept={setInstrucoes}
+            resource={t("resourceSkill")}
           >
             <textarea
               className="acct-btn"
@@ -223,7 +243,7 @@ export function SkillWizard({
               disabled={busy}
               onChange={(e) => setInstrucoes(e.target.value)}
             />
-          </AssistedField>
+          </AiField>
         </div>
       )}
 

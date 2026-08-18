@@ -13,6 +13,8 @@
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { AiField } from "@/components/shell/AiField";
+import { FieldProposalTool, type FieldProposal } from "@/components/shell/FieldProposal";
 import { authedFetch } from "@/lib/auth/api";
 
 type Result = { kind: "ok" | "bad"; text: string } | null;
@@ -101,8 +103,17 @@ export function CreateKnowledge({ onCreated }: { onCreated: () => void }) {
     onCreated();
   };
 
+  const aplicar = (p: FieldProposal) => {
+    if (p.field === "description") setDescription(p.value);
+    else if (p.field === "name") setName(p.value);
+    // A base de conhecimento não tem `metadata` no contrato de criação (o backend monta o
+    // recurso a partir de nome e descrição), então a procedência ainda não viaja daqui. Dizer
+    // isso é melhor que fingir que viaja: ver a nota no commit.
+  };
+
   return (
     <section className="card stack-sm">
+      <FieldProposalTool onAccept={aplicar} fields={["name", "description"]} />
       <h3 className="section-title">{t("title")}</h3>
 
       {result && (
@@ -131,13 +142,23 @@ export function CreateKnowledge({ onCreated }: { onCreated: () => void }) {
             {t("createBtn")}
           </button>
         </div>
-        <input
-          className="acct-btn"
-          placeholder={t("descriptionPlaceholder")}
+        {/* A descrição da base é o que o AGENTE lê para decidir se consulta esta base — não é
+            rótulo de vitrine. Escrevê-la bem muda a recuperação, e é por isso que ela ganha as
+            ações de IA junto com as demais. */}
+        <AiField
+          field="description"
+          label={t("descriptionPlaceholder")}
           value={description}
-          disabled={busy || created !== null}
-          onChange={(e) => setDescription(e.target.value)}
-        />
+          resource={t("resourceKnowledge")}
+        >
+          <input
+            className="acct-btn"
+            placeholder={t("descriptionPlaceholder")}
+            value={description}
+            disabled={busy || created !== null}
+            onChange={(e) => setDescription(e.target.value)}
+          />
+        </AiField>
         <p className="muted t-xs">{t("nameHelp")}</p>
       </div>
 

@@ -171,6 +171,29 @@
     "discard": "Descartar",
     "empty": "O modelo não devolveu texto. Tente pedir de outro jeito."
   },
+  "audit": {
+    "title": "Auditoria",
+    "subtitle": "O que foi aprovado, lido e barrado — e se o registro ainda é o que foi escrito.",
+    "export": "Exportar pacote",
+    "chainOk": "cadeia íntegra",
+    "chainBroken": "cadeia quebrada no evento {seq}",
+    "unanchored": "sem fecho diário",
+    "scope_approvals": "Aprovações",
+    "scope_access": "Acessos",
+    "scope_redactions": "Redações",
+    "closeDay": "Fechar o dia de {scope}",
+    "closing": "Fechando…",
+    "closeHelp": "Grava o hash de cabeça num blob que não pode ser sobrescrito.",
+    "anchored": "Dia {date} fechado.",
+    "anchorRefused": "Não foi ancorado: {reason}",
+    "missingProofs": "Provas ainda ausentes: {list}. Ver o LEIA-ME dentro do pacote.",
+    "eventsIn": "Eventos em {scope}",
+    "noEvents": "Nenhum evento registrado ainda.",
+    "colWhen": "Quando",
+    "colActor": "Quem",
+    "colWhat": "O quê",
+    "colHash": "Hash"
+  },
   "branding": {
     "tagline": "Suporte de engenharia",
     "description": "Concierge interno de suporte de engenharia"
@@ -399,7 +422,8 @@
     "imported": "{count} arquivo(s) importado(s) de {repo}.",
     "skipped": "{count} ficaram de fora (extensão ou tamanho).",
     "treeTruncated": "Atenção: o GitHub truncou a listagem — o repositório é grande e pode haver arquivos não vistos.",
-    "indexingNote": "A indexação roda no serviço e leva alguns minutos. Atualize a lista para ver o status de sincronização."
+    "indexingNote": "A indexação roda no serviço e leva alguns minutos. Atualize a lista para ver o status de sincronização.",
+    "resourceKnowledge": "base de conhecimento"
   },
   "language": {
     "label": "Idioma",
@@ -421,7 +445,8 @@
     "knowledge": "Conhecimento",
     "skills": "Skills",
     "usecases": "Casos de uso",
-    "assistants": "Assistentes"
+    "assistants": "Assistentes",
+    "audit": "Auditoria"
   },
   "outcomes": {
     "title": "Resultados",
@@ -518,7 +543,8 @@
     "next": "Avançar",
     "publish": "Publicar skill",
     "publishing": "Publicando…",
-    "erroDescricaoVazia": "Escreva uma descrição — o serviço exige uma frase dizendo para que a skill serve."
+    "erroDescricaoVazia": "Escreva uma descrição — o serviço exige uma frase dizendo para que a skill serve.",
+    "resourceSkill": "skill"
   },
   "skills": {
     "title": "Skills",

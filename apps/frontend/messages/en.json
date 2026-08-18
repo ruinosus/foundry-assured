@@ -171,6 +171,29 @@
     "discard": "Discard",
     "empty": "The model returned no text. Try asking differently."
   },
+  "audit": {
+    "title": "Audit",
+    "subtitle": "What was approved, read and blocked — and whether the record is still what was written.",
+    "export": "Export package",
+    "chainOk": "chain intact",
+    "chainBroken": "chain broken at event {seq}",
+    "unanchored": "no daily close",
+    "scope_approvals": "Approvals",
+    "scope_access": "Access",
+    "scope_redactions": "Redactions",
+    "closeDay": "Close the {scope} day",
+    "closing": "Closing…",
+    "closeHelp": "Writes the head hash to a blob that cannot be overwritten.",
+    "anchored": "Day {date} closed.",
+    "anchorRefused": "Not anchored: {reason}",
+    "missingProofs": "Proofs still missing: {list}. See the README inside the package.",
+    "eventsIn": "Events in {scope}",
+    "noEvents": "No events recorded yet.",
+    "colWhen": "When",
+    "colActor": "Who",
+    "colWhat": "What",
+    "colHash": "Hash"
+  },
   "branding": {
     "tagline": "Engineering support",
     "description": "Internal engineering support concierge"
@@ -399,7 +422,8 @@
     "imported": "{count} file(s) imported from {repo}.",
     "skipped": "{count} were left out (extension or size).",
     "treeTruncated": "Heads up: GitHub truncated the listing — the repository is large and some files may be unseen.",
-    "indexingNote": "Indexing runs on the service and takes a few minutes. Refresh the list to see the synchronization status."
+    "indexingNote": "Indexing runs on the service and takes a few minutes. Refresh the list to see the synchronization status.",
+    "resourceKnowledge": "knowledge base"
   },
   "language": {
     "label": "Language",
@@ -421,7 +445,8 @@
     "knowledge": "Knowledge",
     "skills": "Skills",
     "usecases": "Use cases",
-    "assistants": "Assistants"
+    "assistants": "Assistants",
+    "audit": "Audit"
   },
   "outcomes": {
     "title": "Results",
@@ -518,7 +543,8 @@
     "next": "Next",
     "publish": "Publish skill",
     "publishing": "Publishing…",
-    "erroDescricaoVazia": "Write a description — the service requires a sentence saying what the skill is for."
+    "erroDescricaoVazia": "Write a description — the service requires a sentence saying what the skill is for.",
+    "resourceSkill": "skill"
   },
   "skills": {
     "title": "Skills",
