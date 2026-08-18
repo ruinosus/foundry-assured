@@ -38,9 +38,21 @@ def build_triage_agent(credential: TokenCredential) -> Agent:
     )
 
 
-def build_retrieve_agent(credential: TokenCredential) -> Agent:
+def build_retrieve_agent(credential: TokenCredential, provider=None) -> Agent:
+    """O passo de recuperação. `provider` é o nosso `GroundedRetrieval` quando há usuário.
+
+    POR QUE NÃO O `AzureAISearchContextProvider` DIRETO. Ele cobre grounding e citação e NÃO envia
+    `x-ms-query-source-authorization` — o header de ACL por usuário (medido: zero ocorrências no
+    módulo). Com ele, o helpdesk era o único domínio grounded que NÃO trimava por documento,
+    enquanto techdocs e selfwiki trimavam. E a contagem de referências morria aqui, que é o insumo
+    principal da fórmula de retorno.
+
+    O nosso provider resolve os dois — é `retrieve()` (com ACL) entrando pelo `ContextProvider` do
+    framework. O do framework fica como RESERVA para quando não há usuário na requisição: sem
+    identidade não há ACL a aplicar, e recusar recuperar ali quebraria o dev local sem auth.
+    """
     cfg = tenant_config()
-    search = AzureAISearchContextProvider(
+    search = provider or AzureAISearchContextProvider(
         endpoint=cfg.azure_search_endpoint,
         knowledge_base_name=cfg.azure_search_knowledge_base,
         credential=credential,

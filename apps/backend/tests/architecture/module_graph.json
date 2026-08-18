@@ -169,7 +169,8 @@
     ],
     "conversations": [
       "modules/grounded/internal/grounded.py",
-      "modules/grounded/internal/per_request.py"
+      "modules/grounded/internal/per_request.py",
+      "modules/grounded/internal/retrieval_provider.py"
     ],
     "foundry": [
       "modules/grounded/internal/concierge.py"
@@ -178,7 +179,8 @@
       "modules/grounded/internal/grounded.py"
     ],
     "knowledge": [
-      "modules/grounded/internal/grounded.py"
+      "modules/grounded/internal/grounded.py",
+      "modules/grounded/internal/retrieval_provider.py"
     ],
     "shared": [
       "modules/grounded/internal/concierge.py",
@@ -202,6 +204,9 @@
     ],
     "foundry": [
       "modules/helpdesk/internal/agents.py"
+    ],
+    "grounded": [
+      "modules/helpdesk/internal/graph.py"
     ],
     "hitl": [
       "modules/helpdesk/internal/escalation.py"

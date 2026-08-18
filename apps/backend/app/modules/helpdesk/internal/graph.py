@@ -13,6 +13,8 @@ locally without Entra.
 WorkflowBuilder API verified against agent-framework 1.9.0.
 """
 
+import contextlib
+
 from agent_framework import Workflow, WorkflowBuilder
 
 from app.modules.conversations.public import build_history_provider, conversation_user
@@ -42,7 +44,20 @@ def build_helpdesk_workflow(thread_id: str | None = None) -> Workflow:
     providers = [p for p in (memory, historico) if p]
 
     triage = build_triage_agent(credential)
-    retrieve = build_retrieve_agent(credential)
+    # A recuperação passa a usar o NOSSO provider, que trima por ACL e conta as referências. O
+    # usuário é capturado AQUI, na fábrica por requisição, porque `retrieve()` precisa da identidade
+    # para aplicar o entitlement — e porque este é o ponto que ainda está no contexto da requisição.
+    from app.modules.grounded.public import GroundedRetrieval
+    from app.modules.tenancy.public import domain_spec
+    from app.shared.auth import current_user
+
+    recuperacao = None
+    with contextlib.suppress(Exception):
+        usuario = current_user()
+        if usuario is not None:
+            recuperacao = GroundedRetrieval(usuario, domain_spec("helpdesk"), agent_id="helpdesk")
+
+    retrieve = build_retrieve_agent(credential, recuperacao)
     resolve = build_resolve_agent(
         credential, context_providers=providers or None
     )

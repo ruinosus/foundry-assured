@@ -231,6 +231,24 @@ diverge without erroring — this repository already lived that when `wiki_build
 copy of the price table. `tests/architecture/instrumentation_matrix_test.py` is the gate that keeps
 the convergence honest: a new agent surface declares what it records, or CI fails.
 
+### `helpdesk -> grounded`: the ACL-aware retrieval provider
+
+One more intended edge. `grounded` owns `GroundedRetrieval`, a `ContextProvider` that wraps the
+ACL-aware `retrieve()` seam, and `helpdesk` now uses it in place of the framework's
+`AzureAISearchContextProvider`.
+
+The reason is a measured gap, not a preference. The framework's provider covers grounding and
+citation but does **not** send `x-ms-query-source-authorization` — the per-user ACL header (zero
+occurrences in its 998-line module). With it, `helpdesk` was the only grounded domain that did
+**not** trim per document, while `techdocs` and `selfwiki` did; and the reference count — the main
+input to the Agent Assisted Hours formula — died there.
+
+That is the whole justification for keeping any hand-written retrieval at all. The SSE loop around
+it in the `grounded` domains is not a gap, it is accumulation; the gap is one HTTP header. Wrapping
+`retrieve()` in the framework's own extension point is the same move `StoredHistoryProvider` already
+made — `HistoryProvider` *is* a `ContextProvider` — and it means any future agent with a knowledge
+base gets ACL and reference counting by using the provider, not by someone remembering.
+
 ## References
 
 - [import-linter](https://import-linter.readthedocs.io/) — layers, forbidden, independence contracts

@@ -20,11 +20,13 @@ from app.modules.grounded.internal.grounded import (
     stream_grounded,
 )
 from app.modules.grounded.internal.per_request import PerRequestAgent
+from app.modules.grounded.internal.retrieval_provider import GroundedRetrieval
 from app.modules.grounded.internal.selfwiki import selfwiki_configured
 from app.modules.grounded.internal.techdocs import techdocs_configured
 
 __all__ = [
     "SYNTHESIS_DIRECTIVE",
+    "GroundedRetrieval",
     "PerRequestAgent",
     "build_concierge_agent",
     "build_synthesis_kwargs",
