@@ -113,7 +113,10 @@
     "publish": "Criar e publicar versão",
     "publishing": "Publicando…",
     "tool_image_generation": "Geração de imagem",
-    "resourceAgent": "agente"
+    "resourceAgent": "agente",
+    "faltaInstrucoes": "Escreva o que o agente deve fazer para continuar.",
+    "faltaModelo": "Escolha um modelo para continuar.",
+    "catalogoIndisponivel": "Não consegui listar {what}. O que aparece abaixo não é o catálogo completo — isto é falha de leitura, não catálogo vazio."
   },
   "agents": {
     "title": "Agentes",
@@ -566,7 +569,8 @@
     "publish": "Publicar skill",
     "publishing": "Publicando…",
     "erroDescricaoVazia": "Escreva uma descrição — o serviço exige uma frase dizendo para que a skill serve.",
-    "resourceSkill": "skill"
+    "resourceSkill": "skill",
+    "faltaInstrucoes": "Escreva o que a skill deve fazer para continuar."
   },
   "skills": {
     "title": "Skills",

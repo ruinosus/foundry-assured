@@ -167,8 +167,16 @@ export function SkillWizard({
     }
   };
 
-  const podeAvancar =
-    (passo === 1 && !problemaNome()) || (passo === 2 && instrucoes.trim().length > 0) || passo === 3;
+  /** O que FALTA para avançar, ou null. Motivo em vez de booleano: um botão desabilitado sem
+   *  explicação é um beco. A regra é "opcional nunca trava" — logo, o que trava é obrigatório e
+   *  precisa se identificar. A etapa 3 (arquivos) é opcional e nunca bloqueia. */
+  const faltaPara = (): string | null => {
+    if (passo === 1) return problemaNome();
+    if (passo === 2 && !instrucoes.trim()) return t("faltaInstrucoes");
+    return null;
+  };
+  const bloqueio = faltaPara();
+  const podeAvancar = bloqueio === null;
 
   /** Aplica a proposta aceita: valor no campo, fonte na procedência. Sempre os dois. */
   const aplicar = (p: FieldProposal) => {
@@ -325,6 +333,7 @@ export function SkillWizard({
             type="button"
             className="btn btn-solid"
             disabled={busy || !podeAvancar}
+            title={bloqueio ?? undefined}
             onClick={() => setPasso((p) => (p + 1) as 2 | 3 | 4)}
           >
             {t("next")}

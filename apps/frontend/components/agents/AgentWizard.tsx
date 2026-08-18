@@ -81,21 +81,36 @@ export function AgentWizard({
   // versão e histórico — e não só na memória de quem estava na tela naquele dia.
   const [origens, setOrigens] = useState<Record<string, string[]>>({});
   const [erro, setErro] = useState<string | null>(null);
+  //: O que NÃO pôde ser listado — distingue "não há" de "não consegui ler".
+  const [catalogoErro, setCatalogoErro] = useState<string | null>(null);
 
-  // O catálogo real é carregado assim que o wizard abre: a etapa 3 oferece o que EXISTE, e uma
-  // lista vazia ali é informação (não criei base nenhuma ainda), não um campo em branco.
+  // O catálogo real é carregado assim que o wizard abre: a etapa 3 oferece o que EXISTE.
+  //
+  // LISTA VAZIA E FALHA DE LEITURA NÃO PODEM PARECER A MESMA COISA. O `catch` que devolvia `{}`
+  // fazia as duas produzirem um select em branco — e "ainda não criei base nenhuma" leva a pessoa
+  // a criar uma, enquanto "não consegui ler as bases" leva a tentar de novo. Um select vazio
+  // calado faz alguém publicar um agente sem base achando que não havia nenhuma.
   useEffect(() => {
-    void Promise.all([
-      authedFetch("/api/foundry/knowledge", { cache: "no-store" })
-        .then((r) => r.json())
-        .catch(() => ({})),
-      authedFetch("/api/foundry/toolboxes", { cache: "no-store" })
-        .then((r) => r.json())
-        .catch(() => ({})),
-    ]).then(([k, tb]) => {
-      setBases(k?.bases ?? []);
-      setToolboxes(tb?.toolboxes ?? []);
-    });
+    const ler = async (url: string, chave: "bases" | "toolboxes") => {
+      const r = await authedFetch(url, { cache: "no-store" });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const b = await r.json();
+      return (b?.[chave] ?? []) as never[];
+    };
+    void (async () => {
+      const [k, tb] = await Promise.allSettled([
+        ler("/api/foundry/knowledge", "bases"),
+        ler("/api/foundry/toolboxes", "toolboxes"),
+      ]);
+      if (k.status === "fulfilled") setBases(k.value);
+      if (tb.status === "fulfilled") setToolboxes(tb.value);
+      // Uma falha PARCIAL também é dita: sem base o agente ainda publica, mas quem escolheu
+      // "sem base" precisa saber se escolheu ou se a lista não carregou.
+      const falhou = [k.status === "rejected" && "knowledge", tb.status === "rejected" && "toolboxes"]
+        .filter(Boolean)
+        .join(", ");
+      setCatalogoErro(falhou || null);
+    })();
   }, []);
 
   const problemaNome = useCallback((): string | null => {
@@ -184,10 +199,21 @@ export function AgentWizard({
       return n;
     });
 
-  const podeAvancar =
-    (passo === 1 && !problemaNome()) ||
-    (passo === 2 && instrucoes.trim().length > 0 && modelo.trim().length > 0) ||
-    passo === 3;
+  /** O que FALTA para avançar, ou null. Devolve o motivo em vez de um booleano porque um botão
+   *  desabilitado sem explicação é um beco: a pessoa vê que não dá e não sabe o que fazer. A
+   *  regra é "opcional nunca trava" — então, quando algo trava, é obrigatório, e dizer qual é o
+   *  mínimo. */
+  const faltaPara = (): string | null => {
+    if (passo === 1) return problemaNome();
+    if (passo === 2) {
+      if (!instrucoes.trim()) return t("faltaInstrucoes");
+      if (!modelo.trim()) return t("faltaModelo");
+    }
+    // Etapa 3 é toda OPCIONAL — base, toolbox e MCP. Ela nunca trava, por regra.
+    return null;
+  };
+  const bloqueio = faltaPara();
+  const podeAvancar = bloqueio === null;
 
   /** Aplica a proposta aceita: o valor vai para o campo, a fonte vai para a procedência. Os dois
    *  juntos, sempre — um valor sem origem registrada é exatamente o que a auditoria não aceita. */
@@ -276,6 +302,12 @@ export function AgentWizard({
             disabled={busy}
             onChange={(e) => setModelo(e.target.value)}
           />
+        </div>
+      )}
+
+      {passo === 3 && catalogoErro && (
+        <div className="notice notice-block">
+          <p className="notice-body">{t("catalogoIndisponivel", { what: catalogoErro })}</p>
         </div>
       )}
 
@@ -394,6 +426,7 @@ export function AgentWizard({
             type="button"
             className="btn btn-solid"
             disabled={busy || !podeAvancar}
+            title={bloqueio ?? undefined}
             onClick={() => setPasso((p) => (p + 1) as 2 | 3 | 4)}
           >
             {t("next")}
