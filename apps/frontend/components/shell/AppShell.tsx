@@ -166,7 +166,12 @@ function AccountChip() {
   );
 }
 
-export function AppShell({
+/** O shell propriamente dito. Separado do `AppShell` porque ele PRECISA estar DENTRO do
+ *  `ChatDockProvider` para ler o estado do dock — `useChatDock()` chamado acima do provider
+ *  devolve o fallback inerte EM SILÊNCIO (`open` sempre false), e a margem que impede o dock de
+ *  cobrir o formulário nunca seria aplicada. Um hook que degrada calado precisa de um lugar que
+ *  garanta o contexto, não de disciplina. */
+function Shell({
   children,
   flush,
 }: {
@@ -180,6 +185,8 @@ export function AppShell({
   const pathname = usePathname() || "/";
   const roles = useMyRoles();
   const apiToken = useApiToken();
+  // O conteúdo recua quando o dock abre — ver `.page.with-dock`.
+  const { open: dockOpen } = useChatDock();
 
   // Construídos no componente, não no módulo: rótulo é texto, e texto depende do idioma
   // escolhido — uma constante avaliada no import nasce numa língua só e nunca mais muda.
@@ -193,7 +200,7 @@ export function AppShell({
   const workspace = isAdmin(roles) ? [...WORKSPACE_NAV, ...ADMIN_NAV] : WORKSPACE_NAV;
 
   return (
-    <ChatDockProvider>
+    <>
     {/* O provider do CopilotKit envolve o dock E o conteúdo: é o que permite a uma tela
         registrar uma tool que o agente do dock consegue chamar. Ver DockProvider. */}
     <DockProvider authorization={apiToken ? `Bearer ${apiToken}` : undefined}>
@@ -252,10 +259,21 @@ export function AppShell({
           </nav>
           <DockHost />
         </header>
-        <main className={`page${flush ? " flush" : ""}`}>{children}</main>
+        <main className={`page${flush ? " flush" : ""}${dockOpen ? " with-dock" : ""}`}>
+          {children}
+        </main>
       </div>
     </div>
     </DockProvider>
+    </>
+  );
+}
+
+
+export function AppShell(props: { children: React.ReactNode; flush?: boolean }) {
+  return (
+    <ChatDockProvider>
+      <Shell {...props} />
     </ChatDockProvider>
   );
 }

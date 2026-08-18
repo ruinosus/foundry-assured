@@ -1465,6 +1465,11 @@ table.evals tr:last-child td { border-bottom: none; }
   padding-right: 0;
 }
 
+/* O dock EMPURRA o conteúdo, não o cobre.
+   Era `position: fixed`, e por isso ele tapava justamente o formulário que a pessoa estava
+   preenchendo — inclusive o botão que abriu o chat. Um painel de ajuda que esconde o que se está
+   fazendo é pior que nenhum: obriga a fechar para ver, e fechar perde o contexto.
+   Agora o `<main>` reserva a largura dele (ver `.page.with-dock`). */
 .chat-dock {
   position: fixed;
   top: var(--topbar-h);
@@ -1474,8 +1479,14 @@ table.evals tr:last-child td { border-bottom: none; }
   display: flex;
   flex-direction: column;
   background: var(--surface);
-  border-left: 1px solid var(--border);
+  border-left: 1px solid var(--line);
   z-index: var(--z-sticky);
+}
+
+/* A margem que impede a sobreposição. No telefone o dock ocupa a tela toda e a margem não faz
+   sentido — ali ele é modal por falta de espaço, e isso é honesto. */
+@media (min-width: 900px) {
+  .page.with-dock { margin-right: min(420px, 100vw); }
 }
 
 .chat-dock-head {
