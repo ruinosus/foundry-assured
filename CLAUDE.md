@@ -213,6 +213,9 @@ uv run python -m tests.shared.telemetry_test             # telemetria off por de
 uv run python -m tests.architecture.proposer_read_only_test  # ADR-022: o propositor nunca publica
 uv run python -m tests.audit.trail_test                  # ADR-023: cadeia, redator e fail-closed
 uv run python -m tests.tickets.store_path_test           # o chamado cai dentro do volume do bicep
+
+# fecho diário da trilha (roda por agenda em .github/workflows/audit-anchor.yml)
+uv run python -m cli.close_audit_day                     # ancora o dia; write-once, idempotente
 uv run python -m tests.conversations.conversation_store_test # a conversa acumula e isola por pessoa
 
 # de apps/frontend/

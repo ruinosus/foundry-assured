@@ -71,12 +71,12 @@ def main() -> int:
     check("os achados são tipos, não valores", all(a.isalpha() for a in redact("CPF 529.982.247-25")[1]))
 
     # ── fail-closed ───────────────────────────────────────────────────────────
-    from app.modules.hitl.public import ApprovalRequest, NotAuthorized, decide
     import app.modules.hitl.public as hitl
+    from app.modules.hitl.public import ApprovalRequest, NotAuthorized, decide
 
     pedido = ApprovalRequest(action="create_ticket", args={}, allowed_decisions=("approve", "reject"))
 
-    quebrado = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("storage fora do ar"))  # noqa: E731
+    quebrado = lambda *a, **k: (_ for _ in ()).throw(RuntimeError("storage fora do ar"))
     original = hitl._registrar
     try:
         hitl._registrar = lambda req, dec: quebrado()
@@ -103,7 +103,6 @@ def main() -> int:
 
     # ── pacote ────────────────────────────────────────────────────────────────
     import io
-    import json
     import zipfile
 
     from app.modules.audit.public import build_package, build_report
@@ -118,6 +117,13 @@ def main() -> int:
     leiame = z.read("LEIA-ME.md").decode()
     check("e diz o que NÃO prova", "Não prova" in leiame and "RFC 3161" in leiame)
     check("a fórmula do hash está no LEIA-ME", "sha256(prev" in leiame)
+
+    # ── fecho do dia ──────────────────────────────────────────────────────────
+    # O comando existe porque âncora que depende de clique não acontece. O que se trava aqui é o
+    # CONTRATO dele: idempotente (write-once) e ruidoso quando a trilha está violada.
+    from app.modules.audit.internal.export import ESCOPOS
+
+    check("os escopos do fecho são os mesmos do pacote", set(ESCOPOS) == {"approvals", "access", "redactions"})
 
     if failures:
         print(f"\n❌ {len(failures)} assertion(s) failed.")
