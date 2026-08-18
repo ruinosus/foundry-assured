@@ -83,7 +83,9 @@ def main() -> int:
         try:
             decide(pedido, "approve")
             check("approve com trilha quebrada NÃO passa", False)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — o teste PRECISA capturar tudo: o que ele
+            # verifica é justamente QUAL exceção sobe. Restringir o except aqui faria o teste
+            # passar por engano quando o código levantasse outra coisa.
             check("approve com trilha quebrada NÃO passa", isinstance(exc, (NotAuthorized, RuntimeError)))
     finally:
         hitl._registrar = original
