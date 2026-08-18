@@ -43,6 +43,7 @@ const WORKSPACE_NAV = [
 ];
 
 const ADMIN_NAV = [
+  { href: "/assistants", key: "screenAssistants", icon: "🧩" },
   { href: "/audit", key: "audit", icon: "🔗" },
   { href: "/admin/users", key: "admin", icon: "🛡️" },
   { href: "/admin/connections", key: "connections", icon: "🔌" },

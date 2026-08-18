@@ -20,7 +20,25 @@
 import { useFrontendTool } from "@copilotkit/react-core/v2";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { authedFetch } from "@/lib/auth/api";
 import { z } from "zod";
+
+/** Registra o DESFECHO da proposta. Silencioso de propósito: é medição, e uma falha de medição
+ *  não pode impedir alguém de usar ou descartar o texto. O que se perde é uma linha de
+ *  estatística; o que se ganharia bloqueando é nada. */
+function registrar(
+  resource: string,
+  field: string,
+  outcome: "accepted" | "edited" | "discarded",
+  sources: string[],
+  chars: number,
+) {
+  void authedFetch("/api/builder-assist", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ resource, field, outcome, sources, chars }),
+  }).catch(() => {});
+}
 
 export type FieldProposal = {
   field: string;
@@ -36,9 +54,11 @@ function ProposalCard({
   fontes,
   motivo,
   conhecido,
+  recurso,
   onAccept,
 }: {
   campo: string;
+  recurso: string;
   valorProposto: string;
   fontes: string[];
   motivo: string;
@@ -104,6 +124,9 @@ function ProposalCard({
           className="btn btn-approve"
           onClick={() => {
             onAccept({ field: campo, value: texto, sources: fontes });
+            // ACEITA vs EDITADA são desfechos diferentes, e a diferença é o sinal de qualidade:
+            // um assistente muito aceito e muito editado está sendo tolerado, não usado.
+            registrar(recurso, campo, editando ? "edited" : "accepted", fontes, texto.length);
             setUsado(true);
           }}
         >
@@ -118,7 +141,14 @@ function ProposalCard({
         >
           {editando ? t("cancelEdit") : t("edit")}
         </button>
-        <button type="button" className="btn" onClick={() => setUsado(true)}>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => {
+            registrar(recurso, campo, "discarded", fontes, valorProposto.length);
+            setUsado(true);
+          }}
+        >
           {t("discard")}
         </button>
       </div>
@@ -129,8 +159,12 @@ function ProposalCard({
 export function FieldProposalTool({
   onAccept,
   fields,
+  resource = "",
 }: {
   onAccept: (proposal: FieldProposal) => void;
+  /** Que recurso o formulário cria — entra na medição para separar wizard de agente, de skill e
+   *  de base. */
+  resource?: string;
   /** Os campos que ESTE formulário tem. Proposta para campo inexistente é dita, não engolida. */
   fields: string[];
 }) {
@@ -164,6 +198,7 @@ export function FieldProposalTool({
         motivo={String(args?.reason ?? "")}
         fontes={Array.isArray(args?.sources) ? (args.sources as string[]).map(String) : []}
         conhecido={fields.includes(String(args?.field ?? ""))}
+        recurso={resource}
         onAccept={onAccept}
       />
     ),

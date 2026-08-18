@@ -113,7 +113,7 @@ export function CreateKnowledge({ onCreated }: { onCreated: () => void }) {
 
   return (
     <section className="card stack-sm">
-      <FieldProposalTool onAccept={aplicar} fields={["name", "description"]} />
+      <FieldProposalTool onAccept={aplicar} resource="knowledge" fields={["name", "description"]} />
       <h3 className="section-title">{t("title")}</h3>
 
       {result && (

@@ -84,10 +84,14 @@
     "agentdefs": [
       "modules/builder/internal/builder.py"
     ],
+    "audit": [
+      "modules/builder/internal/assist_log.py"
+    ],
     "grounded": [
       "modules/builder/internal/builder.py"
     ],
     "shared": [
+      "modules/builder/api.py",
       "modules/builder/internal/builder.py"
     ],
     "tenancy": [

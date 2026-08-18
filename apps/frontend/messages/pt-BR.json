@@ -172,6 +172,23 @@
     "discard": "Descartar",
     "empty": "O modelo não devolveu texto. Tente pedir de outro jeito."
   },
+  "assistants": {
+    "title": "Assistentes de tela",
+    "subtitle": "Agentes que ajudam a preencher formulário — e se estão ajudando de verdade.",
+    "empty": "Nenhuma proposta ainda. Use \"Escrever\" num campo do wizard e volte aqui.",
+    "builderTitle": "Construtor de assistentes",
+    "proposals": "Propostas feitas",
+    "usedRate": "Aproveitadas",
+    "usedDetail": "{accepted} usadas como vieram, {edited} após correção",
+    "editedRate": "Precisaram de correção",
+    "editedHelp": "das que foram aproveitadas",
+    "toleratedWarning": "Mais da metade das propostas aproveitadas precisou de correção. Aproveitamento alto com edição alta significa que o rascunho poupa tempo, não que o assistente está acertando — vale revisar o prompt dele.",
+    "withSources": "{n} de {total} propostas declararam a fonte de onde vieram.",
+    "byField": "Por campo",
+    "colField": "Campo",
+    "colCount": "Propostas",
+    "source": "Os números são lidos da trilha de auditoria, não de um contador — o que a tela mostra e o que ficou registrado são a mesma coisa."
+  },
   "audit": {
     "title": "Auditoria",
     "subtitle": "O que foi aprovado, lido e barrado — e se o registro ainda é o que foi escrito.",
@@ -450,7 +467,8 @@
     "skills": "Skills",
     "usecases": "Casos de uso",
     "assistants": "Assistentes",
-    "audit": "Auditoria"
+    "audit": "Auditoria",
+    "screenAssistants": "Assistentes de tela"
   },
   "outcomes": {
     "title": "Resultados",

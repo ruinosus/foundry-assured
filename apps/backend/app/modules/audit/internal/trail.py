@@ -38,6 +38,11 @@ KINDS = (
     "write",      # recurso criado ou alterado por ação de agente
     "redaction",  # dado pessoal barrado antes da gravação
     "access",     # leitura de recurso controlado por ACL
+    # Uma sugestão de agente que a pessoa JULGOU — aceitou, corrigiu ou descartou. Não é
+    # `approval` (não autoriza escrita nenhuma) nem `write` (nada foi gravado no serviço); é o
+    # desfecho de uma ajuda. Separado porque a pergunta que ele responde é outra: não "quem
+    # autorizou", mas "esse assistente ajuda de verdade?".
+    "assist",
 )
 
 _SEGMENTO = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")

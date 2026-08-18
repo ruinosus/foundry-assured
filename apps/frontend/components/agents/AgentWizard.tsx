@@ -204,7 +204,7 @@ export function AgentWizard({
           wizard, porque é o formulário que sabe quais campos existem e como aplicá-los — e
           porque ela deixa de existir quando o formulário fecha, que é o comportamento certo:
           uma tool de proposta viva sem formulário aberto proporia para o nada. */}
-      <FieldProposalTool onAccept={aplicar} fields={["name", "description", "instructions"]} />
+      <FieldProposalTool onAccept={aplicar} resource="agent" fields={["name", "description", "instructions"]} />
       <header className="between">
         <h3 className="section-title">{t("title")}</h3>
         <button type="button" className="btn" disabled={busy} onClick={onCancelar}>

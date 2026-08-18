@@ -182,7 +182,7 @@ export function SkillWizard({
     <section className="card stack-sm">
       {/* A tool vive enquanto o formulário está aberto — fechado, ela some, e o agente deixa de
           poder propor para um formulário que ninguém está vendo. */}
-      <FieldProposalTool onAccept={aplicar} fields={["name", "description", "instructions"]} />
+      <FieldProposalTool onAccept={aplicar} resource="skill" fields={["name", "description", "instructions"]} />
       <header className="between">
         <h3 className="section-title">{t("title")}</h3>
         <button type="button" className="btn" disabled={busy} onClick={onCancelar}>

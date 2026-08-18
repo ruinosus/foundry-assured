@@ -172,6 +172,23 @@
     "discard": "Discard",
     "empty": "The model returned no text. Try asking differently."
   },
+  "assistants": {
+    "title": "Screen assistants",
+    "subtitle": "Agents that help fill forms — and whether they are actually helping.",
+    "empty": "No proposals yet. Use \"Write\" on a wizard field and come back.",
+    "builderTitle": "Assistant builder",
+    "proposals": "Proposals made",
+    "usedRate": "Used",
+    "usedDetail": "{accepted} used as-is, {edited} after editing",
+    "editedRate": "Needed editing",
+    "editedHelp": "of the ones that were used",
+    "toleratedWarning": "More than half of the used proposals needed editing. High usage with high editing means the draft saves time, not that the assistant is getting it right — worth revisiting its prompt.",
+    "withSources": "{n} of {total} proposals declared where they came from.",
+    "byField": "By field",
+    "colField": "Field",
+    "colCount": "Proposals",
+    "source": "The numbers are read from the audit trail, not from a counter — what the screen shows and what was recorded are the same thing."
+  },
   "audit": {
     "title": "Audit",
     "subtitle": "What was approved, read and blocked — and whether the record is still what was written.",
@@ -450,7 +467,8 @@
     "skills": "Skills",
     "usecases": "Use cases",
     "assistants": "Assistants",
-    "audit": "Audit"
+    "audit": "Audit",
+    "screenAssistants": "Screen assistants"
   },
   "outcomes": {
     "title": "Results",
