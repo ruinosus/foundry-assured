@@ -12,7 +12,6 @@ APIs mirror app/agents/selfwiki.py (agent-framework 1.9.0).
 from __future__ import annotations
 
 from agent_framework import Agent, ToolApprovalMiddleware
-from agent_framework.foundry import FoundryChatClient
 
 from app.modules.agentdefs.public import PLATFORM_INSTRUCTIONS
 from app.modules.grounded.public import PerRequestAgent
@@ -98,12 +97,9 @@ def _approval_middleware() -> ToolApprovalMiddleware:
 
 def build_platform_agent() -> Agent:
     """A tool-driven concierge over the Microsoft first-party MCP servers."""
-    cfg = tenant_config()
-    client = FoundryChatClient(
-        project_endpoint=cfg.foundry_project_endpoint or None,
-        model=cfg.foundry_model,
-        credential=credential_for_request(),
-    )
+    from app.modules.foundry.public import chat_client
+
+    client = chat_client(credential_for_request())
     return client.as_agent(
         name="PlatformConcierge",
         description="Engineering-platform concierge over Microsoft first-party MCP tools.",

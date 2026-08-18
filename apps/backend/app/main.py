@@ -90,6 +90,19 @@ tenancy.install()
 # the platform registry.
 tenancy.set_server_catalog(server.id for server in SERVERS)
 
+# MEDIR PASSA A SER PROPRIEDADE DE FALAR COM O MODELO, não de cada agente lembrar. Havia cinco
+# construções de `FoundryChatClient` espalhadas pelos módulos, e o painel de ROI mostrou o preço:
+# um domínio com token gravado e todos os outros com zero, porque só um caminho se lembrava. Agora
+# existe uma fábrica (`foundry.chat_client`) e ela carrega este middleware em todo cliente.
+#
+# A entrega vem daqui pelo mesmo motivo da linha acima: `conversations` importa `foundry`, então
+# `foundry` importar `conversations` fecharia um ciclo que o import-linter recusa. O composition
+# root é o único lugar que pode conhecer os dois.
+from app.modules.conversations.public import usage_recorder
+from app.modules.foundry.public import set_chat_middleware
+
+set_chat_middleware(usage_recorder)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

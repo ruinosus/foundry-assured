@@ -13,6 +13,7 @@
       "registry.py"
     ],
     "conversations": [
+      "main.py",
       "registry.py"
     ],
     "deepcall": [
@@ -22,6 +23,7 @@
       "registry.py"
     ],
     "foundry": [
+      "main.py",
       "registry.py"
     ],
     "grounded": [
@@ -45,6 +47,7 @@
       "registry.py"
     ],
     "shared": [
+      "api_health.py",
       "main.py",
       "registry.py"
     ],
@@ -87,14 +90,14 @@
     "audit": [
       "modules/builder/internal/assist_log.py"
     ],
+    "foundry": [
+      "modules/builder/internal/builder.py"
+    ],
     "grounded": [
       "modules/builder/internal/builder.py"
     ],
     "shared": [
       "modules/builder/api.py",
-      "modules/builder/internal/builder.py"
-    ],
-    "tenancy": [
       "modules/builder/internal/builder.py"
     ]
   },
@@ -147,6 +150,7 @@
       "modules/foundry/internal/agent_write.py",
       "modules/foundry/internal/agents.py",
       "modules/foundry/internal/assist.py",
+      "modules/foundry/internal/chat.py",
       "modules/foundry/internal/connections.py",
       "modules/foundry/internal/flow_store.py",
       "modules/foundry/internal/knowledge_catalog.py",
@@ -162,6 +166,9 @@
     ],
     "conversations": [
       "modules/grounded/internal/grounded.py"
+    ],
+    "foundry": [
+      "modules/grounded/internal/concierge.py"
     ],
     "hosted": [
       "modules/grounded/internal/grounded.py"
@@ -188,6 +195,9 @@
     ],
     "conversations": [
       "modules/helpdesk/internal/graph.py"
+    ],
+    "foundry": [
+      "modules/helpdesk/internal/agents.py"
     ],
     "hitl": [
       "modules/helpdesk/internal/escalation.py"
@@ -230,6 +240,9 @@
     "audit": [
       "modules/knowledge/internal/retrieval.py"
     ],
+    "foundry": [
+      "modules/knowledge/internal/wiki_builder.py"
+    ],
     "shared": [
       "modules/knowledge/internal/retrieval.py",
       "modules/knowledge/internal/wiki_builder.py"
@@ -262,6 +275,9 @@
       "modules/platform_ops/internal/platform.py"
     ],
     "audit": [
+      "modules/platform_ops/internal/platform.py"
+    ],
+    "foundry": [
       "modules/platform_ops/internal/platform.py"
     ],
     "grounded": [

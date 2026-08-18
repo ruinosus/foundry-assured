@@ -23,22 +23,17 @@ verifica do outro lado.
 from __future__ import annotations
 
 from agent_framework import Agent
-from agent_framework.foundry import FoundryChatClient
 
 from app.modules.agentdefs.public import BUILDER_INSTRUCTIONS
 from app.modules.grounded.public import PerRequestAgent
-from app.modules.tenancy.public import tenant_config
 from app.shared.auth import credential_for_request
 
 
 def build_builder_agent() -> Agent:
     """O assistente do formulário. Sem tools de servidor — só propõe."""
-    cfg = tenant_config()
-    client = FoundryChatClient(
-        project_endpoint=cfg.foundry_project_endpoint or None,
-        model=cfg.foundry_model,
-        credential=credential_for_request(),
-    )
+    from app.modules.foundry.public import chat_client
+
+    client = chat_client(credential_for_request())
     return client.as_agent(
         name="AssistantBuilder",
         description="Ajuda a preencher o formulário de criação de agente, base e skill.",

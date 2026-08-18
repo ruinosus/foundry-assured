@@ -134,6 +134,15 @@ jobs:
       - name: Agent Assisted Hours (bate com o exemplo publicado)
         run: uv run python -m tests.usecases.aah_formula_test
 
+      # A medição de uso tem de ser UNIFORME por construção. `record_usage` era chamado de um
+      # arquivo só, e o painel de ROI mostrava um domínio com token gravado e todos os outros com
+      # zero — não por esquecimento, mas porque cada módulo construía o SEU FoundryChatClient
+      # (eram cinco). Agora há uma fábrica e ela anexa o gravador; este gate proíbe a sexta
+      # construção solta, que voltaria a criar um agente fora da contabilidade sem nada falhar.
+      # Ele já pegou uma: o wiki_builder, que eu tinha deixado para trás.
+      - name: Uso medido por construção (nenhum cliente fora da fábrica)
+        run: uv run python -m tests.conversations.usage_seam_test
+
       - name: Approval decisions (edit is not a loophole)
         run: uv run python -m tests.hitl.decision_test
       - name: Edit round-trips end to end

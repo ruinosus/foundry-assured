@@ -23,12 +23,11 @@ from app.modules.tenancy.public import tenant_config
 
 
 def _client(credential: TokenCredential) -> FoundryChatClient:
-    cfg = tenant_config()
-    return FoundryChatClient(
-        project_endpoint=cfg.foundry_project_endpoint or None,
-        model=cfg.foundry_model,
-        credential=credential,
-    )
+    # Fábrica única (foundry.public.chat_client): é ela que anexa o gravador de uso, para medir ser
+    # propriedade de falar com o modelo e não de cada agente lembrar.
+    from app.modules.foundry.public import chat_client
+
+    return chat_client(credential)
 
 
 def build_triage_agent(credential: TokenCredential) -> Agent:

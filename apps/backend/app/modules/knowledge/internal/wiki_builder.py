@@ -44,7 +44,6 @@ import re
 from datetime import UTC, datetime
 from pathlib import Path
 
-from agent_framework.foundry import FoundryChatClient
 from azure.identity import DefaultAzureCredential
 
 import app as _app
@@ -285,11 +284,15 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
     _maybe_setup_observability()
 
     def _agent(name: str, instructions: str):
-        return FoundryChatClient(
-            project_endpoint=tenant_config().foundry_project_endpoint or None,
-            model=model or tenant_config().foundry_model,
-            credential=credential,
-        ).as_agent(name=name, instructions=instructions)
+        # Pela fábrica única, como todo mundo. Aqui o gravador de uso vira no-op de propósito —
+        # não há conversa amarrada, porque isto roda por CLI e não é conversa de ninguém. Mesmo
+        # assim passa pela porta: ficar de fora dela é o que permite a próxima construção solta
+        # aparecer sem nada falhar.
+        from app.modules.foundry.public import chat_client
+
+        return chat_client(credential, model=model).as_agent(
+            name=name, instructions=instructions
+        )
 
     files = gather_source(repo)
     if not files:

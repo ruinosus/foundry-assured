@@ -214,6 +214,7 @@ uv run python -m tests.architecture.proposer_read_only_test  # ADR-022: o propos
 uv run python -m tests.audit.trail_test                  # ADR-023: cadeia, redator e fail-closed
 uv run python -m tests.tickets.store_path_test           # o chamado cai dentro do volume do bicep
 uv run python -m tests.usecases.aah_formula_test         # AAH bate com o exemplo publicado pela Microsoft
+uv run python -m tests.conversations.usage_seam_test     # nenhum cliente de chat fora da fábrica que mede
 
 # fecho diário da trilha (roda por agenda em .github/workflows/audit-anchor.yml)
 uv run python -m cli.close_audit_day                     # ancora o dia; write-once, idempotente

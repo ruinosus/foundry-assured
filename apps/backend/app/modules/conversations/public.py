@@ -14,16 +14,24 @@ from app.modules.conversations.internal.provider import (
     StoredHistoryProvider,
     build_history_provider,
 )
+from app.modules.conversations.internal.recorder import (
+    bind_conversation,
+    current_conversation,
+    usage_recorder,
+)
 from app.modules.conversations.internal.store import conversation_user
 
 __all__ = [
     "StoredHistoryProvider",
+    "bind_conversation",
     "build_history_provider",
     "conversation_user",
+    "current_conversation",
     "find_conversation",
     "get_conversation",
     "list_conversations",
     "record_turn",
     "record_usage",
+    "usage_recorder",
     "usage_totals",
 ]
