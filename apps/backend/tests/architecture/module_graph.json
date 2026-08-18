@@ -224,6 +224,10 @@
     ]
   },
   "hosted": {
+    "conversations": [
+      "modules/hosted/api.py",
+      "modules/hosted/internal/hosted.py"
+    ],
     "foundry": [
       "modules/hosted/api.py"
     ],

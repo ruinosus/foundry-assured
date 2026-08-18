@@ -49,6 +49,41 @@ def bind_conversation(agent: str, conversation_id: str) -> None:
         _current.set((agent, conversation_id))
 
 
+def bind_dependency(agent: str = "", *, path_param: str = ""):
+    """Dependência do FastAPI que amarra `(agente, thread)` a esta requisição.
+
+    MORA AQUI, e não no registry, porque a amarração é do módulo de conversas — e porque ela
+    precisa valer para DUAS famílias de rota que não compartilham código: os domínios do registry
+    (`mount_domains`) e as rotas hosted (`app/modules/hosted/api.py`). Enquanto ela existia só no
+    registry, as rotas hosted ficavam de fora — inclusive `/foundry-agent/{name}`, que é o agente
+    que o USUÁRIO cria, a superfície menos instrumentada de todas.
+
+    `agent` fixo serve o domínio; `path_param` serve a rota genérica, onde a identidade só se
+    conhece por requisição (`/foundry-agent/{name}`). Sem isso, ou a rota genérica ficaria sem
+    amarração, ou todas as conversas de agentes diferentes cairiam sob a mesma chave.
+
+    `request.json()` guarda o corpo em cache no próprio objeto (`Request._body`), então lê-lo aqui
+    não consome o stream que o adapter vai ler depois. Corpo que não é JSON — ou sem thread —
+    simplesmente não amarra, e o gravador vira no-op.
+    """
+
+    async def _amarrar(request) -> None:
+        nome = agent
+        if path_param:
+            nome = str(request.path_params.get(path_param, "") or "") or agent
+        if not nome:
+            return
+        try:
+            corpo = await request.json()
+        except Exception:  # noqa: BLE001 — corpo não-JSON não amarra, e não derruba a requisição
+            return
+        if isinstance(corpo, dict):
+            thread = corpo.get("threadId") or corpo.get("thread_id") or ""
+            bind_conversation(nome, str(thread))
+
+    return _amarrar
+
+
 def current_conversation() -> tuple[str, str] | None:
     """`(agente, conversa)` desta requisição, ou None fora de uma."""
     return _current.get()

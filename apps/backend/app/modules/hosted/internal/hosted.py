@@ -69,6 +69,33 @@ def _last_user_text(messages: list) -> str:
     return ""
 
 
+def _registrar(
+    agent: str, thread_id: str, pergunta: str, resposta: str, entrada: int, saida: int
+) -> None:
+    """Grava conversa e uso do runtime hosted. UM lugar, não um por rota.
+
+    Este é o seam do runtime D: as três rotas hosted (`/helpdesk-hosted`, `/platform-hosted` e a
+    genérica `/foundry-agent/{name}`) passam todas por este stream, então gravar aqui cobre as três
+    — e cobre a próxima, sem ninguém precisar lembrar. É a mesma disciplina da fábrica de cliente
+    para o agent-framework: medir é propriedade do caminho, não decisão de cada agente.
+
+    Não grava referências: um agente hosted responde com o que a base dele trouxe, e essa contagem
+    não volta no stream de Responses. Zero aqui seria contagem errada, e a matriz de instrumentação
+    declara essa lacuna em vez de fingir que é zero.
+    """
+    from app.modules.conversations.public import (
+        conversation_user,
+        record_turn,
+        record_usage,
+    )
+
+    usuario = conversation_user()
+    if not (usuario and thread_id):
+        return
+    record_turn(usuario, agent, thread_id, pergunta, resposta)
+    record_usage(usuario, agent, thread_id, entrada, saida)
+
+
 async def stream_agui(body: dict, agent_name: str) -> AsyncGenerator[str]:
     """Stream the named hosted agent's Responses output as AG-UI SSE events."""
     from ag_ui.core import (
@@ -89,15 +116,28 @@ async def stream_agui(body: dict, agent_name: str) -> AsyncGenerator[str]:
     yield enc.encode(RunStartedEvent(thread_id=thread_id, run_id=run_id))
     message_id = uuid.uuid4().hex
     yield enc.encode(TextMessageStartEvent(message_id=message_id, role="assistant"))
+    resposta: list[str] = []
+    tokens_in = tokens_out = 0
     try:
         client = await _client(agent_name)
         events = await client.responses.create(input=user_text, stream=True)
         async for event in events:
-            if getattr(event, "type", "") == "response.output_text.delta":
+            tipo = getattr(event, "type", "")
+            if tipo == "response.output_text.delta":
                 delta = getattr(event, "delta", "") or ""
                 if delta:
+                    resposta.append(delta)
                     yield enc.encode(TextMessageContentEvent(message_id=message_id, delta=delta))
+            elif tipo == "response.completed":
+                # O uso vive SÓ no evento final — os deltas não o carregam. Este laço lia apenas
+                # `output_text.delta` e descartava o resto, então o token de todo agente hosted
+                # (inclusive os que o usuário cria) era jogado fora aqui. Não era "só o Foundry
+                # sabe": estava ao lado, no mesmo stream.
+                uso = getattr(getattr(event, "response", None), "usage", None)
+                tokens_in = int(getattr(uso, "input_tokens", 0) or 0)
+                tokens_out = int(getattr(uso, "output_tokens", 0) or 0)
         yield enc.encode(TextMessageEndEvent(message_id=message_id))
+        _registrar(agent_name, thread_id, user_text, "".join(resposta), tokens_in, tokens_out)
         yield enc.encode(RunFinishedEvent(thread_id=thread_id, run_id=run_id))
     except Exception as exc:  # surface to the UI as a clean run error
         yield enc.encode(TextMessageEndEvent(message_id=message_id))

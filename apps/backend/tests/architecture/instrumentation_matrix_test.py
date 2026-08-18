@@ -105,28 +105,34 @@ MATRIZ: dict[str, dict[str, object]] = {
     },
     # ── runtime D · hosted no Foundry · execução fora daqui ─────────────────────────────────
     "/helpdesk-hosted": {
-        "conversa": "sem amarração: a rota usa auth_dependencies() e não domain_deps",
-        "tokens": "o stream lê só output_text.delta e descarta o usage de response.completed",
-        "referencias": "não grava",
+        "conversa": True,
+        "tokens": True,
+        "referencias": "o stream de Responses não devolve as fontes que a base do agente trouxe",
         "chamado": "n/a: não abre chamado",
-        "trilha": "não grava",
-        "caso_de_uso": "nenhum",
+        "trilha": "n/a: o gêmeo não faz escrita que precise de aprovação",
+        "caso_de_uso": True,
     },
     "/platform-hosted": {
-        "conversa": "sem amarração de conversa",
-        "tokens": "o stream descarta o usage de response.completed",
+        # PASSTHROUGH 1:1 — o Invocations já serve AG-UI e este caminho relaia os bytes sem abrir
+        # envelope, de propósito (é o que permite o interrupt de aprovação ir e voltar inteiro).
+        # Sem parsing não há texto nem uso a ler, e parsear para medir custaria a propriedade que
+        # justifica o desenho. Lacuna declarada, não descuido.
+        "conversa": "passthrough de bytes AG-UI: o texto não é lido aqui",
+        "tokens": "idem — abrir o envelope para medir quebraria o passthrough do interrupt",
         "referencias": "n/a: tool-driven, sem base",
         "chamado": "n/a: não abre chamado",
-        "trilha": "não grava",
-        "caso_de_uso": "nenhum",
+        "trilha": True,
+        "caso_de_uso": "depende da conversa",
     },
     "/foundry-agent/{name}": {
-        "conversa": "a rota usa auth_dependencies() e não domain_deps — nem a amarração chega",
-        "tokens": "o stream descarta o usage de response.completed",
-        "referencias": "não grava",
+        # A superfície do agente que o USUÁRIO cria. A amarração vem do `{name}` do caminho, não de
+        # um nome fixo — senão a conversa de todo agente criado cairia sob a mesma chave.
+        "conversa": True,
+        "tokens": True,
+        "referencias": "o stream de Responses não devolve as fontes da base do agente",
         "chamado": "n/a: não abre chamado",
-        "trilha": "não grava",
-        "caso_de_uso": "nenhum — é o agente que o USUÁRIO cria, e é o menos instrumentado",
+        "trilha": "n/a: sem escrita que precise de aprovação por este caminho",
+        "caso_de_uso": True,
     },
 }
 

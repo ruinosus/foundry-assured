@@ -96,10 +96,24 @@ def main() -> int:
     # domínios continuam servindo e param de ser medidos, sem nada falhar.
     from app import registry
 
-    if "_bind_conversation" not in registry.domain_deps.__doc__ and not any(
-        "_bind_conversation" in repr(d) for d in registry.domain_deps("helpdesk")
-    ):
-        falhas.append("  domain_deps não carrega mais a amarração da conversa")
+    # Checa o FATO, não o nome: a dependência tem de vir do módulo de CONVERSAS. Procurar pelo
+    # nome da função quebrou quando ela mudou de casa — e um teste que falha por renomeação, sem o
+    # comportamento ter mudado, ensina a gente a ignorá-lo.
+    from app.modules.tenancy.public import domain_deps as deps_de_tenancy
+
+    def _modulos(deps) -> set[str]:
+        return {
+            getattr(getattr(d, "dependency", None), "__module__", "") or "" for d in deps
+        }
+
+    do_registry = registry.domain_deps("helpdesk")
+    if len(do_registry) != len(deps_de_tenancy("helpdesk")) + 1:
+        falhas.append("  domain_deps não carrega mais EXATAMENTE uma dependência a mais que tenancy")
+    if not any("conversations" in m for m in _modulos(do_registry)):
+        falhas.append(
+            "  nenhuma dependência de `conversations` em domain_deps — sem a amarração, os "
+            "domínios seguem servindo e param de ser medidos, em silêncio"
+        )
 
     if falhas:
         print("❌ a medição de uso deixou de ser uniforme:")
