@@ -1483,6 +1483,16 @@ table.evals tr:last-child td { border-bottom: none; }
   z-index: var(--z-sticky);
 }
 
+/* Fechado: fora da vista, fora do fluxo e fora do alcance — mas MONTADO, que é o ponto (ver
+   ChatDock). `visibility: hidden` em vez de `display: none` porque o segundo faz o navegador
+   descartar o layout do subárvore inteira a cada abertura, e o chat remonta visualmente com
+   solavanco. */
+.chat-dock.chat-dock-hidden {
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(100%);
+}
+
 /* A margem que impede a sobreposição. No telefone o dock ocupa a tela toda e a margem não faz
    sentido — ali ele é modal por falta de espaço, e isso é honesto. */
 @media (min-width: 900px) {

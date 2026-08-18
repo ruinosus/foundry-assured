@@ -30,10 +30,24 @@ export function ChatDock() {
   // por thread fixa. Controlar a thread aqui acrescentava uma variável a um caminho que o
   // `aap-kb` resolve sem ela, e caminho com peça a menos é caminho com bug a menos.
 
-  if (!open) return null;
-
+  // FICA MONTADO MESMO FECHADO, escondido por CSS. Não é preferência de estilo: o
+  // `<CopilotChat>` só CONECTA o agente quando monta, e enquanto ele nunca montou um pedido vindo
+  // de um campo do wizard rodava sem ninguém conectado — a resposta acontecia e não aparecia.
+  // Era o "só funciona depois de abrir o chat uma vez".
+  //
+  // A alternativa seria esperar a conexão antes de enviar, e foi o que eu tentei três vezes:
+  // esperar `open`, esperar um quadro, tentar de novo. Toda tentativa acertava o TEMPO de uma
+  // corrida que não precisava existir. Montado sempre, não há corrida — há um agente conectado.
+  //
+  // `hidden` de verdade (via CSS), não `display:none` inline: o React continua montado, os
+  // efeitos rodam, a conexão acontece, e nada disso aparece nem entra na ordem de tabulação.
   return (
-    <aside className="chat-dock" aria-label={t("title")}>
+    <aside
+      className={`chat-dock${open ? "" : " chat-dock-hidden"}`}
+      aria-label={t("title")}
+      aria-hidden={!open}
+      {...(open ? {} : { inert: "" as unknown as boolean })}
+    >
       <header className="chat-dock-head">
         <select
           className="acct-btn"

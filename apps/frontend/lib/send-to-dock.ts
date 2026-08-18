@@ -28,15 +28,6 @@ export function useSendToDock(agentId: string): (prompt: string) => void {
   return (prompt: string) => {
     setAgentId(agentId);
     show();
-    // DIAGNÓSTICO temporário: identidade da instância e estado ANTES do envio. Se o chat mostra
-    // vazio mas o backend responde, a pergunta é se a instância que recebe a mensagem é a mesma
-    // que o `<CopilotChat>` renderiza.
-    console.log("[send-to-dock] antes", {
-      agentId,
-      agenteId: (agent as { agentId?: string }).agentId,
-      threadId: (agent as { threadId?: string }).threadId,
-      mensagens: (agent as { messages?: unknown[] }).messages?.length ?? -1,
-    });
     agent.addMessage({
       id:
         typeof crypto !== "undefined" && crypto.randomUUID
@@ -47,16 +38,11 @@ export function useSendToDock(agentId: string): (prompt: string) => void {
     });
     // O erro vai para o console identificado. O composer do CopilotKit faz o mesmo — e foi o
     // silêncio aqui que escondeu a causa por duas rodadas.
-    console.log("[send-to-dock] depois de addMessage", {
-      mensagens: (agent as { messages?: unknown[] }).messages?.length ?? -1,
-    });
+    // A rejeição vai para o console identificada. Não é zelo: o `void runAgent(...)` silencioso
+    // escondeu a causa por duas rodadas de depuração — a mensagem aparecia, a resposta não, e não
+    // havia nada no console para explicar.
     copilotkit
       .runAgent({ agent })
-      .then(() =>
-        console.log("[send-to-dock] run terminou", {
-          mensagens: (agent as { messages?: unknown[] }).messages?.length ?? -1,
-        }),
-      )
       .catch((erro: unknown) => console.error("[send-to-dock] runAgent falhou", erro));
   };
 }
