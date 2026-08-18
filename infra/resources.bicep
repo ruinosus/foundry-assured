@@ -212,6 +212,63 @@ resource corpusContainer 'Microsoft.Storage/storageAccounts/blobServices/contain
   properties: { publicAccess: 'None' }
 }
 
+// ── A camada de EVIDÊNCIA (ADR-023) ──────────────────────────────────────────────────────────
+//
+// A imutabilidade é do AZURE, não do nosso código. `allowProtectedAppendWrites` existe
+// exatamente para esta forma: bloco NOVO pode ser anexado a um append blob, bloco EXISTENTE não
+// pode ser alterado nem apagado — a recusa é da plataforma, e vale inclusive para quem tem RBAC
+// do storage.
+//
+// A política fica DESTRAVADA aqui de propósito. Travar é irreversível e faz o dado ficar
+// genuinamente indelével pelo prazo — inclusive o gravado por engano. Isso é decisão de
+// compliance de quem opera o ambiente, não default de template; um `azd up` de demonstração que
+// travasse 20 anos de retenção seria uma armadilha. O caminho de produção é travar
+// deliberadamente (`az storage container immutability-policy lock`), e é aí que a retenção passa
+// a valer como SEC 17a-4(f).
+//
+// `immutabilityPeriodSinceCreationInDays: 1` é o mínimo que mantém a semântica ligada sem
+// prender nada em ambiente descartável.
+resource auditContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
+  parent: blobService
+  name: 'audit'
+  properties: {
+    publicAccess: 'None'
+    immutableStorageWithVersioning: { enabled: true }
+  }
+}
+
+resource auditImmutability 'Microsoft.Storage/storageAccounts/blobServices/containers/immutabilityPolicies@2023-05-01' = {
+  parent: auditContainer
+  name: 'default'
+  properties: {
+    immutabilityPeriodSinceCreationInDays: 1
+    // Sem isto, um append blob de auditoria fica ilegível para APPEND: o serviço recusaria o
+    // próximo evento junto com a alteração dos anteriores, e a trilha pararia de crescer.
+    allowProtectedAppendWrites: true
+  }
+}
+
+// As conversas seguem o MESMO regime: elas são o registro do que foi perguntado e respondido, e
+// hoje são append blob por escolha de API, não por política. Sem isto, `delete_blob` apaga uma
+// conversa inteira sem deixar rastro.
+resource conversationsContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
+  parent: blobService
+  name: 'conversations'
+  properties: {
+    publicAccess: 'None'
+    immutableStorageWithVersioning: { enabled: true }
+  }
+}
+
+resource conversationsImmutability 'Microsoft.Storage/storageAccounts/blobServices/containers/immutabilityPolicies@2023-05-01' = {
+  parent: conversationsContainer
+  name: 'default'
+  properties: {
+    immutabilityPeriodSinceCreationInDays: 1
+    allowProtectedAppendWrites: true
+  }
+}
+
 // File share mounted by the backend container app (Azure Files) so app data written
 // to /app/data (tickets.jsonl) survives scale-to-zero / restarts. Small + cheap.
 resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {

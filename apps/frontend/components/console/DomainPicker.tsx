@@ -15,7 +15,7 @@
 
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
-import { DOMAINS, FRAMEWORK_ORDER, type Domain } from "@/lib/domains";
+import { CHAT_DOMAINS, FRAMEWORK_ORDER, type Domain } from "@/lib/domains";
 
 export function DomainPicker({
   current,
@@ -62,7 +62,7 @@ export function DomainPicker({
       {aberto && (
         <div className="dom-menu" role="listbox">
           {FRAMEWORK_ORDER.map((fw) => {
-            const doFw = DOMAINS.filter((d) => d.framework === fw);
+            const doFw = CHAT_DOMAINS.filter((d) => d.framework === fw);
             if (!doFw.length) return null;
             return (
               <div key={fw}>

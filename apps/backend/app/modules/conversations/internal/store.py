@@ -82,6 +82,7 @@ class InMemoryConversationStore:
 
     def append(self, user: str, agent: str, conv: str, messages: list[dict]) -> None:
         chave = _blob_name(user, agent, conv)
+        messages, _ = sanitize(messages)
         self._linhas.setdefault(chave, []).extend(messages)
         meta = self._meta.setdefault(chave, {"title": "", "created_at": _agora()})
         meta["updated_at"] = _agora()
@@ -126,6 +127,46 @@ class InMemoryConversationStore:
         return sorted(saida, key=lambda c: c.updated_at, reverse=True)
 
 
+def sanitize(messages: list[dict]) -> tuple[list[dict], list[str]]:
+    """Saneia as mensagens ANTES de gravar. É o ponto único de escrita da ADR-023.
+
+    POR QUE AQUI e não no chamador: existem dois caminhos que gravam conversa (o
+    `HistoryProvider` do agent-framework e o `record_turn` do grounded), e um saneamento que
+    depende de cada chamador lembrar de chamá-lo é decoração. Aqui os dois passam por cima
+    obrigatoriamente, porque `append` é a única porta.
+
+    POR QUE ANTES e não numa faxina depois: uma passada de limpeza sobre o que já foi gravado
+    significa que o valor cru existiu num blob — e, com a política de retenção travada, existiria
+    para sempre. Redigir depois é redigir uma cópia.
+
+    Devolve `(mensagens saneadas, tipos encontrados)`. Os TIPOS sobem para o chamador registrar na
+    trilha; o conteúdo, não.
+    """
+    from app.modules.audit.public import redact
+
+    achados: list[str] = []
+    saidas: list[dict] = []
+    for m in messages:
+        copia = dict(m)
+        for campo in ("text",):
+            if isinstance(copia.get(campo), str):
+                copia[campo], tipos = redact(copia[campo])
+                achados.extend(t for t in tipos if t not in achados)
+        # O formato do agent-framework guarda o texto em `contents[].text`.
+        partes = copia.get("contents")
+        if isinstance(partes, list):
+            novas = []
+            for parte in partes:
+                if isinstance(parte, dict) and isinstance(parte.get("text"), str):
+                    parte = dict(parte)
+                    parte["text"], tipos = redact(parte["text"])
+                    achados.extend(t for t in tipos if t not in achados)
+                novas.append(parte)
+            copia["contents"] = novas
+        saidas.append(copia)
+    return saidas, achados
+
+
 def _titulo(messages: list[dict]) -> str:
     """A primeira fala do usuário, cortada — é o que a lista mostra.
 
@@ -168,6 +209,22 @@ class BlobConversationStore:
     def append(self, user: str, agent: str, conv: str, messages: list[dict]) -> None:
         if not messages:
             return
+        messages, achados = sanitize(messages)
+        if achados:
+            # O que foi barrado vira EVENTO, não silêncio: uma redação invisível faz o operador
+            # concluir que ninguém nunca colou documento no chat. Só os TIPOS entram — pôr o
+            # valor na trilha trocaria um vazamento por um vazamento imutável.
+            with _silencio():
+                from app.modules.audit.public import record
+
+                record(
+                    scope="redactions",
+                    actor=f"human:{user}",
+                    kind="redaction",
+                    summary=f"{len(achados)} tipo(s) de dado pessoal barrados antes de gravar",
+                    ref=f"{agent}/{conv}",
+                    detail={"types": achados},
+                )
         blob = self._container.get_blob_client(_blob_name(user, agent, conv))
         from azure.core import MatchConditions
         from azure.core.exceptions import ResourceExistsError, ResourceModifiedError

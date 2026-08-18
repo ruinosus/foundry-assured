@@ -288,6 +288,12 @@
         "A taxa de erro do serviço de pagamentos subiu para 8%.",
         "Um job noturno falhou, mas ninguém foi impactado."
       ]
+    },
+    "builder": {
+      "label": "Construtor de assistentes",
+      "blurb": "Ajuda a preencher o formulário de criação — propõe o texto de cada campo, com a fonte de onde tirou. Nunca publica.",
+      "demonstrates": "",
+      "suggested": []
     }
   },
   "evals": {

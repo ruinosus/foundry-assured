@@ -68,6 +68,11 @@
       "modules/agentdefs/internal/skill_injection.py"
     ]
   },
+  "audit": {
+    "tenancy": [
+      "modules/audit/internal/trail.py"
+    ]
+  },
   "builder": {
     "agentdefs": [
       "modules/builder/internal/builder.py"
@@ -83,6 +88,9 @@
     ]
   },
   "conversations": {
+    "audit": [
+      "modules/conversations/internal/store.py"
+    ],
     "foundry": [
       "modules/conversations/internal/listing.py"
     ],
@@ -180,6 +188,9 @@
     ]
   },
   "hitl": {
+    "audit": [
+      "modules/hitl/public.py"
+    ],
     "shared": [
       "modules/hitl/public.py"
     ]

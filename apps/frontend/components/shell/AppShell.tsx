@@ -10,13 +10,15 @@ import { useEffect, useState } from "react";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
-import { DOMAINS } from "@/lib/domains";
+import { CHAT_DOMAINS, DOMAINS } from "@/lib/domains";
 import { authedFetch } from "@/lib/auth/api";
 import { useMyRoles, isAdmin } from "@/lib/auth/roles";
 import { useTranslations } from "next-intl";
 import { LanguageToggle } from "@/components/shell/LanguageToggle";
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { ChatDock } from "@/components/shell/ChatDock";
+import { DockProvider } from "@/components/shell/DockProvider";
+import { useApiToken } from "@/lib/auth/useApiToken";
 import { ChatDockProvider, useChatDock } from "@/lib/chat-dock";
 
 // The domain agents are config-driven from the registry → /d/<id>. Workspace pages are
@@ -31,7 +33,7 @@ const WORKSPACE_NAV = [
   // UM item para os assistentes, não seis. Os seis viraram o seletor no topo do console — mas
   // sem esta linha não haveria caminho até uma conversa a partir das telas de gestão, e o
   // redesenho teria escondido o produto.
-  { href: `/d/${DOMAINS[0].id}`, key: "assistants", icon: "💬" },
+  { href: `/d/${CHAT_DOMAINS[0].id}`, key: "assistants", icon: "💬" },
   { href: "/agents", key: "agents", icon: "◆" },
   { href: "/knowledge", key: "knowledge", icon: "▤" },
   { href: "/skills", key: "skills", icon: "✦" },
@@ -84,30 +86,12 @@ function ProjectBadge() {
   );
 }
 
-/** O chat lateral e o botão que o alterna. O token é adquirido aqui pelo mesmo caminho do
- *  console: silencioso, com refresh antes da expiração de ~1h. Sem auth configurada não há token
- *  e o chat sobe sem Authorization — que é o modo local. */
+/** O chat lateral e o botão que o alterna. O token NÃO é adquirido aqui desde que o provider do
+ *  CopilotKit subiu para o shell (`DockProvider`): quem carrega `Authorization` é o provider, e
+ *  ele está acima deste componente. Ver `lib/auth/useApiToken`. */
 function DockHost() {
   const { open, toggle } = useChatDock();
   const t = useTranslations("chatDock");
-  const { instance, accounts } = useMsal();
-  const [token, setToken] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!authConfigured || !accounts[0]) return;
-    let alive = true;
-    const acquire = () =>
-      instance
-        .acquireTokenSilent({ scopes: apiScopes, account: accounts[0] })
-        .then((r) => alive && setToken(r.accessToken))
-        .catch(() => {});
-    void acquire();
-    const id = setInterval(acquire, 4 * 60 * 1000);
-    return () => {
-      alive = false;
-      clearInterval(id);
-    };
-  }, [instance, accounts]);
 
   return (
     <>
@@ -121,7 +105,7 @@ function DockHost() {
         <span aria-hidden>💬</span>
         <span className="sr-only">{open ? t("close") : t("open")}</span>
       </button>
-      <ChatDock authorization={token ? `Bearer ${token}` : undefined} />
+      <ChatDock />
     </>
   );
 }
@@ -194,6 +178,7 @@ export function AppShell({
   const tb = useTranslations("branding");
   const pathname = usePathname() || "/";
   const roles = useMyRoles();
+  const apiToken = useApiToken();
 
   // Construídos no componente, não no módulo: rótulo é texto, e texto depende do idioma
   // escolhido — uma constante avaliada no import nasce numa língua só e nunca mais muda.
@@ -208,6 +193,9 @@ export function AppShell({
 
   return (
     <ChatDockProvider>
+    {/* O provider do CopilotKit envolve o dock E o conteúdo: é o que permite a uma tela
+        registrar uma tool que o agente do dock consegue chamar. Ver DockProvider. */}
+    <DockProvider authorization={apiToken ? `Bearer ${apiToken}` : undefined}>
     <div className="shell">
       <aside className="sidebar">
         <div className="brand">
@@ -266,6 +254,7 @@ export function AppShell({
         <main className={`page${flush ? " flush" : ""}`}>{children}</main>
       </div>
     </div>
+    </DockProvider>
     </ChatDockProvider>
   );
 }

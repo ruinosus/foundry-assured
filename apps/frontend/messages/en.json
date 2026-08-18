@@ -288,6 +288,12 @@
         "The payments service error rate climbed to 8%.",
         "A nightly job failed, but nobody was affected."
       ]
+    },
+    "builder": {
+      "label": "Assistant builder",
+      "blurb": "Helps fill the creation form — proposes each field's text, with the source it came from. Never publishes.",
+      "demonstrates": "",
+      "suggested": []
     }
   },
   "evals": {

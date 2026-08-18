@@ -436,3 +436,34 @@ source_modules = [
     "app.shared",
 ]
 forbidden_modules = ["app.modules.proposer.internal"]
+
+# A trilha de auditoria (ADR-023). O `internal/` guarda o encadeamento por hash e o redator; de
+# fora só se importa `public`. O motivo é a propriedade central: a trilha é append-only, e a
+# superfície pública não expõe NADA que apague ou reescreva. Um módulo que alcançasse o interior
+# poderia gravar um evento sem passar pelo encadeamento — e um evento fora da cadeia é
+# indistinguível de um evento removido.
+[[tool.importlinter.contracts]]
+name = "audit internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.modules.usecases",
+    "app.modules.conversations",
+    "app.modules.proposer",
+    "app.modules.builder",
+    "app.modules.hitl",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.audit.internal"]

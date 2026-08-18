@@ -14,21 +14,26 @@
 // por ela num contexto em que a pergunta varia — quem está montando um agente de plataforma quer
 // o `platform`, não o `selfwiki`.
 
-import { CopilotChat, CopilotKitProvider } from "@copilotkit/react-core/v2";
-import { useLocale, useTranslations } from "next-intl";
-import { useState } from "react";
+import { CopilotChat } from "@copilotkit/react-core/v2";
+import { useTranslations } from "next-intl";
+import { useMemo, useRef } from "react";
 import { useChatDock } from "@/lib/chat-dock";
 import { DOMAINS } from "@/lib/domains";
 
-export function ChatDock({ authorization }: { authorization?: string }) {
+export function ChatDock() {
   const t = useTranslations("chatDock");
   const td = useTranslations("domains");
-  const locale = useLocale();
-  const { open, hide } = useChatDock();
-  // `selfwiki` como ponto de partida: é o domínio que sabe explicar o próprio produto.
-  const [agentId, setAgentId] = useState(
-    DOMAINS.find((d) => d.id === "selfwiki")?.id ?? DOMAINS[0].id,
-  );
+  const { open, hide, agentId, setAgentId } = useChatDock();
+
+  // Uma thread POR AGENTE. Antes o provider era remontado (`key={agentId}`) para não vazar o
+  // histórico de um para o outro; remontar agora apagaria o rascunho do wizard junto, porque o
+  // provider passou a envolver a página inteira. Separar por identidade faz o mesmo trabalho sem
+  // destruir nada — e o histórico volta ao trocar de volta, em vez de recomeçar.
+  const threads = useRef<Record<string, string>>({});
+  const threadId = useMemo(() => {
+    threads.current[agentId] ??= crypto.randomUUID();
+    return threads.current[agentId];
+  }, [agentId]);
 
   if (!open) return null;
 
@@ -52,20 +57,10 @@ export function ChatDock({ authorization }: { authorization?: string }) {
         </button>
       </header>
 
-      {/* Provider próprio, com a mesma configuração do console: o dock vive fora da rota de
-          domínio, então não herda o provider de lá. `key` força remontagem ao trocar de agente —
-          sem isso o histórico de um vazaria para o outro. */}
+      {/* Sem provider próprio: quem provê é o shell (DockProvider), para que uma tool registrada
+          por uma TELA seja visível ao agente daqui. */}
       <div className="chat-dock-body copilotkit-chat-host">
-        <CopilotKitProvider
-          key={agentId}
-          runtimeUrl="/api/copilotkit"
-          headers={{
-            ...(authorization ? { Authorization: authorization } : {}),
-            "Accept-Language": locale,
-          }}
-        >
-          <CopilotChat agentId={agentId} />
-        </CopilotKitProvider>
+        <CopilotChat agentId={agentId} threadId={threadId} />
       </div>
     </aside>
   );

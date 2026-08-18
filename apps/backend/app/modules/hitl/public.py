@@ -24,10 +24,13 @@ Agent Framework domains speak the same vocabulary to the same ApprovalCard.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+import logging
+from dataclasses import dataclass, field, replace
 from typing import Literal
 
 from app.shared.auth import current_roles, has_role
+
+logger = logging.getLogger(__name__)
 
 DecisionType = Literal["approve", "edit", "reject", "respond"]
 
@@ -70,6 +73,10 @@ class ApprovalDecision:
     args: dict = field(default_factory=dict)
     message: str = ""
     approver_roles: tuple[str, ...] = ()
+    #: O evento da TRILHA que registra esta decisão (ADR-023). Vazio significa que a decisão não
+    #: foi registrada — e nesse caso a ação NÃO deve rodar: a RULE #5 diz que o chamado só abre
+    #: após aprovação, e uma aprovação que não deixou rastro não é comprovável.
+    audit: dict = field(default_factory=dict)
 
 
 def decide(
@@ -104,14 +111,65 @@ def decide(
             f"{' or '.join(request.required_role)}"
         )
 
-    if decision_type == "edit":
-        if not args:
-            raise NotAuthorized(
-                f"'edit' on '{request.action}' carries no arguments — an edit that changes "
-                "nothing is an approval, and must be sent as one"
-            )
-        return ApprovalDecision("edit", args=dict(args), approver_roles=tuple(sorted(current_roles())))
+    if decision_type == "edit" and not args:
+        raise NotAuthorized(
+            f"'edit' on '{request.action}' carries no arguments — an edit that changes "
+            "nothing is an approval, and must be sent as one"
+        )
 
-    return ApprovalDecision(
-        decision_type, message=message, approver_roles=tuple(sorted(current_roles()))
+    papeis = tuple(sorted(current_roles()))
+    decisao = ApprovalDecision(
+        decision_type,
+        args=dict(args) if decision_type == "edit" else {},
+        message=message if decision_type != "edit" else "",
+        approver_roles=papeis,
     )
+    return replace(decisao, audit=_registrar(request, decisao))
+
+
+def _registrar(request: ApprovalRequest, decisao: ApprovalDecision) -> dict:
+    """Grava a decisão na trilha. FAIL-CLOSED nas decisões que fazem a ação rodar.
+
+    `approver_roles` já era calculado aqui e DESCARTADO — quem lia a decisão usava só `.type` e
+    `.args`. O resultado é que a RULE #5 ("o chamado só abre após aprovação de um Approver") não
+    tinha nenhum artefato que a comprovasse. Este é o evento que a comprova.
+
+    Por que falhar fecha: se a gravação da aprovação falha e a ação roda mesmo assim, existe uma
+    escrita sem rastro — exatamente o buraco que a trilha existe para não ter. `reject` e
+    `respond` não fazem nada rodar, então uma falha de registro ali não pode impedir alguém de
+    RECUSAR: bloquear a recusa transformaria uma falha de auditoria em pressão para aprovar.
+
+    O que entra no evento: quem, o quê, quando, e — no `edit` — QUE CAMPOS foram corrigidos.
+    Os VALORES não entram: eles são texto do usuário e do modelo, e a trilha é imutável.
+    """
+    from app.modules.audit.public import record
+    from app.shared.auth import current_user
+
+    user = current_user()
+    ator = f"human:{user.oid}" if user is not None and user.oid else "human:dev-local"
+    detalhe = {
+        "decision": decisao.type,
+        "roles": list(decisao.approver_roles),
+        "required_role": list(request.required_role),
+    }
+    if decisao.type == "edit":
+        # Só as CHAVES corrigidas. O valor corrigido é conteúdo, e conteúdo não entra na trilha.
+        detalhe["edited_fields"] = sorted(decisao.args)
+
+    try:
+        return record(
+            scope="approvals",
+            actor=ator,
+            kind="approval",
+            summary=f"{decisao.type} em {request.action}",
+            ref=request.action,
+            detail=detalhe,
+        )
+    except Exception as exc:
+        if decisao.type in ("approve", "edit"):
+            raise NotAuthorized(
+                "A decisão não pôde ser registrada na trilha de auditoria, então a ação não vai "
+                f"rodar: {exc}"
+            ) from exc
+        logger.warning("falha ao registrar a decisão '%s' na trilha: %s", decisao.type, exc)
+        return {}

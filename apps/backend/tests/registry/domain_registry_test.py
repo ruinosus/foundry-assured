@@ -155,7 +155,14 @@ def main() -> int:
         check("grounded routes gated by domain_deps", all(r["dependencies"] is not None for r in app.routes))
 
         adapter_paths = {c["path"] for c in adapter_calls}
-        check("workflow + tool branches hit the adapter (/helpdesk, /platform)", adapter_paths == {"/helpdesk", "/platform"})
+        # `/builder` entra aqui porque é `kind: tool`: o assistente do wizard PRECISA do adapter,
+        # que é o único caminho que repassa as tools do cliente ao agente (`propose_field`). Uma
+        # regressão que o mandasse pelo caminho grounded o deixaria sem enxergar a ferramenta que
+        # ele é instruído a chamar — e o sintoma seria um agente educado que nunca propõe nada.
+        check(
+            "workflow + tool branches hit the adapter (/helpdesk, /platform, /builder)",
+            adapter_paths == {"/helpdesk", "/platform", "/builder"},
+        )
         check("workflow/tool adapter calls carry deps", all(c["dependencies"] is not None for c in adapter_calls))
     finally:
         domains_mod.add_agent_framework_fastapi_endpoint = saved["adapter"]

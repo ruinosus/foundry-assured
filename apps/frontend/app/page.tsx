@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { AppShell } from "@/components/shell/AppShell";
-import { DOMAINS } from "@/lib/domains";
+import { CHAT_DOMAINS } from "@/lib/domains";
 
 // Public landing — self-explanatory for anyone who opens the repo. Tells the story
 // (Foundry showcase + the assurance mechanism), then offers the domains as role-cards
@@ -25,7 +25,7 @@ export default function Page() {
         <h1>{t("tagline")}</h1>
         <p>{t("lede")}</p>
         <div className="hero-cta">
-          <Link href={`/d/${DOMAINS[0].id}`} className="btn btn-primary">
+          <Link href={`/d/${CHAT_DOMAINS[0].id}`} className="btn btn-primary">
             <span aria-hidden>💬</span> {t("ctaOpen")}
           </Link>
           <Link href="/evals" className="btn btn-ghost">
@@ -36,7 +36,7 @@ export default function Page() {
 
       <div className="section-title">{t("agents")}</div>
       <div className="grid">
-        {DOMAINS.map((d) => (
+        {CHAT_DOMAINS.map((d) => (
           <Link key={d.id} href={`/d/${d.id}`} className="card domain-card">
             <div className="domain-card-head">
               <span className="domain-card-icon" aria-hidden>

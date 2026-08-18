@@ -33,9 +33,25 @@ export interface Domain {
   /** Optional Foundry hosted twin agent id (enables the live-vs-hosted toggle). */
   hostedAgentId?: string;
   framework: Framework;
+  /** ONDE ele aparece. `domain` = assistente de negócio, com rota `/d/<id>` e lugar no seletor
+   *  do console. `dock` = assistente de TELA — ajuda a preencher formulário e só faz sentido ao
+   *  lado de um wizard; ele existe no runtime e no dock, e NÃO no seletor de domínios, porque
+   *  "conversar com o construtor de assistentes" não é um caso de uso, é uma ferramenta. */
+  surface?: "domain" | "dock";
 }
 
 export const DOMAINS: Domain[] = [
+  {
+    // O assistente do WIZARD (ADR-022 + SEGUNDA MÁXIMA): o prompt dele é um documento
+    // AgentSchema publicado no Foundry, não uma constante em Python. `kind: tool` porque só o
+    // caminho do adapter repassa a tool de frontend `propose_field` — medido.
+    id: "builder",
+    icon: "🧩",
+    kind: "tool",
+    framework: "agent-framework",
+    surface: "dock",
+    endpoint: "/builder",
+  },
   {
     id: "helpdesk",
     framework: "agent-framework",
@@ -107,3 +123,7 @@ export const getDomain = (id: string | undefined): Domain | undefined =>
 /** A ordem em que os grupos aparecem no seletor. Microsoft primeiro porque é a plataforma do
  *  produto; os demais existem para provar que o mecanismo não depende dela. */
 export const FRAMEWORK_ORDER: Framework[] = ["agent-framework", "langgraph", "deepagents"];
+
+/** Os assistentes que aparecem como DOMÍNIO (seletor do console, cards da home). Exclui os de
+ *  tela — sem isto o construtor de assistentes viraria um "caso de uso" na vitrine. */
+export const CHAT_DOMAINS: Domain[] = DOMAINS.filter((d) => (d.surface ?? "domain") === "domain");

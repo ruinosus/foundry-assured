@@ -20,13 +20,22 @@ from agent_framework import tool
 
 import app as _app
 
-#: Ancorado no pacote `app` (RULE #9), NUNCA contado por `parents[N]` a partir deste arquivo.
+#: A RAIZ DO BACKEND, não o pacote `app` — e a diferença é onde os chamados sobrevivem.
 #:
-#: Era `Path(__file__).parent.parent.parent`, e o count estava certo quando o arquivo morava em
-#: `app/tickets.py`. A ADR-017 o moveu dois níveis, e o mesmo count passou a apontar para
-#: `app/modules/data/` — os chamados iam para lá havia meses, em silêncio, porque o diretório
-#: simplesmente passou a existir. Foi exatamente o modo de falha que a regra 9 existe para pegar.
-_STORE = Path(_app.__file__).resolve().parent / "data" / "tickets.jsonl"
+#: `infra/containerapps.bicep` monta o Azure Files em **`/app/data`**. No container,
+#: `WORKDIR /app` + `COPY app ./app` põem o pacote em `/app/app/`, então:
+#:
+#:     Path(app.__file__).parent        → /app/app        → /app/app/data   ✗ disco efêmero
+#:     Path(app.__file__).parent.parent → /app            → /app/data       ✓ o mount
+#:
+#: Este caminho já errou DUAS vezes, das duas por contagem: primeiro `parents[3]` a partir do
+#: arquivo (que apontou para `app/modules/data/` quando a ADR-017 moveu o arquivo), depois a
+#: correção que ancorou no pacote `app` em vez da raiz — trocando um lugar errado por outro. A
+#: regra 9 manda ancorar; ela não diz em quê, e ancorar no lugar errado erra igual.
+#:
+#: O gate `tests/architecture/filesystem_anchors_test.py` não pega isto: o caminho existe, só não
+#: é o do mount. Quem prova é `tests/tickets/store_path_test.py`, que compara com o bicep.
+_STORE = Path(_app.__file__).resolve().parent.parent / "data" / "tickets.jsonl"
 
 
 def _new_id() -> str:

@@ -66,6 +66,9 @@ MODULES = (
     # O assistente do WIZARD (não do chat de domínio). `tool` porque só o caminho do adapter
     # repassa a tool de frontend que ele precisa chamar; sem tools de servidor, ele só propõe.
     "builder",
+    # ADR-023: a camada de EVIDÊNCIA. Trilha encadeada por hash + o redator que roda antes de
+    # qualquer gravação. A imutabilidade é do Azure (política WORM no container); o evento é nosso.
+    "audit",
 )
 
 PREFIXES = (
