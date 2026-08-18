@@ -94,6 +94,17 @@ function ProjectBadge() {
 function DockHost() {
   const { open, toggle } = useChatDock();
   const t = useTranslations("chatDock");
+  const pathname = usePathname() || "/";
+
+  // NADA DE DOCK NA ROTA DE DOMÍNIO, e a razão é estrutural: ali o console tem o PRÓPRIO
+  // `CopilotKitProvider` (o chat É a tela), então o `DockProvider` do shell não cria o dele — e
+  // o dock, que passou a ficar montado mesmo fechado, chamaria `useCopilotKit` sem provider e
+  // derrubaria a página.
+  //
+  // A regra já estava escrita no `DockProvider` ("o dock é das telas de GESTÃO"); faltava valer
+  // também para o botão e para o painel. Uma regra que vale só em metade dos lugares onde ela é
+  // necessária é uma regra que ainda não existe.
+  if (pathname.startsWith("/d/")) return null;
 
   return (
     <>
