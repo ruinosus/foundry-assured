@@ -12,8 +12,8 @@ from types import SimpleNamespace
 
 from fastapi import HTTPException
 
-from app.modules.tenancy.internal import tenant_resolution as _tr
 import app.modules.tenancy.api as tapi
+from app.modules.tenancy.internal import tenant_resolution as _tr
 from app.modules.tenancy.internal.tenant import DOMAIN_IDS
 from app.modules.tenancy.internal.tenant_store import InMemoryTenantStore
 

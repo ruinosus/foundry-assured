@@ -151,6 +151,15 @@ jobs:
       - name: Preço por token confere com a lista da Azure
         run: uv run python -m tests.pricing.azure_prices_test
 
+      # Toda superfície que serve agente é AUTENTICADA e DECLARA o que grava. O primeiro item não é
+      # hipotético: `add_langgraph_fastapi_endpoint` não aceita `dependencies`, e por isso /oncall e
+      # /deepcall ficaram abertos — respondiam 422 sem token enquanto /helpdesk respondia 401, e
+      # eram justamente os dois que abrem chamado e têm HITL de escrita. O route snapshot não pegou:
+      # ele compara caminho e método, não dependência. O segundo item é o que impede o próximo
+      # agente de nascer fora da contabilidade: `n/a` é resposta válida, mas exige motivo escrito.
+      - name: Superfícies de agente (autenticadas + declaram o que gravam)
+        run: uv run python -m tests.architecture.instrumentation_matrix_test
+
       - name: Approval decisions (edit is not a loophole)
         run: uv run python -m tests.hitl.decision_test
       - name: Edit round-trips end to end

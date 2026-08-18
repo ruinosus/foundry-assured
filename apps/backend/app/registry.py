@@ -310,11 +310,25 @@ def _mount_graph(app: FastAPI, domain_id: str) -> None:
             return
         build, descricao = build_oncall_graph, "On-call triage with human-in-the-loop on escalation."
 
+    # AUTENTICAÇÃO: `add_langgraph_fastapi_endpoint(app, agent, path)` não aceita `dependencies` —
+    # a assinatura upstream tem três parâmetros e nenhum deles é o gate. Registrar direto no `app`,
+    # como estava, deixava `/oncall` e `/deepcall` ABERTOS: medido, os dois respondiam 422 (erro de
+    # validação de corpo) sem token, enquanto `/helpdesk` respondia 401. Eram os únicos endpoints de
+    # agente sem auth — e são justamente os dois que abrem chamado e têm HITL de escrita. No modo
+    # shared ficavam também sem o gate de entitlement, alcançáveis por qualquer tenant.
+    #
+    # O conserto é do próprio FastAPI e não envolve embrulhar o adapter: ele só usa `.post` e
+    # `.get`, que um `APIRouter` também tem. Registra-se nele, e `include_router` aplica as deps a
+    # tudo que estiver dentro. O adapter segue sendo chamado do jeito canônico dele (ADR-020).
+    from fastapi import APIRouter
+
+    router = APIRouter()
     add_langgraph_fastapi_endpoint(
-        app=app,
+        app=router,  # type: ignore[arg-type]  # duck-typed: o adapter só chama .post/.get
         agent=LangGraphAgent(name=domain_id, description=descricao, graph=build()),
         path=f"/{domain_id}",
     )
+    app.include_router(router, dependencies=domain_deps(domain_id))
 
 
 def mount_domains(app: FastAPI) -> None:
