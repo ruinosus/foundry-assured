@@ -35,6 +35,9 @@
       "main.py",
       "registry.py"
     ],
+    "proposer": [
+      "registry.py"
+    ],
     "shared": [
       "main.py",
       "registry.py"
@@ -216,6 +219,19 @@
     "tenancy": [
       "modules/platform_ops/internal/mcp_tools.py",
       "modules/platform_ops/internal/platform.py"
+    ]
+  },
+  "proposer": {
+    "foundry": [
+      "modules/proposer/internal/draft.py",
+      "modules/proposer/internal/optimize.py"
+    ],
+    "shared": [
+      "modules/proposer/api.py"
+    ],
+    "tenancy": [
+      "modules/proposer/internal/draft.py",
+      "modules/proposer/internal/optimize.py"
     ]
   },
   "tenancy": {

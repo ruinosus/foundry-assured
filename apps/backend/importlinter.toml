@@ -408,3 +408,31 @@ source_modules = [
     "app.shared",
 ]
 forbidden_modules = ["app.modules.conversations.internal"]
+
+# O propositor (ADR-022). O `internal/` guarda a montagem do prompt, o parse do rascunho e a
+# chamada ao job de otimização do Foundry; de fora só se importa `public`. O motivo é a fronteira
+# da própria ADR: publicar não é dele, e um módulo que alcançasse o interior dele poderia montar
+# um caminho de escrita passando por baixo da superfície que o gate inspeciona.
+[[tool.importlinter.contracts]]
+name = "proposer internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.modules.usecases",
+    "app.modules.conversations",
+    "app.modules.hitl",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.proposer.internal"]

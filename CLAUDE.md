@@ -30,7 +30,7 @@ O domínio é **swappable**: a arquitetura "pergunte → fundamente → resolva 
 Três camadas. O frontend Next.js conversa com o backend Python via **AG-UI sobre SSE**; o backend roda um **workflow multi-agente** que usa o Foundry na nuvem.
 
 - **Frontend** → o "Assurance Console". A rota genérica `/d/[domain]` (ex.: `/d/helpdesk`, `/d/cockpit`, `/d/selfwiki`, `/d/platform`; as antigas `/chat` e `/cockpit` redirecionam) é dirigida por **um registry**: `apps/frontend/lib/domains.ts` define o agent map (4 domínios; `kind: workflow | grounded | tool`), a nav, a rota genérica e os prompts sugeridos. No modo `shared`, os domínios montam globalmente mas são gated por tenant via **DomainAssignment** (ADR-010). `app/api/copilotkit/route.ts` registra um `CopilotRuntime` com um `HttpAgent` por domínio. A página usa `useCoAgentStateRender` para mostrar os passos intermediários, `useCopilotAction` (`renderAndWaitForResponse`) para o approval card, e um `EvidencePanel` para as fontes citadas + badges de assurance.
-- **Backend** → `apps/backend/app/main.py` é fino: cria o FastAPI (rodado como `app.main:app`), aplica CORS, chama `setup_telemetry()`, `include_routers(app)` e `mount_domains(app)`. O registry do backend é `app/registry.py` — **um `DomainSpec` por domínio e um único loop que despacha por `kind`** (`workflow` → AG-UI do helpdesk; `grounded` → cockpit/selfwiki; `tool` → platform). A organização é um **monolito modular por domínio** (ADR-017): `app/modules/<domínio>/` com `public.py` (única superfície importável) e `internal/` (privado), sobre um shared kernel `app/shared/` (settings, auth, telemetria) que não importa nenhum módulo. As fronteiras são verificadas em CI por `import-linter` (14 contratos). A resolução de tenant (modo `shared`) + brokering de credenciais ficam em `app/modules/tenancy/`.
+- **Backend** → `apps/backend/app/main.py` é fino: cria o FastAPI (rodado como `app.main:app`), aplica CORS, chama `setup_telemetry()`, `include_routers(app)` e `mount_domains(app)`. O registry do backend é `app/registry.py` — **um `DomainSpec` por domínio e um único loop que despacha por `kind`** (`workflow` → AG-UI do helpdesk; `grounded` → cockpit/selfwiki; `tool` → platform). A organização é um **monolito modular por domínio** (ADR-017): `app/modules/<domínio>/` com `public.py` (única superfície importável) e `internal/` (privado), sobre um shared kernel `app/shared/` (settings, auth, telemetria) que não importa nenhum módulo. As fronteiras são verificadas em CI por `import-linter` (21 contratos). A resolução de tenant (modo `shared`) + brokering de credenciais ficam em `app/modules/tenancy/`.
 - **Foundry** → o retriever consulta a **Foundry IQ KB** e trima por entitlement (`app/modules/knowledge/internal/secure_search.py`, `app/modules/knowledge/internal/acl_setup.py`); triage/resolver leem/escrevem **memória**; eval e traces vão para o Foundry Control Plane.
 
 **Adicionar um domínio = 3 coisas:** uma linha no registry do frontend (`apps/frontend/lib/domains.ts`), um `DomainSpec` no registry do backend (`apps/backend/app/registry.py`) e o agente/KB correspondente. Os dois registries são espelhos — `eval/domain_registry_test.py` guarda esse contrato.
@@ -46,13 +46,14 @@ apps/backend/
   app/registry.py        DomainSpec + mount_domains (despacha por `kind`) + include_routers
   app/api_health.py      transversal
   app/shared/            SHARED KERNEL — settings, auth, telemetry/. NÃO importa módulo algum
-  app/modules/<m>/       10 domínios: public.py (única superfície importável) + internal/
+  app/modules/<m>/       módulos de negócio: public.py (única superfície) + internal/
                          tenancy · admin · knowledge · helpdesk · grounded · platform_ops
-                         tickets · hosted · evaluation · agentdefs
+                         tickets · hosted · evaluation · agentdefs · hitl · oncall · deepcall
+                         usecases · foundry · conversations · proposer
   agents/helpdesk/       documentos AgentSchema (prompts) — NÃO se move (contrato de deploy)
   eval/                  harness de assurance = PRODUTO (8 gates que os workflows invocam)
   tests/<módulo>/        testes, espelhando os módulos; + smoke/ e architecture/
-  importlinter.toml      os 14 contratos de fronteira
+  importlinter.toml      os 21 contratos de fronteira
   cli/                   provision_*
 apps/frontend/           Next.js App Router: app/, components/<área>/, lib/ (registry + auth)
 apps/hosted-*/           containers dos hosted agents (helpdesk, techdocs, selfwiki, platform)
@@ -209,6 +210,8 @@ uv run python -m tests.smoke.routes_snapshot_test        # superfície HTTP (sel
 uv run python -m tests.architecture.module_graph_test    # nenhuma dependência cross-module nova
 uv run python -m tests.architecture.filesystem_anchors_test  # nenhum parents[N] contado do arquivo
 uv run python -m tests.shared.telemetry_test             # telemetria off por default; captura opt-in
+uv run python -m tests.architecture.proposer_read_only_test  # ADR-022: o propositor nunca publica
+uv run python -m tests.conversations.conversation_store_test # a conversa acumula e isola por pessoa
 
 # de apps/frontend/
 npm run typecheck && npm run lint && npm run build

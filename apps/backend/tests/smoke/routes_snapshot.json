@@ -126,6 +126,14 @@
     ],
     [
       "GET",
+      "/proposer/optimizations"
+    ],
+    [
+      "GET",
+      "/proposer/optimizations/{job_id}"
+    ],
+    [
+      "GET",
       "/redoc"
     ],
     [
@@ -231,6 +239,14 @@
     [
       "POST",
       "/platform-hosted"
+    ],
+    [
+      "POST",
+      "/proposer/draft"
+    ],
+    [
+      "POST",
+      "/proposer/optimizations"
     ],
     [
       "POST",
@@ -388,6 +404,14 @@
     ],
     [
       "GET",
+      "/proposer/optimizations"
+    ],
+    [
+      "GET",
+      "/proposer/optimizations/{job_id}"
+    ],
+    [
+      "GET",
       "/redoc"
     ],
     [
@@ -501,6 +525,14 @@
     [
       "POST",
       "/platform-hosted"
+    ],
+    [
+      "POST",
+      "/proposer/draft"
+    ],
+    [
+      "POST",
+      "/proposer/optimizations"
     ],
     [
       "POST",
@@ -654,6 +686,14 @@
     ],
     [
       "GET",
+      "/proposer/optimizations"
+    ],
+    [
+      "GET",
+      "/proposer/optimizations/{job_id}"
+    ],
+    [
+      "GET",
       "/redoc"
     ],
     [
@@ -771,6 +811,14 @@
     [
       "POST",
       "/platform-hosted"
+    ],
+    [
+      "POST",
+      "/proposer/draft"
+    ],
+    [
+      "POST",
+      "/proposer/optimizations"
     ],
     [
       "POST",

@@ -60,6 +60,9 @@ MODULES = (
     # HistoryProvider do agent-framework; o caminho do blob começa no object-id do usuário, que é
     # o que isola uma pessoa da outra.
     "conversations",
+    # ADR-022: rascunha e mostra a otimização do Foundry. NUNCA publica — e isso é
+    # verificado por `proposer_read_only_test`, não prometido em comentário.
+    "proposer",
 )
 
 PREFIXES = (
