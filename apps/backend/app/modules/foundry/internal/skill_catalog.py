@@ -32,6 +32,7 @@ from __future__ import annotations
 import re
 
 from app.modules.foundry.internal.github_source import GitHubError, _get
+from app.modules.foundry.internal.skills import MAX_INSTRUCTIONS_CHARS
 
 #: Os catálogos que a tela oferece de saída. Ponteiro para repositório de terceiro — não é uma
 #: cópia de recurso nosso, então não conflita com a SEGUNDA MÁXIMA; qualquer outro repositório no
@@ -117,6 +118,14 @@ def list_catalog(repo: str, ref: str = "main", token: str = "") -> list[dict]:
                 "subpath": meio,
                 "path": caminho[: -len("/SKILL.md")],
                 "repo": repo,
+                # O tamanho vem da ÁRVORE, sem baixar nada. Serve para a tela avisar antes do
+                # clique que uma skill não cabe no teto de instruções do serviço — medido: 2 das
+                # 218 skills dos dois catálogos estouram.
+                #
+                # É BYTES, e o teto do serviço é em CARACTERES. Num arquivo com acentos os dois
+                # divergem, então isto é um AVISO, não um veredito: a recusa exata acontece na
+                # importação, onde o texto está em mãos.
+                "bytes": int(entrada.get("size", 0) or 0),
             }
         )
     saida.sort(key=lambda s: (s["group"], s["subpath"], s["name"]))
@@ -184,6 +193,10 @@ def preview_skill(repo: str, path: str, ref: str = "main") -> dict:
         "body": texto,
         "path": path,
         "repo": repo,
+        # Aqui o texto ESTÁ em mãos, então o número é exato — e é o mesmo que o serviço mede.
+        "chars": len(texto),
+        "max_chars": MAX_INSTRUCTIONS_CHARS,
+        "too_large": len(texto) > MAX_INSTRUCTIONS_CHARS,
     }
 
 

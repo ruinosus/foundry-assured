@@ -197,6 +197,14 @@ def _ensure_frontmatter(name: str, description: str, conteudo: bytes) -> bytes:
     return (cabecalho + texto).encode("utf-8")
 
 
+#: Teto do serviço para as INSTRUÇÕES da skill — o conteúdo do `SKILL.md`.
+#:
+#: Não é limite nosso; é o que o Foundry responde: `Skill instructions exceed the maximum length
+#: of 65536 characters`. Está aqui para a recusa acontecer ANTES do upload do bundle inteiro, com
+#: uma mensagem que diz o que fazer, em vez de depois, com vocabulário de plataforma.
+MAX_INSTRUCTIONS_CHARS = 65_536
+
+
 def create_skill_from_files(
     name: str,
     files: list[tuple[str, bytes]],
@@ -222,6 +230,19 @@ def create_skill_from_files(
             f"O bundle tem {total // (1024 * 1024)} MB e o limite é {MAX_BUNDLE_BYTES // (1024 * 1024)} MB."
         )
 
+    # As instruções são o SKILL.md. Verificar aqui evita subir megabytes para receber um 400 do
+    # serviço sobre o único arquivo que já estava em mãos.
+    for fname, data in files:
+        if fname.lower().endswith("skill.md"):
+            chars = len(data.decode("utf-8", errors="replace"))
+            if chars > MAX_INSTRUCTIONS_CHARS:
+                raise InvalidSkill(
+                    f"O SKILL.md tem {chars:,} caracteres e o serviço aceita no máximo "
+                    f"{MAX_INSTRUCTIONS_CHARS:,}. Skills longas devem manter o SKILL.md curto e "
+                    "mover o detalhe para arquivos de referência — é a convenção de divulgação "
+                    "progressiva do agentskills.io. Esta precisa ser dividida na origem."
+                    .replace(",", ".")
+                )
     qualified = qualify(name)
     preparados = [
         (fname, _ensure_frontmatter(qualified, description, data)

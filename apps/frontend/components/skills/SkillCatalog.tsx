@@ -16,10 +16,14 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
 
 type CatalogRef = { id: string; repo: string; label: string };
-type Entry = { id: string; name: string; group: string; subpath: string; path: string; repo: string };
+type Entry = {
+  id: string; name: string; group: string; subpath: string;
+  path: string; repo: string; bytes: number;
+};
 type Preview = {
   name: string; description: string; license: string;
   author: string; version: string; body: string; path: string; repo: string;
+  chars: number; max_chars: number; too_large: boolean;
 };
 
 export function SkillCatalog({ onImported }: { onImported: () => void }) {
@@ -189,6 +193,10 @@ export function SkillCatalog({ onImported }: { onImported: () => void }) {
                     {[e.group, e.subpath].filter(Boolean).join(" / ")}
                   </span>
                 )}
+                {/* Aviso, não veredito: o tamanho vem em BYTES da árvore e o teto do serviço é
+                    em CARACTERES — num arquivo com acentos os dois divergem. A recusa exata
+                    acontece no preview, onde o texto está em mãos. */}
+                {e.bytes > 65536 && <span className="t-xs bad-line">{t("maybeTooLarge")}</span>}
               </button>
             </li>
           ))}
@@ -209,14 +217,27 @@ export function SkillCatalog({ onImported }: { onImported: () => void }) {
               {/* O documento INTEIRO. Quem publica um texto de terceiro na empresa precisa
                   poder ler o texto de terceiro. */}
               <pre className="doc-preview">{preview.body}</pre>
-              <button
-                type="button"
-                className="btn btn-solid"
-                disabled={importando}
-                onClick={() => void importar()}
-              >
-                {importando ? t("importing") : t("import")}
-              </button>
+
+              {/* O teto é do SERVIÇO, não nosso: `Skill instructions exceed the maximum length
+                  of 65536 characters`. Dizer isso aqui evita subir o bundle inteiro para
+                  receber a recusa depois — e explica o que fazer, que a mensagem da plataforma
+                  não explica. */}
+              {preview.too_large ? (
+                <div className="notice notice-block">
+                  <p className="notice-body">
+                    {t("tooLarge", { chars: preview.chars, max: preview.max_chars })}
+                  </p>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="btn btn-solid"
+                  disabled={importando}
+                  onClick={() => void importar()}
+                >
+                  {importando ? t("importing") : t("import")}
+                </button>
+              )}
             </>
           )}
         </div>

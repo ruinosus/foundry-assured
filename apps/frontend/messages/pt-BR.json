@@ -435,7 +435,9 @@
     "import": "Importar para o Foundry",
     "importing": "Importando…",
     "imported": "Skill {name} publicada com {files} arquivo(s).",
-    "importedPartial": "Skill {name} publicada com {files} arquivo(s) — {skipped} ficaram de fora por tamanho."
+    "importedPartial": "Skill {name} publicada com {files} arquivo(s) — {skipped} ficaram de fora por tamanho.",
+    "maybeTooLarge": "pode exceder o limite",
+    "tooLarge": "Esta skill tem {chars} caracteres de instruções e o Foundry aceita no máximo {max}. Skills longas mantêm o SKILL.md curto e movem o detalhe para arquivos de referência — esta precisa ser dividida na origem."
   },
   "skillWizard": {
     "title": "Nova skill",
