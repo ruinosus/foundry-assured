@@ -20,6 +20,7 @@ from app.modules.audit.public import (
     AnchorExists,
     build_package,
     build_report,
+    by_conversation,
     check,
     close_day,
     list_anchors,
@@ -55,6 +56,18 @@ def report() -> dict:
 def trail_of(scope: str) -> dict:
     """Os eventos de um escopo, com o resultado da reconstrução da cadeia."""
     return _guard(lambda: {"scope": scope, "events": read(scope), "chain": check(scope)})
+
+
+@router.get("/trail/{scope}/conversation/{conversation_id}")
+def trail_of_conversation(scope: str, conversation_id: str) -> dict:
+    """Os eventos de UMA conversa — o recorte que um auditor pede antes do global."""
+    return _guard(
+        lambda: {
+            "scope": scope,
+            "conversation": conversation_id,
+            "events": by_conversation(scope, conversation_id),
+        }
+    )
 
 
 @router.get("/anchors/{scope}")

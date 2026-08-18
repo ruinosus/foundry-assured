@@ -44,9 +44,56 @@ def platform_configured() -> bool:
 # `build_mcp_tools()` filters by the caller's roles (min_role / min_role_write) BEFORE the
 # agent ever sees a tool, so a rule can only ever be consulted for tools the caller is
 # already entitled to. RULE #5 depends on that ordering.
+class _RecordingToolApproval(ToolApprovalMiddleware):
+    """A aprovação nativa, com a decisão REGISTRADA na trilha (ADR-023).
+
+    Subclasse mínima em vez de middleware paralelo: a máquina de aprovação continua sendo a do
+    framework (ADR-009 decidiu não reconstruí-la), e daqui só se OBSERVA. Um segundo middleware
+    de aprovação seria uma segunda máquina, com o risco de as duas discordarem sobre o que foi
+    aprovado — e a que registra discordar da que decide é o pior desfecho possível.
+
+    `_prepare_inbound_messages` é onde a decisão humana entra: as mensagens chegam com conteúdos
+    do tipo `function_approval_response`. Registrar antes de delegar garante que o evento existe
+    mesmo que o processamento seguinte falhe.
+
+    A gravação NÃO é fail-closed aqui, ao contrário da do `hitl.decide`. A diferença é onde o
+    controle mora: ali a nossa função decide E executa, então bloquear é possível; aqui quem
+    executa é o framework, e levantar no meio do `process` deixaria a sessão num estado que não
+    controlamos. O evento de ESCRITA, esse sim, é gravado em `create_ticket` — e cobre o
+    resultado mesmo quando a decisão escapa.
+    """
+
+    def _prepare_inbound_messages(self, messages, state):  # type: ignore[override]
+        import contextlib
+
+        for mensagem in messages:
+            for conteudo in getattr(mensagem, "contents", None) or []:
+                if getattr(conteudo, "type", "") != "function_approval_response":
+                    continue
+                with contextlib.suppress(Exception):
+                    from app.modules.audit.public import actor, actor_detail, record
+                    from app.shared.auth import current_roles
+
+                    aprovado = bool(getattr(conteudo, "approved", False))
+                    chamada = getattr(conteudo, "function_call", None)
+                    ferramenta = getattr(chamada, "name", "") or "?"
+                    record(
+                        scope="approvals",
+                        actor=actor(),
+                        kind="approval",
+                        summary=f"{'approve' if aprovado else 'reject'} em {ferramenta}",
+                        ref=ferramenta,
+                        # Os ARGUMENTOS da tool não entram: eles carregam o conteúdo da operação.
+                        detail={"decision": "approve" if aprovado else "reject",
+                                "roles": sorted(current_roles()),
+                                "domain": "platform", **actor_detail()},
+                    )
+        return super()._prepare_inbound_messages(messages, state)
+
+
 def _approval_middleware() -> ToolApprovalMiddleware:
     """The framework's approval middleware, with no auto-approval rules (H-4)."""
-    return ToolApprovalMiddleware(source_id="tool_approval", auto_approval_rules=None)
+    return _RecordingToolApproval(source_id="tool_approval", auto_approval_rules=None)
 
 
 def build_platform_agent() -> Agent:

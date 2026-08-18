@@ -73,7 +73,8 @@
   },
   "audit": {
     "shared": [
-      "modules/audit/api.py"
+      "modules/audit/api.py",
+      "modules/audit/internal/trail.py"
     ],
     "tenancy": [
       "modules/audit/internal/trail.py"
@@ -246,6 +247,9 @@
     "agentdefs": [
       "modules/platform_ops/internal/platform.py"
     ],
+    "audit": [
+      "modules/platform_ops/internal/platform.py"
+    ],
     "grounded": [
       "modules/platform_ops/internal/platform.py"
     ],
@@ -281,6 +285,9 @@
     ]
   },
   "tickets": {
+    "audit": [
+      "modules/tickets/internal/tickets.py"
+    ],
     "shared": [
       "modules/tickets/api.py"
     ]

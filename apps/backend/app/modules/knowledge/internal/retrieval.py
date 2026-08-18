@@ -88,18 +88,18 @@ async def retrieve(query: str, user, domain, *, top: int = 8) -> list[dict]:
         # leitura por causa do registro puniria o usuário por um problema de infraestrutura. A
         # ausência aparece como lacuna no relatório de verificação.
         with contextlib.suppress(Exception):
-            from app.modules.audit.public import record
+            from app.modules.audit.public import actor, actor_detail, record
 
-            oid = getattr(user, "oid", None) if user is not None else None
             record(
                 scope="access",
-                actor=f"human:{oid}" if oid else "process:app-identity",
+                actor=actor(),
                 kind="access",
                 summary=f"{len(docs)} documento(s) recuperados",
                 ref=getattr(domain, "id", "") or "",
                 detail={
                     "documents": [d["source"] for d in docs if d["source"]],
                     "query_chars": len(query),
+                    **actor_detail(),
                 },
             )
         return docs

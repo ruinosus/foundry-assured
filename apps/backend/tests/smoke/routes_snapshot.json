@@ -54,6 +54,10 @@
     ],
     [
       "GET",
+      "/audit/trail/{scope}/conversation/{conversation_id}"
+    ],
+    [
+      "GET",
       "/conversations"
     ],
     [
@@ -345,6 +349,10 @@
     [
       "GET",
       "/audit/trail/{scope}"
+    ],
+    [
+      "GET",
+      "/audit/trail/{scope}/conversation/{conversation_id}"
     ],
     [
       "GET",
@@ -659,6 +667,10 @@
     [
       "GET",
       "/audit/trail/{scope}"
+    ],
+    [
+      "GET",
+      "/audit/trail/{scope}/conversation/{conversation_id}"
     ],
     [
       "GET",

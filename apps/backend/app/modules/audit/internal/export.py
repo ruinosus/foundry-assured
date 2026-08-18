@@ -73,6 +73,29 @@ foi barrado antes da gravação, o evento diz o TIPO ("cpf", "email"), nunca o v
 """
 
 
+def by_conversation(scope: str, conversation_id: str) -> list[dict]:
+    """Os eventos de UMA conversa.
+
+    POR QUE ESTE RECORTE EXISTE, e por que ele não é um filtro qualquer: a primeira pergunta de
+    quem audita não é "o que aconteceu no workspace", é "o que aconteceu NAQUELE atendimento".
+    Sem ele, responder exige varrer a trilha inteira à mão — e a resposta perde exatamente o
+    contexto que a torna verificável.
+
+    O vínculo é o `ref` do evento ou o `conversation` no detalhe. Não há índice: a trilha é um
+    arquivo append-only, e um índice paralelo seria uma segunda verdade que pode divergir dela.
+    Varrer é O(n) e honesto; para o tamanho de uma trilha de conversa, é instantâneo.
+    """
+    alvo = (conversation_id or "").strip()
+    if not alvo:
+        return []
+    saida = []
+    for e in trail().read(scope):
+        detalhe = e.get("detail") or {}
+        if e.get("ref") == alvo or detalhe.get("conversation") == alvo:
+            saida.append(e)
+    return saida
+
+
 def build_report() -> dict:
     """A verificação de todos os escopos, com as perdas declaradas."""
     t = trail()

@@ -142,15 +142,14 @@ def _registrar(request: ApprovalRequest, decisao: ApprovalDecision) -> dict:
     O que entra no evento: quem, o quê, quando, e — no `edit` — QUE CAMPOS foram corrigidos.
     Os VALORES não entram: eles são texto do usuário e do modelo, e a trilha é imutável.
     """
-    from app.modules.audit.public import record
-    from app.shared.auth import current_user
+    from app.modules.audit.public import actor, actor_detail, record
 
-    user = current_user()
-    ator = f"human:{user.oid}" if user is not None and user.oid else "human:dev-local"
     detalhe = {
         "decision": decisao.type,
         "roles": list(decisao.approver_roles),
         "required_role": list(request.required_role),
+        # O oid ao lado do e-mail: o `actor` é legível, este é durável.
+        **actor_detail(),
     }
     if decisao.type == "edit":
         # Só as CHAVES corrigidas. O valor corrigido é conteúdo, e conteúdo não entra na trilha.
@@ -159,7 +158,7 @@ def _registrar(request: ApprovalRequest, decisao: ApprovalDecision) -> dict:
     try:
         return record(
             scope="approvals",
-            actor=ator,
+            actor=actor(),
             kind="approval",
             summary=f"{decisao.type} em {request.action}",
             ref=request.action,

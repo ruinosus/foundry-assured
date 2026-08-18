@@ -106,6 +106,44 @@ def verify(eventos: list[dict]) -> dict:
     return {"ok": True, "length": len(eventos), "broken_at": None, "reason": ""}
 
 
+def actor() -> str:
+    """O ator da requisição atual: `human:<e-mail>` quando há, senão `human:<oid>`.
+
+    A PREFERÊNCIA VEM DO DNA-CLOUD, que já resolveu isto: e-mail → oid → sub. O e-mail é legível
+    e dispensa consultar diretório na hora de auditar; o oid é durável e sobrevive a troca de
+    e-mail. Guardar SÓ o oid transforma toda leitura de trilha numa consulta ao Entra; guardar só
+    o e-mail perde a identidade quando ele muda.
+
+    Por isso os DOIS vão: o e-mail no `actor` (que é o que a tela mostra) e o oid no detalhe do
+    evento (que é o que resolve quem é, para sempre).
+    """
+    from app.shared.auth import current_user
+
+    user = current_user()
+    if user is None:
+        return "process:app"
+    email = (getattr(user, "email", "") or getattr(user, "preferred_username", "") or "").strip()
+    if email:
+        return f"human:{email}"
+    return f"human:{user.oid}" if user.oid else "human:dev-local"
+
+
+def actor_detail() -> dict:
+    """O oid junto do e-mail — a identidade durável ao lado da legível."""
+    from app.shared.auth import current_user
+
+    user = current_user()
+    if user is None:
+        return {}
+    saida = {}
+    if user.oid:
+        saida["oid"] = user.oid
+    email = (getattr(user, "email", "") or getattr(user, "preferred_username", "") or "").strip()
+    if email:
+        saida["email"] = email
+    return saida
+
+
 def _seguro(parte: str, campo: str) -> str:
     if not _SEGMENTO.match(parte or ""):
         raise InvalidEvent(f"{campo} inválido para a trilha: {parte!r}")

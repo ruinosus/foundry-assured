@@ -11,6 +11,7 @@ Tool API verified against agent-framework 1.9.0 (`agent_framework.tool`).
 
 from __future__ import annotations
 
+import contextlib
 import json
 import uuid
 from datetime import UTC, datetime
@@ -68,6 +69,33 @@ def create_ticket(summary: str, severity: str = "medium", *, domain: str = "") -
     _STORE.parent.mkdir(parents=True, exist_ok=True)
     with _STORE.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(ticket) + "\n")
+
+    # ── A ESCRITA VIRA EVENTO (ADR-023) ──────────────────────────────────────────────────────
+    #
+    # AQUI e não em cada aprovação, e o motivo é cobertura: existem QUATRO caminhos que abrem
+    # chamado — a escalação do helpdesk (que passa por `hitl.decide`), a tool do `oncall`, a do
+    # `deepcall` e a aprovação nativa do `platform`. Três deles passam por middleware de
+    # framework, cada um com o seu jeito de entregar a decisão. Todos, sem exceção, passam por
+    # ESTA função.
+    #
+    # Registrar no recurso em vez de em cada porta é o que faz a trilha não depender de alguém
+    # lembrar de instrumentar a próxima porta. A decisão de quem aprovou continua sendo evento
+    # separado onde conseguimos capturá-la; este evento responde a outra pergunta, que é "o que
+    # foi efetivamente escrito".
+    #
+    # O RESUMO NÃO ENTRA: ele é texto do modelo e pode conter o que o usuário colou. Entram o id,
+    # a severidade e o domínio — o suficiente para achar o chamado e nada além disso.
+    with contextlib.suppress(Exception):
+        from app.modules.audit.public import actor, actor_detail, record
+
+        record(
+            scope="approvals",
+            actor=actor(),
+            kind="write",
+            summary=f"chamado {ticket['id']} aberto",
+            ref=ticket["id"],
+            detail={"severity": ticket["severity"], "domain": domain, **actor_detail()},
+        )
     return ticket
 
 

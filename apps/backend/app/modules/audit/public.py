@@ -13,13 +13,19 @@ from app.modules.audit.internal.anchor import (
     close_day,
     list_anchors,
 )
-from app.modules.audit.internal.export import build_package, build_report
+from app.modules.audit.internal.export import (
+    build_package,
+    build_report,
+    by_conversation,
+)
 from app.modules.audit.internal.redact import redact
 from app.modules.audit.internal.trail import (
     GENESIS,
     KINDS,
     Event,
     InvalidEvent,
+    actor,
+    actor_detail,
     chain,
     trail,
     verify,
@@ -56,9 +62,12 @@ __all__ = [
     "AnchorExists",
     "Event",
     "InvalidEvent",
+    "actor",
+    "actor_detail",
     "build_anchor",
     "build_package",
     "build_report",
+    "by_conversation",
     "chain",
     "check",
     "close_day",
