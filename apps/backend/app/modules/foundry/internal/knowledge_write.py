@@ -29,6 +29,7 @@ import os
 import re
 from typing import Any
 
+from app.modules.foundry.internal.audited import audited
 from app.modules.foundry.internal.names import qualify
 from app.modules.tenancy.public import tenant_config
 
@@ -133,6 +134,7 @@ def ensure_container(qualified_name: str) -> str:
             service.close()
 
 
+@audited("knowledge", "update")
 def upload_files(name: str, files: list[tuple[str, bytes]]) -> dict:
     """Sobe arquivos para o container desta base, criando o container se preciso.
 
@@ -158,6 +160,7 @@ def upload_files(name: str, files: list[tuple[str, bytes]]) -> dict:
             service.close()
 
 
+@audited("knowledge", "create")
 def create_knowledge(name: str, description: str = "", answer_instructions: str = "") -> dict:
     """Cria (ou atualiza) a fonte e a base desta base de conhecimento.
 
@@ -237,6 +240,7 @@ def create_knowledge(name: str, description: str = "", answer_instructions: str 
             client.close()
 
 
+@audited("knowledge", "delete")
 def delete_knowledge(name: str, *, delete_container: bool = False) -> dict:
     """Apaga a base e depois a fonte. A ordem é o ponto.
 

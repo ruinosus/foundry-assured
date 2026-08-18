@@ -31,6 +31,7 @@ from __future__ import annotations
 
 import contextlib
 
+from app.modules.foundry.internal.audited import audited
 from app.modules.foundry.internal.names import qualify
 
 #: O arquivo dentro do dataset. Nome fixo porque o dataset inteiro É um fluxo — não é uma pasta.
@@ -65,6 +66,7 @@ def _latest_version(client, nome: str) -> str | None:
     return str(max(numeros)) if numeros else None
 
 
+@audited("flow", "create")
 def save_flow(name: str, yaml_text: str, *, description: str = "") -> dict:
     """Publica o YAML como uma nova versão do dataset. Devolve nome e versão gravados."""
     from azure.ai.projects.models import (

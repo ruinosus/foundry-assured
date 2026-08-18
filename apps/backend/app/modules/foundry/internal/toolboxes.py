@@ -59,6 +59,7 @@ from __future__ import annotations
 import contextlib
 from typing import Any
 
+from app.modules.foundry.internal.audited import audited
 from app.modules.foundry.internal.names import qualify
 
 
@@ -184,6 +185,7 @@ def parse_toolbox(body: dict) -> dict:
     return {"tools": tools, "skills": skills}
 
 
+@audited("toolbox", "create")
 def create_toolbox_version(name: str, body: dict) -> dict:
     """Publica uma versão do toolbox com as tools e as skills informadas."""
     from azure.ai.projects.models import ToolboxSkillReference
@@ -233,6 +235,7 @@ def create_toolbox_version(name: str, body: dict) -> dict:
             client.close()
 
 
+@audited("toolbox", "delete")
 def delete_toolbox(name: str) -> dict:
     qualified = qualify(name)
     client = _client()

@@ -139,9 +139,11 @@ export function AgentWizard({
     // não ter.
     const comOrigem = Object.entries(origens).filter(([, fontes]) => fontes.length);
     if (comOrigem.length) {
+      // SERIALIZADA. O Foundry exige que valores de `metadata` sejam STRING — um objeto aqui é
+      // recusado com "The JSON value could not be converted to System.String", medido publicando.
       doc.metadata = {
         ...(doc.metadata as Record<string, unknown> | undefined),
-        provenance: Object.fromEntries(comOrigem),
+        provenance: JSON.stringify(Object.fromEntries(comOrigem)),
       };
     }
     // Atalhos: o backend expande os dois para o tool completo, porque montar a URL do toolbox

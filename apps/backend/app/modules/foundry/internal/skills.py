@@ -24,6 +24,7 @@ from __future__ import annotations
 import contextlib
 from typing import Any
 
+from app.modules.foundry.internal.audited import audited
 from app.modules.foundry.internal.names import qualify
 
 # Teto do bundle. O serviço extrai e valida o zip do lado dele; isto só impede que um upload
@@ -149,6 +150,7 @@ def parse_skill(doc: dict) -> dict:
     return {"content": out, "ignored": sorted(set(doc) - known)}
 
 
+@audited("skill", "create")
 def create_skill(name: str, doc: dict, *, make_default: bool = True) -> dict:
     """Cria (ou versiona) uma skill a partir do documento inline.
 
@@ -205,6 +207,7 @@ def _ensure_frontmatter(name: str, description: str, conteudo: bytes) -> bytes:
 MAX_INSTRUCTIONS_CHARS = 65_536
 
 
+@audited("skill", "create")
 def create_skill_from_files(
     name: str,
     files: list[tuple[str, bytes]],
@@ -267,6 +270,7 @@ def create_skill_from_files(
             client.close()
 
 
+@audited("skill", "delete")
 def delete_skill(name: str) -> dict:
     """Apaga a skill e todas as suas versões."""
     qualified = qualify(name)

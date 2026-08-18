@@ -129,6 +129,9 @@
     ]
   },
   "foundry": {
+    "audit": [
+      "modules/foundry/internal/audited.py"
+    ],
     "shared": [
       "modules/foundry/api.py"
     ],

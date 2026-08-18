@@ -36,6 +36,7 @@ import base64
 import os
 import re
 
+from app.modules.foundry.internal.audited import audited
 from app.modules.foundry.internal.knowledge_write import (
     ALLOWED_SUFFIXES,
     MAX_FILE_BYTES,
@@ -107,6 +108,7 @@ def _wanted(path: str, size: int) -> bool:
     return 0 < size <= MAX_FILE_BYTES
 
 
+@audited("knowledge", "update")
 def ingest_repo(
     kb_name: str,
     repo: str,

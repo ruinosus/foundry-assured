@@ -28,6 +28,7 @@ from __future__ import annotations
 import contextlib
 from typing import Any
 
+from app.modules.foundry.internal.audited import audited
 from app.modules.foundry.internal.names import qualify
 
 # Campos com equivalente direto em `PromptAgentDefinition`, repassados como vêm.
@@ -196,6 +197,7 @@ def _search_tool_spec(kb_name: str) -> dict:
     }
 
 
+@audited("agent", "create")
 def create_agent_version(name: str, doc: dict, *, description: str = "") -> dict:
     """Publica uma versão do agente a partir do documento.
 
@@ -236,6 +238,7 @@ def create_agent_version(name: str, doc: dict, *, description: str = "") -> dict
             client.close()
 
 
+@audited("agent", "update")
 def set_agent_enabled(name: str, enabled: bool) -> dict:
     """Habilita ou desabilita. Desabilitar não apaga — é o botão reversível."""
     qualified = qualify(name)
@@ -251,6 +254,7 @@ def set_agent_enabled(name: str, enabled: bool) -> dict:
             client.close()
 
 
+@audited("agent", "delete")
 def delete_agent(name: str) -> dict:
     """Apaga o agente e todas as suas versões.
 

@@ -117,7 +117,9 @@ export function SkillWizard({
     // A procedência viaja com o recurso publicado (ADR-023): "de onde veio esta instrução" passa
     // a ter resposta no Foundry, não só na memória de quem estava na tela.
     const comOrigem = Object.entries(origens).filter(([, f]) => f.length);
-    if (comOrigem.length) doc.metadata = { provenance: Object.fromEntries(comOrigem) };
+    // Serializada: o Foundry exige valor de metadata em STRING (ver AgentWizard).
+    if (comOrigem.length)
+      doc.metadata = { provenance: JSON.stringify(Object.fromEntries(comOrigem)) };
     return doc;
   })();
 
