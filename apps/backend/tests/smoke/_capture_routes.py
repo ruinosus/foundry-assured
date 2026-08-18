@@ -42,6 +42,25 @@ PROFILES = {
     #
     # So the profile now DECLARES what shared mode needs: synthetic Entra values to switch auth
     # on, and the in-memory tenant store (the documented dev/CI backend) so it boots offline.
+    # Auth LIGADA e TODOS os domínios montados — o único perfil onde dá para verificar que cada
+    # rota de agente exige identidade. Os perfis acima não servem: sem `ENTRA_*` a auth está
+    # desligada e toda rota aparece sem dependência, o que responderia "desprotegida" para o app
+    # inteiro e não significaria nada. `self_hosted` e não `shared` porque `oncall_configured()`
+    # falha fechado em shared de propósito (o checkpointer em memória perde interrupt entre
+    # réplicas) — e é justamente `/oncall` que precisa ser verificado.
+    #
+    # Não entra na tupla que o `routes_snapshot_test` congela: quem o consome é
+    # `tests/architecture/instrumentation_matrix_test.py`, com `--deps`.
+    "auth_on_oncall": {
+        "DEPLOYMENT_MODE": "self_hosted",
+        "MCP_ENABLED": "true",
+        "FOUNDRY_PROJECT_ENDPOINT": "https://snapshot.invalid/api/projects/snapshot",
+        "AZURE_SEARCH_ENDPOINT": "https://snapshot.invalid",
+        "AZURE_SEARCH_KNOWLEDGE_BASE": "snapshot-kb",
+        "AZURE_OPENAI_ENDPOINT": "https://snapshot.invalid",
+        "ENTRA_TENANT_ID": "00000000-0000-0000-0000-000000000000",
+        "ENTRA_API_CLIENT_ID": "00000000-0000-0000-0000-000000000001",
+    },
     "shared": {
         "DEPLOYMENT_MODE": "shared",
         "MCP_ENABLED": "true",
@@ -73,9 +92,9 @@ def main() -> int:
     # The mount helpers import these lazily from the module, so patching the module
     # attribute here is what the mount actually sees.
     from app import registry as domains
-    import app.modules.grounded.internal.concierge as concierge
-    import app.modules.platform_ops.internal.platform as platform
+    from app.modules.grounded.internal import concierge
     from app.modules.helpdesk.internal import graph, stream_fix
+    from app.modules.platform_ops.internal import platform
 
     concierge.build_concierge_agent = lambda: object()
     platform.platform_agent_proxy = object()
@@ -94,6 +113,27 @@ def main() -> int:
         from app.main import app
     finally:
         domains.add_agent_framework_fastapi_endpoint = real_adapter
+
+    # `--deps` é um SEGUNDO modo de saída, não um campo a mais no primeiro: a fixture do snapshot
+    # é `[[método, caminho]]` e acrescentar coluna a ela invalidaria o baseline inteiro por um
+    # motivo que não é mudança de superfície. O consumidor deste modo é
+    # `tests/architecture/instrumentation_matrix_test.py`, que precisa saber se a rota exige
+    # identidade — coisa que o snapshot deliberadamente não olha.
+    if "--deps" in sys.argv:
+        saida = []
+        for route in app.routes:
+            if "POST" not in (getattr(route, "methods", set()) or set()):
+                continue
+            dependant = getattr(route, "dependant", None)
+            nomes = sorted(
+                {
+                    getattr(getattr(d, "call", None), "__name__", "")
+                    for d in (getattr(dependant, "dependencies", []) or [])
+                }
+            )
+            saida.append([route.path, [n for n in nomes if n]])
+        print(json.dumps(sorted(saida), indent=2))
+        return 0
 
     routes = sorted(
         {(method, route.path) for route in app.routes for method in getattr(route, "methods", ())}

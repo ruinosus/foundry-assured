@@ -152,47 +152,62 @@ NAO_SAO_AGENTE = (
 )
 
 
-def _rotas_de_agente(app) -> dict[str, object]:
-    """As rotas POST que servem agente, pelo caminho. Descobertas, não listadas.
+def _superficies() -> dict[str, list[str]]:
+    """`{caminho: [dependências]}` das rotas POST que servem agente.
 
-    A heurística é a TOPOLOGIA, não um nome: um domínio do registry, um gêmeo hosted, ou a rota
-    genérica de agente do Foundry. Listar à mão seria a mesma lista paralela que a SEGUNDA MÁXIMA
-    proíbe — ela divergiria no primeiro domínio novo.
+    SUBPROCESSO E PERFIL SINTÉTICO, reusando `tests/smoke/_capture_routes`. Importar `app.main`
+    aqui foi a primeira tentativa e quebrou no CI: montar o app em `self_hosted` constrói agente na
+    hora, e `FoundryChatClient` exige `FOUNDRY_PROJECT_ENDPOINT`, que o CI não tem. Verde local,
+    vermelho no CI — e por uma lacuna do teste, não do código. O `_capture_routes` já resolvia
+    exatamente isso, então este gate reusa em vez de duplicar: um lugar só sabe bootar o app sem
+    credencial.
+
+    O perfil é `auth_on_oncall` — auth LIGADA e todos os domínios montados. Sem `ENTRA_*` a
+    autenticação fica desligada e TODA rota aparece sem dependência, o que responderia
+    "desprotegida" para o app inteiro e não significaria nada.
     """
+    import json
+    import pathlib
+    import subprocess
+    import sys
+
+    import app as _app
+
+    raiz = pathlib.Path(_app.__file__).resolve().parent.parent
+    r = subprocess.run(
+        [sys.executable, "-m", "tests.smoke._capture_routes", "auth_on_oncall", "--deps"],
+        capture_output=True,
+        text=True,
+        cwd=raiz,
+        check=False,
+    )
+    if r.returncode != 0:
+        raise RuntimeError(f"captura de rotas falhou:\n{r.stderr[-2000:]}")
+
     from app.registry import DOMAIN_KINDS
 
-    achadas: dict[str, object] = {}
-    for rota in app.routes:
-        caminho = getattr(rota, "path", "")
-        if "POST" not in (getattr(rota, "methods", set()) or set()):
-            continue
-        if any(caminho.startswith(p) for p in NAO_SAO_AGENTE):
+    achadas: dict[str, list[str]] = {}
+    for caminho, deps in json.loads(r.stdout):
+        if any(caminho.startswith(prefixo) for prefixo in NAO_SAO_AGENTE):
             continue
         primeiro = caminho.lstrip("/").split("/")[0]
         if primeiro in DOMAIN_KINDS or "hosted" in caminho or "foundry-agent" in caminho:
-            achadas[caminho] = rota
+            achadas[caminho] = deps
     return achadas
 
 
-def _autenticada(rota) -> bool:
+def _autenticada(deps: list[str]) -> bool:
     """A rota exige identidade?
 
-    Lê o `dependant` e não a lista `dependencies`: uma dep aplicada por `include_router` (que é
-    como as rotas do LangGraph são protegidas, já que o adapter upstream não aceita `dependencies`)
-    aparece resolvida ali. Checar só a lista declarada daria falso negativo justamente no caminho
-    que precisou do conserto.
+    Lê o `dependant` resolvido (é o que `_capture_routes --deps` emite), não a lista `dependencies`
+    declarada: uma dep aplicada por `include_router` — que é como as rotas do LangGraph são
+    protegidas, já que o adapter upstream não aceita `dependencies` — só aparece ali. Checar a lista
+    declarada daria falso negativo justamente no caminho que precisou do conserto.
     """
-    dependant = getattr(rota, "dependant", None)
-    nomes = {
-        getattr(getattr(d, "call", None), "__name__", "")
-        for d in (getattr(dependant, "dependencies", []) or [])
-    }
-    return any("user" in n or "auth" in n or "require" in n for n in nomes)
+    return any("user" in n or "auth" in n or "require" in n for n in deps)
 
 
 def main() -> int:
-    from app.main import app
-
     falhas: list[str] = []
 
     def check(nome: str, cond: bool) -> None:
@@ -200,11 +215,11 @@ def main() -> int:
         if not cond:
             falhas.append(nome)
 
-    rotas = _rotas_de_agente(app)
-    check(f"a descoberta achou superfícies de agente ({len(rotas)})", len(rotas) >= 8)
+    rotas = _superficies()
+    check(f"a descoberta achou superfícies de agente ({len(rotas)})", len(rotas) >= 10)
 
     # --- 1 · toda rota de agente é autenticada -------------------------------------------
-    abertas = sorted(c for c, r in rotas.items() if not _autenticada(r))
+    abertas = sorted(c for c, deps in rotas.items() if not _autenticada(deps))
     check(
         "nenhuma rota de agente sem autenticação"
         + (f" — ABERTAS: {', '.join(abertas)}" if abertas else ""),
@@ -218,9 +233,14 @@ def main() -> int:
         + (f" — FALTAM: {', '.join(nao_declaradas)}" if nao_declaradas else ""),
         not nao_declaradas,
     )
-    # Perfil restrito (sem oncall/deepcall/platform) não serve tudo, então declaração a mais só é
-    # erro quando a rota não existe em NENHUM perfil — o snapshot de rotas é quem guarda isso.
-    print(f"  · declaradas e não servidas neste perfil: {len(set(MATRIZ) - set(rotas))}")
+    # O perfil monta TUDO, então declaração sem rota é declaração podre — as duas metades
+    # apodrecem em direções opostas, e só cobrar uma deixaria a outra mentir.
+    orfas = sorted(set(MATRIZ) - set(rotas))
+    check(
+        "nenhuma declaração aponta para rota inexistente"
+        + (f" — ÓRFÃS: {', '.join(orfas)}" if orfas else ""),
+        not orfas,
+    )
 
     # --- 3 · toda declaração responde a TODAS as colunas, e `n/a` tem motivo ---------------
     incompletas: list[str] = []
