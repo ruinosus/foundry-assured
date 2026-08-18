@@ -54,7 +54,7 @@ MATRIZ: dict[str, dict[str, object]] = {
         "caso_de_uso": True,
     },
     "/platform": {
-        "conversa": "sem HistoryProvider — o token chega e não tem onde pousar",
+        "conversa": True,
         "tokens": True,
         "referencias": "n/a: tool-driven, sem base de conhecimento",
         "chamado": "n/a: não abre chamado",
@@ -62,12 +62,12 @@ MATRIZ: dict[str, dict[str, object]] = {
         "caso_de_uso": "depende da conversa",
     },
     "/builder": {
-        "conversa": "sem HistoryProvider — o token chega e não tem onde pousar",
+        "conversa": True,
         "tokens": True,
         "referencias": "n/a: assistente de formulário, sem base",
         "chamado": "n/a: não abre chamado",
         "trilha": True,
-        "caso_de_uso": "depende da conversa",
+        "caso_de_uso": True,
     },
     # ── runtime B · Responses API · laço de SSE escrito aqui ────────────────────────────────
     "/techdocs": {
@@ -88,45 +88,57 @@ MATRIZ: dict[str, dict[str, object]] = {
     },
     # ── runtime C · LangChain / LangGraph · fora da fábrica ─────────────────────────────────
     "/oncall": {
-        "conversa": "AzureChatOpenAI não passa pela fábrica; falta o callback do LangChain",
-        "tokens": "idem",
-        "referencias": "idem",
+        # O turno visível é do GRAFO, não da chamada de modelo: `on_llm_end` veria também os
+        # passos internos do HITL, que ninguém quer reler. Gravar isso como conversa encheria a
+        # transcrição de ruído — lacuna deliberada, não esquecimento.
+        "conversa": "o turno é do grafo, não da chamada; on_llm_end veria os passos internos",
+        "tokens": True,
+        "referencias": "n/a: triagem por tools, sem base de conhecimento",
         "chamado": True,
         "trilha": True,
-        "caso_de_uso": "só indireto, pelo chamado",
+        "caso_de_uso": True,
     },
     "/deepcall": {
-        "conversa": "AzureChatOpenAI não passa pela fábrica; falta o callback do LangChain",
-        "tokens": "idem",
-        "referencias": "idem",
+        # O turno visível é do GRAFO, não da chamada de modelo: `on_llm_end` veria também os
+        # passos internos do HITL, que ninguém quer reler. Gravar isso como conversa encheria a
+        # transcrição de ruído — lacuna deliberada, não esquecimento.
+        "conversa": "o turno é do grafo, não da chamada; on_llm_end veria os passos internos",
+        "tokens": True,
+        "referencias": "n/a: triagem por tools, sem base de conhecimento",
         "chamado": True,
         "trilha": True,
-        "caso_de_uso": "só indireto, pelo chamado",
+        "caso_de_uso": True,
     },
     # ── runtime D · hosted no Foundry · execução fora daqui ─────────────────────────────────
     "/helpdesk-hosted": {
-        "conversa": "sem amarração: a rota usa auth_dependencies() e não domain_deps",
-        "tokens": "o stream lê só output_text.delta e descarta o usage de response.completed",
-        "referencias": "não grava",
+        "conversa": True,
+        "tokens": True,
+        "referencias": "o stream de Responses não devolve as fontes que a base do agente trouxe",
         "chamado": "n/a: não abre chamado",
-        "trilha": "não grava",
-        "caso_de_uso": "nenhum",
+        "trilha": "n/a: o gêmeo não faz escrita que precise de aprovação",
+        "caso_de_uso": True,
     },
     "/platform-hosted": {
-        "conversa": "sem amarração de conversa",
-        "tokens": "o stream descarta o usage de response.completed",
+        # PASSTHROUGH 1:1 — o Invocations já serve AG-UI e este caminho relaia os bytes sem abrir
+        # envelope, de propósito (é o que permite o interrupt de aprovação ir e voltar inteiro).
+        # Sem parsing não há texto nem uso a ler, e parsear para medir custaria a propriedade que
+        # justifica o desenho. Lacuna declarada, não descuido.
+        "conversa": "passthrough de bytes AG-UI: o texto não é lido aqui",
+        "tokens": "idem — abrir o envelope para medir quebraria o passthrough do interrupt",
         "referencias": "n/a: tool-driven, sem base",
         "chamado": "n/a: não abre chamado",
-        "trilha": "não grava",
-        "caso_de_uso": "nenhum",
+        "trilha": True,
+        "caso_de_uso": "depende da conversa",
     },
     "/foundry-agent/{name}": {
-        "conversa": "a rota usa auth_dependencies() e não domain_deps — nem a amarração chega",
-        "tokens": "o stream descarta o usage de response.completed",
-        "referencias": "não grava",
+        # A superfície do agente que o USUÁRIO cria. A amarração vem do `{name}` do caminho, não de
+        # um nome fixo — senão a conversa de todo agente criado cairia sob a mesma chave.
+        "conversa": True,
+        "tokens": True,
+        "referencias": "o stream de Responses não devolve as fontes da base do agente",
         "chamado": "n/a: não abre chamado",
-        "trilha": "não grava",
-        "caso_de_uso": "nenhum — é o agente que o USUÁRIO cria, e é o menos instrumentado",
+        "trilha": "n/a: sem escrita que precise de aprovação por este caminho",
+        "caso_de_uso": True,
     },
 }
 

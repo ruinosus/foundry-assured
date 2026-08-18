@@ -19,16 +19,14 @@ Notes:
 
 from __future__ import annotations
 
-import contextlib
 from dataclasses import dataclass
-from functools import partial
 from typing import Literal
 
 from agent_framework_ag_ui import add_agent_framework_fastapi_endpoint
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import StreamingResponse
 
-from app.modules.conversations.public import bind_conversation
+from app.modules.conversations.public import bind_dependency
 from app.modules.tenancy.public import domain_deps as _tenancy_domain_deps
 from app.modules.tenancy.public import tenant_config
 from app.shared.settings import settings
@@ -199,32 +197,13 @@ def _mount_grounded(app: FastAPI, domain_id: str) -> None:
     )
 
 
-async def _bind_conversation(domain_id: str, request: Request) -> None:
-    """Amarra `(domínio, threadId)` a esta requisição, para o gravador de uso saber onde somar.
-
-    POR QUE AQUI E SÓ AQUI. Os dois lados da medição sabem metades diferentes: o middleware de chat
-    vê o token e não sabe de que conversa é; a requisição sabe a conversa e não vê o token. Esta
-    dependência é o encontro, e ela entra por `domain_deps` — que TODO domínio recebe, qualquer que
-    seja o `kind`. Um agente novo é medido por existir, não por alguém lembrar de instrumentá-lo.
-
-    `request.json()` guarda o corpo em cache no próprio objeto (`Request._body`), então lê-lo aqui
-    não consome o stream que o adapter vai ler depois. Corpo que não é JSON — ou que não traz
-    thread — simplesmente não amarra nada, e o gravador vira no-op.
-    """
-    with contextlib.suppress(Exception):
-        corpo = await request.json()
-        if isinstance(corpo, dict):
-            thread = corpo.get("threadId") or corpo.get("thread_id") or ""
-            bind_conversation(domain_id, str(thread))
-
-
 def domain_deps(domain_id: str) -> list:
     """As deps de tenancy MAIS a amarração da conversa. É o que `mount_domains` usa em todo kind.
 
-    Fica aqui, e não em `tenancy`, porque a amarração é do módulo de conversas — e tenancy não
-    pode importá-lo sem ganhar uma dependência que não é dela.
+    A amarração vem de `conversations` porque é dela — e porque as rotas hosted precisam da MESMA
+    dependência sem passar por aqui. Enquanto ela morava neste arquivo, elas ficavam de fora.
     """
-    return [*_tenancy_domain_deps(domain_id), Depends(partial(_bind_conversation, domain_id))]
+    return [*_tenancy_domain_deps(domain_id), Depends(bind_dependency(domain_id))]
 
 
 def _mount_helpdesk(app: FastAPI, domain_id: str) -> None:

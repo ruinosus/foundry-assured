@@ -49,6 +49,7 @@ def _construcoes_diretas() -> list[str]:
 def main() -> int:
     from app.modules.conversations.public import (
         bind_conversation,
+        bind_dependency,
         current_conversation,
         usage_recorder,
     )
@@ -96,10 +97,59 @@ def main() -> int:
     # domínios continuam servindo e param de ser medidos, sem nada falhar.
     from app import registry
 
-    if "_bind_conversation" not in registry.domain_deps.__doc__ and not any(
-        "_bind_conversation" in repr(d) for d in registry.domain_deps("helpdesk")
-    ):
-        falhas.append("  domain_deps não carrega mais a amarração da conversa")
+    # Checa o FATO, não o nome: a dependência tem de vir do módulo de CONVERSAS. Procurar pelo
+    # nome da função quebrou quando ela mudou de casa — e um teste que falha por renomeação, sem o
+    # comportamento ter mudado, ensina a gente a ignorá-lo.
+    from app.modules.tenancy.public import domain_deps as deps_de_tenancy
+
+    def _modulos(deps) -> set[str]:
+        return {
+            getattr(getattr(d, "dependency", None), "__module__", "") or "" for d in deps
+        }
+
+    do_registry = registry.domain_deps("helpdesk")
+    if len(do_registry) != len(deps_de_tenancy("helpdesk")) + 1:
+        falhas.append("  domain_deps não carrega mais EXATAMENTE uma dependência a mais que tenancy")
+    if not any("conversations" in m for m in _modulos(do_registry)):
+        falhas.append(
+            "  nenhuma dependência de `conversations` em domain_deps — sem a amarração, os "
+            "domínios seguem servindo e param de ser medidos, em silêncio"
+        )
+
+    # ── a amarração RODA, e sobrevive ao StreamingResponse ────────────────────────────────
+    #
+    # Dois modos de falha silenciosa, os dois já observados:
+    #
+    #   · sem a anotação `request: Request`, o FastAPI trata o parâmetro como QUERY PARAM e
+    #     devolve 422 antes de chamar a função. Nas rotas reais isso fica mascarado, porque a
+    #     autenticação responde 401 primeiro — a amarração simplesmente nunca roda, e nada falha;
+    #   · toda resposta de agente é um `StreamingResponse`, e o corpo é iterado DEPOIS do handler.
+    #     Se o contextvar não atravessasse, o gravador leria `None` em cada chamada de modelo e
+    #     gravaria zero para sempre.
+    from fastapi import Depends, FastAPI
+    from fastapi.responses import StreamingResponse
+    from fastapi.testclient import TestClient
+
+    sonda = FastAPI()
+
+    @sonda.post("/sonda", dependencies=[Depends(bind_dependency("sonda"))])
+    async def _sonda():
+        async def gerar():
+            yield str(current_conversation())
+
+        return StreamingResponse(gerar(), media_type="text/plain")
+
+    resposta = TestClient(sonda).post("/sonda", json={"threadId": "t-1"})
+    if resposta.status_code != 200:
+        falhas.append(
+            f"  a dependência de amarração não roda (HTTP {resposta.status_code}) — provável falta"
+            " da anotação `request: Request`, que o FastAPI lê como query param"
+        )
+    elif resposta.text != "('sonda', 't-1')":
+        falhas.append(
+            f"  a conversa não sobreviveu ao StreamingResponse: {resposta.text!r} — o gravador"
+            " leria None em toda chamada de modelo e gravaria zero em silêncio"
+        )
 
     if falhas:
         print("❌ a medição de uso deixou de ser uniforme:")

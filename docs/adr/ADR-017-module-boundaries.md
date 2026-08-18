@@ -204,6 +204,33 @@ The middleware is handed to `foundry` by the composition root rather than import
 `tenancy.set_server_catalog(...)` — the composition root is the one place allowed to know both
 sides.
 
+## Recorded edges: five modules depend on `conversations` so that measuring is uniform
+
+A second batch of intended edges — `hosted`, `oncall` and `deepcall` now import `conversations`,
+joining the composition root and the domains that already did. The justification the graph gate
+asks for:
+
+The product runs agents through **four different runtimes**, and each has its own natural place to
+hang instrumentation. Because each was built at a different time, the recording was born in four
+places, and what existed on one path did not exist on another. Measured: only one of the four
+recorded everything, and the least-instrumented surface of all was `/foundry-agent/{name}` — the
+agent a **user** creates through the wizard, which is the surface the product exists to offer.
+
+The edges buy convergence on **one destination with per-runtime entry points**, which is the
+opposite of a second accounting:
+
+| runtime | entry point | why that one |
+|---|---|---|
+| agent-framework | `ChatMiddleware` via the single chat-client factory | the framework's own seam |
+| Responses SSE (hosted) | one recording call in the shared stream function | all three hosted routes pass through it |
+| LangChain / LangGraph | `BaseCallbackHandler.on_llm_end` | LangChain's own observability surface (ADR-020) |
+| per-request agents | `context_providers` on the shared `PerRequestAgent` | the proxy platform, builder and shared-mode grounded already cross |
+
+Every one of them calls the **same** `record_usage`. Two numbers answering the same question
+diverge without erroring — this repository already lived that when `wiki_builder` kept a private
+copy of the price table. `tests/architecture/instrumentation_matrix_test.py` is the gate that keeps
+the convergence honest: a new agent surface declares what it records, or CI fails.
+
 ## References
 
 - [import-linter](https://import-linter.readthedocs.io/) — layers, forbidden, independence contracts
