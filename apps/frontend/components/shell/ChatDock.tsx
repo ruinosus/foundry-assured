@@ -16,7 +16,6 @@
 
 import { CopilotChat } from "@copilotkit/react-core/v2";
 import { useTranslations } from "next-intl";
-import { useMemo, useRef } from "react";
 import { useChatDock } from "@/lib/chat-dock";
 import { DOMAINS } from "@/lib/domains";
 
@@ -25,15 +24,11 @@ export function ChatDock() {
   const td = useTranslations("domains");
   const { open, hide, agentId, setAgentId } = useChatDock();
 
-  // Uma thread POR AGENTE. Antes o provider era remontado (`key={agentId}`) para não vazar o
-  // histórico de um para o outro; remontar agora apagaria o rascunho do wizard junto, porque o
-  // provider passou a envolver a página inteira. Separar por identidade faz o mesmo trabalho sem
-  // destruir nada — e o histórico volta ao trocar de volta, em vez de recomeçar.
-  const threads = useRef<Record<string, string>>({});
-  const threadId = useMemo(() => {
-    threads.current[agentId] ??= crypto.randomUUID();
-    return threads.current[agentId];
-  }, [agentId]);
+  // SEM `threadId` controlado, de propósito. Cada agente já tem a sua própria instância e as
+  // suas próprias mensagens no core, então não há histórico vazando de um para o outro — era o
+  // que o antigo `key={agentId}` (que remontava o provider) protegia, e o que eu havia trocado
+  // por thread fixa. Controlar a thread aqui acrescentava uma variável a um caminho que o
+  // `aap-kb` resolve sem ela, e caminho com peça a menos é caminho com bug a menos.
 
   if (!open) return null;
 
@@ -60,7 +55,7 @@ export function ChatDock() {
       {/* Sem provider próprio: quem provê é o shell (DockProvider), para que uma tool registrada
           por uma TELA seja visível ao agente daqui. */}
       <div className="chat-dock-body copilotkit-chat-host">
-        <CopilotChat agentId={agentId} threadId={threadId} />
+        <CopilotChat agentId={agentId} />
       </div>
     </aside>
   );

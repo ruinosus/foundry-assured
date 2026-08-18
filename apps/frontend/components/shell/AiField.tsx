@@ -21,7 +21,7 @@
 
 import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
-import { useChatDock } from "@/lib/chat-dock";
+import { useSendToDock } from "@/lib/send-to-dock";
 
 /** O agente que atende o wizard. Fixo aqui e não escolhido pela pessoa: só ele sabe preencher
  *  formulário E consegue chamar a tool de proposta (os domínios grounded não recebem tools do
@@ -46,13 +46,13 @@ export function AiField({
   children: ReactNode;
 }) {
   const t = useTranslations("aiField");
-  const { ask } = useChatDock();
+  const enviar = useSendToDock(AGENTE);
   const [instrucao, setInstrucao] = useState<string | null>(null);
 
   const preenchido = value.trim().length > 0;
 
   const pedir = (texto: string) => {
-    ask(texto, AGENTE);
+    enviar(texto);
     setInstrucao(null);
   };
 
