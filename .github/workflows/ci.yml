@@ -160,6 +160,15 @@ jobs:
       - name: Superfícies de agente (autenticadas + declaram o que gravam)
         run: uv run python -m tests.architecture.instrumentation_matrix_test
 
+      # A identidade atravessa o gerador do StreamingResponse. Três lugares afirmavam o contrário,
+      # com a palavra "verified", e a afirmação era carga estrutural — era a razão declarada de o
+      # usuário ser capturado no endpoint. Medido contra uvicorn real: sobrevive. O gate existe pelo
+      # MODO DE FALHA, não pela curiosidade: se um dia parar de atravessar, ler a identidade dentro
+      # do streaming devolve None e cai na identidade da aplicação — que 403 na inferência crua e,
+      # no `retrieve`, DEIXA DE TRIMAR POR ACL. Errar para "serve documento demais" é o pior lado.
+      - name: A identidade atravessa o StreamingResponse
+        run: uv run python -m tests.grounded.contextvar_survival_test
+
       - name: Approval decisions (edit is not a loophole)
         run: uv run python -m tests.hitl.decision_test
       - name: Edit round-trips end to end
