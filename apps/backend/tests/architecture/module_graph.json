@@ -6,6 +6,9 @@
     "agentdefs": [
       "registry.py"
     ],
+    "audit": [
+      "registry.py"
+    ],
     "builder": [
       "registry.py"
     ],
@@ -69,6 +72,9 @@
     ]
   },
   "audit": {
+    "shared": [
+      "modules/audit/api.py"
+    ],
     "tenancy": [
       "modules/audit/internal/trail.py"
     ]
@@ -209,6 +215,9 @@
     ]
   },
   "knowledge": {
+    "audit": [
+      "modules/knowledge/internal/retrieval.py"
+    ],
     "shared": [
       "modules/knowledge/internal/retrieval.py",
       "modules/knowledge/internal/wiki_builder.py"

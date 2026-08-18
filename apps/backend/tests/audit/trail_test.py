@@ -88,6 +88,37 @@ def main() -> int:
     finally:
         hitl._registrar = original
 
+    # ── âncora ────────────────────────────────────────────────────────────────
+    from app.modules.audit.internal.anchor import build_anchor
+
+    a = build_anchor("s", ev, "2026-08-18")
+    check("a âncora carrega o hash de cabeça", a["digest"] == ev[-1]["hash"])
+    check("e o número de eventos", a["events"] == 4 and a["seq"] == 4)
+    check("trilha íntegra é ancorável", a["verified"])
+    # TRILHA VIOLADA NÃO É ANCORADA: ancorar uma cadeia adulterada seria certificá-la.
+    check("trilha violada NÃO é ancorável", not build_anchor("s", alterado, "2026-08-18")["verified"])
+    # Os slots de prova temporal existem e nascem VAZIOS — omiti-los faria o auditor supor que a
+    # prova existe, e a omissão seria a mentira.
+    check("os slots de prova temporal são declarados e nulos", a["tsr"] is None and a["ledger_receipt"] is None)
+
+    # ── pacote ────────────────────────────────────────────────────────────────
+    import io
+    import json
+    import zipfile
+
+    from app.modules.audit.public import build_package, build_report
+
+    rel = build_report()
+    check("o relatório nomeia as provas que faltam", rel["missing_proofs"] == ["rfc3161_timestamp", "ledger_receipt"])
+
+    z = zipfile.ZipFile(io.BytesIO(build_package()))
+    nomes = z.namelist()
+    check("o pacote traz o relatório", "verificacao.json" in nomes)
+    check("o pacote ensina a verificar sem o produto", "LEIA-ME.md" in nomes)
+    leiame = z.read("LEIA-ME.md").decode()
+    check("e diz o que NÃO prova", "Não prova" in leiame and "RFC 3161" in leiame)
+    check("a fórmula do hash está no LEIA-ME", "sha256(prev" in leiame)
+
     if failures:
         print(f"\n❌ {len(failures)} assertion(s) failed.")
         return 1

@@ -37,6 +37,7 @@ which never fired on the `answerSynthesis` KB (there `response` is the prose ans
 from __future__ import annotations
 
 import base64
+import contextlib
 import re
 
 from app.shared.settings import settings
@@ -70,10 +71,42 @@ async def retrieve(query: str, user, domain, *, top: int = 8) -> list[dict]:
             rows = await _native_retrieve(domain, query, primary, user_token)
         else:  # FALLBACK: direct-search-as-user (the engine lives here now)
             rows = await _direct_search_authorized(domain, query, primary, user_token, top=top)
-        return _project(rows)
-    finally:
-        import contextlib
+        docs = _project(rows)
 
+        # ── REGISTRO DE ACESSO (ADR-023) ────────────────────────────────────────────────────
+        #
+        # O acesso já era DECIDIDO aqui (a recuperação é aparada por entitlement do usuário) e
+        # nunca era REGISTRADO. Auditoria de controle de acesso não pergunta "o sistema barrou?",
+        # pergunta "quem leu o quê, e quando?" — e a resposta não existia.
+        #
+        # Só os NOMES dos documentos entram, nunca o trecho: o snippet É o conteúdo controlado, e
+        # copiá-lo para a trilha imutável faria dela o maior repositório do dado que ela protege.
+        # A consulta também não entra — é texto do usuário. Fica o TAMANHO dela, que responde "foi
+        # uma pergunta ou um despejo de documento" sem guardar nenhum dos dois.
+        #
+        # Falha aqui NÃO derruba a resposta: diferente da aprovação, ler é reversível, e negar a
+        # leitura por causa do registro puniria o usuário por um problema de infraestrutura. A
+        # ausência aparece como lacuna no relatório de verificação.
+        with contextlib.suppress(Exception):
+            from app.modules.audit.public import record
+
+            oid = getattr(user, "oid", None) if user is not None else None
+            record(
+                scope="access",
+                actor=f"human:{oid}" if oid else "process:app-identity",
+                kind="access",
+                summary=f"{len(docs)} documento(s) recuperados",
+                ref=getattr(domain, "id", "") or "",
+                detail={
+                    "documents": [d["source"] for d in docs if d["source"]],
+                    "query_chars": len(query),
+                },
+            )
+        return docs
+    finally:
+        # `import contextlib` era local aqui; virou import de módulo quando o registro de acesso
+        # passou a usá-lo ANTES deste ponto — e um import local sombreia o do módulo em toda a
+        # função, quebrando o uso de cima com "referenced before assignment".
         with contextlib.suppress(Exception):
             await app_cred.close()
 
@@ -292,4 +325,5 @@ def _project(rows: list[dict]) -> list[dict]:
             "url": url,
             "snippet": r.get("snippet") or "",
         })
+
     return docs

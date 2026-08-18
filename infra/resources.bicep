@@ -269,6 +269,40 @@ resource conversationsImmutability 'Microsoft.Storage/storageAccounts/blobServic
   }
 }
 
+// ── RETENÇÃO DECLARADA ───────────────────────────────────────────────────────────────────────
+//
+// Sem política, "quanto tempo guardamos" não tem resposta — e a pergunta é feita em toda
+// auditoria. Declarar é metade do controle; a outra metade é que os containers de auditoria NÃO
+// entram aqui: eles têm política de imutabilidade própria, e uma regra de ciclo de vida que
+// apagasse o que a política de retenção obriga a manter seria uma contradição que só apareceria
+// no dia do apagamento.
+//
+// `corpus` é conteúdo REPRODUZÍVEL (o ingest o reconstrói), então versão antiga não precisa
+// ficar. É o único que tem regra de expurgo.
+resource lifecycle 'Microsoft.Storage/storageAccounts/managementPolicies@2023-05-01' = {
+  parent: storage
+  name: 'default'
+  properties: {
+    policy: {
+      rules: [
+        {
+          name: 'corpus-versions'
+          enabled: true
+          type: 'Lifecycle'
+          definition: {
+            filters: { blobTypes: [ 'blockBlob' ], prefixMatch: [ corpusContainerName ] }
+            actions: {
+              // Só VERSÕES antigas. O blob corrente do corpus nunca é tocado por esta regra.
+              version: { delete: { daysAfterCreationGreaterThan: 90 } }
+            }
+          }
+        }
+      ]
+    }
+  }
+  dependsOn: [ corpusContainer ]
+}
+
 // File share mounted by the backend container app (Azure Files) so app data written
 // to /app/data (tickets.jsonl) survives scale-to-zero / restarts. Small + cheap.
 resource fileService 'Microsoft.Storage/storageAccounts/fileServices@2023-05-01' = {

@@ -7,6 +7,13 @@ e por política do Azure no container.
 
 from __future__ import annotations
 
+from app.modules.audit.internal.anchor import (
+    AnchorExists,
+    build_anchor,
+    close_day,
+    list_anchors,
+)
+from app.modules.audit.internal.export import build_package, build_report
 from app.modules.audit.internal.redact import redact
 from app.modules.audit.internal.trail import (
     GENESIS,
@@ -46,10 +53,16 @@ def check(scope: str) -> dict:
 __all__ = [
     "GENESIS",
     "KINDS",
+    "AnchorExists",
     "Event",
     "InvalidEvent",
+    "build_anchor",
+    "build_package",
+    "build_report",
     "chain",
     "check",
+    "close_day",
+    "list_anchors",
     "read",
     "record",
     "redact",

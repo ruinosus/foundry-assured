@@ -313,6 +313,7 @@ def include_routers(app) -> None:
     """
     from app import api_health
     from app.modules.admin import api_admin, api_me
+    from app.modules.audit import api as audit
     from app.modules.conversations import api as conversations
     from app.modules.evaluation import api as evals
     from app.modules.foundry import api as foundry
@@ -332,6 +333,7 @@ def include_routers(app) -> None:
         usecases,
         conversations,
         proposer,
+        audit,
     ):
         app.include_router(module.router)
 

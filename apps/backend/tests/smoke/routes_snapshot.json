@@ -38,6 +38,22 @@
     ],
     [
       "GET",
+      "/audit/anchors/{scope}"
+    ],
+    [
+      "GET",
+      "/audit/package"
+    ],
+    [
+      "GET",
+      "/audit/report"
+    ],
+    [
+      "GET",
+      "/audit/trail/{scope}"
+    ],
+    [
+      "GET",
       "/conversations"
     ],
     [
@@ -178,6 +194,10 @@
     ],
     [
       "POST",
+      "/audit/anchors/{scope}"
+    ],
+    [
+      "POST",
       "/builder"
     ],
     [
@@ -309,6 +329,22 @@
     [
       "GET",
       "/admin/users"
+    ],
+    [
+      "GET",
+      "/audit/anchors/{scope}"
+    ],
+    [
+      "GET",
+      "/audit/package"
+    ],
+    [
+      "GET",
+      "/audit/report"
+    ],
+    [
+      "GET",
+      "/audit/trail/{scope}"
     ],
     [
       "GET",
@@ -460,6 +496,10 @@
     ],
     [
       "POST",
+      "/audit/anchors/{scope}"
+    ],
+    [
+      "POST",
       "/builder"
     ],
     [
@@ -603,6 +643,22 @@
     [
       "GET",
       "/admin/users"
+    ],
+    [
+      "GET",
+      "/audit/anchors/{scope}"
+    ],
+    [
+      "GET",
+      "/audit/package"
+    ],
+    [
+      "GET",
+      "/audit/report"
+    ],
+    [
+      "GET",
+      "/audit/trail/{scope}"
     ],
     [
       "GET",
@@ -755,6 +811,10 @@
     [
       "POST",
       "/admin/users/invite"
+    ],
+    [
+      "POST",
+      "/audit/anchors/{scope}"
     ],
     [
       "POST",
