@@ -198,9 +198,30 @@ async def stream_grounded(body: dict, domain, user=None, language: str | None = 
         # Station 4 — emit: include the retrieved snippet as `content` so the UI can show the source
         # INLINE on click (the blob URLs are private — allowBlobPublicAccess=false — so opening 403s).
         # 800-char cap preserved; dedupe already done in retrieve().
+        # A FORMA É A DO FRAMEWORK, não uma nossa. `agent_framework.Annotation` é um TypedDict com
+        # `type: Literal["citation"]` mais `title`, `url`, `snippet` — e o `langchain_core.messages
+        # .Citation` é praticamente o mesmo. Nós tínhamos inventado `{index, source, url, content}`,
+        # que é o mesmo dado com nomes próprios: vocabulário paralelo, dois frameworks à frente.
+        #
+        # O TRANSPORTE continua sendo `CustomEvent`, e isso NÃO é gambiarra: o protocolo AG-UI tem
+        # 38 eventos e NENHUM de citação, e o `CustomEvent` é o mecanismo que ele mesmo prevê para
+        # carga fora do padrão. O adapter também não propaga `annotations` — o conversor lê
+        # `messageId` e `delta` de um TextContent e descarta o resto. Essa é a lacuna real.
+        #
+        # No dia em que o adapter propagar, apaga-se este evento e nada mais muda, porque a forma
+        # já é a deles. `index` fica ao lado (fora do vocabulário canônico) porque é ele que amarra
+        # a citação `[n]` do texto ao item da lista — o `annotated_regions` do framework faria isso
+        # por posição de caractere, e o nosso prompt cita por número.
         sources = [
-            {"index": d["index"], "source": d["source"], "url": d["url"],
-             "content": (d.get("snippet") or "")[:800]}
+            {
+                "type": "citation",
+                "title": d["source"],
+                "url": d["url"],
+                # 800 chars: o conteúdo é mostrado INLINE no clique, porque as URLs de blob são
+                # privadas (allowBlobPublicAccess=false) e abrir dá 403.
+                "snippet": (d.get("snippet") or "")[:800],
+                "index": d["index"],
+            }
             for d in docs
         ]
 

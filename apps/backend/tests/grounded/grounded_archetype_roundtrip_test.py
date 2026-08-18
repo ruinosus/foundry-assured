@@ -99,7 +99,13 @@ def _ask(backend: str, token: str, probe: str) -> tuple[int, list[str], str | No
             if t == "TEXT_MESSAGE_CONTENT":
                 chars += len(ev.get("delta", ""))
             elif t == "CUSTOM" and ev.get("name") == "sources":
-                sources = [s.get("source", "") for s in (ev.get("value") or [])]
+                # `title` é o campo canônico (`agent_framework.Annotation`); `source` era o nome
+                # próprio anterior. Aceitar os dois porque este teste roda contra o app DEPLOYADO,
+                # que pode estar uma versão atrás — e sem o fallback ele devolveria uma lista de
+                # strings VAZIAS e reprovaria por "não citou fonte", que é o veredito errado.
+                sources = [
+                    s.get("title") or s.get("source", "") for s in (ev.get("value") or [])
+                ]
             elif t == "RUN_ERROR":
                 err = ev.get("message")
     return chars, sources, err

@@ -185,6 +185,13 @@ jobs:
       - name: Domínios de grafo gravam o turno (uma vez, no nível certo)
         run: uv run python -m tests.conversations.langgraph_recording_test
 
+      # As citações falam o vocabulário do FRAMEWORK, e os dois lados concordam. O painel de
+      # evidências atravessa uma fronteira de linguagem (Python → SSE → TypeScript), e fronteira
+      # assim quebra em silêncio: campo renomeado vira `undefined`, a tela mostra "sem fontes", e
+      # isso é indistinguível de uma resposta que não citou nada. Falha grave com cara de cosmética.
+      - name: Vocabulário de citação (canônico, e os dois lados concordam)
+        run: uv run python -m tests.grounded.citation_vocabulary_test
+
       - name: Approval decisions (edit is not a loophole)
         run: uv run python -m tests.hitl.decision_test
       - name: Edit round-trips end to end
