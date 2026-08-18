@@ -46,6 +46,7 @@ export function UseCaseDetail({ id }: { id: string }) {
 
   const [caso, setCaso] = useState<UseCase | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [movido, setMovido] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [flow, setFlow] = useState<Flow>({ steps: [] });
@@ -58,7 +59,15 @@ export function UseCaseDetail({ id }: { id: string }) {
       const r = await authedFetch(`/api/usecases/${encodeURIComponent(id)}`, { cache: "no-store" });
       const body = await r.json().catch(() => ({}));
       if (!r.ok) {
-        setErro(body?.error ?? `HTTP ${r.status}`);
+        // O backend distingue "não existe" de "mudou de lugar". Um link antigo para um
+        // assistente de TELA não deve dizer que o agente sumiu — ele existe, e a medição dele
+        // fica noutra tela.
+        const codigo = (body?.error as { code?: string } | undefined)?.code;
+        if (codigo === "moved_to_assistants") {
+          setMovido(true);
+          return;
+        }
+        setErro(typeof body?.error === "string" ? body.error : `HTTP ${r.status}`);
         return;
       }
       setCaso(body);
@@ -124,6 +133,17 @@ export function UseCaseDetail({ id }: { id: string }) {
     novo[i] = { ...novo[i], [campo]: valor } as FlowStep;
     setFlow({ steps: novo });
   };
+
+  if (movido) {
+    return (
+      <div className="notice notice-block">
+        <p className="notice-body">{t("movedToAssistants")}</p>
+        <Link className="btn btn-solid" href="/assistants">
+          {t("goToAssistants")}
+        </Link>
+      </div>
+    );
+  }
 
   if (erro) {
     return (

@@ -8,6 +8,7 @@ de campos no `metadata` do agente (SEGUNDA MÁXIMA: tudo fica no Foundry).
 
 from app.modules.usecases.internal.outcomes import outcomes, parse_assumption
 from app.modules.usecases.internal.usecases import (
+    MovedToAssistants,
     get_use_case,
     list_use_cases,
     read_flow,
@@ -16,6 +17,7 @@ from app.modules.usecases.internal.usecases import (
 )
 
 __all__ = [
+    "MovedToAssistants",
     "get_use_case",
     "list_use_cases",
     "outcomes",

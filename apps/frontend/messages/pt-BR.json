@@ -640,7 +640,9 @@
     "piecesHelp": "Os agentes que este caso de uso usa. Cada um é um recurso do seu projeto no Foundry.",
     "colAgent": "Agente",
     "colVersion": "Versão",
-    "colRuntime": "Execução"
+    "colRuntime": "Execução",
+    "movedToAssistants": "Este é um assistente de TELA — ele ajuda a preencher formulários, não atende um caso de negócio. A medição dele (propostas feitas, aproveitadas e corrigidas) fica em Assistentes de tela.",
+    "goToAssistants": "Ver assistentes de tela"
   },
   "useCases": {
     "title": "Casos de uso",

@@ -253,12 +253,41 @@ def list_use_cases() -> list[dict]:
     return saida
 
 
+class MovedToAssistants(LookupError):
+    """O id existe, mas é assistente de TELA — a medição dele fica em outro lugar.
+
+    Erro próprio em vez de `KeyError`: "não encontrado" e "está em outra tela" levam a pessoa a
+    coisas diferentes. O primeiro faz procurar o que não existe; o segundo diz onde está. Um link
+    que ficou pendurado depois de o `builder` sair da vitrine é exatamente o caso — e devolver
+    404 genérico ali faria parecer que o agente sumiu.
+    """
+
+
 def get_use_case(case_id: str) -> dict:
     """Um caso com o fluxo cru — a tela de leitura e o canvas consomem o mesmo objeto."""
     for c in list_use_cases():
         if c["id"] == case_id:
             c["flow"] = read_flow(case_id)
             return c
+
+    # Não está na vitrine: pode não existir, ou pode ser assistente de tela. A diferença importa.
+    #
+    # O `suppress` cobre SÓ a consulta, e o `raise` acontece depois dele — a primeira versão disto
+    # levantava dentro do bloco, e `suppress(Exception)` engolia o próprio raise (LookupError É
+    # Exception). O sintoma: `builder` respondia "não encontrado", que é justamente a mensagem
+    # que este código existe para evitar.
+    de_tela = False
+    with contextlib.suppress(Exception):
+        from app.modules.foundry.public import list_agents
+
+        for a in list_agents():
+            if a.get("name") == case_id:
+                meta = (a.get("version") or {}).get("metadata") or {}
+                de_tela = meta.get("surface") == "tool"
+                break
+
+    if de_tela:
+        raise MovedToAssistants(case_id)
     raise KeyError(f"Caso de uso '{case_id}' não encontrado.")
 
 

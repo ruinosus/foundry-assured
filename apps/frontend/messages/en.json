@@ -640,7 +640,9 @@
     "piecesHelp": "The agents this use case uses. Each one is a resource in your Foundry project.",
     "colAgent": "Agent",
     "colVersion": "Version",
-    "colRuntime": "Runs on"
+    "colRuntime": "Runs on",
+    "movedToAssistants": "This is a SCREEN assistant — it helps fill forms rather than serving a business case. Its measurement (proposals made, used and edited) lives in Screen assistants.",
+    "goToAssistants": "Go to screen assistants"
   },
   "useCases": {
     "title": "Use cases",

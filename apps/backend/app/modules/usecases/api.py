@@ -9,6 +9,7 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, Request
 
 from app.modules.usecases.public import (
+    MovedToAssistants,
     get_use_case,
     list_use_cases,
     outcomes,
@@ -30,6 +31,13 @@ def _guard(fn):
         return fn()
     except HTTPException:
         raise
+    except MovedToAssistants as exc:
+        # 404 com um CÓDIGO que a tela entende. Sem ele, a pessoa que clicou num link antigo veria
+        # "não encontrado" e concluiria que o agente sumiu — quando ele existe e é medido noutro
+        # lugar.
+        raise HTTPException(
+            status_code=404, detail={"code": "moved_to_assistants", "id": str(exc)}
+        ) from exc
     except KeyError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except ValueError as exc:
