@@ -6,6 +6,7 @@
 
 import { CopilotChat, CopilotKitProvider } from "@copilotkit/react-core/v2";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+import { useLocale, useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
@@ -19,6 +20,8 @@ const WorkflowSteps = dynamic(
 );
 
 function Chat({ authorization }: { authorization?: string }) {
+  const tc = useTranslations("common");
+  const locale = useLocale();
   // Engine selector: the live AG-UI workflow (steps/HITL/OBO/memory) vs the Phase 6
   // Foundry hosted agent (managed, Responses protocol). Same agent, two delivery
   // models — the showcase shows both without losing the rich experience.
@@ -27,7 +30,13 @@ function Chat({ authorization }: { authorization?: string }) {
   return (
     <CopilotKitProvider
       runtimeUrl="/api/copilotkit"
-      headers={authorization ? { Authorization: authorization } : undefined}
+      // O chat sai do SERVIDOR Next para o backend, então o Accept-Language do navegador não
+      // é repassado sozinho. `useLocale()` já é o idioma efetivo (escolha explícita ou o que o
+      // navegador pediu), e mandá-lo aqui é o que faz o AGENTE responder na língua da tela.
+      headers={{
+        ...(authorization ? { Authorization: authorization } : {}),
+        "Accept-Language": locale,
+      }}
       // Renders the CopilotKit Inspector (the floating devtools icon) with the
       // live core wired up. Setting showDevConsole is the supported way — a bare
       // <CopilotKitInspector/> has no core and shows "core not attached".
@@ -44,24 +53,24 @@ function Chat({ authorization }: { authorization?: string }) {
           margin: "0 auto",
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 4px" }}>
+        <div className="row">
           {demoMode ? (
             // Demo mode talks to a recorded aimock fixture — only the Live AG-UI path
             // is replayed, so hide the engine toggle and flag that it's mocked.
-            <span className="pill" style={{ fontSize: 12 }}>
-              ● Demo · replayed fixture, no Azure
+            <span className="pill t-xs">
+              {tc("demoMode")}
             </span>
           ) : (
             <>
               <div className="seg">
                 <button className={mode === "live" ? "on" : ""} onClick={() => setMode("live")}>
-                  Live workflow
+                  {tc("modeLive")}
                 </button>
                 <button className={mode === "hosted" ? "on" : ""} onClick={() => setMode("hosted")}>
-                  Hosted agent
+                  {tc("modeHosted")}
                 </button>
               </div>
-              <span className="muted" style={{ fontSize: 12 }}>
+              <span className="muted t-xs">
                 {mode === "live"
                   ? "AG-UI · live steps, approval, per-user OBO + memory"
                   : "Foundry Agent Service · managed, Responses protocol"}
@@ -73,15 +82,15 @@ function Chat({ authorization }: { authorization?: string }) {
         {mode === "live" ? (
           <>
             <WorkflowSteps />
-            <TicketApproval />
-            <div style={{ flex: 1, minHeight: 0 }} className="copilotkit-chat-host">
+            <TicketApproval agentId="helpdesk" />
+            <div className="fill copilotkit-chat-host">
               <CopilotChat agentId="helpdesk" />
             </div>
           </>
         ) : (
           // Hosted agent rendered through the same CopilotChat, via the AG-UI
           // bridge (backend /helpdesk-hosted). Streams, but no steps/approval.
-          <div style={{ flex: 1, minHeight: 0 }} className="copilotkit-chat-host">
+          <div className="fill copilotkit-chat-host">
             <CopilotChat agentId="helpdesk-hosted" />
           </div>
         )}
@@ -90,18 +99,9 @@ function Chat({ authorization }: { authorization?: string }) {
   );
 }
 
-const center: React.CSSProperties = {
-  display: "flex",
-  height: "100%",
-  minHeight: 360,
-  alignItems: "center",
-  justifyContent: "center",
-  fontFamily: "system-ui",
-  flexDirection: "column",
-  gap: 16,
-};
 
 function AuthedChat() {
+  const tc = useTranslations("common");
   const { instance, accounts } = useMsal();
   const isAuthenticated = useIsAuthenticated();
   const [token, setToken] = useState<string | null>(null);
@@ -128,30 +128,23 @@ function AuthedChat() {
 
   if (!isAuthenticated) {
     return (
-      <div style={center}>
-        <p>Sign in to use {branding.product}.</p>
+      <div className="console-center">
+        <p>{tc("signInToUse", { product: branding.product })}</p>
         <button
           onClick={() => instance.loginRedirect({ scopes: apiScopes })}
-          style={{
-            padding: "10px 16px",
-            borderRadius: 8,
-            border: "1px solid #2563eb",
-            background: "#2563eb",
-            color: "white",
-            cursor: "pointer",
-            fontSize: 14,
-          }}
+          className="btn btn-primary"
         >
-          Sign in with Microsoft
+          {tc("signIn")}
         </button>
       </div>
     );
   }
-  if (!token) return <div style={center}>Acquiring token…</div>;
+  if (!token) return <div className="console-center">{tc("acquiringToken")}</div>;
   return <Chat authorization={`Bearer ${token}`} />;
 }
 
 export default function HelpdeskApp() {
+  const locale = useLocale();
   // MSAL is initialized app-wide by the root <Providers>; here we only gate the
   // chat behind sign-in. Module-constant branch (not a hook), so the early
   // return is safe.

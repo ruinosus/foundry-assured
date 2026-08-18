@@ -1,0 +1,3 @@
+{"id": "HD-200BA8", "summary": "[sev1] CORRIGIDO-PELO-APROVADOR: gateway de pagamento fora", "severity": "medium", "status": "open", "created_at": "2026-08-16T11:36:40+00:00"}
+{"id": "HD-B9188D", "summary": "[sev1] EDIT-VIA-HOOK: gateway de pagamento fora, checkout indisponivel", "severity": "medium", "status": "open", "created_at": "2026-08-16T11:43:56+00:00"}
+{"id": "HD-BF100D", "summary": "[sev1] Checkout indispon\u00edvel para todos os usu\u00e1rios", "severity": "medium", "status": "open", "created_at": "2026-08-16T12:03:23+00:00"}

@@ -4,40 +4,59 @@
 // frontend is too. This registry drives the agent map (api/copilotkit route), the
 // sidebar nav, the generic console route (/d/[domain]), the landing role-cards, and the
 // per-domain starter prompts. Adding a domain = one entry here (+ a backend agent).
+//
+// O TEXTO NÃO MORA AQUI. Rótulo, descrição, o que o domínio prova e os prompts sugeridos vivem
+// em `messages/<locale>.json` sob `domains.<id>`, lidos com `useTranslations("domains")`. O que
+// fica é o que é CONTRATO com o backend (id, kind, endpoint) e não muda com o idioma.
+//
+// A divisão não é estética: este módulo é importado pela rota do CopilotKit, que roda no
+// servidor sem contexto de idioma. Um campo de texto aqui é um campo que nasce numa língua só —
+// foi assim que a tela de visão geral ficou em português fixo para quem escolheu inglês.
+// `scripts/check-hardcoded-text.mjs` é o gate que impede a volta.
 
-export type DomainKind = "workflow" | "grounded" | "tool";
+export type DomainKind = "workflow" | "grounded" | "tool" | "graph";
+
+/** O runtime que executa o domínio. É CONTRATO, não estética: o seletor de assistente agrupa por
+ *  ele, e o agrupamento é o argumento de que o mesmo produto, com as mesmas garantias, roda em
+ *  runtimes diferentes (ADR-020). O RÓTULO fica em `messages.frameworks.<id>`, como todo texto. */
+export type Framework = "agent-framework" | "langgraph" | "deepagents";
 
 export interface Domain {
   /** Stable id — matches the backend agentId + the AG-UI endpoint path segment. */
   id: string;
   icon: string;
-  label: string;
   /** "workflow" = triage→retrieve→resolve→escalate with steps + HITL; "grounded" = pure cited
    * Q&A; "tool" = tool-driven (Microsoft MCP servers) with HITL on write actions. */
   kind: DomainKind;
-  /** One line for the switcher + landing card. */
-  blurb: string;
-  /** Starter prompts shown as chips — avoids the "blank box, prompt paralysis" anti-pattern. */
-  suggested: string[];
   /** Backend AG-UI path (default; per-domain env override resolved in the runtime route). */
   endpoint: string;
   /** Optional Foundry hosted twin agent id (enables the live-vs-hosted toggle). */
   hostedAgentId?: string;
+  framework: Framework;
+  /** ONDE ele aparece. `domain` = assistente de negócio, com rota `/d/<id>` e lugar no seletor
+   *  do console. `dock` = assistente de TELA — ajuda a preencher formulário e só faz sentido ao
+   *  lado de um wizard; ele existe no runtime e no dock, e NÃO no seletor de domínios, porque
+   *  "conversar com o construtor de assistentes" não é um caso de uso, é uma ferramenta. */
+  surface?: "domain" | "dock";
 }
 
 export const DOMAINS: Domain[] = [
   {
+    // O assistente do WIZARD (ADR-022 + SEGUNDA MÁXIMA): o prompt dele é um documento
+    // AgentSchema publicado no Foundry, não uma constante em Python. `kind: tool` porque só o
+    // caminho do adapter repassa a tool de frontend `propose_field` — medido.
+    id: "builder",
+    icon: "🧩",
+    kind: "tool",
+    framework: "agent-framework",
+    surface: "dock",
+    endpoint: "/builder",
+  },
+  {
     id: "helpdesk",
+    framework: "agent-framework",
     icon: "💬",
-    label: "Helpdesk concierge",
     kind: "workflow",
-    blurb:
-      "Triagem → fundamenta → resolve → escala, com aprovação humana antes de abrir um chamado.",
-    suggested: [
-      "Como faço rollback de um deploy em produção?",
-      "Preciso de acesso de produção — abre um chamado pra mim?",
-      "Meu pod está em CrashLoopBackOff, por onde começo?",
-    ],
     endpoint: "/helpdesk",
     // Foundry hosted twin (backend /helpdesk-hosted). The hosted agent runs inside Foundry, so the
     // backend invokes it via the agent endpoint (/agents/<name>/.../responses) — a path the MI IS
@@ -49,6 +68,7 @@ export const DOMAINS: Domain[] = [
   // (and ingest the KB) to bring it back.
   // {
   //   id: "techdocs",
+  //   framework: "agent-framework",
   //   icon: "🛰️",
   //   label: "TechDocs expert",
   //   kind: "grounded",
@@ -64,31 +84,34 @@ export const DOMAINS: Domain[] = [
   // },
   {
     id: "selfwiki",
+    framework: "agent-framework",
     icon: "📖",
-    label: "Project wiki",
     kind: "grounded",
-    blurb:
-      "Pergunte sobre este próprio repositório — a deep-wiki gerada do código real do monorepo.",
-    suggested: [
-      "Quais endpoints AG-UI o backend expõe?",
-      "Como funciona o controle de acesso por documento?",
-      "Quais são as fases de implementação do projeto?",
-    ],
     endpoint: "/selfwiki",
     // Grounded runs live via OBO — no hosted twin needed.
   },
   {
+    id: "oncall",
+    framework: "langgraph",
+    icon: "🚨",
+    kind: "graph",
+    endpoint: "/oncall",
+    // No hosted twin: LangGraph runs in this backend, not inside Foundry.
+  },
+  {
+    // Gêmeo do oncall no harness deepagents — os dois no ar para comparação prática, não para
+    // um substituir o outro. Ver app/modules/deepcall/public.py.
+    id: "deepcall",
+    framework: "deepagents",
+    icon: "🧪",
+    kind: "graph",
+    endpoint: "/deepcall",
+  },
+  {
     id: "platform",
+    framework: "agent-framework",
     icon: "🛠️",
-    label: "Platform ops",
     kind: "tool",
-    blurb:
-      "Concierge de plataforma sobre as ferramentas Microsoft (Learn, Azure, Entra, DevOps, GitHub) — com aprovação humana antes de qualquer ação de escrita.",
-    suggested: [
-      "O que é o Azure AI Foundry Agent Service? (via Microsoft Learn)",
-      "Liste os recursos do meu resource group.",
-      "Quanto gastei em AI Search neste mês?",
-    ],
     endpoint: "/platform",
     hostedAgentId: "platform-hosted",
   },
@@ -96,3 +119,11 @@ export const DOMAINS: Domain[] = [
 
 export const getDomain = (id: string | undefined): Domain | undefined =>
   DOMAINS.find((d) => d.id === id);
+
+/** A ordem em que os grupos aparecem no seletor. Microsoft primeiro porque é a plataforma do
+ *  produto; os demais existem para provar que o mecanismo não depende dela. */
+export const FRAMEWORK_ORDER: Framework[] = ["agent-framework", "langgraph", "deepagents"];
+
+/** Os assistentes que aparecem como DOMÍNIO (seletor do console, cards da home). Exclui os de
+ *  tela — sem isto o construtor de assistentes viraria um "caso de uso" na vitrine. */
+export const CHAT_DOMAINS: Domain[] = DOMAINS.filter((d) => (d.surface ?? "domain") === "domain");

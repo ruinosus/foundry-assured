@@ -5,6 +5,14 @@ target:
 checks:
 - type: contains
   value: 'TICKET: <one-line summary of the request>'
+# O PORQUÊ é lido pelo aprovador antes de aprovar. Sem esta invariante, uma edição futura do
+# prompt tiraria a linha WHY e o card voltaria a mostrar só o QUE seria escrito — sem erro
+# nenhum, porque o parser trata a ausência como opcional de propósito (ADR-014: prompt e código
+# publicam separado).
+- type: contains
+  value: 'WHY: <one sentence'
+- type: contains
+  value: read by the human approver
 - type: contains
   value: ONLY the runbook content
 - type: contains
@@ -18,5 +26,5 @@ checks:
   value: Helpdesk Concierge
 - type: min_length
   value: 500
-expected: The RESOLVE prompt preserves the TICKET sentinel (workflow branches on it) and the cite-or-don't-know discipline.
+expected: The RESOLVE prompt preserves the TICKET sentinel (workflow branches on it), the WHY line the approver reads, and the cite-or-don't-know discipline.
 tags: [workflow, contract, escalation]

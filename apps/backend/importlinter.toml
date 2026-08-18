@@ -252,3 +252,218 @@ source_modules = [
     "app.shared",
 ]
 forbidden_modules = ["app.modules.agentdefs.internal"]
+
+[[tool.importlinter.contracts]]
+name = "hitl internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.hitl.internal"]
+
+# ADR-020: the LangGraph domain. Its framework's surface (create_agent, HumanInTheLoopMiddleware,
+# the checkpointer) stays inside this module's internal/ — which is exactly the isolation a ports
+# layer promised and did not need to provide.
+[[tool.importlinter.contracts]]
+name = "oncall internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.modules.hitl",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.oncall.internal"]
+
+# O módulo que expõe recursos do Foundry (agentes, e depois bases e skills) ao usuário final.
+# O SDK da plataforma — AIProjectClient, AgentsOperations — fica dentro do internal/, pelo mesmo
+# motivo dos demais: um upgrade da superfície do Foundry deve ser contido por construção, não
+# por disciplina. É também o que mantém honesta a MÁXIMA MAIOR: se a chamada oficial vazasse
+# para outros módulos, a "cola fina" viraria acoplamento espalhado.
+[[tool.importlinter.contracts]]
+name = "deepcall internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.modules.hitl",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.deepcall.internal"]
+
+# O módulo que expõe recursos do Foundry (agentes, e depois bases e skills) ao usuário final.
+# O SDK da plataforma — AIProjectClient, AgentsOperations — fica dentro do internal/, pelo mesmo
+# motivo dos demais: um upgrade da superfície do Foundry deve ser contido por construção, não
+# por disciplina. É também o que mantém honesta a MÁXIMA MAIOR: se a chamada oficial vazasse
+# para outros módulos, a "cola fina" viraria acoplamento espalhado.
+[[tool.importlinter.contracts]]
+name = "usecases internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.modules.hitl",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.usecases.internal"]
+
+# O módulo que expõe recursos do Foundry (agentes, e depois bases e skills) ao usuário final.
+# O SDK da plataforma — AIProjectClient, AgentsOperations — fica dentro do internal/, pelo mesmo
+# motivo dos demais: um upgrade da superfície do Foundry deve ser contido por construção, não
+# por disciplina. É também o que mantém honesta a MÁXIMA MAIOR: se a chamada oficial vazasse
+# para outros módulos, a "cola fina" viraria acoplamento espalhado.
+[[tool.importlinter.contracts]]
+name = "foundry internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.modules.hitl",
+    "app.modules.oncall",
+    "app.modules.deepcall",
+    "app.modules.usecases",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.foundry.internal"]
+
+# As conversas. O `internal/` guarda o store (blobs de apêndice) e o `HistoryProvider` que os
+# agentes recebem; de fora só se importa `public`. O motivo aqui é concreto: o caminho do blob
+# começa no object-id do usuário, e é ele que faz o isolamento entre pessoas. Um módulo que
+# montasse esse caminho por conta própria poderia escrever a conversa de alguém na pasta de
+# outro — então quem monta o caminho é um lugar só, por construção.
+[[tool.importlinter.contracts]]
+name = "conversations internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.modules.usecases",
+    "app.modules.hitl",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.conversations.internal"]
+
+# O propositor (ADR-022). O `internal/` guarda a montagem do prompt, o parse do rascunho e a
+# chamada ao job de otimização do Foundry; de fora só se importa `public`. O motivo é a fronteira
+# da própria ADR: publicar não é dele, e um módulo que alcançasse o interior dele poderia montar
+# um caminho de escrita passando por baixo da superfície que o gate inspeciona.
+[[tool.importlinter.contracts]]
+name = "proposer internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.modules.usecases",
+    "app.modules.conversations",
+    "app.modules.hitl",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.proposer.internal"]
+
+# A trilha de auditoria (ADR-023). O `internal/` guarda o encadeamento por hash e o redator; de
+# fora só se importa `public`. O motivo é a propriedade central: a trilha é append-only, e a
+# superfície pública não expõe NADA que apague ou reescreva. Um módulo que alcançasse o interior
+# poderia gravar um evento sem passar pelo encadeamento — e um evento fora da cadeia é
+# indistinguível de um evento removido.
+[[tool.importlinter.contracts]]
+name = "audit internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.tenancy",
+    "app.modules.admin",
+    "app.modules.knowledge",
+    "app.modules.helpdesk",
+    "app.modules.grounded",
+    "app.modules.platform_ops",
+    "app.modules.tickets",
+    "app.modules.hosted",
+    "app.modules.evaluation",
+    "app.modules.agentdefs",
+    "app.modules.usecases",
+    "app.modules.conversations",
+    "app.modules.proposer",
+    "app.modules.builder",
+    "app.modules.hitl",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.audit.internal"]

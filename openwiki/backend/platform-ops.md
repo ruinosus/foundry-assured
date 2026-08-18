@@ -1,76 +1,63 @@
 ---
-type: backend module
-title: Platform operations domain
-description: Tool-driven platform concierge over MCP servers, including registry-as-data, per-tool RBAC, connection-driven builds, and the split between internal and hosted tool acquisition.
-tags: [backend, platform-ops, mcp, tools]
+type: service
+title: Platform Ops Domain
+description: "Tool-driven platform concierge over Microsoft MCP servers, including per-request tool assembly, role filtering, approval middleware, Foundry connection brokering, and hosted/live differences."
+tags: [backend, platform, mcp, tools]
 ---
 
-# Platform operations domain
+# Platform ops domain
 
-The platform operations module is the one backend domain that answers by calling tools instead of retrieving a corpus. Its runtime entrypoint, `build_platform_agent()`, constructs a `FoundryChatClient` with tenant-scoped project/model config and the current request credential, then wraps that client as an agent with `PLATFORM_INSTRUCTIONS` and `build_mcp_tools()` ([apps/backend/app/modules/platform_ops/internal/platform.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/platform.py#L31-L44)). The registry mounts `/platform` only when `platform_configured()` says the platform domain is available ([apps/backend/app/modules/platform_ops/internal/platform.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/platform.py#L25-L29), [apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L143-L155)).
+`platform` is the backend’s tool-driven domain. Unlike grounded domains, it answers by assembling and calling MCP tools instead of retrieving corpus passages. The module docstring states the contract: tools are assembled per request from Microsoft first-party MCP servers, filtered by caller roles, and for OBO-capable servers run as the signed-in user. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/platform.py#L1-L9) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/platform.py#L25-L29)
 
-## Registry-as-data
+## Runtime entrypoint
 
-The heart of the module is `mcp_registry.py`. Its header explains the design goal: MCP servers are represented as pure data so both the internal `MCPStreamableHTTPTool` path and the hosted Toolbox path can share one catalog, and governance decisions such as read/write classification and minimum roles live in data instead of code branches ([apps/backend/app/modules/platform_ops/internal/mcp_registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/mcp_registry.py#L1-L12)).
+`build_platform_agent()` creates a `FoundryChatClient` bound to the current tenant config and current request credential, then turns it into an agent with `PLATFORM_INSTRUCTIONS`, MCP tools, and `ToolApprovalMiddleware`. The mounted runtime is not a static agent instance; the registry mounts `platform_agent_proxy`, a `PerRequestAgent` that rebuilds the platform agent on each run. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/platform.py#L50-L64) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/platform.py#L67-L76) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/registry.py#L183-L195)
 
-Each `McpServer` row records:
+The invariant is the same as helpdesk, but for tools: **never cache platform tools across requests**, because roles and credentials are caller-specific.
 
-- stable server ID,
-- label and URL,
-- auth mode (`public`, `obo`, `github_pat`, or `oauth_passthrough`),
-- optional OBO scope,
-- explicit read and write tool names,
-- minimum role for read and write access,
-- enabled flag ([apps/backend/app/modules/platform_ops/internal/mcp_registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/mcp_registry.py#L24-L35)).
+## Approval model
 
-The fail-closed rule is critical: `classify_tool()` treats any unclassified tool as a write, not a read ([apps/backend/app/modules/platform_ops/internal/mcp_registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/mcp_registry.py#L130-L135)). That makes adding tools safe by default.
+The domain uses the framework’s own `ToolApprovalMiddleware`, but with `auto_approval_rules=None`. The comment is explicit: nothing starts “on the loop”, and authorization stays earlier in tool construction, where unauthorized tools are filtered out before the agent sees them. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/platform.py#L31-L47)
 
-## Role model and stricter-of-both gating
+That ordering is critical. Approval does not decide who may call a tool; it only pauses execution for tools the caller was already entitled to see.
 
-The registry defines read-role and write-role grant sets, then exposes `visible_tools()` and `visible_tools_for()` to filter tools by caller roles ([apps/backend/app/modules/platform_ops/internal/mcp_registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/mcp_registry.py#L18-L22), [apps/backend/app/modules/platform_ops/internal/mcp_registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/mcp_registry.py#L142-L175)). `visible_tools_for()` applies a stricter-of-both rule: the global server’s minimum role and the tenant connection’s minimum role must both pass. This lets a tenant tighten access but never loosen the repository default.
+## Tool assembly
 
-`rbac_per_tool_test.py` is the narrowest evidence of this contract. It proves readers see only reads, authors see writes, connection-specific tightening can hide reads from readers, and unknown kinds resolve to `None` ([apps/backend/tests/platform_ops/rbac_per_tool_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/platform_ops/rbac_per_tool_test.py#L1-L4), [apps/backend/tests/platform_ops/rbac_per_tool_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/platform_ops/rbac_per_tool_test.py#L22-L45)).
+`app/modules/platform_ops/internal/mcp_tools.py` is the canonical change surface for live MCP tooling. It supports two assembly paths:
 
-## Internal live path: build_mcp_tools()
+- **Self-hosted/non-shared path**: iterate enabled registry servers and build `MCPStreamableHTTPTool` objects directly.
+- **Shared path**: build tools from per-tenant `Connection` records and role-filtered visible tools.
 
-`mcp_tools.py` builds the internal live tools. The module docstring spells out the policy: each server is filtered to the caller’s visible tools, `allowed_tools` is set so hidden tools cannot be called by the model, write approval is handled by the repository’s own HITL flow rather than native MCP approval, and authentication differs per server ([apps/backend/app/modules/platform_ops/internal/mcp_tools.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L1-L18)).
+[Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L1-L18) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L82-L109) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L124-L181) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L184-L210) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L223-L240)
 
-The auth helpers are the key extension seams:
+The step-by-step shared-mode flow is: resolve the current tenant’s `Connection` list, drop disabled or unknown kinds, map each connection to its registry server, tighten visible tools through `visible_tools_for(server, conn, roles)`, skip the server if no tools survive, resolve the final URL from connection data, then either build an internal `MCPStreamableHTTPTool` with a header provider or build a hosted tool by passing `project_connection_id` into `get_tool(...)`. This is where current tenant connections materially change tool availability. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L124-L181) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L184-L210) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L213-L240)
 
-- `_obo_header_provider(scope)` lazily mints a user-scoped OBO bearer on each tool call ([apps/backend/app/modules/platform_ops/internal/mcp_tools.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L36-L41));
-- `_static_header_provider(value)` injects a fixed bearer such as a GitHub PAT ([apps/backend/app/modules/platform_ops/internal/mcp_tools.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L44-L48));
-- `_foundry_connection_header_provider(connection_id)` brokers credentials from a Foundry connection rather than reading secrets from local storage ([apps/backend/app/modules/platform_ops/internal/mcp_tools.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L51-L68)).
+### Auth modes
 
-```mermaid
-flowchart TD
-  CALLER["current request roles and credential"] --> MODE{"deployment mode"}
-  MODE -->|"shared"| CONN["tenant Connections"]
-  MODE -->|"other"| REG["enabled_servers registry"]
-  REG --> BUILD1["_build_one"]
-  CONN --> BUILD2["_build_from_connection"]
-  BUILD1 --> TOOLS["MCPStreamableHTTPTool list"]
-  BUILD2 --> TOOLS
-  TOOLS --> AG["platform agent tools"]
-```
-This diagram shows how platform tools are assembled differently in shared versus non-shared modes.
+The tool builder handles three auth patterns on the internal path:
 
-## Shared-mode connection-driven builds
+- `public` → no auth header.
+- `obo` → lazy per-call header provider minting a user bearer token.
+- Foundry connection-backed secrets → lazy brokered header provider using `AIProjectClient.connections.get(..., include_credentials=True)`.
 
-`build_mcp_tools()` is mode-aware. In shared mode, it calls `build_from_connections(_current_tenant_connections(), roles)`; in other modes it iterates `enabled_servers()` and uses the flat registry path ([apps/backend/app/modules/platform_ops/internal/mcp_tools.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L223-L240)). The shared path treats tenant `Connection` records as the source of target URLs, role tightening, and Foundry connection references. `connection_tools_build_test.py` proves the no-network version of that path using an in-memory `learn` connection ([apps/backend/tests/platform_ops/connection_tools_build_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/platform_ops/connection_tools_build_test.py#L1-L5), [apps/backend/tests/platform_ops/connection_tools_build_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/platform_ops/connection_tools_build_test.py#L24-L40)).
+Non-OBO servers without a configured reference are skipped fail-closed. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L36-L68) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L92-L109) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L157-L175)
 
-A key operational invariant here is that auth-off local mode should still be usable. `build_mcp_tools()` treats auth-disabled callers as `Admin` for tool visibility so local development does not hide every tool behind an empty role set ([apps/backend/app/modules/platform_ops/internal/mcp_tools.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L230-L239)).
+### Approval mode by tool class
 
-## Hosted path versus internal path
+For shared-mode connections, `_connection_build_params` assigns reads to `never_require_approval` and writes to `always_require_approval`. This is the central read/write approval contract for platform tools. The stricter-of-both RBAC rule comes from combining registry server metadata with per-connection min roles via `visible_tools_for`; if a tool cannot be classified or no allowed tools remain after tightening, the builder skips it fail-closed instead of exposing it optimistically. The hosted path then passes the same filtered tool set and approval map through `project_connection_id` rather than a live header provider. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L124-L147) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L184-L210) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/tests/platform_ops/mcp_registry_test.py#L1-L1) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/tests/platform_ops/rbac_per_tool_test.py#L1-L1)
 
-The module also exports `build_hosted_from_connections()`, which uses a `get_tool` callback instead of `MCPStreamableHTTPTool`. In hosted mode, Foundry resolves auth through `project_connection_id`, so there is no header provider; the same connection/URL/RBAC logic is shared, but the acquisition mechanism changes ([apps/backend/app/modules/platform_ops/internal/mcp_tools.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/mcp_tools.py#L184-L210)). This is the bridge to the hosted platform agent documented under ../hosted-agents/platform-invocations.md.
+## Hosted path
 
-## Configuration and availability
+The platform domain also has a hosted path, but it differs more than helpdesk’s hosted twin. The backend exposes `/platform-hosted`, and the hosted bridge uses an Invocations-style passthrough rather than the Responses re-encoding used for normal hosted agents. The bridge source carries explicit `TODO(infra-gated)` notes around auth scope, request body shape, and SSE framing, so some behavior is intentionally not considered fully verified offline yet. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/hosted/api.py#L29-L34) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/hosted/internal/hosted.py#L107-L118) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/hosted/internal/hosted.py#L121-L182)
 
-`platform_configured()` varies subtly by mode. In shared mode it mounts when `mcp_enabled` is globally on, because per-tenant access is checked later; in non-shared modes it also requires a Foundry project endpoint in tenant config ([apps/backend/app/modules/platform_ops/internal/platform.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/platform.py#L25-L29)). This matters when debugging “why is `/platform` absent?” versus “why is it mounted but returning no tools?”
+## Representative tests
 
-## Focused validation
+The platform domain has unusually rich focused tests:
 
-- `rbac_per_tool_test.py` for server and connection role filtering.
-- `connection_tools_build_test.py` for shared-mode connection mapping.
-- Backend `/platform` smoke with one read and one write-intent action.
-- If hosted behavior changes, also verify the hosted path in ../backend/hosted-bridges-and-evals.md.
+- `tests/platform_ops/approval_mode_test.py`
+- `tests/platform_ops/approval_parity_test.py`
+- `tests/platform_ops/mcp_registry_test.py`
+- `tests/platform_ops/mcp_brokering_e2e_test.py`
+- `tests/platform_ops/platform_hosted_bridge_test.py` and hosted platform E2E/smoke tests
+
+The MCP brokering E2E is especially important because it proves live Foundry connection credential fetch and OBO minting, two behaviors that unit tests cannot fully fake. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/tests/platform_ops/mcp_brokering_e2e_test.py#L1-L20) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/tests/platform_ops/mcp_brokering_e2e_test.py#L154-L187) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/tests/platform_ops/mcp_brokering_e2e_test.py#L192-L241)

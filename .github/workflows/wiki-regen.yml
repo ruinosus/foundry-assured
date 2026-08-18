@@ -125,7 +125,7 @@ jobs:
             --repo "$GITHUB_WORKSPACE" \
             --component "$COMPONENT" \
             --version "$VERSION" \
-            --out "$GITHUB_WORKSPACE/docs/wiki"
+            --out "$GITHUB_WORKSPACE/knowledge/wiki-bundle"
 
       - name: Fidelity gate
         working-directory: apps/backend
@@ -147,7 +147,7 @@ jobs:
         with:
           add-paths: |
             openwiki
-            docs/wiki
+            knowledge/wiki-bundle
             AGENTS.md
             CLAUDE.md
           branch: wiki/regen

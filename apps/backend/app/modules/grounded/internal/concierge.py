@@ -13,15 +13,14 @@ APIs verified against agent-framework 1.9.0 / agent-framework-azure-ai-search.
 
 from agent_framework import Agent
 from agent_framework.azure import AzureAISearchContextProvider
-from agent_framework.foundry import FoundryChatClient
 from azure.identity import DefaultAzureCredential
 
 from app.modules.agentdefs.public import (
     CONCIERGE_GROUNDED_INSTRUCTIONS,
     CONCIERGE_UNGROUNDED_INSTRUCTIONS,
 )
-from app.shared.settings import settings
 from app.modules.tenancy.public import tenant_config
+from app.shared.settings import settings
 
 
 def _knowledge_configured() -> bool:
@@ -35,11 +34,9 @@ def build_concierge_agent() -> Agent:
     """Create the concierge, grounding it in the knowledge base when available."""
     cfg = tenant_config()
     credential = DefaultAzureCredential()
-    client = FoundryChatClient(
-        project_endpoint=cfg.foundry_project_endpoint or None,
-        model=cfg.foundry_model,
-        credential=credential,
-    )
+    from app.modules.foundry.public import chat_client
+
+    client = chat_client(credential)
 
     if _knowledge_configured():
         search = AzureAISearchContextProvider(

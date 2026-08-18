@@ -46,7 +46,6 @@ from azure.search.documents.indexes.models import (
 )
 from azure.storage.blob import BlobServiceClient
 
-from app.modules.tenancy.public import tenant_config
 from app.modules.knowledge.internal.ingest import (
     CALL_TIMEOUT_S,
     _require,
@@ -54,6 +53,7 @@ from app.modules.knowledge.internal.ingest import (
     _validate_storage_resource_id,
     _with_timeout,
 )
+from app.modules.tenancy.public import tenant_config
 
 # The mechanism is domain-generic: the SAME pipeline serves any doc-bundle corpus by
 # pointing it at a different knowledge source / container / KB. Defaults are the TechDocs
@@ -586,7 +586,7 @@ def ingest_selfwiki() -> None:
         uv run python -m app.modules.knowledge.internal.ingest_docbundles --selfwiki
 
     selfwiki is a PRIVATE single-audience KB: readable by everyone with app access = the app-users
-    group (APP_USERS_GROUP_ID). Bundles default to this repo's docs/wiki (override TECHDOCS_DOCBUNDLES).
+    group (APP_USERS_GROUP_ID). Bundles default to this repo's knowledge/wiki-bundle (override TECHDOCS_DOCBUNDLES).
     Uploads to selfwiki-corpus, ensures the blob KS that drives selfwiki-docbundles-ks-index (created
     once; skipped if it exists — ACL-safe), (re)provisions the ACTIVE searchIndex KB (selfwiki-si-kb),
     prunes prior-version blobs + reconciles the index, runs the indexer, then STAMPS every doc with the
@@ -595,7 +595,7 @@ def ingest_selfwiki() -> None:
     _setup_logging()
     cfg = tenant_config()
     _require("AZURE_SEARCH_ENDPOINT", cfg.azure_search_endpoint)
-    default_bundles = _repo_root() / "docs" / "wiki"
+    default_bundles = _repo_root() / "knowledge" / "wiki-bundle"
     docbundles = Path(os.environ.get("TECHDOCS_DOCBUNDLES", str(default_bundles))).expanduser()
     if not docbundles.is_dir():
         sys.exit(f"selfwiki docbundles dir not found: {docbundles}")

@@ -4,6 +4,7 @@
 // (backend create_ticket tool → data/tickets.jsonl), served via /api/tickets.
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { authedFetch } from "@/lib/auth/api";
 
 type Ticket = {
@@ -17,6 +18,8 @@ type Ticket = {
 const SEV: Record<string, string> = { low: "neutral", medium: "ok", high: "bad" };
 
 export function TicketsView() {
+  const t = useTranslations("tickets");
+  const tc = useTranslations("common");
   const [tickets, setTickets] = useState<Ticket[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +32,7 @@ export function TicketsView() {
       if (data.error) setError(data.error);
     } catch {
       setTickets([]);
-      setError("could not reach the backend");
+      setError(tc("backendUnreachable"));
     }
   }
 
@@ -39,12 +42,11 @@ export function TicketsView() {
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div className="between">
         <div>
-          <h2 style={{ margin: "0 0 4px" }}>Tickets</h2>
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-            Real tickets opened by the concierge — the <code>create_ticket</code> tool runs
-            only after you approve the escalation in the chat.
+          <h2>{t("title")}</h2>
+          <p className="muted t-sm">
+            {t.rich("subtitleLong", { code: (c) => <code>{c}</code> })}
           </p>
         </div>
         <button className="btn btn-solid" onClick={load}>
@@ -53,13 +55,13 @@ export function TicketsView() {
       </div>
 
       {error && (
-        <p className="muted" style={{ marginTop: 12 }}>
+        <p className="muted">
           ⚠️ {error}
         </p>
       )}
 
       {tickets === null ? (
-        <div className="empty">Loading…</div>
+        <div className="empty">{tc("loading")}</div>
       ) : tickets.length === 0 ? (
         <div className="table-wrap">
           <div className="empty">
@@ -72,17 +74,17 @@ export function TicketsView() {
           <table className="evals">
             <thead>
               <tr>
-                <th>Ticket</th>
-                <th>Summary</th>
-                <th>Severity</th>
-                <th>Status</th>
-                <th>Opened</th>
+                <th>{t("colTicket")}</th>
+                <th>{t("colSummary")}</th>
+                <th>{t("colSeverity")}</th>
+                <th>{t("colStatus")}</th>
+                <th>{t("colCreated")}</th>
               </tr>
             </thead>
             <tbody>
               {tickets.map((t) => (
                 <tr key={t.id}>
-                  <td style={{ fontWeight: 600 }}>{t.id}</td>
+                  <td className="strong">{t.id}</td>
                   <td>{t.summary}</td>
                   <td>
                     <span className={`pill ${SEV[t.severity] ?? "neutral"}`}>{t.severity}</span>
@@ -90,7 +92,7 @@ export function TicketsView() {
                   <td>
                     <span className="pill ok">{t.status}</span>
                   </td>
-                  <td style={{ whiteSpace: "nowrap" }}>{new Date(t.created_at).toLocaleString()}</td>
+                  <td className="nowrap">{new Date(t.created_at).toLocaleString()}</td>
                 </tr>
               ))}
             </tbody>

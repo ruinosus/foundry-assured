@@ -1,0 +1,35 @@
+name: builder-contract
+description: O assistente do wizard propõe pela tool, declara a procedência e nunca preenche direto
+target:
+  agent: builder
+checks:
+# A tool é o ÚNICO caminho de escrita: sem esta linha o agente passaria a responder o texto no
+# chat e a pessoa copiaria à mão — o que reintroduz o preenchimento sem revisão que o card evita.
+- type: contains
+  value: propose_field
+# A procedência é requisito de produto (auditoria ponta a ponta). Um prompt sem ela produz
+# propostas sem fonte declarada, e a trilha nasce vazia.
+- type: contains
+  value: sources
+# O PORQUÊ é lido antes de usar a proposta, e é o que permite discordar da ESCOLHA e não só do
+# texto. Sem esta invariante, uma edição do prompt tiraria o campo e o card ficaria sem motivo —
+# em silêncio, porque `reason` tem default vazio no schema da tool.
+- type: contains
+  value: POR QUE você escreveu assim
+- type: contains
+  value: o IDENTIFICADOR do campo
+- type: contains
+  value: fonte inventada
+# A recusa de inventar nome de recurso: um nome que não existe só falha ao publicar, que é o
+# pior momento para descobrir.
+# Frase curta de propósito: o bloco `|-` preserva as quebras de linha do YAML, e uma verificação
+# longa passa a depender de ONDE a linha quebrou — que é formatação, não contrato.
+- type: contains
+  value: inventar o nome
+# Ele NÃO veste a persona do concierge — é assistente de formulário, não de atendimento.
+- type: not_contains
+  value: Helpdesk Concierge
+- type: min_length
+  value: 800
+expected: O prompt do BUILDER preserva a tool como único caminho de escrita, a declaração de procedência e a recusa de inventar recurso.
+tags: [wizard, contract, provenance]

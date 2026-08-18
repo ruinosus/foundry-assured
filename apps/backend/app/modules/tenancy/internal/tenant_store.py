@@ -6,7 +6,7 @@ Cosmos/Postgres later = another class implementing TenantStore.
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, asdict, replace
+from dataclasses import asdict, dataclass, replace
 from typing import Protocol
 
 from app.modules.tenancy.internal.tenant import TenantConfig

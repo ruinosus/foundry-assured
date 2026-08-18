@@ -129,7 +129,12 @@ async def stream_platform_agui(body: dict) -> AsyncGenerator[str]:
     — the response lines are relayed UNTOUCHED, no envelope parsing, no re-encoding. We only frame
     a clean RunErrorEvent for the failure path (e.g. no endpoint configured), mirroring stream_agui.
     """
-    from ag_ui.core import RunErrorEvent, RunStartedEvent, TextMessageEndEvent, TextMessageStartEvent
+    from ag_ui.core import (
+        RunErrorEvent,
+        RunStartedEvent,
+        TextMessageEndEvent,
+        TextMessageStartEvent,
+    )
     from ag_ui.encoder import EventEncoder
 
     thread_id = body.get("threadId") or body.get("thread_id") or uuid.uuid4().hex

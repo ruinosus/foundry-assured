@@ -22,7 +22,11 @@ from app.modules.tenancy.internal.tenant import (
     set_provider,
     tenant_config,
 )
-from app.modules.tenancy.internal.tenant_resolution import install, memory_scope, tenant_store
+from app.modules.tenancy.internal.tenant_resolution import (
+    install,
+    memory_scope,
+    tenant_store,
+)
 from app.modules.tenancy.internal.tenant_store import (
     Connection,
     InMemoryTenantStore,
@@ -35,11 +39,11 @@ from app.shared.auth import auth_dependencies
 from app.shared.settings import settings
 
 __all__ = [
-    "Connection",
     "DOMAIN_IDS",
+    "TIER_DOMAINS",
+    "Connection",
     "InMemoryTenantStore",
     "MultiTenantConfigProvider",
-    "TIER_DOMAINS",
     "TableStorageTenantStore",
     "TenantConfig",
     "TenantRecord",

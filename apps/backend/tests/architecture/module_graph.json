@@ -6,7 +6,24 @@
     "agentdefs": [
       "registry.py"
     ],
+    "audit": [
+      "registry.py"
+    ],
+    "builder": [
+      "registry.py"
+    ],
+    "conversations": [
+      "main.py",
+      "registry.py"
+    ],
+    "deepcall": [
+      "registry.py"
+    ],
     "evaluation": [
+      "registry.py"
+    ],
+    "foundry": [
+      "main.py",
       "registry.py"
     ],
     "grounded": [
@@ -19,11 +36,18 @@
       "main.py",
       "registry.py"
     ],
+    "oncall": [
+      "registry.py"
+    ],
     "platform_ops": [
       "main.py",
       "registry.py"
     ],
+    "proposer": [
+      "registry.py"
+    ],
     "shared": [
+      "api_health.py",
       "main.py",
       "registry.py"
     ],
@@ -32,6 +56,9 @@
       "registry.py"
     ],
     "tickets": [
+      "registry.py"
+    ],
+    "usecases": [
       "registry.py"
     ]
   },
@@ -42,6 +69,67 @@
       "modules/admin/internal/graph.py"
     ]
   },
+  "agentdefs": {
+    "tenancy": [
+      "modules/agentdefs/internal/skill_injection.py"
+    ]
+  },
+  "audit": {
+    "shared": [
+      "modules/audit/api.py",
+      "modules/audit/internal/trail.py"
+    ],
+    "tenancy": [
+      "modules/audit/internal/trail.py"
+    ]
+  },
+  "builder": {
+    "agentdefs": [
+      "modules/builder/internal/builder.py"
+    ],
+    "audit": [
+      "modules/builder/internal/assist_log.py"
+    ],
+    "foundry": [
+      "modules/builder/internal/builder.py"
+    ],
+    "grounded": [
+      "modules/builder/internal/builder.py"
+    ],
+    "shared": [
+      "modules/builder/api.py",
+      "modules/builder/internal/builder.py"
+    ]
+  },
+  "conversations": {
+    "audit": [
+      "modules/conversations/internal/store.py"
+    ],
+    "foundry": [
+      "modules/conversations/internal/listing.py"
+    ],
+    "shared": [
+      "modules/conversations/api.py",
+      "modules/conversations/internal/store.py"
+    ],
+    "tenancy": [
+      "modules/conversations/internal/store.py"
+    ]
+  },
+  "deepcall": {
+    "agentdefs": [
+      "modules/deepcall/internal/graph.py"
+    ],
+    "hitl": [
+      "modules/deepcall/internal/graph.py"
+    ],
+    "shared": [
+      "modules/deepcall/internal/graph.py"
+    ],
+    "tickets": [
+      "modules/deepcall/internal/graph.py"
+    ]
+  },
   "evaluation": {
     "shared": [
       "modules/evaluation/api.py"
@@ -50,8 +138,36 @@
       "modules/evaluation/internal/foundry_evals.py"
     ]
   },
+  "foundry": {
+    "audit": [
+      "modules/foundry/internal/audited.py"
+    ],
+    "shared": [
+      "modules/foundry/api.py"
+    ],
+    "tenancy": [
+      "modules/foundry/api.py",
+      "modules/foundry/internal/agent_write.py",
+      "modules/foundry/internal/agents.py",
+      "modules/foundry/internal/assist.py",
+      "modules/foundry/internal/chat.py",
+      "modules/foundry/internal/connections.py",
+      "modules/foundry/internal/flow_store.py",
+      "modules/foundry/internal/knowledge_catalog.py",
+      "modules/foundry/internal/knowledge_write.py",
+      "modules/foundry/internal/names.py",
+      "modules/foundry/internal/skills.py",
+      "modules/foundry/internal/toolboxes.py"
+    ]
+  },
   "grounded": {
     "agentdefs": [
+      "modules/grounded/internal/concierge.py"
+    ],
+    "conversations": [
+      "modules/grounded/internal/grounded.py"
+    ],
+    "foundry": [
       "modules/grounded/internal/concierge.py"
     ],
     "hosted": [
@@ -61,24 +177,32 @@
       "modules/grounded/internal/grounded.py"
     ],
     "shared": [
-      "modules/grounded/internal/techdocs.py",
       "modules/grounded/internal/concierge.py",
       "modules/grounded/internal/grounded.py",
-      "modules/grounded/internal/selfwiki.py"
+      "modules/grounded/internal/selfwiki.py",
+      "modules/grounded/internal/techdocs.py"
     ],
     "tenancy": [
-      "modules/grounded/internal/techdocs.py",
       "modules/grounded/internal/concierge.py",
       "modules/grounded/internal/grounded.py",
-      "modules/grounded/internal/selfwiki.py"
+      "modules/grounded/internal/selfwiki.py",
+      "modules/grounded/internal/techdocs.py"
     ]
   },
   "helpdesk": {
     "agentdefs": [
       "modules/helpdesk/internal/agents.py"
     ],
+    "conversations": [
+      "modules/helpdesk/internal/graph.py"
+    ],
+    "foundry": [
+      "modules/helpdesk/internal/agents.py"
+    ],
+    "hitl": [
+      "modules/helpdesk/internal/escalation.py"
+    ],
     "shared": [
-      "modules/helpdesk/internal/escalation.py",
       "modules/helpdesk/internal/graph.py"
     ],
     "tenancy": [
@@ -90,7 +214,19 @@
       "modules/helpdesk/internal/escalation.py"
     ]
   },
+  "hitl": {
+    "audit": [
+      "modules/hitl/internal/langgraph_recording.py",
+      "modules/hitl/public.py"
+    ],
+    "shared": [
+      "modules/hitl/public.py"
+    ]
+  },
   "hosted": {
+    "foundry": [
+      "modules/hosted/api.py"
+    ],
     "shared": [
       "modules/hosted/api.py",
       "modules/hosted/internal/hosted.py"
@@ -101,8 +237,15 @@
     ]
   },
   "knowledge": {
-    "shared": [
+    "audit": [
       "modules/knowledge/internal/retrieval.py"
+    ],
+    "foundry": [
+      "modules/knowledge/internal/wiki_builder.py"
+    ],
+    "shared": [
+      "modules/knowledge/internal/retrieval.py",
+      "modules/knowledge/internal/wiki_builder.py"
     ],
     "tenancy": [
       "modules/knowledge/internal/acl_setup.py",
@@ -112,8 +255,29 @@
       "modules/knowledge/internal/wiki_builder.py"
     ]
   },
+  "oncall": {
+    "agentdefs": [
+      "modules/oncall/internal/graph.py"
+    ],
+    "hitl": [
+      "modules/oncall/internal/graph.py"
+    ],
+    "shared": [
+      "modules/oncall/internal/graph.py",
+      "modules/oncall/public.py"
+    ],
+    "tickets": [
+      "modules/oncall/internal/graph.py"
+    ]
+  },
   "platform_ops": {
     "agentdefs": [
+      "modules/platform_ops/internal/platform.py"
+    ],
+    "audit": [
+      "modules/platform_ops/internal/platform.py"
+    ],
+    "foundry": [
       "modules/platform_ops/internal/platform.py"
     ],
     "grounded": [
@@ -128,6 +292,19 @@
       "modules/platform_ops/internal/platform.py"
     ]
   },
+  "proposer": {
+    "foundry": [
+      "modules/proposer/internal/draft.py",
+      "modules/proposer/internal/optimize.py"
+    ],
+    "shared": [
+      "modules/proposer/api.py"
+    ],
+    "tenancy": [
+      "modules/proposer/internal/draft.py",
+      "modules/proposer/internal/optimize.py"
+    ]
+  },
   "tenancy": {
     "shared": [
       "modules/tenancy/api.py",
@@ -138,8 +315,34 @@
     ]
   },
   "tickets": {
+    "audit": [
+      "modules/tickets/internal/tickets.py"
+    ],
     "shared": [
       "modules/tickets/api.py"
+    ]
+  },
+  "usecases": {
+    "agentdefs": [
+      "modules/usecases/internal/usecases.py"
+    ],
+    "conversations": [
+      "modules/usecases/internal/outcomes.py"
+    ],
+    "foundry": [
+      "modules/usecases/internal/outcomes.py",
+      "modules/usecases/internal/usecases.py"
+    ],
+    "shared": [
+      "modules/usecases/api.py",
+      "modules/usecases/internal/outcomes.py"
+    ],
+    "tenancy": [
+      "modules/usecases/internal/outcomes.py",
+      "modules/usecases/internal/usecases.py"
+    ],
+    "tickets": [
+      "modules/usecases/internal/outcomes.py"
     ]
   }
 }

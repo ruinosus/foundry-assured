@@ -28,7 +28,11 @@ import os
 from pathlib import Path
 
 import app as _app_package
-from app.modules.agentdefs.internal.definitions import AGENTS_DIRECTORY, PromptPack, load_pack
+from app.modules.agentdefs.internal.definitions import (
+    AGENTS_DIRECTORY,
+    PromptPack,
+    load_pack,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -97,7 +101,9 @@ _AGENT_FOR_CONSTANT = {
     "CONCIERGE_UNGROUNDED_INSTRUCTIONS": "concierge-ungrounded",
     "TECHDOCS_INSTRUCTIONS": "techdocs",
     "SELFWIKI_INSTRUCTIONS": "selfwiki",
+    "ONCALL_INSTRUCTIONS": "oncall",
     "PLATFORM_INSTRUCTIONS": "platform",
+    "BUILDER_INSTRUCTIONS": "builder",
 }
 
 
@@ -153,7 +159,36 @@ TECHDOCS_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["TECHDOCS_INSTRUCTIO
 # --- Third domain: this project's own deep-wiki (the "selfwiki" — dogfood) -----
 SELFWIKI_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["SELFWIKI_INSTRUCTIONS"])
 
+# O oncall roda em LangGraph, não em agent-framework — e isso não importa aqui. O que define
+# se um agente entra nesta composição é ONDE O PROMPT É MONTADO, não qual runtime o executa.
+ONCALL_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["ONCALL_INSTRUCTIONS"])
+
 # --- Fourth domain: tool-driven engineering-platform concierge -----------------
 PLATFORM_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["PLATFORM_INSTRUCTIONS"])
+BUILDER_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["BUILDER_INSTRUCTIONS"])
 
 del _pack
+
+
+def composed_agents() -> dict[str, tuple[str, str]]:
+    """Todo agente do escopo: nome → (instruções compostas, descrição do documento).
+
+    Existe para o ingest (`cli/provision_agents.py`) publicar no Foundry SEM declarar uma lista
+    própria. Uma lista ali seria uma segunda verdade ao lado dos documentos, e divergiria no
+    primeiro agente novo — que é justamente a divergência que o ingest existe para eliminar:
+    tudo fica no Foundry, e o que muda é quem colocou e como.
+
+    Devolve o texto COMPOSTO (persona + instruções + guardrails + skills), não o cru: é o que o
+    backend usa em execução, então é o que o Foundry deve guardar. Publicar o cru faria o portal
+    mostrar um prompt que ninguém roda.
+
+    O pack é RECARREGADO aqui em vez de mantido em memória. Este módulo apaga `_pack` depois de
+    compor as constantes (`del _pack`, acima) — a composição é o produto, o pack é andaime. Manter
+    o andaime vivo por causa de um comando que roda uma vez, no provisionamento, inverteria a
+    prioridade certa: o custo é de quem publica, não de quem serve requisição.
+    """
+    pack = _load_pack()
+    return {
+        nome: (_compose(pack, nome), getattr(definicao, "description", "") or "")
+        for nome, definicao in pack.agents.items()
+    }

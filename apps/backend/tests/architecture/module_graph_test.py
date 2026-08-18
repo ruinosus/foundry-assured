@@ -45,6 +45,30 @@ MAP: dict[str, str] = {
 MODULES = (
     "tenancy", "admin", "knowledge", "helpdesk", "grounded",
     "platform_ops", "tickets", "hosted", "evaluation", "agentdefs",
+    "oncall",  # ADR-020: the LangGraph domain — a different runtime, same guarantees
+    # Gêmeo do oncall no harness deepagents. Existe para MEDIR a diferença entre os dois, não
+    # para substituir: mesmas tools, mesmo prompt, mesmo contrato de HITL.
+    "deepcall",
+    # A camada de negócio sobre os agentes: casos de uso são LEITURA sobre o registry, os agentes
+    # publicados e os fluxos — não uma tabela nova (SEGUNDA MÁXIMA).
+    "usecases",
+    # Recursos do Foundry (agentes, e depois bases e skills) expostos ao usuário final. Fino
+    # por construção: a gestão é do SDK, aqui mora projeção e autorização.
+    "foundry",
+    "hitl",  # ADR-019: approve/edit/reject/respond + the role gate neither framework has
+    # Onde uma conversa fica depois que a aba fecha. O store (blobs de apêndice) e o
+    # HistoryProvider do agent-framework; o caminho do blob começa no object-id do usuário, que é
+    # o que isola uma pessoa da outra.
+    "conversations",
+    # ADR-022: rascunha e mostra a otimização do Foundry. NUNCA publica — e isso é
+    # verificado por `proposer_read_only_test`, não prometido em comentário.
+    "proposer",
+    # O assistente do WIZARD (não do chat de domínio). `tool` porque só o caminho do adapter
+    # repassa a tool de frontend que ele precisa chamar; sem tools de servidor, ele só propõe.
+    "builder",
+    # ADR-023: a camada de EVIDÊNCIA. Trilha encadeada por hash + o redator que roda antes de
+    # qualquer gravação. A imutabilidade é do Azure (política WORM no container); o evento é nosso.
+    "audit",
 )
 
 PREFIXES = (

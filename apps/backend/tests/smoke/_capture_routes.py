@@ -24,16 +24,48 @@ PROFILES = {
         "AZURE_SEARCH_ENDPOINT": "https://snapshot.invalid",
         "AZURE_SEARCH_KNOWLEDGE_BASE": "snapshot-kb",
     },
+    # ADR-020: the LangGraph domain mounts only with an Azure OpenAI endpoint, so a profile
+    # that sets one is the only way the snapshot can prove /oncall exists at all.
+    "self_hosted_oncall": {
+        "DEPLOYMENT_MODE": "self_hosted",
+        "MCP_ENABLED": "true",
+        "FOUNDRY_PROJECT_ENDPOINT": "https://snapshot.invalid/api/projects/snapshot",
+        "AZURE_SEARCH_ENDPOINT": "https://snapshot.invalid",
+        "AZURE_SEARCH_KNOWLEDGE_BASE": "snapshot-kb",
+        "AZURE_OPENAI_ENDPOINT": "https://snapshot.invalid",
+    },
+    # Shared mode only comes alive when auth is ON: `tenancy.install()` returns early unless
+    # `auth_enabled and deployment_mode == "shared"`. Without the ENTRA_* keys below this profile
+    # took that early return and captured a shared-mode surface that had never resolved a tenant
+    # — green, and meaningless. It only surfaced when a developer ran setup-entra.sh and the real
+    # ENTRA_* leaked in from `.env`, at which point the profile started demanding a tenant store.
+    #
+    # So the profile now DECLARES what shared mode needs: synthetic Entra values to switch auth
+    # on, and the in-memory tenant store (the documented dev/CI backend) so it boots offline.
     "shared": {
         "DEPLOYMENT_MODE": "shared",
         "MCP_ENABLED": "true",
         "FOUNDRY_PROJECT_ENDPOINT": "https://snapshot.invalid/api/projects/snapshot",
+        "ENTRA_TENANT_ID": "00000000-0000-0000-0000-000000000000",
+        "ENTRA_API_CLIENT_ID": "00000000-0000-0000-0000-000000000001",
+        "TENANT_STORE_BACKEND": "memory",
     },
 }
 
 
 def main() -> int:
     profile = sys.argv[1]
+    # A profile must be HERMETIC, not merely additive. `settings` reads `.env` from the cwd,
+    # so a developer's local file was enough to change the captured surface: setting
+    # AZURE_OPENAI_ENDPOINT there mounted /oncall inside the `self_hosted` profile, whose
+    # entire job is to prove /oncall does NOT mount without one. The snapshot then reported a
+    # route change that existed only on that machine.
+    #
+    # Blanking every key any profile mentions makes each profile mean what it says: the keys
+    # it omits are absent, not inherited. Blank rather than deleted because `.env` is read
+    # after this and would put them back.
+    for key in {k for values in PROFILES.values() for k in values}:
+        os.environ[key] = ""
     for key, value in PROFILES[profile].items():
         os.environ[key] = value
 

@@ -9,6 +9,22 @@
       "/admin/users/{user_id}"
     ],
     [
+      "DELETE",
+      "/foundry/agents/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/knowledge/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/skills/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/toolboxes/{name}"
+    ],
+    [
       "GET",
       "/admin/role-assignments"
     ],
@@ -19,6 +35,42 @@
     [
       "GET",
       "/admin/users"
+    ],
+    [
+      "GET",
+      "/audit/anchors/{scope}"
+    ],
+    [
+      "GET",
+      "/audit/package"
+    ],
+    [
+      "GET",
+      "/audit/report"
+    ],
+    [
+      "GET",
+      "/audit/trail/{scope}"
+    ],
+    [
+      "GET",
+      "/audit/trail/{scope}/conversation/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/builder-assist/stats"
+    ],
+    [
+      "GET",
+      "/conversations"
+    ],
+    [
+      "GET",
+      "/conversations/by-id/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/conversations/{agent}/{conversation_id}"
     ],
     [
       "GET",
@@ -38,6 +90,58 @@
     ],
     [
       "GET",
+      "/foundry/agents"
+    ],
+    [
+      "GET",
+      "/foundry/agents/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/knowledge"
+    ],
+    [
+      "GET",
+      "/foundry/knowledge/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/project"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalog"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalog/preview"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalogs"
+    ],
+    [
+      "GET",
+      "/foundry/skills"
+    ],
+    [
+      "GET",
+      "/foundry/skills/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes/{name}/mcp"
+    ],
+    [
+      "GET",
       "/healthz"
     ],
     [
@@ -50,11 +154,27 @@
     ],
     [
       "GET",
+      "/proposer/optimizations"
+    ],
+    [
+      "GET",
+      "/proposer/optimizations/{job_id}"
+    ],
+    [
+      "GET",
       "/redoc"
     ],
     [
       "GET",
       "/tickets"
+    ],
+    [
+      "GET",
+      "/usecases"
+    ],
+    [
+      "GET",
+      "/usecases/{case_id}"
     ],
     [
       "HEAD",
@@ -86,7 +206,63 @@
     ],
     [
       "POST",
-      "/techdocs"
+      "/audit/anchors/{scope}"
+    ],
+    [
+      "POST",
+      "/builder"
+    ],
+    [
+      "POST",
+      "/builder-assist/proposals"
+    ],
+    [
+      "POST",
+      "/foundry-agent/{name}"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/disable"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/enable"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/versions"
+    ],
+    [
+      "POST",
+      "/foundry/assist"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge/{name}/files"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge/{name}/github"
+    ],
+    [
+      "POST",
+      "/foundry/skill-catalog/import"
+    ],
+    [
+      "POST",
+      "/foundry/skills/{name}"
+    ],
+    [
+      "POST",
+      "/foundry/skills/{name}/files"
+    ],
+    [
+      "POST",
+      "/foundry/toolboxes/{name}"
     ],
     [
       "POST",
@@ -106,10 +282,34 @@
     ],
     [
       "POST",
+      "/proposer/draft"
+    ],
+    [
+      "POST",
+      "/proposer/optimizations"
+    ],
+    [
+      "POST",
       "/selfwiki"
+    ],
+    [
+      "POST",
+      "/techdocs"
+    ],
+    [
+      "POST",
+      "/usecases/{case_id}/outcomes"
+    ],
+    [
+      "PUT",
+      "/usecases/{case_id}"
+    ],
+    [
+      "PUT",
+      "/usecases/{case_id}/flow"
     ]
   ],
-  "shared": [
+  "self_hosted_oncall": [
     [
       "DELETE",
       "/admin/role-assignments/{assignment_id}"
@@ -120,7 +320,19 @@
     ],
     [
       "DELETE",
-      "/tenant/connections/{conn_id}"
+      "/foundry/agents/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/knowledge/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/skills/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/toolboxes/{name}"
     ],
     [
       "GET",
@@ -133,6 +345,46 @@
     [
       "GET",
       "/admin/users"
+    ],
+    [
+      "GET",
+      "/audit/anchors/{scope}"
+    ],
+    [
+      "GET",
+      "/audit/package"
+    ],
+    [
+      "GET",
+      "/audit/report"
+    ],
+    [
+      "GET",
+      "/audit/trail/{scope}"
+    ],
+    [
+      "GET",
+      "/audit/trail/{scope}/conversation/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/builder-assist/stats"
+    ],
+    [
+      "GET",
+      "/conversations"
+    ],
+    [
+      "GET",
+      "/conversations/by-id/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/conversations/{agent}/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/deepcall/health"
     ],
     [
       "GET",
@@ -152,6 +404,384 @@
     ],
     [
       "GET",
+      "/foundry/agents"
+    ],
+    [
+      "GET",
+      "/foundry/agents/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/knowledge"
+    ],
+    [
+      "GET",
+      "/foundry/knowledge/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/project"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalog"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalog/preview"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalogs"
+    ],
+    [
+      "GET",
+      "/foundry/skills"
+    ],
+    [
+      "GET",
+      "/foundry/skills/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes/{name}/mcp"
+    ],
+    [
+      "GET",
+      "/healthz"
+    ],
+    [
+      "GET",
+      "/me"
+    ],
+    [
+      "GET",
+      "/oncall/health"
+    ],
+    [
+      "GET",
+      "/openapi.json"
+    ],
+    [
+      "GET",
+      "/proposer/optimizations"
+    ],
+    [
+      "GET",
+      "/proposer/optimizations/{job_id}"
+    ],
+    [
+      "GET",
+      "/redoc"
+    ],
+    [
+      "GET",
+      "/tickets"
+    ],
+    [
+      "GET",
+      "/usecases"
+    ],
+    [
+      "GET",
+      "/usecases/{case_id}"
+    ],
+    [
+      "HEAD",
+      "/docs"
+    ],
+    [
+      "HEAD",
+      "/docs/oauth2-redirect"
+    ],
+    [
+      "HEAD",
+      "/openapi.json"
+    ],
+    [
+      "HEAD",
+      "/redoc"
+    ],
+    [
+      "POST",
+      "/admin/role-assignments"
+    ],
+    [
+      "POST",
+      "/admin/users"
+    ],
+    [
+      "POST",
+      "/admin/users/invite"
+    ],
+    [
+      "POST",
+      "/audit/anchors/{scope}"
+    ],
+    [
+      "POST",
+      "/builder"
+    ],
+    [
+      "POST",
+      "/builder-assist/proposals"
+    ],
+    [
+      "POST",
+      "/deepcall"
+    ],
+    [
+      "POST",
+      "/foundry-agent/{name}"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/disable"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/enable"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/versions"
+    ],
+    [
+      "POST",
+      "/foundry/assist"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge/{name}/files"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge/{name}/github"
+    ],
+    [
+      "POST",
+      "/foundry/skill-catalog/import"
+    ],
+    [
+      "POST",
+      "/foundry/skills/{name}"
+    ],
+    [
+      "POST",
+      "/foundry/skills/{name}/files"
+    ],
+    [
+      "POST",
+      "/foundry/toolboxes/{name}"
+    ],
+    [
+      "POST",
+      "/helpdesk"
+    ],
+    [
+      "POST",
+      "/helpdesk-hosted"
+    ],
+    [
+      "POST",
+      "/oncall"
+    ],
+    [
+      "POST",
+      "/platform"
+    ],
+    [
+      "POST",
+      "/platform-hosted"
+    ],
+    [
+      "POST",
+      "/proposer/draft"
+    ],
+    [
+      "POST",
+      "/proposer/optimizations"
+    ],
+    [
+      "POST",
+      "/selfwiki"
+    ],
+    [
+      "POST",
+      "/techdocs"
+    ],
+    [
+      "POST",
+      "/usecases/{case_id}/outcomes"
+    ],
+    [
+      "PUT",
+      "/usecases/{case_id}"
+    ],
+    [
+      "PUT",
+      "/usecases/{case_id}/flow"
+    ]
+  ],
+  "shared": [
+    [
+      "DELETE",
+      "/admin/role-assignments/{assignment_id}"
+    ],
+    [
+      "DELETE",
+      "/admin/users/{user_id}"
+    ],
+    [
+      "DELETE",
+      "/foundry/agents/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/knowledge/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/skills/{name}"
+    ],
+    [
+      "DELETE",
+      "/foundry/toolboxes/{name}"
+    ],
+    [
+      "DELETE",
+      "/tenant/connections/{conn_id}"
+    ],
+    [
+      "GET",
+      "/admin/role-assignments"
+    ],
+    [
+      "GET",
+      "/admin/roles"
+    ],
+    [
+      "GET",
+      "/admin/users"
+    ],
+    [
+      "GET",
+      "/audit/anchors/{scope}"
+    ],
+    [
+      "GET",
+      "/audit/package"
+    ],
+    [
+      "GET",
+      "/audit/report"
+    ],
+    [
+      "GET",
+      "/audit/trail/{scope}"
+    ],
+    [
+      "GET",
+      "/audit/trail/{scope}/conversation/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/builder-assist/stats"
+    ],
+    [
+      "GET",
+      "/conversations"
+    ],
+    [
+      "GET",
+      "/conversations/by-id/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/conversations/{agent}/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/docs"
+    ],
+    [
+      "GET",
+      "/docs/oauth2-redirect"
+    ],
+    [
+      "GET",
+      "/eval/foundry"
+    ],
+    [
+      "GET",
+      "/eval/runs"
+    ],
+    [
+      "GET",
+      "/foundry/agents"
+    ],
+    [
+      "GET",
+      "/foundry/agents/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/knowledge"
+    ],
+    [
+      "GET",
+      "/foundry/knowledge/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/project"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalog"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalog/preview"
+    ],
+    [
+      "GET",
+      "/foundry/skill-catalogs"
+    ],
+    [
+      "GET",
+      "/foundry/skills"
+    ],
+    [
+      "GET",
+      "/foundry/skills/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes/{name}"
+    ],
+    [
+      "GET",
+      "/foundry/toolboxes/{name}/mcp"
+    ],
+    [
+      "GET",
       "/healthz"
     ],
     [
@@ -161,6 +791,14 @@
     [
       "GET",
       "/openapi.json"
+    ],
+    [
+      "GET",
+      "/proposer/optimizations"
+    ],
+    [
+      "GET",
+      "/proposer/optimizations/{job_id}"
     ],
     [
       "GET",
@@ -183,6 +821,14 @@
       "/tickets"
     ],
     [
+      "GET",
+      "/usecases"
+    ],
+    [
+      "GET",
+      "/usecases/{case_id}"
+    ],
+    [
       "HEAD",
       "/docs"
     ],
@@ -212,7 +858,63 @@
     ],
     [
       "POST",
-      "/techdocs"
+      "/audit/anchors/{scope}"
+    ],
+    [
+      "POST",
+      "/builder"
+    ],
+    [
+      "POST",
+      "/builder-assist/proposals"
+    ],
+    [
+      "POST",
+      "/foundry-agent/{name}"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/disable"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/enable"
+    ],
+    [
+      "POST",
+      "/foundry/agents/{name}/versions"
+    ],
+    [
+      "POST",
+      "/foundry/assist"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge/{name}/files"
+    ],
+    [
+      "POST",
+      "/foundry/knowledge/{name}/github"
+    ],
+    [
+      "POST",
+      "/foundry/skill-catalog/import"
+    ],
+    [
+      "POST",
+      "/foundry/skills/{name}"
+    ],
+    [
+      "POST",
+      "/foundry/skills/{name}/files"
+    ],
+    [
+      "POST",
+      "/foundry/toolboxes/{name}"
     ],
     [
       "POST",
@@ -232,7 +934,19 @@
     ],
     [
       "POST",
+      "/proposer/draft"
+    ],
+    [
+      "POST",
+      "/proposer/optimizations"
+    ],
+    [
+      "POST",
       "/selfwiki"
+    ],
+    [
+      "POST",
+      "/techdocs"
     ],
     [
       "POST",
@@ -243,12 +957,24 @@
       "/tenant/onboard"
     ],
     [
+      "POST",
+      "/usecases/{case_id}/outcomes"
+    ],
+    [
       "PUT",
       "/tenant/config"
     ],
     [
       "PUT",
       "/tenant/domains"
+    ],
+    [
+      "PUT",
+      "/usecases/{case_id}"
+    ],
+    [
+      "PUT",
+      "/usecases/{case_id}/flow"
     ]
   ]
 }

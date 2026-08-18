@@ -4,8 +4,8 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
+from app.modules.evaluation.public import read_eval_runs
 from app.shared.auth import auth_dependencies
-from app.modules.evaluation.public import list_eval_runs
 
 router = APIRouter()
 
@@ -37,9 +37,15 @@ def eval_runs(limit: int = 50) -> dict[str, list[dict]]:
 
 
 @router.get("/eval/foundry", dependencies=auth_dependencies())
-def foundry_eval_runs(limit: int = 8) -> dict[str, list[dict]]:
-    """Live evaluation runs + scores read from the Foundry project (the canonical
-    store) — groundedness/relevance/coherence pass counts per run, each linking to
-    its portal report. This is what the /evals page renders.
+def foundry_eval_runs(limit: int = 8) -> dict:
+    """As execuções de avaliação do projeto do Foundry — e o MOTIVO, quando não há nenhuma.
+
+    A anotação é `dict`, não `dict[str, list[dict]]`, e isso não é preguiça: a resposta passou a
+    ter `reason` (string ou null) ao lado de `runs` (lista). Com a anotação antiga o FastAPI
+    validava a saída, encontrava uma string onde exigia lista, e devolvia 500 — a tela trocava
+    "nenhuma execução" por "erro 500", que é pior: some a informação e some o dado.
+
+    Foi regressão minha ao tornar a falha visível. O tipo faz parte do contrato; mudá-lo pela
+    metade é mudar o contrato pela metade.
     """
-    return {"runs": list_eval_runs(limit)}
+    return read_eval_runs(limit)

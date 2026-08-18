@@ -7,6 +7,8 @@ kind of leak the internal/public split exists to surface.
 
 from app.modules.hosted.internal.hosted import (
     _last_user_text as last_user_text,
+)
+from app.modules.hosted.internal.hosted import (
     aclose,
     stream_agui,
     stream_platform_agui,

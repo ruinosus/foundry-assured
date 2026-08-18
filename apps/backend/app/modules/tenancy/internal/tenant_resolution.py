@@ -41,10 +41,14 @@ def _make_tenant_store():
     boot offline; NEVER use in production: it doesn't persist and isn't shared across instances).
     """
     if settings.tenant_store_backend == "memory":
-        from app.modules.tenancy.internal.tenant_store import InMemoryTenantStore  # dev/CI: no Azure needed
+        from app.modules.tenancy.internal.tenant_store import (
+            InMemoryTenantStore,  # dev/CI: no Azure needed
+        )
 
         return InMemoryTenantStore()
-    from app.modules.tenancy.internal.tenant_store import TableStorageTenantStore  # lazy: shared mode only
+    from app.modules.tenancy.internal.tenant_store import (
+        TableStorageTenantStore,  # lazy: shared mode only
+    )
 
     if not settings.tenant_store_account_url:
         raise RuntimeError("DEPLOYMENT_MODE=shared requires TENANT_STORE_ACCOUNT_URL")
@@ -99,7 +103,10 @@ def install() -> None:
     if _tenant_store is not None:
         return
 
-    from app.modules.tenancy.internal.tenant import MultiTenantConfigProvider, set_provider
+    from app.modules.tenancy.internal.tenant import (
+        MultiTenantConfigProvider,
+        set_provider,
+    )
 
     set_provider(MultiTenantConfigProvider())
     _tenant_store = _make_tenant_store()

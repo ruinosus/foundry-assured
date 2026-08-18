@@ -5,6 +5,7 @@
 // by the Admin role; this UI is the convenience layer.
 
 import { useCallback, useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { authedFetch } from "@/lib/auth/api";
 
 interface User {
@@ -30,6 +31,8 @@ async function call(path: string, init?: RequestInit) {
 }
 
 export function AdminUsers() {
+  const t = useTranslations("admin");
+  const tu = useTranslations("users");
   const [users, setUsers] = useState<User[]>([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [roles, setRoles] = useState<string[]>([]);
@@ -81,34 +84,34 @@ export function AdminUsers() {
   const [aRole, setARole] = useState("Reader");
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+    <div className="stack">
       <div>
-        <h1 style={{ margin: "0 0 4px" }}>Users & roles</h1>
-        <p className="muted" style={{ margin: 0, fontSize: 14 }}>
+        <h1>{t("usersTitle")}</h1>
+        <p className="muted t-sm">
           Managed in Microsoft Entra via Graph — the app owns the roles
           ({roles.join(" · ") || "…"}); your company maps its groups onto them.
         </p>
       </div>
 
-      {err && <div className="card" style={{ borderColor: "var(--bad)", color: "var(--bad)" }}>⚠️ {err}</div>}
-      {msg && <div className="card" style={{ borderColor: "var(--ok)", color: "var(--ok)" }}>✓ {msg}</div>}
+      {err && <div className="card btn btn-reject">⚠️ {err}</div>}
+      {msg && <div className="card btn btn-approve">✓ {msg}</div>}
 
       {/* Role assignments */}
       <section className="card">
-        <h3 style={{ marginTop: 0 }}>Role assignments</h3>
-        <div className="table-wrap" style={{ marginTop: 8 }}>
+        <h3>{t("assignments")}</h3>
+        <div className="table-wrap">
           <table className="evals">
-            <thead><tr><th>Principal</th><th>Type</th><th>Role</th><th></th></tr></thead>
+            <thead><tr><th>{t("principal")}</th><th>Type</th><th>{t("role")}</th><th></th></tr></thead>
             <tbody>
-              {assignments.length === 0 && <tr><td colSpan={4} className="muted">No assignments yet.</td></tr>}
+              {assignments.length === 0 && <tr><td colSpan={4} className="muted">{t("noAssignments")}</td></tr>}
               {assignments.map((a) => (
                 <tr key={a.id}>
                   <td>{a.principalDisplayName || a.principalId}</td>
                   <td><span className="pill neutral">{a.principalType || "—"}</span></td>
                   <td><span className="pill ok">{a.role}</span></td>
-                  <td style={{ textAlign: "right" }}>
+                  <td className="right">
                     <button className="acct-btn" disabled={busy}
-                      onClick={() => run(() => call(`role-assignments/${a.id}`, { method: "DELETE" }), "Role revoked.")}>
+                      onClick={() => run(() => call(`role-assignments/${a.id}`, { method: "DELETE" }), tu("roleRevoked"))}>
                       Revoke
                     </button>
                   </td>
@@ -117,38 +120,38 @@ export function AdminUsers() {
             </tbody>
           </table>
         </div>
-        <div style={{ display: "flex", gap: 8, marginTop: 12, flexWrap: "wrap", alignItems: "center" }}>
-          <input className="acct-btn" style={{ flex: 1, minWidth: 220, cursor: "text" }} placeholder="Principal object-id (user or group)"
+        <div className="row-tight">
+          <input className="acct-btn grow" placeholder={tu("principalId")}
             value={aPrincipal} onChange={(e) => setAPrincipal(e.target.value)} />
-          <select className="acct-btn" style={{ width: "auto" }} value={aRole} onChange={(e) => setARole(e.target.value)}>
+          <select className="acct-btn" value={aRole} onChange={(e) => setARole(e.target.value)}>
             {roles.map((r) => <option key={r} value={r}>{r}</option>)}
           </select>
           <button className="btn btn-solid" disabled={busy || !aPrincipal}
-            onClick={() => run(() => call("role-assignments", { method: "POST", body: JSON.stringify({ principal_id: aPrincipal, role: aRole }) }), "Role assigned.")}>
-            Assign role
+            onClick={() => run(() => call("role-assignments", { method: "POST", body: JSON.stringify({ principal_id: aPrincipal, role: aRole }) }), tu("roleAssigned"))}>
+            {t("assignRole")}
           </button>
         </div>
-        <p className="muted" style={{ fontSize: 12, marginTop: 8 }}>
+        <p className="muted t-xs">
           On this tenant, assign to a <b>user</b> object-id. Group assignment is the same call once the tenant has Entra ID P1.
         </p>
       </section>
 
       {/* Users */}
       <section className="card">
-        <h3 style={{ marginTop: 0 }}>Users</h3>
-        <div className="table-wrap" style={{ marginTop: 8 }}>
+        <h3>{t("users")}</h3>
+        <div className="table-wrap">
           <table className="evals">
-            <thead><tr><th>Name</th><th>UPN / mail</th><th>Enabled</th><th></th></tr></thead>
+            <thead><tr><th>Name</th><th>{t("upn")}</th><th>{t("enabled")}</th><th></th></tr></thead>
             <tbody>
-              {users.length === 0 && <tr><td colSpan={4} className="muted">No users loaded.</td></tr>}
+              {users.length === 0 && <tr><td colSpan={4} className="muted">{t("noUsers")}</td></tr>}
               {users.map((u) => (
                 <tr key={u.id}>
                   <td>{u.displayName || "—"}</td>
                   <td className="muted">{u.userPrincipalName || u.mail || "—"}</td>
                   <td><span className={`pill ${u.accountEnabled ? "ok" : "bad"}`}>{u.accountEnabled ? "yes" : "no"}</span></td>
-                  <td style={{ textAlign: "right" }}>
+                  <td className="right">
                     <button className="acct-btn" disabled={busy}
-                      onClick={() => { if (confirm(`Remove ${u.displayName || u.id}?`)) run(() => call(`users/${u.id}`, { method: "DELETE" }), "User removed."); }}>
+                      onClick={() => { if (confirm(tu("confirmRemove", { name: u.displayName || u.id }))) run(() => call(`users/${u.id}`, { method: "DELETE" }), tu("removed")); }}>
                       Remove
                     </button>
                   </td>
@@ -158,27 +161,27 @@ export function AdminUsers() {
           </table>
         </div>
 
-        <div className="grid g2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
+        <div className="grid g2 grid g2">
           <div>
-            <h4 style={{ margin: "0 0 8px" }}>Invite (external guest)</h4>
-            <div style={{ display: "flex", gap: 8 }}>
-              <input className="acct-btn" style={{ flex: 1, cursor: "text" }} placeholder="email@company.com"
+            <h4>{t("invite")}</h4>
+            <div className="row-tight">
+              <input className="acct-btn grow" placeholder="email@company.com"
                 value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} />
               <button className="btn btn-solid" disabled={busy || !inviteEmail}
-                onClick={() => run(() => call("users/invite", { method: "POST", body: JSON.stringify({ email: inviteEmail }) }), "Invitation sent.")}>
+                onClick={() => run(() => call("users/invite", { method: "POST", body: JSON.stringify({ email: inviteEmail }) }), tu("invited"))}>
                 Invite
               </button>
             </div>
           </div>
           <div>
-            <h4 style={{ margin: "0 0 8px" }}>Create (internal member)</h4>
-            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-              <input className="acct-btn" style={{ cursor: "text" }} placeholder="Display name" value={cName} onChange={(e) => setCName(e.target.value)} />
-              <input className="acct-btn" style={{ cursor: "text" }} placeholder="user@tenant.onmicrosoft.com" value={cUpn} onChange={(e) => setCUpn(e.target.value)} />
-              <div style={{ display: "flex", gap: 8 }}>
-                <input className="acct-btn" style={{ flex: 1, cursor: "text" }} type="password" placeholder="Temp password" value={cPwd} onChange={(e) => setCPwd(e.target.value)} />
+            <h4>{t("create")}</h4>
+            <div className="stack-sm">
+              <input className="acct-btn" placeholder={tu("displayName")} value={cName} onChange={(e) => setCName(e.target.value)} />
+              <input className="acct-btn" placeholder="user@tenant.onmicrosoft.com" value={cUpn} onChange={(e) => setCUpn(e.target.value)} />
+              <div className="row-tight">
+                <input className="acct-btn grow" type="password" placeholder={tu("tempPassword")} value={cPwd} onChange={(e) => setCPwd(e.target.value)} />
                 <button className="btn btn-solid" disabled={busy || !cName || !cUpn || !cPwd}
-                  onClick={() => run(() => call("users", { method: "POST", body: JSON.stringify({ display_name: cName, user_principal_name: cUpn, password: cPwd }) }), "User created.")}>
+                  onClick={() => run(() => call("users", { method: "POST", body: JSON.stringify({ display_name: cName, user_principal_name: cUpn, password: cPwd }) }), tu("created"))}>
                   Create
                 </button>
               </div>

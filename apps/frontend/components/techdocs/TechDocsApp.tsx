@@ -7,14 +7,22 @@
 
 import { CopilotChat, CopilotKitProvider } from "@copilotkit/react-core/v2";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 
 function Chat({ authorization }: { authorization?: string }) {
+  const locale = useLocale();
   return (
     <CopilotKitProvider
       runtimeUrl="/api/copilotkit"
-      headers={authorization ? { Authorization: authorization } : undefined}
+      // O chat sai do SERVIDOR Next para o backend, então o Accept-Language do navegador não
+      // é repassado sozinho. `useLocale()` já é o idioma efetivo (escolha explícita ou o que o
+      // navegador pediu), e mandá-lo aqui é o que faz o AGENTE responder na língua da tela.
+      headers={{
+        ...(authorization ? { Authorization: authorization } : {}),
+        "Accept-Language": locale,
+      }}
       showDevConsole={process.env.NODE_ENV !== "production"}
     >
       <main
@@ -27,13 +35,13 @@ function Chat({ authorization }: { authorization?: string }) {
           margin: "0 auto",
         }}
       >
-        <div style={{ padding: "12px 4px" }}>
-          <span className="muted" style={{ fontSize: 12 }}>
+        <div>
+          <span className="muted t-xs">
             TechDocs expert · grounded in the TechDocs platform knowledge base (cites the
             component + doc)
           </span>
         </div>
-        <div style={{ flex: 1, minHeight: 0 }} className="copilotkit-chat-host">
+        <div className="fill copilotkit-chat-host">
           <CopilotChat agentId="techdocs" />
         </div>
       </main>
@@ -41,16 +49,9 @@ function Chat({ authorization }: { authorization?: string }) {
   );
 }
 
-const center: React.CSSProperties = {
-  display: "flex",
-  height: "100%",
-  minHeight: 360,
-  alignItems: "center",
-  justifyContent: "center",
-  fontFamily: "system-ui",
-};
 
 function AuthedChat() {
+  const tc = useTranslations("common");
   const { instance, accounts } = useMsal();
   const isAuthenticated = useIsAuthenticated();
   const [token, setToken] = useState<string | null>(null);
@@ -73,7 +74,7 @@ function AuthedChat() {
     };
   }, [isAuthenticated, accounts, instance]);
 
-  if (!token) return <div style={center}>Acquiring token…</div>;
+  if (!token) return <div className="console-center">{tc("acquiringToken")}</div>;
   return <Chat authorization={`Bearer ${token}`} />;
 }
 

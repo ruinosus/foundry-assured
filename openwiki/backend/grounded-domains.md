@@ -1,72 +1,66 @@
 ---
-type: backend module
-title: Grounded domains archetype
-description: Shared serving archetype for cockpit and selfwiki, including request-scoped user capture, retrieval-to-synthesis flow, AG-UI event emission, and structured citation delivery.
-tags: [backend, grounded, retrieval, ag-ui]
+type: service
+title: Grounded Domains
+description: "Grounded question-answering domains such as selfwiki and techdocs, including the shared archetype, per-domain configuration, retrieval path, and declarative instruction ownership."
+tags: [backend, grounded, retrieval, citations]
 ---
 
-# Grounded domains archetype
+# Grounded domains
 
-The grounded module exists so `cockpit` and `selfwiki` do not each reinvent secure cited Q&A. Its public surface exports `stream_grounded`, synthesis helpers, the fallback concierge builder, and `PerRequestAgent`, while its module docstring states the invariant: every answer from this module must carry at least one source citation, enforced by evaluation rather than by transport protocol ([apps/backend/app/modules/grounded/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/public.py#L1-L9), [apps/backend/app/modules/grounded/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/public.py#L24-L33)).
+The backend’s grounded domains are `techdocs` and `selfwiki`. In the registry they are `kind: "grounded"` domains that resolve per-request tenant config and stream cited Q&A through the common `stream_grounded` archetype. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/registry.py#L73-L75) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/registry.py#L96-L132) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/registry.py#L137-L160)
 
-## How grounded endpoints are mounted
+## Shared archetype
 
-The backend registry mounts each grounded domain as a POST route whose handler captures `current_user()` before constructing the `StreamingResponse`, because the auth context variable does not survive into the async generator used by `stream_grounded()` ([apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L103-L121)). This is one of the easiest ways to accidentally break authorization: if an endpoint starts reading `current_user()` inside `stream_grounded()` instead of passing `user`, it will silently degrade toward the wrong identity path.
+`app/modules/grounded/public.py` exposes the public API for grounded behavior: `stream_grounded`, synthesis helpers, knowledge configuration checks, and `PerRequestAgent`. The module docstring states the core product rule: every answer produced here must carry at least one source citation, enforced by eval policy rather than by transport protocol. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/grounded/public.py#L1-L9) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/grounded/public.py#L11-L33)
 
-## Four-stage runtime flow
+That separation matters: the transport can stream anything, but repository assurance requires citations and evaluates them independently.
 
-`grounded.py` documents its own four-stage path:
+## Per-domain configuration
 
-1. build an async credential representing the signed-in user,
-2. retrieve authorized documents through the knowledge seam,
-3. synthesize only from those documents,
-4. emit AG-UI text deltas plus a `sources` custom event ([apps/backend/app/modules/grounded/internal/grounded.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/internal/grounded.py#L1-L18)).
+The registry’s `DomainSpec` enforces that a grounded domain must define either a knowledge base name or a search index. `_domains()` then fills those fields from tenant config, plus instructions and ACL group maps. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/registry.py#L33-L59) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/registry.py#L96-L132)
 
-The code matches that comment exactly. `stream_grounded()` derives `user_text`, starts AG-UI run/message envelopes, gets tenant config, builds the async credential, calls `retrieve(user_text, user, domain)`, creates a Foundry OpenAI client, builds synthesis kwargs, emits source metadata, and streams `response.output_text.delta` events back into AG-UI message-content events ([apps/backend/app/modules/grounded/internal/grounded.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/internal/grounded.py#L76-L150)).
+`selfwiki` is notable because it uses an app-users ACL map when `APP_USERS_GROUP_ID` is present, making the repository wiki a private grounded corpus by default. `techdocs` instead uses tenant-configured KB/index/ACL values. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/registry.py#L108-L129)
 
-```mermaid
-sequenceDiagram
-  participant HTTP as grounded endpoint
-  participant GR as stream_grounded
-  participant KN as knowledge.retrieve
-  participant FDY as Foundry responses client
-  participant UI as AG-UI consumer
-  HTTP->>GR: body and captured user
-  GR->>KN: retrieve(query, user, domain)
-  KN-->>GR: authorized docs with source and snippet
-  GR->>FDY: responses.create with synthesized context
-  FDY-->>GR: output_text deltas
-  GR-->>UI: AG-UI text events
-  GR-->>UI: CUSTOM sources event
-```
-This sequence shows the grounded path from request to structured citations.
+## Declarative instruction ownership
 
-## OBO and auth-off fallback
+Grounded domain instructions are not authored in the registry itself. `_domains()` imports `TECHDOCS_INSTRUCTIONS` and `SELFWIKI_INSTRUCTIONS` from `app.modules.agentdefs.public`, which means changes to grounding behavior often start in declarative agent-definition assets under `apps/backend/agents/`, not in the registry. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/registry.py#L96-L99) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/agentdefs/internal/definitions.py#L24-L35) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/agentdefs/internal/definitions.py#L140-L155)
 
-`_async_credential(user)` uses `OnBehalfOfCredential` when auth is enabled and a user exists, otherwise `DefaultAzureCredential` ([apps/backend/app/modules/grounded/internal/grounded.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/internal/grounded.py#L58-L73)). The comments explain why this is duplicated from shared auth rather than reused directly: the generator loses access to the request-scoped `current_user()` contextvar, so the endpoint must capture the user and pass it in ([apps/backend/app/modules/grounded/internal/grounded.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/internal/grounded.py#L59-L63), [apps/backend/app/modules/grounded/internal/grounded.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/internal/grounded.py#L82-L83)).
+That is the main extension seam for adding another grounded domain: define the prompt assets, export instructions, then add the `DomainSpec` row.
 
-This is the core auth invariant for grounded domains: retrieval and synthesis should run as the user when possible, but local development must still work when auth is off.
+## Retrieval and ACL path
 
-## Synthesis contract
+Grounded domains depend on the knowledge module’s retrieval path and ACL guarantees. The repository’s retrieval ACL parity test explains the seam precisely: the production `retrieve()` path must preserve per-user trimming through header attachment, native retrieval, docKey parsing, and deduplication. The test asserts that a confidential source appears for an entitled user A and does not appear for public-only user B. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/tests/knowledge/retrieval_acl_parity_test.py#L1-L18) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/tests/knowledge/retrieval_acl_parity_test.py#L104-L142)
 
-`SYNTHESIS_DIRECTIVE` is intentionally strict: answer only from provided documents, cite every factual claim by bracketed index, and say you do not know when the documents do not contain the answer ([apps/backend/app/modules/grounded/internal/grounded.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/internal/grounded.py#L29-L35)). `build_synthesis_kwargs()` injects retrieved snippets as the only grounding context and includes domain-specific instructions separately ([apps/backend/app/modules/grounded/internal/grounded.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/internal/grounded.py#L38-L55)). If you weaken this prompt contract, you are changing both retrieval assurance semantics and the EvidencePanel’s expected source behavior.
+The request flow is:
 
-## Structured citations and the frontend contract
+1. `_mount_grounded()` captures `current_user()` before entering `StreamingResponse`, because the contextvar would otherwise be lost inside the stream generator.
+2. `stream_grounded()` receives the request payload, domain spec, and captured user.
+3. The grounding layer calls `retrieve()` with that user and domain.
+4. Retrieval chooses native KB retrieve when a knowledge base is configured, otherwise direct search fallback.
+5. The synthesis layer emits AG-UI/SSE events: a run-start event, assistant text-delta events, and a custom `sources`/evidence event carrying the citations/snippets that the right-hand evidence panel renders.
 
-After retrieval, `stream_grounded()` constructs `sources = [{index, source, url, content}]`, where `content` is the snippet capped at 800 characters, then emits that list as a `CustomEvent(name="sources", value=sources)` after the text stream finishes ([apps/backend/app/modules/grounded/internal/grounded.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/internal/grounded.py#L123-L141)). The frontend `EvidencePanel` is built around that exact event shape: it subscribes to agent events, clears citations on `RUN_STARTED`, and stores citation data when it sees `CUSTOM` with `name === "sources"` ([apps/frontend/components/console/EvidencePanel.tsx](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/components/console/EvidencePanel.tsx#L8-L13), [apps/frontend/components/console/EvidencePanel.tsx](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/components/console/EvidencePanel.tsx#L71-L108)).
+[Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/registry.py#L137-L154) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/knowledge/internal/retrieval.py#L48-L73) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/knowledge/internal/retrieval.py#L105-L170)
 
-Because storage blobs are private, the inline `content` preview is often more important to the UX than the URL itself. The UI renders `.citation-content` from that snippet, not by opening blob URLs directly ([apps/frontend/components/console/EvidencePanel.tsx](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/frontend/components/console/EvidencePanel.tsx#L117-L149)). So a change to snippet shape or absence will show up as a user-visible citation regression.
+Per-user search authorization is attached only when a user-scoped token is available and the domain is ACL-sensitive: `_user_search_token(user)` is called only when `acl_group_map` is truthy, the native/direct-search headers carry `x-ms-query-source-authorization` only when that token exists, and ACL domains intentionally fail closed to zero docs when no user token can be attached. Public domains omit that header and run under app identity, while direct-search dev/public fallback can use elevated read instead of ACL trimming. Dedupe and 1-based reindexing are centralized in `_project()` and locked in by `retrieval_shape_test`, while A-vs-B visibility is locked in by `retrieval_acl_parity_test`. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/knowledge/internal/retrieval.py#L64-L73) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/knowledge/internal/retrieval.py#L81-L102) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/knowledge/internal/retrieval.py#L157-L163) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/knowledge/internal/retrieval.py#L248-L275) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/app/modules/knowledge/internal/retrieval.py#L278-L295) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/backend/tests/knowledge/retrieval_acl_parity_test.py#L107-L142)
 
-## Concierge fallback and PerRequestAgent
+The important repository invariant is therefore: **ACL trimming is a pre-answer retrieval property, not a postprocessing embellishment**.
 
-The module also exports a concierge fallback and `PerRequestAgent`. The registry uses `knowledge_configured()` to decide whether `/helpdesk` should run the full workflow or a single concierge agent ([apps/backend/app/registry.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/registry.py#L124-L140), [apps/backend/app/modules/grounded/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/public.py#L11-L22)). `PerRequestAgent` lives here because grounded domains needed it first and platform ops reused it later ([apps/backend/app/modules/grounded/public.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/grounded/public.py#L6-L9), [apps/backend/app/modules/platform_ops/internal/platform.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/app/modules/platform_ops/internal/platform.py#L17-L23)).
+## Selfwiki vs TechDocs
 
-## Focused tests and validation
+The two grounded domains differ mainly by corpus:
 
-The grounded test family focuses on event shape and end-to-end citation behavior. `grounded_archetype_roundtrip_test.py` posts real authenticated A/B requests through `/cockpit` and asserts on cited source filenames from the `sources` custom event, not on prose ([apps/backend/tests/grounded/grounded_archetype_roundtrip_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/grounded/grounded_archetype_roundtrip_test.py#L1-L18), [apps/backend/tests/grounded/grounded_archetype_roundtrip_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/grounded/grounded_archetype_roundtrip_test.py#L77-L105), [apps/backend/tests/grounded/grounded_archetype_roundtrip_test.py](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/apps/backend/tests/grounded/grounded_archetype_roundtrip_test.py#L125-L147)). The browser equivalent is `e2e/cockpit-acl.spec.ts`, which signs in as two users, asserts that only the cleared user sees the confidential source, and clicks the first citation to confirm inline snippet rendering ([e2e/cockpit-acl.spec.ts](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/e2e/cockpit-acl.spec.ts#L6-L19), [e2e/cockpit-acl.spec.ts](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/e2e/cockpit-acl.spec.ts#L124-L145), [e2e/cockpit-acl.spec.ts](https://github.com/ruinosus/foundry-assured/blob/08e078d7f2b6febbc5135f0b7928b5a204c667e3/e2e/cockpit-acl.spec.ts#L152-L177)).
+- **selfwiki** is grounded in this repo’s own generated wiki/docbundle content and usually exposed as a private audience to app users.
+- **techdocs** is grounded in a separate TechDocs corpus and can be temporarily hidden in the frontend even while backend support remains. [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/frontend/lib/domains.ts#L47-L64) [Source](https://github.com/ruinosus/foundry-assured/blob/b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad/apps/frontend/lib/domains.ts#L65-L79)
 
-Minimal validation after grounded changes:
+The shared archetype means adding a new grounded domain should usually not require new streaming logic, only new configuration, prompts, and corpus ingest.
 
-- Verify one live `/cockpit` or `/selfwiki` answer shows structured citations.
-- Re-run the A/B ACL round-trip if retrieval or event shape changed.
-- Confirm the frontend EvidencePanel still receives and displays `sources` data.
+## Focused tests
+
+Key tests for grounded behavior include:
+
+- `tests/knowledge/retrieval_acl_parity_test.py`
+- `tests/knowledge/retrieval_shape_test.py`
+- `tests/knowledge/techdocs_acl_stamp_test.py`
+- grounded payload/native snippet/per-request override tests under `tests/grounded/`
+
+After changing grounded domain config, retrieval, or citation behavior, start there.

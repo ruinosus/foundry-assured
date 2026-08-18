@@ -7,6 +7,14 @@
 // dependency is a no-op there too.
 
 import { apiScopes, authConfigured, msalInstance } from "@/lib/auth/msal";
+import { LOCALE_COOKIE } from "@/lib/locale";
+
+/** A escolha de idioma da interface, do cookie — vazio quando a pessoa está em "automático". */
+function chosenLocale(): string | null {
+  if (typeof document === "undefined") return null;
+  const hit = document.cookie.split("; ").find((c) => c.startsWith(`${LOCALE_COOKIE}=`));
+  return hit ? decodeURIComponent(hit.split("=")[1]) : null;
+}
 
 export async function authedFetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers);
@@ -22,5 +30,14 @@ export async function authedFetch(input: RequestInfo | URL, init: RequestInit = 
       }
     }
   }
+  // O MESMO idioma da interface vai ao backend, que o repassa ao agente como preferência de
+  // resposta. Sem isto, a interface em inglês conversaria com um agente em português — que é
+  // exatamente a mistura que a tradução veio corrigir.
+  //
+  // Só quando há escolha explícita: em "automático" o navegador já envia o seu Accept-Language,
+  // e sobrescrevê-lo aqui apagaria a preferência real da pessoa.
+  const locale = chosenLocale();
+  if (locale && !headers.has("Accept-Language")) headers.set("Accept-Language", locale);
+
   return fetch(input, { ...init, headers });
 }

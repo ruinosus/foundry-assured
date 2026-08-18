@@ -36,7 +36,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from app.modules.knowledge.internal.docbundle_schema import validate_manifest
@@ -119,7 +119,7 @@ def adapt(repo: Path, component: str, version: str, out_dir: Path, wiki_dir: str
         "key": f"{component}-{version}", "title": f"{component} {version}",
         "source": {"type": "repo", "ref": str(repo), "commit": ""},
         "language": language, "model": "github-copilot-cli/deep-wiki",
-        "generatedAt": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generatedAt": datetime.now(UTC).isoformat(timespec="seconds"),
         "kind": "element", "component": component, "componentVersion": version,
         # This path has no access input at all (deep-wiki knows nothing about the
         # repo's read teams) — so it declares nothing. `null`, never `[]`.

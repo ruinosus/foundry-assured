@@ -19,15 +19,19 @@ Notes:
 
 from __future__ import annotations
 
+import contextlib
 from dataclasses import dataclass
+from functools import partial
 from typing import Literal
 
 from agent_framework_ag_ui import add_agent_framework_fastapi_endpoint
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import StreamingResponse
 
+from app.modules.conversations.public import bind_conversation
+from app.modules.tenancy.public import domain_deps as _tenancy_domain_deps
+from app.modules.tenancy.public import tenant_config
 from app.shared.settings import settings
-from app.modules.tenancy.public import domain_deps, tenant_config
 
 
 @dataclass(frozen=True)
@@ -73,6 +77,18 @@ DOMAIN_KINDS: dict[str, str] = {
     "techdocs": "grounded",
     "selfwiki": "grounded",
     "platform": "tool",
+    # O assistente do WIZARD (não do chat de domínio): ajuda a preencher o formulário de criação
+    # e propõe valores pela tool de frontend `propose_field`. `tool` e não `grounded` porque só o
+    # caminho do adapter repassa as tools do cliente ao agente — medido, ver
+    # `modules/builder/internal/builder.py`.
+    "builder": "tool",
+    # ADR-020: a domain on a DIFFERENT runtime, mounted by the same loop. The registry
+    # dispatches by kind and each branch calls its framework's own idiom — there is no adapter
+    # making them look alike, because the frameworks move faster than such an adapter could be
+    # maintained. `oncall` is LangGraph; the four above are Agent Framework.
+    "oncall": "graph",
+    # Gêmeo em deepagents — mesmo problema, harness diferente. Ver modules/deepcall/public.py.
+    "deepcall": "graph",
 }
 
 
@@ -91,7 +107,10 @@ def domain_spec(domain_id: str) -> DomainSpec:
 def _domains() -> list[DomainSpec]:
     """The four domain specs, built from the current request's tenant config (read LAZILY here —
     NOT at import). Mirrors domains.ts row-for-row."""
-    from app.modules.agentdefs.public import TECHDOCS_INSTRUCTIONS, SELFWIKI_INSTRUCTIONS
+    from app.modules.agentdefs.public import (
+        SELFWIKI_INSTRUCTIONS,
+        TECHDOCS_INSTRUCTIONS,
+    )
 
     cfg = tenant_config()
     return [
@@ -129,6 +148,21 @@ def _domains() -> list[DomainSpec]:
 
 
 
+def _preferred_language(request) -> str | None:
+    """O idioma preferido do chamador, de `Accept-Language`.
+
+    Fica na primeira escolha e ignora os pesos: o modelo não precisa da lista de fallback, e
+    passar "pt-BR,pt;q=0.9,en;q=0.8" inteiro só gastaria contexto. Sem o header, devolve None e
+    o agente segue o idioma da pergunta — que é o que o guardrail `response-language` manda.
+    """
+    raw = (request.headers.get("accept-language") or "").strip()
+    if not raw:
+        return None
+    first = raw.split(",")[0].split(";")[0].strip()
+    # Um header malformado não deve virar instrução: só passa o que tem cara de tag BCP-47.
+    return first if 2 <= len(first) <= 12 and all(c.isalnum() or c == "-" for c in first) else None
+
+
 def _mount_grounded(app: FastAPI, domain_id: str) -> None:
     """POST /{id} → stream the grounded archetype (cited Q&A). Captures current_user() in the
     endpoint body (the contextvar is lost inside the StreamingResponse generator).
@@ -140,11 +174,20 @@ def _mount_grounded(app: FastAPI, domain_id: str) -> None:
     """
 
     async def endpoint(request: Request) -> StreamingResponse:
-        from app.shared.auth import current_user
         from app.modules.grounded.public import stream_grounded
+        from app.shared.auth import current_user
 
+        # `Accept-Language` é o padrão da web para isto — o browser já o envia e o seletor de
+        # idioma da interface o sobrescreve. Inventar um campo no corpo seria criar vocabulário
+        # onde já existe um. Lido AQUI porque, como `current_user()`, a requisição não sobrevive
+        # dentro do gerador do StreamingResponse.
         return StreamingResponse(
-            stream_grounded(await request.json(), domain_spec(domain_id), current_user()),
+            stream_grounded(
+                await request.json(),
+                domain_spec(domain_id),
+                current_user(),
+                language=_preferred_language(request),
+            ),
             media_type="text/event-stream",
         )
 
@@ -156,11 +199,42 @@ def _mount_grounded(app: FastAPI, domain_id: str) -> None:
     )
 
 
+async def _bind_conversation(domain_id: str, request: Request) -> None:
+    """Amarra `(domínio, threadId)` a esta requisição, para o gravador de uso saber onde somar.
+
+    POR QUE AQUI E SÓ AQUI. Os dois lados da medição sabem metades diferentes: o middleware de chat
+    vê o token e não sabe de que conversa é; a requisição sabe a conversa e não vê o token. Esta
+    dependência é o encontro, e ela entra por `domain_deps` — que TODO domínio recebe, qualquer que
+    seja o `kind`. Um agente novo é medido por existir, não por alguém lembrar de instrumentá-lo.
+
+    `request.json()` guarda o corpo em cache no próprio objeto (`Request._body`), então lê-lo aqui
+    não consome o stream que o adapter vai ler depois. Corpo que não é JSON — ou que não traz
+    thread — simplesmente não amarra nada, e o gravador vira no-op.
+    """
+    with contextlib.suppress(Exception):
+        corpo = await request.json()
+        if isinstance(corpo, dict):
+            thread = corpo.get("threadId") or corpo.get("thread_id") or ""
+            bind_conversation(domain_id, str(thread))
+
+
+def domain_deps(domain_id: str) -> list:
+    """As deps de tenancy MAIS a amarração da conversa. É o que `mount_domains` usa em todo kind.
+
+    Fica aqui, e não em `tenancy`, porque a amarração é do módulo de conversas — e tenancy não
+    pode importá-lo sem ganhar uma dependência que não é dela.
+    """
+    return [*_tenancy_domain_deps(domain_id), Depends(partial(_bind_conversation, domain_id))]
+
+
 def _mount_helpdesk(app: FastAPI, domain_id: str) -> None:
     """AG-UI workflow endpoint. With a KB wired, the per-request factory streams the Phase 2 steps
     + Phase 3 OBO/memory; without one, fall back to the single concierge agent."""
     from app.modules.grounded.public import build_concierge_agent, knowledge_configured
-    from app.modules.helpdesk.public import OrderedAgentFrameworkWorkflow, build_helpdesk_workflow
+    from app.modules.helpdesk.public import (
+        OrderedAgentFrameworkWorkflow,
+        build_helpdesk_workflow,
+    )
 
     if knowledge_configured():
         add_agent_framework_fastapi_endpoint(
@@ -175,11 +249,28 @@ def _mount_helpdesk(app: FastAPI, domain_id: str) -> None:
         )
 
 
+def _mount_builder(app: FastAPI, domain_id: str) -> None:
+    """O assistente do wizard. Mesmo arquétipo do platform — adapter oficial, agente por
+    requisição — mas sem tools de servidor: tudo que ele faz é propor, e propor é tool do
+    cliente."""
+    from app.modules.builder.public import builder_agent_proxy
+
+    add_agent_framework_fastapi_endpoint(
+        app,
+        agent=builder_agent_proxy,
+        path=f"/{domain_id}",
+        dependencies=domain_deps(domain_id),
+    )
+
+
 def _mount_platform(app: FastAPI, domain_id: str) -> None:
     """Tool-driven ops concierge over the Microsoft first-party MCP servers. The platform_agent_proxy
     (a PerRequestAgent) rebuilds the agent on each run so tools are filtered under the caller's roles +
     OBO credential. Only mounted when platform is configured."""
-    from app.modules.platform_ops.public import platform_agent_proxy, platform_configured
+    from app.modules.platform_ops.public import (
+        platform_agent_proxy,
+        platform_configured,
+    )
 
     if platform_configured():
         add_agent_framework_fastapi_endpoint(
@@ -188,6 +279,42 @@ def _mount_platform(app: FastAPI, domain_id: str) -> None:
             path=f"/{domain_id}",
             dependencies=domain_deps(domain_id),
         )
+
+
+def _mount_graph(app: FastAPI, domain_id: str) -> None:
+    """A LangGraph domain, mounted with LangGraph's own AG-UI adapter (ADR-020).
+
+    `add_langgraph_fastapi_endpoint` is the exact counterpart of the Agent Framework's
+    `add_agent_framework_fastapi_endpoint` used two functions up. Both speak AG-UI to the same
+    CopilotKit frontend; neither is wrapped to look like the other. That symmetry is the whole
+    argument of ADR-020 — the protocol is the seam, not an abstraction we maintain.
+    """
+    from ag_ui_langgraph import LangGraphAgent, add_langgraph_fastapi_endpoint
+
+    # Dois grafos LangGraph, um caminho de montagem — porque `create_deep_agent` devolve o mesmo
+    # `CompiledStateGraph` que `create_agent`. Se precisasse de adaptador, a comparação já estaria
+    # contaminada pelo adaptador.
+    if domain_id == "deepcall":
+        from app.modules.deepcall.public import (
+            build_deepcall_graph,
+            deepcall_configured,
+        )
+
+        if not deepcall_configured():
+            return
+        build, descricao = build_deepcall_graph, "On-call triage on the deepagents harness."
+    else:
+        from app.modules.oncall.public import build_oncall_graph, oncall_configured
+
+        if not oncall_configured():
+            return
+        build, descricao = build_oncall_graph, "On-call triage with human-in-the-loop on escalation."
+
+    add_langgraph_fastapi_endpoint(
+        app=app,
+        agent=LangGraphAgent(name=domain_id, description=descricao, graph=build()),
+        path=f"/{domain_id}",
+    )
 
 
 def mount_domains(app: FastAPI) -> None:
@@ -203,7 +330,11 @@ def mount_domains(app: FastAPI) -> None:
         elif kind == "workflow":
             _mount_helpdesk(app, domain_id)
         elif kind == "tool":
-            _mount_platform(app, domain_id)
+            # Dois domínios de tool hoje, e o despacho é por ID porque eles montam agentes
+            # diferentes. Um terceiro pede um mapa; dois ainda cabem numa condição legível.
+            (_mount_builder if domain_id == "builder" else _mount_platform)(app, domain_id)
+        elif kind == "graph":
+            _mount_graph(app, domain_id)
 
 
 def include_routers(app) -> None:
@@ -214,11 +345,30 @@ def include_routers(app) -> None:
     """
     from app import api_health
     from app.modules.admin import api_admin, api_me
+    from app.modules.audit import api as audit
+    from app.modules.builder import api as builder_assist
+    from app.modules.conversations import api as conversations
     from app.modules.evaluation import api as evals
+    from app.modules.foundry import api as foundry
     from app.modules.hosted import api as chat
+    from app.modules.proposer import api as proposer
     from app.modules.tickets import api as tickets
+    from app.modules.usecases import api as usecases
 
-    for module in (api_health, tickets, evals, chat, api_admin, api_me):
+    for module in (
+        api_health,
+        tickets,
+        evals,
+        chat,
+        api_admin,
+        api_me,
+        foundry,
+        usecases,
+        conversations,
+        proposer,
+        audit,
+        builder_assist,
+    ):
         app.include_router(module.router)
 
     if settings.deployment_mode == "shared":

@@ -5,6 +5,7 @@
 // pass counts per run, each linking to its portal report.
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import { authedFetch } from "@/lib/auth/api";
 
 const FOUNDRY_PORTAL = "https://ai.azure.com";
@@ -23,6 +24,8 @@ type Run = {
 };
 
 export function EvalsView() {
+  const tc = useTranslations("common");
+  const t = useTranslations("evals");
   const [runs, setRuns] = useState<Run[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,10 +35,13 @@ export function EvalsView() {
       const r = await authedFetch("/api/evals", { cache: "no-store" });
       const data = await r.json();
       setRuns(data.runs ?? []);
-      if (data.error) setError(data.error);
+      // `reason` vem do backend quando a lista está vazia por falha (sem permissão, serviço fora).
+      // Sem ele, a tela dizia "nenhuma execução — rode o eval", que é conselho errado quando o
+      // problema é permissão: rodar o eval não resolve, e a pessoa tenta várias vezes.
+      if (data.error || data.reason) setError(data.error ?? data.reason);
     } catch {
       setRuns([]);
-      setError("could not reach the backend");
+      setError(tc("backendUnreachable"));
     }
   }
 
@@ -47,15 +53,14 @@ export function EvalsView() {
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div className="between">
         <div>
-          <h2 style={{ margin: "0 0 4px" }}>Evaluations</h2>
-          <p className="muted" style={{ margin: 0, fontSize: 13 }}>
-            Live from the Foundry project — hosted groundedness/relevance/coherence judges.
-            Each run links to its full report in the portal.
+          <h2>{t("title")}</h2>
+          <p className="muted t-sm">
+            {t("subtitleLong")}
           </p>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="row-tight">
           <a className="btn" href={portalLink} target="_blank" rel="noreferrer">
             Foundry portal ↗
           </a>
@@ -66,13 +71,13 @@ export function EvalsView() {
       </div>
 
       {error && (
-        <p className="muted" style={{ marginTop: 12 }}>
+        <p className="muted">
           ⚠️ {error}
         </p>
       )}
 
       {runs === null ? (
-        <div className="empty">Loading…</div>
+        <div className="empty">{tc("loading")}</div>
       ) : runs.length === 0 ? (
         <div className="table-wrap">
           <div className="empty">
@@ -92,9 +97,9 @@ export function EvalsView() {
               <tr>
                 <th>When</th>
                 <th>Eval</th>
-                <th>Status</th>
-                <th>Scores</th>
-                <th>Report</th>
+                <th>{t("colStatus")}</th>
+                <th>{t("colScores")}</th>
+                <th>{t("colReport")}</th>
               </tr>
             </thead>
             <tbody>
@@ -102,7 +107,7 @@ export function EvalsView() {
                 const ok = run.status === "completed" && run.failed === 0;
                 return (
                   <tr key={run.id}>
-                    <td style={{ whiteSpace: "nowrap" }}>
+                    <td className="nowrap">
                       {run.created_at ? new Date(run.created_at * 1000).toLocaleString() : "—"}
                     </td>
                     <td>{run.eval_name}</td>

@@ -12,19 +12,47 @@ from __future__ import annotations
 import sys
 
 import app.registry as domains_mod
-from app.registry import DomainSpec, domain_deps, _domains, mount_domains
+from app.registry import DomainSpec, _domains, domain_deps, mount_domains
 
 
 class _FakeApp:
-    """Records add_api_route calls (grounded branch) so we can assert the routes + their deps."""
+    """Records the routes `mount_domains` registers, by BOTH mechanisms it actually uses.
+
+    `add_api_route` is the grounded branch. `post` is the LangGraph one: ADR-020 mounts that
+    domain through `add_langgraph_fastapi_endpoint`, which registers with `@app.post(path)` — a
+    decorator, not a method call. A stub that only knew `add_api_route` raised AttributeError the
+    moment the second runtime mounted, and it did so ONLY on a machine with AZURE_OPENAI_ENDPOINT
+    set, because `oncall_configured()` gates the mount. Green in CI, red locally, for a stub gap
+    rather than a real defect — so the stub grew the second mechanism instead of the test
+    pretending one runtime is all there is.
+    """
 
     def __init__(self) -> None:
         self.routes: list[dict] = []
+        self.posted: list[str] = []
+        self.gotten: list[str] = []
 
     def add_api_route(self, path, endpoint, *, methods=None, dependencies=None, **kw) -> None:
         self.routes.append(
             {"path": path, "endpoint": endpoint, "methods": methods, "dependencies": dependencies}
         )
+
+    def post(self, path, **kw):
+        """`@app.post(path)` — record the path and hand the function straight back."""
+        return self._record(self.posted, path)
+
+    def get(self, path, **kw):
+        """`@app.get(path)` — the adapter also registers `<path>/health` beside the endpoint."""
+        return self._record(self.gotten, path)
+
+    @staticmethod
+    def _record(sink: list[str], path: str):
+        sink.append(path)
+
+        def decorator(fn):
+            return fn
+
+        return decorator
 
 
 def main() -> int:
@@ -70,17 +98,41 @@ def main() -> int:
         ok_index = False
     check("grounded guard allows search_index-only", ok_index)
 
-    # --- domain_deps: self_hosted → exactly auth_dependencies() (no domain gate) ---
+    # --- domain_deps: duas funções com o mesmo nome, e a distinção importa ---------------
+    #
+    # `tenancy.domain_deps` guarda a promessa da ADR-017: em self_hosted é BYTE-IDÊNTICO a
+    # `auth_dependencies()`, e só o modo shared acrescenta o gate de entitlement. Isso continua
+    # valendo e é verificado abaixo.
+    #
+    # `registry.domain_deps` é o composto que os endpoints recebem, e ele acrescenta UMA
+    # dependência em TODO modo: a amarração da conversa, que é como a medição de uso passou a ser
+    # uniforme por construção em vez de cada agente lembrar de se instrumentar. Essa é a única
+    # diferença entre os dois, e o teste fixa exatamente ela — se alguém remover a amarração, os
+    # domínios continuam servindo e param de ser medidos, sem nada mais falhar.
+    from app.modules.tenancy.public import domain_deps as tenancy_deps
     from app.shared.auth import auth_dependencies
     from app.shared.settings import settings
 
     orig_mode = settings.deployment_mode
     try:
         settings.deployment_mode = "self_hosted"
-        check("domain_deps == auth_dependencies() in self_hosted", domain_deps("techdocs") == auth_dependencies())
+        check(
+            "tenancy.domain_deps == auth_dependencies() in self_hosted (ADR-017)",
+            tenancy_deps("techdocs") == auth_dependencies(),
+        )
+        check(
+            "registry.domain_deps acrescenta a amarração da conversa em self_hosted",
+            len(domain_deps("techdocs")) == len(auth_dependencies()) + 1,
+        )
         settings.deployment_mode = "shared"
-        shared_deps = domain_deps("techdocs")
-        check("domain_deps adds a gate in shared mode", len(shared_deps) == len(auth_dependencies()) + 1)
+        check(
+            "tenancy.domain_deps adds a gate in shared mode",
+            len(tenancy_deps("techdocs")) == len(auth_dependencies()) + 1,
+        )
+        check(
+            "registry.domain_deps carrega gate + amarração em shared",
+            len(domain_deps("techdocs")) == len(auth_dependencies()) + 2,
+        )
     finally:
         settings.deployment_mode = orig_mode
 
@@ -127,7 +179,14 @@ def main() -> int:
         check("grounded routes gated by domain_deps", all(r["dependencies"] is not None for r in app.routes))
 
         adapter_paths = {c["path"] for c in adapter_calls}
-        check("workflow + tool branches hit the adapter (/helpdesk, /platform)", adapter_paths == {"/helpdesk", "/platform"})
+        # `/builder` entra aqui porque é `kind: tool`: o assistente do wizard PRECISA do adapter,
+        # que é o único caminho que repassa as tools do cliente ao agente (`propose_field`). Uma
+        # regressão que o mandasse pelo caminho grounded o deixaria sem enxergar a ferramenta que
+        # ele é instruído a chamar — e o sintoma seria um agente educado que nunca propõe nada.
+        check(
+            "workflow + tool branches hit the adapter (/helpdesk, /platform, /builder)",
+            adapter_paths == {"/helpdesk", "/platform", "/builder"},
+        )
         check("workflow/tool adapter calls carry deps", all(c["dependencies"] is not None for c in adapter_calls))
     finally:
         domains_mod.add_agent_framework_fastapi_endpoint = saved["adapter"]

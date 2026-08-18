@@ -1,0 +1,246 @@
+/* =============================================================================
+   Foundry Assured — design tokens
+   =============================================================================
+
+   Register: product (design serve o produto — console operado dentro de uma tarefa).
+
+   A cena que decidiu o tema: um engenheiro às 23h, sala escura, monitor como única luz,
+   decidindo se escala um incidente; e um avaliador às 14h, sala clara, projetor, julgando se
+   as garantias são reais. Os dois contextos são reais e documentados no PRODUCT.md — por isso
+   ambos os temas são requisito, não preferência.
+
+   Estratégia de cor: RESTRAINED, levada a sério. Este é um console de procedência — o produto
+   é dizer o que é verdade, com que fonte, aprovado por quem. Num console assim, cor que não
+   significa nada é ruído. Então o neutro carrega a interface inteira e **cor só aparece quando
+   significa**: passou · aguarda humano · barrou · selecionado.
+
+   O que foi recusado, e por quê:
+   - escuro com roxo/índigo e gradiente — o reflexo de primeira ordem para "console de IA";
+   - terminal verde-fosforado — o reflexo de segunda ordem de quem foge do primeiro;
+   - a paleta anterior era Tailwind default sem Tailwind (#2563eb blue-600, #64748b slate-500),
+     o valor mais genérico disponível.
+
+   Tudo em OKLCH: a interpolação é perceptual, então uma rampa de neutros não muda de matiz no
+   meio, e ajustar L não desloca a cor.
+   ============================================================================= */
+
+:root {
+  /* --- Neutros ------------------------------------------------------------
+     Viés frio deliberado (hue 258, chroma ≤0.012). NÃO warm-neutral: a banda
+     creme/areia é o default saturado de 2026 e este produto não é editorial. */
+  --bg: oklch(0.977 0.003 258);
+  --surface: oklch(1 0 0);
+  --sunk: oklch(0.955 0.005 258);      /* sidebar, painéis, cabeçalhos de tabela */
+  --line: oklch(0.902 0.006 258);
+  --line-strong: oklch(0.836 0.008 258);
+
+  /* Texto. --muted precisa dos mesmos 4.5:1 do corpo — texto cinza-claro "por elegância" é a
+     maior razão de interfaces de IA parecerem difíceis de ler. Verificado, não estimado. */
+  --ink: oklch(0.235 0.017 262);
+  --muted: oklch(0.487 0.018 260);
+  --faint: oklch(0.612 0.014 258);     /* SÓ para não-texto: ícones decorativos, separadores */
+
+  /* --- Accent -------------------------------------------------------------
+     Azul-tinta profundo. Existe para ação primária e seleção — nunca decoração. Escolhido
+     longe do blue-600 (mais escuro, mais saturado) e longe das três semânticas abaixo, para
+     que "selecionado" nunca seja confundido com "aprovado". */
+  --accent: oklch(0.452 0.152 262);
+  --accent-hover: oklch(0.396 0.152 262);
+  --accent-ink: oklch(0.99 0.005 262);  /* texto sobre o accent */
+  --accent-wash: oklch(0.955 0.024 262); /* fundo de seleção, bem discreto */
+
+  /* --- Semântica ----------------------------------------------------------
+     O vocabulário do produto. Estas três são as ÚNICAS cores que aparecem sem ação do
+     usuário, e cada uma quer dizer exatamente uma coisa:
+       pass  — o gate aprovou, a citação resolve, o acesso confere
+       wait  — parado esperando um humano (o momento mais importante da interface)
+       block — barrado: reprovou, negou, falhou */
+  --pass: oklch(0.492 0.126 158);
+  --pass-wash: oklch(0.958 0.028 158);
+  --wait: oklch(0.545 0.126 68);
+  --wait-wash: oklch(0.960 0.038 68);
+  --block: oklch(0.505 0.176 26);
+  --block-wash: oklch(0.958 0.030 26);
+
+  /* --- Tipografia ---------------------------------------------------------
+     Uma família só (o register product não pede par display/corpo) em pesos variados. Escala
+     FIXA em rem, ratio ~1.125: interface é vista em DPI consistente, e um h1 fluido que
+     encolhe dentro de uma sidebar fica pior, não melhor. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue",
+    Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
+
+  --text-2xs: 0.6875rem;   /* 11px — apenas rótulos em maiúsculas */
+  --text-xs: 0.75rem;      /* 12px */
+  --text-sm: 0.8125rem;    /* 13px — densidade de dados */
+  --text-base: 0.9375rem;  /* 15px — corpo */
+  --text-md: 1.0625rem;    /* 17px */
+  --text-lg: 1.1875rem;    /* 19px */
+  --text-xl: 1.375rem;     /* 22px */
+  --text-2xl: 1.625rem;    /* 26px */
+  --text-3xl: 2rem;        /* 32px */
+
+  --leading-tight: 1.25;
+  --leading-snug: 1.4;
+  --leading-normal: 1.6;
+  --tracking-label: 0.06em;   /* rótulos em maiúsculas */
+  --tracking-tight: -0.015em; /* títulos; piso de -0.04em jamais atingido aqui */
+
+  /* --- Espaçamento --------------------------------------------------------
+     Base 4px. Ritmo vem de VARIAR os passos, não de repetir o mesmo. */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+
+  /* --- Forma --------------------------------------------------------------
+     Cartões entre 8 e 12px. Nada de 24/28/32px: sobre-arredondar é um tell, e nenhum produto
+     de operações quer parecer um brinquedo. */
+  --radius-sm: 4px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --radius-pill: 999px;
+
+  /* --- Elevação -----------------------------------------------------------
+     Sombra OU borda, nunca as duas como decoração no mesmo elemento. Blur ≤8px. */
+  --shadow-sm: 0 1px 2px oklch(0.235 0.017 262 / 0.06);
+  --shadow: 0 2px 8px oklch(0.235 0.017 262 / 0.08);
+  --shadow-pop: 0 4px 16px oklch(0.235 0.017 262 / 0.12);
+
+  /* --- Z-index ------------------------------------------------------------
+     Escala semântica. Nunca 999 nem 9999. */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-dropdown: 20;
+  --z-backdrop: 30;
+  --z-modal: 40;
+  --z-toast: 50;
+  --z-tooltip: 60;
+
+  /* --- Movimento ----------------------------------------------------------
+     150–250ms: o usuário está em fluxo e não quer esperar coreografia. Ease-out exponencial;
+     sem bounce, sem elástico. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 120ms;
+  --dur: 180ms;
+  --dur-slow: 240ms;
+
+  /* --- Layout -------------------------------------------------------------- */
+  --sidebar-w: 248px;
+  --topbar-h: 56px;
+  --measure: 68ch;  /* comprimento de linha para prosa */
+}
+
+/* =============================================================================
+   Tema escuro
+   =============================================================================
+   Três estados, não dois: escolha explícita (data-theme), e o padrão "sistema", que não
+   estampa nada — nesse caso só prefers-color-scheme separa claro de escuro. Por isso a
+   media query é guardada com :not([data-theme="light"]), e o [data-theme="dark"] repete os
+   tokens para que o botão vença nos dois sentidos.
+
+   O escuro NÃO é o claro invertido: o chroma sobe um pouco (cores dessaturam contra fundo
+   escuro) e os neutros ficam acima de 0.17 para não virar buraco preto no monitor às 23h. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: oklch(0.172 0.008 262);
+    --surface: oklch(0.212 0.010 262);
+    --sunk: oklch(0.246 0.011 262);
+    --line: oklch(0.302 0.012 262);
+    --line-strong: oklch(0.382 0.014 262);
+
+    --ink: oklch(0.944 0.004 258);
+    --muted: oklch(0.726 0.014 258);
+    --faint: oklch(0.588 0.014 258);
+
+    --accent: oklch(0.706 0.138 262);
+    --accent-hover: oklch(0.772 0.130 262);
+    --accent-ink: oklch(0.176 0.020 262);
+    --accent-wash: oklch(0.286 0.052 262);
+
+    --pass: oklch(0.740 0.136 158);
+    --pass-wash: oklch(0.276 0.048 158);
+    --wait: oklch(0.784 0.126 72);
+    --wait-wash: oklch(0.296 0.050 68);
+    --block: oklch(0.712 0.152 26);
+    --block-wash: oklch(0.298 0.062 26);
+
+    --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.32);
+    --shadow: 0 2px 8px oklch(0 0 0 / 0.40);
+    --shadow-pop: 0 4px 16px oklch(0 0 0 / 0.50);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: oklch(0.172 0.008 262);
+  --surface: oklch(0.212 0.010 262);
+  --sunk: oklch(0.246 0.011 262);
+  --line: oklch(0.302 0.012 262);
+  --line-strong: oklch(0.382 0.014 262);
+
+  --ink: oklch(0.944 0.004 258);
+  --muted: oklch(0.726 0.014 258);
+  --faint: oklch(0.588 0.014 258);
+
+  --accent: oklch(0.706 0.138 262);
+  --accent-hover: oklch(0.772 0.130 262);
+  --accent-ink: oklch(0.176 0.020 262);
+  --accent-wash: oklch(0.286 0.052 262);
+
+  --pass: oklch(0.740 0.136 158);
+  --pass-wash: oklch(0.276 0.048 158);
+  --wait: oklch(0.784 0.126 72);
+  --wait-wash: oklch(0.296 0.050 68);
+  --block: oklch(0.712 0.152 26);
+  --block-wash: oklch(0.298 0.062 26);
+
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.32);
+  --shadow: 0 2px 8px oklch(0 0 0 / 0.40);
+  --shadow-pop: 0 4px 16px oklch(0 0 0 / 0.50);
+}
+
+/* =============================================================================
+   Compatibilidade — os nomes antigos viram apelidos
+   =============================================================================
+   787 linhas de CSS e 14 componentes ainda falam --text/--primary/--ok/--bad. Mapear em vez
+   de renomear tudo de uma vez mantém a interface funcionando enquanto a migração acontece
+   componente a componente. Estes apelidos saem quando o último consumidor sair. */
+:root {
+  --text: var(--ink);
+  --border: var(--line);
+  --primary: var(--accent);
+  --primary-tint: var(--accent-wash);
+  --ok: var(--pass);
+  --ok-tint: var(--pass-wash);
+  --bad: var(--block);
+  --bad-tint: var(--block-wash);
+}
+
+/* ── Aliases para o que renderiza DENTRO do CopilotKit ─────────────────────────────────────
+   O CopilotKit declara os PRÓPRIOS tokens em `[data-copilotkit]`, e alguns nomes coincidem com
+   os nossos — `--muted`, `--border`, `--radius`. Os valores não coincidem: o `--muted` dele é um
+   FUNDO quase branco (`oklch(97% 0 0)`), o nosso é uma cor de TEXTO. Um componente nosso
+   renderizado dentro do chat (o card de proposta, o card de aprovação, a linha de tool) resolve
+   `var(--muted)` para o valor DELE — e o texto some no claro.
+
+   Custom property resolve no ponto de USO, mas um alias declarado aqui resolve NO :root, onde o
+   valor é o nosso — e desce herdado já resolvido, imune à redeclaração lá dentro.
+
+   Regra: componente que pode aparecer dentro do chat usa `--fa-*`. */
+:root {
+  --fa-ink: var(--ink);
+  --fa-muted: var(--muted);
+  --fa-faint: var(--faint);
+  --fa-surface: var(--surface);
+  --fa-sunken: var(--sunken);
+  --fa-line: var(--line);
+  --fa-accent: var(--accent);
+  --fa-wait: var(--wait);
+  --fa-pass: var(--pass);
+  --fa-block: var(--block);
+}

@@ -195,13 +195,13 @@ uv run python -m app.modules.knowledge.internal.ingest
 COCKPIT_DOCBUNDLES=/path/to/cockpit/docbundles \
   uv run python -m app.modules.knowledge.internal.ingest_docbundles
 
-# Selfwiki KB — this repo's own deep-wiki (docs/wiki); reuses ingest_docbundles via ENV override
+# Selfwiki KB — this repo's own deep-wiki (knowledge/wiki-bundle); reuses ingest_docbundles via ENV override
 KB_KNOWLEDGE_SOURCE=selfwiki-docbundles-ks \
 KB_DOMAIN_LABEL="o projeto foundry-assured" \
 COCKPIT_STORAGE_CONTAINER=selfwiki-corpus \
 COCKPIT_SEARCH_KNOWLEDGE_BASE=selfwiki-kb \
 COCKPIT_SEARCH_INDEX=selfwiki-docbundles-ks-index \
-COCKPIT_DOCBUNDLES=../../docs/wiki \
+TECHDOCS_DOCBUNDLES=../../knowledge/wiki-bundle \
   uv run python -m app.modules.knowledge.internal.ingest_docbundles
 ```
 
@@ -210,7 +210,7 @@ the per-document access groups, and polls until the index settles.
 
 ### Generating the selfwiki corpus — two paths
 
-The `docs/wiki` deep-wiki that the **selfwiki** ingest consumes is itself generated.
+The `knowledge/wiki-bundle` deep-wiki that the **selfwiki** ingest consumes is itself generated.
 There are **two ways** to produce it:
 
 1. **Foundry pipeline (`wiki_builder.py`)** — automated, runs in-cloud. From

@@ -32,6 +32,9 @@ param ciPrincipalId string = ''
 @description('Model deployment name, surfaced to the app as FOUNDRY_MODEL.')
 param modelDeploymentName string = 'gpt-5-mini'
 
+@description('Deploy Azure AI Search (default true). FALSE gives an environment for the model-driven domains only — helpdesk workflow, platform MCP and the LangGraph oncall domain — without the ~US$74/month the Basic tier costs simply for existing. The grounded domains and the per-document ACL need it.')
+param deploySearch bool = true
+
 @description('Optional region override for Azure AI Search (set AZURE_SEARCH_LOCATION if eastus2 is out of Search capacity). Falls back to location.')
 param searchLocation string = ''
 
@@ -67,6 +70,7 @@ module resources 'resources.bicep' = {
     ciPrincipalId: ciPrincipalId
     appUsersGroupId: appUsersGroupId
     modelDeploymentName: modelDeploymentName
+    deploySearch: deploySearch
     searchLocation: effectiveSearchLocation // region override for AI Search capacity
   }
 }

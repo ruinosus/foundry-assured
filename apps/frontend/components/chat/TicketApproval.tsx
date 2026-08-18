@@ -21,45 +21,40 @@
 // runAgent({ resume }) mechanism.
 
 import { useAgent } from "@copilotkit/react-core/v2";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
 // Two shapes of interrupt arrive over the SAME request_info/CUSTOM-event tap:
 //   - "ticket": the helpdesk workflow's create_ticket HITL -> { data: { summary } }
 //   - "tool":   the platform agent's native MCP write-tool approval
 //               (agent-framework ToolApprovalRequestContent) -> tool name + args
+// LangGraph domains are NOT handled here. They go through `GraphApproval`, which uses
+// CopilotKit's own `useInterrupt` — the hook already implements this tap, and gets the resume
+// run right (it replays the interrupted `runId` instead of the thread's messages, which is
+// what made a hand-rolled resume interrupt a second time instead of executing). This file
+// stays for the Agent Framework domains, whose adapter emits `request_info`, which that hook
+// does not know about. ADR-020: two runtimes, two idioms, no normalizing layer.
 type Pending =
-  | { kind: "ticket"; id: string; summary: string }
+  | { kind: "ticket"; id: string; summary: string; reason: string }
   | { kind: "tool"; id: string; toolName: string; args: unknown };
 
-const card: React.CSSProperties = {
-  border: "1px solid #2563eb33",
-  borderLeft: "3px solid #2563eb",
-  borderRadius: 8,
-  padding: 12,
-  margin: "0 24px 8px",
-  background: "#eff6ff",
-  fontFamily: "system-ui",
-};
-const btn = (bg: string): React.CSSProperties => ({
-  padding: "6px 14px",
-  borderRadius: 6,
-  border: "none",
-  background: bg,
-  color: "white",
-  cursor: "pointer",
-  fontSize: 13,
-  fontWeight: 600,
-});
 
-export function TicketApproval() {
-  const { agent } = useAgent({ agentId: "helpdesk" });
+export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = {}) {
+  const t = useTranslations("approval");
+  // The domain is a PROP, not a constant. It was hard-coded to "helpdesk", so on any other
+  // domain's page the card subscribed to the wrong agent and never saw the interrupt — the
+  // approval simply never appeared. Found by running it, not by reading it.
+  const { agent } = useAgent({ agentId });
   const [pending, setPending] = useState<Pending | null>(null);
   const [busy, setBusy] = useState(false);
+  // The approver's corrected summary. Empty means "not editing" — the card only shows the
+  // input once Edit is pressed, so the default path (approve / reject) stays two clicks.
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
 
   useEffect(() => {
     if (!agent) return;
     const sub = agent.subscribe({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onEvent: ({ event }: any) => {
         if (event?.type === "CUSTOM" && event?.name === "request_info") {
           const v = event.value ?? {};
@@ -81,7 +76,11 @@ export function TicketApproval() {
             setPending({ kind: "tool", id, toolName, args });
           } else {
             const summary = data.summary ?? v.summary ?? "(no summary)";
-            setPending({ kind: "ticket", id, summary });
+            // O PORQUÊ pode não vir: prompt e código publicam separado (ADR-014), então um
+            // backend novo roda com prompt antigo por um tempo. Ausente = a seção não aparece,
+            // nunca um placeholder que finge que o agente não justificou.
+            const reason = String(data.reason ?? v.reason ?? "");
+            setPending({ kind: "ticket", id, summary, reason });
           }
         }
       },
@@ -91,16 +90,20 @@ export function TicketApproval() {
 
   if (!pending) return null;
 
-  const respond = async (approved: boolean) => {
+  // The payload is either the legacy boolean or a decision object. The backend accepts both
+  // and treats anything unrecognized as a REJECT, so a malformed payload can never be the
+  // reason a ticket opens (ADR-019).
+  const respond = async (payload: boolean | { type: string; args?: Record<string, string> }) => {
     if (!agent || busy) return;
     setBusy(true);
     const id = pending.id;
     setPending(null);
+    setEditing(false);
     try {
       // Send the AG-UI array form (the CopilotKit runtime validates this); the
       // runtime route rewrites it to the backend's dict form before forwarding.
       await agent.runAgent({
-        resume: [{ interruptId: id, status: "resolved", payload: approved }],
+        resume: [{ interruptId: id, status: "resolved", payload }],
       });
     } finally {
       setBusy(false);
@@ -108,36 +111,111 @@ export function TicketApproval() {
   };
 
   return (
-    <div style={card}>
+    <div className="approval">
       {pending.kind === "tool" ? (
         <>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>
-            Run write tool <code>{pending.toolName}</code>?
+          <div className="approval-head">
+            <span className="approval-eyebrow">{t("waiting")}</span>
+            <h3 className="approval-title">
+              Executar <code>{pending.toolName}</code>?
+            </h3>
           </div>
-          <div style={{ fontSize: 13, marginBottom: 10 }}>
-            <b>Arguments:</b>{" "}
-            <code style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+          <dl className="approval-body">
+            <dt>{t("arguments")}</dt>
+            <dd>
+              <code>
               {typeof pending.args === "string"
                 ? pending.args
                 : JSON.stringify(pending.args ?? {}, null, 2)}
-            </code>
-          </div>
+              </code>
+            </dd>
+          </dl>
         </>
       ) : (
         <>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>Open a support ticket?</div>
-          <div style={{ fontSize: 13, marginBottom: 10 }}>
-            <b>Summary:</b> {pending.summary}
+          <div className="approval-head">
+            <span className="approval-eyebrow">{t("waiting")}</span>
+            <h3 className="approval-title">{t("openTicket")}</h3>
           </div>
+          {editing ? (
+            <div className="approval-edit">
+              <label htmlFor="ticket-summary" className="approval-eyebrow">
+                Resumo
+              </label>
+              <textarea
+                id="ticket-summary"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                rows={3}
+              />
+            </div>
+          ) : (
+            <dl className="approval-body">
+              <dt>{t("summary")}</dt>
+              <dd>{pending.summary}</dd>
+              {/* O PORQUÊ, marcado como o que é: texto do MODELO, não fato verificado.
+                  Tipografia deliberadamente diferente do resumo — exibido igual, ele vira uma
+                  segunda afirmação com ar de dado, e o aprovador passa a aprovar PELA
+                  justificativa em vez de pelo conteúdo, que é o oposto do que este gate faz. */}
+              {pending.reason && (
+                <>
+                  <dt>{t("reason")}</dt>
+                  <dd className="approval-reason">
+                    <span className="approval-reason-tag">{t("modelSaid")}</span>
+                    <span className="muted">{pending.reason}</span>
+                  </dd>
+                </>
+              )}
+            </dl>
+          )}
         </>
       )}
-      <div style={{ display: "flex", gap: 8 }}>
-        <button style={btn("#16a34a")} disabled={busy} onClick={() => respond(true)}>
-          Approve
-        </button>
-        <button style={btn("#dc2626")} disabled={busy} onClick={() => respond(false)}>
-          Reject
-        </button>
+      <div className="approval-actions">
+        {editing ? (
+          <>
+            {/* An edit that changes nothing is an approval — the backend refuses an empty
+                edit, so send the plain approval rather than a no-op correction. */}
+            <button
+              className="btn btn-approve"
+              disabled={busy || !draft.trim()}
+              onClick={() =>
+                respond(
+                  pending.kind === "ticket" && draft.trim() === pending.summary
+                    ? { type: "approve" }
+                    : { type: "edit", args: { summary: draft.trim() } },
+                )
+              }
+            >
+              {t("saveApprove")}
+            </button>
+            <button className="btn" disabled={busy} onClick={() => setEditing(false)}>
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            <button className="btn btn-approve" disabled={busy} onClick={() => respond(true)}>
+              Approve
+            </button>
+            {pending.kind === "ticket" && (
+              // Editing is only offered where the backend can apply it. The platform agent's
+              // native tool approval is still accept/refuse (ADR-019).
+              <button
+                className="btn"
+                disabled={busy}
+                onClick={() => {
+                  setDraft(pending.summary);
+                  setEditing(true);
+                }}
+              >
+                Edit
+              </button>
+            )}
+            <button className="btn btn-reject" disabled={busy} onClick={() => respond(false)}>
+              Reject
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

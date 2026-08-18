@@ -1,0 +1,56 @@
+# Fecha o dia da trilha de auditoria (ADR-023).
+#
+# POR QUE AGENDADO, e não um botão. A âncora é o que impede que alguém reescreva a trilha INTEIRA
+# recalculando todos os hashes: a cadeia sozinha detecta EDIÇÃO, não SUBSTITUIÇÃO. Enquanto o
+# fecho dependia de alguém clicar em /audit, ele não acontecia — e uma âncora que não acontece não
+# protege de nada.
+#
+# POR QUE GITHUB ACTIONS, e não um job do Container Apps. O fecho precisa rodar mesmo quando o
+# backend está escalado a zero, que é o estado normal deste ambiente fora do horário de uso — e um
+# job que só roda quando alguém está usando o produto fecha os dias errados. O Actions também dá
+# a trilha de execução de graça: quem rodou, quando, e com que saída.
+#
+# 03:30 UTC = 00:30 em São Paulo. Depois da meia-noite local, para o fecho pertencer ao dia que
+# terminou; e não em ponto, porque a meia-noite exata é quando todo agendador do mundo dispara.
+name: audit anchor
+
+on:
+  schedule:
+    - cron: "30 3 * * *"
+  workflow_dispatch:
+    inputs:
+      date:
+        description: "AAAA-MM-DD (vazio = hoje). Use para recuperar um dia perdido."
+        required: false
+
+permissions:
+  contents: read
+  id-token: write # Azure OIDC — sem segredo de longa duração (ADR-005)
+
+jobs:
+  anchor:
+    name: fecha o dia da trilha
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync --frozen
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # A falha aqui é DELIBERADAMENTE ruidosa: o único motivo de um escopo não ancorar é a
+      # trilha estar violada, e essa é a descoberta mais importante que este sistema pode fazer.
+      # Um `continue-on-error` transformaria isso num log que ninguém lê.
+      - name: Close the day
+        env:
+          AZURE_STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
+          FOUNDRY_PROJECT_ENDPOINT: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
+        run: uv run python -m cli.close_audit_day --date "${{ inputs.date }}"

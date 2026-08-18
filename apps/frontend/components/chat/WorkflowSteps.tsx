@@ -13,24 +13,21 @@
 // is shared — importing useAgent from /v2/headless uses a separate context copy
 // and throws "useCopilotKit must be used within CopilotKitProvider".
 import { useAgent } from "@copilotkit/react-core/v2";
+import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
-const STEPS = [
-  { id: "triage", label: "Triage", desc: "Classify intent & urgency" },
-  { id: "retrieve", label: "Retrieve", desc: "Search the runbook knowledge base" },
-  { id: "resolve", label: "Resolve", desc: "Write the grounded, cited answer" },
-] as const;
+// O `id` é contrato: é o nome do passo no snapshot de estado que o workflow emite. Rótulo e
+// descrição são texto, e por isso vivem no dicionário sob a mesma chave.
+const STEPS = ["triage", "retrieve", "resolve"] as const;
 
 type StepState = "idle" | "active" | "done" | "pending";
 
-const DOT: Record<StepState, string> = {
-  idle: "#cbd5e1",
-  pending: "#cbd5e1",
-  active: "#2563eb",
-  done: "#16a34a",
-};
+// Estado do passo é semântica, não enfeite: "rodando agora" usa o accent (a atenção está
+// ali) e "concluído" usa --pass (o mesmo verde que diz "o gate aprovou" em toda a interface).
+// Antes eram hex cravados — #cbd5e1/#2563eb/#16a34a — que no tema escuro sumiam ou brigavam.
 
 export function WorkflowSteps() {
+  const t = useTranslations("workflow");
   const { agent } = useAgent({ agentId: "helpdesk" });
   const [status, setStatus] = useState<Record<string, string>>({});
   const [running, setRunning] = useState(false);
@@ -42,7 +39,6 @@ export function WorkflowSteps() {
         setStatus({});
         setRunning(true);
       },
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       onActivitySnapshotEvent: ({ event }: any) => {
         const content = event?.content ?? event?.payload?.content;
         const id: string | undefined = content?.executor_id;
@@ -52,7 +48,7 @@ export function WorkflowSteps() {
         setRunning(false);
         // The run finished successfully, so every step ran — mark them all done
         // (the terminal step never emits a clean "completed" activity).
-        setStatus(() => Object.fromEntries(STEPS.map((s) => [s.id, "completed"])));
+        setStatus(() => Object.fromEntries(STEPS.map((id) => [id, "completed"])));
       },
       onRunFailed: () => setRunning(false),
     });
@@ -68,53 +64,26 @@ export function WorkflowSteps() {
     return running ? "pending" : "idle";
   }
 
+  // SÓ DURANTE A EXECUÇÃO, e por pouco tempo depois. Antes era um bloco fixo acima do chat,
+  // ocupando altura permanente para dizer "idle" — informação de zero valor que empurrava a
+  // conversa para baixo em toda visita. Agora aparece quando roda e sai quando termina.
+  if (!hasAny) return null;
+
   return (
-    <section
-      style={{
-        borderBottom: "1px solid #e5e7eb",
-        padding: "12px 24px",
-        fontFamily: "system-ui",
-      }}
-    >
-      <div style={{ fontSize: 12, color: "#64748b", marginBottom: 8 }}>
-        Workflow {running ? "· running…" : hasAny ? "· done" : "· idle"}
-      </div>
-      <ol
-        style={{
-          display: "flex",
-          gap: 8,
-          listStyle: "none",
-          margin: 0,
-          padding: 0,
-          flexWrap: "wrap",
-        }}
-      >
-        {STEPS.map((s) => {
-          const st = stateFor(s.id);
+    <div className={`steps-strip${running ? " running" : ""}`} aria-live="polite">
+      <span className="steps-label">{running ? t("running") : t("done")}</span>
+      <ol className="steps-flow">
+        {STEPS.map((id, i) => {
+          const st = stateFor(id);
           return (
-            <li
-              key={s.id}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "6px 10px",
-                border: `1px solid ${st === "active" ? DOT.active : "#e5e7eb"}`,
-                borderRadius: 8,
-                background:
-                  st === "active" ? "#eff6ff" : st === "done" ? "#f0fdf4" : "transparent",
-                opacity: st === "pending" || st === "idle" ? 0.6 : 1,
-              }}
-            >
-              <span aria-hidden style={{ fontSize: 13, color: DOT[st] }}>
-                {st === "done" ? "✓" : "●"}
-              </span>
-              <span style={{ fontSize: 13, fontWeight: 600 }}>{s.label}</span>
-              <span style={{ fontSize: 12, color: "#94a3b8" }}>{s.desc}</span>
+            <li key={id} className={`step-${st}`}>
+              {i > 0 && <span className="step-arrow" aria-hidden>→</span>}
+              <span className="step-pip" aria-hidden />
+              <span className="step-name">{t(`${id}Label`)}</span>
             </li>
           );
         })}
       </ol>
-    </section>
+    </div>
   );
 }

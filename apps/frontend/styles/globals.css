@@ -1,18 +1,10 @@
+/* Tokens: paleta OKLCH, escala tipográfica, espaçamento, elevação, z-index e os dois temas.
+   Os nomes antigos (--text, --primary, --ok, --bad) seguem valendo como apelidos, definidos no
+   fim de tokens.css, para que este arquivo e os componentes migrem aos poucos. */
+@import "./tokens.css";
+
 :root {
-  --bg: #f8fafc;
-  --surface: #ffffff;
-  --border: #e5e7eb;
-  --text: #0f172a;
-  --muted: #64748b;
-  --primary: #2563eb;
-  --primary-tint: #eff6ff;
-  --ok: #16a34a;
-  --ok-tint: #f0fdf4;
-  --bad: #dc2626;
-  --bad-tint: #fef2f2;
-  --sidebar-w: 248px;
-  --topbar-h: 56px;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--font-sans);
 }
 
 * {
@@ -62,10 +54,10 @@ a {
   width: 30px;
   height: 30px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--primary), #7c3aed);
+  background: var(--accent);
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--accent-ink);
   font-size: 16px;
 }
 
@@ -97,7 +89,7 @@ a {
 }
 
 .nav-item:hover {
-  background: #f1f5f9;
+  background: var(--sunk);
 }
 
 .nav-item.active {
@@ -149,10 +141,10 @@ a {
   flex: 0 0 30px;
   display: grid;
   place-items: center;
-  color: #fff;
+  color: var(--accent-ink);
   font-weight: 700;
   font-size: 13px;
-  background: linear-gradient(135deg, var(--primary), #7c3aed);
+  background: var(--accent);
 }
 .acct-meta {
   min-width: 0;
@@ -183,7 +175,7 @@ a {
   cursor: pointer;
 }
 .acct-btn:hover {
-  background: #f1f5f9;
+  background: var(--sunk);
 }
 
 .dot {
@@ -230,7 +222,7 @@ a {
   font-weight: 600;
 }
 .crumbs .sep {
-  color: #cbd5e1;
+  color: var(--muted);
 }
 
 .page {
@@ -246,8 +238,8 @@ a {
 .hero {
   border-radius: 16px;
   padding: 40px;
-  color: #fff;
-  background: radial-gradient(1200px 400px at 0% 0%, #3b82f6 0%, #2563eb 40%, #4f46e5 100%);
+  color: var(--accent-ink);
+  background: var(--accent);
   box-shadow: 0 10px 30px -12px rgba(37, 99, 235, 0.45);
 }
 .hero h1 {
@@ -278,17 +270,17 @@ a {
   border: 1px solid transparent;
 }
 .btn-primary {
-  background: #fff;
+  background: var(--surface);
   color: var(--primary);
 }
 .btn-ghost {
   background: rgba(255, 255, 255, 0.12);
-  color: #fff;
+  color: var(--accent-ink);
   border-color: rgba(255, 255, 255, 0.35);
 }
 .btn-solid {
   background: var(--primary);
-  color: #fff;
+  color: var(--accent-ink);
 }
 
 /* ---------- Cards / grid ---------- */
@@ -354,7 +346,7 @@ table.evals td {
   vertical-align: top;
 }
 table.evals th {
-  background: #f8fafc;
+  background: var(--bg);
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -365,10 +357,11 @@ table.evals tr:last-child td {
 }
 .pill {
   display: inline-block;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 11px;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-2xs);
   font-weight: 600;
+  line-height: 1.3;
 }
 .pill.ok {
   background: var(--ok-tint);
@@ -379,7 +372,7 @@ table.evals tr:last-child td {
   color: var(--bad);
 }
 .pill.neutral {
-  background: #f1f5f9;
+  background: var(--sunk);
   color: var(--muted);
 }
 .score {
@@ -423,37 +416,96 @@ table.evals tr:last-child td {
   min-height: 0;
 }
 .console-head {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-2) var(--space-4);
   align-items: center;
-  gap: 14px;
-  padding: 16px 24px;
-  border-bottom: 1px solid var(--border);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
 }
+
+/* Marca do domínio. Fundo neutro afundado, NÃO o accent: o accent é reservado para ação e
+   seleção, e gastá-lo num enfeite de cabeçalho tira força de onde ele significa algo. */
 .console-icon {
-  width: 40px;
-  height: 40px;
-  flex: 0 0 40px;
-  border-radius: 10px;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: var(--radius);
   display: grid;
   place-items: center;
-  font-size: 20px;
-  background: var(--primary-tint);
+  font-size: var(--text-lg);
+  background: var(--sunk);
+  border: 1px solid var(--line);
 }
-.console-head-meta {
-  min-width: 0;
-  flex: 1;
-}
+
+.console-head-meta { min-width: 0; }
+
 .console-head-meta h2 {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--text-md);
+  font-weight: 640;
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
 }
-.console-head-meta p {
-  margin: 2px 0 0;
-  font-size: 12.5px;
+
+.console-blurb {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--muted);
+  text-wrap: pretty;
 }
-.console-kind {
-  flex: 0 0 auto;
+
+/* A capacidade demonstrada ocupa a segunda linha inteira, alinhada ao texto — não um badge
+   apertado no canto. É a informação que faltava na tela, então recebe largura para ser lida,
+   não um chip que force abreviar até virar jargão. */
+.console-demo {
+  grid-column: 2;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+  max-width: var(--measure);
 }
+
+.console-demo-label {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* Alternador Live/Hosted + sua legenda. */
+.console-mode {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-2) var(--space-5);
+}
+
+.console-mode-note {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+/* Estados vazios / de transição do console (não autenticado, adquirindo token, domínio
+   inexistente). */
+.console-center {
+  display: flex;
+  height: 100%;
+  min-height: 22rem;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: var(--space-4);
+  color: var(--muted);
+}
+
 /* The shared chat-host fixes its own viewport height; inside the console it must flex. */
 .console .copilotkit-chat-host {
   height: auto;
@@ -507,159 +559,160 @@ table.evals tr:last-child td {
 
 /* Evidence panel */
 .evidence {
-  border-left: 1px solid var(--border);
+  border-left: 1px solid var(--line);
   background: var(--surface);
-  padding: 18px 18px 24px;
+  padding: var(--space-5) var(--space-5) var(--space-6);
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: var(--space-6);
 }
+
 .evidence-title {
-  font-size: 11px;
+  font-size: var(--text-2xs);
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--tracking-label);
   text-transform: uppercase;
   color: var(--muted);
-  margin-bottom: 12px;
+  margin-bottom: var(--space-3);
 }
+
 .evidence-sources {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  /* Contained scroll box: many sources scroll here instead of pushing "Garantias" off-screen. */
+  gap: var(--space-2);
+  /* Rolagem contida: muitas fontes rolam aqui em vez de empurrar "Garantias" para fora. */
   max-height: 42vh;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: var(--space-1);
 }
+
 .source-chip {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  border: 1px solid var(--border);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  color: var(--ink);
+  border: 1px solid var(--line);
   background: var(--bg);
   word-break: break-all;
 }
+
+/* Fonte de componente. Antes usava lilás cravado (#ddd6fe / #f5f3ff), invisível no tema
+   escuro. Agora é o accent lavado — a mesma cor que marca seleção, porque é disso que se
+   trata: esta fonte é de um componente específico, não do corpus geral. */
 .source-chip.component {
-  border-color: #ddd6fe;
-  background: #f5f3ff;
+  border-color: var(--accent);
+  background: var(--accent-wash);
 }
-.source-ico {
-  font-family: system-ui;
-  flex: 0 0 auto;
-}
-/* Structured citations (grounded stream): numbered, clickable footnotes. */
+
+.source-ico { font-family: var(--font-sans); flex: 0 0 auto; }
+
+/* Citações estruturadas: notas de rodapé numeradas e clicáveis. */
 .evidence-citations {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: var(--space-2);
   max-height: 42vh;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: var(--space-1);
 }
+
 .citation-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   width: 100%;
   text-align: left;
-  padding: 7px 9px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
   background: var(--bg);
+  color: var(--ink);
   cursor: pointer;
   font: inherit;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
 }
-.citation-btn:hover {
-  border-color: #c7d2fe;
-  background: #f5f3ff;
-}
+
+.citation-btn:hover { border-color: var(--accent); background: var(--accent-wash); }
+.citation-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
 .citation-idx {
   flex: 0 0 auto;
-  min-width: 18px;
-  height: 18px;
+  min-width: 1.25rem;
+  height: 1.25rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 999px;
-  background: #ede9fe;
-  color: #5b21b6;
-  font-size: 11px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--text-2xs);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
+
 .citation-src {
-  font-size: 12px;
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
   word-break: break-all;
 }
-.citation-detail {
-  padding: 6px 9px 2px 35px;
-}
+
+.citation-detail { padding: var(--space-2) var(--space-3) 0 2.2rem; }
+
 .citation-link {
-  font-size: 11.5px;
+  font-size: var(--text-xs);
   word-break: break-all;
-  color: #4f46e5;
+  color: var(--accent);
 }
+.citation-link:hover { text-decoration: underline; }
+
 .citation-content {
-  font-size: 12px;
-  line-height: 1.5;
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
   color: var(--muted);
-  max-height: 180px;
+  max-height: 11rem;
   overflow-y: auto;
   white-space: pre-wrap;
-  border-left: 2px solid var(--border);
-  padding-left: 10px;
+  border-left: 2px solid var(--line);
+  padding-left: var(--space-3);
 }
+
 .evidence-empty {
-  font-size: 12.5px;
-  line-height: 1.5;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--muted);
   margin: 0;
+  text-wrap: pretty;
 }
+
 .evidence-guarantees {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-}
-.evidence-guarantees li {
-  display: flex;
-  gap: 10px;
-}
-.evidence-guarantees b {
-  font-size: 13px;
-}
-.evidence-guarantees p {
-  margin: 2px 0 0;
-  font-size: 12px;
-  line-height: 1.45;
-}
-.guarantee-icon {
-  flex: 0 0 20px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  display: grid;
-  place-items: center;
-  font-size: 11px;
-  font-weight: 700;
-  background: var(--ok-tint);
-  color: var(--ok);
+  gap: var(--space-4);
 }
 
-/* Domain role-cards (landing) */
-.domain-card {
-  display: block;
-  transition: border-color 0.12s, box-shadow 0.12s, transform 0.12s;
+.evidence-guarantees li { display: flex; gap: var(--space-3); }
+.evidence-guarantees b { font-size: var(--text-sm); color: var(--ink); }
+.evidence-guarantees p {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  color: var(--muted);
+  text-wrap: pretty;
 }
+
 .domain-card:hover {
   border-color: var(--primary);
   box-shadow: 0 8px 24px -16px rgba(37, 99, 235, 0.5);
@@ -685,7 +738,7 @@ table.evals tr:last-child td {
   margin: 0;
 }
 .tag.tag-neutral {
-  background: #f1f5f9;
+  background: var(--sunk);
   color: var(--muted);
 }
 
@@ -707,7 +760,7 @@ table.evals tr:last-child td {
 /* ---------- Engine selector (Live workflow vs Hosted agent) ---------- */
 .seg {
   display: inline-flex;
-  background: #f1f5f9;
+  background: var(--sunk);
   border-radius: 10px;
   padding: 3px;
   gap: 3px;
@@ -785,3 +838,1114 @@ table.evals tr:last-child td {
   background: var(--primary-tint);
   color: var(--primary);
 }
+
+/* ---------- Seletor de tema (claro · escuro · sistema) ---------- */
+/* Segmented control, o affordance padrão para escolha exclusiva entre poucas opções — o
+   register `product` premia vocabulário familiar sobre invenção. Sem borda + sombra larga no
+   mesmo elemento; a elevação aqui é a própria depressão do trilho. */
+.theme-toggle {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  padding: 2px;
+  background: var(--sunk);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.theme-opt {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: 1;
+  padding: var(--space-2) 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.theme-opt:hover { color: var(--ink); background: var(--surface); }
+
+/* Foco visível e sempre presente — nunca `outline: none` sem substituto. */
+.theme-opt:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+/* Selecionado usa o accent, que é reservado para ação primária e seleção. Deliberadamente NÃO
+   usa --pass: verde aqui significaria "aprovado", e o vocabulário semântico deste produto não
+   pode ser gasto com preferência de tema. */
+.theme-opt.on {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .theme-opt { transition: none; }
+}
+
+/* Rótulo acessível sem ruído visual: o ícone carrega a forma, o texto carrega o significado
+   para leitor de tela. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Botões (vocabulário único para toda a interface) ---------- */
+/* O register `product` é explícito: se o botão "salvar" parece diferente em duas telas, uma
+   delas está errada. Este é o vocabulário; componentes param de inventar o seu.
+   Todos os estados existem — default, hover, active, focus, disabled — porque metade deles
+   não é o suficiente. */
+.btn {
+  --btn-bg: var(--surface);
+  --btn-ink: var(--ink);
+  --btn-line: var(--line-strong);
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  font: inherit;
+  font-size: var(--text-base);
+  font-weight: 600;
+  line-height: 1;
+  color: var(--btn-ink);
+  background: var(--btn-bg);
+  border: 1px solid var(--btn-line);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.btn:hover:not(:disabled) { background: var(--sunk); }
+.btn:active:not(:disabled) { transform: translateY(0.5px); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Primário: sem borda + sombra larga juntas. A cor já carrega a hierarquia. */
+.btn-primary {
+  --btn-bg: var(--accent);
+  --btn-ink: var(--accent-ink);
+  --btn-line: var(--accent);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-block { width: 100%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn { transition: none; }
+  .btn:active:not(:disabled) { transform: none; }
+}
+
+/* ---------- Tela de entrada ---------- */
+.login {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto;
+  justify-items: center;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--bg);
+}
+
+.login-card {
+  width: 100%;
+  max-width: 25rem;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: var(--space-7) var(--space-6);
+  text-align: center;
+  /* Sombra OU borda como decoração — nunca as duas. Aqui a borda define e a sombra apenas
+     assenta a peça, com blur dentro do teto. */
+  box-shadow: var(--shadow);
+}
+
+.login-mark { font-size: var(--text-3xl); line-height: 1; }
+
+.login-title {
+  margin: var(--space-4) 0 var(--space-1);
+  font-size: var(--text-xl);
+  font-weight: 650;
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.login-sub {
+  margin: 0 0 var(--space-6);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.login-note {
+  margin: var(--space-5) 0 0;
+  font-size: var(--text-xs);
+  line-height: var(--leading-snug);
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+.login-foot { padding-bottom: var(--space-4); }
+
+/* ---------- Card de aprovação (o momento que importa) ---------- */
+/* É aqui que a interface para e pede um humano — uma ação real fica bloqueada esperando. Por
+   isso usa `--wait`, a cor semântica de "aguardando pessoa", e não o accent: o accent quer
+   dizer "ação disponível", e este card quer dizer "nada acontece até você decidir".
+   Sem faixa lateral colorida: borda inteira + fundo lavado. */
+.approval {
+  margin: 0 var(--space-5) var(--space-3);
+  padding: var(--space-4);
+  background: var(--wait-wash);
+  border: 1px solid var(--wait);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.approval-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.approval-eyebrow {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--wait);
+}
+
+.approval-title {
+  margin: 0;
+  font-size: var(--text-base);
+  font-weight: 640;
+  color: var(--ink);
+}
+
+.approval-body { font-size: var(--text-sm); color: var(--ink); line-height: var(--leading-snug); }
+.approval-body dt {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: var(--space-1);
+}
+.approval-body dd { margin: 0; word-break: break-word; }
+
+.approval-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+
+/* As três decisões têm peso visual diferente porque têm consequências diferentes: aprovar e
+   corrigir EXECUTAM a ação; recusar apenas para. */
+.btn-approve { --btn-bg: var(--pass); --btn-ink: var(--surface); --btn-line: var(--pass); }
+.btn-reject { --btn-ink: var(--block); --btn-line: var(--block); }
+
+.approval-edit { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.approval-edit textarea {
+  width: 100%;
+  padding: var(--space-3);
+  font: inherit;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  resize: vertical;
+}
+.approval-edit textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+/* ---------- Utilitários de layout e formulário ---------- */
+/* Existem para matar os padrões que apareciam cravados nos componentes: `display:flex` com
+   `gap` numérico repetido 16 vezes, `fontSize` em pixel 24 vezes, `marginTop` 18 vezes. Cada
+   um desses era uma decisão de espaçamento tomada de novo, sem relação com as outras — a razão
+   de a interface não ter ritmo. */
+.stack { display: flex; flex-direction: column; gap: var(--space-5); }
+.stack-sm { display: flex; flex-direction: column; gap: var(--space-2); }
+.row { display: flex; align-items: center; gap: var(--space-3); flex-wrap: wrap; }
+.row-tight { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; }
+.grow { flex: 1; min-width: 0; }
+.right { text-align: right; }
+.nowrap { white-space: nowrap; }
+
+/* Escala tipográfica utilitária — usar estas em vez de fontSize solto. */
+.t-xs { font-size: var(--text-xs); }
+.t-sm { font-size: var(--text-sm); }
+.t-mono { font-family: var(--font-mono); font-size: var(--text-xs); }
+
+/* ---------- Formulário ---------- */
+/* Vocabulário único de controles: mesma altura, mesma borda, mesmo foco em toda a interface.
+   Sem invenção — o register premia o controle familiar sobre o customizado. */
+.field { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.field-label {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.input,
+.select {
+  appearance: none;
+  width: 100%;
+  padding: var(--space-3);
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+/* Placeholder precisa dos mesmos 4.5:1 do corpo — o cinza-claro padrão do browser não passa. */
+.input::placeholder { color: var(--muted); opacity: 1; }
+
+.input:focus-visible,
+.select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: var(--accent);
+}
+
+.input:disabled,
+.select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.select {
+  /* Seta própria porque `appearance:none` remove a nativa; desenhada com a cor do texto para
+     seguir o tema. */
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: right 1rem center, right 0.7rem center;
+  background-size: 0.3rem 0.3rem, 0.3rem 0.3rem;
+  background-repeat: no-repeat;
+  padding-right: var(--space-6);
+  cursor: pointer;
+}
+
+/* ---------- Tabela ---------- */
+/* `table.evals` estava acoplada a uma página e era usada também no admin. `.tbl` é o nome do
+   que a coisa é; o seletor antigo continua valendo enquanto houver consumidor. */
+.tbl,
+table.evals {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+
+.tbl th,
+.tbl td,
+table.evals th,
+table.evals td {
+  text-align: left;
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.tbl th,
+table.evals th {
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--sunk);
+  white-space: nowrap;
+}
+
+.tbl tr:last-child td,
+table.evals tr:last-child td { border-bottom: none; }
+
+/* Dígitos que se comparam em coluna precisam alinhar. */
+.tbl .num, .num { font-variant-numeric: tabular-nums; }
+
+/* Distribui extremos numa linha — cabeçalho de seção com ação à direita. */
+.between { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+/* Preenche o espaço vertical restante (painéis de chat dentro de coluna flex). */
+.fill { flex: 1; min-height: 0; }
+.strong { font-weight: 600; }
+
+/* ---------- Convivência com o CSS do CopilotKit ---------- */
+/* Dois sistemas de token no mesmo documento, e eles COLIDEM em dois nomes: `--accent` e
+   `--border`. No vocabulário shadcn que o CopilotKit usa, `--accent` é um cinza de hover e
+   `--border` é a linha dos controles dele; no nosso, `--accent` é a cor de ação e `--border`
+   um apelido de `--line`. Como nosso CSS é importado depois, estávamos sobrescrevendo os dele
+   — silenciosamente, e com valores de outra semântica.
+   Aqui devolvemos a semântica DELE dentro do container do chat, usando nossos neutros para
+   que ainda siga o tema. Fora deste escopo, os nomes seguem sendo nossos. */
+.copilotkit-chat-host {
+  --accent: var(--sunk);
+  --border: var(--line);
+}
+
+/* ---------- Cabeçalho de página ---------- */
+.page-title {
+  margin: 0;
+  font-size: var(--text-xl);
+  font-weight: 640;
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.page-sub {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--muted);
+  max-width: var(--measure);
+  text-wrap: pretty;
+}
+
+.muted-line { margin: var(--space-1) 0 0; color: var(--muted); }
+
+/* ---------- Carregando ---------- */
+/* Esqueleto em vez de spinner no meio do conteúdo: preserva a forma do que vem, então a página
+   não salta quando os dados chegam. A pulsação respeita quem pediu menos movimento. */
+.skeleton-list { display: flex; flex-direction: column; gap: var(--space-2); }
+
+.skeleton-row {
+  height: 3rem;
+  border-radius: var(--radius);
+  background: var(--sunk);
+  border: 1px solid var(--line);
+  animation: skeleton-pulse 1.4s var(--ease-out) infinite;
+}
+.skeleton-row:nth-child(2) { animation-delay: 0.12s; }
+.skeleton-row:nth-child(3) { animation-delay: 0.24s; }
+
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.55; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-row { animation: none; }
+}
+
+/* ---------- Estado vazio ---------- */
+/* Ensina o próximo passo em vez de anunciar a ausência. "Nada aqui" é a versão preguiçosa e
+   não ajuda ninguém a sair do zero. */
+.empty {
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: var(--space-7) var(--space-5);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.empty-title { margin: 0; font-size: var(--text-md); font-weight: 620; color: var(--ink); }
+.empty-body {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--muted);
+  max-width: 48ch;
+  text-wrap: pretty;
+}
+
+/* ---------- Aviso / falha ---------- */
+/* Falha de leitura NUNCA se disfarça de vazio: usa --block, diz o que houve e oferece a ação.
+   Uma tela vazia e tranquila esconderia falta de permissão, que é o oposto de um produto cuja
+   tese é procedência. */
+.notice {
+  border: 1px solid var(--block);
+  background: var(--block-wash);
+  border-radius: var(--radius);
+  padding: var(--space-4);
+}
+
+.notice-block { display: flex; flex-direction: column; gap: var(--space-2); align-items: flex-start; }
+.notice-title { margin: 0; font-weight: 640; font-size: var(--text-base); color: var(--ink); }
+.notice-body {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--ink);
+  text-wrap: pretty;
+}
+
+/* ── Wizard e catálogo de skills ────────────────────────────────────────────────────────────
+ *
+ * O stepper e os cartões substituem, respectivamente, um formulário de dois campos e uma tabela.
+ * A escolha não é estética: cartão é a forma certa para um catálogo que se NAVEGA (a tabela serve
+ * para auditoria), e o stepper mostra onde a pessoa está numa sequência que ela não conhece.
+ */
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.step {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+/* O número é o âncora visual do passo: preenchido quando ativo, contornado quando futuro,
+   e marcado como concluído quando já passou. */
+.step-num {
+  display: grid;
+  place-items: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+}
+
+.step.on { color: var(--text); font-weight: 600; }
+.step.on .step-num { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.step.done .step-num { border-color: var(--pass); color: var(--pass); }
+
+.file-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
+.file-list li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
+
+/* A revisão é a última coisa antes de algo acontecer no serviço — precisa ser legível, não
+   compacta. */
+.review { display: grid; gap: var(--space-2); margin: 0; }
+.review dt { font-size: var(--text-xs); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.review dd { margin: 0 0 var(--space-2); }
+
+.doc-preview {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--space-3);
+  overflow-x: auto;
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.skill-card { display: grid; gap: var(--space-2); }
+.skill-name { margin: 0; font-size: var(--text-base); }
+.skill-versions { display: flex; gap: var(--space-4); margin: 0; }
+.skill-versions dt { font-size: var(--text-xs); color: var(--muted); }
+.skill-versions dd { margin: 0; font-size: var(--text-sm); }
+
+/* Erro de validação inline: vermelho semântico, não decoração. */
+.bad-line { color: var(--block); }
+
+/* O project é CONTEXTO, não destino: fica sob a marca, sempre visível, sem ser item de menu.
+   Todos os recursos das telas abaixo vivem dentro dele — quem vê uma lista vazia precisa saber
+   se está no lugar certo. */
+.project-badge {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  margin: 0 var(--space-2) var(--space-3);
+  background: var(--sunk);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.project-label {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+}
+
+.project-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+/* Campo assistido: as ações aparecem no hover/foco, como no aap-kb — presentes quando se precisa
+   delas, invisíveis quando não. A sugestão fica ABAIXO e separada: substituir o campo direto
+   tiraria da pessoa a chance de comparar com o que ela escreveu. */
+.assisted { display: grid; gap: var(--space-2); }
+
+.assisted-label {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+}
+
+.assisted-actions {
+  display: flex;
+  gap: var(--space-2);
+  opacity: 0;
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+.assisted:hover .assisted-actions,
+.assisted:focus-within .assisted-actions { opacity: 1; }
+
+/* Sem hover (toque), as ações ficam sempre visíveis — do contrário seriam inalcançáveis. */
+@media (hover: none) {
+  .assisted-actions { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .assisted-actions { transition: none; }
+}
+
+.assisted-suggestion {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--accent-wash);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.assisted-text { margin: 0; font-size: var(--text-sm); white-space: pre-wrap; }
+
+/* Chat lateral — o dock.
+ *
+ * Ele divide a área de conteúdo em vez de flutuar por cima: sobreposição esconderia justamente o
+ * formulário sobre o qual se está perguntando. Em tela estreita vira sobreposição, porque aí não
+ * há largura para os dois e o chat é o que a pessoa acabou de pedir. */
+.dock-toggle {
+  margin-left: auto;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-2);
+  cursor: pointer;
+  line-height: 1;
+  transition: color var(--dur-fast) var(--ease-out), border-color var(--dur-fast) var(--ease-out);
+}
+
+.dock-toggle:hover { color: var(--text); border-color: var(--line-strong); }
+.dock-toggle.on { color: var(--accent); border-color: var(--accent); }
+
+.content:has(.chat-dock) .page {
+  /* O conteúdo cede espaço ao dock sem reflow do shell inteiro. */
+  padding-right: 0;
+}
+
+/* O dock EMPURRA o conteúdo, não o cobre.
+   Era `position: fixed`, e por isso ele tapava justamente o formulário que a pessoa estava
+   preenchendo — inclusive o botão que abriu o chat. Um painel de ajuda que esconde o que se está
+   fazendo é pior que nenhum: obriga a fechar para ver, e fechar perde o contexto.
+   Agora o `<main>` reserva a largura dele (ver `.page.with-dock`). */
+.chat-dock {
+  position: fixed;
+  top: var(--topbar-h);
+  right: 0;
+  bottom: 0;
+  width: min(420px, 100vw);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-left: 1px solid var(--line);
+  z-index: var(--z-sticky);
+}
+
+/* Fechado: fora da vista, fora do fluxo e fora do alcance — mas MONTADO, que é o ponto (ver
+   ChatDock). `visibility: hidden` em vez de `display: none` porque o segundo faz o navegador
+   descartar o layout do subárvore inteira a cada abertura, e o chat remonta visualmente com
+   solavanco. */
+.chat-dock.chat-dock-hidden {
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateX(100%);
+}
+
+/* A margem que impede a sobreposição. No telefone o dock ocupa a tela toda e a margem não faz
+   sentido — ali ele é modal por falta de espaço, e isso é honesto. */
+@media (min-width: 900px) {
+  .page.with-dock { margin-right: min(420px, 100vw); }
+}
+
+.chat-dock-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.chat-dock-head select { flex: 1; min-width: 0; }
+.chat-dock-body { flex: 1; min-height: 0; overflow: hidden; }
+
+/* Abaixo de 1100px o dock cobre a página: não há largura para os dois, e quem abriu o chat quer
+   o chat. */
+@media (max-width: 1100px) {
+  .chat-dock { width: min(420px, 100vw); box-shadow: var(--shadow-pop); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dock-toggle { transition: none; }
+}
+
+/* ── Casos de uso: a camada que o negócio lê ────────────────────────────────────────────────
+ *
+ * O cartão mostra o FLUXO, não a contagem de peças. "Triagem → Buscar na base → Redigir resposta"
+ * diz o que o assistente faz; "3 agentes" não diz nada a quem não sabe o que é um agente. */
+.usecase-card { display: grid; gap: var(--space-2); }
+.usecase-name { margin: 0; font-size: var(--text-md); }
+
+.usecase-steps {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding-left: var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+/* Um passo que espera uma pessoa é a informação mais importante do fluxo para quem é de
+   negócio: é onde o processo para. Merece cor semântica, não só texto. */
+.usecase-steps li.waits { color: var(--wait); }
+
+.flow-read,
+.flow-edit {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.flow-read li {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--sunk);
+  border-radius: var(--radius-sm);
+  border-left: 1px solid var(--border);
+}
+
+.flow-read li.waits { border-left-color: var(--wait); }
+
+.flow-kind {
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--muted);
+  min-width: 5.5rem;
+}
+
+.flow-label { font-weight: 560; }
+
+/* O nó do canvas é um cartão empilhado, não uma caixa flutuante: a linguagem declarativa é uma
+   SEQUÊNCIA, e a interface deve parecer o que ela é. Uma tela livre sugeriria que dá para ligar
+   qualquer coisa a qualquer coisa — e não dá. */
+.flow-node {
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+/* Métrica: o número primeiro, o rótulo depois — é a ordem em que se lê um painel.
+   O que é MEDIDO e o que é ESTIMADO ficam em blocos separados; misturá-los faria um cálculo
+   parecer uma medida, que é como um painel de ROI vira propaganda. */
+.grid.g3 { grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr)); }
+
+.metric {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3);
+  background: var(--sunk);
+  border-radius: var(--radius-sm);
+}
+
+.metric-value {
+  font-size: var(--text-xl);
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--tracking-tight);
+}
+
+.metric-label {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+/* ── Conversas ─────────────────────────────────────────────────────────────────────────────
+   A coluna da direita passou a ter DUAS coisas: as conversas anteriores em cima e a evidência
+   embaixo. Elas dividem a mesma largura porque respondem perguntas do mesmo momento — "onde eu
+   estava" e "de onde veio essa resposta" — e uma terceira coluna espremeria o chat, que é o que
+   a pessoa veio usar.
+
+   A lista rola sozinha e tem teto de altura: com trinta conversas, a evidência sairia da tela e o
+   painel de fontes viraria algo que só existe em quem nunca conversou. */
+.console-side {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+  border-left: 1px solid var(--line);
+  background: var(--surface);
+}
+
+.conv-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--line);
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+/* A evidência já tinha a borda da esquerda; agora quem a desenha é o `.console-side`, senão
+   apareceriam duas linhas coladas. */
+.console-side .evidence {
+  border-left: 0;
+}
+
+.conv-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.conv-item {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.conv-item:hover {
+  background: var(--sunken);
+}
+
+/* A conversa aberta. Fundo afundado + peso, NUNCA só cor: quem não distingue matiz precisa
+   enxergar qual está aberta. */
+.conv-item.on {
+  background: var(--sunken);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+
+.conv-item.on .conv-title {
+  font-weight: 600;
+}
+
+.conv-title {
+  display: block;
+  font-size: var(--text-sm);
+  /* Uma pergunta longa não pode empurrar a largura da coluna. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.conv-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-2xs);
+  color: var(--muted);
+}
+
+/* ── Catálogo de skills ────────────────────────────────────────────────────────────────────
+   Lista à esquerda, documento à direita. A proporção é deliberada: a lista tem 198 linhas de
+   um nome curto, e o documento é o que decide a importação — ele ganha o espaço. */
+.cat-split {
+  display: grid;
+  grid-template-columns: minmax(200px, 300px) minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+@media (max-width: 780px) { .cat-split { grid-template-columns: 1fr; } }
+
+.cat-list {
+  list-style: none; margin: 0; padding: 0;
+  max-height: 60vh; overflow-y: auto;
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+}
+.cat-item {
+  width: 100%; text-align: left; display: flex; flex-direction: column; gap: 1px;
+  padding: var(--space-2) var(--space-3);
+  border: 0; border-bottom: 1px solid var(--line);
+  background: transparent; color: inherit; cursor: pointer;
+}
+.cat-item:hover { background: var(--sunken); }
+/* Selecionado por fundo + barra, nunca só por cor. */
+.cat-item.on { background: var(--sunken); box-shadow: inset 2px 0 0 var(--accent); font-weight: 600; }
+.cat-name { font-size: var(--text-sm); }
+.cat-path { font-family: var(--font-mono); }
+
+.cat-preview { min-width: 0; }
+/* O SKILL.md inteiro rola dentro do próprio bloco — a página não rola de lado por causa dele. */
+.cat-preview .doc-preview { max-height: 46vh; overflow: auto; }
+
+/* ── Console redesenhado ───────────────────────────────────────────────────────────────────
+   Quatro mudanças, uma razão só: a tela mostrava TUDO o tempo todo em vez do que vale agora.
+   O chat era a coluna mais estreita da tela sendo o que a pessoa veio usar. */
+
+/* 1 · Barra de topo — substitui o cabeçalho de quatro blocos. */
+.console-bar {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--line); background: var(--surface);
+}
+.console-bar-end { margin-left: auto; display: flex; align-items: center; gap: var(--space-3); }
+.seg-sm button { padding: 2px var(--space-2); font-size: var(--text-xs); }
+
+/* Seletor de assistente, agrupado por framework. */
+.dom-picker { position: relative; }
+.dom-trigger {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid transparent; border-radius: var(--radius-sm);
+  background: transparent; color: inherit; cursor: pointer; font: inherit;
+}
+.dom-trigger:hover { border-color: var(--line); background: var(--sunken); }
+.dom-trigger b { font-weight: 600; }
+.dom-trigger .caret { color: var(--faint); font-size: var(--text-xs); }
+
+.dom-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; width: 320px;
+  max-height: 60vh; overflow-y: auto; padding: var(--space-1);
+  background: var(--surface); border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm); box-shadow: var(--shadow-pop, 0 8px 24px rgb(0 0 0 / 0.14));
+}
+.dom-group {
+  display: flex; align-items: baseline; gap: var(--space-2);
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  font-size: var(--text-2xs); font-weight: 700;
+  letter-spacing: var(--tracking-label); text-transform: uppercase; color: var(--muted);
+}
+.dom-by { text-transform: none; letter-spacing: 0; font-weight: 400; color: var(--faint); }
+.dom-opt {
+  display: flex; gap: var(--space-2); align-items: flex-start; width: 100%; text-align: left;
+  padding: var(--space-2); border: 0; border-radius: var(--radius-sm);
+  background: transparent; color: inherit; cursor: pointer; font: inherit;
+}
+.dom-opt:hover { background: var(--sunken); }
+.dom-opt.on { background: var(--accent-wash); }
+.dom-opt b { display: block; font-size: var(--text-sm); font-weight: 600; }
+.dom-opt i { display: block; font-style: normal; font-size: var(--text-xs); color: var(--muted); }
+
+/* 2 · Trilho de uma coluna com abas. */
+.seg-tabs { display: flex; gap: 2px; padding: var(--space-2) var(--space-3) 0; border-bottom: 1px solid var(--line); }
+.seg-tabs button {
+  border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent;
+  padding: var(--space-2); color: var(--muted); font: inherit; font-size: var(--text-xs);
+  cursor: pointer;
+}
+.seg-tabs button.on { color: var(--ink); font-weight: 600; border-bottom-color: var(--accent); }
+/* A aba inativa fica MONTADA e escondida: o EvidencePanel assina o stream, e desmontá-lo
+   perderia as citações que chegam com a aba de conversas aberta. */
+.tab-off { display: none; }
+
+.console-side { display: grid; grid-template-rows: auto minmax(0, 1fr); }
+.console-side .conv-panel { max-height: none; border-bottom: 0; }
+
+/* Garantias recolhidas. */
+.evidence-guar summary {
+  cursor: pointer; list-style: none; display: flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-xs); color: var(--muted);
+}
+.evidence-guar summary::-webkit-details-marker { display: none; }
+.evidence-guar[open] summary { color: var(--ink); font-weight: 600; margin-bottom: var(--space-2); }
+
+/* 4 · Passos como fita de uma linha, só durante a execução. */
+.steps-strip {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--sunken); border-bottom: 1px solid var(--line);
+  font-size: var(--text-xs);
+}
+.steps-label { color: var(--muted); white-space: nowrap; }
+.steps-flow { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); list-style: none; margin: 0; padding: 0; }
+.steps-flow li { display: flex; align-items: center; gap: var(--space-2); color: var(--muted); }
+.step-arrow { color: var(--faint); }
+/* Estado por FORMA e cor, não só cor. */
+.step-pip { width: 7px; height: 7px; border-radius: 50%; background: var(--faint); flex: none; }
+.step-done .step-pip { background: var(--pass); }
+.step-done .step-name { color: var(--ink); }
+.step-active .step-pip { background: var(--wait); box-shadow: 0 0 0 3px var(--wait-wash); }
+.step-active .step-name { color: var(--ink); font-weight: 600; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .steps-strip.running .step-active .step-pip { animation: pip-pulse 1.4s ease-in-out infinite; }
+}
+@keyframes pip-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px var(--wait-wash); }
+  50% { box-shadow: 0 0 0 6px transparent; }
+}
+
+/* ── Atividade de tool ─────────────────────────────────────────────────────────────────────
+   Uma linha por chamada. Discreta de propósito: é acompanhamento, não conteúdo — a resposta é
+   que a pessoa veio ler. O nome fica em monoespaçada porque ele é um IDENTIFICADOR (o mesmo do
+   span no Application Insights), não um rótulo. */
+.tool-line {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  padding: var(--space-1) 0;
+  font-size: var(--text-xs);
+  min-width: 0;
+}
+.tool-pip {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--fa-pass); flex: none; align-self: center;
+}
+.tool-line.running .tool-pip { background: var(--fa-wait); }
+.tool-name { color: var(--fa-ink); }
+.tool-result {
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .tool-line.running .tool-pip { animation: tool-pulse 1.4s ease-in-out infinite; }
+}
+@keyframes tool-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* O PORQUÊ no card de aprovação.
+   Tipografia diferente do resumo DE PROPÓSITO: o resumo é o que será gravado; o porquê é texto
+   do modelo. Exibidos iguais, os dois viram "informação do sistema" e o aprovador decide pela
+   justificativa — que é justamente o que ele deveria estar julgando. */
+.approval-reason {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  font-size: var(--text-sm);
+}
+.approval-reason-tag {
+  flex: none;
+  font-size: var(--text-2xs);
+  font-weight: 700;
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--fa-wait);
+  border: 1px solid var(--fa-wait);
+  border-radius: var(--radius-sm);
+  padding: 0 var(--space-1);
+}
+
+/* ── Campo com IA e proposta ───────────────────────────────────────────────────────────────
+   As ações ficam DISCRETAS e abaixo do campo: elas são atalho, não a forma principal de
+   preencher. Um botão de IA com peso visual de ação primária empurra a pessoa a usá-lo antes de
+   pensar — e o valor do wizard é a pessoa saber o que está criando. */
+/* As ações só aparecem no campo em que a pessoa está. Um formulário com um botão de IA fixo ao
+   lado de cada campo vira uma tela de botões de IA — e a pessoa passa a escolher entre eles em
+   vez de preencher. */
+.ai-field { display: flex; flex-direction: column; gap: 2px; position: relative; }
+.ai-field-actions {
+  display: flex; gap: var(--space-1); justify-content: flex-end;
+  opacity: 0;
+  /* `pointer-events: none` junto com opacity 0: invisível e clicável seria uma armadilha para o
+     mouse. O teclado não depende disso — `:focus-within` revela ao tabular. */
+  pointer-events: none;
+  transition: opacity 140ms ease-out;
+}
+.ai-field:hover .ai-field-actions,
+.ai-field:focus-within .ai-field-actions { opacity: 1; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) { .ai-field-actions { transition: none; } }
+
+.ai-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 1px var(--space-2); border-radius: var(--radius-sm);
+  border: 1px solid var(--accent); background: var(--surface); color: var(--accent);
+  font: inherit; font-size: var(--text-2xs); cursor: pointer; line-height: 1.6;
+}
+.ai-chip:hover { background: var(--accent-wash); }
+.ai-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ai-chip-icon { border-color: var(--line); color: var(--muted); padding: 1px var(--space-1); }
+
+/* O card da proposta, dentro do chat. Borda de espera (não de sucesso): nada foi aplicado ainda,
+   e a cor precisa dizer isso antes do texto. */
+/* O card da proposta. O ESTADO (esperando decisão) é dito pela BORDA, não por um fundo colorido.
+   Com o wash de fundo, todo texto dentro herdava cores calibradas para a superfície neutra —
+   `--muted` sobre âmbar escuro ficava ilegível, e o `<pre>` virava uma barra escura sobre outra.
+   Superfície neutra + borda de estado resolve os dois sem perder o sinal. */
+.proposal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  border: 1px solid var(--fa-wait);
+  background: var(--fa-surface);
+  color: var(--fa-ink);
+  border-radius: var(--radius-sm);
+  padding: var(--space-3);
+}
+/* Explícitos, nunca herdados: um bloco de texto dentro de um card colorido é exatamente onde a
+   herança produz texto invisível. */
+.proposal .doc-preview {
+  max-height: 30vh;
+  overflow: auto;
+  margin: 0;
+  background: var(--fa-sunken);
+  color: var(--fa-ink);
+  border-color: var(--fa-line);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.proposal .proposal-edit { width: 100%; background: var(--fa-sunken); color: var(--fa-ink); border: 1px solid var(--fa-line); }
+/* O motivo é secundário, mas precisa passar no contraste de corpo de texto — `--muted` sozinho
+   sobre superfície já é limítrofe em bloco pequeno. */
+.proposal-reason-text { color: var(--fa-muted); }
+
+/* Cartões de escopo da auditoria: são botões, e precisam parecer clicáveis sem virar botão
+   grande demais — a informação é o número, não a ação. */
+.metric.as-button {
+  border: 1px solid var(--line); border-radius: var(--radius-sm);
+  background: var(--surface); cursor: pointer; text-align: left; padding: var(--space-3);
+}
+.metric.as-button:hover { border-color: var(--line-strong); }
+.metric.as-button.on { border-color: var(--accent); background: var(--accent-wash); }
+.ok-line { color: var(--pass); }
+.wait-line { color: var(--wait); }

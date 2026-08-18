@@ -180,6 +180,30 @@ boundary work in this ADR stands on its own and does not depend on that decision
 - **⚠** Ten `forbidden` contracts is verbose TOML that grows with every module. That is the
   cost of the rule being explicit rather than conventional.
 
+## Recorded edges: the five modules that depend on `foundry.chat_client`
+
+`tests/architecture/module_graph_test.py` flagged five new edges — `helpdesk`, `grounded`,
+`platform_ops`, `builder` and `knowledge` all now import `foundry`. They are intended, and the
+justification the gate asks for is this:
+
+`FoundryChatClient` was being constructed **five times**, once inside each of those modules, with
+byte-identical arguments. Five constructions are not merely duplication: they are five places where
+each agent decides on its own what to instrument. The ROI panel showed the bill — one domain with
+656 recorded tokens and every other domain at zero, because only one path remembered to call
+`record_usage`. Fixing the paths one at a time would have left the structure intact and guaranteed
+that the *next* agent would be born outside the accounting, which is how the bug was born.
+
+So the edges buy a real reduction: **five constructions become one**, and measuring becomes a
+property of talking to the model rather than of each agent remembering. One edge was also
+*removed* (`builder -> tenancy`), which is the shape of coupling moving to one place rather than
+growing. `tests/conversations/usage_seam_test.py` forbids a sixth loose construction.
+
+The middleware is handed to `foundry` by the composition root rather than imported, because
+`conversations` already imports `foundry` and the reverse edge would close a cycle that
+`import-linter` refuses. That is the same inversion `main.py` already uses for
+`tenancy.set_server_catalog(...)` — the composition root is the one place allowed to know both
+sides.
+
 ## References
 
 - [import-linter](https://import-linter.readthedocs.io/) — layers, forbidden, independence contracts

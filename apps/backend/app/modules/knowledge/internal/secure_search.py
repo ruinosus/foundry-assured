@@ -26,8 +26,8 @@ import urllib.request
 
 from azure.identity import DefaultAzureCredential
 
-from app.modules.tenancy.public import tenant_config
 from app.modules.knowledge.internal.acl_setup import _canonical, _component
+from app.modules.tenancy.public import tenant_config
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _API = "2025-08-01-preview"
@@ -61,7 +61,7 @@ def _chunk_component(content: str) -> str:
     pages (`# TechDocs (fonte): Architecture` → `source__ARCHITECTURE`). Deterministic
     identity extraction (matches the ingest's labeling), not classification."""
     first = (content or "").lstrip().split("\n", 1)[0]
-    label = (first[2:] if first.startswith("# ") else first).strip()
+    label = (first.removeprefix("# ")).strip()
     if label.lower().startswith("techdocs (fonte):"):
         title = label.split(":", 1)[1].strip()
         return "source__" + re.sub(r"\s+", "_", title).upper()

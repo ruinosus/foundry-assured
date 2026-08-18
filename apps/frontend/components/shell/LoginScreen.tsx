@@ -1,63 +1,50 @@
 "use client";
 
-// Full-page sign-in wall. Rendered by <AuthGate> whenever Entra is configured and
-// the user is not authenticated — it replaces the ENTIRE app (no shell, no nav, no
-// route content), so nothing is reachable without signing in. After sign-out
-// (logoutRedirect) the user lands back here.
+// Muro de entrada. Renderizado pelo <AuthGate> sempre que o Entra está configurado e o usuário
+// não está autenticado — substitui o app INTEIRO (sem shell, sem nav, sem rota), então nada é
+// alcançável sem entrar. Depois do sign-out o usuário volta para cá.
+//
+// Primeira tela do produto, e por isso a primeira a sair do estilo inline: antes tinha
+// gradiente cravado, card branco imune ao tema, sombra de 60px de blur e `#2563eb`. Agora
+// consome os tokens, respeita claro/escuro e traz o seletor de tema — quem abre isto às 23h
+// escolhe o tema antes de entrar, não depois.
 
 import { useMsal } from "@azure/msal-react";
+import { useTranslations } from "next-intl";
 import { apiScopes } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
+import { ThemeToggle } from "@/components/shell/ThemeToggle";
 
 export function LoginScreen() {
   const { instance } = useMsal();
+  const t = useTranslations();
 
   return (
-    <div
-      style={{
-        height: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)",
-        fontFamily: "system-ui, sans-serif",
-        padding: 24,
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: 380,
-          background: "#fff",
-          borderRadius: 16,
-          padding: "40px 32px",
-          boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
-          textAlign: "center",
-        }}
-      >
-        <div style={{ fontSize: 40, lineHeight: 1 }}>⚡</div>
-        <h1 style={{ margin: "16px 0 4px", fontSize: 22, color: "#0f172a" }}>{branding.product}</h1>
-        <p style={{ margin: "0 0 28px", color: "#64748b", fontSize: 14 }}>{branding.description}</p>
+    <div className="login">
+      <main className="login-card">
+        <span className="login-mark" aria-hidden>
+          ⚡
+        </span>
+        <h1 className="login-title">{branding.product}</h1>
+        <p className="login-sub">{t("branding.description")}</p>
+
         <button
+          type="button"
+          className="btn btn-primary btn-block"
           onClick={() => instance.loginRedirect({ scopes: apiScopes })}
-          style={{
-            width: "100%",
-            padding: "12px 16px",
-            borderRadius: 10,
-            border: "none",
-            background: "#2563eb",
-            color: "#fff",
-            fontSize: 15,
-            fontWeight: 600,
-            cursor: "pointer",
-          }}
         >
-          Sign in with Microsoft
+          {t("common.signIn")}
         </button>
-        <p style={{ margin: "20px 0 0", color: "#94a3b8", fontSize: 12 }}>
-          You must sign in to access the Helpdesk.
-        </p>
-      </div>
+
+        {/* Diz o que exige a entrada, não que ela é exigida — o usuário já percebeu isso ao
+            ver esta tela. A informação útil é POR QUE: as respostas carregam procedência, e
+            procedência precisa de identidade. */}
+        <p className="login-note">{t("login.note")}</p>
+      </main>
+
+      <footer className="login-foot">
+        <ThemeToggle />
+      </footer>
     </div>
   );
 }

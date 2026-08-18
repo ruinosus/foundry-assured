@@ -70,12 +70,143 @@ def offenders() -> list[tuple[str, int, int]]:
     return found
 
 
+# --- Second rule: a path built from literal segments must actually EXIST -------------------
+#
+# Counting depth was only half the problem. `ingest.py` used `Path(__file__).parent / "corpus"`
+# — depth 0, which the rule above deliberately allows — and it still broke: ADR-017 moved the
+# module into `internal/` while `corpus/` stayed put, so the path pointed at `internal/corpus`,
+# which does not exist. Ingestion exited with "No markdown found" and every gate stayed green.
+#
+# Two more were hiding behind the same blind spot: `eval/assertions.py` still read
+# `app/knowledge/corpus` (the pre-ADR-017 layout) and `wiki_builder` read `internal/skills`.
+#
+# So the check that matters is not how the path is spelled, it is whether it LANDS. Resolve
+# every statically-known path and require the target to exist. This says nothing about style —
+# `Path(__file__).parent / "x"` stays legal when `x` is genuinely there.
+_RUNTIME_SUFFIXES = (".jsonl", ".json", ".log", ".yaml.lock")
+
+
+def _literal_segments(node: ast.AST) -> list[str] | None:
+    """The trailing literal path segments of a `<base> / "a" / "b"` chain, innermost first."""
+    segments: list[str] = []
+    while isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div):
+        if not (isinstance(node.right, ast.Constant) and isinstance(node.right.value, str)):
+            return None
+        segments.insert(0, node.right.value)
+        node = node.left
+    return segments or None
+
+
+def _resolve_base(node: ast.AST, path: pathlib.Path) -> pathlib.Path | None:
+    """The directory a `Path(__file__)` / `Path(<pkg>.__file__)` base with `.parent`s denotes.
+
+    Peels BOTH links in the chain: `.parent` (an Attribute) and no-argument calls like
+    `.resolve()` (a Call wrapping an Attribute). Stopping at the first Call is what let
+    `eval/run_eval.py` slip through — it reads
+
+        Path(__file__).resolve().parent.parent / "app" / "knowledge" / "corpus"
+
+    which is the pre-ADR-017 layout and resolves to nothing. `_corpus_by_title()` returned an
+    empty map, no eval item got a `context`, and Foundry's groundedness judge scored
+    `{'passed': 0, 'failed': 0}` — a whole assurance dimension silently switched off while the
+    run reported success. A gate that skips what it cannot parse reports the same green as a
+    gate that checked, which is the failure this file exists to prevent.
+    """
+    attrs: list[str] = []
+    while True:
+        if isinstance(node, ast.Attribute):
+            attrs.append(node.attr)
+            node = node.value
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and not node.args:
+            node = node.func  # `.resolve()` / `.absolute()` — transparent for this purpose
+        else:
+            break
+    if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+        return None
+    if node.func.id != "Path" or not node.args:
+        return None
+
+    arg = node.args[0]
+    if isinstance(arg, ast.Name) and arg.id == "__file__":
+        base = path
+    elif isinstance(arg, ast.Attribute) and arg.attr == "__file__":
+        base = pathlib.Path(_app.__file__).resolve()  # the anchored form
+    else:
+        return None
+
+    for attr in attrs:  # `.resolve()` is a Call, so it never lands here; only `.parent` does
+        if attr == "parent":
+            base = base.parent
+    return base
+
+
+def dangling() -> list[tuple[str, int, str]]:
+    """(relative path, line, resolved target) for literal paths that do not exist."""
+    found: list[tuple[str, int, str]] = []
+    for path in sorted(p for root in ROOTS for p in root.rglob("*.py")):
+        try:
+            tree = ast.parse(path.read_text())
+        except SyntaxError:
+            continue
+        # `a / "x" / "y"` nests: the outer BinOp contains an inner one for `a / "x"`. Walking
+        # naively judges BOTH, so one line reports the full path AND every prefix of it — three
+        # findings for one mistake, and the prefixes are usually directories that legitimately
+        # do not exist on their own. Only the outermost expression is a real path.
+        inner = {
+            n.left
+            for n in ast.walk(tree)
+            if isinstance(n, ast.BinOp) and isinstance(n.op, ast.Div)
+        }
+        for node in ast.walk(tree):
+            if not (isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div)):
+                continue
+            if node in inner:
+                continue
+            segments = _literal_segments(node)
+            if not segments:
+                continue
+            # Walk to the innermost left operand — the base of the `/` chain.
+            base_node = node
+            while isinstance(base_node, ast.BinOp):
+                base_node = base_node.left
+            base = _resolve_base(base_node, path.resolve())
+            if base is None:
+                continue
+            target = base.joinpath(*segments)
+            # A file the app WRITES is skipped entirely — not just the file, its directory too.
+            # The first version probed `target.parent`, reasoning that the file may not exist yet
+            # but its folder must. That was wrong for the common case: writers call
+            # `.parent.mkdir(parents=True, exist_ok=True)` and create the whole tree on first use.
+            # `tickets.py` does exactly that, so this gate went red on CI (where nobody had opened
+            # a ticket) while passing locally (where someone had) — a check that depends on
+            # whether the machine happened to run the feature is worse than no check.
+            if target.suffix in _RUNTIME_SUFFIXES or target.parent.suffix in _RUNTIME_SUFFIXES:
+                continue
+            if not target.exists():
+                found.append((str(path.relative_to(BACKEND)), node.lineno, str(target)))
+    return found
+
+
 def main() -> int:
     found = offenders()
     for relative, line, index in found:
         print(f"  ✗ {relative}:{line} — parents[{index}] counts levels from the file")
 
-    if found:
+    missing = dangling()
+    for relative, line, target in missing:
+        print(f"  ✗ {relative}:{line} — path does not exist: {target}")
+
+    if missing and not found:
+        print(
+            f"\n❌ {len(missing)} path(s) point at nothing. A path that resolves to a missing\n"
+            "   directory fails at RUN time, not at import time, so the suite stays green while\n"
+            "   the feature is dead. Anchor on the `app` package and point at what is there:\n\n"
+            "       import app as _app\n"
+            "       CORPUS = Path(_app.__file__).resolve().parent / 'modules' / 'knowledge' / 'corpus'\n"
+        )
+        return 1
+
+    if found or missing:
         print(
             f"\n❌ {len(found)} fragile path anchor(s). Counting `parents[N]` bakes in where the\n"
             "   file happens to live, so the next move breaks it — usually without failing a\n"
@@ -85,7 +216,10 @@ def main() -> int:
             "       REPO_ROOT = Path(_app.__file__).resolve().parents[3]\n"
         )
         return 1
-    print("✅ no path is computed by counting parents[N] from a file's own location.")
+    print(
+        "✅ no path counts parents[N] from a file's own location, and every statically-known\n"
+        "   path lands on something that exists."
+    )
     return 0
 
 
