@@ -84,6 +84,11 @@ def _latest_version(details: Any) -> dict | None:
         "status": str(_field(top, "status", "") or "") or None,
         "runtime": _field(metadata, "runtime"),
         "source": _field(metadata, "source"),
+        # O METADATA CRU, além dos campos que a lista destaca. Sem ele, quem lê a projeção não
+        # alcançava `use_case` nem `surface` — e a agregação de casos de uso caía sempre no
+        # fallback, sem erro nenhum. Destacar alguns campos e esconder o resto fez a projeção
+        # decidir, por omissão, o que os outros módulos podem saber.
+        "metadata": dict(metadata) if isinstance(metadata, dict) else {},
     }
 
 

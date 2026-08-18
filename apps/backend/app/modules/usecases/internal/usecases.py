@@ -220,6 +220,11 @@ def list_use_cases() -> list[dict]:
 
     for a in agentes:
         versao = a.get("version") or {}
+        # Assistente de TELA não é caso de uso. Ele ajuda alguém a preencher um formulário; não
+        # tem conversa atendida nem chamado evitado, e incluí-lo faria as métricas desta lista
+        # deixarem de significar o que significam. A medição dele é outra (/assistants).
+        if (versao.get("metadata") or {}).get("surface") == "tool":
+            continue
         metadata = {k: v for k, v in (versao.get("metadata") or {}).items()} if isinstance(versao.get("metadata"), dict) else {}
         case_id = _case_of(a.get("name") or "", metadata)
         caso = _garante(case_id)

@@ -53,6 +53,16 @@ _DOMAIN_FOR_DOC = {
 }
 
 
+#: Agentes que existem para AJUDAR NUMA TELA, não para atender um caso de negócio.
+#: Lista curta e explícita: hoje é um. Derivar isso do `kind` não serviria — o `platform` também
+#: é `tool` e É um caso de uso (operações de plataforma).
+_TELA = {"builder"}
+
+
+def _surface_for(nome: str) -> str:
+    return "tool" if nome in _TELA else "domain"
+
+
 def _runtime_for(doc_name: str) -> str:
     """Onde este agente REALMENTE executa, segundo o registry.
 
@@ -99,7 +109,13 @@ def main() -> int:
                     "kind": "prompt",
                     "model": modelo,
                     "instructions": instrucoes,
-                    "metadata": {"runtime": runtime, "source": "repo"},
+                    # `surface` diz PARA QUEM o agente existe: `domain` é assistente de negócio
+                    # (entra na vitrine de casos de uso); `tool` é assistente de TELA, que ajuda
+                    # alguém a preencher formulário e não atende ninguém — ele tem medição
+                    # própria em /assistants. Sem este campo, o `builder` aparecia como caso de
+                    # uso, e a lista de casos deixava de significar "problemas que o produto
+                    # resolve".
+                    "metadata": {"runtime": runtime, "source": "repo", "surface": _surface_for(nome)},
                 },
                 description=descricao,
             )
