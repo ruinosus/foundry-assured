@@ -74,6 +74,10 @@ def assess_severity(symptom: Annotated[str, "What the user reported."]) -> str:
 def escalate_incident(
     summary: Annotated[str, "One line describing what needs a human."],
     severity: Annotated[str, "sev1 | sev2 | sev3"],
+    # O PORQUÊ é ARGUMENTO da tool, não um campo separado: no HITL do LangGraph o card mostra
+    # os argumentos da chamada, então o motivo chega ao aprovador pelo caminho que já existe —
+    # e, quando ele CORRIGE a escalação, corrige o motivo junto.
+    reason: Annotated[str, "One sentence on what led you to escalate — read by the human approver before they approve."] = "",
 ) -> str:
     """Escalate an incident by opening a ticket. WRITE — always stops for human approval."""
     ticket = create_ticket(f"[{severity}] {summary}", domain="oncall")

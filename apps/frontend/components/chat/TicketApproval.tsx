@@ -35,7 +35,7 @@ import { useEffect, useState } from "react";
 // stays for the Agent Framework domains, whose adapter emits `request_info`, which that hook
 // does not know about. ADR-020: two runtimes, two idioms, no normalizing layer.
 type Pending =
-  | { kind: "ticket"; id: string; summary: string }
+  | { kind: "ticket"; id: string; summary: string; reason: string }
   | { kind: "tool"; id: string; toolName: string; args: unknown };
 
 
@@ -77,7 +77,11 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
             setPending({ kind: "tool", id, toolName, args });
           } else {
             const summary = data.summary ?? v.summary ?? "(no summary)";
-            setPending({ kind: "ticket", id, summary });
+            // O PORQUÊ pode não vir: prompt e código publicam separado (ADR-014), então um
+            // backend novo roda com prompt antigo por um tempo. Ausente = a seção não aparece,
+            // nunca um placeholder que finge que o agente não justificou.
+            const reason = String(data.reason ?? v.reason ?? "");
+            setPending({ kind: "ticket", id, summary, reason });
           }
         }
       },
@@ -150,6 +154,19 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
             <dl className="approval-body">
               <dt>{t("summary")}</dt>
               <dd>{pending.summary}</dd>
+              {/* O PORQUÊ, marcado como o que é: texto do MODELO, não fato verificado.
+                  Tipografia deliberadamente diferente do resumo — exibido igual, ele vira uma
+                  segunda afirmação com ar de dado, e o aprovador passa a aprovar PELA
+                  justificativa em vez de pelo conteúdo, que é o oposto do que este gate faz. */}
+              {pending.reason && (
+                <>
+                  <dt>{t("reason")}</dt>
+                  <dd className="approval-reason">
+                    <span className="approval-reason-tag">{t("modelSaid")}</span>
+                    <span className="muted">{pending.reason}</span>
+                  </dd>
+                </>
+              )}
             </dl>
           )}
         </>

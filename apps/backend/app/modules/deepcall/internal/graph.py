@@ -83,6 +83,12 @@ def assess_severity(symptom: Annotated[str, "What the user reported."]) -> str:
 def escalate_incident(
     summary: Annotated[str, "One-line incident summary."],
     severity: Annotated[str, "sev1 | sev2 | sev3."],
+    # O PORQUÊ como ARGUMENTO da tool: o card do HITL do LangGraph mostra os argumentos da
+    # chamada, então o motivo chega ao aprovador pelo caminho que já existe — e, quando ele
+    # CORRIGE a escalação, corrige o motivo junto. O gêmeo `oncall` recebe o mesmo campo, porque
+    # os dois existem para serem comparados: uma diferença de contrato entre eles invalidaria a
+    # comparação.
+    reason: Annotated[str, "One sentence on what led you to escalate — read by the human approver before they approve."] = "",
 ) -> str:
     """Open an incident ticket. WRITE: stops for human approval before running."""
     ticket = create_ticket(f"[{severity}] {summary}", domain="deepcall")

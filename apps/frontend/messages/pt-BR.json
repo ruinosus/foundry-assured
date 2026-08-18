@@ -143,7 +143,9 @@
     "edit": "Corrigir",
     "reject": "Recusar",
     "cancel": "Cancelar",
-    "saveApprove": "Salvar e aprovar"
+    "saveApprove": "Salvar e aprovar",
+    "reason": "Por que escalar",
+    "modelSaid": "segundo o agente"
   },
   "assist": {
     "generate": "✨ Escrever",

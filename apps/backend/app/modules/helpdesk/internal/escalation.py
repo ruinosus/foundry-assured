@@ -33,12 +33,31 @@ from app.modules.tickets.public import create_ticket
 
 TICKET_PREFIX = "TICKET:"
 
+#: A linha OPCIONAL com o porquê. `resolve` a emite logo abaixo do TICKET.
+#:
+#: Opcional não é descuido: prompt e código publicam SEPARADO (ADR-014 — o prompt vai por
+#: `push-prompts.sh` e aplica no restart; o código vai por deploy). Um backend novo pode rodar
+#: com um prompt antigo por horas, e nesse intervalo a escalação precisa continuar funcionando
+#: sem o motivo em vez de quebrar.
+WHY_PREFIX = "WHY:"
+
 
 @dataclass
 class TicketApprovalRequest:
-    """Shown to the developer: approve opening a ticket with this summary."""
+    """Shown to the developer: approve opening a ticket with this summary.
+
+    `reason` é o PORQUÊ — o que levou o agente a concluir que precisa escalar. Ele existe porque
+    aprovar sabendo só o QUE será escrito é decidir com metade da informação: "substituir a
+    estação do desenvolvedor" pode ser óbvio ou absurdo dependendo do que veio antes.
+
+    É TEXTO DO MODELO, não fato verificado, e a interface precisa dizer isso. Um porquê exibido
+    com a mesma tipografia do resumo vira uma segunda afirmação com ar de dado — e o aprovador
+    passa a aprovar PELA justificativa em vez de pelo conteúdo, que é o oposto do que o gate
+    existe para fazer.
+    """
 
     summary: str
+    reason: str = ""
 
 
 class EscalationExecutor(Executor):
@@ -53,10 +72,23 @@ class EscalationExecutor(Executor):
     ) -> None:
         text = (response.agent_response.text or "").strip()
         if text.upper().startswith(TICKET_PREFIX):
-            summary = text[len(TICKET_PREFIX) :].strip() or "Escalation requested"
+            # Primeira linha é o resumo; uma linha WHY: abaixo dela, quando houver, é o porquê.
+            # Duas linhas em vez de um separador no meio da frase: um resumo pode conter
+            # qualquer pontuação, e parsear por delimitador embutido quebraria no primeiro
+            # chamado que citasse o próprio delimitador.
+            linhas = [linha.strip() for linha in text.splitlines() if linha.strip()]
+            summary = linhas[0][len(TICKET_PREFIX) :].strip() or "Escalation requested"
+            reason = next(
+                (
+                    linha[len(WHY_PREFIX) :].strip()
+                    for linha in linhas[1:]
+                    if linha.upper().startswith(WHY_PREFIX)
+                ),
+                "",
+            )
             # Pause for approval — the response arrives in on_decision below.
             await ctx.request_info(
-                request_data=TicketApprovalRequest(summary=summary),
+                request_data=TicketApprovalRequest(summary=summary, reason=reason),
                 # `object`, not `bool`: the approver may now EDIT the summary, so the answer
                 # can be a decision dict as well as the legacy boolean. Both are handled in
                 # `on_decision` (ADR-019).

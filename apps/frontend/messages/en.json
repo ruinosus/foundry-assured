@@ -143,7 +143,9 @@
     "edit": "Edit",
     "reject": "Reject",
     "cancel": "Cancel",
-    "saveApprove": "Save & approve"
+    "saveApprove": "Save & approve",
+    "reason": "Why escalate",
+    "modelSaid": "per the agent"
   },
   "assist": {
     "generate": "✨ Write",
