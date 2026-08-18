@@ -9,9 +9,13 @@ from __future__ import annotations
 import sys
 from types import SimpleNamespace
 
-from app.modules.tenancy.internal import tenant_resolution as _tr
 import app.modules.tenancy.api as tapi
-from app.modules.tenancy.internal.tenant import DOMAIN_IDS, TIER_DOMAINS, domains_for_tier
+from app.modules.tenancy.internal import tenant_resolution as _tr
+from app.modules.tenancy.internal.tenant import (
+    DOMAIN_IDS,
+    TIER_DOMAINS,
+    domains_for_tier,
+)
 from app.modules.tenancy.internal.tenant_store import InMemoryTenantStore
 
 

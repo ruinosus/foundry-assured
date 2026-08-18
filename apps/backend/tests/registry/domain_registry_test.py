@@ -25,17 +25,39 @@ class _FakeApp:
     set, because `oncall_configured()` gates the mount. Green in CI, red locally, for a stub gap
     rather than a real defect — so the stub grew the second mechanism instead of the test
     pretending one runtime is all there is.
+
+    `include_router` é o TERCEIRO mecanismo, e ele existe por um motivo de segurança: o adapter do
+    LangGraph não aceita `dependencies` (assinatura upstream de três parâmetros), então `/oncall` e
+    `/deepcall` ficaram sem autenticação — respondiam 422 sem token enquanto `/helpdesk` respondia
+    401. O conserto registra num `APIRouter` e aplica as deps no `include_router`; o dublê grava
+    quais deps foram aplicadas para o teste poder cobrar que elas existam.
     """
 
     def __init__(self) -> None:
         self.routes: list[dict] = []
         self.posted: list[str] = []
         self.gotten: list[str] = []
+        #: `[(caminho, dependências)]` — o que entrou por include_router.
+        self.incluidos: list[tuple[str, list]] = []
 
     def add_api_route(self, path, endpoint, *, methods=None, dependencies=None, **kw) -> None:
         self.routes.append(
             {"path": path, "endpoint": endpoint, "methods": methods, "dependencies": dependencies}
         )
+
+    def include_router(self, router, *, dependencies=None, **kw) -> None:
+        """`app.include_router(router, dependencies=...)` — o caminho das rotas do LangGraph.
+
+        Lê `router.routes`, que é o formato do `APIRouter` real — `_mount_graph` cria um de
+        verdade e o adapter upstream registra nele. Guardar as deps é o ponto: sem isso o teste
+        veria a rota existir e não veria que ela está desprotegida, que foi exatamente o estado
+        anterior.
+        """
+        for rota in getattr(router, "routes", []) or []:
+            caminho = getattr(rota, "path", "")
+            if "POST" in (getattr(rota, "methods", set()) or set()):
+                self.incluidos.append((caminho, list(dependencies or [])))
+                self.posted.append(caminho)
 
     def post(self, path, **kw):
         """`@app.post(path)` — record the path and hand the function straight back."""
@@ -136,6 +158,9 @@ def main() -> int:
     finally:
         settings.deployment_mode = orig_mode
 
+    # O `_mount_graph` real cria um `APIRouter` de verdade e o entrega ao `include_router` do
+    # dublê. Para o dublê saber QUAIS caminhos vieram nele, lê `router.routes` do FastAPI quando
+    # `posted` não existir — é o mesmo dado, no formato da biblioteca.
     # --- mount_domains dispatch (monkeypatch the adapter + heavy factories) ---
     adapter_calls: list[dict] = []
 
@@ -196,6 +221,20 @@ def main() -> int:
         platform_mod.platform_agent_proxy = saved["proxy"]
         graph_mod.build_helpdesk_workflow = saved["bhw"]
         sf_mod.OrderedAgentFrameworkWorkflow = saved["ord"]
+
+    # --- as rotas do LangGraph entram autenticadas ---------------------------------------
+    # Elas passam por `include_router` porque o adapter upstream não aceita `dependencies`. Sem
+    # esta verificação, um retorno ao registro direto no `app` reabriria `/oncall` e `/deepcall`
+    # sem que nada falhasse — o route snapshot compara caminho e método, não dependência.
+    if app.incluidos:
+        desprotegidas = [c for c, deps in app.incluidos if not deps]
+        check(
+            "rotas de grafo entram com dependências"
+            + (f" — SEM DEPS: {desprotegidas}" if desprotegidas else ""),
+            not desprotegidas,
+        )
+    else:
+        print("  · nenhum domínio de grafo montado neste perfil (oncall/deepcall não configurados)")
 
     if failures:
         print(f"\n❌ {len(failures)} assertion(s) failed.")
