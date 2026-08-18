@@ -20,6 +20,11 @@ COPY app ./app
 # agents/ over this path; production (ACA) mounts an Azure Files share at
 # /mnt/agents selected via AGENTS_DIR (scripts/push-prompts.sh).
 COPY agents ./agents
+# O modelo de valor (fórmula de retorno + procedência das constantes). Mesma lógica do `agents`
+# acima: cópia baked no imagem, e `VALUE_MODEL` aponta para outro arquivo quando a instalação tem
+# o seu. Esquecer esta linha derrubaria o painel de resultados no container e passaria despercebido
+# em dev — foi assim que o corpus da KB ficou meses fora da imagem antes da ADR-017.
+COPY value ./value
 
 ENV PATH="/app/.venv/bin:$PATH"
 EXPOSE 8000
