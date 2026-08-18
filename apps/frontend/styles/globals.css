@@ -1887,16 +1887,35 @@ table.evals tr:last-child td { border-bottom: none; }
 
 /* O card da proposta, dentro do chat. Borda de espera (não de sucesso): nada foi aplicado ainda,
    e a cor precisa dizer isso antes do texto. */
+/* O card da proposta. O ESTADO (esperando decisão) é dito pela BORDA, não por um fundo colorido.
+   Com o wash de fundo, todo texto dentro herdava cores calibradas para a superfície neutra —
+   `--muted` sobre âmbar escuro ficava ilegível, e o `<pre>` virava uma barra escura sobre outra.
+   Superfície neutra + borda de estado resolve os dois sem perder o sinal. */
 .proposal {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   border: 1px solid var(--wait);
-  background: var(--wait-wash);
+  background: var(--surface);
+  color: var(--ink);
   border-radius: var(--radius-sm);
   padding: var(--space-3);
 }
-.proposal .doc-preview { max-height: 30vh; overflow: auto; margin: 0; }
+/* Explícitos, nunca herdados: um bloco de texto dentro de um card colorido é exatamente onde a
+   herança produz texto invisível. */
+.proposal .doc-preview {
+  max-height: 30vh;
+  overflow: auto;
+  margin: 0;
+  background: var(--sunken);
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.proposal .proposal-edit { width: 100%; background: var(--sunken); color: var(--ink); }
+/* O motivo é secundário, mas precisa passar no contraste de corpo de texto — `--muted` sozinho
+   sobre superfície já é limítrofe em bloco pequeno. */
+.proposal-reason-text { color: var(--muted); }
 
 /* Cartões de escopo da auditoria: são botões, e precisam parecer clicáveis sem virar botão
    grande demais — a informação é o número, não a ação. */

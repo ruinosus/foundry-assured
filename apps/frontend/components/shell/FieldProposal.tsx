@@ -46,9 +46,14 @@ function ProposalCard({
   onAccept: (p: FieldProposal) => void;
 }) {
   const t = useTranslations("fieldProposal");
-  const [texto, setTexto] = useState(valorProposto);
-  const [editando, setEditando] = useState(false);
+  // A CORREÇÃO só existe enquanto se edita. `useState(valorProposto)` capturava o valor do
+  // PRIMEIRO render — e os argumentos da tool chegam em STREAMING, então o primeiro render tem
+  // `value` vazio. O card ficava com a caixa em branco para sempre, mesmo depois de o texto
+  // inteiro chegar. Derivar do prop enquanto não se edita resolve sem perder a edição.
+  const [correcao, setCorrecao] = useState<string | null>(null);
   const [usado, setUsado] = useState(false);
+  const editando = correcao !== null;
+  const texto = editando ? correcao : valorProposto;
 
   if (!conhecido) {
     return (
@@ -68,10 +73,10 @@ function ProposalCard({
 
       {editando ? (
         <textarea
-          className="acct-btn"
+          className="acct-btn proposal-edit"
           rows={8}
           value={texto}
-          onChange={(e) => setTexto(e.target.value)}
+          onChange={(e) => setCorrecao(e.target.value)}
         />
       ) : (
         <pre className="doc-preview">{texto}</pre>
@@ -83,7 +88,7 @@ function ProposalCard({
       {motivo && (
         <p className="approval-reason">
           <span className="approval-reason-tag">{t("modelSaid")}</span>
-          <span className="muted t-sm">{motivo}</span>
+          <span className="t-sm proposal-reason-text">{motivo}</span>
         </p>
       )}
 
@@ -106,7 +111,11 @@ function ProposalCard({
         </button>
         {/* EDITAR existe pelo mesmo motivo do card de escalação: aceitar um texto quase certo,
             porque descartar era a única alternativa, não é revisão. */}
-        <button type="button" className="btn" onClick={() => setEditando((v) => !v)}>
+        <button
+          type="button"
+          className="btn"
+          onClick={() => setCorrecao(editando ? null : valorProposto)}
+        >
           {editando ? t("cancelEdit") : t("edit")}
         </button>
         <button type="button" className="btn" onClick={() => setUsado(true)}>

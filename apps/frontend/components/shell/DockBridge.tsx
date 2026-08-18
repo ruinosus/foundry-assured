@@ -31,25 +31,35 @@ export function DockBridge() {
     // fazia o primeiro clique rodar o agente com ninguém escutando: a resposta acontecia e não
     // aparecia, e a pessoa clicava de novo. O segundo clique "funcionava" porque o chat já estava
     // montado — sintoma clássico de corrida que parece intermitência.
-    if (!open || !isReady || !pending || pending.nonce === entregue.current) return;
+    if (!open || !isReady || !pending || pending.nonce === entregue.current)
+      return;
     entregue.current = pending.nonce;
 
-    const id =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `${Date.now()}`;
-    agent.addMessage({ id, role: "user", content: pending.prompt });
+    // ESPERA UM QUADRO antes de entregar. Só `open` não bastou: o `<CopilotChat>` monta no MESMO
+    // commit em que `open` vira true, e os efeitos rodam de filho para pai — esta ponte é irmã do
+    // conteúdo e roda ANTES de o chat assinar o agente. Um quadro depois, ele já assinou.
+    //
+    // Um `setTimeout(0)` faria o mesmo na maioria das vezes; `requestAnimationFrame` é o que
+    // garante que o React já pintou o commit em que o chat montou.
+    const quadro = requestAnimationFrame(() => {
+      const id =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `${Date.now()}`;
+      agent.addMessage({ id, role: "user", content: pending.prompt });
 
-    // Roda pelo CORE, não pelo agente. Medido, e foi o defeito: quem monta a lista de tools do
-    // frontend é o core —
-    //
-    //     core.runAgent({agent})  →  tools: this.buildFrontendTools(agent.agentId)  →  agent.runAgent(input)
-    //
-    // Chamar `agent.runAgent()` direto pula essa montagem e a requisição sai com `tools: []`. O
-    // sintoma no chat era o modelo IMITANDO a chamada em texto: ele fora instruído a usar
-    // `propose_field`, a ferramenta nunca chegou, e ele escreveu o que teria chamado.
-    void copilotkit.runAgent({ agent });
-    clearPending();
+      // Roda pelo CORE, não pelo agente. Medido, e foi o defeito: quem monta a lista de tools do
+      // frontend é o core —
+      //
+      //     core.runAgent({agent})  →  tools: this.buildFrontendTools(agent.agentId)  →  agent.runAgent(input)
+      //
+      // Chamar `agent.runAgent()` direto pula essa montagem e a requisição sai com `tools: []`. O
+      // sintoma no chat era o modelo IMITANDO a chamada em texto: ele fora instruído a usar
+      // `propose_field`, a ferramenta nunca chegou, e ele escreveu o que teria chamado.
+      void copilotkit.runAgent({ agent });
+      clearPending();
+    });
+    return () => cancelAnimationFrame(quadro);
   }, [agent, isReady, open, pending, clearPending, copilotkit]);
 
   return null;
