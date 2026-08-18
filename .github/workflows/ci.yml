@@ -169,6 +169,14 @@ jobs:
       - name: A identidade atravessa o StreamingResponse
         run: uv run python -m tests.grounded.contextvar_survival_test
 
+      # A conversa é GRAVADA de fato, não só ligada. Os outros gates olham o fio (a superfície
+      # declara, o ponto de gravação existe); nenhum olhava a corrente. A diferença apareceu na
+      # prática: depois de ligar seis superfícies novas, o store continha UMA conversa, anterior a
+      # todo o trabalho. Este roda um `Agent` real do framework com o provider anexado do mesmo
+      # jeito que `PerRequestAgent` e o workflow do helpdesk anexam, e confere o store.
+      - name: A conversa é gravada de fato (provider invocado pelo framework)
+        run: uv run python -m tests.conversations.provider_invoked_test
+
       - name: Approval decisions (edit is not a loophole)
         run: uv run python -m tests.hitl.decision_test
       - name: Edit round-trips end to end

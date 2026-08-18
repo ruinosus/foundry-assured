@@ -218,6 +218,7 @@ uv run python -m tests.conversations.usage_seam_test     # nenhum cliente de cha
 uv run python -m tests.pricing.azure_prices_test          # o preço por token confere com a lista da Azure
 uv run python -m tests.architecture.instrumentation_matrix_test  # agente autenticado e declarando o que grava
 uv run python -m tests.grounded.contextvar_survival_test   # a identidade atravessa o StreamingResponse
+uv run python -m tests.conversations.provider_invoked_test # a conversa é gravada de fato, não só ligada
 
 # fecho diário da trilha (roda por agenda em .github/workflows/audit-anchor.yml)
 uv run python -m cli.close_audit_day                     # ancora o dia; write-once, idempotente
