@@ -46,7 +46,11 @@ export function ChatDock() {
       className={`chat-dock${open ? "" : " chat-dock-hidden"}`}
       aria-label={t("title")}
       aria-hidden={!open}
-      {...(open ? {} : { inert: "" as unknown as boolean })}
+      // `inert` como BOOLEANO. Eu havia passado string vazia com cast — o jeito antigo, de
+      // quando o React não conhecia o atributo. Ele conhece desde a 19, e a string vazia é lida
+      // como FALSE: o dock fechado continuaria alcançável por teclado, que é o oposto do que a
+      // linha pretendia.
+      inert={!open}
     >
       <header className="chat-dock-head">
         <select
