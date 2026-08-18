@@ -493,7 +493,8 @@
     "references": "knowledge references cited",
     "multiplierSource": "multiplier: {source}",
     "hourlySource": "hourly rate: {source}",
-    "referencesPartial": "The reference count is missing for every conversation in this case — they predate this measurement. The reference half of the formula reads zero for lack of data, not for lack of citation, so the value below is understated."
+    "referencesPartial": "The reference count is missing for every conversation in this case — they predate this measurement. The reference half of the formula reads zero for lack of data, not for lack of citation, so the value below is understated.",
+    "priceSource": "Price for {model} read from Azure's own price list — meters: {meters}"
   },
   "overview": {
     "title": "Overview",

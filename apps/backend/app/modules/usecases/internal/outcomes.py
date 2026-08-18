@@ -231,10 +231,16 @@ def outcomes(case: dict, assumption: dict | None = None) -> dict:
 
     modelo = _modelo()
     preco = None
+    # De QUAL meter da Azure o preço saiu. `SkuMeter` é coluna do export FOCUS de billing, e é
+    # este mesmo vocabulário — então guardar o nome aqui é a chave que permite, quando houver
+    # fatura com volume, cruzar o estimado contra o cobrado. Custa nada e não dá para reconstruir
+    # depois.
+    meters: list[str] = []
     with contextlib.suppress(Exception):
-        from app.modules.pricing.public import price_for as preco_da_azure
+        from app.modules.pricing.public import price_detail
 
-        preco = preco_da_azure(modelo, _regiao_de_preco())
+        detalhe = price_detail(modelo, _regiao_de_preco())
+        preco, meters = detalhe["price"], detalhe["meters"]
     preco = preco or preco_de_reserva(modelo)
 
     if preco is None:
@@ -255,6 +261,10 @@ def outcomes(case: dict, assumption: dict | None = None) -> dict:
         # `None` significa "não sei o preço deste modelo", e a tela mostra isso — não um zero,
         # que seria indistinguível de "não gastou nada".
         "actual_cost": custo,
+        # A procedência do CUSTO, do mesmo jeito que `provenance` é a procedência do valor: um
+        # número de dinheiro que não diz de onde veio não é auditável.
+        "price_model": modelo,
+        "price_meters": meters,
         # O retorno LÍQUIDO. Pode ser negativo, e um número negativo aqui é informação — significa
         # que este caso gastou mais em modelo do que economizou sob a premissa informada.
         "net_saved": round(economia - (custo or 0.0), 2),

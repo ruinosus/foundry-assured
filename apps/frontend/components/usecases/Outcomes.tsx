@@ -36,6 +36,10 @@ type Result = {
   output_tokens: number;
   // `null` = não sabemos o preço deste modelo. Diferente de zero, que seria "não gastou".
   actual_cost: number | null;
+  price_model: string;
+  // Os meters da Azure de onde o preço saiu. É o mesmo vocabulário da coluna `SkuMeter` do
+  // export FOCUS de billing — a chave que permite cruzar o estimado com o cobrado (ADR-024).
+  price_meters: string[];
   net_saved: number;
   assumption: {
     minutes_per_reference: number;
@@ -229,6 +233,17 @@ export function Outcomes({ caseId }: { caseId: string }) {
               {busy ? t("calculating") : t("recalculate")}
             </button>
           </div>
+
+          {/* De onde o PREÇO veio. O valor tem procedência (a fórmula da Microsoft); o custo
+              precisa da dele também, senão metade do cálculo é auditável e a outra não. */}
+          {data.price_meters.length > 0 && (
+            <p className="t-xs muted-line">
+              {t("priceSource", {
+                model: data.price_model,
+                meters: data.price_meters.join(" · "),
+              })}
+            </p>
+          )}
 
           {/* A ressalva não fica em letra miúda escondida: é parte do número. */}
           <p className="muted t-xs">{data.caveat}</p>

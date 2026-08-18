@@ -190,6 +190,50 @@ def resolve(model: str, itens: list[dict]) -> tuple[float, float] | None:
     return (p_in, p_out) if p_in is not None and p_out is not None else None
 
 
+def meters_for(model: str, itens: list[dict]) -> list[str]:
+    """Os NOMES dos meters de que o preço saiu. Vazio quando o preço não foi determinado.
+
+    POR QUE O NOME IMPORTA E NÃO SÓ O NÚMERO. `SkuMeter` é uma coluna do export FOCUS de billing
+    da Azure — e é *exatamente* este mesmo vocabulário. Guardar o nome do meter ao lado do custo
+    estimado é o que permite, quando houver fatura com volume, cruzar o que estimamos contra o que
+    foi cobrado: a chave de junção existe hoje, e sai de graça.
+
+    Sem isto, a reconciliação futura precisaria adivinhar de qual meter cada estimativa veio, que
+    é o mesmo problema de casamento por nome que este módulo já resolveu uma vez.
+    """
+    alvo = _identidade(model)
+    if not alvo or resolve(model, itens) is None:
+        return []
+    nomes = []
+    for item in itens:
+        nome = item.get("meterName", "")
+        palavras = set(_tokens(nome))
+        if (
+            _POR_1M.get(item.get("unitOfMeasure", "")) is not None
+            and not (palavras & _EXCLUIR)
+            and _mesma_identidade(_identidade(nome), alvo)
+            and palavras & (_ENTRADA | _SAIDA)
+            and palavras & _PREFERIDO
+        ):
+            nomes.append(nome)
+    return sorted(nomes)
+
+
+def price_detail(model: str, region: str) -> dict:
+    """`{"price": (entrada, saída) | None, "meters": [nomes]}` — o número E de onde ele veio.
+
+    Uma chamada só de propósito: pedir preço e procedência em duas funções faria duas buscas na
+    API para responder sobre a mesma coisa, e abriria a chance de as duas discordarem se o
+    catálogo mudasse no meio.
+    """
+    try:
+        itens = _fetch(region)
+    except Exception:  # noqa: BLE001 — preço indisponível não derruba o painel
+        return {"price": None, "meters": []}
+    preco = resolve(model, itens)
+    return {"price": preco, "meters": meters_for(model, itens) if preco else []}
+
+
 def price_for(model: str, region: str) -> tuple[float, float] | None:
     """O preço do modelo na região, direto da Azure. `None` quando não dá para afirmar.
 
