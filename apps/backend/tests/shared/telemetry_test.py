@@ -65,16 +65,32 @@ def main() -> int:
     check("span_name without a model is bare", conventions.span_name(conventions.OP_INVOKE_AGENT)
           == "invoke_agent")
 
-    # --- Cost arithmetic: exact tokens, longest-prefix pricing ---
+    # --- Cost arithmetic: token exato, preço por nome EXATO (não mais por prefixo) ---
+    #
+    # O casamento por prefixo mais longo saiu daqui. Ele resolvia o caso legítimo (sufixo de
+    # versão no nome do deployment) e, com a mesma regra, fazia `gpt-5-pro` herdar o preço de
+    # `gpt-5` — 12× menos que o real, medido contra a lista da Azure. Agora o sufixo de VERSÃO é
+    # recortado explicitamente e o resto é igualdade; modelo desconhecido não recebe preço.
+    # A conferência linha a linha contra a Azure é `tests/pricing/azure_prices_test.py`.
     meter = cost.CostMeter("gpt-5-mini")
     meter.add(_Response(1_000_000, 1_000_000))
     check("tokens accumulate exactly", (meter.input_tokens, meter.output_tokens) == (10**6, 10**6))
     check("gpt-5-mini priced at 0.25 + 2.00", abs(meter.usd - 2.25) < 1e-9)
     check(
-        "longest prefix wins (gpt-5-mini is not gpt-5)",
-        cost.price_for("gpt-5-mini-2026") == (0.25, 2.00),
+        "sufixo de versão do deployment resolve para o modelo base",
+        cost.price_for("gpt-5-mini-2026-08-01") == (0.25, 2.00),
     )
-    check("unknown model falls back conservatively", cost.price_for("llama-9") == cost.DEFAULT_PRICE)
+    check(
+        "…mas OUTRO modelo não herda o preço do vizinho de nome mais curto",
+        cost.price_for("gpt-5-pro") == (15.00, 120.00)
+        and cost.price_for("gpt-5-nano") is None,
+    )
+    check("modelo desconhecido não recebe preço", cost.price_for("llama-9") is None)
+    check(
+        "…e um medidor sem preço não inventa custo zero",
+        cost.CostMeter("llama-9").usd is None
+        and "não está na tabela" in cost.CostMeter("llama-9").report(),
+    )
     check("missing usage counts as zero", cost.usage(object()) == (0, 0))
 
     if failures:

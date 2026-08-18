@@ -66,6 +66,10 @@ MODULES = (
     # O assistente do WIZARD (não do chat de domínio). `tool` porque só o caminho do adapter
     # repassa a tool de frontend que ele precisa chamar; sem tools de servidor, ele só propõe.
     "builder",
+    # O preço por token, lido da lista pública da Azure (`prices.azure.com`). Módulo próprio e não
+    # `shared`: o shared kernel promete não fazer I/O, e este faz chamada de rede. A aritmética de
+    # custo continua lá, pura; aqui mora só de onde vem o número.
+    "pricing",
     # ADR-023: a camada de EVIDÊNCIA. Trilha encadeada por hash + o redator que roda antes de
     # qualquer gravação. A imutabilidade é do Azure (política WORM no container); o evento é nosso.
     "audit",

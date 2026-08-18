@@ -1,0 +1,7277 @@
+[
+ {
+  "meterName": "gpt 4.1 Inp regnl Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Code-Interpreter-global Session",
+  "retailPrice": 0.03,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "gpt-4-8K-Batch-Outp-glbl Tokens",
+  "retailPrice": 0.03,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 nano Batch cd Inp Gl 1M Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-0603 cchd Inp DZn Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0513 Input Data Zone Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0806 cached Inp glbl Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mini txt Inp DZone Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 nano Inp Data Zone Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Nano Batch Inpt cchd Dzone 1M Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5 mini pp Opt Gl 1M Tokens",
+  "retailPrice": 3.6,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3-pro Inp glbl Tokens",
+  "retailPrice": 0.02,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 mini 0131 output glbl Tokens",
+  "retailPrice": 0.0044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Medium-128K-Instruct-Finetuned Deployment Hosting Unit",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt-4.1-mini-dev-ft cchd inpt glbl Tokens",
+  "retailPrice": 0.0001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.1 chat inp Dz 1M Tokens",
+  "retailPrice": 1.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3.5-Mini-128K-Instruct-Output Tokens",
+  "retailPrice": 0.00052,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Batch Inpt cchd Dzone 1M Tokens",
+  "retailPrice": 0.06875,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.1 chat cd inp Dz 1M Tokens",
+  "retailPrice": 0.1375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.2 pro Batch inp Gl 1M Tokens",
+  "retailPrice": 10.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Medium-4K-Instruct-Output Tokens",
+  "retailPrice": 0.00068,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Mini Batch outpt Glbl 1M Tokens",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.3 codex opt Dz 1M Tokens",
+  "retailPrice": 15.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt 1.5 txt opt Gl 1M Tokens",
+  "retailPrice": 16.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3-deep research 0626-inp-cchd-glbl 1M Tokens",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-nano-ft hosting regional Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "o1 model ft grader cched input Tokens",
+  "retailPrice": 0.00825,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3-deep research 0626-inp-dzone 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Codestral Inp glbl Tokens",
+  "retailPrice": 0.0003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Code Fast 1 Outp glbl Tokens",
+  "retailPrice": 0.0015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pro longco opt Gl 1M Tokens",
+  "retailPrice": 270.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt img 1.5 in img DZ 1M Tokens",
+  "retailPrice": 8.8,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Text opt DZ 1M Tokens",
+  "retailPrice": 26.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Mini-128K-Instruct-Finetuned Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-dev-ft inpt glbl Tokens",
+  "retailPrice": 0.002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "OSS-20b FT Tokens",
+  "retailPrice": 0.0036,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-nano-ft output regional Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "3.3 70b Inp FT DZ Tokens",
+  "retailPrice": 0.000781,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0513 Batch Inp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V4 Flash Outp DZ Tokens",
+  "retailPrice": 0.00056,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "R1 Inp regnl Tokens",
+  "retailPrice": 0.001485,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Llama 4 Maverick 17B Outp regnl Tokens",
+  "retailPrice": 0.0011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Qwen3 32B FT Tokens",
+  "retailPrice": 0.0032,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3-ft mdl grdr inpt Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o realtimePrvwTxtInp DataZone Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Medium-4K-Instruct-Input Tokens",
+  "retailPrice": 0.00017,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 Batch cd inp Gl 1M Tokens",
+  "retailPrice": 0.13,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt img mn cchd in gl 1215 1M Tokens",
+  "retailPrice": 0.08,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 pro Batch inp Gl 1M Tokens",
+  "retailPrice": 15.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "FW GLM 5.2 Inp DZ Tokens",
+  "retailPrice": 0.00154,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt txt 0828 Outp glbl Tokens",
+  "retailPrice": 0.016,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0513 Input global Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-mini-ft output global Tokens",
+  "retailPrice": 0.0016,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "chat-latest 05052026 inp Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "FW DeepSeek-V4-Pro Inp DZ Tokens",
+  "retailPrice": 0.001925,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0806 Inp Data Zone Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-0603 Outp DZone Tokens",
+  "retailPrice": 0.088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-Mini MM-FT Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3.5-V-128K-Instruct-Output Tokens",
+  "retailPrice": 0.00052,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4o mini 0718 ft hosting Dz Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "V4 Pro Outp DZ Tokens",
+  "retailPrice": 0.00383,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud 0828 Outp glbl Tokens",
+  "retailPrice": 0.064,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 outpt DZone 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "chat-latest 05052026 opt Gl 1M Tokens",
+  "retailPrice": 30.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 mini output regnl Tokens",
+  "retailPrice": 0.00484,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "3.3 70b FT Tokens",
+  "retailPrice": 0.0045,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-nano-ft output global Tokens",
+  "retailPrice": 0.0004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5 mini pp cd Inp Gl 1M Tokens",
+  "retailPrice": 0.045,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4omini-aud1217 Inp glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.3 codex pp opt Gl 1M Tokens",
+  "retailPrice": 28.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 5 pro out dzone Tokens",
+  "retailPrice": 0.132,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-Mini-Output Tokens",
+  "retailPrice": 0.0003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1.5 in cd txt DZ 1M Tokens",
+  "retailPrice": 1.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-nano-ft cached input global Tokens",
+  "retailPrice": 2.5e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Small-8K-Instruct-Input Tokens",
+  "retailPrice": 0.00015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini 0416 Inp glbl Tokens",
+  "retailPrice": 0.0011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1.5 in cd img gl 1M Tokens",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "FW GLM 5.1 Inp DZ Tokens",
+  "retailPrice": 0.00154,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.1 codex mini cd inp Dz 1M Tokens",
+  "retailPrice": 0.0275,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-4-FT Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-0603 cchd Inp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-mini-dev-ft inpt glbl Tokens",
+  "retailPrice": 0.0004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o rtime cached txt inp rgnl Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1 FT Training regional Tokens",
+  "retailPrice": 0.0275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud mini Outp glbl Tokens",
+  "retailPrice": 0.02,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1.5 in cd txt gl 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4.3 Inp Glbl Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-nano-ft hosting global Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "gpt4omini-rt-txt1217 Outp glbl Tokens",
+  "retailPrice": 0.0024,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1.5 in txt DZ 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.1 pp cd inp Dz 1M Tokens",
+  "retailPrice": 0.275,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "K2 Thinking Outp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3 Outp glbl Tokens",
+  "retailPrice": 0.00456,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pro opt Gl 1M Tokens",
+  "retailPrice": 180.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-dev-ft cchd inpt glbl Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud 0828 txt Outp DZone Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 Inp Data Zone Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3.5-V-128K-Instruct-Output-Finetuned Tokens",
+  "retailPrice": 0.00052,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0513 Output global Tokens",
+  "retailPrice": 0.015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 Batch opt Gl 1M Tokens",
+  "retailPrice": 7.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-4-mini-reasoning-Input Tokens",
+  "retailPrice": 7.5e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Large 3 Outp glbl Tokens",
+  "retailPrice": 0.0015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "chat-latest 05282026 cd inp Gl 1M Tokens",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Inp Std DZ 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Ministral 3B Model In-FT Tokens",
+  "retailPrice": 5e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Mnstrl 3b FT DZ Tokens",
+  "retailPrice": 0.0011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1 mini out img glbl Tokens",
+  "retailPrice": 0.008,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3-ft mdl grdr cchd inpt Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 mini ft opt Dz Tokens",
+  "retailPrice": 0.00176,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-latest 05052026 opt Gl 1M Tokens",
+  "retailPrice": 64.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-0603 Inp regnl Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Audio opt DZ 1M Tokens",
+  "retailPrice": 70.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 nano Batch Inp Dz 1M Tokens",
+  "retailPrice": 0.11,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Mini Batch outpt DZone 1M Tokens",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 luna LongCo Inp Std DZ 1M Tokens",
+  "retailPrice": 2.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 pro longco inp Dz 1M Tokens",
+  "retailPrice": 66.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT-OSS-20b-Out-FT Tokens",
+  "retailPrice": 0.0003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5 mini pp Inp Dz 1M Tokens",
+  "retailPrice": 0.495,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-1217 Inp DZone Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt img mn in gl 1215 1M Tokens",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3 mini 0131 cached input glbl Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "R1 Inp glbl Tokens",
+  "retailPrice": 0.00135,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt 1.5 aud cd inp Gl 1M Tokens",
+  "retailPrice": 0.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4o 1120 Batch Inp DZ Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok 4.2 Inp Dzone Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Inp PP Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.1 pp opt Gl 1M Tokens",
+  "retailPrice": 20.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Inp Std DZ 1M Tokens",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-1217 cchd Inp DZn Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.3 Outp DZ L Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4omini-rt-aud1217 Outp DZone Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pp cd inp Dz 1M Tokens",
+  "retailPrice": 0.55,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4.1 dev ft training glbl Tokens",
+  "retailPrice": 0.0125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MM3.5 Inp glbl Tokens",
+  "retailPrice": 0.0015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4omini-aud1217-txt Inp DZone Tokens",
+  "retailPrice": 0.000165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt img 0828 Inp glbl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-Mini-Input Tokens",
+  "retailPrice": 7.5e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt 1.5 img cd inp Gl 1M Tokens",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.5 LongCo inp Gl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "computer-use-outp-rgnl Tokens",
+  "retailPrice": 0.0132,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "R1 Inp DZone Tokens",
+  "retailPrice": 0.001485,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Small-128K-Instruct-Input Tokens",
+  "retailPrice": 0.00015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW GPT OSS 120B Inp DZ Tokens",
+  "retailPrice": 0.000165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Regional Unit",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt aud mini Inp glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Image inp DZ 1M Tokens",
+  "retailPrice": 0.88,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Sora 2 pro high res glbl Second",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "gpt4omini-aud1217 Outp regnl Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-1217 cchd Inp rgnl Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "embedding-ada-regional Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.3 Cached Inp DZ Tokens",
+  "retailPrice": 0.00022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt txt mini cchd Inp glbl Tokens",
+  "retailPrice": 6e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "K2.6 Thinking Inp glbl Tokens",
+  "retailPrice": 0.00095,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Small-8K-Instruct-Finetuned Deployment Hosting Unit",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt 4o mini 0718 cached Inp regnl Tokens",
+  "retailPrice": 8.3e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-0603 Outp DZone Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 nano cached Inp DZone Tokens",
+  "retailPrice": 2.8e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini pp Inp Gl 1M Tokens",
+  "retailPrice": 1.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "V3.1 Inp DZone Tokens",
+  "retailPrice": 0.00136,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1-pro Batch Inp Data Zone Tokens",
+  "retailPrice": 0.0825,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-1217 Inp regnl Tokens",
+  "retailPrice": 0.044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0513 Batch Inp Data Zone Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "K2 Thinking Inp glbl Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-ft model grader output Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3.5-MoE-Instruct-Input Tokens",
+  "retailPrice": 0.00016,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt 1.5 aud inp Gl 1M Tokens",
+  "retailPrice": 32.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 model ft grader input Tokens",
+  "retailPrice": 0.0165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o mini dev ft inpt glbl Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 pro opt Dz 1M Tokens",
+  "retailPrice": 184.8,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Cd Inp PP Gl 1M Tokens",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Doc AI 2512 Dzone Pages",
+  "retailPrice": 3.3,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4 mini ft inp Dz Tokens",
+  "retailPrice": 0.00121,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.1 inp Dz 1M Tokens",
+  "retailPrice": 1.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Audio opt Gl 1M Tokens",
+  "retailPrice": 20.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2 Image inp Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "FW MiniMax M2.5 Cache Inp DZ Tokens",
+  "retailPrice": 3.3e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1 mini inp txt dzone Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Flux 2 Pro MP Megapixel",
+  "retailPrice": 0.015,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "5.5 ShortCo cd inp Dz 1M Tokens",
+  "retailPrice": 0.55,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Provisioned Managed Global Unit",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt4o realtime prvw text inp regn Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.3 Cached Inp Glbl Tokens",
+  "retailPrice": 0.0002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini Batch Opt Gl 1M Tokens",
+  "retailPrice": 2.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt img mn cd in DZ 1215 1M Tokens",
+  "retailPrice": 0.088,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-4-Mini-Output-FT Tokens",
+  "retailPrice": 0.0003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o realtimePrvw audio outp regn Tokens",
+  "retailPrice": 0.22,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mn txt out DZ 1215 1M Tokens",
+  "retailPrice": 2.64,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Image-Dall-E-3 Std LowRes-regnl EP Images",
+  "retailPrice": 4.4,
+  "unitOfMeasure": "100"
+ },
+ {
+  "meterName": "Mngd MI300_192GB Gl",
+  "retailPrice": 7.91,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "o4-mini 0416 Batch Outp glbl Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt txt mn cd in DZ 1215 1M Tokens",
+  "retailPrice": 0.066,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "chat-latest 05052026 cd inp Gl 1M Tokens",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 model ft grader output Tokens",
+  "retailPrice": 0.066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4o mini 0718 ft cd inp Dz Tokens",
+  "retailPrice": 8.3e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 mini ft inp Dz Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-mini-ft mdl grdr cchd inpt Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW GLM 5.1 Cache Inp DZ Tokens",
+  "retailPrice": 0.000286,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Qwen3 32B-IN-FT Tokens",
+  "retailPrice": 0.0003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud mini Outp DZone Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4omini-aud1217 Inp regnl Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pro longco opt Dz 1M Tokens",
+  "retailPrice": 297.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Grok-4 Outp glbl Tokens",
+  "retailPrice": 0.015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 codex inp Dz 1M Tokens",
+  "retailPrice": 1.925,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4.1 mini ft hosting Dz Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Text cd inp DZ 1M Tokens",
+  "retailPrice": 0.066,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "K2.6 Thinking Outp glbl Tokens",
+  "retailPrice": 0.004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-35-turbo-16k-Output-regional Tokens",
+  "retailPrice": 0.004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4o 0806 ft hosting Dz Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Opt Std DZ 1M Tokens",
+  "retailPrice": 33.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-0603 Inp DZone Tokens",
+  "retailPrice": 0.044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "chat-latest 05282026 inp Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Cd Wr Std DZ 1M Tokens",
+  "retailPrice": 3.4375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-aud-1217-txt Outp regnl Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-image-1-inp-img-glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5 pp inp Gl 1M Tokens",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt aud 0828 cchd Inp DZn Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Text inp DZ 1M Tokens",
+  "retailPrice": 0.66,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "computer-use-inpt-glbl Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Codestral Outp glbl Tokens",
+  "retailPrice": 0.0009,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok 4.2 Outp Dzone Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 longco cd inp Gl 1M Tokens",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3.5-MoE-Instruct-Output-FT Tokens",
+  "retailPrice": 0.00064,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4-Turbo-Batch-128K Inp-glbl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 nano Opt Gl 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Cd Wr PP DZ 1M Tokens",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt 1.5 txt opt Dz 1M Tokens",
+  "retailPrice": 17.6,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Opt PP Gl 1M Tokens",
+  "retailPrice": 30.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4o mn trscb txt out dz 1215 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 terra LongCo Opt Std Gl 1M Tokens",
+  "retailPrice": 22.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-mini-tts-txt-inp-dz Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 longco batch inp Gl 1M Tokens",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Doc AI DZone 2505 Pages",
+  "retailPrice": 3.3,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 mini 0131 output Data Zone Tokens",
+  "retailPrice": 0.00484,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol LongCo Inp Std Gl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Llama 3.3 70B Outp glbl Tokens",
+  "retailPrice": 0.00071,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-mini-ft output regional Tokens",
+  "retailPrice": 0.00176,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pro longco batch inp Gl 1M Tokens",
+  "retailPrice": 30.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-1217 Inp regnl Tokens",
+  "retailPrice": 0.044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-35-trb16K-Batch-125-Outp-glbl Tokens",
+  "retailPrice": 0.00075,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-mini-ft mdel grdr cched inpt Tokens",
+  "retailPrice": 8.3e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0513 Batch Outp Data Zone Tokens",
+  "retailPrice": 0.00825,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pro inp Dz 1M Tokens",
+  "retailPrice": 33.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3 mini 0131 cached input Data Zone Tokens",
+  "retailPrice": 0.000605,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "text-embedding-3-small-glbl Tokens",
+  "retailPrice": 2e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 img Batch inp Gl 1M Tokens",
+  "retailPrice": 4.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "V3 Outp DZone Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 nano Inp Gl 1M Tokens",
+  "retailPrice": 0.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "3.3 70b Outp FT DZ Tokens",
+  "retailPrice": 0.000781,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.1 inp Gl 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Mini outpt Glbl 1M Tokens",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Mini-128K-Instruct-Finetuned Deployment Hosting Unit",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "5.3 codex pp cd inp Dz 1M Tokens",
+  "retailPrice": 0.385,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.5 LongCo opt Gl 1M Tokens",
+  "retailPrice": 45.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1 FT Training global Tokens",
+  "retailPrice": 0.025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Inp PP DZ 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Provisioned Managed Regional Unit",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "Mngd H100_80GB Gl",
+  "retailPrice": 7.91,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "GPT 5 Chat outpt Glbl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt aud 0828 txt Inp DZone Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4-8K-Output-regional Tokens",
+  "retailPrice": 0.06,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.3 Outp Glbl L Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Llama 3.3 70B Outp regnl Tokens",
+  "retailPrice": 0.000781,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Image cd inp Gl 1M Tokens",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3 mini 0131 Batch Inp Data Zone Tokens",
+  "retailPrice": 0.000605,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Az-Provisioned Throughput Unit",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt-4.1-mini-ft input regional Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud 1.5 opt Gl 1M Tokens",
+  "retailPrice": 64.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4o mn trscb aud in gl 1215 1M Tokens",
+  "retailPrice": 3.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Mini Batch Inpt Glbl 1M Tokens",
+  "retailPrice": 0.125,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4omini-aud1217-txt Outp DZone Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4o 0806 ft cd inp Dz Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 nano Inp regnl Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "K2.7 Code Inp DZ Tokens",
+  "retailPrice": 0.001045,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "K2.7 Code cached glbl Tokens",
+  "retailPrice": 0.00019,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 nano Batch cd Inp Dz 1M Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-mini-tts-aud-out-dz Tokens",
+  "retailPrice": 0.0132,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini-ft output global Tokens",
+  "retailPrice": 0.0044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud mn in DZ 1215 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 cd inp Gl 1M Tokens",
+  "retailPrice": 0.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4o mini dev ft cchd inpt glbl Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "embedding-ada-glbl Tokens",
+  "retailPrice": 0.0001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI-DS-R1 Outp Dzone Tokens",
+  "retailPrice": 0.00594,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 txt cd inp DZ 1M Tokens",
+  "retailPrice": 1.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-1217 Inp DZone Tokens",
+  "retailPrice": 0.044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-0603 cchd Inp rgnl Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 0416 Outp regnl Tokens",
+  "retailPrice": 0.0088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 ShortCo cd inp Gl 1M Tokens",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Kontext Pro glbl Images",
+  "retailPrice": 40.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI x Tokens",
+  "retailPrice": 0.0517,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4-turbo-128K Input-regional Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image-Dall-E-3 HD LowRes-regnl EP Images",
+  "retailPrice": 8.8,
+  "unitOfMeasure": "100"
+ },
+ {
+  "meterName": "5.1 codex max inp Gl 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Embed v4 Img DZ Tokens",
+  "retailPrice": 0.000517,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 1120 Outp glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3-0324 Inp glbl Tokens",
+  "retailPrice": 0.00114,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 ShortCo opt Gl 1M Tokens",
+  "retailPrice": 30.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1-pro Batch Inp glbl Tokens",
+  "retailPrice": 0.075,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o mini 0718 Outp Data Zone Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "computer-use-inpt-datazone Tokens",
+  "retailPrice": 0.0033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 chat 0210 inp Gl 1M Tokens",
+  "retailPrice": 1.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Mnstrl 3B FT Tokens",
+  "retailPrice": 0.001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-transcribe-txt-inp-dz Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW Kimi K2.5 Inp DZ Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.1 chat opt Gl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4.1 pp inp Dz Tokens",
+  "retailPrice": 0.00385,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-mini-tts-txt-inp-glbl Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 ShortCo Batch opt Dz 1M Tokens",
+  "retailPrice": 16.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Doc AI glbl 2505 Pages",
+  "retailPrice": 3.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Kontext Pro Dzone Images",
+  "retailPrice": 44.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Small-8K-Instruct-Output-Finetuned Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4omini-rt-txt1217 Inp DZone Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-latest 05052026 inp Gl 1M Tokens",
+  "retailPrice": 32.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 luna LongCo Opt Std Gl 1M Tokens",
+  "retailPrice": 9.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4omini-rt-txt1217 Inp glbl Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1 mini out img dzone Tokens",
+  "retailPrice": 0.0088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok-3 Mini Inp Dzone Tokens",
+  "retailPrice": 0.000275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o mn tts aud out dz 1215 1M Tokens",
+  "retailPrice": 13.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Provisioned Managed Data Zone Unit",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "5.6 terra LongCo Cd Inp Std DZ 1M Tokens",
+  "retailPrice": 0.55,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-aud-1217 Outp glbl Tokens",
+  "retailPrice": 0.08,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 Output glbl Tokens",
+  "retailPrice": 0.033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 img Batch cd inp Gl 1M Tokens",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4o 0513 Output regional Tokens",
+  "retailPrice": 0.0165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-35-trb16K-Batch-Outp-glbl Tokens",
+  "retailPrice": 0.001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Codestral Inp regnl Tokens",
+  "retailPrice": 0.00033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-transcribe-aud-inp-dz Tokens",
+  "retailPrice": 0.0066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.1 codex opt Gl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Cd Wr Std DZ 1M Tokens",
+  "retailPrice": 6.875,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3 0416 cached Inp Data Zone Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Cd Wr PP Gl 1M Tokens",
+  "retailPrice": 12.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 1217 Inp regnl Tokens",
+  "retailPrice": 0.0165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Cd Wr PP DZ 1M Tokens",
+  "retailPrice": 13.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "3.3 70b FT DZ Deployment Hosting Unit",
+  "retailPrice": 0.33,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "5.4 nano cd Inp Gl 1M Tokens",
+  "retailPrice": 0.02,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-mini-transcribe-txt-inp-rgnl Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt txt 0828 Outp DZone Tokens",
+  "retailPrice": 0.0176,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini-ft hosting global Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Opt Std DZ 1M Tokens",
+  "retailPrice": 16.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Provisioned Managed Regional Unit",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "o3-deep research 0626-out-dzone 1M Tokens",
+  "retailPrice": 44.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "computer-use-outp-datazone Tokens",
+  "retailPrice": 0.0132,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 ShortCo PP opt Dz 1M Tokens",
+  "retailPrice": 82.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4o 1120 Inp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "text-embedding-3-large-glbl Tokens",
+  "retailPrice": 0.00013,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3-ft mdl grdr opt Tokens",
+  "retailPrice": 0.0088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok4 Fast Inp DZone Tokens",
+  "retailPrice": 0.00022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 codex opt Gl 1M Tokens",
+  "retailPrice": 14.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-aud-0603 Inp glbl Tokens",
+  "retailPrice": 0.04,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Audio inp DZ 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4o mn trscb txt in gl 1215 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Nano cchd Inpt Glbl 1M Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.3 codex inp Gl 1M Tokens",
+  "retailPrice": 1.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "MAI z Tokens",
+  "retailPrice": 0.001925,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4 mini ft opt Dz Tokens",
+  "retailPrice": 0.00484,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini-ft input global Tokens",
+  "retailPrice": 0.0011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Text opt Gl 1M Tokens",
+  "retailPrice": 2.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-image-1-output-img-glbl Tokens",
+  "retailPrice": 0.04,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI r Tokens",
+  "retailPrice": 0.047,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 mini Batch Inp glbl Tokens",
+  "retailPrice": 0.0002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4o mini 0718 ft opt Dz Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW DeepSeek-V4-Pro Outp DZ Tokens",
+  "retailPrice": 0.003828,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Medium-128K-Instruct-Input-Finetuned Tokens",
+  "retailPrice": 0.00017,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-Mini-FT Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-0603 cchd Inp rgnl Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-image-1-inp-cached-img-dzone Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2 Text opt Gl 1M Tokens",
+  "retailPrice": 24.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 inp Dz 1M Tokens",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Grok-3 Mini Inp glbl Tokens",
+  "retailPrice": 0.00025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0806 Batch Inp Data Zone Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.3 chat opt Gl 1M Tokens",
+  "retailPrice": 14.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 mini Batch Inp Dz 1M Tokens",
+  "retailPrice": 0.4125,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "computer-use-inpt-rgnl Tokens",
+  "retailPrice": 0.0033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-transcribe-txt-out-dz Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 txt Batch inp Gl 1M Tokens",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-35-turbo-16K-0125 Output-regional Tokens",
+  "retailPrice": 0.00165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 mini cached input Data Zone Tokens",
+  "retailPrice": 0.000605,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1-pro Inp Data Zone Tokens",
+  "retailPrice": 0.165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o mini 0718 Batch Inp Data Zone Tokens",
+  "retailPrice": 8.3e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2 Text cd inp Gl 1M Tokens",
+  "retailPrice": 0.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4.1 mini ft training Dz Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Global Unit",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "o4-mini-ft model grader output Tokens",
+  "retailPrice": 0.00484,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI u Tokens",
+  "retailPrice": 0.0195,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 cchd Inpt DZone 1M Tokens",
+  "retailPrice": 0.1375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Mini-4K-Instruct-Finetuned Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-transcribe-aud-inp-glbl Tokens",
+  "retailPrice": 0.006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3.5-V-128K-Instruct-Input-Finetuned Tokens",
+  "retailPrice": 0.00013,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Llama 4 Maverick 17B Inp regnl Tokens",
+  "retailPrice": 0.000275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mini Outp glbl Tokens",
+  "retailPrice": 0.02,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-mini-0718-Batch-Outp-glbl Tokens",
+  "retailPrice": 0.0003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4omini-rt-txt1217 cchd Inp rgnl Tokens",
+  "retailPrice": 0.00033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-ft cached input regional Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4 mini dev RFT opt glb Tokens",
+  "retailPrice": 0.0044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 Outp Data Zone Tokens",
+  "retailPrice": 0.0088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok 4.1 Inp DZone Tokens",
+  "retailPrice": 0.00022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW MiniMax 3 Inp DZ Tokens",
+  "retailPrice": 0.00033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Sora 2 pro glbl Second",
+  "retailPrice": 0.3,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "gpt rt txt mn cd in gl 1215 1M Tokens",
+  "retailPrice": 0.06,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Small-8K-Instruct-Output Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 Batch Outp Data Zone Tokens",
+  "retailPrice": 0.033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 pp cd inp Dz 1M Tokens",
+  "retailPrice": 0.385,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4.1 mini Outp regnl Tokens",
+  "retailPrice": 0.00176,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-image-1-inp-cached-txt-glbl Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Cd Inp Std DZ 1M Tokens",
+  "retailPrice": 0.275,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 nano Batch Inp Gl 1M Tokens",
+  "retailPrice": 0.1,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Codestral Inp DZone Tokens",
+  "retailPrice": 0.00033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 mini 0131 Batch Outp Data Zone Tokens",
+  "retailPrice": 0.00242,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-whisper Opt Gl Unit",
+  "retailPrice": 1.02,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "gpt rt txt mini Outp glbl Tokens",
+  "retailPrice": 0.0024,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt 1.5 img inp Dz 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Cd Inp PP DZ 1M Tokens",
+  "retailPrice": 0.22,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt aud 0828 Outp DZone Tokens",
+  "retailPrice": 0.088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MM3.5 Outp glbl Tokens",
+  "retailPrice": 0.0075,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 inp Gl 1M Tokens",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2 Image cd inp Gl 1M Tokens",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Grok-3 Mini Outp glbl Tokens",
+  "retailPrice": 0.00127,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-1217 Outp regnl Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt 1.5 aud inp Dz 1M Tokens",
+  "retailPrice": 35.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt aud mini Inp DZone Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Az-GPT-3.5-turbo Tokens",
+  "retailPrice": 0.002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Llama 3.3 70B Outp Dzone Tokens",
+  "retailPrice": 0.000781,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Flex DZone Megapixel",
+  "retailPrice": 0.055,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "gpt4omini-aud1217-txt Outp regnl Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 txt inp DZ 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-mini-transcribe-txt-out-rgnl Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Flex Ref DZone Megapixel",
+  "retailPrice": 0.055,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Audio inp Gl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-nano FT Training global Tokens",
+  "retailPrice": 0.0015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini-ft model grader cchd inp Tokens",
+  "retailPrice": 0.000303,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Inpt DZone 1M Tokens",
+  "retailPrice": 1.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 cd inp Dz 1M Tokens",
+  "retailPrice": 0.275,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 longco opt Dz 1M Tokens",
+  "retailPrice": 24.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Mini cchd Inpt Glbl 1M Tokens",
+  "retailPrice": 0.025,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-ft output global Tokens",
+  "retailPrice": 0.008,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Audio opt Gl 1M Tokens",
+  "retailPrice": 64.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "FW GLM 5.1 Outp DZ Tokens",
+  "retailPrice": 0.00484,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 opt Gl 1M Tokens",
+  "retailPrice": 15.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-aud-1217-txt Outp glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI-DS-R1 Inp glbl Tokens",
+  "retailPrice": 0.00135,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0806 cached Inp regnl Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1-pro Batch Outp glbl Tokens",
+  "retailPrice": 0.3,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pro opt Dz 1M Tokens",
+  "retailPrice": 198.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4.3 Outp DZ Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-mini-tts-aud-out-rgnl Tokens",
+  "retailPrice": 0.0132,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini Batch cd Inp Dz 1M Tokens",
+  "retailPrice": 0.04125,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-5-codex-ccchd-inp-glbl Tokens",
+  "retailPrice": 0.000125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini 0416 Outp regnl Tokens",
+  "retailPrice": 0.00484,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3.5-Mini-128K-Instruct-Output-Finetuned Tokens",
+  "retailPrice": 0.00052,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok4 Fast Outp glbl Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3 Inp DZone Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Cd Wr Std Gl 1M Tokens",
+  "retailPrice": 3.125,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt aud mn out gl 1215 1M Tokens",
+  "retailPrice": 20.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Provisioned Throughput Units",
+  "retailPrice": 312.0,
+  "unitOfMeasure": "1/Month"
+ },
+ {
+  "meterName": "Image 2 txt Batch cd inp DZ 1M Tokens",
+  "retailPrice": 0.6875,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 pp cd inp Gl 1M Tokens",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "MM3.5 Inp DZ Tokens",
+  "retailPrice": 0.00165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 5 pro inp glbl Tokens",
+  "retailPrice": 0.015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol LongCo Cd Wr Std Gl 1M Tokens",
+  "retailPrice": 12.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "V3-0324 Inp DZone Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mn txt in gl 1215 1M Tokens",
+  "retailPrice": 0.6,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4.1 Batch Inp Data Zone Tokens",
+  "retailPrice": 0.0011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud 0828 Outp glbl Tokens",
+  "retailPrice": 0.08,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Embed v4 Txt DZ Tokens",
+  "retailPrice": 0.000132,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.1 cd inp Dz 1M Tokens",
+  "retailPrice": 0.1375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Mnstrl 3b Inp FT DZ Tokens",
+  "retailPrice": 5.5e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4omini-rt-aud1217 Outp regnl Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Mini-4K-Instruct-Output-Finetuned Tokens",
+  "retailPrice": 0.00052,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Sora 2 pro dzone Second",
+  "retailPrice": 0.33,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "o4-mini-ft input regional Tokens",
+  "retailPrice": 0.00121,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini Inp Gl 1M Tokens",
+  "retailPrice": 0.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 Batch Inp glbl Tokens",
+  "retailPrice": 0.0075,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Assistants-File Search-glbl GB",
+  "retailPrice": 0.1,
+  "unitOfMeasure": "1/Day"
+ },
+ {
+  "meterName": "o4 mini ft hosting Dz Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "gpt-4o-aud-1217 Outp DZone Tokens",
+  "retailPrice": 0.088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 cached Inp glbl Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud 0828 Inp DZone Tokens",
+  "retailPrice": 0.0352,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Code Fast 1 Inp glbl Tokens",
+  "retailPrice": 0.0002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pro inp Gl 1M Tokens",
+  "retailPrice": 30.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4omini-rt-aud1217 cchd Inp rgnl Tokens",
+  "retailPrice": 0.00033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o mn trscb aud in dz 1215 1M Tokens",
+  "retailPrice": 3.3,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "FW Kimi K2.6 Cache Inp DZ Tokens",
+  "retailPrice": 0.000176,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-Mini MM-Output Tokens",
+  "retailPrice": 0.00032,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mini txt Outp glbl Tokens",
+  "retailPrice": 0.0024,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 LongCo Batch opt Dz 1M Tokens",
+  "retailPrice": 24.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Qwen3 32B-Out-FT Tokens",
+  "retailPrice": 0.0012,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 chat 0210 inp Dz 1M Tokens",
+  "retailPrice": 1.925,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-image-1-inp-img-dzone Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-35-turbo-16k-Input-regional Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "K2.6 cached glbl Tokens",
+  "retailPrice": 0.00016,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 0416 Inp regnl Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Medium-128K-Instruct-Output Tokens",
+  "retailPrice": 0.00068,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mn txt in DZ 1215 1M Tokens",
+  "retailPrice": 0.66,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.2 pp inp Dz 1M Tokens",
+  "retailPrice": 3.85,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "codex mini out dzone Tokens",
+  "retailPrice": 0.0066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI-DS-R1 Outp regnl Tokens",
+  "retailPrice": 0.00594,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 inp Gl 1M Tokens",
+  "retailPrice": 1.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 longco cd inp Dz 1M Tokens",
+  "retailPrice": 0.55,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3-mini-ft model grader cchd inpt Tokens",
+  "retailPrice": 0.000605,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 nano ft cd inp Dz Tokens",
+  "retailPrice": 2.8e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 mini Inp regnl Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "OCR DZone Pages",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.3 Inp Glbl L Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 opt Gl 1M Tokens",
+  "retailPrice": 14.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o4-mini 0416 Batch Outp Data Zone Tokens",
+  "retailPrice": 0.00242,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-mini-ft cached input regnl Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Small-128K-Instruct-Finetuned Deployment Hosting Unit",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "Phi-3.5-V-128K-Instruct-Input Tokens",
+  "retailPrice": 0.00013,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI-DS-R1 Inp regnl Tokens",
+  "retailPrice": 0.001485,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o mini dev ft opt glbl Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 5 pro batch out dzone Tokens",
+  "retailPrice": 0.066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 cached Inp regnl Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Medium-4K-Instruct-Finetuned Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-0603 cchd Inp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud 1.5 inp Dz 1M Tokens",
+  "retailPrice": 35.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-5-codex-inp-glbl Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok-4 Inp glbl Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt txt mini Outp DZone Tokens",
+  "retailPrice": 0.00264,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.1 codex max opt Dz 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 preview output Data Zone Tokens",
+  "retailPrice": 0.066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 chat 0210 opt Gl 1M Tokens",
+  "retailPrice": 14.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Llama 3.3 70B Inp Dzone Tokens",
+  "retailPrice": 0.000781,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "codex mini inp cchd rgnl Tokens",
+  "retailPrice": 0.000413,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-1217 Inp regnl Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-ft hosting global Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "4.1 pp opt Gl Tokens",
+  "retailPrice": 0.014,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pro longco batch opt Dz 1M Tokens",
+  "retailPrice": 148.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "text-embedding-3-small-regional Tokens",
+  "retailPrice": 2.2e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-reasoning-Input Tokens",
+  "retailPrice": 0.000125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Data Zone Unit",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "file-search-tool-calls-rgnl Calls",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 Batch opt Dz 1M Tokens",
+  "retailPrice": 8.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Provisioned Managed Data Zone Unit",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-1217 Outp regnl Tokens",
+  "retailPrice": 0.088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4omini-rt-aud1217 Inp glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW MiniMax 3 Cache Inp DZ Tokens",
+  "retailPrice": 6.6e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Data Zone Unit",
+  "retailPrice": 286.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "Provisioned Managed Data Zone Unit",
+  "retailPrice": 2916.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-1217 Outp DZone Tokens",
+  "retailPrice": 0.088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 pp inp Gl 1M Tokens",
+  "retailPrice": 3.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Cd Inp Std Gl 1M Tokens",
+  "retailPrice": 0.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Image 2 img opt Gl 1M Tokens",
+  "retailPrice": 30.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-ft mdl grdr opt Tokens",
+  "retailPrice": 0.0088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok-3 Inp glbl Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Mnstrl 3b FT DZ Deployment Hosting Unit",
+  "retailPrice": 0.715,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Cd Inp Std Gl 1M Tokens",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Chat cchd Inpt Glbl 1M Tokens",
+  "retailPrice": 0.125,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4.1 nano ft opt Dz Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud 0828 cchd Inp glbl Tokens",
+  "retailPrice": 0.0004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pp opt Gl 1M Tokens",
+  "retailPrice": 30.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 opt Dz 1M Tokens",
+  "retailPrice": 16.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "V4 Pro Inp glbl Tokens",
+  "retailPrice": 0.00174,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 Batch cd inp Dz 1M Tokens",
+  "retailPrice": 0.143,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Embed v4 Img Glbl Tokens",
+  "retailPrice": 0.00047,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini 0416 cached Inp glbl Tokens",
+  "retailPrice": 0.000275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 0416 Outp Data Zone Tokens",
+  "retailPrice": 0.0088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 nano cd Inp Dz 1M Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4o 1120 Inp Data Zone Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-nano-dev-ft inpt glbl Tokens",
+  "retailPrice": 0.0001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 longco batch opt Gl 1M Tokens",
+  "retailPrice": 11.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-5-codex-inp-dzone Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt 1.5 img cd inp Dz 1M Tokens",
+  "retailPrice": 0.55,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4o mn tts txt in dz 1215 1M Tokens",
+  "retailPrice": 0.66,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Grok-3 Mini Outp regnl Tokens",
+  "retailPrice": 0.00138,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 ShortCo inp Dz 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4o 1120 cached Inp regnl Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pp inp Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "K2.5 Thinking Outp DZ Tokens",
+  "retailPrice": 0.0033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Codestral Outp regnl Tokens",
+  "retailPrice": 0.00099,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok-3 Mini Inp regnl Tokens",
+  "retailPrice": 0.000275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V4 Pro Outp glbl Tokens",
+  "retailPrice": 0.00348,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3.5-Mini-Instruct-Finetuned Deployment Hosting Unit",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "Qwen3 32B FT Deployment Hosting Unit",
+  "retailPrice": 0.3,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "Flux 1.1 Pro glbl Images",
+  "retailPrice": 40.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4-8K-Input-regional Tokens",
+  "retailPrice": 0.03,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-mini-0718-Outp-regnl Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 mini pp cd Inp Gl Tokens",
+  "retailPrice": 0.000175,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Text cd inp Gl 1M Tokens",
+  "retailPrice": 0.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 1217 Inp glbl Tokens",
+  "retailPrice": 0.015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5 mini pp Opt Dz 1M Tokens",
+  "retailPrice": 3.96,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 1217 Outp Data Zone Tokens",
+  "retailPrice": 0.066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 nano Batch Opt Dz 1M Tokens",
+  "retailPrice": 0.6875,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "file-search-tool-calls-glbl Calls",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "codex mini inp cchd dzone Tokens",
+  "retailPrice": 0.000413,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini 0416 cached Inp regnl Tokens",
+  "retailPrice": 0.000303,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 codex opt Dz 1M Tokens",
+  "retailPrice": 15.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3 mini 0131 Batch Inp glbl Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Audio inp Gl 1M Tokens",
+  "retailPrice": 32.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3 0416 cached Inp regnl Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Nano Inpt Glbl 1M Tokens",
+  "retailPrice": 0.05,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Image 2 txt inp Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Inp PP DZ 1M Tokens",
+  "retailPrice": 2.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-mini-0718-Batch-Inp-glbl Tokens",
+  "retailPrice": 7.5e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 mini Inp glbl Tokens",
+  "retailPrice": 0.0004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-0603 Outp regnl Tokens",
+  "retailPrice": 0.088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3.5-MoE-Instruct-Output Tokens",
+  "retailPrice": 0.00064,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini Batch Inp Gl 1M Tokens",
+  "retailPrice": 0.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3 mini 0131 Batch Outp glbl Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 terra LongCo Inp Std DZ 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Grok 4.1 Inp Glbl Tokens",
+  "retailPrice": 0.0002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 ft opt Dz Tokens",
+  "retailPrice": 0.0088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 preview cached input Data Zone Tokens",
+  "retailPrice": 0.00825,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt txt mn out DZ 1215 1M Tokens",
+  "retailPrice": 2.64,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Cd Inp PP DZ 1M Tokens",
+  "retailPrice": 0.55,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Flex Megapixel",
+  "retailPrice": 0.05,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "gpt4omini-rt-txt1217 cchd Inp glbl Tokens",
+  "retailPrice": 0.0003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Medium-4K-Instruct-Finetuned Deployment Hosting Unit",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "5.1 codex mini opt Gl 1M Tokens",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Grok4 Fast Outp DZone Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pro Batch opt Gl 1M Tokens",
+  "retailPrice": 90.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Doc AI 2512 glbl Pages",
+  "retailPrice": 3.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 nano Outp glbl Tokens",
+  "retailPrice": 0.0004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o mini 0718 Inp Data Zone Tokens",
+  "retailPrice": 0.000165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 mini 0131 input regnl Tokens",
+  "retailPrice": 0.00121,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol LongCo Opt Std DZ 1M Tokens",
+  "retailPrice": 49.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "K2.7 Code cached DZ Tokens",
+  "retailPrice": 0.000209,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok-3 Outp regnl Tokens",
+  "retailPrice": 0.0165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Llama3.3-Out-FT Tokens",
+  "retailPrice": 0.00071,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Mini Inpt Glbl 1M Tokens",
+  "retailPrice": 0.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.1 codex inp Gl 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-ft model grader cched inpt Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Cd Inp PP Gl 1M Tokens",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4.1 ft inp Dz Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Opt Std Gl 1M Tokens",
+  "retailPrice": 15.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Image inp DZ 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1-pro Batch Outp Data Zone Tokens",
+  "retailPrice": 0.33,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "OCR 2512 Dzone Pages",
+  "retailPrice": 2.2,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "K2.7 Code Outp DZ Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o tcrb d txt out glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 luna LongCo Cd Inp Std DZ 1M Tokens",
+  "retailPrice": 0.22,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Nano Batch outpt Glbl 1M Tokens",
+  "retailPrice": 0.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt txt mini Inp DZone Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 Batch Outp Data Zone Tokens",
+  "retailPrice": 0.0044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3-pro Batch Outp glbl Tokens",
+  "retailPrice": 0.04,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4o mini 0718 ft training Dz Tokens",
+  "retailPrice": 0.0033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "K2.5 cached glbl Tokens",
+  "retailPrice": 0.0001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Mini Batch Inpt DZone 1M Tokens",
+  "retailPrice": 0.1375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4omini-rt-txt1217 cchd Inp DZn Tokens",
+  "retailPrice": 0.00033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt txt 0828 Inp DZone Tokens",
+  "retailPrice": 0.0044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-ft mdl grdr inpt Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 codex cd inp Dz 1M Tokens",
+  "retailPrice": 0.1925,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3-mini-ft model grader input Tokens",
+  "retailPrice": 0.00121,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 ShortCo opt Dz 1M Tokens",
+  "retailPrice": 33.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Assistants-File Search-regnl GB",
+  "retailPrice": 0.11,
+  "unitOfMeasure": "1/Day"
+ },
+ {
+  "meterName": "4.1 mini pp Inp Gl Tokens",
+  "retailPrice": 0.0007,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image-Dall-E-3 Std HighRes-regnl EP Images",
+  "retailPrice": 8.8,
+  "unitOfMeasure": "100"
+ },
+ {
+  "meterName": "GPT 5.1 opt Dz 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4.1 nano cached Inp regnl Tokens",
+  "retailPrice": 2.8e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 1120 Batch Outp glbl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Image inp Gl 1M Tokens",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.2 Batch inp Dz 1M Tokens",
+  "retailPrice": 0.9625,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.3 codex pp inp Gl 1M Tokens",
+  "retailPrice": 3.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "K2.7 Code Inp glbl Tokens",
+  "retailPrice": 0.00095,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 pp cd inp Dz Tokens",
+  "retailPrice": 0.000963,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 nano Inp glbl Tokens",
+  "retailPrice": 0.0001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Mini-4K-Instruct-Input Tokens",
+  "retailPrice": 0.00013,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 ShortCo Batch cd inp Gl 1M Tokens",
+  "retailPrice": 0.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-transcribe-txt-inp-rgnl Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "codex mini inp rgnl Tokens",
+  "retailPrice": 0.00165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 Text Input DZ Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 img cd inp DZ 1M Tokens",
+  "retailPrice": 2.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "chat-latest 05282026 opt Gl 1M Tokens",
+  "retailPrice": 30.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Mnstrl 3B FT Deployment Hosting Unit",
+  "retailPrice": 0.65,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "GPT 5.1 cd inp Gl 1M Tokens",
+  "retailPrice": 0.125,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 mini cached input glbl Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "K2 Thinking Outp DZ Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-1217 cchd Inp DZn Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 Text Input glbl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini pp cd Inp Gl 1M Tokens",
+  "retailPrice": 0.15,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Llama 4 Maverick 17B Inp glbl Tokens",
+  "retailPrice": 0.00025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o mini 0718 cached Inp glbl Tokens",
+  "retailPrice": 7.5e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o realtimePrvwAudOutp DataZone Tokens",
+  "retailPrice": 0.22,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "R1 Outp regnl Tokens",
+  "retailPrice": 0.00594,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Mini-128K-Instruct-Output-Finetuned Tokens",
+  "retailPrice": 0.00052,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt 1.5 txt inp Gl 1M Tokens",
+  "retailPrice": 4.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-4-Input-FT Tokens",
+  "retailPrice": 0.000125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud mini Inp DZone Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-0603 cchd Inp DZn Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V4 Flash cached glbl Tokens",
+  "retailPrice": 2.8e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt img mini cchd Inp glbl Tokens",
+  "retailPrice": 8e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-ft output regional Tokens",
+  "retailPrice": 0.0088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 Batch inp Dz 1M Tokens",
+  "retailPrice": 1.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4o mn trscb txt in dz 1215 1M Tokens",
+  "retailPrice": 1.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Codestral Outp DZone Tokens",
+  "retailPrice": 0.00099,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Nano outpt Glbl 1M Tokens",
+  "retailPrice": 0.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-0603 Outp regnl Tokens",
+  "retailPrice": 0.088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 LongCo cd inp Dz 1M Tokens",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Cd Wr PP Gl 1M Tokens",
+  "retailPrice": 6.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4omini-rt-aud1217 Inp regnl Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok-3 Outp glbl Tokens",
+  "retailPrice": 0.015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.3 Inp DZ Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 nano ft training Dz Tokens",
+  "retailPrice": 0.00165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "text-embedding-3-large-grader Tokens",
+  "retailPrice": 0.00013,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o realtime cached audio inp regn Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-Mini MM-Input Tokens",
+  "retailPrice": 8e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 img inp Gl 1M Tokens",
+  "retailPrice": 8.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-mini-ft input global Tokens",
+  "retailPrice": 0.0004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 mini Batch Outp DZone Tokens",
+  "retailPrice": 0.00088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-mini-dev-ft opt glbl Tokens",
+  "retailPrice": 0.0016,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.1 Batch opt Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "OSS-20b FT Deployment Hosting Unit",
+  "retailPrice": 0.3,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "o4 mini rft training Dz Unit",
+  "retailPrice": 110.0,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "gpt-4o-mini-ft model grader input Tokens",
+  "retailPrice": 0.000165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI v Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Nano Inpt DZone 1M Tokens",
+  "retailPrice": 0.055,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Code Fast 1 Outp DZone Tokens",
+  "retailPrice": 0.00165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0806 cached Inp Data Zone Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok 4.1 Outp DZone Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 mini pp Opt Dz Tokens",
+  "retailPrice": 0.00308,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Code Fast 1 Inp DZone Tokens",
+  "retailPrice": 0.00022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Flux 2 Pro MP DZone Megapixel",
+  "retailPrice": 0.0165,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "gpt-4o-mini-transcribe-txt-inp-glbl Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Data Zone Unit",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "o1 mini input glbl Tokens",
+  "retailPrice": 0.0011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 1217 Outp glbl Tokens",
+  "retailPrice": 0.06,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-0603 Outp DZone Tokens",
+  "retailPrice": 0.088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 pro opt Gl 1M Tokens",
+  "retailPrice": 168.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.2 Batch opt Gl 1M Tokens",
+  "retailPrice": 7.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3.5-MoE-Instruct-FT Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 Batch cd inp Gl 1M Tokens",
+  "retailPrice": 0.0875,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Image 2 img opt DZ 1M Tokens",
+  "retailPrice": 33.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.2 pp opt Gl 1M Tokens",
+  "retailPrice": 28.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.2 chat cd inp Dz 1M Tokens",
+  "retailPrice": 0.1925,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-dev-ft opt glbl Tokens",
+  "retailPrice": 0.008,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 mini pp cd Inp Dz Tokens",
+  "retailPrice": 0.000193,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4-Turbo-Batch-128K Outp-glbl Tokens",
+  "retailPrice": 0.015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4o 0806 ft opt Dz Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-0603-txt Inp regnl Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 LongCo Batch inp Dz 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-mini-tts-aud-out-glbl Tokens",
+  "retailPrice": 0.012,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Medium-4K-Instruct-Output-Finetuned Tokens",
+  "retailPrice": 0.00068,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Cd Wr PP DZ 1M Tokens",
+  "retailPrice": 6.875,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-aud-0603-txt Outp DZone Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Small-8K-Instruct-Finetuned Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Opt PP DZ 1M Tokens",
+  "retailPrice": 13.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-0603 Inp glbl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4 mini dev RFT Training glb Unit",
+  "retailPrice": 50.0,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "GPT 5 Nano Batch outpt DZone 1M Tokens",
+  "retailPrice": 0.22,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5 pp inp Dz 1M Tokens",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Flux 2 Pro Initial MP Megapixel",
+  "retailPrice": 0.03,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "o4-mini 0416 Batch Inp glbl Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-Mini MM-FT Deployment Hosting Unit",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt 4.1 mini Batch Outp glbl Tokens",
+  "retailPrice": 0.0008,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini 0416 Inp Data Zone Tokens",
+  "retailPrice": 0.00121,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud 1.5 opt Dz 1M Tokens",
+  "retailPrice": 70.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 luna LongCo Cd Wr Std Gl 1M Tokens",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 longco opt Gl 1M Tokens",
+  "retailPrice": 22.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "FW MiniMax M2.5 Outp DZ Tokens",
+  "retailPrice": 0.00132,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3.5-MoE-Instruct-Input-FT Tokens",
+  "retailPrice": 0.00016,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 5 pro batch inp dzone Tokens",
+  "retailPrice": 0.00825,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V4 Pro cached glbl Tokens",
+  "retailPrice": 0.000145,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 1217 cached Inp Data Zone Tokens",
+  "retailPrice": 0.00825,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-0603 Outp regnl Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 1120 Batch Outp DZ Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4o 0806 ft inp Dz Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.1 codex mini inp Dz 1M Tokens",
+  "retailPrice": 0.275,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Provisioned Throughput Units",
+  "retailPrice": 312.0,
+  "unitOfMeasure": "1/Month"
+ },
+ {
+  "meterName": "5.3 codex cd inp Gl 1M Tokens",
+  "retailPrice": 0.175,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o4-mini 0416 Outp glbl Tokens",
+  "retailPrice": 0.0044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "K2.5 Thinking Inp DZ Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Large 3 Outp Dzone Tokens",
+  "retailPrice": 0.00165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.3 Cached Inp DZ L Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Image cd inp DZ 1M Tokens",
+  "retailPrice": 0.55,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Llama3.3 70b-IN-FT Tokens",
+  "retailPrice": 0.00071,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud mini Inp glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 mini Batch Outp Data Zone Tokens",
+  "retailPrice": 0.00242,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3-mini-ft model grader output Tokens",
+  "retailPrice": 0.00484,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Medium-128K-Instruct-Finetuned Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-ft mdl grdr cchd inpt Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 mini output glbl Tokens",
+  "retailPrice": 0.0044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.3 codex inp Dz 1M Tokens",
+  "retailPrice": 1.925,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o4-mini-ft cached input regional Tokens",
+  "retailPrice": 0.000303,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW DeepSeek V3.2 Inp DZ Tokens",
+  "retailPrice": 0.00062,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud 0828 txt Outp glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1.5 out img DZ 1M Tokens",
+  "retailPrice": 35.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4.1 nano Batch Outp glbl Tokens",
+  "retailPrice": 0.0002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 pro inp Dz 1M Tokens",
+  "retailPrice": 23.1,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "V3-0324 Outp DZone Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-nano-ft cached input regnl Tokens",
+  "retailPrice": 2.8e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-mini-0718-Outp-glbl Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5 pp opt Dz 1M Tokens",
+  "retailPrice": 22.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "codex mini inp dzone Tokens",
+  "retailPrice": 0.00165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Command A Outp DZ Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-1217 Inp glbl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 Output DZ Tokens",
+  "retailPrice": 0.0363,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt img mini cchd Inp DZn Tokens",
+  "retailPrice": 8.8e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-mini-0718-Inp-regnl Tokens",
+  "retailPrice": 0.000165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt txt mn in gl 1215 1M Tokens",
+  "retailPrice": 0.6,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4omini-rt-txt1217 Outp DZone Tokens",
+  "retailPrice": 0.00264,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Audio opt DZ 1M Tokens",
+  "retailPrice": 22.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-aud-0603-txt Inp DZone Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Nano Batch Inpt Glbl 1M Tokens",
+  "retailPrice": 0.025,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3-deep research 0626-inp-glbl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Provisioned Managed Global Unit",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt 4.1 nano Outp Data Zone Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-nano-ft mdl grdr opt Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 nano cached Inp glbl Tokens",
+  "retailPrice": 2.5e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-5-codex-out-dzone Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini Inp Dz 1M Tokens",
+  "retailPrice": 0.825,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Text inp Gl 1M Tokens",
+  "retailPrice": 4.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5 pp cd inp Gl 1M Tokens",
+  "retailPrice": 0.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4.1 mini pp Opt Gl Tokens",
+  "retailPrice": 0.0028,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3.1 Outp glbl Tokens",
+  "retailPrice": 0.00494,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 1217 Batch Inp Data Zone Tokens",
+  "retailPrice": 0.00825,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud mn in gl 1215 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4.1 mini Batch Inp DZone Tokens",
+  "retailPrice": 0.00022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Llama 4 Maverick 17B Outp glbl Tokens",
+  "retailPrice": 0.001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Nano cchd Inpt DZone 1M Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.2 chat inp Dz 1M Tokens",
+  "retailPrice": 1.925,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4o realtime cached text inp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 pro Batch opt Gl 1M Tokens",
+  "retailPrice": 84.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Mini-128K-Instruct-Input Tokens",
+  "retailPrice": 0.00013,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3.1 Outp DZone Tokens",
+  "retailPrice": 0.00543,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini pp Opt Dz 1M Tokens",
+  "retailPrice": 9.9,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Rerank v4 Pro Glbl Search",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1-pro Outp glbl Tokens",
+  "retailPrice": 0.6,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-mini-transcribe-txt-out-glbl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mn txt out gl 1215 1M Tokens",
+  "retailPrice": 2.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.5 LongCo Batch cd inp Gl 1M Tokens",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.5 ShortCo PP cd inp Dz 1M Tokens",
+  "retailPrice": 1.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-1217 cchd Inp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-transcribe-txt-out-glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok-3 Inp regnl Tokens",
+  "retailPrice": 0.0033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 pp cd inp Gl Tokens",
+  "retailPrice": 0.000875,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0806 Batch Outp Data Zone Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V4 Flash Inp glbl Tokens",
+  "retailPrice": 0.00019,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt 1.5 txt cd inp Dz 1M Tokens",
+  "retailPrice": 0.44,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-1217 cchd Inp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-0603 Inp DZone Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Llama 3.3 70B Inp regnl Tokens",
+  "retailPrice": 0.000781,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.1 pp cd inp Gl 1M Tokens",
+  "retailPrice": 0.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.5 LongCo cd inp Gl 1M Tokens",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-4-Input Tokens",
+  "retailPrice": 0.000125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-mini-0718-Inp-glbl Tokens",
+  "retailPrice": 0.00015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW MiniMax M2.5 Inp DZ Tokens",
+  "retailPrice": 0.00033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-1217 cchd Inp rgnl Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1.5 out img gl 1M Tokens",
+  "retailPrice": 32.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4-turbo-128K Output-regional Tokens",
+  "retailPrice": 0.033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o mini 0718 cached Inp Data Zone Tokens",
+  "retailPrice": 8.3e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 cd inp Gl 1M Tokens",
+  "retailPrice": 0.175,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt aud mn out DZ 1215 1M Tokens",
+  "retailPrice": 22.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Grok-4 Inp DZone Tokens",
+  "retailPrice": 0.0033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 mini 0131 input glbl Tokens",
+  "retailPrice": 0.0011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.1 Batch opt Dz 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.1 codex mini opt Dz 1M Tokens",
+  "retailPrice": 2.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Grok-3 Inp Dzone Tokens",
+  "retailPrice": 0.0033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud 1.5 inp Gl 1M Tokens",
+  "retailPrice": 32.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4o realtimePrvw audio inp glbl Tokens",
+  "retailPrice": 0.1,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3-pro Outp glbl Tokens",
+  "retailPrice": 0.08,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-1217-txt Inp DZone Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 terra LongCo Cd Wr Std Gl 1M Tokens",
+  "retailPrice": 6.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4-32K-Input-regional Tokens",
+  "retailPrice": 0.06,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 mini Batch Inp glbl Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-nano-dev-ft cchd inpt glbl Tokens",
+  "retailPrice": 2.5e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 ShortCo PP opt Gl 1M Tokens",
+  "retailPrice": 75.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 longco inp Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt txt 0828 cchd Inp DZn Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini pp Inp Dz 1M Tokens",
+  "retailPrice": 1.65,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.1 codex cd inp Dz 1M Tokens",
+  "retailPrice": 0.1375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4omini-aud1217-txt Inp glbl Tokens",
+  "retailPrice": 0.00015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-1217 Inp glbl Tokens",
+  "retailPrice": 0.04,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Inp PP Gl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Grok-3 Outp DZone Tokens",
+  "retailPrice": 0.0165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1-pro Outp Data Zone Tokens",
+  "retailPrice": 0.66,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud mini cchd Inp glbl Tokens",
+  "retailPrice": 0.0003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW Kimi K2.7 Code Inp DZ Tokens",
+  "retailPrice": 0.00105,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-nano-ft input global Tokens",
+  "retailPrice": 0.0001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-ft model grader input Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol LongCo Opt Std Gl 1M Tokens",
+  "retailPrice": 45.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Mini-4K-Instruct-Finetuned Deployment Hosting Unit",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "Rerank v4 Fast Glbl Search",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-5-codex-ccchd-inp-dzone Tokens",
+  "retailPrice": 0.000138,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Image inp Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4o realtimePrvwTxtOutp DataZone Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o mn tts txt in gl 1215 1M Tokens",
+  "retailPrice": 0.6,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4.1 ft hosting Dz Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "32b Outp FT DZ Tokens",
+  "retailPrice": 0.00132,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 ShortCo Batch inp Gl 1M Tokens",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 1217 Batch Outp glbl Tokens",
+  "retailPrice": 0.03,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI t Tokens",
+  "retailPrice": 0.00175,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-1217-txt Inp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Command A Inp Glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-1217 Outp glbl Tokens",
+  "retailPrice": 0.02,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 nano Batch Outp DZone Tokens",
+  "retailPrice": 0.00022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "OCR 4 glbl Pages",
+  "retailPrice": 4.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW DeepSeekV3.2 Cache Inp DZ Tokens",
+  "retailPrice": 0.00031,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt img mn in DZ 1215 1M Tokens",
+  "retailPrice": 0.88,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt 1.5 img inp Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-4-Mini-FT Deployment Hosting Unit",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Cd Inp Std Gl 1M Tokens",
+  "retailPrice": 0.1,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.3 chat inp Dz 1M Tokens",
+  "retailPrice": 1.925,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "32b FT DZ Deployment Hosting Unit",
+  "retailPrice": 0.33,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "FW DeepSeek-V4-Pro Ch Inp DZ Tokens",
+  "retailPrice": 0.000165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 preview input Data Zone Tokens",
+  "retailPrice": 0.0165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "3.3 70b FT DZ Tokens",
+  "retailPrice": 0.00495,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mn in gl 1215 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Llama 4 Maverick 17B Outp Dzone Tokens",
+  "retailPrice": 0.0011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Sora 2 dzone Second",
+  "retailPrice": 0.11,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "V3-0324 Outp regnl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3.2 Outp glbl Tokens",
+  "retailPrice": 0.00168,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-0603 Inp regnl Tokens",
+  "retailPrice": 0.044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Kontext Pro regnl Images",
+  "retailPrice": 44.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5 pp opt Gl 1M Tokens",
+  "retailPrice": 20.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.2 Batch inp Gl 1M Tokens",
+  "retailPrice": 0.875,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "OSS 20b Outp FT DZ Tokens",
+  "retailPrice": 0.00033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Audio cd inp Gl 1M Tokens",
+  "retailPrice": 0.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "OCR 4 annot glbl Pages",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW Kimi K2.7 Code Cd Inp DZ Tokens",
+  "retailPrice": 0.00021,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-reasoning-Output Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt 1.5 txt inp Dz 1M Tokens",
+  "retailPrice": 4.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.5 LongCo opt Dz 1M Tokens",
+  "retailPrice": 49.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4o mn trscb txt out gl 1215 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-nano FT Training regional Tokens",
+  "retailPrice": 0.00165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mn in DZ 1215 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Nano Batch Inpt DZone 1M Tokens",
+  "retailPrice": 0.0275,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Provisioned Managed Data Zone Unit",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt rt aud 0828 Outp DZone Tokens",
+  "retailPrice": 0.0704,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW GLM 5.2 Cache Inp DZ Tokens",
+  "retailPrice": 0.00015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI s Tokens",
+  "retailPrice": 0.00175,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 img cd inp Gl 1M Tokens",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 1217 cached Inp glbl Tokens",
+  "retailPrice": 0.0075,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud 0828 Inp DZone Tokens",
+  "retailPrice": 0.044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2e Output glbl Tokens",
+  "retailPrice": 0.0195,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-0603 Outp glbl Tokens",
+  "retailPrice": 0.02,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "32b Inp FT DZ Tokens",
+  "retailPrice": 0.00033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3-deep research 0626-out-glbl 1M Tokens",
+  "retailPrice": 40.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "text embedding 3 large DZ Tokens",
+  "retailPrice": 0.000143,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.1 chat cd inp Gl 1M Tokens",
+  "retailPrice": 0.125,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4o 0513 Input regional Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok 4.1 Outp Glbl Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1-pro Outp regnl Tokens",
+  "retailPrice": 0.66,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o rtime cached txt inp datazone Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Batch Inpt cchd Glbl 1M Tokens",
+  "retailPrice": 0.0625,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-mini-transcribe-txt-out-dz Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-mini FT Training global Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 0416 Batch Outp Data Zone Tokens",
+  "retailPrice": 0.0044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3-pro Batch Inp glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V4 Flash Inp DZ Tokens",
+  "retailPrice": 0.00021,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 nano Opt Dz 1M Tokens",
+  "retailPrice": 1.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Image-DALL-E-2-regnl Images",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "100"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-0603 Outp glbl Tokens",
+  "retailPrice": 0.08,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Audio cd inp DZ 1M Tokens",
+  "retailPrice": 0.33,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "FW GPT OSS 120B Outp DZ Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 longco batch inp Dz 1M Tokens",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-4-FT Deployment Hosting Unit",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Inp PP DZ 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.2 chat opt Gl 1M Tokens",
+  "retailPrice": 14.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "K2 Thinking Inp DZ Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 0416 Batch Inp Data Zone Tokens",
+  "retailPrice": 0.0011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 0416 Batch Inp glbl Tokens",
+  "retailPrice": 0.001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 outpt Glbl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Mini Batch Inpt cchd Glbl 1M Tokens",
+  "retailPrice": 0.0125,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.2 pro Batch opt Dz 1M Tokens",
+  "retailPrice": 92.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.1 Batch cd inp Gl 1M Tokens",
+  "retailPrice": 0.0625,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4.1 nano ft inp Dz Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pro Batch opt Dz 1M Tokens",
+  "retailPrice": 99.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-oss-120B Inp glbl Tokens",
+  "retailPrice": 0.00015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 mini 0131 input Data Zone Tokens",
+  "retailPrice": 0.00121,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Command A Plus Inp DZ 1M Tokens",
+  "retailPrice": 0.88,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "codex mini out glbl Tokens",
+  "retailPrice": 0.006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt img mini Inp DZn Tokens",
+  "retailPrice": 0.00088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 luna LongCo Inp Std Gl 1M Tokens",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4omini-rt-aud1217 Inp DZone Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.1 codex mini cd inp Gl 1M Tokens",
+  "retailPrice": 0.025,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-4-Mini MM-Output-FT Tokens",
+  "retailPrice": 0.00032,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 Batch Inp Data Zone Tokens",
+  "retailPrice": 0.00825,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Opt Std DZ 1M Tokens",
+  "retailPrice": 6.6,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.3 codex opt Gl 1M Tokens",
+  "retailPrice": 14.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Image 2 img Batch cd inp DZ 1M Tokens",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Cd Wr Std DZ 1M Tokens",
+  "retailPrice": 1.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt img 1 mini inp txt glbl Tokens",
+  "retailPrice": 0.002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-reasoning-plus-input Tokens",
+  "retailPrice": 0.000125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1.5 in cd img DZ 1M Tokens",
+  "retailPrice": 2.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-0806-Outp-regnl Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o realtimePrvwAudInp DataZone Tokens",
+  "retailPrice": 0.11,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-0603-txt Outp glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pro longco inp Gl 1M Tokens",
+  "retailPrice": 60.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt aud 0828 Inp glbl Tokens",
+  "retailPrice": 0.04,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-nano-ft mdl grdr inpt Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-mini-transcribe-aud-inp-dz Tokens",
+  "retailPrice": 0.0033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-mini-transcribe-aud-inp-rgnl Tokens",
+  "retailPrice": 0.0033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Flux 1.1 Pro regnl Images",
+  "retailPrice": 44.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.3 Cached Inp Glbl L Tokens",
+  "retailPrice": 0.0004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Throughput - Overage Unit",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "Command A Outp Glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3 Inp glbl Tokens",
+  "retailPrice": 0.00114,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt txt mini Inp glbl Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 nano Batch Inp DZone Tokens",
+  "retailPrice": 5.5e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V4 Pro cached DZ Tokens",
+  "retailPrice": 0.00016,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 img Batch opt Gl 1M Tokens",
+  "retailPrice": 15.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.3 codex pp cd inp Gl 1M Tokens",
+  "retailPrice": 0.35,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.2 pro inp Gl 1M Tokens",
+  "retailPrice": 21.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-mini-transcribe-aud-inp-glbl Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Audio cd inp Gl 1M Tokens",
+  "retailPrice": 0.3,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-4-mini-reasoning-Output Tokens",
+  "retailPrice": 0.0003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 cchd Inpt Glbl 1M Tokens",
+  "retailPrice": 0.125,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4.1 pp opt Dz Tokens",
+  "retailPrice": 0.0154,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-mini-ft mdl grdr inpt Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Command A Plus Outp Glbl 1M Tokens",
+  "retailPrice": 3.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Ministral 3B Model Out-FT Tokens",
+  "retailPrice": 0.00015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "codex mini inp glbl Tokens",
+  "retailPrice": 0.0015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-35-turbo-16K-0125 Input-regional Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini Opt Dz 1M Tokens",
+  "retailPrice": 4.95,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Small-128K-Instruct-Output-Finetuned Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3.5-MoE-Instruct-FT Deployment Hosting Unit",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt 4.1 Inp glbl Tokens",
+  "retailPrice": 0.002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini pp Opt Gl 1M Tokens",
+  "retailPrice": 9.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-4-Mini MM-Audio-In Tokens",
+  "retailPrice": 0.004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 chat cd inp Gl 1M Tokens",
+  "retailPrice": 0.175,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "K2.6 Thinking Outp DZ Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 chat 0210 cd inp Gl 1M Tokens",
+  "retailPrice": 0.175,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Small-8K-Instruct-Input-Finetuned Tokens",
+  "retailPrice": 0.00015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 mini Outp Data Zone Tokens",
+  "retailPrice": 0.00176,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI q Tokens",
+  "retailPrice": 0.008,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "OCR regnl Pages",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-0806-Inp-regnl Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.1 codex max cd inp Gl 1M Tokens",
+  "retailPrice": 0.125,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3 0416 Inp glbl Tokens",
+  "retailPrice": 0.002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 mini cached Inp glbl Tokens",
+  "retailPrice": 0.0001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.1 codex max cd inp Dz 1M Tokens",
+  "retailPrice": 0.1375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 pro longco batch opt Gl 1M Tokens",
+  "retailPrice": 135.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Image cd inp DZ 1M Tokens",
+  "retailPrice": 0.088,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Cd Inp Std DZ 1M Tokens",
+  "retailPrice": 0.55,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.5 ShortCo Batch cd inp Dz 1M Tokens",
+  "retailPrice": 0.275,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.2 chat opt Dz 1M Tokens",
+  "retailPrice": 15.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 mini pp cd Inp Dz 1M Tokens",
+  "retailPrice": 0.165,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-5-codex-out-glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 1120 Outp regnl Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 ShortCo Batch opt Gl 1M Tokens",
+  "retailPrice": 15.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Text opt Gl 1M Tokens",
+  "retailPrice": 24.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4o 1120 cached Inp Data Zone Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-translate Opt Gl Unit",
+  "retailPrice": 2.04,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "5.1 pp inp Gl 1M Tokens",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Cd Inp PP DZ 1M Tokens",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Opt Std Gl 1M Tokens",
+  "retailPrice": 30.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-transcribe-txt-out-rgnl Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o mini0718 BatchOutp DataZone Tokens",
+  "retailPrice": 0.00033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 longco inp Dz 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-1217 Outp glbl Tokens",
+  "retailPrice": 0.08,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "OCR 4 DZ Pages",
+  "retailPrice": 4.4,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-nano-dev-ft opt glbl Tokens",
+  "retailPrice": 0.0004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mini Outp DZone Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0513 Batch Outp glbl Tokens",
+  "retailPrice": 0.0075,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-transcribe-aud-inp-rgnl Tokens",
+  "retailPrice": 0.0066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt img mini Inp glbl Tokens",
+  "retailPrice": 0.0008,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 ShortCo Batch inp Dz 1M Tokens",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.5 ShortCo PP cd inp Gl 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4o 1120 Outp Data Zone Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3 Inp regnl Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW Kimi K2.7 Code Opt DZ Tokens",
+  "retailPrice": 0.0044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 5 pro out glbl Tokens",
+  "retailPrice": 0.12,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o tcrb d txt inp dz Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Global Unit",
+  "retailPrice": 260.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "Provisioned Managed Global Unit",
+  "retailPrice": 2652.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "5.4 longco batch cd inp Dz 1M Tokens",
+  "retailPrice": 0.275,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Text opt DZ 1M Tokens",
+  "retailPrice": 2.64,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "V4 Pro Inp DZ Tokens",
+  "retailPrice": 0.00191,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3.2 SP Outp DZ Tokens",
+  "retailPrice": 0.00185,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Command A Plus Inp Glbl 1M Tokens",
+  "retailPrice": 0.8,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-0806-Inp-glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 longco batch opt Dz 1M Tokens",
+  "retailPrice": 12.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.3 chat inp Gl 1M Tokens",
+  "retailPrice": 1.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5 pp cd inp Dz 1M Tokens",
+  "retailPrice": 0.275,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.2 Batch opt Dz 1M Tokens",
+  "retailPrice": 7.7,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "OCR 2512 glbl Pages",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mn out gl 1215 1M Tokens",
+  "retailPrice": 20.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4.1 mini dev ft training glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mini txt Inp glbl Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Batch Inpt Glbl 1M Tokens",
+  "retailPrice": 0.625,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "K2.5 Thinking Inp glbl Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4omini-rt-aud1217 cchd Inp glbl Tokens",
+  "retailPrice": 0.0003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Opt PP Gl 1M Tokens",
+  "retailPrice": 60.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "file-search-tool-calls-datazone Calls",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1.5 in txt gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Provisioned Throughput Units Overage",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt-image-1-inp-cached-img-glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Sora 2 glbl Second",
+  "retailPrice": 0.1,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "GPT 5.1 Batch inp Dz 1M Tokens",
+  "retailPrice": 0.6875,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Cd Inp PP Gl 1M Tokens",
+  "retailPrice": 0.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "OSS 20b FT DZ Deployment Hosting Unit",
+  "retailPrice": 0.33,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "V3.2 SP Inp DZ Tokens",
+  "retailPrice": 0.00064,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 txt Batch cd inp Gl 1M Tokens",
+  "retailPrice": 0.625,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Batch outpt DZone 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.1 codex max inp Dz 1M Tokens",
+  "retailPrice": 1.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o4-mini-ft cached input global Tokens",
+  "retailPrice": 0.000275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Llama 4 Maverick 17B Inp Dzone Tokens",
+  "retailPrice": 0.000275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 1217 Inp Data Zone Tokens",
+  "retailPrice": 0.0165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 txt Batch inp DZ 1M Tokens",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "R1 Outp glbl Tokens",
+  "retailPrice": 0.0054,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Embed v4 Txt Glbl Tokens",
+  "retailPrice": 0.00012,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt txt mn Out gl 1215 1M Tokens",
+  "retailPrice": 2.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Inp Std Gl 1M Tokens",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Provisioned Managed Global Unit",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "Flux 1.1 Pro Dzone Images",
+  "retailPrice": 44.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o realtimePrvw audio outp glbl Tokens",
+  "retailPrice": 0.2,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.1 codex cd inp Gl 1M Tokens",
+  "retailPrice": 0.125,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Mngd A100_80GB Gl",
+  "retailPrice": 3.95,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "gpt-4o-0806-Batch-Outp-glbl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-mini-ft hosting global Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "5.5 ShortCo PP inp Gl 1M Tokens",
+  "retailPrice": 12.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 Batch Outp glbl Tokens",
+  "retailPrice": 0.03,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini Opt Gl 1M Tokens",
+  "retailPrice": 4.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.5 LongCo Batch inp Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "embedding-ada-datazone Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "OSS 20b FT DZ Tokens",
+  "retailPrice": 0.004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4omini-aud1217-txt Outp glbl Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 5 pro inp dzone Tokens",
+  "retailPrice": 0.0165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 mini Batch Outp glbl Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt 1.5 txt cd inp Gl 1M Tokens",
+  "retailPrice": 0.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 terra LongCo Inp Std Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "FW GLM 5 Inp DZ Tokens",
+  "retailPrice": 0.0011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Medium-128K-Instruct-Output-Finetuned Tokens",
+  "retailPrice": 0.00068,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Cd Wr Std Gl 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 terra LongCo Opt Std DZ 1M Tokens",
+  "retailPrice": 24.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1-pro Inp regnl Tokens",
+  "retailPrice": 0.165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Nano Batch Inpt cchd Glbl 1M Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4.1 nano ft hosting Dz Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "gpt aud mini txt Outp DZone Tokens",
+  "retailPrice": 0.00264,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2e Text Input glbl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pp opt Dz 1M Tokens",
+  "retailPrice": 33.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Batch outpt Glbl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt img 1.5 out txt DZ 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Grok-4 Outp DZone Tokens",
+  "retailPrice": 0.0165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT-OSS-20b-IN-FT Tokens",
+  "retailPrice": 7e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Text inp Gl 1M Tokens",
+  "retailPrice": 0.6,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Opt Std Gl 1M Tokens",
+  "retailPrice": 6.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3 0416 Inp Data Zone Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Flux 2 Pro Initial MP DZ Megapixel",
+  "retailPrice": 0.033,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "5.1 codex mini inp Gl 1M Tokens",
+  "retailPrice": 0.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-mini-transcribe-txt-inp-dz Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.1 Batch inp Gl 1M Tokens",
+  "retailPrice": 0.625,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-oss-120B Outp DZone Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-reasoning-plus-output Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.1 codex inp Dz 1M Tokens",
+  "retailPrice": 1.375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-nano-ft mdl grdr cchd inpt Tokens",
+  "retailPrice": 2.8e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.1 chat opt Dz 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4omini-rt-txt1217 Inp regnl Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3.1 Inp glbl Tokens",
+  "retailPrice": 0.00123,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok 4.2 Inp glbl Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "codex mini inp cchd glbl Tokens",
+  "retailPrice": 0.000375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-Mini-Input-FT Tokens",
+  "retailPrice": 7.5e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-35-turbo-4k-Input-regional Tokens",
+  "retailPrice": 0.0015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "R1 Outp DZone Tokens",
+  "retailPrice": 0.00594,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o realtime prvw text inp glbl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-1217 Inp glbl Tokens",
+  "retailPrice": 0.04,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "codex mini out rgnl Tokens",
+  "retailPrice": 0.0066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Text cd inp DZ 1M Tokens",
+  "retailPrice": 0.44,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "computer-use-outp-glbl Tokens",
+  "retailPrice": 0.012,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "K2.5 cached DZ Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol LongCo Cd Inp Std Gl 1M Tokens",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "MAI-DS-R1 Inp Dzone Tokens",
+  "retailPrice": 0.001485,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-1217-txt Outp DZone Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Cd Inp Std DZ 1M Tokens",
+  "retailPrice": 0.11,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4.1 nano Batch Inp glbl Tokens",
+  "retailPrice": 5e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-ft input regional Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Opt PP DZ 1M Tokens",
+  "retailPrice": 66.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Audio inp DZ 1M Tokens",
+  "retailPrice": 35.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Mini-128K-Instruct-Output Tokens",
+  "retailPrice": 0.00052,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Batch Inpt DZone 1M Tokens",
+  "retailPrice": 0.6875,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.5 LongCo Batch opt Gl 1M Tokens",
+  "retailPrice": 22.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-image-1-inp-cached-txt-dzone Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5 mini pp cd Inp Dz 1M Tokens",
+  "retailPrice": 0.0495,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-0806-Outp-glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 mini input Data Zone Tokens",
+  "retailPrice": 0.00121,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o tcrb d aud inp glbl Tokens",
+  "retailPrice": 0.006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Data Zone Unit",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt4omini-rt-txt1217 Outp regnl Tokens",
+  "retailPrice": 0.00264,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-0806-Batch-Inp-glbl Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 ShortCo inp Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Mini outpt DZone 1M Tokens",
+  "retailPrice": 2.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Chat Inpt Glbl 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3 0416 Outp glbl Tokens",
+  "retailPrice": 0.008,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 nano Outp regnl Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.5 LongCo inp Dz 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o4-mini-ft output regional Tokens",
+  "retailPrice": 0.00484,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "32b FT DZ Tokens",
+  "retailPrice": 0.0035,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Cd Wr PP Gl 1M Tokens",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2 Text inp Gl 1M Tokens",
+  "retailPrice": 4.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "V3-0324 Inp regnl Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 mini Outp glbl Tokens",
+  "retailPrice": 0.0016,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 0416 Batch Outp glbl Tokens",
+  "retailPrice": 0.004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 Outp regnl Tokens",
+  "retailPrice": 0.0088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 Batch Inp glbl Tokens",
+  "retailPrice": 0.001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 pro Batch inp Dz 1M Tokens",
+  "retailPrice": 11.55,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Mini-128K-Instruct-Input-Finetuned Tokens",
+  "retailPrice": 0.00013,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Opt PP DZ 1M Tokens",
+  "retailPrice": 33.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-aud-0603 Outp glbl Tokens",
+  "retailPrice": 0.08,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-ft input global Tokens",
+  "retailPrice": 0.002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-txt-1217 Outp DZone Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 1217 cached Inp regnl Tokens",
+  "retailPrice": 0.00825,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-35-trb16K-Batch-125-Inp-glbl Tokens",
+  "retailPrice": 0.00025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-oss-120B Inp DZone Tokens",
+  "retailPrice": 0.000165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 1120 Batch Inp glbl Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Mini Batch Inpt cchd Dzone 1M Tokens",
+  "retailPrice": 0.01375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Large 3 Inp glbl Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Inp Std DZ 1M Tokens",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Small-128K-Instruct-Finetuned Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW Kimi K2.6 Outp DZ Tokens",
+  "retailPrice": 0.0044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-mini-ft hosting regional Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "gpt 4.1 nano dev ft training glbl Tokens",
+  "retailPrice": 0.00075,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3.2 SP Outp glbl Tokens",
+  "retailPrice": 0.00168,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-Mini MM-Input-FT Tokens",
+  "retailPrice": 8e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 img inp DZ 1M Tokens",
+  "retailPrice": 8.8,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt txt mini cchd Inp DZn Tokens",
+  "retailPrice": 6.6e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Opt PP Gl 1M Tokens",
+  "retailPrice": 12.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 luna LongCo Opt Std DZ 1M Tokens",
+  "retailPrice": 9.9,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-mini-ft cached input global Tokens",
+  "retailPrice": 0.0001,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-0603 Inp DZone Tokens",
+  "retailPrice": 0.044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V4 Flash cached DZ Tokens",
+  "retailPrice": 3.1e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3.2 Inp DZ Tokens",
+  "retailPrice": 0.00064,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1 mini inp cchd img glbl Tokens",
+  "retailPrice": 0.00025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.3 chat cd inp Dz 1M Tokens",
+  "retailPrice": 0.1925,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 5 pro batch inp glbl Tokens",
+  "retailPrice": 0.0075,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 mini 0131 cached input regnl Tokens",
+  "retailPrice": 0.000605,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 chat 0210 cd inp Dz 1M Tokens",
+  "retailPrice": 0.1925,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-aud-0603-txt Outp regnl Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4-turbo128K Outp-glbl Tokens",
+  "retailPrice": 0.03,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.3 chat cd inp Gl 1M Tokens",
+  "retailPrice": 0.175,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 longco batch cd inp Gl 1M Tokens",
+  "retailPrice": 0.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-0603 Inp glbl Tokens",
+  "retailPrice": 0.04,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 luna LongCo Cd Wr Std DZ 1M Tokens",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4-32K-Output-regional Tokens",
+  "retailPrice": 0.12,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 chat 0210 opt Dz 1M Tokens",
+  "retailPrice": 15.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4.1 Outp glbl Tokens",
+  "retailPrice": 0.008,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini-ft model grader input Tokens",
+  "retailPrice": 0.00121,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud mn out DZ 1215 1M Tokens",
+  "retailPrice": 22.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o4 mini ft cd inp Dz Tokens",
+  "retailPrice": 0.000303,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.3 codex cd inp Dz 1M Tokens",
+  "retailPrice": 0.1925,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-4-Output-FT Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Flux 2 Ref MP Megapixel",
+  "retailPrice": 0.015,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "gpt-4.1-ft hosting regional Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "gpt 4o tcrb d aud inp dz Tokens",
+  "retailPrice": 0.0066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 opt Dz 1M Tokens",
+  "retailPrice": 15.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-ft cached input global Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 img Batch inp DZ 1M Tokens",
+  "retailPrice": 4.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Mini-4K-Instruct-Output Tokens",
+  "retailPrice": 0.00052,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini Batch cd Inp Gl 1M Tokens",
+  "retailPrice": 0.0375,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-image-1-inp-txt-glbl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt img 0828 cchd Inp DZn Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o realtimePrvw audio inp regn Tokens",
+  "retailPrice": 0.11,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.2 pp opt Dz 1M Tokens",
+  "retailPrice": 30.8,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "MAI p Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1-pro Inp glbl Tokens",
+  "retailPrice": 0.15,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol LongCo Inp Std DZ 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt txt mn in DZ 1215 1M Tokens",
+  "retailPrice": 0.66,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-35-turbo-4k-Output-regional Tokens",
+  "retailPrice": 0.002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Large 3 Inp Dzone Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 mini Inp Data Zone Tokens",
+  "retailPrice": 0.00044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 0513 Output Data Zone Tokens",
+  "retailPrice": 0.0165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Data Zone Unit",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "o1 mini input regnl Tokens",
+  "retailPrice": 0.00121,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 Batch inp Gl 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o4-mini RFT Training regional Unit",
+  "retailPrice": 110.0,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "GPT 5.2 Batch cd inp Dz 1M Tokens",
+  "retailPrice": 0.09625,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "OCR 4 annot DZ Pages",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW GLM 5 Outp DZ Tokens",
+  "retailPrice": 0.00352,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 inp Dz 1M Tokens",
+  "retailPrice": 1.925,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "MAI w Tokens",
+  "retailPrice": 0.0088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1 mini inp cchd txt dzone Tokens",
+  "retailPrice": 0.00022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1 mini inp img glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Image 2 img Batch opt DZ 1M Tokens",
+  "retailPrice": 16.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt aud 1.5 txt opt Dz 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-mini-tts-txt-inp-rgnl Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW Kimi K2.5 Cache Inp DZ Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3-0324 Outp glbl Tokens",
+  "retailPrice": 0.00456,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "K2.7 Code Outp glbl Tokens",
+  "retailPrice": 0.004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o dev ft cchd inpt glbl Tokens",
+  "retailPrice": 0.044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o realtime prvw text outp regn Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4omini-aud1217 Outp glbl Tokens",
+  "retailPrice": 0.02,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o realtime cached audio inp glbl Tokens",
+  "retailPrice": 0.02,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-oss-120B Outp glbl Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 ft cd inp Dz Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud mini cchd Inp DZn Tokens",
+  "retailPrice": 0.00033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.2 chat inp Gl 1M Tokens",
+  "retailPrice": 1.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "FW GPT OSS 120B Cache Inp DZ Tokens",
+  "retailPrice": 8.2e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 luna ShortCo Inp PP Gl 1M Tokens",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "MM3.5 Outp DZ Tokens",
+  "retailPrice": 0.00825,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini cd Inp Gl 1M Tokens",
+  "retailPrice": 0.075,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4o 0806 Outp Data Zone Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 mini cached Inp regnl Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4 mini dev RFT inp glb Tokens",
+  "retailPrice": 0.0011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-latest 05052026 cd inp Gl 1M Tokens",
+  "retailPrice": 0.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3.5-Mini-128K-Instruct-Input-Finetuned Tokens",
+  "retailPrice": 0.00013,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI o Tokens",
+  "retailPrice": 0.02145,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini 0416 Batch Inp Data Zone Tokens",
+  "retailPrice": 0.000605,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Regional Unit",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt rt img 0828 cchd Inp glbl Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Inp Std Gl 1M Tokens",
+  "retailPrice": 5.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Medium-128K-Instruct-Input Tokens",
+  "retailPrice": 0.00017,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-mini FT Training regional Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Command A Inp DZ Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud 1.5 txt inp Gl 1M Tokens",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5 Mini cchd Inpt DZone 1M Tokens",
+  "retailPrice": 0.0275,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Image 2 txt cd inp Gl 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Sora 2 pro high res dzone Second",
+  "retailPrice": 0.55,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "gpt4omini-aud1217 Inp DZone Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.1 pp inp Dz 1M Tokens",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.2 pp cd inp Gl 1M Tokens",
+  "retailPrice": 0.35,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 mini cd Inp Dz 1M Tokens",
+  "retailPrice": 0.0825,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.2 codex cd inp Gl 1M Tokens",
+  "retailPrice": 0.175,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-image-1-output-img-dzone Tokens",
+  "retailPrice": 0.044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1 mini inp cchd img dzone Tokens",
+  "retailPrice": 0.000275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1 mini inp img dzone Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini 0416 Outp Data Zone Tokens",
+  "retailPrice": 0.00484,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "MAI-DS-R1 Outp glbl Tokens",
+  "retailPrice": 0.0054,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud 1.5 txt inp Dz 1M Tokens",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "V3.2 SP Inp glbl Tokens",
+  "retailPrice": 0.00058,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o 1120 Inp regnl Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-1217 Outp regnl Tokens",
+  "retailPrice": 0.088,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Regional Unit",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt-4o-aud-1217 Inp DZone Tokens",
+  "retailPrice": 0.044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Inpt Glbl 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "3.3 70b FT Deployment Hosting Unit",
+  "retailPrice": 0.3,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "FW Kimi K2.6 Inp DZ Tokens",
+  "retailPrice": 0.001045,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4.1-mini-ft mdl grdr opt Tokens",
+  "retailPrice": 0.00176,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok-3 Mini Outp Dzone Tokens",
+  "retailPrice": 0.00138,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Nano outpt DZone 1M Tokens",
+  "retailPrice": 0.44,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4.1-nano-ft input regional Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o dev ft inpt glbl Tokens",
+  "retailPrice": 0.001375,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW GLM 5 Cache Inp DZ Tokens",
+  "retailPrice": 0.00022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3.2 Outp DZ Tokens",
+  "retailPrice": 0.00185,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V4 Flash Outp glbl Tokens",
+  "retailPrice": 0.00051,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-image-1-inp-txt-dzone Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o dev ft opt glbl Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud 0828 txt Inp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5 Mini Inpt DZone 1M Tokens",
+  "retailPrice": 0.275,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 5 pro batch out glbl Tokens",
+  "retailPrice": 0.06,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud 0828 Inp glbl Tokens",
+  "retailPrice": 0.032,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.3 Inp DZ L Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt img 0828 Inp DZn Tokens",
+  "retailPrice": 0.0055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 1217 Batch Inp glbl Tokens",
+  "retailPrice": 0.0075,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4-8K-Batch-Inp-glbl Tokens",
+  "retailPrice": 0.015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1.5 in img gl 1M Tokens",
+  "retailPrice": 8.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.2 codex inp Gl 1M Tokens",
+  "retailPrice": 1.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Small-128K-Instruct-Output Tokens",
+  "retailPrice": 0.0006,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o tcrb d txt inp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3 Outp regnl Tokens",
+  "retailPrice": 0.005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Audio cd inp DZ 1M Tokens",
+  "retailPrice": 0.44,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.1 codex max opt Gl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "MAI y Tokens",
+  "retailPrice": 0.001925,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini RFT Training global Unit",
+  "retailPrice": 100.0,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "gpt-4o-transcribe-txt-inp-glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.3 Outp Glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Doc AI regnl 2505 Pages",
+  "retailPrice": 3.3,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol LongCo Cd Inp Std DZ 1M Tokens",
+  "retailPrice": 1.1,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "K2.6 Thinking Inp DZ Tokens",
+  "retailPrice": 0.001045,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 sol LongCo Cd Wr Std DZ 1M Tokens",
+  "retailPrice": 13.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Grok 4.2 Outp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Regional Unit",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt-35-trb16K-Batch-Inp-glbl Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 mini pp Inp Dz Tokens",
+  "retailPrice": 0.00077,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Command A Plus Outp DZ 1M Tokens",
+  "retailPrice": 3.52,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.4 nano Batch Opt Gl 1M Tokens",
+  "retailPrice": 0.625,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4o-mini-ft model grader output Tokens",
+  "retailPrice": 0.00066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "text-embedding-3-large-regional Tokens",
+  "retailPrice": 0.000143,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 mini Batch Inp Data Zone Tokens",
+  "retailPrice": 0.000605,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.3 chat opt Dz 1M Tokens",
+  "retailPrice": 15.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 sol ShortCo Cd Wr Std Gl 1M Tokens",
+  "retailPrice": 6.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt 1.5 aud opt Gl 1M Tokens",
+  "retailPrice": 64.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "K2.5 Thinking Outp glbl Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Global Unit",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "GPT 5.1 Batch cd inp Dz 1M Tokens",
+  "retailPrice": 0.06875,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-4-turbo128K Inp-glbl Tokens",
+  "retailPrice": 0.01,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Mini-4K-Instruct-Input-Finetuned Tokens",
+  "retailPrice": 0.00013,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4.1 cached Inp Data Zone Tokens",
+  "retailPrice": 0.00055,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini 0416 Inp regnl Tokens",
+  "retailPrice": 0.00121,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Regional Unit",
+  "retailPrice": 286.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "Provisioned Managed Regional Unit",
+  "retailPrice": 2916.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "Mnstrl 3b Outp FT DZ Tokens",
+  "retailPrice": 0.00017,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-1217-txt Inp regnl Tokens",
+  "retailPrice": 0.00275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt txt 0828 Inp glbl Tokens",
+  "retailPrice": 0.004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pro Batch inp Dz 1M Tokens",
+  "retailPrice": 16.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-35-turbo-Instruct-Output-regional Tokens",
+  "retailPrice": 0.0022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Provisioned Managed Global Unit",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "5 mini pp Inp Gl 1M Tokens",
+  "retailPrice": 0.45,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "4o 0806 ft training Dz Tokens",
+  "retailPrice": 0.0275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-35-turbo-Instruct-Input-regional Tokens",
+  "retailPrice": 0.00165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3-deep research 0626-inp-cchd-dzone 1M Tokens",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.1 codex opt Dz 1M Tokens",
+  "retailPrice": 11.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.6 terra LongCo Cd Wr Std DZ 1M Tokens",
+  "retailPrice": 6.875,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "text embedding 3 small DZ Tokens",
+  "retailPrice": 2.2e-05,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 1217 Outp regnl Tokens",
+  "retailPrice": 0.066,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-aud-0603-txt Inp glbl Tokens",
+  "retailPrice": 0.0025,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "OCR glbl Pages",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 luna LongCo Cd Inp Std Gl 1M Tokens",
+  "retailPrice": 0.2,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o3 0416 cached Inp glbl Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 terra LongCo Cd Inp Std Gl 1M Tokens",
+  "retailPrice": 0.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "K2.6 cached DZ Tokens",
+  "retailPrice": 0.000176,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini-ft hosting regional Unit",
+  "retailPrice": 1.7,
+  "unitOfMeasure": "1 Hour"
+ },
+ {
+  "meterName": "o1 mini cached input regnl Tokens",
+  "retailPrice": 0.000605,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4o mini 0718 ft inp Dz Tokens",
+  "retailPrice": 0.000165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt-4o-rt-aud-0603 Inp regnl Tokens",
+  "retailPrice": 0.044,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 nano Inp Dz 1M Tokens",
+  "retailPrice": 0.22,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Provisioned Managed Global Unit",
+  "retailPrice": 1.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Image cd inp Gl 1M Tokens",
+  "retailPrice": 0.08,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3.5-Mini-128K-Instruct-Input Tokens",
+  "retailPrice": 0.00013,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Grok4 Fast Inp glbl Tokens",
+  "retailPrice": 0.0002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Rerank v4 Fast DZ Search",
+  "retailPrice": 2.2,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud mn cd in DZ 1215 1M Tokens",
+  "retailPrice": 0.33,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt img 1.5 out txt gl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "o1 1217 Batch Outp Data Zone Tokens",
+  "retailPrice": 0.033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o3 mini 0131 output regnl Tokens",
+  "retailPrice": 0.00484,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "V3.2 Inp glbl Tokens",
+  "retailPrice": 0.00058,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Code-Interpreter-regnl EP Session",
+  "retailPrice": 0.033,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "Provisioned Throughput - Available Unit",
+  "retailPrice": 2.0,
+  "unitOfMeasure": "1/Hour"
+ },
+ {
+  "meterName": "gpt4omini-aud1217 Outp DZone Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.3 codex pp opt Dz 1M Tokens",
+  "retailPrice": 30.8,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4omini-aud1217-txt Inp regnl Tokens",
+  "retailPrice": 0.000165,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt 4o tcrb d txt out dz Tokens",
+  "retailPrice": 0.011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "GPT 5.1 chat inp Gl 1M Tokens",
+  "retailPrice": 1.25,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4o 1120 cached Inp glbl Tokens",
+  "retailPrice": 0.00125,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW Kimi K2.5 Outp DZ Tokens",
+  "retailPrice": 0.0033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3-Medium-4K-Instruct-Input-Finetuned Tokens",
+  "retailPrice": 0.00017,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "FW MiniMax 3 Outp DZ Tokens",
+  "retailPrice": 0.00132,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Rerank v4 Pro DZ Search",
+  "retailPrice": 2.75,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt aud 1.5 txt opt Gl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.1 opt Gl 1M Tokens",
+  "retailPrice": 10.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Phi-3-Small-128K-Instruct-Input-Finetuned Tokens",
+  "retailPrice": 0.00015,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 mini Batch Opt Dz 1M Tokens",
+  "retailPrice": 2.475,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Llama 3.3 70B Inp glbl Tokens",
+  "retailPrice": 0.00071,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4omini-rt-aud1217 cchd Inp DZn Tokens",
+  "retailPrice": 0.00033,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.3 codex pp inp Dz 1M Tokens",
+  "retailPrice": 3.85,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2.1-mini Text cd inp Gl 1M Tokens",
+  "retailPrice": 0.06,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.5 ShortCo PP inp Dz 1M Tokens",
+  "retailPrice": 13.75,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Flux 2 Pro Ref Dzone Megapixel",
+  "retailPrice": 0.0165,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "5.4 pro longco batch inp Dz 1M Tokens",
+  "retailPrice": 33.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4.1 mini cached Inp DZone Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.1 pp opt Dz 1M Tokens",
+  "retailPrice": 22.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "5.5 LongCo Batch cd inp Dz 1M Tokens",
+  "retailPrice": 0.55,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt-realtime-2.1 Text inp DZ 1M Tokens",
+  "retailPrice": 4.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4o mn tts aud out gl 1215 1M Tokens",
+  "retailPrice": 12.0,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "GPT 5.2 cd inp Dz 1M Tokens",
+  "retailPrice": 0.1925,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "FW DeepSeek V3.2 Outp DZ Tokens",
+  "retailPrice": 0.00185,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4o realtime prvw text outp glbl Tokens",
+  "retailPrice": 0.02,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.6 terra ShortCo Inp Std Gl 1M Tokens",
+  "retailPrice": 2.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt rt 1.5 aud cd inp Dz 1M Tokens",
+  "retailPrice": 0.44,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "Image-Dall-E-3 HD HighRes-regnl EP Images",
+  "retailPrice": 13.2,
+  "unitOfMeasure": "100"
+ },
+ {
+  "meterName": "4.1 pp inp Gl Tokens",
+  "retailPrice": 0.0035,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4 mini dev RFT cd inp glb Tokens",
+  "retailPrice": 0.000275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt img 1 mini inp cchd txt glbl Tokens",
+  "retailPrice": 0.0002,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt4omini-rt-aud1217 Outp glbl Tokens",
+  "retailPrice": 0.02,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt txt 0828 cchd Inp glbl Tokens",
+  "retailPrice": 0.0004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-4-Output Tokens",
+  "retailPrice": 0.0005,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Flex Ref Megapixel",
+  "retailPrice": 0.05,
+  "unitOfMeasure": "1"
+ },
+ {
+  "meterName": "4.1 ft training Dz Tokens",
+  "retailPrice": 0.0275,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "Phi-3.5-Mini-Instruct-Finetuned Tokens",
+  "retailPrice": 0.003,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "4.1 mini ft cd inp Dz Tokens",
+  "retailPrice": 0.00011,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt aud mn cd in gl 1215 1M Tokens",
+  "retailPrice": 0.3,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt4o rtime cached audio inp dzone Tokens",
+  "retailPrice": 0.022,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "5.4 pp inp Dz 1M Tokens",
+  "retailPrice": 5.5,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "gpt 4.1 Batch Outp glbl Tokens",
+  "retailPrice": 0.004,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o4-mini 0416 cached Inp DataZone Tokens",
+  "retailPrice": 0.000303,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "o1 mini output Data Zone Tokens",
+  "retailPrice": 0.00484,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "gpt rt 1.5 aud opt Dz 1M Tokens",
+  "retailPrice": 70.4,
+  "unitOfMeasure": "1M"
+ },
+ {
+  "meterName": "FW GLM 5.2 Outp DZ Tokens",
+  "retailPrice": 0.00484,
+  "unitOfMeasure": "1K"
+ },
+ {
+  "meterName": "OSS 20b Inp FT DZ Tokens",
+  "retailPrice": 7.7e-05,
+  "unitOfMeasure": "1K"
+ }
+]

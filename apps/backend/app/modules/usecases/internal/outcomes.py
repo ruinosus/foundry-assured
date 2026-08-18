@@ -51,6 +51,7 @@ Referência: learn.microsoft.com/microsoft-copilot-studio/guidance/agent-busines
 from __future__ import annotations
 
 import contextlib
+import os
 from typing import Any
 
 #: A PROCEDÊNCIA de cada constante da fórmula, para subir na resposta junto com ela.
@@ -148,6 +149,17 @@ def _modelo() -> str:
     return ""
 
 
+def _regiao_de_preco() -> str:
+    """A região cuja lista de preços consultar.
+
+    Importa pouco na prática, e o motivo é medido: preferimos os meters de deployment **global**,
+    e o preço global é o MESMO nas 27 regiões que o publicam (conferido no meter
+    `GPT 5 Mini Inpt Glbl 1M Tokens`). A região só muda o número para deployment `DZone` ou
+    regional — daí ser declarada por ambiente em vez de adivinhada a partir do endpoint.
+    """
+    return os.environ.get("AZURE_PRICE_REGION", "eastus")
+
+
 def _tickets_of(case_id: str, agent_names: list[str]) -> int:
     """Escalações que ESTE caso gerou.
 
@@ -221,24 +233,46 @@ def outcomes(case: dict, assumption: dict | None = None) -> dict:
         )
 
     # CUSTO REAL — a terceira faixa, e a única que não depende de premissa nenhuma. Tokens são
-    # medidos exatamente (o serviço devolve o uso no evento final do stream); o PREÇO por 1M é
-    # tabela editável, e `cost.py` diz isso no cabeçalho. Sem esta linha o painel só mostrava
-    # ganho, o que faz qualquer projeto parecer lucrativo.
-    from app.shared.telemetry.cost import price_for, usd_brl
+    # medidos exatamente (o serviço devolve o uso no evento final do stream); o PREÇO vem da
+    # Azure. Sem esta linha o painel só mostrava ganho, o que faz qualquer projeto parecer
+    # lucrativo.
+    #
+    # ORDEM: a lista de preços da Azure primeiro (`pricing`, que lê `prices.azure.com`), a tabela
+    # de reserva do shared kernel depois, e **nada** se as duas falharem. O terceiro caso é o que
+    # mudou: antes um modelo desconhecido recebia um preço "conservador" que aparecia na tela com
+    # a mesma cara de um preço real. `gpt-5-pro` teria saído 12× mais barato do que é.
+    from app.shared.telemetry.cost import price_for as preco_de_reserva
+    from app.shared.telemetry.cost import usd_brl
 
-    preco_in, preco_out = price_for(_modelo())
-    custo_usd = tokens_in / 1e6 * preco_in + tokens_out / 1e6 * preco_out
-    custo = round(custo_usd * usd_brl(), 2)
+    modelo = _modelo()
+    preco = None
+    with contextlib.suppress(Exception):
+        from app.modules.pricing.public import price_for as preco_da_azure
+
+        preco = preco_da_azure(modelo, _regiao_de_preco())
+    preco = preco or preco_de_reserva(modelo)
+
+    if preco is None:
+        custo = None
+        motivo = motivo or (
+            f"Não foi possível determinar o preço por token do modelo {modelo!r} — o custo não "
+            "entra no cálculo. O retorno líquido abaixo conta só a economia estimada."
+        )
+    else:
+        custo_usd = tokens_in / 1e6 * preco[0] + tokens_out / 1e6 * preco[1]
+        custo = round(custo_usd * usd_brl(), 2)
 
     return {
         "case": case["id"],
         "conversations": conversas,
         "input_tokens": tokens_in,
         "output_tokens": tokens_out,
+        # `None` significa "não sei o preço deste modelo", e a tela mostra isso — não um zero,
+        # que seria indistinguível de "não gastou nada".
         "actual_cost": custo,
         # O retorno LÍQUIDO. Pode ser negativo, e um número negativo aqui é informação — significa
         # que este caso gastou mais em modelo do que economizou sob a premissa informada.
-        "net_saved": round(economia - custo, 2),
+        "net_saved": round(economia - (custo or 0.0), 2),
         "escalated": escalados,
         "resolved_without_escalation": resolvidos,
         "resolution_rate": taxa,

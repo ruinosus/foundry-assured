@@ -215,6 +215,7 @@ uv run python -m tests.audit.trail_test                  # ADR-023: cadeia, reda
 uv run python -m tests.tickets.store_path_test           # o chamado cai dentro do volume do bicep
 uv run python -m tests.usecases.aah_formula_test         # AAH bate com o exemplo publicado pela Microsoft
 uv run python -m tests.conversations.usage_seam_test     # nenhum cliente de chat fora da fábrica que mede
+uv run python -m tests.pricing.azure_prices_test          # o preço por token confere com a lista da Azure
 
 # fecho diário da trilha (roda por agenda em .github/workflows/audit-anchor.yml)
 uv run python -m cli.close_audit_day                     # ancora o dia; write-once, idempotente

@@ -34,7 +34,8 @@ type Result = {
   references_partial: boolean;
   input_tokens: number;
   output_tokens: number;
-  actual_cost: number;
+  // `null` = não sabemos o preço deste modelo. Diferente de zero, que seria "não gastou".
+  actual_cost: number | null;
   net_saved: number;
   assumption: {
     minutes_per_reference: number;
@@ -183,7 +184,11 @@ export function Outcomes({ caseId }: { caseId: string }) {
           <p className="lead-in">{t("costLabelBand")}</p>
           <div className="grid g3">
             <div className="metric">
-              <span className="metric-value num">{moeda(data.actual_cost)}</span>
+              {/* Preço desconhecido não vira R$ 0,00: zero e "não sei" levam a conclusões
+                  opostas, e o motivo aparece na ressalva abaixo. */}
+              <span className="metric-value num">
+                {data.actual_cost === null ? "—" : moeda(data.actual_cost)}
+              </span>
               <span className="metric-label">{t("actualCost")}</span>
             </div>
             <div className="metric">
