@@ -3,9 +3,15 @@
 Four stations, one path (the old acl/MCP fork is gone — retrieval lives behind `app.modules.knowledge.internal.retrieval`):
 
 1. **Identity (OBO):** the SYNTHESIS (Responses API) runs AS THE SIGNED-IN USER (OBO for
-   `https://ai.azure.com/.default` → no 403 on inference). The `user` MUST be captured in the endpoint
-   and passed in — the `current_user()` contextvar is LOST inside this StreamingResponse async generator
-   (verified), so we never read it here (`_async_credential`).
+   `https://ai.azure.com/.default` → no 403 on inference). The `user` is captured in the endpoint and
+   passed in. Este arquivo afirmava, com a palavra "verified", que o contextvar `current_user()` se
+   PERDIA dentro do gerador do StreamingResponse — MEDIDO DE NOVO EM 2026-08-18 CONTRA UVICORN REAL,
+   ELE SOBREVIVE, no
+   início do gerador e depois de um `await` (`tests/grounded/contextvar_survival_test.py`). O achado
+   original é de 2026-07-01 e o Starlette passou por um major desde então; a causa da mudança não foi
+   medida e não se afirma aqui. A captura explícita FICA — passar dado de requisição adiante é melhor
+   desenho que lê-lo de um contextvar, e é o lado seguro para errar — mas ela é escolha, não imposição
+   do runtime, e portanto não é mais motivo para o caminho grounded não virar agente comum.
 2. **Retrieve:** ONE call — `docs = await retrieve(user_text, user, domain)`. The seam does native
    searchIndex retrieve (per-user ACL via the `x-ms-query-source-authorization` header) or the
    direct-search fallback, plus dedupe + reindex. Returns `[{index, source, url, snippet}]`.
@@ -77,10 +83,18 @@ def build_synthesis_kwargs(
 
 def _async_credential(user):
     """Async credential AS THE SIGNED-IN USER (OBO), mirroring app.shared.auth.credential_for_request.
-    The `user` MUST be captured in the endpoint and passed in — the `current_user()` contextvar is
-    LOST inside this StreamingResponse async generator (verified), so reading it here would return
-    None and silently fall back to the app MI, which 403s on raw inference (the service-principal gap).
-    Falls back to DefaultAzureCredential (aio) when auth is off (local dev) or no user."""
+
+    O `user` é capturado no endpoint e passado adiante. O motivo declarado aqui era que o contextvar
+    `current_user()` se perdia dentro deste gerador; medido de novo contra uvicorn real, ELE
+    SOBREVIVE (`tests/grounded/contextvar_survival_test.py`). A captura fica por desenho, não por
+    obrigação: passar dado de requisição explicitamente é melhor que lê-lo de estado ambiente.
+
+    O modo de falha que a afirmação antiga protegia continua real e é o que o gate vigia: se a
+    identidade não chegar aqui, isto cai na MI da aplicação — que 403 na inferência crua e, no
+    `retrieve`, deixaria de trimar por ACL. Errar para "serve documento demais" é o pior lado.
+
+    Cai em DefaultAzureCredential (aio) quando a autenticação está desligada (dev local) ou não há
+    usuário."""
     from azure.identity.aio import DefaultAzureCredential, OnBehalfOfCredential
 
     if settings.auth_enabled and user is not None:
@@ -99,8 +113,9 @@ async def stream_grounded(body: dict, domain, user=None, language: str | None = 
     ONE archetype: retrieve via the `retrieve()` seam (per-user ACL / dedupe live there), then
     synthesize from ONLY those docs and emit their sources as citations.
 
-    `user` is the signed-in User, CAPTURED IN THE ENDPOINT and passed in (the current_user() contextvar
-    doesn't survive into this generator — see _async_credential). None → app identity (dev/no-auth).
+    `user` is the signed-in User, capturado no endpoint e passado adiante — por desenho, não porque
+    o contextvar se perca aqui (ele sobrevive; ver `_async_credential`). None → app identity
+    (dev/no-auth).
 
     `language` chega do endpoint pelo mesmo motivo que `user`: é dado da requisição, e a
     requisição não sobrevive dentro do gerador do StreamingResponse."""

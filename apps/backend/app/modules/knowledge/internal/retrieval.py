@@ -52,8 +52,12 @@ async def retrieve(query: str, user, domain, *, top: int = 8) -> list[dict]:
     `domain` is DUCK-TYPED (DomainSpec doesn't exist yet): reads `.kb_name` (→ native path),
     `.search_endpoint`, `.search_index` (→ fallback path) via plain attribute access.
 
-    `user` is the signed-in User captured in the endpoint (the current_user() contextvar is lost inside
-    streaming generators — see grounded._async_credential). None → app identity (dev / no-auth / public).
+    `user` is the signed-in User captured in the endpoint. O motivo antes declarado era que o
+    contextvar se perdia dentro de geradores de streaming; medido contra uvicorn real, ele SOBREVIVE
+    (`tests/grounded/contextvar_survival_test.py`). A passagem explícita fica por desenho — quem
+    chama esta função nem sempre está numa requisição (CLI, ingestão), e depender de estado ambiente
+    aqui tornaria o comportamento diferente conforme o chamador. None → app identity
+    (dev / no-auth / public).
 
     `top` is honored only on the FALLBACK direct-search path; the native KB retrieve has no proven
     result-count param, so it returns the KB's default result set (see _native_retrieve, RULE #1).

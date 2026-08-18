@@ -162,8 +162,9 @@ def _preferred_language(request) -> str | None:
 
 
 def _mount_grounded(app: FastAPI, domain_id: str) -> None:
-    """POST /{id} → stream the grounded archetype (cited Q&A). Captures current_user() in the
-    endpoint body (the contextvar is lost inside the StreamingResponse generator).
+    """POST /{id} → stream the grounded archetype (cited Q&A). Captura `current_user()` no corpo do
+    endpoint — por desenho, não porque o contextvar se perca no gerador (ele sobrevive; medido em
+    `tests/grounded/contextvar_survival_test.py`).
 
     The spec is resolved INSIDE the handler, not captured at mount time: in shared mode the
     kb/index/ACL differ per tenant, so a spec captured at boot would serve every tenant the

@@ -48,7 +48,7 @@ MATRIZ: dict[str, dict[str, object]] = {
     "/helpdesk": {
         "conversa": True,
         "tokens": True,
-        "referencias": "o retrieve traz fontes e a contagem morre ali (AzureAISearchContextProvider)",
+        "referencias": True,
         "chamado": True,
         "trilha": True,
         "caso_de_uso": True,
@@ -59,7 +59,7 @@ MATRIZ: dict[str, dict[str, object]] = {
         "referencias": "n/a: tool-driven, sem base de conhecimento",
         "chamado": "n/a: não abre chamado",
         "trilha": True,
-        "caso_de_uso": "depende da conversa",
+        "caso_de_uso": True,
     },
     "/builder": {
         "conversa": True,
