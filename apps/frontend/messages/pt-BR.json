@@ -112,7 +112,8 @@
     "next": "Avançar",
     "publish": "Criar e publicar versão",
     "publishing": "Publicando…",
-    "tool_image_generation": "Geração de imagem"
+    "tool_image_generation": "Geração de imagem",
+    "resourceAgent": "agente"
   },
   "agents": {
     "title": "Agentes",
@@ -132,6 +133,16 @@
     "runsInFoundry": "no Foundry",
     "runsInBackend": "neste backend",
     "proposeBtn": "Propor com IA"
+  },
+  "aiField": {
+    "generate": "Escrever com IA",
+    "revise": "Melhorar com IA",
+    "custom": "Instrução",
+    "send": "Enviar",
+    "customPlaceholder": "Ex.: mais curto, e cite a base de RH",
+    "generatePrompt": "Escreva o campo \"{field}\" para um {resource} que estou criando. Use a ferramenta propose_field.",
+    "revisePrompt": "Melhore o campo \"{field}\" deste {resource}. Texto atual:\n\n{value}\n\nUse a ferramenta propose_field.",
+    "customPrompt": "No campo \"{field}\" deste {resource}: {instruction}. Use a ferramenta propose_field."
   },
   "approval": {
     "waiting": "Aguardando aprovação",
@@ -322,6 +333,16 @@
     "internalDoc": "documento interno (recuperação segura; sem prévia)",
     "empty": "As fontes que a resposta citar aparecem aqui — cada afirmação fundamentada na base, não em suposição.",
     "sources": "Fontes"
+  },
+  "fieldProposal": {
+    "title": "Proposta para {field}",
+    "accept": "Usar",
+    "discard": "Descartar",
+    "dismiss": "Entendi",
+    "done": "Proposta para {field} resolvida.",
+    "sources": "Fontes: {list}",
+    "noSources": "Sem fonte declarada — escrito pelo modelo.",
+    "unknownField": "O agente propôs para o campo \"{field}\", que não existe neste formulário."
   },
   "frameworks": {
     "agent-framework": {

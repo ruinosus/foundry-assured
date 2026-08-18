@@ -112,7 +112,8 @@
     "next": "Next",
     "publish": "Create and publish version",
     "publishing": "Publishing…",
-    "tool_image_generation": "Image generation"
+    "tool_image_generation": "Image generation",
+    "resourceAgent": "agent"
   },
   "agents": {
     "title": "Agents",
@@ -132,6 +133,16 @@
     "runsInFoundry": "Foundry",
     "runsInBackend": "this backend",
     "proposeBtn": "Propose with AI"
+  },
+  "aiField": {
+    "generate": "Write with AI",
+    "revise": "Improve with AI",
+    "custom": "Instruction",
+    "send": "Send",
+    "customPlaceholder": "e.g. shorter, and cite the HR knowledge base",
+    "generatePrompt": "Write the \"{field}\" field for a {resource} I am creating. Use the propose_field tool.",
+    "revisePrompt": "Improve the \"{field}\" field of this {resource}. Current text:\n\n{value}\n\nUse the propose_field tool.",
+    "customPrompt": "For the \"{field}\" field of this {resource}: {instruction}. Use the propose_field tool."
   },
   "approval": {
     "waiting": "Awaiting approval",
@@ -322,6 +333,16 @@
     "internalDoc": "internal document (secure retrieval; no preview)",
     "empty": "The sources the answer cites show up here — every claim grounded in the knowledge base, not in guesswork.",
     "sources": "Sources"
+  },
+  "fieldProposal": {
+    "title": "Proposal for {field}",
+    "accept": "Use",
+    "discard": "Discard",
+    "dismiss": "Got it",
+    "done": "Proposal for {field} resolved.",
+    "sources": "Sources: {list}",
+    "noSources": "No source declared — written by the model.",
+    "unknownField": "The agent proposed for the field \"{field}\", which does not exist in this form."
   },
   "frameworks": {
     "agent-framework": {

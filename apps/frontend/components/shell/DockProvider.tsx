@@ -18,6 +18,7 @@
 // identidade, não por destruição.
 
 import { CopilotKitProvider } from "@copilotkit/react-core/v2";
+import { DockBridge } from "@/components/shell/DockBridge";
 import { useLocale } from "next-intl";
 import { usePathname } from "next/navigation";
 import { useMemo, type ReactNode } from "react";
@@ -45,6 +46,8 @@ export function DockProvider({
 
   return (
     <CopilotKitProvider runtimeUrl="/api/copilotkit" headers={headers}>
+      {/* Dentro do provider, porque é o único lugar de onde se fala com o agente. */}
+      <DockBridge />
       {children}
     </CopilotKitProvider>
   );

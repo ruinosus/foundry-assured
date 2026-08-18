@@ -20,7 +20,8 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authedFetch } from "@/lib/auth/api";
-import { AssistedField } from "@/components/shell/AssistedField";
+import { AiField } from "@/components/shell/AiField";
+import { FieldProposalTool, type FieldProposal } from "@/components/shell/FieldProposal";
 
 const NOME_RECURSO = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 
@@ -75,6 +76,10 @@ export function AgentWizard({
   const [bases, setBases] = useState<Base[]>([]);
   const [toolboxes, setToolboxes] = useState<Toolbox[]>([]);
   const [busy, setBusy] = useState(false);
+  // A PROCEDÊNCIA de cada campo escrito pelo agente (ADR-023). Ela viaja para o `metadata` da
+  // versão publicada: a partir daí, "de onde veio esta instrução" tem resposta no Foundry, com
+  // versão e histórico — e não só na memória de quem estava na tela naquele dia.
+  const [origens, setOrigens] = useState<Record<string, string[]>>({});
   const [erro, setErro] = useState<string | null>(null);
 
   // O catálogo real é carregado assim que o wizard abre: a etapa 3 oferece o que EXISTE, e uma
@@ -129,6 +134,16 @@ export function AgentWizard({
       instructions: instrucoes.trim(),
     };
     if (kb) doc.knowledge_base = kb;
+    // A procedência entra no METADATA da versão. Só os campos que o agente escreveu aparecem —
+    // o que a pessoa digitou sozinha não tem origem a declarar, e inventar uma seria pior que
+    // não ter.
+    const comOrigem = Object.entries(origens).filter(([, fontes]) => fontes.length);
+    if (comOrigem.length) {
+      doc.metadata = {
+        ...(doc.metadata as Record<string, unknown> | undefined),
+        provenance: Object.fromEntries(comOrigem),
+      };
+    }
     // Atalhos: o backend expande os dois para o tool completo, porque montar a URL do toolbox
     // exigiria conhecer o endpoint do project — informação de quem opera, não de quem usa.
     if (toolbox) doc.toolbox = toolbox;
@@ -172,8 +187,22 @@ export function AgentWizard({
     (passo === 2 && instrucoes.trim().length > 0 && modelo.trim().length > 0) ||
     passo === 3;
 
+  /** Aplica a proposta aceita: o valor vai para o campo, a fonte vai para a procedência. Os dois
+   *  juntos, sempre — um valor sem origem registrada é exatamente o que a auditoria não aceita. */
+  const aplicar = (p: FieldProposal) => {
+    if (p.field === "instructions") setInstrucoes(p.value);
+    else if (p.field === "description") setDescricao(p.value);
+    else if (p.field === "name") setNome(p.value);
+    setOrigens((o) => ({ ...o, [p.field]: p.sources }));
+  };
+
   return (
     <section className="card stack-sm">
+      {/* A tool que o agente do dock chama para propor um campo. Registrada AQUI, dentro do
+          wizard, porque é o formulário que sabe quais campos existem e como aplicá-los — e
+          porque ela deixa de existir quando o formulário fecha, que é o comportamento certo:
+          uma tool de proposta viva sem formulário aberto proporia para o nada. */}
+      <FieldProposalTool onAccept={aplicar} fields={["name", "description", "instructions"]} />
       <header className="between">
         <h3 className="section-title">{t("title")}</h3>
         <button type="button" className="btn" disabled={busy} onClick={onCancelar}>
@@ -222,17 +251,11 @@ export function AgentWizard({
           <p className="muted t-sm">{t("behaviorHelp")}</p>
           {/* O catálogo entra no contexto: sugerir instruções sabendo que existe uma base
               chamada helpdesk-kb produz texto útil; sem isso, produz texto genérico. */}
-          <AssistedField
+          <AiField
             field="instructions"
             label={t("step2")}
             value={instrucoes}
-            context={{
-              nome: nome.trim(),
-              descricao: descricao.trim(),
-              bases: bases.map((b) => b.name),
-              toolboxes: toolboxes.map((x) => x.name),
-            }}
-            onAccept={setInstrucoes}
+            resource={t("resourceAgent")}
           >
             <textarea
               className="acct-btn"
@@ -242,7 +265,7 @@ export function AgentWizard({
               disabled={busy}
               onChange={(e) => setInstrucoes(e.target.value)}
             />
-          </AssistedField>
+          </AiField>
           {/* Nome de deployment do modelo: não se traduz, é o que a pessoa vê no portal. */}
           <label className="muted t-xs">{t("modelLabel")}</label>
           <input
