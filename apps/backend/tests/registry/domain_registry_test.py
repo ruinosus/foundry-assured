@@ -12,7 +12,7 @@ from __future__ import annotations
 import sys
 
 import app.registry as domains_mod
-from app.registry import DomainSpec, domain_deps, _domains, mount_domains
+from app.registry import DomainSpec, _domains, domain_deps, mount_domains
 
 
 class _FakeApp:

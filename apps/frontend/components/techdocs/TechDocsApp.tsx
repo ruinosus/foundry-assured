@@ -35,7 +35,7 @@ function Chat({ authorization }: { authorization?: string }) {
           margin: "0 auto",
         }}
       >
-        <div >
+        <div>
           <span className="muted t-xs">
             TechDocs expert · grounded in the TechDocs platform knowledge base (cites the
             component + doc)
@@ -79,7 +79,6 @@ function AuthedChat() {
 }
 
 export default function TechDocsApp() {
-  const locale = useLocale();
   if (!authConfigured) return <Chat />;
   return <AuthedChat />;
 }
