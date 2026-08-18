@@ -121,13 +121,22 @@ def get_conversation(user_id: str, agent: str, conversation_id: str) -> list[dic
 
 
 def record_usage(
-    user_id: str, agent: str, conversation_id: str, incoming: int, outgoing: int
+    user_id: str,
+    agent: str,
+    conversation_id: str,
+    incoming: int,
+    outgoing: int,
+    references: int = 0,
 ) -> None:
-    """Soma tokens gastos nesta conversa. Silencioso em falha — contabilidade não derruba chat."""
+    """Soma tokens e referências de conhecimento desta conversa.
+
+    `references` é o número de fontes citadas na resposta — insumo da fórmula Agent Assisted
+    Hours. Silencioso em falha: contabilidade não derruba chat.
+    """
     if not (user_id and conversation_id):
         return
     with contextlib.suppress(Exception):
-        store().add_usage(user_id, agent, conversation_id, incoming, outgoing)
+        store().add_usage(user_id, agent, conversation_id, incoming, outgoing, references)
 
 
 def usage_totals(agent: str = "") -> dict:
@@ -135,7 +144,14 @@ def usage_totals(agent: str = "") -> dict:
     try:
         return store().totals(agent)
     except Exception:  # noqa: BLE001 — o painel mostra "não foi possível medir", não um zero falso
-        return {"conversations": 0, "input_tokens": 0, "output_tokens": 0, "error": True}
+        return {
+            "conversations": 0,
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "references": 0,
+            "conversations_with_references": 0,
+            "error": True,
+        }
 
 
 def find_conversation(user_id: str, conversation_id: str) -> dict:

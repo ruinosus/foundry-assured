@@ -124,6 +124,16 @@ jobs:
       - name: Projeção de agente (versão visível, plataforma escondida)
         run: uv run python -m tests.foundry.agent_projection_test
 
+      # O painel de ROI usa a fórmula Agent Assisted Hours que a Microsoft PUBLICA, e o ganho
+      # disso — premissa citável de terceiro em vez de premissa nossa — só existe enquanto a
+      # implementação ainda for a deles. Fórmula escrita à mão deriva calada: muda um peso,
+      # alguém "melhora" a atribuição de desfecho, e a tela segue dizendo "Microsoft" sobre a
+      # conta da casa. Este caso reproduz o exemplo numérico publicado e já pegou uma divergência
+      # real (4.700 ponderadas onde o exemplo dá 4.400 — generoso no único lugar onde ser
+      # generoso é fabricar resultado).
+      - name: Agent Assisted Hours (bate com o exemplo publicado)
+        run: uv run python -m tests.usecases.aah_formula_test
+
       - name: Approval decisions (edit is not a loophole)
         run: uv run python -m tests.hitl.decision_test
       - name: Edit round-trips end to end

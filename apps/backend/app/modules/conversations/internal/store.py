@@ -92,20 +92,32 @@ class InMemoryConversationStore:
     def read(self, user: str, agent: str, conv: str) -> list[dict]:
         return list(self._linhas.get(_blob_name(user, agent, conv), []))
 
-    def add_usage(self, user: str, agent: str, conv: str, incoming: int, outgoing: int) -> None:
+    def add_usage(
+        self, user: str, agent: str, conv: str, incoming: int, outgoing: int, references: int = 0
+    ) -> None:
         meta = self._meta.setdefault(_blob_name(user, agent, conv), {})
         meta["in_tokens"] = int(meta.get("in_tokens", 0)) + max(incoming, 0)
         meta["out_tokens"] = int(meta.get("out_tokens", 0)) + max(outgoing, 0)
+        meta["refs"] = int(meta.get("refs", 0)) + max(references, 0)
 
     def totals(self, agent: str = "") -> dict:
-        conversas = incoming = outgoing = 0
+        conversas = incoming = outgoing = refs = com_refs = 0
         for chave, meta in self._meta.items():
             if agent and chave.split("/")[1] != agent:
                 continue
             conversas += 1
             incoming += int(meta.get("in_tokens", 0))
             outgoing += int(meta.get("out_tokens", 0))
-        return {"conversations": conversas, "input_tokens": incoming, "output_tokens": outgoing}
+            n = int(meta.get("refs", 0))
+            refs += n
+            com_refs += 1 if n else 0
+        return {
+            "conversations": conversas,
+            "input_tokens": incoming,
+            "output_tokens": outgoing,
+            "references": refs,
+            "conversations_with_references": com_refs,
+        }
 
     def list(self, user: str, agent: str = "") -> list[ConversationMeta]:
         prefixo = f"{_seguro(user, 'usuário')}/" + (f"{_seguro(agent, 'agente')}/" if agent else "")
@@ -259,19 +271,28 @@ class BlobConversationStore:
                 atual["title"] = blob.get_blob_properties().metadata.get("title", "")
         blob.set_blob_metadata({k: v for k, v in atual.items() if v})
 
-    def add_usage(self, user: str, agent: str, conv: str, incoming: int, outgoing: int) -> None:
-        """Soma tokens à conversa. Fica no METADATA do blob, não no corpo.
+    def add_usage(
+        self, user: str, agent: str, conv: str, incoming: int, outgoing: int, references: int = 0
+    ) -> None:
+        """Soma tokens e REFERÊNCIAS de conhecimento à conversa. No METADATA do blob, não no corpo.
 
         Assim o total de uma conversa é lido no `list_blobs` junto com o resto — o painel de ROI
         soma o custo de mil conversas sem abrir nenhuma, e sem ler o conteúdo de ninguém.
+
+        `refs` existe porque é o INSUMO PRINCIPAL da fórmula Agent Assisted Hours da Microsoft:
+        cada referência de conhecimento citada conta uma vez e vale o multiplicador de tempo. O
+        detector de citação do `eval/assertions.py` responde "citou ou não" — booleano, que serve
+        de gate e não serve de conta. A contagem tem que ser gravada quando o número está em mãos,
+        e o único lugar onde ele está é o fim do stream, aqui.
         """
-        if incoming <= 0 and outgoing <= 0:
+        if incoming <= 0 and outgoing <= 0 and references <= 0:
             return
         blob = self._container.get_blob_client(_blob_name(user, agent, conv))
         with _silencio():
             atual = blob.get_blob_properties().metadata or {}
             atual["in_tokens"] = str(int(atual.get("in_tokens", 0) or 0) + max(incoming, 0))
             atual["out_tokens"] = str(int(atual.get("out_tokens", 0) or 0) + max(outgoing, 0))
+            atual["refs"] = str(int(atual.get("refs", 0) or 0) + max(references, 0))
             blob.set_blob_metadata(atual)
 
     def totals(self, agent: str = "") -> dict:
@@ -283,7 +304,7 @@ class BlobConversationStore:
 
         Lê só METADATA: nomes, contagens e tokens. Nenhum conteúdo de conversa é aberto aqui.
         """
-        conversas = incoming = outgoing = 0
+        conversas = incoming = outgoing = refs = com_refs = 0
         for b in self._container.list_blobs(include=["metadata"]):
             partes = b.name.split("/")
             if len(partes) != 3 or (agent and partes[1] != agent):
@@ -292,7 +313,19 @@ class BlobConversationStore:
             meta = b.metadata or {}
             incoming += int(meta.get("in_tokens", 0) or 0)
             outgoing += int(meta.get("out_tokens", 0) or 0)
-        return {"conversations": conversas, "input_tokens": incoming, "output_tokens": outgoing}
+            # `refs` ausente é conversa gravada ANTES deste campo existir, e some do numerador
+            # sem sumir do denominador. Quem soma isto tem de saber: ver `references_partial`
+            # em `usecases/internal/outcomes.py`.
+            n = int(meta.get("refs", 0) or 0)
+            refs += n
+            com_refs += 1 if n else 0
+        return {
+            "conversations": conversas,
+            "input_tokens": incoming,
+            "output_tokens": outgoing,
+            "references": refs,
+            "conversations_with_references": com_refs,
+        }
 
     def read(self, user: str, agent: str, conv: str) -> list[dict]:
         from azure.core.exceptions import ResourceNotFoundError

@@ -3,9 +3,15 @@
 // Resultados de um caso de uso — o que ele produziu, e o retorno que isso representa.
 //
 // ESTA TELA TEM UM RISCO PRÓPRIO, e o desenho existe para desarmá-lo: um painel de ROI é o lugar
-// mais fácil de mostrar um número bonito e falso. Conversas e escalações são CONTADAS; a economia
-// é CALCULADA sobre uma premissa que a empresa informa. As duas coisas aparecem separadas, com a
-// conta visível — quem discordar da premissa vê exatamente onde discordar.
+// mais fácil de mostrar um número bonito e falso. Conversas, escalações e REFERÊNCIAS CITADAS são
+// CONTADAS; as horas assistidas são CALCULADAS. As duas coisas aparecem separadas, com a conta
+// visível — quem discordar da premissa vê exatamente onde discordar.
+//
+// A fórmula não é nossa: é a **Agent Assisted Hours** da Microsoft, e a tela diz isso com o link.
+// Antes daqui havia um modelo próprio que se chamava conservador usando 15 min por atendimento
+// contra os 6 min que a Microsoft publica com fonte. Premissa de terceiro, citável, vale mais numa
+// conversa de negócio do que premissa nossa — e a procedência de cada constante sobe na resposta,
+// porque "premissa visível" não é só mostrar o número, é dizer quem o escolheu.
 //
 // Um ROI cuja premissa está visível é útil. Um que a esconde é propaganda, e a diferença entre os
 // dois é só se a premissa aparece na tela.
@@ -19,13 +25,31 @@ type Result = {
   escalated: number;
   resolved_without_escalation: number;
   resolution_rate: number | null;
-  estimated_minutes_saved: number;
-  estimated_cost_saved: number;
+  references: number;
+  conversations_with_references: number;
+  sessions_without_references: number;
+  weighted_sessions: number;
+  assisted_hours: number;
+  assisted_value: number;
+  references_partial: boolean;
   input_tokens: number;
   output_tokens: number;
   actual_cost: number;
   net_saved: number;
-  assumption: { minutes_per_case: number; hourly_cost: number; currency: string; source: string };
+  assumption: {
+    minutes_per_reference: number;
+    resolved_weight: number;
+    unresolved_weight: number;
+    hourly_cost: number;
+    currency: string;
+    source: string;
+  };
+  provenance: {
+    formula: string;
+    formula_doc: string;
+    multiplier_source: string;
+    hourly_cost_source: string;
+  };
   caveat: string;
   reason: string | null;
 };
@@ -35,12 +59,12 @@ export function Outcomes({ caseId }: { caseId: string }) {
   const tc = useTranslations("common");
   const [data, setData] = useState<Result | null>(null);
   const [erro, setErro] = useState<string | null>(null);
-  const [minutos, setMinutos] = useState("15");
+  const [minutos, setMinutos] = useState("6");
   const [custo, setCusto] = useState("90");
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(
-    async (premissa?: { minutes_per_case: number; hourly_cost: number }) => {
+    async (premissa?: { minutes_per_reference: number; hourly_cost: number }) => {
       setBusy(true);
       setErro(null);
       try {
@@ -55,7 +79,7 @@ export function Outcomes({ caseId }: { caseId: string }) {
           return;
         }
         setData(body);
-        setMinutos(String(body.assumption?.minutes_per_case ?? 15));
+        setMinutos(String(body.assumption?.minutes_per_reference ?? 6));
         setCusto(String(body.assumption?.hourly_cost ?? 90));
       } catch {
         setErro(tc("backendUnreachable"));
@@ -71,7 +95,7 @@ export function Outcomes({ caseId }: { caseId: string }) {
   }, [load]);
 
   const recalcular = () =>
-    void load({ minutes_per_case: Number(minutos), hourly_cost: Number(custo) });
+    void load({ minutes_per_reference: Number(minutos), hourly_cost: Number(custo) });
 
   const moeda = (v: number) =>
     new Intl.NumberFormat(undefined, {
@@ -91,9 +115,15 @@ export function Outcomes({ caseId }: { caseId: string }) {
 
       {data && (
         <>
-          {/* CONTADO. Estes três vieram do serviço — são fatos sobre o uso. */}
+          {/* CONTADO. Fatos sobre o uso — nada aqui depende de premissa. As referências citadas
+              entram nesta faixa porque são contadas uma a uma no fim de cada resposta, e são o
+              insumo principal da AAH. */}
           <p className="lead-in">{t("measuredLabel")}</p>
           <div className="grid g3">
+            <div className="metric">
+              <span className="metric-value num">{data.references}</span>
+              <span className="metric-label">{t("references")}</span>
+            </div>
             <div className="metric">
               <span className="metric-value num">{data.conversations}</span>
               <span className="metric-label">{t("conversations")}</span>
@@ -115,17 +145,36 @@ export function Outcomes({ caseId }: { caseId: string }) {
           {/* ESTIMADO. Separado do bloco acima de propósito: misturar os dois faria um cálculo
               parecer uma medida. */}
           <p className="lead-in">{t("estimatedLabel")}</p>
-          <div className="notice">
-            <p className="metric-value num">{moeda(data.estimated_cost_saved)}</p>
-            {/* A CONTA INTEIRA, não só o resultado. */}
+          <div className="notice notice-block">
+            <p className="metric-value num">{moeda(data.assisted_value)}</p>
+            {/* A CONTA INTEIRA, termo por termo — não só o resultado. */}
             <p className="t-sm muted-line">
               {t("formula", {
-                cases: data.resolved_without_escalation,
-                minutes: data.assumption.minutes_per_case,
+                references: data.references,
+                weighted: data.weighted_sessions,
+                minutes: data.assumption.minutes_per_reference,
+                hours: data.assisted_hours,
                 cost: moeda(data.assumption.hourly_cost),
               })}
             </p>
+            {/* A PROCEDÊNCIA da fórmula, com link. É o que separa "nós achamos" de "a Microsoft
+                publica" — e é metade do valor de ter adotado a AAH. */}
+            <p className="t-xs muted-line">
+              <a href={data.provenance.formula_doc} target="_blank" rel="noreferrer">
+                {data.provenance.formula}
+              </a>
+              {" · "}
+              {t("multiplierSource", { source: data.provenance.multiplier_source })}
+              {" · "}
+              {t("hourlySource", { source: data.provenance.hourly_cost_source })}
+            </p>
           </div>
+
+          {/* Referência zerada por FALTA DE DADO não pode parecer resposta sem citação: a
+              primeira subestima o valor, a segunda acusa o agente de falha grave. */}
+          {data.references_partial && (
+            <p className="t-xs bad-line">{t("referencesPartial")}</p>
+          )}
 
           {/* CUSTO REAL — faixa própria, nem com o contado nem com o estimado. Os tokens são
               medidos; o preço por token é tabela editável. Misturá-lo com a economia estimada
