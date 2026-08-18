@@ -58,35 +58,54 @@ export function AiField({
 
   return (
     <div className="ai-field">
-      {children}
-      <div className="ai-field-actions">
+      {/* As ações ficam ESCONDIDAS até o hover ou o foco, como no `aap-kb`. O motivo não é
+          estético: um formulário com um botão de IA ao lado de cada campo vira uma tela de
+          botões de IA, e a pessoa passa a escolher entre eles em vez de preencher. Aparecendo no
+          campo em que ela já está, a ajuda chega no momento certo e some no resto do tempo.
+
+          `opacity` + `pointer-events`, nunca `display: none`: escondido por display sai da ordem
+          de tabulação, e a ajuda deixaria de existir para quem navega por teclado. Com
+          `:focus-within`, tabular até o botão o revela. */}
+      <div className="ai-field-actions" aria-label={t("actionsFor", { field: label })}>
         {preenchido ? (
           <button
             type="button"
-            className="acct-btn t-xs"
+            className="ai-chip"
+            title={t("revise")}
             onClick={() =>
-              pedir(t("revisePrompt", { field: label, resource, value: value.slice(0, 2000) }))
+              pedir(
+                t("revisePrompt", {
+                  field,
+                  label,
+                  resource,
+                  value: value.slice(0, 2000),
+                }),
+              )
             }
           >
-            {t("revise")}
+            <span aria-hidden>✎</span> {t("revise")}
           </button>
         ) : (
           <button
             type="button"
-            className="acct-btn t-xs"
-            onClick={() => pedir(t("generatePrompt", { field: label, resource }))}
+            className="ai-chip"
+            title={t("generate")}
+            onClick={() => pedir(t("generatePrompt", { field, label, resource }))}
           >
-            {t("generate")}
+            <span aria-hidden>✨</span> {t("generate")}
           </button>
         )}
         <button
           type="button"
-          className="acct-btn t-xs"
+          className="ai-chip ai-chip-icon"
+          title={t("custom")}
+          aria-label={t("custom")}
           onClick={() => setInstrucao(instrucao === null ? "" : null)}
         >
-          {t("custom")}
+          <span aria-hidden>💬</span>
         </button>
       </div>
+      {children}
 
       {instrucao !== null && (
         <div className="row-tight">
@@ -97,7 +116,7 @@ export function AiField({
             onChange={(e) => setInstrucao(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter" && instrucao.trim()) {
-                pedir(t("customPrompt", { field: label, resource, instruction: instrucao.trim() }));
+                pedir(t("customPrompt", { field, label, resource, instruction: instrucao.trim() }));
               }
             }}
           />
@@ -106,7 +125,7 @@ export function AiField({
             className="acct-btn t-xs"
             disabled={!instrucao.trim()}
             onClick={() =>
-              pedir(t("customPrompt", { field: label, resource, instruction: instrucao.trim() }))
+              pedir(t("customPrompt", { field, label, resource, instruction: instrucao.trim() }))
             }
           >
             {t("send")}

@@ -135,14 +135,15 @@
     "proposeBtn": "Propose with AI"
   },
   "aiField": {
-    "generate": "Write with AI",
-    "revise": "Improve with AI",
-    "custom": "Instruction",
+    "generate": "Write",
+    "revise": "Improve",
+    "custom": "Custom instruction",
     "send": "Send",
     "customPlaceholder": "e.g. shorter, and cite the HR knowledge base",
-    "generatePrompt": "Write the \"{field}\" field for a {resource} I am creating. Use the propose_field tool.",
-    "revisePrompt": "Improve the \"{field}\" field of this {resource}. Current text:\n\n{value}\n\nUse the propose_field tool.",
-    "customPrompt": "For the \"{field}\" field of this {resource}: {instruction}. Use the propose_field tool."
+    "actionsFor": "AI actions for {field}",
+    "generatePrompt": "Write the \"{label}\" field (identifier: {field}) for a {resource} I am creating. Call propose_field with field=\"{field}\".",
+    "revisePrompt": "Improve the \"{label}\" field (identifier: {field}) of this {resource}. Current text:\n\n{value}\n\nCall propose_field with field=\"{field}\".",
+    "customPrompt": "For the \"{label}\" field (identifier: {field}) of this {resource}: {instruction}. Call propose_field with field=\"{field}\"."
   },
   "approval": {
     "waiting": "Awaiting approval",

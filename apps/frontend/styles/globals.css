@@ -1859,9 +1859,31 @@ table.evals tr:last-child td { border-bottom: none; }
    As ações ficam DISCRETAS e abaixo do campo: elas são atalho, não a forma principal de
    preencher. Um botão de IA com peso visual de ação primária empurra a pessoa a usá-lo antes de
    pensar — e o valor do wizard é a pessoa saber o que está criando. */
-.ai-field { display: flex; flex-direction: column; gap: var(--space-1); }
-.ai-field-actions { display: flex; gap: var(--space-2); }
-.ai-field-actions button { padding: 2px var(--space-2); }
+/* As ações só aparecem no campo em que a pessoa está. Um formulário com um botão de IA fixo ao
+   lado de cada campo vira uma tela de botões de IA — e a pessoa passa a escolher entre eles em
+   vez de preencher. */
+.ai-field { display: flex; flex-direction: column; gap: 2px; position: relative; }
+.ai-field-actions {
+  display: flex; gap: var(--space-1); justify-content: flex-end;
+  opacity: 0;
+  /* `pointer-events: none` junto com opacity 0: invisível e clicável seria uma armadilha para o
+     mouse. O teclado não depende disso — `:focus-within` revela ao tabular. */
+  pointer-events: none;
+  transition: opacity 140ms ease-out;
+}
+.ai-field:hover .ai-field-actions,
+.ai-field:focus-within .ai-field-actions { opacity: 1; pointer-events: auto; }
+@media (prefers-reduced-motion: reduce) { .ai-field-actions { transition: none; } }
+
+.ai-chip {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 1px var(--space-2); border-radius: var(--radius-sm);
+  border: 1px solid var(--accent); background: var(--surface); color: var(--accent);
+  font: inherit; font-size: var(--text-2xs); cursor: pointer; line-height: 1.6;
+}
+.ai-chip:hover { background: var(--accent-wash); }
+.ai-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.ai-chip-icon { border-color: var(--line); color: var(--muted); padding: 1px var(--space-1); }
 
 /* O card da proposta, dentro do chat. Borda de espera (não de sucesso): nada foi aplicado ainda,
    e a cor precisa dizer isso antes do texto. */

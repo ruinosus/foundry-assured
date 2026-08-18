@@ -5,7 +5,7 @@
 // (addMessage + runAgent). Shown only until the conversation starts, then they get out
 // of the way.
 
-import { useAgent } from "@copilotkit/react-core/v2";
+import { useAgent, useCopilotKit } from "@copilotkit/react-core/v2";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import type { Domain } from "@/lib/domains";
@@ -14,6 +14,7 @@ export function SuggestedPrompts({ domain }: { domain: Domain }) {
   const t = useTranslations("console");
   const td = useTranslations("domains");
   const { agent } = useAgent({ agentId: domain.id });
+  const { copilotkit } = useCopilotKit();
   const [hasMessages, setHasMessages] = useState(false);
 
   useEffect(() => {
@@ -37,7 +38,11 @@ export function SuggestedPrompts({ domain }: { domain: Domain }) {
         : `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
     agent.addMessage({ id, role: "user", content: text });
     setHasMessages(true);
-    void agent.runAgent();
+    // Pelo CORE, não pelo agente: é o core que monta a lista de tools do frontend. Aqui não havia
+    // sintoma porque nenhum domínio de chip declara tool — mas o chip e o campo do wizard usam o
+    // mesmo caminho, e deixar um certo e o outro errado garante que o próximo a copiar copie o
+    // errado.
+    void copilotkit.runAgent({ agent });
   };
 
   return (

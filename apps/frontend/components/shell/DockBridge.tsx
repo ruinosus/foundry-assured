@@ -13,13 +13,14 @@
 // nada não tem de onde vir — e "ajuda que chega sem mostrar de onde veio é ajuda que não se
 // audita" já estava escrito no contexto do dock antes de existir motivo para usá-la.
 
-import { useAgent } from "@copilotkit/react-core/v2";
+import { useAgent, useCopilotKit } from "@copilotkit/react-core/v2";
 import { useEffect, useRef } from "react";
 import { useChatDock } from "@/lib/chat-dock";
 
 export function DockBridge() {
   const { agentId, pending, clearPending } = useChatDock();
   const { agent, isReady } = useAgent({ agentId });
+  const { copilotkit } = useCopilotKit();
   // O nonce já entregue. Sem isto um re-render reenviaria o mesmo pedido, e o agente responderia
   // duas vezes à mesma pergunta.
   const entregue = useRef<number>(0);
@@ -33,9 +34,18 @@ export function DockBridge() {
         ? crypto.randomUUID()
         : `${Date.now()}`;
     agent.addMessage({ id, role: "user", content: pending.prompt });
-    void agent.runAgent();
+
+    // Roda pelo CORE, não pelo agente. Medido, e foi o defeito: quem monta a lista de tools do
+    // frontend é o core —
+    //
+    //     core.runAgent({agent})  →  tools: this.buildFrontendTools(agent.agentId)  →  agent.runAgent(input)
+    //
+    // Chamar `agent.runAgent()` direto pula essa montagem e a requisição sai com `tools: []`. O
+    // sintoma no chat era o modelo IMITANDO a chamada em texto: ele fora instruído a usar
+    // `propose_field`, a ferramenta nunca chegou, e ele escreveu o que teria chamado.
+    void copilotkit.runAgent({ agent });
     clearPending();
-  }, [agent, isReady, pending, clearPending]);
+  }, [agent, isReady, pending, clearPending, copilotkit]);
 
   return null;
 }

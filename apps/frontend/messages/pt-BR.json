@@ -135,14 +135,15 @@
     "proposeBtn": "Propor com IA"
   },
   "aiField": {
-    "generate": "Escrever com IA",
-    "revise": "Melhorar com IA",
-    "custom": "Instrução",
+    "generate": "Escrever",
+    "revise": "Melhorar",
+    "custom": "Instrução própria",
     "send": "Enviar",
     "customPlaceholder": "Ex.: mais curto, e cite a base de RH",
-    "generatePrompt": "Escreva o campo \"{field}\" para um {resource} que estou criando. Use a ferramenta propose_field.",
-    "revisePrompt": "Melhore o campo \"{field}\" deste {resource}. Texto atual:\n\n{value}\n\nUse a ferramenta propose_field.",
-    "customPrompt": "No campo \"{field}\" deste {resource}: {instruction}. Use a ferramenta propose_field."
+    "actionsFor": "Ações de IA para {field}",
+    "generatePrompt": "Escreva o campo \"{label}\" (identificador: {field}) para um {resource} que estou criando. Chame propose_field com field=\"{field}\".",
+    "revisePrompt": "Melhore o campo \"{label}\" (identificador: {field}) deste {resource}. Texto atual:\n\n{value}\n\nChame propose_field com field=\"{field}\".",
+    "customPrompt": "No campo \"{label}\" (identificador: {field}) deste {resource}: {instruction}. Chame propose_field com field=\"{field}\"."
   },
   "approval": {
     "waiting": "Aguardando aprovação",
