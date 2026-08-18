@@ -10,7 +10,18 @@
 // We override the HttpAgent's fetch to translate the body just before it hits
 // the backend, so the workflow interrupt can be resumed.
 
-import { CopilotRuntime, createCopilotRuntimeHandler } from "@copilotkit/runtime/v2";
+import {
+  CopilotRuntime,
+  InMemoryAgentRunner,
+  createCopilotRuntimeHandler,
+  type AgentRunnerConnectRequest,
+} from "@copilotkit/runtime/v2";
+import { Observable } from "rxjs";
+import {
+  fetchThreadHistory,
+  historyConnectEvents,
+  toAguiMessages,
+} from "@/lib/thread-history";
 import { HttpAgent } from "@ag-ui/client";
 import { DOMAINS } from "@/lib/domains";
 
@@ -123,6 +134,54 @@ function agentFor(id: string): HttpAgent {
   return dynamicAgents[id];
 }
 
+/** O runner que REIDRATA uma conversa no `connect`.
+ *
+ *  O runner padrão responde o `agent/connect` só da memória DO PROCESSO — ele nunca consulta o
+ *  armazenamento durável. Depois de um restart, de uma réplica nova ou de uma sessão nova, o
+ *  connect transmite nada e a conversa parece vazia até o próximo envio. Substitui o
+ *  `ThreadSeeder`, que fazia isto pela tela: funcionava e amarrava a reidratação a um componente
+ *  estar montado.
+ *
+ *  `onConcurrentRun: "supersede"` vem do dna-cloud, que pagou por ele em produção: o runner
+ *  mantém um LOCK por thread, e um run que não finaliza — stream fechando sem RUN_FINISHED, o que
+ *  um turno de HITL ou uma desconexão produzem — deixava o lock preso e todo envio seguinte
+ *  falhava com "Thread already running". `supersede` aborta o run travado e começa o novo; a
+ *  transcrição durável é a nossa, então esse sinalizador em memória nunca foi a fonte da verdade.
+ */
+class ThreadHistoryRunner extends InMemoryAgentRunner {
+  constructor(private readonly headers: Record<string, string>) {
+    super({ onConcurrentRun: "supersede" });
+  }
+
+  connect(request: AgentRunnerConnectRequest) {
+    // Já há eventos em memória: esta é a thread corrente e o comportamento padrão está certo.
+    if (this.getThreadEvents(request.threadId).length > 0) {
+      return super.connect(request);
+    }
+    const cabecalhos = { ...this.headers, ...(request.headers ?? {}) };
+    return new Observable((subscriber) => {
+      let cancelado = false;
+      void (async () => {
+        const { messages } = await fetchThreadHistory(BACKEND, request.threadId, cabecalhos);
+        if (cancelado) return;
+        const eventos = historyConnectEvents(
+          request.threadId,
+          toAguiMessages(messages, request.threadId),
+        );
+        // O tipo do evento vem de um schema Zod do AG-UI, e o nosso construtor é puro (sem
+        // importar o pacote de eventos, para continuar testável fora do runtime). O cast é o
+        // preço dessa separação — e é onde ele fica, num lugar só, em vez de espalhado.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        for (const e of eventos) subscriber.next(e as any);
+        subscriber.complete();
+      })();
+      return () => {
+        cancelado = true;
+      };
+    }) as ReturnType<InMemoryAgentRunner["connect"]>;
+  }
+}
+
 async function handler(req: Request): Promise<Response> {
   const id = requestedAgentId(req.url);
   // Um id conhecido do registry sempre ganha: os domínios do showcase têm runtime próprio
@@ -130,8 +189,15 @@ async function handler(req: Request): Promise<Response> {
   const agents =
     id && !(id in staticAgents) ? { ...staticAgents, [id]: agentFor(id) } : staticAgents;
 
+  // O token do chamador viaja para o backend na reidratação: a conversa é escopada por usuário,
+  // e sem ele o `by-id` responderia 401 — a tela abriria vazia sem dizer por quê.
+  const auth = req.headers.get("authorization");
+
   return createCopilotRuntimeHandler({
-    runtime: new CopilotRuntime({ agents }),
+    runtime: new CopilotRuntime({
+      agents,
+      runner: new ThreadHistoryRunner(auth ? { Authorization: auth } : {}),
+    }),
     basePath: "/api/copilotkit",
   })(req);
 }

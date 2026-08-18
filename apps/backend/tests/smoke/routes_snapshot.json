@@ -62,6 +62,10 @@
     ],
     [
       "GET",
+      "/conversations/by-id/{conversation_id}"
+    ],
+    [
+      "GET",
       "/conversations/{agent}/{conversation_id}"
     ],
     [
@@ -357,6 +361,10 @@
     [
       "GET",
       "/conversations"
+    ],
+    [
+      "GET",
+      "/conversations/by-id/{conversation_id}"
     ],
     [
       "GET",
@@ -675,6 +683,10 @@
     [
       "GET",
       "/conversations"
+    ],
+    [
+      "GET",
+      "/conversations/by-id/{conversation_id}"
     ],
     [
       "GET",

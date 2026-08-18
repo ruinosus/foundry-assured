@@ -28,7 +28,6 @@ import { DomainPicker } from "@/components/console/DomainPicker";
 import { EvidencePanel } from "@/components/console/EvidencePanel";
 import { MermaidZoom } from "@/components/console/MermaidZoom";
 import { SuggestedPrompts } from "@/components/console/SuggestedPrompts";
-import { ThreadSeeder } from "@/components/console/ThreadSeeder";
 import { ToolActivity } from "@/components/console/ToolActivity";
 
 const WorkflowSteps = dynamic(
@@ -118,11 +117,6 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
             {/* Vale para TODOS os domínios, não só os tool-driven: qualquer tool sem
                 renderizador próprio passa a aparecer em vez de virar spinner. */}
             <ToolActivity />
-            <ThreadSeeder
-              agentId={activeAgentId}
-              agentKey={conversationKey}
-              threadId={threadId}
-            />
             <CopilotChat agentId={activeAgentId} threadId={threadId} />
             <MermaidZoom />
           </div>

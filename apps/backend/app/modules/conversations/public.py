@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from app.modules.conversations.internal.listing import (
+    find_conversation,
     get_conversation,
     list_conversations,
     record_turn,
@@ -19,6 +20,7 @@ __all__ = [
     "StoredHistoryProvider",
     "build_history_provider",
     "conversation_user",
+    "find_conversation",
     "get_conversation",
     "list_conversations",
     "record_turn",

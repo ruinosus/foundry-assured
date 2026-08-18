@@ -136,3 +136,23 @@ def usage_totals(agent: str = "") -> dict:
         return store().totals(agent)
     except Exception:  # noqa: BLE001 — o painel mostra "não foi possível medir", não um zero falso
         return {"conversations": 0, "input_tokens": 0, "output_tokens": 0, "error": True}
+
+
+def find_conversation(user_id: str, conversation_id: str) -> dict:
+    """A conversa pelo ID, sem saber o agente. `{agent, messages}` — vazio se não houver.
+
+    POR QUE ESTE RECORTE EXISTE. O `connect` do CopilotKit conhece só o `threadId`: o
+    `AgentRunnerConnectRequest` tem `threadId` e `headers`, e mais nada. Sem esta função, reidratar
+    uma conversa a partir do runtime exigiria adivinhar o agente pela URL — o que quebraria no dia
+    em que a mesma conversa fosse aberta de outro lugar.
+
+    A varredura é sobre as conversas DO USUÁRIO, o que também é o controle de acesso: um id de
+    outra pessoa simplesmente não aparece na lista dela.
+    """
+    alvo = (conversation_id or "").strip()
+    if not (user_id and alvo):
+        return {}
+    for meta in store().list(user_id):
+        if meta.id == alvo:
+            return {"agent": meta.agent, "messages": store().read(user_id, meta.agent, alvo)}
+    return {}
