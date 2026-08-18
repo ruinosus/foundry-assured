@@ -220,6 +220,7 @@ uv run python -m tests.architecture.instrumentation_matrix_test  # agente autent
 uv run python -m tests.grounded.contextvar_survival_test   # a identidade atravessa o StreamingResponse
 uv run python -m tests.conversations.provider_invoked_test # a conversa é gravada de fato, não só ligada
 uv run python -m tests.conversations.langgraph_recording_test # os grafos gravam o turno, uma vez
+uv run python -m tests.grounded.citation_vocabulary_test  # citação no vocabulário do framework, backend ↔ painel
 
 # fecho diário da trilha (roda por agenda em .github/workflows/audit-anchor.yml)
 uv run python -m cli.close_audit_day                     # ancora o dia; write-once, idempotente

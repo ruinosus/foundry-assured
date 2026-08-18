@@ -18,11 +18,20 @@ import { useEffect, useState } from "react";
 import type { Domain } from "@/lib/domains";
 
 // A structured citation from the grounded stream (the CUSTOM `sources` event).
+// A FORMA É A DO FRAMEWORK, não uma nossa. `agent_framework.Annotation` é um TypedDict com
+// `type: "citation"` + `title`, `url`, `snippet`; o `Citation` do `langchain_core.messages` é
+// praticamente o mesmo. Antes daqui tínhamos `{index, source, url, content}` — o mesmo dado com
+// nomes próprios, inventado por cima de dois vocabulários que já existiam.
+//
+// O `index` fica ao lado do canônico porque é ele que amarra a citação `[n]` do texto ao item da
+// lista: o `annotated_regions` do framework faria isso por posição de caractere, e o nosso prompt
+// cita por número.
 interface Citation {
+  type?: "citation";
+  title: string; // o nome do documento (ex.: techdocs-mcp-server-v1.4.0__page-1.md)
+  url?: string; // a URL da fonte (blob privado — não abre direto; mantida para referência)
+  snippet?: string; // o trecho recuperado — mostrado INLINE no clique, porque o storage é privado
   index: number;
-  source: string; // the document filename (e.g. techdocs-mcp-server-v1.4.0__page-1.md)
-  url?: string; // the source URL (private blob — can't be opened directly; kept for reference)
-  content?: string; // the retrieved snippet — shown INLINE on click (the storage is private by design)
 }
 
 // A heuristic source (v1 fallback) derived from the answer text.
@@ -82,7 +91,15 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
         } else if (event?.type === "CUSTOM" && event?.name === "sources") {
           const value = (event.value ?? []) as Citation[];
           setCitations(
-            value.map((v) => ({ index: v.index, source: v.source, url: v.url, content: v.content })),
+            // Aceita a forma canônica E a anterior: uma aba já aberta durante o deploy continua
+            // recebendo eventos do backend antigo, e um painel que esvazia no meio da conversa
+            // parece resposta sem fonte — que é falha grave, não cosmética.
+            value.map((v: Citation & { source?: string; content?: string }) => ({
+              index: v.index,
+              title: v.title ?? v.source ?? "",
+              url: v.url,
+              snippet: v.snippet ?? v.content,
+            })),
           );
         }
       },
@@ -116,16 +133,16 @@ export function EvidencePanel({ domain }: { domain: Domain }) {
                   <span className="citation-idx" aria-hidden>
                     {c.index}
                   </span>
-                  <span className="citation-src">{c.source}</span>
+                  <span className="citation-src">{c.title}</span>
                 </button>
                 {openIdx === c.index && (
                   <div className="citation-detail">
-                    {c.content ? (
+                    {c.snippet ? (
                       // Show the retrieved snippet inline — the blob is private (can't be opened).
-                      <p className="citation-content">{c.content}</p>
+                      <p className="citation-content">{c.snippet}</p>
                     ) : (
                       <span className="muted">
-                        {c.source} — {te("internalDoc")}
+                        {c.title} — {te("internalDoc")}
                       </span>
                     )}
                   </div>
