@@ -10,7 +10,7 @@ Repositório **shipped** (v0.6.0): todas as 6 fases do showcase estão verdes (K
 
 **Camada mais recente — prompts declarativos:** os prompts dos agentes saíram do Python e viraram **documentos AgentSchema** em `apps/backend/agents/helpdesk/` (ADR-013), publicáveis sem rebuild via mount do Azure Files (ADR-014), lidos pelo reader oficial da Microsoft `agent-framework-declarative` depois que o DNA SDK foi removido (ADR-015). Ver "Prompts declarativos" abaixo.
 
-A fonte de verdade hoje é o código + o [`README.md`](./README.md) e [`docs/METHOD.md`](./docs/METHOD.md) (modelo as-built); a arquitetura-alvo SaaS está em [`docs/superpowers/specs/2026-06-29-saas-target-architecture-design.md`](./docs/superpowers/specs/2026-06-29-saas-target-architecture-design.md), as decisões nas **ADRs 001–021** ([`docs/adr/README.md`](./docs/adr/README.md)), os designs/planos em `docs/superpowers/specs/` + `docs/superpowers/plans/`, e o runbook de empacotamento em [`docs/D-PACKAGING-RUNBOOK.md`](./docs/D-PACKAGING-RUNBOOK.md). A `foundry-helpdesk-spec.md` e a [`docs/ASSURANCE-MECHANISM-PLAN.md`](./docs/ASSURANCE-MECHANISM-PLAN.md) são plano/histórico (as 6 fases do showcase, com seus critérios verde/vermelho, estão lá) — leia-as como contexto, não como o estado atual.
+A fonte de verdade hoje é o código + o [`README.md`](./README.md) e [`docs/METHOD.md`](./docs/METHOD.md) (modelo as-built); a arquitetura-alvo SaaS está em [`docs/superpowers/specs/2026-06-29-saas-target-architecture-design.md`](./docs/superpowers/specs/2026-06-29-saas-target-architecture-design.md), as decisões nas **ADRs 001–022** ([`docs/adr/README.md`](./docs/adr/README.md)), os designs/planos em `docs/superpowers/specs/` + `docs/superpowers/plans/`, e o runbook de empacotamento em [`docs/D-PACKAGING-RUNBOOK.md`](./docs/D-PACKAGING-RUNBOOK.md). A `foundry-helpdesk-spec.md` e a [`docs/ASSURANCE-MECHANISM-PLAN.md`](./docs/ASSURANCE-MECHANISM-PLAN.md) são plano/histórico (as 6 fases do showcase, com seus critérios verde/vermelho, estão lá) — leia-as como contexto, não como o estado atual.
 
 ## O que é
 
@@ -64,7 +64,7 @@ infra/                   bicep/azd (+ managed-app/ e lighthouse/ para o stamp de
 e2e/                     Playwright contra o app DEPLOYADO (sign-in Entra real)
 scripts/                 bootstrap, setup-entra, up-all, dev-shared, demo, push-prompts; spikes/
 docs/                    documentação PARA HUMANOS apenas — nada indexável mora aqui
-docs/adr/                ADR-001..021 — decisões de arquitetura
+docs/adr/                ADR-001..022 — decisões de arquitetura
 ```
 
 Regra de conteúdo: **`apps/` é código, `knowledge/` é o que os agentes indexam, `docs/` é para
