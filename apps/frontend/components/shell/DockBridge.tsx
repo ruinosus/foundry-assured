@@ -18,7 +18,7 @@ import { useEffect, useRef } from "react";
 import { useChatDock } from "@/lib/chat-dock";
 
 export function DockBridge() {
-  const { agentId, pending, clearPending } = useChatDock();
+  const { agentId, open, pending, clearPending } = useChatDock();
   const { agent, isReady } = useAgent({ agentId });
   const { copilotkit } = useCopilotKit();
   // O nonce já entregue. Sem isto um re-render reenviaria o mesmo pedido, e o agente responderia
@@ -26,7 +26,12 @@ export function DockBridge() {
   const entregue = useRef<number>(0);
 
   useEffect(() => {
-    if (!isReady || !pending || pending.nonce === entregue.current) return;
+    // ESPERA O DOCK ABRIR. O `ChatDock` devolve null enquanto fechado, então o `<CopilotChat>` —
+    // que é quem assina o agente e renderiza as mensagens — só monta depois. Entregar antes disso
+    // fazia o primeiro clique rodar o agente com ninguém escutando: a resposta acontecia e não
+    // aparecia, e a pessoa clicava de novo. O segundo clique "funcionava" porque o chat já estava
+    // montado — sintoma clássico de corrida que parece intermitência.
+    if (!open || !isReady || !pending || pending.nonce === entregue.current) return;
     entregue.current = pending.nonce;
 
     const id =
@@ -45,7 +50,7 @@ export function DockBridge() {
     // `propose_field`, a ferramenta nunca chegou, e ele escreveu o que teria chamado.
     void copilotkit.runAgent({ agent });
     clearPending();
-  }, [agent, isReady, pending, clearPending, copilotkit]);
+  }, [agent, isReady, open, pending, clearPending, copilotkit]);
 
   return null;
 }

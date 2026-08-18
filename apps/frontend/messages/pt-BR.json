@@ -361,9 +361,12 @@
   "fieldProposal": {
     "title": "Proposta para {field}",
     "accept": "Usar",
+    "acceptEdited": "Usar com a correção",
+    "edit": "Editar",
+    "cancelEdit": "Cancelar edição",
     "discard": "Descartar",
-    "dismiss": "Entendi",
-    "done": "Proposta para {field} resolvida.",
+    "applied": "Proposta para {field} resolvida.",
+    "modelSaid": "segundo o agente",
     "sources": "Fontes: {list}",
     "noSources": "Sem fonte declarada — escrito pelo modelo.",
     "unknownField": "O agente propôs para o campo \"{field}\", que não existe neste formulário."

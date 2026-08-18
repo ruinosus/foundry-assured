@@ -11,6 +11,13 @@ checks:
 # propostas sem fonte declarada, e a trilha nasce vazia.
 - type: contains
   value: sources
+# O PORQUÊ é lido antes de usar a proposta, e é o que permite discordar da ESCOLHA e não só do
+# texto. Sem esta invariante, uma edição do prompt tiraria o campo e o card ficaria sem motivo —
+# em silêncio, porque `reason` tem default vazio no schema da tool.
+- type: contains
+  value: POR QUE você escreveu assim
+- type: contains
+  value: o IDENTIFICADOR do campo
 - type: contains
   value: fonte inventada
 # A recusa de inventar nome de recurso: um nome que não existe só falha ao publicar, que é o

@@ -1,25 +1,25 @@
 "use client";
 
-// A tool `propose_field` — como o agente escreve num campo, e por que ele não escreve direto.
+// A tool `propose_field` — como o agente propõe um campo, e por que ela RESPONDE NA HORA.
 //
-// `useHumanInTheLoop` é a primitiva do CopilotKit para tool SEM handler: o agente chama, a tela
-// renderiza, e a decisão da PESSOA resolve a chamada. É a peça certa aqui porque a propriedade
-// que precisamos é exatamente essa — o valor entra no campo por um gesto humano, nunca por
-// retorno de função.
+// A PRIMEIRA VERSÃO USAVA `useHumanInTheLoop` e QUEBRAVA. Ela deixa a chamada PENDENTE até a
+// pessoa decidir, e o caminho do Foundry é stateful: a requisição seguinte levava uma chamada de
+// função sem resultado, e o serviço recusava com
 //
-// A ALTERNATIVA que não foi feita: dar ao agente uma tool com handler que preenche o campo. Ela
-// funcionaria e apagaria a revisão — o agente passaria a escrever no formulário, e o "aceitar"
-// viraria um desfazer. Proposta e escrita são coisas diferentes; a ADR-022 diz isso para recurso,
-// e vale igual para campo.
+//     400 — No tool output found for function call call_…
 //
-// AS FONTES são parte do contrato da tool, não enfeite. O prompt do `builder` exige `sources` em
-// toda proposta, e o card as MOSTRA — se o agente escreveu com base numa base de conhecimento, a
-// pessoa vê qual antes de aceitar. Aceitar registra a procedência (ADR-023): a auditoria ponta a
-// ponta que o dono do projeto pediu começa aqui, no momento em que um texto de origem conhecida
-// entra num recurso que será publicado.
+// A correção não é técnica, é de semântica. O trabalho do agente é PROPOR; se a pessoa aceita ou
+// não, não é assunto do turno dele. Então a tool responde imediatamente ("proposta entregue"), o
+// modelo segue em frente, e o CARD continua na tela esperando a decisão humana. O valor entra no
+// campo por um gesto da pessoa exatamente como antes — o que mudou é que o MODELO não fica preso
+// esperando por ele.
+//
+// Isso preserva a propriedade que importa (nada é escrito sem gesto humano) e elimina a pendência
+// que o protocolo não suporta.
 
-import { useHumanInTheLoop } from "@copilotkit/react-core/v2";
+import { useFrontendTool } from "@copilotkit/react-core/v2";
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 import { z } from "zod";
 
 export type FieldProposal = {
@@ -28,99 +28,136 @@ export type FieldProposal = {
   sources: string[];
 };
 
+/** O card. Componente próprio porque ele tem ESTADO (o texto em edição) — e um render inline não
+ *  poderia ter, já que o CopilotKit o remonta a cada atualização do stream. */
+function ProposalCard({
+  campo,
+  valorProposto,
+  fontes,
+  motivo,
+  conhecido,
+  onAccept,
+}: {
+  campo: string;
+  valorProposto: string;
+  fontes: string[];
+  motivo: string;
+  conhecido: boolean;
+  onAccept: (p: FieldProposal) => void;
+}) {
+  const t = useTranslations("fieldProposal");
+  const [texto, setTexto] = useState(valorProposto);
+  const [editando, setEditando] = useState(false);
+  const [usado, setUsado] = useState(false);
+
+  if (!conhecido) {
+    return (
+      <div className="notice notice-block">
+        <p className="notice-body">{t("unknownField", { field: campo })}</p>
+      </div>
+    );
+  }
+
+  if (usado) {
+    return <div className="t-xs ok-line">{t("applied", { field: campo })}</div>;
+  }
+
+  return (
+    <div className="proposal">
+      <span className="approval-eyebrow">{t("title", { field: campo })}</span>
+
+      {editando ? (
+        <textarea
+          className="acct-btn"
+          rows={8}
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+        />
+      ) : (
+        <pre className="doc-preview">{texto}</pre>
+      )}
+
+      {/* O PORQUÊ, marcado como o que é: texto do modelo, não fato. Mesma regra do card de
+          aprovação — exibido igual ao conteúdo, ele viraria uma segunda afirmação com ar de dado
+          e a pessoa aceitaria PELA justificativa em vez de pelo texto. */}
+      {motivo && (
+        <p className="approval-reason">
+          <span className="approval-reason-tag">{t("modelSaid")}</span>
+          <span className="muted t-sm">{motivo}</span>
+        </p>
+      )}
+
+      {/* A PROCEDÊNCIA, antes do aceite. Sem fonte não é erro — o prompt diz que escrever do
+          próprio conhecimento é honesto —, mas a tela distingue os dois casos. */}
+      <p className="t-xs muted-line">
+        {fontes.length ? t("sources", { list: fontes.join(", ") }) : t("noSources")}
+      </p>
+
+      <div className="row-tight">
+        <button
+          type="button"
+          className="btn btn-approve"
+          onClick={() => {
+            onAccept({ field: campo, value: texto, sources: fontes });
+            setUsado(true);
+          }}
+        >
+          {editando ? t("acceptEdited") : t("accept")}
+        </button>
+        {/* EDITAR existe pelo mesmo motivo do card de escalação: aceitar um texto quase certo,
+            porque descartar era a única alternativa, não é revisão. */}
+        <button type="button" className="btn" onClick={() => setEditando((v) => !v)}>
+          {editando ? t("cancelEdit") : t("edit")}
+        </button>
+        <button type="button" className="btn" onClick={() => setUsado(true)}>
+          {t("discard")}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function FieldProposalTool({
   onAccept,
   fields,
 }: {
-  /** Chamado quando a pessoa aceita. Recebe a proposta INTEIRA, com as fontes, porque quem
-   *  publica precisa gravar a procedência junto. */
   onAccept: (proposal: FieldProposal) => void;
-  /** Os campos que ESTE formulário tem. Uma proposta para campo que não existe é recusada com
-   *  motivo, em vez de sumir — o agente precisa saber que errou o nome. */
+  /** Os campos que ESTE formulário tem. Proposta para campo inexistente é dita, não engolida. */
   fields: string[];
 }) {
-  const t = useTranslations("fieldProposal");
-
-  useHumanInTheLoop({
+  useFrontendTool({
     name: "propose_field",
-    // A descrição vai para o MODELO — é ela que faz o agente chamar a tool em vez de responder
-    // o texto no chat.
-    description: "Propose the text of one form field. The human accepts or discards; nothing is written directly.", // @texto-para-modelo
-    // Zod porque o CopilotKit aceita "any Standard Schema V1 compatible library" e o zod v4 é
-    // uma — JSON Schema cru não é aceito aqui (o tipo recusa). As descrições vão para o modelo:
-    // são elas que fazem `sources` ser preenchido com o que foi consultado, e não com um nome
-    // plausível.
+    description: "Propose the text of one form field. Returns immediately; the human decides separately whether to use it.", // @texto-para-modelo
     parameters: z.object({
       field: z.string().describe("The field identifier this proposal is for."), // @texto-para-modelo
       value: z.string().describe("The proposed text."), // @texto-para-modelo
+      reason: z
+        .string()
+        .default("")
+        .describe("One sentence on WHY you wrote it this way — read by the person before they use it."), // @texto-para-modelo
       sources: z
         .array(z.string())
         .default([])
         .describe(
-          "Where the text came from: knowledge base, document or agent names ACTUALLY consulted. Empty when written from the model's own knowledge — an empty list is honest, an invented name is not.",
-        ),
+          "Where the text came from: knowledge base, document or agent names ACTUALLY consulted. Empty when written from your own knowledge — an empty list is honest, an invented name is not.",
+        ), // @texto-para-modelo
     }),
-    render: ({ args, status, respond }) => {
-      const campo = String(args?.field ?? "");
-      const valor = String(args?.value ?? "");
-      const fontes = Array.isArray(args?.sources) ? (args.sources as string[]).map(String) : [];
-
-      if (status !== "executing" || !respond) {
-        return <div className="t-xs muted-line">{t("done", { field: campo })}</div>;
-      }
-
-      // Campo que não existe neste formulário: recusa COM MOTIVO. Ignorar em silêncio faria o
-      // agente repetir o mesmo erro, e a pessoa esperar por uma proposta que nunca chega.
-      if (campo && !fields.includes(campo)) {
-        return (
-          <div className="notice notice-block">
-            <p className="notice-body">{t("unknownField", { field: campo })}</p>
-            <button
-              type="button"
-              className="btn"
-              onClick={() => respond({ accepted: false, reason: `unknown field: ${campo}` })}
-            >
-              {t("dismiss")}
-            </button>
-          </div>
-        );
-      }
-
-      return (
-        <div className="proposal">
-          <span className="approval-eyebrow">{t("title", { field: campo })}</span>
-          <pre className="doc-preview">{valor}</pre>
-
-          {/* A PROCEDÊNCIA, visível antes do aceite. Sem fonte declarada não é erro — o prompt
-              diz que escrever do próprio conhecimento é honesto —, mas a tela distingue os dois
-              casos, porque "veio da base X" e "veio do modelo" pesam diferente. */}
-          <p className="t-xs muted-line">
-            {fontes.length ? t("sources", { list: fontes.join(", ") }) : t("noSources")}
-          </p>
-
-          <div className="row-tight">
-            <button
-              type="button"
-              className="btn btn-approve"
-              onClick={() => {
-                onAccept({ field: campo, value: valor, sources: fontes });
-                respond({ accepted: true });
-              }}
-            >
-              {t("accept")}
-            </button>
-            <button
-              type="button"
-              className="btn"
-              // O motivo volta para o AGENTE, para ele saber que não foi erro dele.
-              onClick={() => respond({ accepted: false, reason: "discarded by the user" })} // @texto-para-modelo
-            >
-              {t("discard")}
-            </button>
-          </div>
-        </div>
-      );
-    },
+    // Responde NA HORA. O retorno é o que o modelo lê para saber que entregou — não é a decisão
+    // da pessoa, que acontece depois e não volta para ele.
+    handler: async ({ field }) =>
+      fields.includes(String(field))
+        ? "Proposal shown to the user. Do not repeat the value in your reply." // @texto-para-modelo
+        : `Unknown field "${field}". Valid fields: ${fields.join(", ")}.`, // @texto-para-modelo
+    render: ({ args }) => (
+      <ProposalCard
+        campo={String(args?.field ?? "")}
+        valorProposto={String(args?.value ?? "")}
+        motivo={String(args?.reason ?? "")}
+        fontes={Array.isArray(args?.sources) ? (args.sources as string[]).map(String) : []}
+        conhecido={fields.includes(String(args?.field ?? ""))}
+        onAccept={onAccept}
+      />
+    ),
   });
 
   return null;

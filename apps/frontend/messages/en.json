@@ -361,9 +361,12 @@
   "fieldProposal": {
     "title": "Proposal for {field}",
     "accept": "Use",
+    "acceptEdited": "Use with my edit",
+    "edit": "Edit",
+    "cancelEdit": "Cancel edit",
     "discard": "Discard",
-    "dismiss": "Got it",
-    "done": "Proposal for {field} resolved.",
+    "applied": "Proposal for {field} resolved.",
+    "modelSaid": "per the agent",
     "sources": "Sources: {list}",
     "noSources": "No source declared — written by the model.",
     "unknownField": "The agent proposed for the field \"{field}\", which does not exist in this form."
