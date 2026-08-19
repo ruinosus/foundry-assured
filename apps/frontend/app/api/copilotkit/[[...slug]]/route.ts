@@ -17,11 +17,7 @@ import {
   type AgentRunnerConnectRequest,
 } from "@copilotkit/runtime/v2";
 import { Observable } from "rxjs";
-import {
-  fetchThreadHistory,
-  historyConnectEvents,
-  toAguiMessages,
-} from "@/lib/thread-history";
+import { fetchThreadHistory, historyConnectEvents } from "@/lib/thread-history";
 import { HttpAgent } from "@ag-ui/client";
 import { DOMAINS } from "@/lib/domains";
 
@@ -163,10 +159,10 @@ class ThreadHistoryRunner extends InMemoryAgentRunner {
       void (async () => {
         const { messages } = await fetchThreadHistory(BACKEND, request.threadId, cabecalhos);
         if (cancelado) return;
-        const eventos = historyConnectEvents(
-          request.threadId,
-          toAguiMessages(messages, request.threadId),
-        );
+        // `messages` é a forma CRUA vinda do backend — `historyConnectEvents` converte para
+        // AG-UI e intercala os eventos de citação por dentro, usando o MESMO índice para os
+        // dois (ver comentário de `idDaMensagem` em lib/thread-history.ts).
+        const eventos = historyConnectEvents(request.threadId, messages);
         // O tipo do evento vem de um schema Zod do AG-UI, e o nosso construtor é puro (sem
         // importar o pacote de eventos, para continuar testável fora do runtime). O cast é o
         // preço dessa separação — e é onde ele fica, num lugar só, em vez de espalhado.
