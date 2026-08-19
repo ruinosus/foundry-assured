@@ -46,6 +46,27 @@ class GroundedRetrieval(ContextProvider):
         self._domain = domain
         self._agent = agent_id or getattr(domain, "id", "") or "grounded"
         self._top = top
+        #: Os documentos da ÚLTIMA busca desta requisição. Lido por quem precisa mostrá-los.
+        self.ultimos_documentos: list[dict] = []
+
+    def citations(self) -> list[dict]:
+        """As citações no vocabulário do framework (`agent_framework.Annotation`).
+
+        Mesma forma que o caminho grounded emite — `type`/`title`/`url`/`snippet` mais o `index`
+        que amarra a citação `[n]` do texto ao item da lista. Uma função só para as duas rotas
+        produzirem a MESMA carga: duas montagens da mesma coisa divergem no primeiro campo novo,
+        e a tela não teria como saber qual das duas está certa.
+        """
+        return [
+            {
+                "type": "citation",
+                "title": d["source"],
+                "url": d.get("url"),
+                "snippet": (d.get("snippet") or "")[:800],
+                "index": d["index"],
+            }
+            for d in self.ultimos_documentos
+        ]
 
     @staticmethod
     def _pergunta(context: Any) -> str:
@@ -80,6 +101,11 @@ class GroundedRetrieval(ContextProvider):
             return
 
         state["referencias"] = len(docs)
+        # Os documentos ficam NA INSTÂNCIA, e isso é seguro porque ela é construída por requisição
+        # (`build_helpdesk_workflow` e `PerRequestAgent`). Guardá-los aqui é o que permite um
+        # executor do workflow emitir o evento de fontes sem refazer a busca — e refazer a busca
+        # para desenhar a tela custaria uma segunda chamada ao serviço por resposta.
+        self.ultimos_documentos = list(docs)
         if not docs:
             return
         corpo = "\n\n".join(

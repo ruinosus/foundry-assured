@@ -192,6 +192,13 @@ jobs:
       - name: Vocabulário de citação (canônico, e os dois lados concordam)
         run: uv run python -m tests.grounded.citation_vocabulary_test
 
+      # O helpdesk emite as fontes por API PÚBLICA. A alternativa seria monkeypatch de `_emit_text`
+      # — função privada de módulo num pacote que a ADR-020 já descreve como volátil. O nosso
+      # código quebra quando NÓS mexemos; um monkeypatch quebra quando ELES publicam um minor.
+      # Este gate vigia a rota pública para que ninguém a perca por engano e recorra à privada.
+      - name: Fontes do helpdesk por API pública (sem monkeypatch)
+        run: uv run python -m tests.helpdesk.sources_event_test
+
       - name: Approval decisions (edit is not a loophole)
         run: uv run python -m tests.hitl.decision_test
       - name: Edit round-trips end to end
