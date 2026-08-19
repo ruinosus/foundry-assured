@@ -45,6 +45,12 @@ def _tenant(name: str):
     """A tenant config distinguishable by every field the grounded specs read."""
     return SimpleNamespace(
         hosted_agent_name=f"{name}-agent",
+        # `corpus_container` de cada domínio (helpdesk/techdocs/selfwiki) — `_domains()` lê os
+        # três em `app/registry.py`. Derivado do nome do tenant, como os campos vizinhos, para
+        # que a asserção de isolamento entre tenants continue significando algo.
+        azure_storage_container=f"{name}-corpus",
+        techdocs_storage_container=f"{name}-techdocs-corpus",
+        selfwiki_storage_container=f"{name}-selfwiki-corpus",
         techdocs_searchindex_knowledge_base=f"{name}-techdocs-kb",
         techdocs_searchindex_knowledge_source=f"{name}-techdocs-ks",
         techdocs_search_index=f"{name}-techdocs-index",
