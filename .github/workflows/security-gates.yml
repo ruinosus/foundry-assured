@@ -1,9 +1,11 @@
 name: Security gates (access-control + red-team)
 
-# Phase 4-5 of the assurance mechanism: the document-level access-control gate and the
-# red-team (injection-proof) gate, run against the live KB as the test identities. Both
-# HARD-gate (a single cross-group leak fails the job). They self-skip when the test
-# credentials aren't configured, so a fork / unconfigured clone stays green.
+# Phase 4-5 of the assurance mechanism: the retrieval-path access-control gate, the
+# document-content-path access-control gate (GET /source/{domain}/{name} — the newest
+# access control in the product, added once it stopped being the only one uncovered here),
+# and the red-team (injection-proof) gate, all run against the live KB as the test
+# identities. All HARD-gate (a single cross-group leak fails the job). They self-skip when
+# the test credentials aren't configured, so a fork / unconfigured clone stays green.
 #
 # Dispatch on demand or weekly. Uses Azure OIDC for the service token; the test users'
 # password is a secret; their UPNs + group IDs + search endpoint are repo variables.
@@ -35,6 +37,9 @@ jobs:
       # deployed ones (techdocs-kb / techdocs-docbundles-ks-index) — override here if yours
       # differ:
       # TECHDOCS_SEARCH_KNOWLEDGE_BASE: ${{ vars.AZURE_SEARCH_KNOWLEDGE_BASE }}
+      # The document-content gate additionally downloads the real blob to prove the reader
+      # never leaks it — needs the storage account behind the techdocs corpus container.
+      AZURE_STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
     steps:
       - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v6
@@ -46,7 +51,9 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       - name: Install deps
         run: uv sync --frozen
-      - name: Access-control gate (no cross-group leak)
+      - name: Access-control gate (no cross-group leak — agentic retrieval path)
         run: uv run python -m eval.access_control_test
+      - name: Access-control gate (no cross-group leak — GET /source document path)
+        run: uv run python -m eval.document_access_control_test
       - name: Red-team gate (trim is injection-proof)
         run: uv run python -m eval.red_team_test
