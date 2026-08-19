@@ -1,0 +1,247 @@
+name: Ingest selfwiki knowledge base
+
+# O conteúdo que o domínio selfwiki responde vive em knowledge/wiki-bundle/ neste repo, mas só
+# fica visível para quem pergunta depois de uma INGESTÃO: subir os bundles pro blob, rodar o
+# indexador do Azure AI Search e — o passo que faltou da última vez — CARIMBAR cada documento
+# com o grupo de leitura (permissionFilter). Esse carimbo é o passo 5/5 de `ingest_selfwiki()`
+# em app/modules/knowledge/internal/ingest_docbundles.py.
+#
+# Ele não rodou depois de uma regeneração da wiki, e ninguém percebeu: 72 documentos ficaram no
+# índice com `permissionFilterOption: enabled` e NENHUM grupo — fail-closed funcionando
+# exatamente como projetado, sobre conteúdo que nunca recebeu ACL. O domínio respondeu "não sei"
+# sobre a própria documentação por meses. Este workflow fecha esse buraco: dispara sozinho
+# quando o bundle muda, e PROVA que o conteúdo ficou visível antes de declarar sucesso — rodar
+# o comando sem checar o resultado foi exatamente o que falhou da vez passada.
+#
+# Bug de seleção de versão (encontrado investigando, corrigido aqui — não no código Python):
+# `knowledge/wiki-bundle/<componente>/<versão>/` guarda TODAS as versões já geradas — a
+# regeneração da wiki nunca apaga a anterior (ver PR #173, que soma v0.20260819 ao lado de
+# v0.20260816 já existente). `ingest_selfwiki()` varre RECURSIVAMENTE o diretório que recebe em
+# TECHDOCS_DOCBUNDLES (`docbundles.rglob("manifest.json")`) — se apontássemos ele pro diretório
+# pai, as duas versões entrariam juntas no mesmo lote de upload: blobs duplicados, e o pruning
+# interno (`_prune_stale_blobs`) só remove blobs que NÃO estão no lote atual, então nada seria
+# "stale" — conteúdo velho e novo ficariam lado a lado no índice para sempre. O passo
+# "Selecionar a versão mais recente" abaixo resolve isso ANTES de chamar o Python: copia só a
+# versão mais recente de cada componente pra um diretório de staging e aponta
+# TECHDOCS_DOCBUNDLES pra lá — assim o pruning existente continua funcionando como projetado.
+#
+# Gatilho duplo: push em main filtrado por knowledge/wiki-bundle/** — é o único diretório que
+# alimenta o índice selfwiki-docbundles-ks-index. `knowledge/corpus/` é o corpus do helpdesk:
+# fica de FORA de propósito, tem seu próprio workflow manual (`provision-kb.yml`, só
+# workflow_dispatch) porque é a base congelada do eval (CLAUDE.md: "13 runbooks fictícios →
+# KB do helpdesk; congelado, base do eval") — reingestão automática mudaria a baseline do eval
+# sem ninguém decidir isso, e `ingest.py` (o script que a alimenta) nem chama o carimbo de ACL.
+# Mais workflow_dispatch, pra rodar sob demanda (ex.: depois de corrigir uma variável, sem
+# esperar o próximo push).
+#
+# Idempotência: rodar isto duas vezes seguidas é seguro. Upload de blob é overwrite; criação de
+# knowledge source/base é create_or_update; blobs de versões antigas são podados
+# (_prune_stale_blobs) e os chunks órfãos correspondentes no índice também (purge_orphans); o
+# carimbo de ACL sempre re-escreve o mesmo grupo pros mesmos documentos. Nada é destrutivo — uma
+# segunda execução sem mudança de conteúdo reprocessa (custo de reindexação) mas não altera o
+# resultado nem apaga nada que não devesse.
+#
+# Ordem indexador → carimbo: `ingest_selfwiki()` já garante isso sozinha, não precisamos
+# reforçar aqui — quando APP_USERS_GROUP_ID está definido (está, ver `gh variable list`), ela
+# BLOQUEIA no indexador (wait_s=900) antes de chamar `setup_acl`: carimbar documentos que ainda
+# não existem no índice não faria nada. O timeout do job abaixo dá folga pros até 15 min de
+# espera bloqueante mais o resto do pipeline + verificação.
+on:
+  push:
+    branches: [main]
+    paths:
+      - knowledge/wiki-bundle/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # Azure OIDC
+
+jobs:
+  ingest-selfwiki:
+    name: Ingest + verify selfwiki KB
+    runs-on: ubuntu-latest
+    environment: production # o repo já exige revisor humano neste Environment — o portão do problema original
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: apps/backend
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Selecionar a versão mais recente de cada bundle
+        # Puro filesystem — roda ANTES do login no Azure, então se a árvore de
+        # knowledge/wiki-bundle estiver quebrada isto falha rápido sem gastar login. Ver o
+        # comentário de cabeçalho sobre o bug de seleção de versão. Os nomes de versão
+        # (v0.YYYYMMDD, gerados em wiki-regen.yml) são zero-padded, então ordem alfabética =
+        # ordem cronológica — o mesmo pressuposto que o resto do pipeline de wiki já usa.
+        working-directory: .
+        run: |
+          set -euo pipefail
+          SRC="knowledge/wiki-bundle"
+          STAGE="$RUNNER_TEMP/selfwiki-docbundles"
+          rm -rf "$STAGE"
+          mkdir -p "$STAGE"
+          shopt -s nullglob
+          found=0
+          for comp_dir in "$SRC"/*/; do
+            comp="$(basename "$comp_dir")"
+            latest="$(ls -1 "$comp_dir" | sort | tail -1)"
+            if [ -z "$latest" ]; then
+              echo "  ⚠️  $comp não tem nenhuma versão — pulando"
+              continue
+            fi
+            older="$(ls -1 "$comp_dir" | grep -v "^$latest\$" | tr '\n' ' ' || true)"
+            echo "  ▸ $comp: usando $latest${older:+ (ignorando: $older)}"
+            cp -r "$comp_dir$latest" "$STAGE/$comp"
+            found=1
+          done
+          if [ "$found" -eq 0 ]; then
+            echo "❌ nenhum bundle encontrado sob $SRC" >&2
+            exit 1
+          fi
+          echo "TECHDOCS_DOCBUNDLES=$STAGE" >> "$GITHUB_ENV"
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Ingest selfwiki (upload → indexador → carimbo de ACL)
+        # --selfwiki roda o pipeline de 5 passos completo (ingest_selfwiki, em
+        # ingest_docbundles.py): upload dos bundles, knowledge source de blob (criada uma vez,
+        # pulada se já existe), KB searchIndex (a KB ativa), indexador — bloqueante quando há
+        # audience configurada — e o carimbo de ACL, o passo que faltou da última vez.
+        env:
+          AZURE_SEARCH_ENDPOINT: ${{ vars.AZURE_SEARCH_ENDPOINT }}
+          AZURE_STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
+          AZURE_STORAGE_RESOURCE_ID: ${{ vars.AZURE_STORAGE_RESOURCE_ID }}
+          APP_USERS_GROUP_ID: ${{ vars.APP_USERS_GROUP_ID }}
+          FOUNDRY_MODEL: ${{ vars.FOUNDRY_MODEL }}
+          # GAP CONHECIDO (reportado no PR, não inventado aqui): AZURE_AI_OPENAI_ENDPOINT não
+          # existe hoje em `gh variable list` nem em scripts/sync-gh-variables.sh, mas é
+          # "REQUIRED (KB)" segundo apps/backend/.env.example — a criação/atualização da KB
+          # searchIndex do selfwiki (passo 3/5, roda em TODA execução, não só na primeira) usa
+          # esse endpoint pra montar o modelo de resposta. Sem essa variável cadastrada no repo
+          # (`gh variable set AZURE_AI_OPENAI_ENDPOINT ...`, valor em `azd env get-values`),
+          # este step falha na chamada à Azure (resource_url vazio), não silenciosamente.
+          AZURE_AI_OPENAI_ENDPOINT: ${{ vars.AZURE_AI_OPENAI_ENDPOINT }}
+        run: uv run python -m app.modules.knowledge.internal.ingest_docbundles --selfwiki
+
+      - name: Verificar — documentos carimbados e visíveis por identidade
+        # Rodar o comando não basta — foi exatamente isso que falhou da vez passada (terminou
+        # sem erro, e o carimbo não tinha pego). Este passo PROVA visibilidade em vez de confiar
+        # só no exit code do passo anterior, e FALHA o job se a prova não fechar.
+        #
+        # Três buscas contra o MESMO índice, cada uma prova uma coisa diferente:
+        #   1) leitura elevada (header x-ms-enable-elevated-read — o mesmo mecanismo que
+        #      acl_setup.py e purge_orphans() já usam pra ler/escrever o índice) — bypassa o
+        #      filtro de permissão e prova que o campo `groups` foi REALMENTE escrito em cada
+        #      documento com o grupo certo. É exatamente o que faltou da vez passada:
+        #      permissionFilterOption=enabled com groups vazio, e esta é a única das três buscas
+        #      que teria pegado aquele incidente.
+        #   2) busca SEM identidade (sem o header x-ms-query-source-authorization) — num índice
+        #      com permissionFilterOption=enabled isso TEM que devolver zero por desenho (medido
+        #      em 19/ago contra este mesmo índice). Se devolver algo, o fail-closed quebrou.
+        #   3) busca COM a identidade OIDC deste próprio runner como
+        #      x-ms-query-source-authorization — a prova ponta a ponta mais forte (é o caminho
+        #      real que um usuário autenticado percorre), mas só é conclusiva se essa identidade
+        #      (o service principal de AZURE_CLIENT_ID) for MEMBRO do grupo app-users no Entra.
+        #      Não dá pra confirmar isso a partir daqui — um service principal de deploy
+        #      normalmente NÃO é membro de grupo de usuário final. Por isso este item é
+        #      diagnóstico (loga o resultado e explica as duas leituras possíveis) e NÃO derruba
+        #      o job sozinho: 1) e 2) já são o gate — cobrem exatamente o bug real, com tokens
+        #      que o runner com certeza tem (as mesmas roles que o passo de ingestão acima usou
+        #      pra escrever o índice).
+        env:
+          AZURE_SEARCH_ENDPOINT: ${{ vars.AZURE_SEARCH_ENDPOINT }}
+          APP_USERS_GROUP_ID: ${{ vars.APP_USERS_GROUP_ID }}
+        run: |
+          uv run python - <<'PY'
+          import json
+          import sys
+          import urllib.request
+
+          from azure.identity import DefaultAzureCredential
+
+          from app.modules.tenancy.public import tenant_config
+
+          API = "2025-08-01-preview"
+          SCOPE = "https://search.azure.com/.default"
+
+          cfg = tenant_config()
+          index = cfg.selfwiki_search_index
+          endpoint = cfg.azure_search_endpoint.rstrip("/")
+          audience = cfg.app_users_group_id
+          if not audience:
+              sys.exit("❌ APP_USERS_GROUP_ID vazio — nada pra verificar (o carimbo também não rodou).")
+
+          token = DefaultAzureCredential().get_token(SCOPE).token
+
+          def search(extra_headers, top=1000):
+              rows, skip = [], 0
+              while True:
+                  req = urllib.request.Request(
+                      f"{endpoint}/indexes/{index}/docs/search?api-version={API}",
+                      method="POST",
+                      headers={
+                          "Authorization": f"Bearer {token}",
+                          "Content-Type": "application/json",
+                          **extra_headers,
+                      },
+                      data=json.dumps(
+                          {"search": "*", "select": "uid,blob_url,groups", "top": top, "skip": skip}
+                      ).encode(),
+                  )
+                  with urllib.request.urlopen(req, timeout=60) as r:
+                      page = json.load(r).get("value", [])
+                  rows += page
+                  if len(page) < top:
+                      break
+                  skip += len(page)
+              return rows
+
+          print(f"== 1/3: leitura elevada — o carimbo aconteceu? (índice '{index}') ==")
+          elevated = search({"x-ms-enable-elevated-read": "true"})
+          if not elevated:
+              sys.exit(f"❌ FALHA: índice '{index}' voltou vazio — a ingestão não populou nenhum documento.")
+          unstamped = [d.get("blob_url", d.get("uid")) for d in elevated if audience not in (d.get("groups") or [])]
+          if unstamped:
+              print(f"❌ FALHA: {len(unstamped)}/{len(elevated)} documentos SEM o grupo {audience}:")
+              for u in unstamped[:15]:
+                  print(f"   - {u}")
+              sys.exit(1)
+          print(f"✅ {len(elevated)} documentos, todos carimbados com o grupo app-users ({audience}).")
+
+          print("\n== 2/3: busca SEM identidade — tem que devolver zero (fail-closed) ==")
+          no_identity = search({}, top=1)
+          if no_identity:
+              sys.exit(f"❌ FALHA: busca sem identidade devolveu {len(no_identity)} documento(s) — fail-closed quebrado.")
+          print("✅ 0 documentos — fail-closed confirmado.")
+
+          print("\n== 3/3 (diagnóstico, não derruba o job) — busca COM a identidade OIDC deste runner ==")
+          with_identity = search({"x-ms-query-source-authorization": f"Bearer {token}"}, top=1)
+          if with_identity:
+              print(
+                  f"✅ {len(with_identity)}+ documento(s) — prova ponta a ponta: este runner é "
+                  "membro do grupo app-users e o trim por identidade funciona."
+              )
+          else:
+              print(
+                  "⚠️  0 documentos. Esperado se o service principal de AZURE_CLIENT_ID não for "
+                  f"membro do grupo app-users ({audience}) no Entra — não temos como confirmar "
+                  "isso a partir daqui. As provas 1) e 2) acima já cobrem o bug que este workflow "
+                  "existe pra prevenir (documento sem grupo carimbado). Pra fechar também esta "
+                  "prova, adicione o service principal de deploy ao grupo app-users."
+              )
+
+          print("\n✅ verificação concluída — conteúdo do selfwiki está carimbado e o fail-closed está ativo.")
+          PY
