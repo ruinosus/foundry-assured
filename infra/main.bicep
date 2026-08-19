@@ -124,3 +124,7 @@ output AZURE_PROMPTS_FILE_SHARE string = resources.outputs.AZURE_PROMPTS_FILE_SH
 
 output AZURE_CONTAINER_REGISTRY_ENDPOINT string = resources.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT
 output AZURE_CONTAINER_REGISTRY_NAME string = resources.outputs.AZURE_CONTAINER_REGISTRY_NAME
+
+// Lido pelo deploy.yml logo após `azd provision` para reprovar o job se o CI ficou sem as
+// roles de dado (ver comentário em resources.bicep).
+output CI_DATA_PLANE_ROLES_ASSIGNED bool = resources.outputs.CI_DATA_PLANE_ROLES_ASSIGNED

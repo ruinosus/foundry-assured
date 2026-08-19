@@ -610,3 +610,12 @@ output AZURE_CONTAINER_REGISTRY_NAME string = registry.name
 // Shared app identity for the Container Apps (backend + web).
 output APP_IDENTITY_ID string = appIdentity.id
 output APP_IDENTITY_CLIENT_ID string = appIdentity.properties.clientId
+
+// Sinaliza se as 3 roles de dado do CI (ciSearchContributor/ciSearchIndexContributor/
+// ciStorageContributor acima) foram de fato atribuídas. Bicep não tem fail() — não dá pra
+// travar o provision daqui quando ciPrincipalId vem vazio. E não dá pra bicep decidir sozinho se
+// isso é grave: em provision LOCAL (uma pessoa, sem CI) vazio é o esperado; só em CI é buraco.
+// Por isso só EXPOMOS o fato aqui; quem cobra é o workflow (deploy.yml, step "Confere se o CI
+// recebeu as roles de dado"), que sabe que está em CI e pode reprovar o job — o provision local
+// nunca roda esse step, então o mesmo output não vira ruído pra quem não é CI.
+output CI_DATA_PLANE_ROLES_ASSIGNED bool = !empty(ciPrincipalId)

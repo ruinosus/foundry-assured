@@ -49,6 +49,33 @@ jobs:
         run: >
           azd auth login --federated-credential-provider github
           --client-id "$AZURE_CLIENT_ID" --tenant-id "$AZURE_TENANT_ID"
+      - name: az login (OIDC)
+        # Login SEPARADO do `azd auth login` acima: são dois CLIs com credenciais próprias.
+        # Só precisamos deste para o `az ad sp show` no passo seguinte (resolver o object-id
+        # do SP de CI) — mesmo padrão já usado em provision-kb.yml/eval-cloud.yml/etc.
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - name: Resolve CI principal object-id
+        id: ci_principal
+        run: |
+          # O bicep (resources.bicep: ciSearchContributor/ciSearchIndexContributor/
+          # ciStorageContributor) precisa do OBJECT-ID do service principal, não do appId
+          # (AZURE_CLIENT_ID) — são coisas diferentes. Ver CONTRIBUTING.md › CI/CD setup.
+          #
+          # Se a leitura no Graph falhar (falta de permissão pra ler o próprio SP é comum em
+          # tenants restritos), NÃO travamos o job aqui: só avisamos e seguimos com o valor
+          # vazio. Quem trava de verdade é o passo "Confere se o CI recebeu as roles de dado"
+          # logo após o provision — ele sabe que está em CI (diferente do bicep) e falha com uma
+          # mensagem acionável. Fazer os dois pontos falharem seria duplicar o mesmo sintoma sob
+          # duas mensagens diferentes.
+          CI_PRINCIPAL_ID="$(az ad sp show --id "$AZURE_CLIENT_ID" --query id -o tsv 2>/dev/null || true)"
+          if [ -z "$CI_PRINCIPAL_ID" ]; then
+            echo "::warning::Não foi possível resolver o object-id do SP de CI via Graph (az ad sp show --id \$AZURE_CLIENT_ID). AZURE_CI_PRINCIPAL_ID vai ficar vazio nesta run — o provision pula as 3 roles de dado do CI e o passo de verificação após o provision vai falhar o job."
+          fi
+          echo "id=$CI_PRINCIPAL_ID" >> "$GITHUB_OUTPUT"
       - name: Configure deploy env (NEXT_PUBLIC + Entra)
         run: |
           azd env new "$AZURE_ENV_NAME" --no-prompt || azd env select "$AZURE_ENV_NAME"
@@ -56,6 +83,10 @@ jobs:
           # deployer data-plane role assignments must use ServicePrincipal, else ARM
           # rejects them: "UnmatchedPrincipalType ... specified PrincipalType 'User'".
           azd env set AZURE_PRINCIPAL_TYPE            "ServicePrincipal"
+          # Object-id do próprio SP de CI, resolvido no passo anterior — grants Azure AI User +
+          # Search Service/Index Contributor + Storage Blob Data Contributor (resources.bicep).
+          # Sem isto as 3 roles são puladas em silêncio e a ingestão da KB 403 no data plane.
+          azd env set AZURE_CI_PRINCIPAL_ID           "${{ steps.ci_principal.outputs.id }}"
           # AI Search was provisioned in a different region (capacity override). Without
           # this, bicep defaults it to AZURE_LOCATION and the idempotent re-provision
           # fails: "resource already exists in location eastus ... cannot be created in eastus2".
@@ -69,9 +100,24 @@ jobs:
           azd env set ENTRA_TENANT_ID                 "${{ vars.ENTRA_TENANT_ID }}"
           azd env set ENTRA_API_CLIENT_ID             "${{ vars.ENTRA_API_CLIENT_ID }}"
           azd env set ENTRA_API_CLIENT_SECRET         "${{ secrets.ENTRA_API_CLIENT_SECRET }}"
-      - name: Provision (idempotent) + deploy selected services
+      - name: Provision (idempotent)
+        run: azd provision --no-prompt
+      - name: Confere se o CI recebeu as roles de dado
+        # O bicep pula ciSearchContributor/ciSearchIndexContributor/ciStorageContributor em
+        # silêncio quando ciPrincipalId vem vazio — um provision verde não significa CI com
+        # acesso a dado. Este é o ÚNICO lugar que trava por isso: bicep não tem fail(), e um
+        # provision LOCAL (pessoa, sem CI) tem o mesmo output vazio de forma legítima — só este
+        # workflow sabe que está em CI e pode cobrar. Falha o job (não só avisa) porque a
+        # ingestão da KB via CI (provision-kb.yml/eval-cloud.yml) vai 403 de qualquer forma; é
+        # melhor descobrir aqui, com mensagem acionável, do que numa run de ingest sem contexto.
         run: |
-          azd provision --no-prompt
+          ASSIGNED="$(azd env get-values | grep '^CI_DATA_PLANE_ROLES_ASSIGNED=' | cut -d= -f2 | tr -d '"')"
+          if [ "$ASSIGNED" != "true" ]; then
+            echo "::error::O CI ficou sem as 3 roles de dado (Storage Blob Data Contributor + Search Service/Index Data Contributor) porque AZURE_CI_PRINCIPAL_ID ficou vazio. Resolva com: az ad sp show --id <appId-do-SP-de-CI> --query id -o tsv, depois: azd env set AZURE_CI_PRINCIPAL_ID <object-id> && azd provision"
+            exit 1
+          fi
+      - name: Deploy selected services
+        run: |
           for svc in ${{ inputs.services || 'backend web' }}; do
             azd deploy "$svc" --no-prompt
           done
