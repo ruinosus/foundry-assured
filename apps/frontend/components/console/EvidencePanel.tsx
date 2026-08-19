@@ -1,177 +1,31 @@
 "use client";
 
-// EvidencePanel — the signature of the Assurance Console, and the on-thesis primitive:
-// in enterprise RAG, *the citation is the interesting object, not the summary — trust
-// routes through the link*. So we surface, beside every answer, the sources it grounded
-// in plus the assurance guarantees the mechanism enforces.
+// EvidencePanel — hoje só as GARANTIAS de assurance, estáticas.
 //
-// v2 (grounded domains): reads STRUCTURED citations off the AG-UI stream. The backend
-// (app/services/grounded.py) runs the Responses API with the KB as an inline MCP tool and
-// emits the url_citation annotations as a CUSTOM `sources` event {index, source, url}. We
-// subscribe to it via agent.subscribe (the same onEvent/CUSTOM pattern TicketApproval uses).
-// When no structured citations arrive (older/hosted paths), we fall back to the v1 heuristic
-// that derives sources from the answer TEXT, so the panel degrades gracefully.
+// A evidência de cada resposta (as citações estruturadas) mudou de casa: mora sob a própria
+// resposta agora (ver MessageEvidence.tsx / Task 5), lendo o mesmo `useCitationsFor` que este
+// painel lia antes. Manter as duas leituras do evento `sources` — uma aqui, outra lá — quebrou:
+// o backend passou a mandar `{message_id, citations}` e este painel ainda esperava um array
+// solto (`(event.value ?? []).map`), o que estourava TypeError a cada resposta. Em vez de
+// consertar uma segunda leitura duplicada do mesmo evento, ela foi removida — `lib/citations.tsx`
+// é agora o ÚNICO lugar que interpreta o evento `sources`.
+//
+// O fallback heurístico que extraía fontes do TEXTO da resposta (regex de caminho de arquivo)
+// também saiu: ele existia para cobrir os casos sem citação estruturada, mas com a evidência
+// migrando para a mensagem, "sem citação estruturada" agora significa "sem evidência", não
+// "hora de adivinhar pelo texto".
 
-import { useAgent } from "@copilotkit/react-core/v2";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
-import type { Domain } from "@/lib/domains";
-
-// A structured citation from the grounded stream (the CUSTOM `sources` event).
-// A FORMA É A DO FRAMEWORK, não uma nossa. `agent_framework.Annotation` é um TypedDict com
-// `type: "citation"` + `title`, `url`, `snippet`; o `Citation` do `langchain_core.messages` é
-// praticamente o mesmo. Antes daqui tínhamos `{index, source, url, content}` — o mesmo dado com
-// nomes próprios, inventado por cima de dois vocabulários que já existiam.
-//
-// O `index` fica ao lado do canônico porque é ele que amarra a citação `[n]` do texto ao item da
-// lista: o `annotated_regions` do framework faria isso por posição de caractere, e o nosso prompt
-// cita por número.
-interface Citation {
-  type?: "citation";
-  title: string; // o nome do documento (ex.: techdocs-mcp-server-v1.4.0__page-1.md)
-  url?: string; // a URL da fonte (blob privado — não abre direto; mantida para referência)
-  snippet?: string; // o trecho recuperado — mostrado INLINE no clique, porque o storage é privado
-  index: number;
-}
-
-// A heuristic source (v1 fallback) derived from the answer text.
-interface TextSource {
-  label: string;
-  kind: "file" | "component";
-}
-
-// File paths (app/…, infra/…, docs/…) and bare code filenames, plus the bundle/component
-// identifiers the grounded prompts cite (techdocs-*, foundry-helpdesk-*).
-const FILE_RE =
-  /\b(?:app|apps|infra|docs|eval|lib|components|frontend|backend)\/[\w./-]+\.(?:py|tsx?|bicep|md|ya?ml|json|css|sh)\b|\b[\w-]+\.(?:py|tsx?|bicep)\b/g;
-const COMPONENT_RE = /\b(?:techdocs-[a-z0-9-]+|foundry-helpdesk-[a-z]+)\b/g;
-
-function extractTextSources(text: string): TextSource[] {
-  const seen = new Set<string>();
-  const out: TextSource[] = [];
-  const add = (label: string, kind: TextSource["kind"]) => {
-    const key = label.toLowerCase();
-    if (seen.has(key)) return;
-    seen.add(key);
-    out.push({ label, kind });
-  };
-  for (const m of text.matchAll(FILE_RE)) add(m[0].replace(/^\.\//, ""), "file");
-  for (const m of text.matchAll(COMPONENT_RE)) add(m[0], "component");
-  return out;
-}
 
 // Mesmo padrão da visão geral: o array guarda a chave, o dicionário guarda a frase.
 const GUARANTEES = ["fidelity", "access", "evaluated"] as const;
 
-export function EvidencePanel({ domain }: { domain: Domain }) {
+export function EvidencePanel() {
   const t = useTranslations("console");
   const te = useTranslations("evidence");
-  const { agent } = useAgent({ agentId: domain.id });
-  // Structured citations (grounded stream) take precedence; text-derived sources are the fallback.
-  const [citations, setCitations] = useState<Citation[]>([]);
-  const [textSources, setTextSources] = useState<TextSource[]>([]);
-  const [openIdx, setOpenIdx] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (!agent) return;
-    const refreshFallback = () => {
-      const msgs = agent.messages ?? [];
-      const lastAssistant = [...msgs].reverse().find((m: any) => m.role === "assistant" && m.content);
-      setTextSources(lastAssistant ? extractTextSources((lastAssistant as any).content) : []);
-    };
-    refreshFallback();
-    const sub = agent.subscribe({
-      // The AG-UI CUSTOM `sources` event carries the structured citations. RUN_STARTED clears the
-      // previous answer's citations so the panel tracks the current turn. (onEvent fires for every
-      // event — same pattern as components/chat/TicketApproval.tsx.)
-      onEvent: ({ event }: any) => {
-        if (event?.type === "RUN_STARTED") {
-          setCitations([]);
-          setOpenIdx(null);
-        } else if (event?.type === "CUSTOM" && event?.name === "sources") {
-          const value = (event.value ?? []) as Citation[];
-          setCitations(
-            // Aceita a forma canônica E a anterior: uma aba já aberta durante o deploy continua
-            // recebendo eventos do backend antigo, e um painel que esvazia no meio da conversa
-            // parece resposta sem fonte — que é falha grave, não cosmética.
-            value.map((v: Citation & { source?: string; content?: string }) => ({
-              index: v.index,
-              title: v.title ?? v.source ?? "",
-              url: v.url,
-              snippet: v.snippet ?? v.content,
-            })),
-          );
-        }
-      },
-      onMessagesChanged: refreshFallback,
-      onRunFinalized: refreshFallback,
-    });
-    return () => sub.unsubscribe();
-  }, [agent]);
-
-  const count = citations.length || textSources.length;
 
   return (
     <aside className="evidence">
-      <div className="evidence-section">
-        <div className="evidence-title">{te("sources")}{count > 0 ? ` (${count})` : ""}</div>
-
-        {citations.length > 0 ? (
-          // Structured, numbered, clickable citations — click reveals the source (path + link).
-          // Blob URLs are private storage, so opening may prompt auth; the identity + link is the
-          // reliable v1 (inline document content is a later enhancement — see the grounded spec).
-          <ol className="evidence-citations">
-            {citations.map((c) => (
-              <li key={c.index} className="citation">
-                <button
-                  type="button"
-                  className="citation-btn"
-                  aria-expanded={openIdx === c.index}
-                  onClick={() => setOpenIdx(openIdx === c.index ? null : c.index)}
-                  title={te("clickSource")}
-                >
-                  <span className="citation-idx" aria-hidden>
-                    {c.index}
-                  </span>
-                  <span className="citation-src">{c.title}</span>
-                </button>
-                {openIdx === c.index && (
-                  <div className="citation-detail">
-                    {c.snippet ? (
-                      // Show the retrieved snippet inline — the blob is private (can't be opened).
-                      <p className="citation-content">{c.snippet}</p>
-                    ) : (
-                      <span className="muted">
-                        {c.title} — {te("internalDoc")}
-                      </span>
-                    )}
-                  </div>
-                )}
-              </li>
-            ))}
-          </ol>
-        ) : textSources.length > 0 ? (
-          <div className="evidence-sources">
-            {textSources.map((s) => (
-              <span key={s.label} className={`source-chip ${s.kind}`} title={te(s.kind === "file" ? "sourceFile" : "sourceComponent")}>
-                <span className="source-ico" aria-hidden>
-                  {s.kind === "file" ? "📄" : "📦"}
-                </span>
-                {s.label}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <p className="evidence-empty muted">
-            {te("empty")}
-          </p>
-        )}
-      </div>
-
-      {/* RECOLHIDO por padrão. O texto das três garantias é estático e não muda com a resposta —
-          mantê-lo aberto gastava metade da coluna dizendo sempre a mesma coisa. Como SINAL
-          (quantas garantias estão ativas) elas continuam visíveis o tempo todo; como TEXTO, só
-          quando alguém quer ler. */}
       <details className="evidence-section evidence-guar">
         <summary>
           <span aria-hidden>▸</span> {t("guaranteesCount", { count: GUARANTEES.length })}

@@ -368,15 +368,11 @@
     "fidelity": "The wiki was generated from real code; ≥80% of citations resolve to a file that exists.",
     "access": "Retrieval trimmed per document — access follows the source (groups), injection-proof.",
     "evaluated": "Every answer cites its source or declines; deterministic gate + groundedness judges.",
-    "clickSource": "Click to see the source",
-    "sourceFile": "Source (file)",
-    "sourceComponent": "Source (component)",
     "fidelityTitle": "Fidelity",
     "accessTitle": "Access",
     "evaluatedTitle": "Evaluation",
-    "internalDoc": "internal document (secure retrieval; no preview)",
-    "empty": "The sources the answer cites show up here — every claim grounded in the knowledge base, not in guesswork.",
-    "sources": "Sources"
+    "sources": "Sources",
+    "openSource": "Open the document"
   },
   "fieldProposal": {
     "title": "Proposal for {field}",

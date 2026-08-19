@@ -368,15 +368,11 @@
     "fidelity": "A wiki foi gerada do código real; ≥80% das citações resolvem para um arquivo que existe.",
     "access": "Recuperação aparada por documento — o acesso segue a fonte (groups), à prova de injeção.",
     "evaluated": "Toda resposta cita a fonte ou declina; gate determinístico + juízes de groundedness.",
-    "clickSource": "Clique para ver a fonte",
-    "sourceFile": "Fonte (arquivo)",
-    "sourceComponent": "Fonte (componente)",
     "fidelityTitle": "Fidelidade",
     "accessTitle": "Acesso",
     "evaluatedTitle": "Avaliação",
-    "internalDoc": "documento interno (recuperação segura; sem prévia)",
-    "empty": "As fontes que a resposta citar aparecem aqui — cada afirmação fundamentada na base, não em suposição.",
-    "sources": "Fontes"
+    "sources": "Fontes",
+    "openSource": "Abrir o documento"
   },
   "fieldProposal": {
     "title": "Proposta para {field}",

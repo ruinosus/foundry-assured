@@ -2,11 +2,12 @@
 
 // Assurance Console — the unified, config-driven surface for any domain agent.
 //
-// Two panes inside the (flush) shell: the chat (center) and the EvidencePanel (right,
-// the citation/assurance signature). The AppShell sidebar is the domain switcher, so
-// this is the same console for every domain — one route (/d/[domain]) drives all of them
-// off lib/domains.ts. Workflow domains (helpdesk) additionally render the live steps +
-// HITL approval; grounded domains are pure cited Q&A.
+// Two panes inside the (flush) shell: the chat (center) and a side column (right) with the
+// conversation list and the static assurance guarantees (EvidencePanel). The citation evidence
+// itself lives UNDER each response now (MessageEvidence.tsx) — the side column no longer carries
+// it. The AppShell sidebar is the domain switcher, so this is the same console for every domain —
+// one route (/d/[domain]) drives all of them off lib/domains.ts. Workflow domains (helpdesk)
+// additionally render the live steps + HITL approval; grounded domains are pure cited Q&A.
 //
 // Auth mirrors HelpdeskApp/TechDocsApp: when Entra is configured we gate on sign-in and
 // forward the user's access token (the backend does the OBO exchange); otherwise the
@@ -27,6 +28,7 @@ import { TicketApproval } from "@/components/chat/TicketApproval";
 import { ConversationsPanel } from "@/components/console/ConversationsPanel";
 import { DomainPicker } from "@/components/console/DomainPicker";
 import { EvidencePanel } from "@/components/console/EvidencePanel";
+import { makeAssistantMessage } from "@/components/console/MessageEvidence";
 import { MermaidZoom } from "@/components/console/MermaidZoom";
 import { SuggestedPrompts } from "@/components/console/SuggestedPrompts";
 import { ToolActivity } from "@/components/console/ToolActivity";
@@ -122,18 +124,21 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
               {/* Vale para TODOS os domínios, não só os tool-driven: qualquer tool sem
                   renderizador próprio passa a aparecer em vez de virar spinner. */}
               <ToolActivity />
-              <CopilotChat agentId={activeAgentId} threadId={threadId} />
+              <CopilotChat
+                agentId={activeAgentId}
+                threadId={threadId}
+                messageView={{ assistantMessage: makeAssistantMessage(domain.id) }}
+              />
               <MermaidZoom />
             </CitationsProvider>
           </div>
         </div>
 
-        {/* UM painel, duas abas. Antes eram três blocos empilhados disputando a mesma coluna,
-            e dois deles só têm conteúdo DEPOIS de uma resposta com citação — ocupavam metade da
-            altura exibindo o texto que explica o que apareceria ali.
-
-            A aba não troca sozinha quando chega citação: troca de contexto automática tira o
-            usuário de onde ele estava. O contador na aba avisa que há fonte nova. */}
+        {/* UM painel, duas abas. A evidência de cada resposta já mora sob a própria resposta
+            (ver MessageEvidence.tsx) — esta coluna lateral guarda só a lista de conversas e as
+            garantias estáticas de assurance, então não há mais citação para contar aqui. A aba
+            não troca sozinha ao trocar de mensagem: troca de contexto automática tiraria o
+            usuário de onde ele estava. */}
         <div className="console-side">
           <div className="seg-tabs" role="tablist">
             <button
@@ -154,9 +159,11 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
             </button>
           </div>
 
-          {/* Os dois ficam MONTADOS e um é escondido por CSS: o EvidencePanel assina o stream do
-              agente, e desmontá-lo perderia as citações que chegam enquanto a aba de conversas
-              está aberta — o contador nunca acenderia. */}
+          {/* Os dois ficam MONTADOS e um é escondido por CSS: o ConversationsPanel preserva
+              posição de rolagem e estado ao trocar de aba em vez de recarregar a lista toda
+              vez. O EvidencePanel agora é estático (só as garantias) e não tem estado a
+              perder, mas escondê-lo por CSS em vez de desmontar continua sendo o caminho mais
+              simples aqui — não há motivo para os dois painéis usarem estratégias diferentes. */}
           <div className={tab === "conv" ? "" : "tab-off"}>
             <ConversationsPanel
               agent={conversationKey}
@@ -166,7 +173,7 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
             />
           </div>
           <div className={tab === "ev" ? "" : "tab-off"}>
-            <EvidencePanel domain={domain} />
+            <EvidencePanel />
           </div>
         </div>
       </div>
