@@ -11,6 +11,12 @@ dependencies = [
     "azure-identity>=1.25.3",
     "azure-search-documents>=11.7.0b2",
     "azure-storage-blob>=12.20.0",
+    # `azure.storage.blob.aio` (usada por `knowledge/internal/document.py` pra baixar o
+    # documento integral) precisa de um transporte async, e o SDK não declara `aiohttp` como
+    # dependência obrigatória — hoje ele só chega transitivamente via extras do
+    # agent-framework. Declarado explícito: se aquele extra sumir, o import quebra em vez de
+    # ficar dependendo, em silêncio, de outro pacote ter puxado o mesmo transitivo.
+    "aiohttp>=3.9.0",
     "fastapi-azure-auth>=5.3.0",
     "fastapi>=0.115.0",
     "uvicorn[standard]>=0.52.1",
