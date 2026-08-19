@@ -28,6 +28,45 @@ from app.modules.conversations.internal.store import store
 logger = logging.getLogger(__name__)
 
 
+def _colapsar_reconstrucoes_duplicadas(mensagens: list[Message]) -> list[Message]:
+    """Descarta a reconstrução SEM id de uma resposta que já tem uma reconstrução COM id.
+
+    O QUE FOI MEDIDO, contra uma conversa real do `selfwiki` (blob `bb82ca58-…`, com
+    `GROUNDED_VIA_FRAMEWORK=true`, que fala com o `FoundryAgent` publicado): cada turno gravava a
+    resposta do assistente DUAS vezes — uma `Message` sem `message_id`, com `author_name` e um
+    `text_reasoning` vazio, e outra `Message` com `message_id` real, só com `text` — e as duas
+    carregavam o MESMO texto, byte a byte. Não são duas respostas: são duas reconstruções da MESMA
+    resposta em streaming (`AgentResponse.from_updates`, a partir das atualizações acumuladas
+    localmente, e `stream.get_final_response()`, a partir do objeto final do serviço), e o
+    `HistoryProvider.after_run()` do framework grava tudo que estiver em `response.messages` sem
+    saber que as duas são a mesma coisa.
+
+    POR QUE FICA A COM ID, e não a outra. Sem `message_id` uma mensagem nunca entra em
+    `_ja_gravados` — o reenvio da thread inteira (comportamento do caminho AG-UI, documentado
+    acima) a trataria como nova em TODO turno seguinte, e a duplicata cresceria sem fim em vez de
+    ficar em uma cópia. A reconstrução sem id não carrega nada que a outra não tenha: o
+    `text_reasoning` medido vem sempre vazio, e o `author_name` é metadado, não conteúdo.
+
+    Só colapsa quando o texto bate e não é vazio — coincidência de duas respostas vazias não deve
+    apagar uma resposta real por engano.
+    """
+    com_id = {
+        m.text
+        for m in mensagens
+        if getattr(m, "role", "") == "assistant" and getattr(m, "message_id", None) and m.text
+    }
+    return [
+        m
+        for m in mensagens
+        if not (
+            getattr(m, "role", "") == "assistant"
+            and not getattr(m, "message_id", None)
+            and m.text
+            and m.text in com_id
+        )
+    ]
+
+
 class StoredHistoryProvider(HistoryProvider):
     """Histórico persistido por usuário, por agente e por conversa.
 
@@ -119,6 +158,7 @@ class StoredHistoryProvider(HistoryProvider):
         self._ja_gravados.update(
             i for i in (getattr(m, "message_id", None) for m in novas) if i
         )
+        novas = _colapsar_reconstrucoes_duplicadas(novas)
         payload = [m.to_dict() for m in novas]
         try:
             await asyncio.to_thread(

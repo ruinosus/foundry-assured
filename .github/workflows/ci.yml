@@ -188,6 +188,15 @@ jobs:
       - name: A conversa é gravada de fato (provider invocado pelo framework)
         run: uv run python -m tests.conversations.provider_invoked_test
 
+      # A resposta do FoundryAgent publicado não é gravada duas vezes. Medido contra uma conversa
+      # real do selfwiki (GROUNDED_VIA_FRAMEWORK=true): `response.messages` trazia DUAS
+      # reconstruções da MESMA resposta em streaming — uma sem `message_id` (com `author_name` e
+      # um `text_reasoning` vazio) e outra com `message_id` (só o texto) — e o `HistoryProvider`
+      # gravava as duas. Diferente do dedup por thread-reenviada (gate acima): aqui as duas
+      # mensagens são NOVAS na mesma chamada, então `_ja_gravados` não pega — é outro bug.
+      - name: A resposta do FoundryAgent publicado não duplica no store
+        run: uv run python -m tests.conversations.duplicate_response_test
+
       # Os domínios de grafo gravam o TURNO, e uma vez só. O ponto não é o mesmo do token:
       # `on_llm_end` vê a chamada de MODELO (onde o token existe) e `on_chain_end` na RAIZ vê o
       # estado final do GRAFO (onde o turno existe). O filtro de raiz é o que impede duplicata —
