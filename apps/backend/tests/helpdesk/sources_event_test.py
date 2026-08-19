@@ -94,9 +94,17 @@ def main() -> int:
         # --- o adapter converteria no evento que o painel escuta ---------------------------
         check("o adapter converte em CustomEvent(name='sources')", _event_name(evento) == "sources")
         valor = _custom_event_value(evento)
-        check("…com a lista de citações como valor", isinstance(valor, list) and len(valor) == 1)
-        if isinstance(valor, list) and valor:
-            faltando = [c for c in CANONICOS if c not in valor[0]]
+        # O evento agora carrega `{message_id, citations}` (ver tests/grounded/sources_message_id_test.py) —
+        # o painel precisa saber a qual resposta a evidência pertence, e este executor roda antes
+        # dela existir, então `message_id` sai `None` aqui de propósito. A lista de citações
+        # continua vivendo em `citations`.
+        citacoes = valor.get("citations") if isinstance(valor, dict) else None
+        check(
+            "…com a lista de citações dentro de `citations`",
+            isinstance(citacoes, list) and len(citacoes) == 1,
+        )
+        if isinstance(citacoes, list) and citacoes:
+            faltando = [c for c in CANONICOS if c not in citacoes[0]]
             check(
                 "…na forma canônica do framework" + (f" — falta {faltando}" if faltando else ""),
                 not faltando,

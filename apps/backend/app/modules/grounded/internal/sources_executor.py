@@ -53,5 +53,12 @@ class SourcesExecutor(Executor):
         except Exception:  # noqa: BLE001 — sem fontes o painel cai no heurístico, e a conversa segue
             citacoes = []
         if citacoes:
-            ctx.add_event(WorkflowEvent("sources", data=citacoes))
+            # `message_id: None` é DELIBERADO. Este executor roda ENTRE o retrieve e o resolve —
+            # a resposta ainda não existe, então não há id para carimbar. Quem consome liga o
+            # None à próxima mensagem que começa, e nesta posição essa mensagem É o resolve.
+            # Emitir depois do resolve daria o id, mas faria o painel só aparecer no fim, e a
+            # pessoa lê a resposta enquanto ela chega.
+            ctx.add_event(
+                WorkflowEvent("sources", data={"message_id": None, "citations": citacoes})
+            )
         await ctx.send_message(message)

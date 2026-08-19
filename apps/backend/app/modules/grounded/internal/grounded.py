@@ -257,7 +257,12 @@ async def stream_grounded(body: dict, domain, user=None, language: str | None = 
         # para desenhar o painel de evidência — medir custava zero e não estava sendo feito.
         _record_usage(_usuario, _conversa, thread_id, tokens_in, tokens_out, len(sources or []))
         if sources:
-            yield enc.encode(CustomEvent(name="sources", value=sources))
+            # A EVIDÊNCIA É DA RESPOSTA, não da sessão. Sem o `message_id` a tela recebia uma
+            # lista solta e só podia guardar a última — rolar a conversa para cima mostrava
+            # respostas antigas sem fonte nenhuma. O id está em escopo desde o início do turno.
+            yield enc.encode(
+                CustomEvent(name="sources", value={"message_id": message_id, "citations": sources})
+            )
         yield enc.encode(RunFinishedEvent(thread_id=thread_id, run_id=run_id))
     except Exception as exc:  # surface to the UI as a clean run error (mirrors hosted.stream_agui)
         yield enc.encode(TextMessageEndEvent(message_id=message_id))
