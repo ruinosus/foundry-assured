@@ -1,7 +1,6 @@
 name: CI
 
-# Runs on every PR and on pushes to main. The hard gates (policy self-test,
-# typecheck, build, bicep) must pass; lint is advisory for now (continue-on-error).
+# Runs on every PR and on pushes to main. All gates below — including lint — must pass.
 on:
   pull_request:
   push:
@@ -28,7 +27,6 @@ jobs:
           enable-cache: true
       - name: Lint (ruff)
         run: uvx ruff check .
-        continue-on-error: true
       - name: Install dependencies
         run: uv sync --frozen
       - name: Policy gate (planted-violation self-test)
