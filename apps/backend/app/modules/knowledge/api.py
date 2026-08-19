@@ -38,8 +38,14 @@ _domain_lookup: Callable[[str], object] | None = None
 
 
 def set_domain_lookup(fn: Callable[[str], object]) -> None:
-    """Injetado por `app.registry.include_routers` — a única chamada permitida a fazê-lo."""
+    """Injetado por `app.registry.include_routers` — a única chamada permitida a fazê-lo.
+
+    Levanta se já houver um registro: mesmo precedente de `app.shared.auth.set_post_authenticate`
+    — duas chamadas significariam dois lugares reivindicando silenciosamente o mesmo ponto único.
+    """
     global _domain_lookup
+    if _domain_lookup is not None and fn is not None:
+        raise RuntimeError("a resolução de domínio já está registrada")
     _domain_lookup = fn
 
 
@@ -66,7 +72,14 @@ async def read_source(domain_id: str, name: str, response: Response) -> dict:
     # resolvido (`_current_tenant` fica `None`), e `require_domain` é fail-closed — chamado sem
     # essa guarda, derrubaria self_hosted/dedicated com 403 em toda leitura.
     if settings.deployment_mode == "shared":
-        await require_domain(domain_id)()
+        try:
+            await require_domain(domain_id)()
+        except HTTPException:
+            # Mesmo par ACL: a negação por entitlement (ADR-010) é tão interessante para a
+            # trilha quanto a negação por ACL logo abaixo — sem isto a auditoria ficava com
+            # metade do par (só registrava quem passou pelo gate de tenant).
+            _auditar(domain_id, name, autorizado=False, url=None)
+            raise
 
     # Conteúdo controlado por ACL: nunca cacheado por proxy/CDN/navegador — um cache
     # compartilhado devolveria o documento de uma pessoa para outra.
