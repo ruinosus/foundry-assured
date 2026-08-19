@@ -68,6 +68,29 @@ _RETIRED = {
 _GENERATED = (":(exclude)knowledge/wiki-bundle", ":(exclude)openwiki")
 
 
+def _shallow() -> bool:
+    """O clone tem histórico suficiente para datar uma mudança de fonte?
+
+    POR QUE ISTO EXISTE. `actions/checkout` clona com profundidade 1 por padrão, e numa
+    checagem de PR o único commit presente é o MERGE SINTÉTICO que o GitHub cria. `git log -1`
+    ali devolve esse commit — exclusões de caminho não ajudam, porque não há outro commit para
+    escolher. O resultado é uma data que não é de nenhuma mudança real de fonte.
+
+    Medido: a wiki gerada 21:04:54 foi reprovada contra "fonte mudou 21:05:03", que era a data
+    do merge sintético; com histórico completo, a última mudança real foi 20:59:55 — cinco
+    minutos ANTES da geração. O veredito estava invertido.
+
+    `wiki-freshness.yml` já pede `fetch-depth: 0` justamente por isso. O `ci.yml` não pede — ele
+    chama este código de dentro do `wiki_shelf_test`, onde a obsolescência é aviso. Um aviso
+    derivado de dado inexistente é pior que aviso nenhum: ensina a ignorar o gate.
+    """
+    out = subprocess.run(
+        ["git", "-C", str(_ROOT), "rev-parse", "--is-shallow-repository"],
+        capture_output=True, text=True, check=False,
+    ).stdout.strip()
+    return out == "true"
+
+
 def _latest_commit_iso(area: str) -> str | None:
     """Latest commit date touching `area`, EXCLUDING everything the generator writes (so
     regenerating the wiki doesn't make the bundle look perpetually stale)."""
@@ -96,6 +119,17 @@ def main() -> int:
 
     if not _WIKI.exists():
         print("⏭️  no knowledge/wiki-bundle — nothing to check.")
+        return 0
+
+    # NÃO OPINAR SEM DADO. Num clone raso não existe histórico para datar a última mudança de
+    # fonte, e `git log -1` devolveria o commit sintético de merge. Reprovar a partir disso é
+    # inventar um veredito; passar seria pior ainda. Dizemos que não dá para saber, e saímos 0 —
+    # quem quiser o veredito de verdade pede `fetch-depth: 0`, como `wiki-freshness.yml` já faz.
+    if _shallow():
+        print(
+            "⏭️  clone raso — não dá para datar a última mudança de fonte, então não há\n"
+            "    veredito de atualidade. Para obtê-lo, use `fetch-depth: 0` no checkout."
+        )
         return 0
     stale: list[tuple[str, str, str, str]] = []
     retired: set[str] = set()
