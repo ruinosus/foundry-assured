@@ -11,6 +11,7 @@ LER o documento é verificado no clique (rota /source), nunca herdado do momento
 
 from __future__ import annotations
 
+import json
 import sys
 
 from app.modules.conversations.internal import listing
@@ -95,6 +96,51 @@ def main() -> int:
     check("o redator reporta o tipo encontrado no trecho aninhado", len(tipos_aninhado) > 0)
     check("título e índice da annotation aninhada atravessam intactos",
           anot_aninhada["title"] == "doc.md" and anot_aninhada["index"] == 2)
+
+    # ITEM 13 — os campos NÃO tipados do Annotation (`additional_properties`/`raw_representation`)
+    # também podem carregar o `ref` bruto do KB, com texto de documento dentro. É estrutura
+    # aninhada arbitrária (dict/lista/valor), não um campo único — por isso a travessia é
+    # recursiva, não uma linha a mais na lista de campos tratados.
+    saneadas_extra, tipos_extra = sanitize([
+        {"role": "assistant", "annotations": [
+            {"title": "d.md", "index": 1, "snippet": "ok",
+             "additional_properties": {"ref": {"chunks": ["contato: fulano@exemplo.com", "ok"]}},
+             "raw_representation": ["cpf 529.982.247-25", {"nested": "cnpj 11.222.333/0001-81"}]},
+        ]},
+    ])
+    anot_extra = saneadas_extra[0]["annotations"][0]
+    check(
+        "additional_properties aninhado é redigido",
+        "fulano@exemplo.com" not in json.dumps(anot_extra["additional_properties"]),
+    )
+    check(
+        "additional_properties preserva o que não é sensível",
+        anot_extra["additional_properties"]["ref"]["chunks"][1] == "ok",
+    )
+    check(
+        "raw_representation (lista + dict aninhado) é redigido",
+        "529.982.247-25" not in json.dumps(anot_extra["raw_representation"])
+        and "11.222.333/0001-81" not in json.dumps(anot_extra["raw_representation"]),
+    )
+    check("os tipos do additional_properties/raw_representation sobem para achados", len(tipos_extra) > 0)
+
+    # Teto de profundidade: uma estrutura funda demais para de descer em vez de estourar a pilha.
+    from app.modules.conversations.internal.store import _PROFUNDIDADE_MAXIMA_REDACAO
+
+    funda: dict = {"v": "contato: fulano@exemplo.com"}
+    no = funda
+    for _ in range(_PROFUNDIDADE_MAXIMA_REDACAO + 5):
+        no["next"] = {"v": "contato: fulano@exemplo.com"}
+        no = no["next"]
+    try:
+        saneadas_funda, _ = sanitize([
+            {"role": "assistant", "annotations": [
+                {"title": "d.md", "additional_properties": funda},
+            ]},
+        ])
+        check("estrutura funda demais não estoura sanitize (teto de profundidade)", True)
+    except RecursionError:
+        check("estrutura funda demais não estoura sanitize (teto de profundidade)", False)
 
     # Entrada malformada não pode estourar `sanitize` — o formato do framework não é garantido
     # pelo nosso código, e uma exceção aqui derrubaria a gravação da conversa inteira.

@@ -139,6 +139,83 @@ class InMemoryConversationStore:
         return sorted(saida, key=lambda c: c.updated_at, reverse=True)
 
 
+#: Teto de profundidade da travessia recursiva de `additional_properties`/`raw_representation`
+#: (item 13). Esses dois campos do `Annotation` são estrutura arbitrária do agent-framework —
+#: dict/lista/valor sem contrato nosso — e uma travessia sem teto estoura em estrutura cíclica ou
+#: funda demais. 6 é folga generosa sobre o que um `Annotation` real aninha (poucos níveis) sem
+#: risco de recursão sem fim.
+_PROFUNDIDADE_MAXIMA_REDACAO = 6
+
+
+def _redigir(texto: str, achados: list[str], redact) -> str:
+    """Redige UMA string e acumula os TIPOS encontrados em `achados` sem duplicar.
+
+    Extraído porque `sanitize()` tinha quatro blocos quase idênticos de "copia valor → redige →
+    acumula tipo sem duplicar" — só o CAMINHO até a string mudava (texto da mensagem, texto de
+    `contents[]`, `snippet` aninhado, `snippet` plano). Comportamento idêntico ao que existia.
+    """
+    novo_texto, tipos = redact(texto)
+    achados.extend(t for t in tipos if t not in achados)
+    return novo_texto
+
+
+def _redigir_recursivo(valor, achados: list[str], redact, profundidade: int = 0):
+    """Redige toda STRING encontrada dentro de `valor`, percorrendo dict/lista recursivamente.
+
+    Usado só para os campos NÃO tipados do `Annotation` (`additional_properties`,
+    `raw_representation` — item 13): esses dois podem carregar o `ref` bruto do KB, e o `ref` pode
+    embutir o trecho de documento por dentro de uma estrutura que não é contrato nosso pra modelar
+    campo a campo. Por isso a travessia é genérica em vez de uma lista de campos conhecidos —
+    e por isso tem TETO DE PROFUNDIDADE (`_PROFUNDIDADE_MAXIMA_REDACAO`): sem ele, um ciclo ou uma
+    estrutura funda demais (nunca deveria acontecer num `Annotation` real, mas não é garantido
+    pelo tipo) estouraria a pilha em vez de simplesmente parar de descer.
+
+    Valor não-string/dict/lista (int, bool, None) volta como está — não há texto pra redigir.
+    """
+    if profundidade >= _PROFUNDIDADE_MAXIMA_REDACAO:
+        return valor
+    if isinstance(valor, str):
+        return _redigir(valor, achados, redact)
+    if isinstance(valor, dict):
+        return {k: _redigir_recursivo(v, achados, redact, profundidade + 1) for k, v in valor.items()}
+    if isinstance(valor, list):
+        return [_redigir_recursivo(v, achados, redact, profundidade + 1) for v in valor]
+    return valor
+
+
+def _redigir_anotacao(anot, achados: list[str], redact):
+    """Redige um `Annotation` (TypedDict do agent-framework) inteiro — as DUAS formas em que
+    `sanitize()` o encontra (aninhada em `contents[].annotations[]`, plana em `annotations[]`)
+    chamam este mesmo helper.
+
+    `snippet` (TIPADO, trecho de documento) é tratado campo a campo. `additional_properties` e
+    `raw_representation` (NÃO tipados) recebem a travessia recursiva do item 13: também podem
+    carregar o `ref` bruto do KB, com texto de documento dentro, mas por serem estrutura
+    arbitrária não dá pra tratá-los campo a campo como `snippet`.
+
+    `title`/`url`/`index` continuam FORA — não são conteúdo, e redigi-los apagaria a citação em
+    vez de proteger dado sensível.
+
+    FORA DE ESCOPO, deliberadamente: `Content.additional_properties`/`Content.raw_representation`
+    (o `_types.py` do agent-framework dá os MESMOS dois campos a `Content`, não só a `Annotation`
+    — ex.: `contents[].additional_properties` fora de qualquer anotação) e o equivalente em
+    `Message`. O pedido que originou este helper (item 13) mirou nomeadamente o `Annotation` — é
+    onde o `ref` bruto do KB aparece nos casos medidos. Estender a mesma travessia a `Content` e
+    `Message` é extensão natural do MESMO padrão, não uma limitação técnica, mas é decisão de
+    escopo maior (mais um lugar onde a trilha grava tipos "achados") e por isso fica para quem
+    pedir explicitamente, em vez de entrar de carona aqui.
+    """
+    if not isinstance(anot, dict):
+        return anot
+    anot = dict(anot)
+    if isinstance(anot.get("snippet"), str):
+        anot["snippet"] = _redigir(anot["snippet"], achados, redact)
+    for campo in ("additional_properties", "raw_representation"):
+        if campo in anot:
+            anot[campo] = _redigir_recursivo(anot[campo], achados, redact)
+    return anot
+
+
 def sanitize(messages: list[dict]) -> tuple[list[dict], list[str]]:
     """Saneia as mensagens ANTES de gravar. É o ponto único de escrita da ADR-023.
 
@@ -162,8 +239,7 @@ def sanitize(messages: list[dict]) -> tuple[list[dict], list[str]]:
         copia = dict(m)
         for campo in ("text",):
             if isinstance(copia.get(campo), str):
-                copia[campo], tipos = redact(copia[campo])
-                achados.extend(t for t in tipos if t not in achados)
+                copia[campo] = _redigir(copia[campo], achados, redact)
         # O formato do agent-framework guarda o texto em `contents[].text`.
         partes = copia.get("contents")
         if isinstance(partes, list):
@@ -171,43 +247,27 @@ def sanitize(messages: list[dict]) -> tuple[list[dict], list[str]]:
             for parte in partes:
                 if isinstance(parte, dict) and isinstance(parte.get("text"), str):
                     parte = dict(parte)
-                    parte["text"], tipos = redact(parte["text"])
-                    achados.extend(t for t in tipos if t not in achados)
+                    parte["text"] = _redigir(parte["text"], achados, redact)
                 # A FORMA ANINHADA da citação. `Annotation` do agent-framework (TypedDict,
                 # `_types.py`) é anexada a cada `Content` — não à mensagem — e é isso que o
-                # `HistoryProvider` grava de fato quando usa `Message.to_dict()`. O ramo acima
+                # `HistoryProvider` grava de fato quando usa `Message.to_dict()`. O ramo abaixo
                 # (`copia["annotations"]`) só cobre a forma PLANA que o `record_turn` do grounded
                 # produz; sem este aqui, a mesma citação vazando pelo outro caminho passava reto
-                # pelo redator. Só `snippet` é tratado: é o único campo tipado com conteúdo de
-                # documento. `additional_properties` e `raw_representation` também podem carregar
-                # o `ref` bruto do KB, mas são estrutura arbitrária — redigir isso é decisão de
-                # desenho maior, fora do escopo deste conserto, e por isso NÃO são cobertos aqui.
+                # pelo redator.
                 if isinstance(parte, dict) and isinstance(parte.get("annotations"), list):
                     parte = dict(parte)
-                    novas_anot_aninhadas = []
-                    for anot in parte["annotations"]:
-                        if isinstance(anot, dict) and isinstance(anot.get("snippet"), str):
-                            anot = dict(anot)
-                            anot["snippet"], tipos = redact(anot["snippet"])
-                            achados.extend(t for t in tipos if t not in achados)
-                        novas_anot_aninhadas.append(anot)
-                    parte["annotations"] = novas_anot_aninhadas
+                    parte["annotations"] = [
+                        _redigir_anotacao(anot, achados, redact) for anot in parte["annotations"]
+                    ]
                 novas.append(parte)
             copia["contents"] = novas
         # A CITAÇÃO TAMBÉM CARREGA CONTEÚDO. `annotations[].snippet` é trecho de documento, e
         # sem este ramo ele chegaria ao blob sem passar pelo redator — furando justamente o
         # ponto que esta função existe para ser. Título, url e índice não são conteúdo e ficam
-        # como estão.
+        # como estão (ver `_redigir_anotacao`).
         anotacoes = copia.get("annotations")
         if isinstance(anotacoes, list):
-            novas_anot = []
-            for anot in anotacoes:
-                if isinstance(anot, dict) and isinstance(anot.get("snippet"), str):
-                    anot = dict(anot)
-                    anot["snippet"], tipos = redact(anot["snippet"])
-                    achados.extend(t for t in tipos if t not in achados)
-                novas_anot.append(anot)
-            copia["annotations"] = novas_anot
+            copia["annotations"] = [_redigir_anotacao(anot, achados, redact) for anot in anotacoes]
         saidas.append(copia)
     return saidas, achados
 
