@@ -119,6 +119,15 @@ export function SourceViewer() {
     : estado === "erro" ? te("sourceError")
     : "";
 
+  // SEM `aria-modal="true"` E SEM PRENDER O TAB — de propósito (item 10 da faxina). O painel é
+  // uma GAVETA NÃO-MODAL (CSS: `position: fixed` do lado direito, SEM backdrop cobrindo o resto
+  // da tela) — quem abriu continua podendo ler/rolar a conversa por trás enquanto confere o
+  // documento. `aria-modal="true"` diz ao leitor de tela que o resto da página ficou INERTE, o
+  // que aqui seria mentira: o chat continua acessível atrás do painel. Prender o Tab teria o
+  // mesmo problema na navegação por teclado — impediria voltar ao chat sem fechar o painel
+  // primeiro, contradizendo o próprio desenho de gaveta. Foco entra ao abrir, Escape fecha e
+  // devolve o foco a quem abriu — o suficiente para um dialog NÃO-modal (WAI-ARIA APG, padrão
+  // "Non-modal Dialog"); `aria-modal`/contenção de Tab pertencem ao padrão MODAL, que não é este.
   return (
     <div className="source-viewer" role="dialog" aria-label={aberto.name}>
       <div className="source-viewer-head">
