@@ -1,17 +1,17 @@
 {
-  "key": "foundry-assured-v0.20260816",
-  "title": "foundry-assured v0.20260816",
+  "key": "foundry-assured-v0.20260819",
+  "title": "foundry-assured v0.20260819",
   "source": {
     "type": "repo",
     "ref": "/home/runner/work/foundry-assured/foundry-assured",
-    "commit": "b0a07a129bc3557f4a4d324dc1b7d050cf7bc1ad"
+    "commit": "8e5fef809b476602ff31f4821f13e5bb18b64830"
   },
   "language": "pt-br",
   "model": "openwiki/gpt-5.4",
-  "generatedAt": "2026-08-16T23:20:06.665Z",
+  "generatedAt": "2026-08-19T21:04:54.812Z",
   "kind": "element",
   "component": "foundry-assured",
-  "componentVersion": "v0.20260816",
+  "componentVersion": "v0.20260819",
   "releaseVersion": null,
   "groups": null,
   "pages": [

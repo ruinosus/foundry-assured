@@ -1,32 +1,8 @@
----
-type: reference
-title: Frontend API and Proxy Layer
-description: "Next.js route handlers that proxy backend services and CopilotKit traffic, including token forwarding, admin and tenant proxies, and the source-document confirmation bridge."
-tags: [frontend, api, proxy, auth]
-openwiki:
-  roles: [integration, operations]
-  change_kinds: [http, auth]
-  source_paths:
-    - apps/frontend/app/api/source/[domain]/[name]/route.ts
-    - apps/frontend/app/api/copilotkit/[[...slug]]/route.ts
-    - apps/frontend/lib/auth/api.ts
-  symbols:
-    - GET
-    - authedFetch
-  test_paths:
-    - apps/frontend/scripts/verify-thread-citations.mjs
-  invariants:
-    - Proxy routes must forward bearer tokens when available.
-    - Source-document proxy responses must preserve authorization status distinctions and no-store caching.
-  validation_commands:
-    - cd apps/frontend && node scripts/verify-thread-citations.mjs
----
-
 # Frontend API and proxy layer
 
 The frontend’s server-side API routes do real architectural work: they hide backend URLs from the browser, forward bearer tokens, and bridge CopilotKit to backend AG-UI and hosted-agent endpoints. The newer source-document confirmation route belongs in the same layer because the browser still never talks to the backend directly for cited documents. [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/frontend/app/api/source/%5Bdomain%5D/%5Bname%5D/route.ts#L1-L19) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/frontend/lib/auth/api.ts#L1-L26)
 
-This page complements [Assurance Console](assurance-console.md), which is the main consumer of the `/api/source/*` route.
+This page complements Assurance Console, which is the main consumer of the `/api/source/*` route.
 
 ## Operational proxy routes
 
@@ -74,7 +50,7 @@ Consult this page when you are:
 - changing auth header forwarding or cache policy,
 - changing the source-viewer API contract but not the UI semantics themselves.
 
-For UI rendering, evidence placement, and conversation replay, continue in [Assurance Console](assurance-console.md).
+For UI rendering, evidence placement, and conversation replay, continue in Assurance Console.
 
 ## Validation
 

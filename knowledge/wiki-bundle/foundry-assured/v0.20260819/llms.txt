@@ -1,4 +1,4 @@
-# foundry-assured v0.20260816
+# foundry-assured v0.20260819
 
 - [OpenWiki Quickstart](pages/page-1.md)
 - [Infrastructure and Deployment](pages/page-2.md)
