@@ -80,6 +80,36 @@ def main() -> int:
           saneadas[0]["annotations"][0]["title"] == "d.md"
           and saneadas[0]["annotations"][0]["index"] == 1)
 
+    # A FORMA ANINHADA — `contents[].annotations[].snippet` — é a que o `HistoryProvider` do
+    # agent-framework grava de fato (`Annotation` pendurado em cada `Content`, não na mensagem).
+    # O achado do revisor: só a forma plana era coberta; esta prova que a aninhada também é.
+    saneadas_aninhado, tipos_aninhado = sanitize([
+        {"role": "assistant", "contents": [
+            {"type": "text", "text": "resposta",
+             "annotations": [{"title": "doc.md", "index": 2, "snippet": "contato: fulano@exemplo.com"}]},
+        ]},
+    ])
+    anot_aninhada = saneadas_aninhado[0]["contents"][0]["annotations"][0]
+    check("o redator alcança contents[].annotations[].snippet",
+          "fulano@exemplo.com" not in anot_aninhada["snippet"])
+    check("o redator reporta o tipo encontrado no trecho aninhado", len(tipos_aninhado) > 0)
+    check("título e índice da annotation aninhada atravessam intactos",
+          anot_aninhada["title"] == "doc.md" and anot_aninhada["index"] == 2)
+
+    # Entrada malformada não pode estourar `sanitize` — o formato do framework não é garantido
+    # pelo nosso código, e uma exceção aqui derrubaria a gravação da conversa inteira.
+    try:
+        saneadas_malformado, _ = sanitize([
+            {"role": "assistant", "contents": [
+                {"type": "text", "text": "x", "annotations": "não é uma lista"},
+                {"type": "text", "text": "y", "annotations": ["não é um dict"]},
+                {"type": "text", "text": "z", "annotations": [{"title": "d.md", "snippet": 123}]},
+            ]},
+        ])
+        check("entrada malformada não estoura sanitize", True)
+    except Exception as exc:  # noqa: BLE001 — é exatamente o que o teste verifica que NÃO acontece
+        check(f"entrada malformada não estoura sanitize ({exc})", False)
+
     print()
     if falhas:
         print(f"FALHOU: {len(falhas)} verificação(ões)")

@@ -173,6 +173,25 @@ def sanitize(messages: list[dict]) -> tuple[list[dict], list[str]]:
                     parte = dict(parte)
                     parte["text"], tipos = redact(parte["text"])
                     achados.extend(t for t in tipos if t not in achados)
+                # A FORMA ANINHADA da citação. `Annotation` do agent-framework (TypedDict,
+                # `_types.py`) é anexada a cada `Content` — não à mensagem — e é isso que o
+                # `HistoryProvider` grava de fato quando usa `Message.to_dict()`. O ramo acima
+                # (`copia["annotations"]`) só cobre a forma PLANA que o `record_turn` do grounded
+                # produz; sem este aqui, a mesma citação vazando pelo outro caminho passava reto
+                # pelo redator. Só `snippet` é tratado: é o único campo tipado com conteúdo de
+                # documento. `additional_properties` e `raw_representation` também podem carregar
+                # o `ref` bruto do KB, mas são estrutura arbitrária — redigir isso é decisão de
+                # desenho maior, fora do escopo deste conserto, e por isso NÃO são cobertos aqui.
+                if isinstance(parte, dict) and isinstance(parte.get("annotations"), list):
+                    parte = dict(parte)
+                    novas_anot_aninhadas = []
+                    for anot in parte["annotations"]:
+                        if isinstance(anot, dict) and isinstance(anot.get("snippet"), str):
+                            anot = dict(anot)
+                            anot["snippet"], tipos = redact(anot["snippet"])
+                            achados.extend(t for t in tipos if t not in achados)
+                        novas_anot_aninhadas.append(anot)
+                    parte["annotations"] = novas_anot_aninhadas
                 novas.append(parte)
             copia["contents"] = novas
         # A CITAÇÃO TAMBÉM CARREGA CONTEÚDO. `annotations[].snippet` é trecho de documento, e
