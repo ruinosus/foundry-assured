@@ -16,7 +16,7 @@ checks:
 - type: contains
   value: ONLY the runbook content
 - type: contains
-  value: cite the source document title(s)
+  value: cite each claim by the bracketed number
 - type: contains
   value: never invent
 # A persona is worn only by the agents that REFERENCE it. This negative
