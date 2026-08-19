@@ -56,7 +56,6 @@ from __future__ import annotations
 import os
 import sys
 
-
 # ---------------------------------------------------------------------------
 # Gate: read env vars and decide whether to skip or run
 # ---------------------------------------------------------------------------
@@ -104,7 +103,10 @@ def main() -> int:
     # or the app modules that pull in framework dependencies.
     from azure.identity import DefaultAzureCredential
 
-    from app.modules.platform_ops.internal.mcp_tools import build_from_connections, build_hosted_from_connections
+    from app.modules.platform_ops.internal.mcp_tools import (
+        build_from_connections,
+        build_hosted_from_connections,
+    )
     from app.modules.tenancy.internal.tenant_store import Connection
 
     failures: list[str] = []
