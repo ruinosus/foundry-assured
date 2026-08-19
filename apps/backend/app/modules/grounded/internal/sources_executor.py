@@ -8,8 +8,8 @@ POR QUE ESTE EXECUTOR EXISTE, e por que ele é pequeno de propósito. O painel d
 alimentado por um `CustomEvent(name="sources")`. O caminho grounded escrito à mão o emite dentro do
 próprio laço de SSE. O helpdesk não emitia — ele passa pelo adapter oficial, e o adapter descarta
 `content.annotations` (medido: `_emit_text` lê só `content.text`, enquanto `_emit_usage`, quatro
-linhas abaixo, emite `CustomEvent`). Resultado: o painel do helpdesk caía no heurístico de texto,
-que adivinha nome de arquivo por regex.
+linhas abaixo, emite `CustomEvent`). Resultado: o painel do helpdesk não recebia fonte nenhuma —
+não havia heurístico de fallback, e este executor é o que fecha essa lacuna.
 
 A SAÍDA NÃO É MONKEYPATCH. O runtime de WORKFLOW do adapter tem um ramo genérico — rotulado por ele
 mesmo "custom workflow events" — que emite `CustomEvent(name=event.type, value=event.data)` para
@@ -50,7 +50,7 @@ class SourcesExecutor(Executor):
         citacoes = []
         try:
             citacoes = self._provider.citations()
-        except Exception:  # noqa: BLE001 — sem fontes o painel cai no heurístico, e a conversa segue
+        except Exception:  # noqa: BLE001 — sem fontes o painel só fica sem citação, e a conversa segue
             citacoes = []
         if citacoes:
             # `message_id: None` é DELIBERADO. Este executor roda ENTRE o retrieve e o resolve —

@@ -13,7 +13,9 @@ porque É a mesma.
 Medido em 19/ago/2026 contra `selfwiki-docbundles-ks-index`:
     filtro blob_url eq '<url>' + x-ms-query-source-authorization do usuário  →  5 trechos
     o mesmo filtro sem identidade                                            →  0
-    o mesmo filtro com token inválido                                        →  401
+    o mesmo filtro com token inválido                                        →  401 (medido na
+        api-version anterior, `2025-05-01-preview`; não remedido depois da migração para
+        `2026-05-01-preview` — ver comentário de `_API` abaixo, que só remediu os dois primeiros)
 
 NUNCA ACEITA URL DO CHAMADOR. Recebe o NOME e constrói a URL a partir do container configurado
 do domínio. Aceitar URL seria SSRF: bastaria apontar para outra conta de storage e o backend a

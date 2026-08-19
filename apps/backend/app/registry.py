@@ -135,6 +135,17 @@ def _domains() -> list[DomainSpec]:
             id="helpdesk",
             kind="workflow",
             hosted_agent_name=cfg.hosted_agent_name,
+            # ATENÇÃO antes de reusar este container para outra coisa: `document_access="session"`
+            # (linha abaixo) significa que QUALQUER sessão autenticada pode ler QUALQUER blob da
+            # raiz deste container pelo nome, via `GET /source/helpdesk/{name}` — não há trim de
+            # ACL nem `search_index` aqui contra o qual reautorizar (é o motivo do `"session"`).
+            # Hoje isso não vaza nada porque o container só recebe os runbooks da ingestão
+            # (conteúdo já público a quem usa o helpdesk); conversas e trilha de auditoria vivem em
+            # containers SEPARADOS de propósito. Mas o container deixou de ser só "insumo de
+            # ingestão" — ele é também "superfície de leitura autenticada". Antes de gravar
+            # qualquer coisa sensível aqui (ou de apontar outro domínio pra ele), pergunte: "uma
+            # sessão qualquer pode ler isto pelo nome?" — se a resposta for não, este não é o
+            # container certo.
             corpus_container=cfg.azure_storage_container,
             # Sem ACL de documento: helpdesk não declara grupo em documento nenhum (não é fonte
             # com controle por documento) e não seta `search_index` — sessão válida é a regra.

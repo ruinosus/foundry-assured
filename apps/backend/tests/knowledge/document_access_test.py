@@ -195,6 +195,7 @@ def main() -> int:
         document.settings.entra_tenant_id = tid_original
         document.settings.entra_api_client_id = cid_original
         document._user_search_token = token_falso
+        document._contar_autorizado = busca_falsa
 
     print()
     if falhas:

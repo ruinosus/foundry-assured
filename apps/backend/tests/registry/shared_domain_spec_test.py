@@ -117,6 +117,10 @@ def main() -> int:
             "the two do not share an ACL group map (RULE #6 — leak would cross tenants)",
             alpha.acl_group_map != beta.acl_group_map,
         )
+        check(
+            "the two do not share a corpus_container (GET /source would read the wrong tenant's blob)",
+            alpha.corpus_container != beta.corpus_container,
+        )
 
         # --- Resolving again for A must return A's config, not the last one seen. ---
         _CURRENT["record"] = _tenant("alpha")

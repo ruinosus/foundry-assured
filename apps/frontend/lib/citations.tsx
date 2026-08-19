@@ -59,7 +59,9 @@ function normalizar(value: unknown): { messageId: string | null; citations: Cita
 function mesclarCitacoes(existentes: Citation[] | undefined | null, novas: Citation[]): Citation[] {
   const porIndice = new Map((existentes ?? []).map((c) => [c.index, c]));
   for (const c of novas) porIndice.set(c.index, c);
-  return [...porIndice.values()];
+  // Ordenado por índice: um segundo evento com índice menor que o primeiro (ordem de chegada
+  // não é ordem de citação) produziria "3, 4, 1, 2" na lista sem isto.
+  return [...porIndice.values()].sort((a, b) => a.index - b.index);
 }
 
 export function CitationsProvider({ agentId, children }: { agentId: string; children: ReactNode }) {
