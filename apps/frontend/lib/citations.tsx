@@ -49,6 +49,19 @@ function normalizar(value: unknown): { messageId: string | null; citations: Cita
   };
 }
 
+// MESMO merge para os dois ramos (com e sem `message_id`), com dedupe por `index`. Antes disso o
+// ramo com `message_id` SOBRESCREVIA (`{...m, [messageId]: citations}`) e o ramo sem `message_id`
+// CONCATENAVA sem checar duplicata — dois eventos `sources` idênticos no mesmo run (reconexão de
+// SSE, replay) duplicavam a lista ("Fontes (6)" com cada documento duas vezes), e dois eventos
+// com o MESMO `message_id` faziam o segundo descartar o primeiro em silêncio — o mesmo bug que já
+// foi corrigido do outro lado. Último valor por índice vence (não faz diferença para eventos
+// idênticos; para eventos divergentes é a leitura mais recente da fonte).
+function mesclarCitacoes(existentes: Citation[] | undefined | null, novas: Citation[]): Citation[] {
+  const porIndice = new Map((existentes ?? []).map((c) => [c.index, c]));
+  for (const c of novas) porIndice.set(c.index, c);
+  return [...porIndice.values()];
+}
+
 export function CitationsProvider({ agentId, children }: { agentId: string; children: ReactNode }) {
   const { agent } = useAgent({ agentId });
   const [porMensagem, setPorMensagem] = useState<Record<string, Citation[]>>({});
@@ -63,11 +76,14 @@ export function CitationsProvider({ agentId, children }: { agentId: string; chil
         if (event?.type === "CUSTOM" && event?.name === "sources") {
           const { messageId, citations } = normalizar(event.value);
           if (!citations.length) return;
-          if (messageId) setPorMensagem((m) => ({ ...m, [messageId]: citations }));
-          // CONCATENA em vez de sobrescrever: pode haver mais de um evento sem message_id no
-          // mesmo run (ex.: dois lotes de fontes entre o retrieve e o resolve). Sobrescrever
-          // silenciosamente descartava o primeiro.
-          else pendente.current = [...(pendente.current ?? []), ...citations];
+          // Os dois ramos usam o MESMO merge com dedupe por índice (`mesclarCitacoes`) — ver
+          // comentário da função. Antes só o ramo sem `message_id` concatenava; o outro
+          // sobrescrevia direto.
+          if (messageId) {
+            setPorMensagem((m) => ({ ...m, [messageId]: mesclarCitacoes(m[messageId], citations) }));
+          } else {
+            pendente.current = mesclarCitacoes(pendente.current, citations);
+          }
         } else if (event?.type === "TEXT_MESSAGE_START") {
           const esperando = pendente.current;
           const id = event?.messageId ?? event?.message_id;
@@ -91,13 +107,32 @@ export function CitationsProvider({ agentId, children }: { agentId: string; chil
         }
       },
     });
-    return () => sub.unsubscribe();
+    return () => {
+      sub.unsubscribe();
+      // IMPORTANT 2 (re-revisão): o efeito depende só de `[agent]`, e o `ref` pertence à
+      // INSTÂNCIA DO PROVIDER — trocar de agente (toggle Live/Hosted) não remonta o provider, só
+      // troca a prop. Sequência do bug: run em andamento emite `sources` sem `message_id` →
+      // usuário troca de agente → `agentId` muda → ESTE cleanup roda (unsubscribe) ANTES de
+      // assinar o novo agente → o `RUN_FINISHED` daquele run nunca chega a ser visto (a
+      // assinatura que o veria já foi cancelada) → o handler de RUN_FINISHED acima, que limpa
+      // `pendente.current`, nunca dispara → a pendência sobrevive na ref → a PRÓXIMA mensagem, já
+      // no OUTRO agente, herda uma citação que não é dela. Por isso a limpeza tem que estar aqui
+      // também, não só reagindo a eventos do próprio agente: ao desligar desta assinatura, o run
+      // que ela estava seguindo deixou de poder ser concluído por ela.
+      pendente.current = null;
+    };
   }, [agent]);
 
   return <Ctx.Provider value={porMensagem}>{children}</Ctx.Provider>;
 }
 
+// Constante de módulo, não `[]` literal a cada chamada: um array novo por render invalidaria
+// qualquer `useMemo`/`useCallback` que dependa do RESULTADO desta função para mensagens sem
+// citação (é o caso de `MessageEvidence.tsx` — ver comentário do IMPORTANT 1 lá). `[] !== []`
+// para `Object.is`, então sem isto a "mensagem sem citação" nunca estabiliza.
+const VAZIO: Citation[] = [];
+
 export function useCitationsFor(messageId: string | undefined): Citation[] {
   const mapa = useContext(Ctx);
-  return (messageId && mapa[messageId]) || [];
+  return (messageId && mapa[messageId]) || VAZIO;
 }

@@ -9,9 +9,9 @@
 //
 // Este módulo troca a estratégia: UM único `MarkdownRenderer` para o conteúdo inteiro, e a
 // substituição do marcador vira um rehype plugin — mexe na árvore JÁ PARSEADA (depois do
-// Markdown virar hast), só em nós de TEXTO, pulando qualquer nó com ancestral `code`/`pre`. O
-// resto do pipeline do Streamdown (tabela, lista, cerca de código, Mermaid) roda por cima sem
-// saber que isso existe.
+// Markdown virar hast), só em nós de TEXTO, pulando qualquer nó com ancestral `code`/`pre`/`a`
+// (este último, Minor 3 da re-revisão — ver comentário de `SEM_CITACAO`). O resto do pipeline do
+// Streamdown (tabela, lista, cerca de código, Mermaid) roda por cima sem saber que isso existe.
 //
 // Entra DEPOIS dos rehype plugins padrão do Streamdown (`defaultRehypePlugins`: raw → katex →
 // sanitize → harden) porque o nó que injetamos é sintético, não veio de markdown do usuário — não
@@ -24,7 +24,13 @@ const MARCADOR = /\[(\d{1,3})\]/g;
 
 // `code`/`pre`: fronteira que o marcador nunca atravessa. `argv[1]` em bash e `A[1]` em Mermaid
 // ficam texto de código, mesmo que o índice exista entre as citações da resposta.
-const SEM_CITACAO = new Set(["code", "pre"]);
+//
+// `a`: Minor 3 (re-revisão). `[texto [1]](https://x.com)` vira `<a><button>...</button></a>` sem
+// este pulo — conteúdo interativo aninhado dentro de âncora é HTML inválido, e o clique dispara
+// os dois handlers (o do link e o do botão) ao mesmo tempo. O `[n]` dentro de texto de link fica
+// texto simples, como um índice órfão — não é regressão visível, porque link com citação embutida
+// no próprio texto do link já é caso raro no corpus.
+const SEM_CITACAO = new Set(["code", "pre", "a"]);
 
 type NoTexto = { type: "text"; value: string };
 type NoElemento = {

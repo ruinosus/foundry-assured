@@ -31,7 +31,12 @@ export function EvidencePanel() {
           mostra uma linha "▸ N garantias ativas" e nada mais, o que é pior que não ter aba. */}
       <details className="evidence-section evidence-guar" open>
         <summary>
-          <span aria-hidden>▸</span> {t("guaranteesCount", { count: GUARANTEES.length })}
+          {/* Minor 4 (re-revisão): a rotação em si é CSS (`.evidence-caret`, styles/globals.css)
+              — o `[open]` já existe no elemento nativo `<details>`, então a seta gira sem JS. */}
+          <span className="evidence-caret" aria-hidden>
+            ▸
+          </span>{" "}
+          {t("guaranteesCount", { count: GUARANTEES.length })}
         </summary>
         <ul className="evidence-guarantees">
           {GUARANTEES.map((g) => (

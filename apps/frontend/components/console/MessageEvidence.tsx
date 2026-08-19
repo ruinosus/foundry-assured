@@ -114,18 +114,51 @@ export function makeAssistantMessage(domainId: string): typeof CopilotChatAssist
       [openLabel],
     );
 
+    // IMPORTANT 1 (re-revisão): esta arrow PRECISA ser memoizada — mas com dependência nos
+    // valores DERIVADOS das citações (`rehypePlugins`/`components`), nunca com array vazio nem
+    // sem `useMemo` nenhum. As duas formas óbvias quebram, cada uma de um jeito:
+    //
+    //   · Arrow INLINE (sem memo) — a versão anterior, e o achado "óbvio" desta re-revisão: o
+    //     `markdownRenderer` remonta a subárvore markdown a CADA re-render da mensagem, inclusive
+    //     a cada token durante o streaming e em TODAS as mensagens do thread sempre que o mapa de
+    //     citações muda (é o "Mermaid re-renderizando" que o IMPORTANT 3 desta mesma tarefa disse
+    //     ter eliminado, uma camada abaixo — aqui ele reaparece).
+    //
+    //   · Arrow memoizada com dependência ESTÁVEL (`useCallback(..., [])` ou equivalente) —
+    //     conserto "óbvio" e ERRADO: medido que o `memo` do `Streamdown` (`chunk-JAPRZBRM.js`)
+    //     IGNORA `rehypePlugins`/`components` no comparador — só olha `children`/`shikiTheme`/
+    //     `isAnimating`/`mode`. No caminho grounded o evento `sources` chega DEPOIS do
+    //     `TextMessageEndEvent` (`grounded.py:247`/`:264`): quando a citação chega, `content` (que
+    //     é `children` lá dentro) já é o mesmo de antes. Se a IDENTIDADE do `markdownRenderer`
+    //     também não mudar, o Streamdown faz bail-out por `children` igual e o `[n]` NUNCA vira
+    //     botão nesse caminho — falha SILENCIOSA, sem erro nenhum. Quem "limpar" a dependência
+    //     achando redundante reintroduz exatamente este bug.
+    //
+    // O meio-termo: dependência em `[rehypePlugins, components]`, os dois já memoizados acima com
+    // dependência real (`[citations]` e `[openLabel]`). Identidade muda SÓ quando a citação muda
+    // — remonta uma vez (o que o Streamdown exige pra reprocessar o `[n]`) e para de remontar a
+    // cada token. Isto por sua vez depende do `useCitationsFor` devolver referência ESTÁVEL para
+    // "sem citação" (Minor 1, `lib/citations.tsx`) — sem aquilo, toda mensagem sem citação teria
+    // `citations` novo a cada render e a cadeia de memoização inteira não travaria em nada.
+    const markdownRenderer = useMemo(() => {
+      // Função NOMEADA, não arrow anônima: `react/display-name` (eslint) acusa componente sem
+      // nome quando devolvido de dentro de outra função — nome próprio resolve o lint sem mudar
+      // comportamento nenhum.
+      function ComCitacoes({ content }: { content: string }) {
+        return (
+          <CopilotChatAssistantMessage.MarkdownRenderer
+            content={content}
+            rehypePlugins={rehypePlugins}
+            components={components}
+          />
+        );
+      }
+      return ComCitacoes;
+    }, [rehypePlugins, components]);
+
     return (
       <>
-        <CopilotChatAssistantMessage
-          {...props}
-          markdownRenderer={({ content }: { content: string }) => (
-            <CopilotChatAssistantMessage.MarkdownRenderer
-              content={content}
-              rehypePlugins={rehypePlugins}
-              components={components}
-            />
-          )}
-        />
+        <CopilotChatAssistantMessage {...props} markdownRenderer={markdownRenderer} />
         {citations.length > 0 && (
           <div className="msg-evidence">
             <div className="msg-evidence-title">

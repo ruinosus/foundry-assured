@@ -1749,6 +1749,15 @@ table.evals tr:last-child td { border-bottom: none; }
 }
 .evidence-guar summary::-webkit-details-marker { display: none; }
 .evidence-guar[open] summary { color: var(--ink); font-weight: 600; margin-bottom: var(--space-2); }
+/* Minor 4 (re-revisão): a seta girava só de cor/peso — apontava para o lado com o conteúdo já
+   aberto. Gira por transform, mesmo padrão de `prefers-reduced-motion` usado em `.step-pip`
+   acima: a transição só existe sob `no-preference`; o ângulo final (`[open]`) aplica sempre,
+   então quem pede menos movimento ainda vê a seta apontando pro lado certo, só sem animação. */
+.evidence-caret { display: inline-block; }
+.evidence-guar[open] .evidence-caret { transform: rotate(90deg); }
+@media (prefers-reduced-motion: no-preference) {
+  .evidence-caret { transition: transform 0.15s ease; }
+}
 
 /* 4 · Passos como fita de uma linha, só durante a execução. */
 .steps-strip {
