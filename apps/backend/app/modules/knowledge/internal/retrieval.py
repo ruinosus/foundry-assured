@@ -328,17 +328,34 @@ async def _direct_search_authorized(
 def _project(rows: list[dict]) -> list[dict]:
     """Centralized dedup-by-URL (first-wins) + 1-based reindex → [{index, source, url, snippet}].
 
-    Both engines feed through here, so index/dedup semantics live in exactly one place."""
+    Both engines feed through here, so index/dedup semantics live in exactly one place.
+
+    UMA CITAÇÃO COM NOME INVÁLIDO NUNCA VIRA DOCUMENTO CITÁVEL. Quando `_decode_dockey` não
+    consegue decodificar um `docKey` (searchIndex), ele devolve a chave crua como fallback
+    "legível" — legível para DEPURAR o problema, não para virar nome de arquivo: carrega `=`/
+    `+`/`/`, que `document._NOME_OK` (a MESMA validação que a rota `/source` aplica) sempre
+    recusa com 400. Sem este filtro, o `[n]` chegava ao usuário — no texto e na lista "Fontes"
+    — como botão que a rota nunca consegue abrir: mesma regra do índice órfão ("link que não
+    leva a lugar nenhum é pior que nenhum link"), aplicada aqui PORQUE o backend é quem sabe,
+    no momento em que a citação nasce, que ela não tem nome resolvível — arrumar só o clique no
+    frontend deixaria a lista "Fontes" (que não passa pelo mesmo gate do `[n]` no texto) com o
+    mesmo botão morto.
+    """
+    from app.modules.knowledge.internal.document import _NOME_OK
+
     docs: list[dict] = []
     seen: set[str] = set()
     for r in rows:
         url = r.get("url") or ""
         if not url or url in seen:
             continue
+        source = r.get("source") or (url.rsplit("/", 1)[-1] if url else "")
+        if not _NOME_OK.fullmatch(source):
+            continue
         seen.add(url)
         docs.append({
             "index": len(docs) + 1,
-            "source": r.get("source") or (url.rsplit("/", 1)[-1] if url else ""),
+            "source": source,
             "url": url,
             "snippet": r.get("snippet") or "",
         })
