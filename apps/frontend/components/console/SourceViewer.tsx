@@ -13,7 +13,9 @@
 
 import { CopilotChatAssistantMessage } from "@copilotkit/react-core/v2";
 import { useTranslations } from "next-intl";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { authedFetch } from "@/lib/auth/api";
+import { realcar } from "@/lib/source-highlight";
 
 interface Aberto {
   domainId: string;
@@ -21,108 +23,64 @@ interface Aberto {
   snippet?: string;
 }
 
-/** Envolve o trecho em <mark> DEPOIS da renderização, andando pelos nós de texto.
- *
- * Marcar o markdown ANTES de renderizar quebraria bloco de código, tabela e link — e é em
- * documento técnico que o trecho cai nesses lugares. Aqui não há sintaxe para quebrar.
- *
- * A comparação é feita em texto NORMALIZADO (espaço colapsado) porque o trecho vem do ÍNDICE
- * e o documento vem do BLOB: eles divergem em quebra de linha e indentação. O mapa `posicoes`
- * é o que traduz um índice do texto normalizado de volta para (nó, deslocamento) reais.
- */
-function realcar(raiz: HTMLElement, trecho: string): boolean {
-  const alvo = trecho.replace(/\s+/g, " ").trim();
-  if (alvo.length < 24) return false;
-
-  const nos: Text[] = [];
-  const caminhador = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT);
-  for (let n = caminhador.nextNode(); n; n = caminhador.nextNode()) nos.push(n as Text);
-
-  // Texto normalizado + posição de cada caractere no nó de origem.
-  let plano = "";
-  const posicoes: Array<{ no: Text; off: number }> = [];
-  let espacoPendente = false;
-  for (const no of nos) {
-    const bruto = no.data;
-    for (let i = 0; i < bruto.length; i++) {
-      if (/\s/.test(bruto[i])) {
-        espacoPendente = plano.length > 0;
-        continue;
-      }
-      if (espacoPendente) {
-        plano += " ";
-        posicoes.push({ no, off: i });
-        espacoPendente = false;
-      }
-      plano += bruto[i];
-      posicoes.push({ no, off: i });
-    }
-  }
-
-  // O maior prefixo do trecho que exista no documento — divergências de normalização entre
-  // índice e blob costumam ficar no FIM do trecho, então encurtar pelo fim é o que resolve.
-  let inicio = -1;
-  let usados = 0;
-  for (let corte = alvo.length; corte >= 24; corte -= Math.max(8, Math.floor(corte / 8))) {
-    inicio = plano.indexOf(alvo.slice(0, corte));
-    if (inicio >= 0) {
-      usados = corte;
-      break;
-    }
-  }
-  if (inicio < 0) return false;
-
-  // Marca por NÓ: um Range que cruza fronteira de elemento não aceita surroundContents.
-  const fim = inicio + usados - 1;
-  const porNo = new Map<Text, { de: number; ate: number }>();
-  for (let i = inicio; i <= fim && i < posicoes.length; i++) {
-    const { no, off } = posicoes[i];
-    const faixa = porNo.get(no);
-    if (!faixa) porNo.set(no, { de: off, ate: off });
-    else faixa.ate = off;
-  }
-
-  let primeira: HTMLElement | null = null;
-  for (const [no, faixa] of porNo) {
-    const range = document.createRange();
-    range.setStart(no, faixa.de);
-    range.setEnd(no, Math.min(faixa.ate + 1, no.data.length));
-    const marca = document.createElement("mark");
-    marca.className = "source-hit";
-    try {
-      range.surroundContents(marca);
-    } catch {
-      continue; // nó já alterado por uma marca anterior — segue para o próximo
-    }
-    if (!primeira) primeira = marca;
-  }
-
-  const reduzMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  primeira?.scrollIntoView({ block: "center", behavior: reduzMovimento ? "auto" : "smooth" });
-  return primeira !== null;
-}
-
 export function SourceViewer() {
   const te = useTranslations("evidence");
   const [aberto, setAberto] = useState<Aberto | null>(null);
-  const [estado, setEstado] = useState<"carregando" | "ok" | "403" | "404" | "erro">("carregando");
+  const [estado, setEstado] = useState<"carregando" | "ok" | "401" | "403" | "404" | "erro">(
+    "carregando",
+  );
   const [conteudo, setConteudo] = useState("");
   const corpo = useRef<HTMLDivElement>(null);
+  const fecharBtn = useRef<HTMLButtonElement>(null);
+  // Quem tinha o foco antes de abrir — normalmente o botão [n] da citação, fora da árvore de
+  // React deste componente. Fechar devolve o foco para lá em vez de deixá-lo perdido no chat.
+  const gatilho = useRef<HTMLElement | null>(null);
+
+  const fechar = useCallback(() => {
+    setAberto(null);
+    gatilho.current?.focus();
+    gatilho.current = null;
+  }, []);
 
   useEffect(() => {
-    const ao = (e: Event) => setAberto((e as CustomEvent).detail as Aberto);
+    const ao = (e: Event) => {
+      gatilho.current = document.activeElement as HTMLElement | null;
+      // Reseta ESTADO E CONTEÚDO aqui, no próprio listener — não no efeito de fetch. O
+      // listener roda fora do ciclo de eventos do React (evento nativo de `window`), então os
+      // efeitos passivos podem só ser liberados DEPOIS de uma pintura: sem isto, reabrir com um
+      // documento novo pinta o cabeçalho do documento B em cima do corpo ainda com o markdown
+      // do documento A.
+      setEstado("carregando");
+      setConteudo("");
+      setAberto((e as CustomEvent).detail as Aberto);
+    };
     window.addEventListener("abrir-fonte", ao);
     return () => window.removeEventListener("abrir-fonte", ao);
   }, []);
 
+  // Escape fecha, mesmo precedente do DomainPicker.
+  useEffect(() => {
+    if (!aberto) return;
+    const esc = (e: KeyboardEvent) => {
+      if (e.key === "Escape") fechar();
+    };
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [aberto, fechar]);
+
+  // Move o foco para dentro do painel ao abrir (ou trocar de documento com o painel já aberto).
+  // Sem isto, quem ativou o [n] pelo teclado fica com o foco no meio da conversa.
+  useEffect(() => {
+    if (aberto) fecharBtn.current?.focus();
+  }, [aberto]);
+
   useEffect(() => {
     if (!aberto) return;
     let cancelado = false;
-    setEstado("carregando");
-    setConteudo("");
-    fetch(`/api/source/${encodeURIComponent(aberto.domainId)}/${encodeURIComponent(aberto.name)}`)
+    authedFetch(`/api/source/${encodeURIComponent(aberto.domainId)}/${encodeURIComponent(aberto.name)}`)
       .then(async (r) => {
         if (cancelado) return;
+        if (r.status === 401) return setEstado("401");
         if (r.status === 403) return setEstado("403");
         if (r.status === 404) return setEstado("404");
         if (!r.ok) return setEstado("erro");
@@ -150,6 +108,7 @@ export function SourceViewer() {
 
   const mensagem =
     estado === "carregando" ? te("sourceLoading")
+    : estado === "401" ? te("sourceSessionExpired")
     : estado === "403" ? te("sourceForbidden")
     : estado === "404" ? te("sourceMissing")
     : estado === "erro" ? te("sourceError")
@@ -159,11 +118,18 @@ export function SourceViewer() {
     <div className="source-viewer" role="dialog" aria-label={aberto.name}>
       <div className="source-viewer-head">
         <span className="source-viewer-name">{aberto.name}</span>
-        <button type="button" className="source-viewer-close" onClick={() => setAberto(null)}
+        <button type="button" className="source-viewer-close" ref={fecharBtn} onClick={fechar}
                 aria-label={te("sourceClose")}>
           ×
         </button>
       </div>
+      {/* O `mensagem ? <p> : <MarkdownRenderer>` abaixo é o que impede o <mark> inserido por
+          `realcar` (fora do React, direto no DOM) de vazar de uma abertura para a próxima: ao
+          trocar de ramo, React desmonta a subárvore do MarkdownRenderer e leva os `<mark>`
+          junto. Não é por causa do reset de estado/conteúdo acima — é a troca de ramo em si.
+          Um futuro "manter o documento anterior visível enquanto carrega o próximo" (trocar
+          este ternário por manter o MarkdownRenderer montado com conteúdo antigo) reintroduziria
+          o vazamento em silêncio. */}
       <div className="source-viewer-body" ref={corpo}>
         {mensagem ? (
           <p className="muted">{mensagem}</p>

@@ -374,6 +374,7 @@
     "sources": "Sources",
     "openSource": "Open the document",
     "sourceLoading": "Opening the document…",
+    "sourceSessionExpired": "Your session has expired. Sign in again to open this document.",
     "sourceForbidden": "You do not have access to this document.",
     "sourceMissing": "Document not found.",
     "sourceError": "Could not open the document.",
