@@ -1,19 +1,3 @@
----
-type: guide
-title: OpenWiki Quickstart
-description: "Entry point to the repository wiki, with task routing for backend, frontend, hosted agents, infrastructure, and the repository’s evidence and validation flows."
-tags: [quickstart, navigation]
-openwiki:
-  roles: [repository]
-  change_kinds: [navigation]
-  source_paths:
-    - openwiki/backend/grounded-domains.md
-    - openwiki/backend/knowledge-pipeline.md
-    - openwiki/frontend/assurance-console.md
-  invariants:
-    - Quickstart should route broad change intents to the first owning wiki page, exact source entry points, focused tests, and narrow validation commands.
----
-
 # OpenWiki quickstart
 
 Use this wiki as a source-grounded map of the whole repository.
