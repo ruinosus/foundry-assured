@@ -27,11 +27,13 @@ import argparse
 import asyncio
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import Self
 
 from agent_framework import EvalItem, EvalNotPassedError, LocalEvaluator, Message
 
+import app as _app
 from app.modules.grounded.internal.concierge import build_concierge_agent
 from app.modules.tenancy.internal.tenant import tenant_config
 from app.registry import _domains
@@ -40,13 +42,11 @@ from eval.assertions import (
     check_cites_a_source,
     check_no_secret_leaked,
     cites_a_source,
-    techdocs_cites_source,
     no_secret_leaked,
     secret_findings,
     selfwiki_cites_source,
+    techdocs_cites_source,
 )
-
-import app as _app
 
 _DATASETS = Path(__file__).resolve().parent / "datasets"
 _GOLDEN = _DATASETS / "golden.jsonl"
@@ -114,7 +114,7 @@ class _RetrieveAgent:
     def __init__(self, domain) -> None:
         self._d = domain
 
-    async def __aenter__(self) -> _RetrieveAgent:
+    async def __aenter__(self) -> Self:
         return self
 
     async def __aexit__(self, *exc) -> bool:
@@ -264,7 +264,7 @@ async def _agent_answer(agent, query: str, *, retries: int = 6) -> str:
     for attempt in range(retries):
         try:
             return (await agent.run(query)).text or ""
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             s = str(exc).lower()
             if any(marker in s for marker in _FILTER_MARKERS):
                 raise
@@ -298,7 +298,7 @@ async def _build_items(
         query = row["query"]
         try:
             text = await _agent_answer(agent, query)
-        except Exception as exc:  # noqa: BLE001 — classify content-filter blocks
+        except Exception as exc:
             if any(marker in str(exc).lower() for marker in _FILTER_MARKERS):
                 text = _BLOCKED_ANSWER
                 blocked += 1
@@ -328,7 +328,7 @@ async def _run(cloud: bool, safety: bool, domain: str) -> int:
         rows = _load_dataset(_TECHDOCS_GOLDEN)
         eval_name = "techdocs-golden"
         local = LocalEvaluator(techdocs_cites_source, no_secret_leaked)
-        agent_factory = lambda: _RetrieveAgent(_eval_spec("techdocs"))  # noqa: E731
+        agent_factory = lambda: _RetrieveAgent(_eval_spec("techdocs"))
         build_kwargs = {"use_context": False, "expected_field": "expected", "pace_s": 3.0}
         label = "techdocs golden"
     elif domain == "selfwiki":
@@ -339,7 +339,7 @@ async def _run(cloud: bool, safety: bool, domain: str) -> int:
         rows = _load_dataset(_SELFWIKI_GOLDEN)
         eval_name = "selfwiki-golden"
         local = LocalEvaluator(selfwiki_cites_source, no_secret_leaked)
-        agent_factory = lambda: _RetrieveAgent(_eval_spec("selfwiki"))  # noqa: E731
+        agent_factory = lambda: _RetrieveAgent(_eval_spec("selfwiki"))
         build_kwargs = {"use_context": False, "expected_field": "expected", "pace_s": 3.0}
         label = "selfwiki golden"
     else:
@@ -435,7 +435,7 @@ def _persist_run(
 ) -> None:
     """Append a compact summary of this run to runs.jsonl for the /evals page."""
     record = {
-        "ts": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "ts": datetime.now(UTC).isoformat(timespec="seconds"),
         "eval_name": eval_name,
         "queries": num_queries,
         "cloud": cloud,
