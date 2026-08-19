@@ -10,7 +10,10 @@ boundary, so they are named for what they are. ADR-017 asked for exactly this: p
 really public surface instead of leaving an underscore that lies.
 """
 
-from app.modules.knowledge.internal.document import authorized_document
+from app.modules.knowledge.internal.document import (
+    NomeDocumentoInvalido,
+    authorized_document,
+)
 from app.modules.knowledge.internal.retrieval import _decode_dockey as decode_dockey
 from app.modules.knowledge.internal.retrieval import retrieve
 from app.modules.knowledge.internal.secure_search import (
@@ -22,6 +25,7 @@ from app.modules.knowledge.internal.secure_search import (
 )
 
 __all__ = [
+    "NomeDocumentoInvalido",
     "authorized_components",
     "authorized_document",
     "chunk_component",

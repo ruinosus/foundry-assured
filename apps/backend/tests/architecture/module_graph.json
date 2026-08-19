@@ -265,10 +265,12 @@
     ],
     "shared": [
       "modules/knowledge/api.py",
+      "modules/knowledge/internal/document.py",
       "modules/knowledge/internal/retrieval.py",
       "modules/knowledge/internal/wiki_builder.py"
     ],
     "tenancy": [
+      "modules/knowledge/api.py",
       "modules/knowledge/internal/acl_setup.py",
       "modules/knowledge/internal/document.py",
       "modules/knowledge/internal/ingest.py",

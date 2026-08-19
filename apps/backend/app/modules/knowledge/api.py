@@ -12,10 +12,12 @@ from __future__ import annotations
 import logging
 from collections.abc import Callable
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Response
 
-from app.modules.knowledge.public import authorized_document
+from app.modules.knowledge.public import NomeDocumentoInvalido, authorized_document
+from app.modules.tenancy.public import require_domain
 from app.shared.auth import auth_dependencies, current_user
+from app.shared.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +38,7 @@ def set_domain_lookup(fn: Callable[[str], object]) -> None:
 
 
 @router.get("/{domain_id}/{name}")
-async def read_source(domain_id: str, name: str) -> dict:
+async def read_source(domain_id: str, name: str, response: Response) -> dict:
     if _domain_lookup is None:
         raise HTTPException(status_code=500, detail="resolução de domínio não configurada")
     try:
@@ -46,24 +48,43 @@ async def read_source(domain_id: str, name: str) -> dict:
     if getattr(domain, "kind", "") == "tool":
         raise HTTPException(status_code=404, detail="domínio não tem documentos")
 
+    # ADR-010: gate de entitlement por tenant no modo shared. `domain_id` é path param, então
+    # `domain_deps(domain_id)` — o que toda outra rota por domínio usa (registry.py, hosted/
+    # api.py) — não dá pra montar como `dependencies=` estático do router aqui. Chamamos o
+    # MESMO `require_domain` que elas chamam, dentro do handler, antes de tocar o documento —
+    # não reimplementamos a regra, só o ponto de chamada muda (dependency estática → chamada
+    # direta). `_check` pede `Depends(require_user)` só para ordenar a resolução do tenant
+    # depois da sessão; a sessão já foi validada pela dependency do router (`auth_dependencies`,
+    # acima), então chamamos `_check()` direto, sem o DI do FastAPI. Condicionado a `shared`
+    # pelo mesmo motivo que `domain_deps` condiciona: fora do modo shared não existe tenant
+    # resolvido (`_current_tenant` fica `None`), e `require_domain` é fail-closed — chamado sem
+    # essa guarda, derrubaria self_hosted/dedicated com 403 em toda leitura.
+    if settings.deployment_mode == "shared":
+        await require_domain(domain_id)()
+
+    # Conteúdo controlado por ACL: nunca cacheado por proxy/CDN/navegador — um cache
+    # compartilhado devolveria o documento de uma pessoa para outra.
+    response.headers["Cache-Control"] = "no-store"
+
     user = current_user()
     try:
         url, conteudo = await authorized_document(domain, name, user)
-    except ValueError:
+    except NomeDocumentoInvalido:
         raise HTTPException(status_code=400, detail="nome de documento inválido") from None
-    except PermissionError:
-        _auditar(domain_id, name, autorizado=False)
+    except PermissionError as exc:
+        _auditar(domain_id, name, autorizado=False, url=getattr(exc, "url", None))
         # 403 e não 404: a pessoa está autenticada e a rota existe. Não vazamos se o documento
         # existe — `authorized_document` já não distingue os dois casos.
         raise HTTPException(status_code=403, detail="sem autorização para este documento") from None
-    except FileNotFoundError:
+    except FileNotFoundError as exc:
+        _auditar(domain_id, name, autorizado=False, url=getattr(exc, "url", None))
         raise HTTPException(status_code=404, detail="documento não encontrado") from None
 
-    _auditar(domain_id, name, autorizado=True)
+    _auditar(domain_id, name, autorizado=True, url=url)
     return {"name": name, "url": url, "content": conteudo}
 
 
-def _auditar(domain_id: str, name: str, *, autorizado: bool) -> None:
+def _auditar(domain_id: str, name: str, *, autorizado: bool, url: str | None) -> None:
     """Registra a leitura — e TAMBÉM a negada, que é o sinal mais interessante da trilha.
 
     Fail-soft como o registro do `retrieve()`: ler é reversível, e negar a leitura por causa
@@ -81,5 +102,7 @@ def _auditar(domain_id: str, name: str, *, autorizado: bool) -> None:
             kind="access",
             summary=f"documento {'aberto' if autorizado else 'NEGADO'}: {name}",
             ref=domain_id,
-            detail={"document": name, "authorized": autorizado, **actor_detail()},
+            # `url` é a CHAVE real do documento (o que o trim filtra por); `name` sozinho não
+            # identifica o recurso entre domínios/containers diferentes.
+            detail={"document": name, "url": url, "authorized": autorizado, **actor_detail()},
         )
