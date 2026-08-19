@@ -80,8 +80,10 @@ def build_grounded_agent(domain: Any, user: Any, thread_id: str = "") -> Any:
         agent_name=domain_id,
         credential=credential_for_request(),
         context_providers=providers,
-        # O gravador de uso entra aqui pelo mesmo motivo que entra na fábrica de cliente: medir é
-        # propriedade de falar com o modelo, não decisão de cada agente.
+        # O gravador de uso DE NÍVEL DE AGENTE. `FoundryAgent` constrói o cliente por dentro, e o
+        # `middleware` dele é agent-level (a docstring do pacote diz isso) — um `ChatMiddleware`
+        # aqui é silenciosamente ignorado. A primeira versão deste arquivo errou nisso, e o efeito
+        # foi token zerado numa conversa que gravou todo o resto.
         middleware=[_usage_middleware()],
         id=domain_id,
         name=domain_id,
@@ -108,9 +110,9 @@ def agente_recuperacao(agente: Any, recuperacao: Any = None) -> Any:
 
 
 def _usage_middleware() -> Any:
-    from app.modules.conversations.public import usage_recorder
+    from app.modules.conversations.public import agent_usage_recorder
 
-    return usage_recorder()
+    return agent_usage_recorder()
 
 
 def build_grounded_workflow(domain: Any, user: Any, thread_id: str = "") -> Any:

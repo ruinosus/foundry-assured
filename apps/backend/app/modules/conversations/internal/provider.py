@@ -54,6 +54,9 @@ class StoredHistoryProvider(HistoryProvider):
         self._user = user_id
         self._agent = agent
         self._conversation = conversation_id
+        #: Os ids que ESTA requisição já encontrou gravados. Preenchido no `get_messages` e lido no
+        #: `save_messages` — ver o porquê lá embaixo.
+        self._ja_gravados: set[str] = set()
 
     def _conv(self, session_id: str | None) -> str:
         return self._conversation or (session_id or "")
@@ -72,7 +75,12 @@ class StoredHistoryProvider(HistoryProvider):
             # silêncio é como o painel de ROI acabou contando zero por meses.
             logger.exception("falha ao ler o histórico da conversa %s", conversa)
             return []
-        return [Message.from_dict(linha) for linha in linhas]
+        mensagens = [Message.from_dict(linha) for linha in linhas]
+        # Guarda os ids do que JÁ está no store. O `save_messages` usa isso para não regravar.
+        self._ja_gravados = {
+            i for i in (getattr(m, "message_id", None) for m in mensagens) if i
+        }
+        return mensagens
 
     async def save_messages(
         self,
@@ -85,7 +93,33 @@ class StoredHistoryProvider(HistoryProvider):
         conversa = self._conv(session_id)
         if not conversa or not messages:
             return
-        payload = [m.to_dict() for m in messages]
+
+        # DEDUPLICAÇÃO POR ID, e sem I/O extra: os ids vêm do `get_messages` desta mesma execução.
+        #
+        # POR QUE É NECESSÁRIA. O framework passa para cá `input_messages + response.messages`, e no
+        # caminho AG-UI o `input_messages` é a THREAD INTEIRA — o cliente reenvia toda a conversa a
+        # cada turno. Como este store é append-only (JSONL), cada turno regravava tudo. Medido numa
+        # conversa real de três perguntas: doze mensagens gravadas onde deviam ser seis, com a
+        # primeira pergunta aparecendo três vezes.
+        #
+        # E o estrago não era só tamanho: o histórico duplicado volta como CONTEXTO do agente, e
+        # quem procura "a última pergunta do usuário" nele encontra uma pergunta antiga. Foi o que
+        # fez a recuperação buscar documentos da pergunta errada.
+        #
+        # Com sessão própria o framework passa só o turno novo (verificado), então isto é
+        # específico do caminho AG-UI — e é aqui que ele tem de ser resolvido, porque é o único
+        # ponto que sabe o que já está gravado.
+        novas = [
+            m
+            for m in messages
+            if not (getattr(m, "message_id", None) or "") in self._ja_gravados
+        ]
+        if not novas:
+            return
+        self._ja_gravados.update(
+            i for i in (getattr(m, "message_id", None) for m in novas) if i
+        )
+        payload = [m.to_dict() for m in novas]
         try:
             await asyncio.to_thread(
                 store().append, self._user, self._agent, conversa, payload

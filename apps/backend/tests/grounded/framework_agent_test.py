@@ -103,7 +103,19 @@ def main() -> int:
             "…com a recuperação com ACL entre os providers",
             any(type(p).__name__ == "GroundedRetrieval" for p in capturado.get("context_providers") or []),
         )
-        check("…e com middleware de uso", bool(capturado.get("middleware")))
+        # A CAMADA IMPORTA: `FoundryAgent.middleware` é AGENT-level (a docstring do pacote diz
+        # isso). Um `ChatMiddleware` ali é silenciosamente ignorado — medido, e o efeito em
+        # produção foi token ZERADO numa conversa que gravou todo o resto. Este check fixa a
+        # camada, não só a presença, porque a presença é o que enganou.
+        from agent_framework import AgentMiddleware, ChatMiddleware
+
+        mws = list(capturado.get("middleware") or [])
+        check("…e com middleware de uso", bool(mws))
+        check(
+            "…na camada de AGENTE (ChatMiddleware aqui é ignorado em silêncio)",
+            all(isinstance(m, AgentMiddleware) for m in mws)
+            and not any(isinstance(m, ChatMiddleware) for m in mws),
+        )
         # `agent_version` ausente é DELIBERADO: fixar versão aqui faria o republish deixar de ter
         # efeito, que é o oposto do que a SEGUNDA MÁXIMA quer.
         check("…e SEM versão fixa (o republish tem de valer)", not capturado.get("agent_version"))
