@@ -57,10 +57,9 @@ class OrderedAgentFrameworkWorkflow(AgentFrameworkWorkflow):
         async for event in super().run(input_data):
             # Drop the request_info tool-call trio (start/args/end) — its id is
             # tracked from the start so the args/end (which carry only the id) go too.
-            if isinstance(event, ToolCallStartEvent):
-                if event.tool_call_name == _REQUEST_INFO_TOOL:
-                    suppressed_tool_ids.add(event.tool_call_id)
-                    continue
+            if isinstance(event, ToolCallStartEvent) and event.tool_call_name == _REQUEST_INFO_TOOL:
+                suppressed_tool_ids.add(event.tool_call_id)
+                continue
             elif isinstance(event, (ToolCallArgsEvent, ToolCallEndEvent)):
                 if event.tool_call_id in suppressed_tool_ids:
                     if isinstance(event, ToolCallEndEvent):

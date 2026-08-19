@@ -128,7 +128,6 @@ def main() -> int:
     import app.modules.tenancy.internal.tenant as _tenant_mod
     from app.modules.tenancy.internal.tenant import TenantConfig
 
-    original_tenant_config = getattr(_tenant_mod, "_tenant_config_override", None)
     test_tenant_cfg = TenantConfig(
         foundry_project_endpoint=cfg["foundry_endpoint"],
         mcp_ado_organization=cfg["azdo_org"] or "",

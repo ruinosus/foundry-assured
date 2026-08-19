@@ -133,7 +133,7 @@ def main() -> int:
         no["next"] = {"v": "contato: fulano@exemplo.com"}
         no = no["next"]
     try:
-        saneadas_funda, _ = sanitize([
+        _saneadas_funda, _ = sanitize([
             {"role": "assistant", "annotations": [
                 {"title": "d.md", "additional_properties": funda},
             ]},
@@ -145,7 +145,7 @@ def main() -> int:
     # Entrada malformada não pode estourar `sanitize` — o formato do framework não é garantido
     # pelo nosso código, e uma exceção aqui derrubaria a gravação da conversa inteira.
     try:
-        saneadas_malformado, _ = sanitize([
+        _saneadas_malformado, _ = sanitize([
             {"role": "assistant", "contents": [
                 {"type": "text", "text": "x", "annotations": "não é uma lista"},
                 {"type": "text", "text": "y", "annotations": ["não é um dict"]},

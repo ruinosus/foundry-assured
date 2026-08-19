@@ -64,9 +64,12 @@ def offenders() -> list[tuple[str, int, int]]:
             if not _rooted_in_own_file(node.value):
                 continue
             index = node.slice
-            if isinstance(index, ast.Constant) and isinstance(index.value, int):
-                if index.value > MAX_SAFE_DEPTH:
-                    found.append((str(path.relative_to(BACKEND)), node.lineno, index.value))
+            if (
+                isinstance(index, ast.Constant)
+                and isinstance(index.value, int)
+                and index.value > MAX_SAFE_DEPTH
+            ):
+                found.append((str(path.relative_to(BACKEND)), node.lineno, index.value))
     return found
 
 
