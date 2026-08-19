@@ -25,10 +25,14 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-      - name: Lint (ruff)
-        run: uvx ruff check .
       - name: Install dependencies
         run: uv sync --frozen
+      # Versão do ruff fixada em `[dependency-groups.dev]` (pyproject.toml) e travada no
+      # uv.lock — `uv run` usa exatamente essa versão, não "a última disponível" como
+      # `uvx ruff` faria. Upgrade de ruff vira um PR que muda o lock, não uma surpresa
+      # silenciosa no gate. O ruleset em si é o `[tool.ruff.lint]` do mesmo pyproject.toml.
+      - name: Lint (ruff)
+        run: uv run ruff check .
       - name: Policy gate (planted-violation self-test)
         run: uv run python -m eval.run_eval --self-test
       - name: ACL attribution round-trip (chunk key == blob key)

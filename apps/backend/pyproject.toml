@@ -55,6 +55,133 @@ dependencies = [
 [tool.uv]
 prerelease = "allow"
 
+# ---------------------------------------------------------------------------
+# ruff — antes desta seção, o gate `uvx ruff check .` rodava com o RULESET
+# PADRÃO da versão instalada (416 regras em 0.16.3), sem ninguém ter
+# escolhido nada. Isso tem dois problemas: (1) um upgrade do ruff pode trocar
+# o default por baixo — já aconteceu de verdade entre 0.12 e 0.16, o default
+# saltou de 59 para 413 regras, ver evidência no relatório — e agora que o
+# gate é obrigatório, isso trava o CI de todo mundo sem aviso; (2) ninguém
+# consegue discutir se uma regra nova faz sentido, porque "o default" não é
+# uma decisão, é um acidente de versão.
+#
+# A seleção abaixo foi DERIVADA do que o repositório já pratica, não
+# inventada: rodamos o ruff com todas as ~969 regras existentes (`--select
+# ALL`) e cruzamos com (a) o que já passa limpo hoje e (b) os `# noqa`
+# existentes, que documentam regras que o time aceita mas contorna caso a
+# caso (não regras que o time rejeita). Regra que só passaria mudando
+# comportamento (docstring ausente, complexidade, assert em produção,
+# `except Exception` genérico fora dos casos já marcados) fica de fora —
+# gate de lint não é gate de refatoração.
+#
+# Famílias com adoção majoritária (a maioria das regras da família já é
+# default e o resto passa limpo, ou o resto cabe num punhado de exceções
+# documentadas) entram por prefixo, com o punhado de violações remanescentes
+# em `ignore`, uma por uma, com o porquê. Famílias onde o default cobre só
+# um caso incidental (bandit, pydocstyle, e as três variantes "avançadas" do
+# pylint — convenção, refactor/complexidade, warning) NÃO foram expandidas:
+# alargá-las pegaria assert de produção, `urlopen` para endpoint já
+# validado, docstring ausente em quase tudo e métrica de complexidade — cada
+# um desses é uma decisão de segurança/arquitetura própria, não um efeito
+# colateral de organizar o pyproject.toml. Ficam só nos códigos que já
+# eram default, explícitos, sem alargar a família.
+[tool.ruff]
+target-version = "py312"  # bate com requires-python; evita o ruff advinhar a sintaxe-alvo do pyupgrade (UP)
+
+[tool.ruff.lint]
+select = [
+    # -- núcleo de correção: sempre queremos (bugs reais, não estilo) --
+    "F",      # Pyflakes — import/nome não usado, variável não definida etc.
+    "E",      # pycodestyle erros
+    "W",      # pycodestyle avisos
+    "PLE",    # Pylint "error" — bugs reais (ex.: argumento de exceção inválido), 0 violação hoje
+
+    # -- já 100% praticadas, zero violação mesmo expandindo a família inteira --
+    "ASYNC",  # flake8-async — pitfall de código async (o backend é async-first)
+    "BLE",    # flake8-blind-except — `except Exception` genérico; instâncias aceitas já têm noqa
+    "DTZ",    # flake8-datetimez — datetime sem timezone
+    "EXE",    # flake8-executable — shebang/permissão de execução
+    "FA",     # flake8-future-annotations
+    "FLY",    # flynt — f-string em vez de concatenação
+    "I",      # isort — ordenação de import
+    "INT",    # flake8-gettext
+    "ISC",    # flake8-implicit-str-concat
+    "LOG",    # flake8-logging
+    "G",      # flake8-logging-format
+    "PGH",    # pygrep-hooks
+    "PIE",    # flake8-pie
+    "PYI",    # flake8-pyi (aplica a `.pyi`; inofensivo hoje, útil se o projeto ganhar stubs)
+    "T100",   # flake8-debugger — `pdb`/`breakpoint()` esquecido
+    "UP",     # pyupgrade — sintaxe moderna equivalente, sem mudar comportamento
+    "YTT",    # flake8-2020 — comparação de versão de Python incorreta
+
+    # -- majoritariamente praticadas; o resto vira `ignore` documentado abaixo --
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "N",      # pep8-naming
+    "PERF",   # Perflint
+    "PT",     # flake8-pytest-style
+    "PTH",    # flake8-use-pathlib
+    "RET",    # flake8-return
+    "RUF",    # regras específicas do Ruff
+    "SIM",    # flake8-simplify
+    "TC",     # flake8-type-checking
+    "TRY",    # tryceratops — inclui TRY004, mantido por causa do noqa existente
+    "FURB",   # refurb
+
+    # -- adotadas só no que já era default; família NÃO alargada (ver nota acima) --
+    "D419",                                                    # pydocstyle: só "docstring vazia"
+    "S102", "S110", "S112",                                    # bandit: os 3 já default; resto é decisão de segurança à parte
+    "PLC0105", "PLC0131", "PLC0132", "PLC0205", "PLC0206",     # pylint convention: só os já default
+    "PLC0208", "PLC0414", "PLC3002",
+    "PLR0124", "PLR0133", "PLR0206", "PLR0402", "PLR1704",     # pylint refactor: só os já default —
+    "PLR1708", "PLR1711", "PLR1716", "PLR1722", "PLR1730",     # métricas de complexidade (PLR09xx) ficam
+    "PLR1733", "PLR1736", "PLR2044",                           # de fora: exigiriam refatorar, não linter
+    "PLW0120", "PLW0127", "PLW0128", "PLW0129", "PLW0131",     # pylint warning: só os já default
+    "PLW0133", "PLW0177", "PLW0211", "PLW0245", "PLW0406",
+    "PLW0602", "PLW0604", "PLW0642", "PLW0711", "PLW1501",
+    "PLW1507", "PLW1508", "PLW1509", "PLW1510", "PLW2101",
+]
+
+ignore = [
+    # Bugbear: estilo de padrão de regex / zip sem `strict=` — sem noqa hoje, sem
+    # justificativa escrita; corrigir é troca de comportamento fora do escopo deste gate.
+    "B034", "B905",
+    # Comprehensions: dict-comp de iterável / comprehension desnecessária — idem.
+    "C416", "C420",
+    # pycodestyle: import fora do topo (padrão deliberado em alguns módulos para evitar
+    # ciclo de import), linha longa (é o `ruff format`/formatador que decide isso, não o
+    # linter), e três nits de estilo (`not in`, lambda atribuída, nome de variável
+    # ambíguo) que exigiriam tocar dezenas de arquivos sem nenhum ganho funcional.
+    "E402", "E501", "E713", "E731", "E741",
+    # refurb: `if/else` que vira `or`, `in` de item único — estilo, sem noqa.
+    "FURB110", "FURB171",
+    # pep8-naming: nome de classe/import/exceção fora do padrão — renomear é risco de
+    # quebrar referência por string/reflection; fora do escopo de um gate de lint.
+    "N801", "N812", "N818",
+    # Perflint: comprehension manual / dict comprehension manual — refatoração de estilo.
+    "PERF401", "PERF403",
+    # pytest-style: assert composto — estilo de teste, sem noqa.
+    "PT018",
+    # use-pathlib: `os.unlink`/`os.path.basename`/`os.path.splitext` em vez de `Path` —
+    # troca de API, não de lint puro.
+    "PTH108", "PTH119", "PTH122",
+    # flake8-return: `return` implícito / `else` supérfluo após `return` — estilo.
+    "RET503", "RET505",
+    # RUF001-003/005: "caractere unicode ambíguo" dispara em acentuação e aspas curvas do
+    # português — falso positivo sistemático neste repo (comentários e strings em pt-BR).
+    "RUF001", "RUF002", "RUF003", "RUF005",
+    # flake8-simplify: exceção suprimível / condição yoda — estilo, sem noqa.
+    "SIM105", "SIM300",
+    # type-checking: import só-de-tipo fora de `TYPE_CHECKING` — melhoria de import time,
+    # não comportamento; fora do escopo deste gate.
+    "TC002", "TC003",
+    # tryceratops: mensagem de exceção "crua", `try/except/else`, `raise` dentro de `try`
+    # — cada um pede reestruturar o bloco; TRY004 (já default) fica de fora desta lista
+    # de propósito — é regra aceita-e-contornada via noqa, não rejeitada.
+    "TRY003", "TRY300", "TRY301",
+]
+
 [tool.ruff.lint.flake8-bugbear]
 # `Depends(...)`/`Security(...)` como valor default de argumento é o idioma exigido pelo
 # FastAPI para injeção de dependência (routes.py chama a função a cada request; o objeto
@@ -70,6 +197,10 @@ build-backend = "hatchling.build"
 [dependency-groups]
 dev = [
     "import-linter>=2.13",
+    # Fixado para o CI e o `uv run ruff check .` local usarem sempre a mesma versão — sem
+    # isso, `uvx ruff` puxa a última disponível e um upgrade pode reabrir o gate sozinho
+    # com regras novas que ninguém selecionou (ver comentário em `[tool.ruff]` acima).
+    "ruff==0.16.3",
 ]
 
 [tool.hatch.build.targets.wheel]
