@@ -41,6 +41,17 @@ jobs:
       # field the producer's model never had, and a second generator grew from it.
       - name: Doc-bundle contract (producer ↔ consumer field agreement)
         run: uv run python -m eval.docbundle_contract_test
+
+      # Fail-closed do controle de acesso a documento integral (rota GET /source), por mutação:
+      # planta o cenário "zero resultados no trim" e prova que o código levanta PermissionError em
+      # vez de servir o documento. Prova por mutação que ninguém roda não é controle, é comentário.
+      - name: Documento integral — fail-closed por mutação (document_access declarado, não derivado)
+        run: uv run python -m tests.knowledge.document_access_test
+      - name: Documento integral — contrato da rota HTTP (401/403/404, sem cache, SSRF)
+        run: uv run python -m tests.knowledge.document_api_test
+      - name: Documento integral — contagem autorizada (trim por blob_url, header de identidade)
+        run: uv run python -m tests.knowledge.document_contar_autorizado_test
+
       # The fidelity gate runs at GENERATION (wiki-regen.yml), on one bundle, once. The ingest
       # then walks knowledge/wiki-bundle/** and uploads whatever is committed — so a bundle stays in
       # the knowledge base long after the code it describes has moved. Two did: they scored
@@ -192,6 +203,16 @@ jobs:
       - name: Vocabulário de citação (canônico, e os dois lados concordam)
         run: uv run python -m tests.grounded.citation_vocabulary_test
 
+      # O evento `sources` carrega o `message_id` da resposta que ele fundamenta — sem isso o
+      # painel de evidência só consegue guardar a última resposta da conversa.
+      - name: Evento `sources` carrega o id da resposta
+        run: uv run python -m tests.grounded.sources_message_id_test
+
+      # A citação persiste junto do turno gravado — não só passa pelo SSE. Sem isto, rolar a
+      # conversa para uma resposta antiga perde a evidência que a sustentava.
+      - name: Citações persistem com a conversa
+        run: uv run python -m tests.conversations.citations_persisted_test
+
       # O helpdesk emite as fontes por API PÚBLICA. A alternativa seria monkeypatch de `_emit_text`
       # — função privada de módulo num pacote que a ADR-020 já descreve como volátil. O nosso
       # código quebra quando NÓS mexemos; um monkeypatch quebra quando ELES publicam um minor.
@@ -254,6 +275,11 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+      # O destaque do trecho citado (source-highlight.ts) roda contra um DOM real via jsdom —
+      # sem este gate, uma regressão na normalização de espaço em branco só aparece quando
+      # alguém clica numa citação e o trecho não acende.
+      - name: Realce do trecho citado (jsdom)
+        run: npm run verify:highlight
       # ENFORCING. This gate was advisory through two consecutive breakages, and each
       # time the breakage looked exactly like success: first `next lint` (removed in
       # Next 16) exited 1 reading "lint" as a directory; then ESLint 10 CRASHED loading
