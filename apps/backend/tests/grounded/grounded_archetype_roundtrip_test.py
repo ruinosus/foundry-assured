@@ -103,8 +103,12 @@ def _ask(backend: str, token: str, probe: str) -> tuple[int, list[str], str | No
                 # próprio anterior. Aceitar os dois porque este teste roda contra o app DEPLOYADO,
                 # que pode estar uma versão atrás — e sem o fallback ele devolveria uma lista de
                 # strings VAZIAS e reprovaria por "não citou fonte", que é o veredito errado.
+                # `value` também virou {"message_id", "citations"} — aceita a forma antiga (lista
+                # solta) pelo mesmo motivo de versão.
+                valor = ev.get("value") or []
+                citacoes = valor.get("citations", []) if isinstance(valor, dict) else valor
                 sources = [
-                    s.get("title") or s.get("source", "") for s in (ev.get("value") or [])
+                    s.get("title") or s.get("source", "") for s in citacoes
                 ]
             elif t == "RUN_ERROR":
                 err = ev.get("message")
