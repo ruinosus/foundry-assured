@@ -20,6 +20,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
+import { CitationsProvider } from "@/lib/citations";
 import { getDomain, type Domain } from "@/lib/domains";
 import { GraphApproval } from "@/components/chat/GraphApproval";
 import { TicketApproval } from "@/components/chat/TicketApproval";
@@ -114,11 +115,16 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
 
 
           <div className="console-chat copilotkit-chat-host">
-            {/* Vale para TODOS os domínios, não só os tool-driven: qualquer tool sem
-                renderizador próprio passa a aparecer em vez de virar spinner. */}
-            <ToolActivity />
-            <CopilotChat agentId={activeAgentId} threadId={threadId} />
-            <MermaidZoom />
+            {/* A evidência é da MENSAGEM, não da sessão: o provider assina o mesmo agente do
+                chat e arquiva as citações por message_id (ver lib/citations.tsx). A Task 5/6
+                consomem `useCitationsFor` dentro deste subtree. */}
+            <CitationsProvider agentId={activeAgentId}>
+              {/* Vale para TODOS os domínios, não só os tool-driven: qualquer tool sem
+                  renderizador próprio passa a aparecer em vez de virar spinner. */}
+              <ToolActivity />
+              <CopilotChat agentId={activeAgentId} threadId={threadId} />
+              <MermaidZoom />
+            </CitationsProvider>
           </div>
         </div>
 
