@@ -61,3 +61,5 @@ TEST-CREDENTIALS.local.md
 # the package (app/modules/data/) because tickets.py anchors on its own file — worth fixing,
 # but the data itself is never repository content.
 apps/backend/app/modules/data/
+experimento-mcp.sh
+reingestar-selfwiki.sh
