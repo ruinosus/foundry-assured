@@ -31,13 +31,21 @@ export async function GET(
       { cache: "no-store", headers: auth ? { Authorization: auth } : undefined },
     );
     const body = await r.json().catch(() => ({}));
+    // O backend seta `Cache-Control: no-store` DE PROPÓSITO nesta rota (conteúdo controlado por
+    // ACL — um cache compartilhado devolveria o documento de uma pessoa para outra). `fetch` aqui
+    // é servidor-a-servidor; o header do backend não atravessa sozinho até o browser, porque é
+    // ESTE proxy quem monta a resposta que o browser recebe. Repassa o valor que o backend
+    // decidiu (em vez de hardcodar `no-store` de novo aqui) para não ter duas fontes da mesma
+    // regra que podem divergir se uma mudar sem a outra.
+    const cacheControl = r.headers.get("cache-control");
+    const headers = cacheControl ? { "Cache-Control": cacheControl } : undefined;
     if (!r.ok) {
       return NextResponse.json(
         { error: body?.detail ?? `backend ${r.status}` },
-        { status: statusFor(r.status) },
+        { status: statusFor(r.status), headers },
       );
     }
-    return NextResponse.json(body);
+    return NextResponse.json(body, { headers });
   } catch {
     return NextResponse.json({ error: "backend inacessível" }, { status: 502 });
   }
