@@ -167,6 +167,15 @@ ONCALL_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["ONCALL_INSTRUCTIONS"]
 PLATFORM_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["PLATFORM_INSTRUCTIONS"])
 BUILDER_INSTRUCTIONS = _compose(_pack, _AGENT_FOR_CONSTANT["BUILDER_INSTRUCTIONS"])
 
+# --- Diretiva de síntese do caminho grounded (NÃO é instrução de nenhum agente) -----------
+# `guardrails/citation-numbered.md` não é composto em nenhum agente (ver o comentário do
+# próprio documento): o caminho grounded precisa colar este texto JUNTO com os documentos
+# recuperados, na mesma mensagem, a cada requisição — não como instrução estática publicada.
+# Por isso lê-se `.body` direto do pack, em vez de `pack.compose(...)`. Continua sendo fonte
+# única (RULE #7): quem precisa deste texto (app/modules/grounded/internal/grounded.py)
+# importa daqui, não declara o literal de novo.
+CITATION_NUMBERED_DIRECTIVE = _pack.guardrail("citation-numbered").body
+
 del _pack
 
 

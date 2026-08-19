@@ -30,19 +30,20 @@ import logging
 import uuid
 from collections.abc import AsyncGenerator
 
+from app.modules.agentdefs.public import (
+    CITATION_NUMBERED_DIRECTIVE as SYNTHESIS_DIRECTIVE,
+)
 from app.modules.tenancy.public import tenant_config
 from app.shared.settings import settings
 
-# Prepended to the synthesis input — the model answers ONLY from the retrieved documents and cites them
-# by their [n] number.
 logger = logging.getLogger(__name__)
 
-
-SYNTHESIS_DIRECTIVE = (
-    "Responda APENAS com base nos DOCUMENTOS fornecidos abaixo — nunca use conhecimento próprio. "
-    "Cite a fonte de cada afirmação pelo seu número entre colchetes, ex.: [1]. Se os documentos não "
-    "contiverem a resposta, diga que não sabe."
-)
+# Prepended to the synthesis input — the model answers ONLY from the retrieved documents and
+# cites them by their [n] number. RULE #7: a fonte deste texto é
+# `agents/helpdesk/guardrails/citation-numbered.md`, não mais um literal aqui — o nome
+# `SYNTHESIS_DIRECTIVE` fica porque este arquivo e `retrieval_provider.py` já o usam (e o
+# reexportam por `app/modules/grounded/public.py`). Ver o comentário do documento fonte para o
+# porquê de ele NÃO estar composto nas instructions de nenhum agente publicado.
 
 
 # O pedido de idioma que viaja com a requisição. Curto e imperativo de propósito: cada

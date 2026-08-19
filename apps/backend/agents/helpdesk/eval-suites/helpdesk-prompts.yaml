@@ -27,3 +27,4 @@ cases:
 - platform-write-safety
 - oncall-contract
 - builder-contract
+- citation-numbered-directive

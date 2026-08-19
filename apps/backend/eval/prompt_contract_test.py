@@ -55,12 +55,23 @@ def _load_document(path: Path) -> dict[str, Any]:
 
 
 def _compose_target(pack: PromptPack, target: dict[str, Any]) -> str:
-    """Compose the prompt one case targets — an agent, or a persona on its own."""
+    """Compose the prompt one case targets — an agent, a persona, or a guardrail on its own.
+
+    The `guardrail` branch exists for `citation-numbered` (RULE #7 move): that document is
+    deliberately NOT composed into any agent's instructions (it is glued to the retrieved
+    documents at synthesis time, in Python — see its own comment for why), so no `agent` case
+    could reach it. Without this branch the `[n]` contract the clickable evidence panel depends
+    on would have moved out of Python with no gate protecting it at all.
+    """
     if agent := target.get("agent"):
         return pack.compose(str(agent))
     if persona := target.get("persona"):
         return pack.compose_persona(str(persona))
-    raise ValueError(f"a case target must name an `agent` or a `persona`, got {target!r}")
+    if guardrail := target.get("guardrail"):
+        return pack.guardrail(str(guardrail)).body
+    raise ValueError(
+        f"a case target must name an `agent`, a `persona`, or a `guardrail`, got {target!r}"
+    )
 
 
 def _run_check(prompt: str, check: dict[str, Any]) -> str | None:

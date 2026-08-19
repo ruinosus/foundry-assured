@@ -1,0 +1,20 @@
+name: citation-numbered-directive
+description: >-
+  The numbered-citation contract ([n]) the clickable evidence panel depends on
+  (frontend `rehype-citations.ts` matches `[n]` in the rendered text against
+  `citation.index`) — glued to the retrieved documents at synthesis time by the
+  grounded archetype (helpdesk retrieve step, techdocs, selfwiki), not composed
+  into any agent's static instructions. See the guardrail document for why.
+target:
+  guardrail: citation-numbered
+checks:
+- type: contains
+  value: 'pelo seu número entre colchetes, ex.: [1]'
+- type: contains
+  value: Responda APENAS
+- type: contains
+  value: diga que não sabe
+- type: min_length
+  value: 100
+expected: The synthesis directive keeps the [n] citation mechanism the clickable evidence panel depends on.
+tags: [grounding, citation, contract]
