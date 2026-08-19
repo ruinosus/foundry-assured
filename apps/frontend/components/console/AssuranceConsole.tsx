@@ -18,7 +18,7 @@ import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { useLocale, useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
 import { CitationsProvider } from "@/lib/citations";
@@ -68,6 +68,16 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
   // A gravação é por DOMÍNIO, não pelo gêmeo hospedado: live e hosted são a mesma conversa do
   // ponto de vista de quem conversa, e separá-las esconderia metade do histórico ao alternar.
   const conversationKey = domain.id;
+
+  // `messageView` novo a cada render remontaria TODO o histórico: o `MemoizedAssistantMessage`
+  // do CopilotKit compara IDENTIDADE do componente (não o que ele renderiza), então trocar de
+  // aba, alternar Live/Hosted ou abrir outra conversa desmontava e remontava o balão inteiro
+  // (Mermaid re-renderizando, rolagem saltando). `makeAssistantMessage` só precisa mudar quando
+  // o domínio muda — é ele quem fecha o `domainId` usado no clique da citação.
+  const messageView = useMemo(
+    () => ({ assistantMessage: makeAssistantMessage(domain.id) }),
+    [domain.id],
+  );
 
   return (
     <CopilotKitProvider
@@ -124,11 +134,7 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
               {/* Vale para TODOS os domínios, não só os tool-driven: qualquer tool sem
                   renderizador próprio passa a aparecer em vez de virar spinner. */}
               <ToolActivity />
-              <CopilotChat
-                agentId={activeAgentId}
-                threadId={threadId}
-                messageView={{ assistantMessage: makeAssistantMessage(domain.id) }}
-              />
+              <CopilotChat agentId={activeAgentId} threadId={threadId} messageView={messageView} />
               <MermaidZoom />
             </CitationsProvider>
           </div>
@@ -155,7 +161,7 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
               className={tab === "ev" ? "on" : ""}
               onClick={() => setTab("ev")}
             >
-              {t("tabEvidence")}
+              {t("tabGuarantees")}
             </button>
           </div>
 

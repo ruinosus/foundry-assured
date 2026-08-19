@@ -282,7 +282,7 @@
     "sourcesEmpty": "The sources an answer cites appear here — every claim grounded in the base, never assumed.",
     "suggested": "Try:",
     "tabConversations": "Conversations",
-    "tabEvidence": "Evidence",
+    "tabGuarantees": "Guarantees",
     "guaranteesCount": "{count} guarantees active"
   },
   "conversations": {

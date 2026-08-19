@@ -11,6 +11,12 @@
 //   · evento SEM message_id  → fica pendente e liga na PRÓXIMA mensagem que começa
 //     (caminho de workflow: o executor emite entre o retrieve e o resolve, então a próxima
 //      mensagem É o resolve — a ordem é o que torna a regra determinística)
+//
+// A pendência (`pendente.current`, note bem: NÃO o `porMensagem` acima) só vale DENTRO do run
+// que a emitiu — por isso é limpa em RUN_STARTED (não herdar de um run anterior) e em
+// RUN_FINISHED/RUN_ERROR (não vazar para o próximo, quando o run termina sem mensagem nova:
+// erro, interrupt antes do resolve, resolve sem texto). Sem isso, fonte errada colada numa
+// afirmação de OUTRA pergunta é falha silenciosa e mais grave que fonte ausente.
 
 import { useAgent } from "@copilotkit/react-core/v2";
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
@@ -58,7 +64,10 @@ export function CitationsProvider({ agentId, children }: { agentId: string; chil
           const { messageId, citations } = normalizar(event.value);
           if (!citations.length) return;
           if (messageId) setPorMensagem((m) => ({ ...m, [messageId]: citations }));
-          else pendente.current = citations;
+          // CONCATENA em vez de sobrescrever: pode haver mais de um evento sem message_id no
+          // mesmo run (ex.: dois lotes de fontes entre o retrieve e o resolve). Sobrescrever
+          // silenciosamente descartava o primeiro.
+          else pendente.current = [...(pendente.current ?? []), ...citations];
         } else if (event?.type === "TEXT_MESSAGE_START") {
           const esperando = pendente.current;
           const id = event?.messageId ?? event?.message_id;
@@ -66,6 +75,19 @@ export function CitationsProvider({ agentId, children }: { agentId: string; chil
             pendente.current = null;
             setPorMensagem((m) => ({ ...m, [id]: esperando }));
           }
+        } else if (
+          event?.type === "RUN_STARTED" ||
+          event?.type === "RUN_FINISHED" ||
+          event?.type === "RUN_ERROR"
+        ) {
+          // A pendência só vale DENTRO do run que a emitiu. Sem isto, um run que termina sem
+          // mensagem nova (erro, interrupt antes do resolve, resolve sem texto) deixa
+          // `pendente.current` vivo indefinidamente — e a PRÓXIMA mensagem que começar a
+          // receber, mesmo em outra pergunta, outra thread ou depois do toggle Live/Hosted,
+          // herda uma citação que não é dela. Fonte errada colada numa afirmação é pior que
+          // fonte ausente, e é silenciosa: por isso limpa tanto no início (não herdar de um run
+          // anterior) quanto no fim (não vazar para o próximo).
+          pendente.current = null;
         }
       },
     });

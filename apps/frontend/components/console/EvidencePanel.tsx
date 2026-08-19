@@ -26,7 +26,10 @@ export function EvidencePanel() {
 
   return (
     <aside className="evidence">
-      <details className="evidence-section evidence-guar">
+      {/* Aberto por padrão: a aba já se chama "Garantias" (ver AssuranceConsole.tsx) e não
+          sobra mais nada além disso na coluna — uma aba cujo único conteúdo nasce fechado
+          mostra uma linha "▸ N garantias ativas" e nada mais, o que é pior que não ter aba. */}
+      <details className="evidence-section evidence-guar" open>
         <summary>
           <span aria-hidden>▸</span> {t("guaranteesCount", { count: GUARANTEES.length })}
         </summary>

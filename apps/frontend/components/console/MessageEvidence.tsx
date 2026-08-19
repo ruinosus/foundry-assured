@@ -8,7 +8,15 @@
 //
 // USA OS SLOTS CANÔNICOS do CopilotKit v2 — `assistantMessage` e, dentro dele,
 // `markdownRenderer`. Nada de renderizador de chat próprio (MÁXIMA MAIOR). O renderizador
-// padrão continua fazendo todo o trabalho de markdown; nós só trocamos o `[n]` por um botão.
+// padrão continua fazendo TODO o trabalho de markdown, para o CONTEÚDO INTEIRO, numa ÚNICA
+// chamada — a primeira versão fazia `content.split(/(\[\d{1,3}\])/g)` e renderizava cada pedaço
+// num `MarkdownRenderer` independente, o que quebra qualquer markdown que atravesse uma
+// fronteira de pedaço (tabela com `[n]` numa célula, bloco cercado partido ao meio, lista
+// virando N `<ol>`) e ainda transformava `[n]` de CÓDIGO (`argv[1]`, `A[1]` de Mermaid) em botão.
+// A troca do marcador por botão agora é um `rehypePlugin` (`lib/rehype-citations.ts`) que mexe
+// só em nós de TEXTO da árvore já parseada, pulando `code`/`pre` — o `MarkdownRenderer` aceita
+// todas as props do Streamdown por baixo (conferido em `node_modules/@copilotkit/react-core/
+// dist/copilotkit-D0aAnD3i.d.mts`: `Omit<ComponentProps<typeof Streamdown>, "children">`).
 //
 // A lista de fontes entra como IRMÃ do `<CopilotChatAssistantMessage>`, não como `children` dele.
 // O tipo real do slot (conferido em `node_modules/@copilotkit/react-core/dist/copilotkit-
@@ -24,8 +32,19 @@ import {
   type CopilotChatAssistantMessageProps,
 } from "@copilotkit/react-core/v2";
 import { useTranslations } from "next-intl";
-import { Fragment } from "react";
-import { useCitationsFor, type Citation } from "@/lib/citations";
+import { useMemo } from "react";
+import { defaultRehypePlugins, type StreamdownProps } from "streamdown";
+import { useCitationsFor } from "@/lib/citations";
+import { rehypeCitations } from "@/lib/rehype-citations";
+
+// `streamdown` depende de `unified@11` numa cópia PRÓPRIA (`node_modules/streamdown/node_modules/
+// unified`), diferente da que fica hoisted no topo do projeto (`unified@10`, trazida por outra
+// dependência) — os dois `Pluggable`/`PluggableList` não são o MESMO tipo estrutural (`unified@11`
+// tirou a variante `Preset` da união). Importar `PluggableList` do pacote `unified` direto pega a
+// cópia errada e não bate com o que `rehypePlugins` do Streamdown espera. Derivar o tipo do
+// PRÓPRIO `StreamdownProps` (que a `MarkdownRenderer` do CopilotKit repassa) usa sempre a versão
+// que o Streamdown realmente lê, sem precisar declarar `unified` como dependência à parte.
+type RehypePlugins = NonNullable<StreamdownProps["rehypePlugins"]>;
 
 function abrirFonte(domainId: string, name: string, snippet?: string) {
   // O TRECHO VIAJA JUNTO porque é ele que o visualizador destaca. Sem ele o documento abre
@@ -33,47 +52,34 @@ function abrirFonte(domainId: string, name: string, snippet?: string) {
   window.dispatchEvent(new CustomEvent("abrir-fonte", { detail: { domainId, name, snippet } }));
 }
 
-// Troca `[n]` por um botão quando existe citação n. Índice órfão (o modelo escreveu [13] com
-// 12 documentos) fica TEXTO SIMPLES — um link que não leva a lugar nenhum é pior que nenhum.
-function ComMarcadores({
-  content,
-  citations,
+// O elemento `<data>` que `rehypeCitations` injeta na árvore vira este botão. Índice órfão (o
+// modelo escreveu [13] com 12 documentos) nunca chega aqui — `rehypeCitations` já deixa esse
+// caso como texto simples, então este componente só existe para citação válida.
+function BotaoCitacao({
   domainId,
   openLabel,
+  ...props
 }: {
-  content: string;
-  citations: Citation[];
   domainId: string;
   openLabel: string;
+  "data-citation-index"?: number;
+  "data-citation-title"?: string;
+  "data-citation-snippet"?: string;
+  children?: React.ReactNode;
 }) {
-  const porIndice = new Map(citations.map((c) => [c.index, c]));
-  const partes = content.split(/(\[\d{1,3}\])/g);
+  const indice = props["data-citation-index"];
+  const titulo = props["data-citation-title"] ?? "";
+  const snippet = props["data-citation-snippet"] || undefined;
   return (
-    <>
-      {partes.map((parte, i) => {
-        const m = /^\[(\d{1,3})\]$/.exec(parte);
-        const cit = m ? porIndice.get(Number(m[1])) : undefined;
-        if (!cit) {
-          return (
-            <Fragment key={i}>
-              <CopilotChatAssistantMessage.MarkdownRenderer content={parte} />
-            </Fragment>
-          );
-        }
-        return (
-          <button
-            key={i}
-            type="button"
-            className="cit-ref"
-            title={cit.title}
-            aria-label={`${openLabel}: ${cit.title}`}
-            onClick={() => abrirFonte(domainId, cit.title, cit.snippet)}
-          >
-            [{cit.index}]
-          </button>
-        );
-      })}
-    </>
+    <button
+      type="button"
+      className="cit-ref"
+      title={titulo}
+      aria-label={`${openLabel}: ${titulo}`}
+      onClick={() => abrirFonte(domainId, titulo, snippet)}
+    >
+      [{indice}]
+    </button>
   );
 }
 
@@ -83,22 +89,42 @@ export function makeAssistantMessage(domainId: string): typeof CopilotChatAssist
     const citations = useCitationsFor(props.message.id);
     const openLabel = te("openSource");
 
+    // Roda DEPOIS dos plugins padrão do Streamdown (raw → katex → sanitize → harden, nessa
+    // ordem — conferido em `node_modules/streamdown/dist/chunk-JAPRZBRM.js`, `Wo`/`Ko`): o nó
+    // `<data>` que injetamos é sintético, não veio do markdown do usuário, então não há por que
+    // o sanitizer da lib decidir que `data-citation-*` é atributo desconhecido e descartá-lo.
+    // Tupla `[attacher, options]`, não a chamada já feita — é assim que o `unified` (que o
+    // Streamdown usa por baixo) invoca um plugin com opções; passar a função já invocada faz o
+    // `unified` chamá-la de novo, agora como se ELA fosse o attacher, com `tree` indefinido.
+    const rehypePlugins = useMemo(
+      () => [...Object.values(defaultRehypePlugins), [rehypeCitations, citations]] as RehypePlugins,
+      [citations],
+    );
+    const components = useMemo(
+      () => ({
+        // `any`: o `.d.ts` do React não tem índice para `data-*` arbitrário (só conhece os
+        // atributos padrão de `<data>`), então não existe tipo estrutural correto para o que o
+        // `rehypeCitations` injeta. Mesma lacuna do cast documentado no fim do arquivo — não é
+        // uma aposta nova, é o valor real batendo numa borda que o `.d.ts` não modela.
+        data: (p: any) => <BotaoCitacao domainId={domainId} openLabel={openLabel} {...p} />,
+      }),
+      // `domainId` é valor de escopo externo (parâmetro de `makeAssistantMessage`, fixo por
+      // instância deste componente) — o eslint recusa como dependência porque mutá-lo não
+      // re-renderiza nada aqui.
+      [openLabel],
+    );
+
     return (
       <>
         <CopilotChatAssistantMessage
           {...props}
-          markdownRenderer={({ content }: { content: string }) =>
-            citations.length ? (
-              <ComMarcadores
-                content={content}
-                citations={citations}
-                domainId={domainId}
-                openLabel={openLabel}
-              />
-            ) : (
-              <CopilotChatAssistantMessage.MarkdownRenderer content={content} />
-            )
-          }
+          markdownRenderer={({ content }: { content: string }) => (
+            <CopilotChatAssistantMessage.MarkdownRenderer
+              content={content}
+              rehypePlugins={rehypePlugins}
+              components={components}
+            />
+          )}
         />
         {citations.length > 0 && (
           <div className="msg-evidence">
@@ -136,6 +162,8 @@ export function makeAssistantMessage(domainId: string): typeof CopilotChatAssist
   // `renderSlotElement`/`isReactComponentType`) o único teste é `typeof slot === "function"`,
   // seguido de `React.createElement(slot, props)` — os estáticos nunca são lidos quando o slot é
   // um componente próprio. O cast documenta essa lacuna entre o `.d.ts` e o comportamento real
-  // medido; não inventa comportamento novo.
-  return AssistantMessageComEvidencia as typeof CopilotChatAssistantMessage;
+  // medido; não inventa comportamento novo. `as unknown as` porque o valor passa a AFIRMAR ter
+  // `.MarkdownRenderer` e os outros estáticos, o que um cast direto esconderia — a lacuna fica
+  // visível em vez de disfarçada.
+  return AssistantMessageComEvidencia as unknown as typeof CopilotChatAssistantMessage;
 }

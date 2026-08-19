@@ -23,6 +23,7 @@
     "next-intl": "^4.13.7",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "streamdown": "^1.6.11",
     "zod": "^4.4.3"
   },
   "devDependencies": {

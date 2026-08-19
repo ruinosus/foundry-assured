@@ -653,6 +653,10 @@ table.evals tr:last-child td {
   border: 0;
   background: none;
   color: var(--accent);
+  /* `<button>` puxa a fonte do controle do navegador por padrão, não a do parágrafo em volta —
+     sem isto o `[n]` no meio da frase troca de tipografia (o `.citation-btn` antigo já tinha
+     essa regra; ela se perdeu na migração para `.cit-ref`). */
+  font: inherit;
   font-size: 0.85em;
   vertical-align: super;
   line-height: 1;
