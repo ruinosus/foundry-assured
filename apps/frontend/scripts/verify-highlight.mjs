@@ -44,14 +44,33 @@ const mod = { exports: {} };
 new Function("module", "exports", "require", outputText)(mod, mod.exports, () => {});
 const { realcar } = mod.exports;
 
-// Cobertura = quanto do TRECHO pedido (não do container inteiro, que pode ter texto ao redor)
-// saiu marcado. É a mesma métrica que a revisão usou para descrever "corta no meio da palavra,
-// cobre 43%" — o denominador é o trecho normalizado, não o documento.
+// ASSERÇÃO EXATA, não percentual (item 8 da faxina). A métrica antiga (`marcadoLen / alvoLen`,
+// piso `< 0.9`) misturava DUAS coisas que não têm nada a ver uma com a outra:
+//
+//   1. ESPAÇO ENTRE NÓS: quando o realce atravessa fronteira de elemento (ex.: "<p>...tecnico
+//      de plantao</p>" com `<strong>` no meio), cada `<mark>` marca só o texto DENTRO do seu
+//      próprio nó — o espaço/quebra ENTRE os nós nunca pertence a nenhum `textContent`, então
+//      somar os comprimentos dos `<mark>`s fica sistematicamente um pouco ABAIXO do trecho
+//      normalizado, mesmo com realce PERFEITO e zero truncagem.
+//   2. TRUNCAGEM DE VERDADE: o realce parou no meio do trecho e um pedaço real ficou de fora.
+//
+// Como (1) sempre desconta alguns pontos por caso mesmo sem bug, o piso tinha que ser frouxo
+// (90%) só para não acusar (1) como falha — e essa mesma folga escondia (2): uma truncagem real
+// de até 10% passava batido (foi como o achado descreveu "corta no meio da palavra, cobre 43%"
+// SEM o gate acusar, porque não havia gate automático — só a tabela de revisão manual). E no
+// sentido contrário, um caso a 1,2pp do piso quebra o gate por acrescentar duas palavras à
+// fixture, sem regressão nenhuma no código.
+//
+// A troca: juntar o texto de TODOS os `<mark>`s (sem separador — cada um já carrega seu próprio
+// texto) e comparar com o trecho, os DOIS COM ESPAÇO COLAPSADO (`replace(/\s+/g, "")`). Colapsar
+// espaço dos dois lados elimina o problema (1) por construção — não há mais "espaço entre nós"
+// para contar contra nada — enquanto qualquer palavra de verdade faltando (2) ainda quebra a
+// igualdade, porque aquele texto literalmente não está em nenhum `<mark>`.
 function marcado(container, trecho) {
   const marks = [...container.querySelectorAll("mark.source-hit")];
-  const alvoLen = trecho.replace(/\s+/g, " ").trim().length;
-  const marcadoLen = marks.reduce((n, m) => n + m.textContent.length, 0);
-  return { count: marks.length, texts: marks.map((m) => m.textContent), coverage: alvoLen ? marcadoLen / alvoLen : 0 };
+  const texto = marks.map((m) => m.textContent).join("").replace(/\s+/g, "");
+  const esperado = trecho.replace(/\s+/g, "");
+  return { count: marks.length, texts: marks.map((m) => m.textContent), bateExato: texto === esperado };
 }
 
 const casos = [
@@ -82,28 +101,37 @@ const casos = [
     html: `<table><tbody><tr><td>Codigo do incidente critico registrado pelo time</td><td>Responsavel designado para a correcao imediata</td></tr></tbody></table>`,
     trecho: "Codigo do incidente critico registrado pelo time Responsavel designado para a correcao",
   },
+  {
+    // Item 9 da faxina: <br> não é elemento de bloco (não entra em ELEMENTOS_BLOCO), mas produz
+    // quebra visual dentro do MESMO <p> — sem tratamento, "plantao<br>Encerrar" colava sem
+    // espaço e o realce truncava no meio. Não alcançável hoje (nenhum documento do corpus usa
+    // <br>, Streamdown não liga remark-breaks), mas prova que o tratamento existe e não
+    // regride em silêncio no dia em que alguém escrever um hard break.
+    nome: "<p> com <br> no meio (hard break)",
+    html: `<p>Primeiro passo: acionar o time de plantao.<br>Segundo passo: encerrar o incidente no painel.</p>`,
+    trecho: "acionar o time de plantao. Segundo passo: encerrar o incidente",
+  },
 ];
 
-console.log("caso | encontrou | nós marcados | cobertura | texto marcado");
-console.log("-----|-----------|--------------|-----------|---------------");
+console.log("caso | encontrou | nós marcados | trecho intacto | texto marcado");
+console.log("-----|-----------|--------------|-----------------|---------------");
 let algumaFalha = false;
 for (const c of casos) {
   const container = document.createElement("div");
   container.innerHTML = c.html;
   document.body.appendChild(container);
   const achou = realcar(container, c.trecho);
-  const { count, texts, coverage } = marcado(container, c.trecho);
-  const cobertura = `${Math.round(coverage * 100)}%`;
-  console.log(`${c.nome} | ${achou} | ${count} | ${cobertura} | ${JSON.stringify(texts.join(" | "))}`);
+  const { count, texts, bateExato } = marcado(container, c.trecho);
+  console.log(`${c.nome} | ${achou} | ${count} | ${bateExato ? "exato" : "DIVERGE"} | ${JSON.stringify(texts.join(" | "))}`);
   document.body.removeChild(container);
-  if (!achou || coverage < 0.9) algumaFalha = true;
+  if (!achou || !bateExato) algumaFalha = true;
 }
 
 if (algumaFalha) {
-  console.error("\nFALHOU: pelo menos um caso não realçou ou cobriu menos de 90% do trecho.");
+  console.error("\nFALHOU: pelo menos um caso não realçou ou o trecho marcado diverge do pedido.");
   process.exit(1);
 } else {
-  console.log("\nOK: todos os 5 casos realçaram com cobertura >= 90%.");
+  console.log(`\nOK: todos os ${casos.length} casos realçaram o trecho pedido, exatamente (sem contar espaço entre nós).`);
 }
 
 // Prova à parte do off-by-one (item MENOR): um caso engenheirado para o corte do laço de

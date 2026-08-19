@@ -31,8 +31,34 @@ export function realcar(raiz: HTMLElement, trecho: string): boolean {
   if (alvo.length < 24) return false;
 
   const nos: Text[] = [];
-  const caminhador = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT);
-  for (let n = caminhador.nextNode(); n; n = caminhador.nextNode()) nos.push(n as Text);
+  // `<br>` NÃO é elemento de bloco (não entra em ELEMENTOS_BLOCO — ele não CONTÉM nada, é uma
+  // quebra solta dentro do MESMO bloco), mas produz quebra visual, e o trecho vindo do índice a
+  // vê como espaço. Sem tratá-lo, "linha1<br>linha2" dentro do MESMO `<p>` colaria as duas
+  // palavras de fronteira sem espaço nenhum entre elas — truncando o realce no meio, do mesmo
+  // jeito que a fronteira de bloco truncava antes deste arquivo existir. Hoje isto não é
+  // alcançável (nenhum documento do corpus usa `<br>`, e o Streamdown não liga `remark-breaks`),
+  // mas silenciosamente voltaria a truncar no dia em que alguém escrever um hard break.
+  const brAntes = new Set<Text>();
+  const caminhador = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, {
+    acceptNode(no: Node) {
+      if (no.nodeType === Node.TEXT_NODE) return NodeFilter.FILTER_ACCEPT;
+      if ((no as Element).tagName === "BR") return NodeFilter.FILTER_ACCEPT;
+      // Qualquer outro elemento (<strong>, <span>...) não é aceito ELE MESMO, mas o walker
+      // continua descendo pelos filhos — é assim que o texto dentro de `<strong>` ainda aparece.
+      return NodeFilter.FILTER_SKIP;
+    },
+  });
+  let brPendente = false;
+  for (let n = caminhador.nextNode(); n; n = caminhador.nextNode()) {
+    if (n.nodeType === Node.ELEMENT_NODE) {
+      brPendente = true;
+      continue;
+    }
+    const texto = n as Text;
+    nos.push(texto);
+    if (brPendente) brAntes.add(texto);
+    brPendente = false;
+  }
 
   // Texto normalizado + posição de cada caractere no nó de origem.
   let plano = "";
@@ -45,6 +71,8 @@ export function realcar(raiz: HTMLElement, trecho: string): boolean {
     // Trocou de bloco (parágrafo, item de lista, célula) em relação ao nó anterior: trata como
     // se houvesse um espaço entre eles, mesmo sem caractere nenhum aí no DOM.
     if (!primeiro && bloco !== blocoAnterior) espacoPendente = plano.length > 0;
+    // `<br>` logo antes deste nó: mesma lógica, mas DENTRO do mesmo bloco.
+    if (brAntes.has(no)) espacoPendente = plano.length > 0;
     blocoAnterior = bloco;
     primeiro = false;
 
