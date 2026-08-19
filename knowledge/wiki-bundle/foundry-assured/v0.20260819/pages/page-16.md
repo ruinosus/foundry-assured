@@ -1,41 +1,8 @@
----
-type: ui
-title: Assurance Console
-description: "Unified CopilotKit-based domain console with per-message evidence rendering, source-document viewing, conversation replay, and runtime-sensitive approval behavior across grounded, workflow, tool, and graph domains."
-tags: [frontend, console, copilotkit, hitl]
-openwiki:
-  roles: [architecture, workflow]
-  change_kinds: [ui, integration]
-  source_paths:
-    - apps/frontend/components/console/AssuranceConsole.tsx
-    - apps/frontend/components/console/MessageEvidence.tsx
-    - apps/frontend/components/console/SourceViewer.tsx
-    - apps/frontend/lib/citations.tsx
-    - apps/frontend/lib/thread-history.ts
-  symbols:
-    - AssuranceConsole
-    - CitationsProvider
-    - makeAssistantMessage
-    - SourceViewer
-    - historyConnectEvents
-  test_paths:
-    - apps/frontend/scripts/verify-thread-citations.mjs
-    - apps/frontend/scripts/verify-highlight.mjs
-    - apps/backend/tests/conversations/citations_persisted_test.py
-  invariants:
-    - Evidence is attached to each assistant message, not stored only in a session-global side panel.
-    - Citation click-through must fetch the full source document through the authenticated source API path.
-    - Replayed history must emit message-addressed sources events so old responses keep their evidence.
-  validation_commands:
-    - cd apps/frontend && node scripts/verify-thread-citations.mjs
-    - cd apps/frontend && node scripts/verify-highlight.mjs
----
-
 # Assurance Console
 
 `components/console/AssuranceConsole.tsx` is the canonical frontend chat surface. It remains one UI for every domain, with runtime-specific behavior selected from the domain registry, but the evidence model changed substantially in this range: citations are now rendered under the response that produced them, and the side column no longer owns live response evidence. [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/frontend/components/console/AssuranceConsole.tsx#L3-L15) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/frontend/components/console/AssuranceConsole.tsx#L52-L80) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/frontend/components/console/AssuranceConsole.tsx#L130-L185)
 
-This page depends on [Grounded Domains](../backend/grounded-domains.md) for where `sources` events come from and on [Backend State and Persistence](../backend/state-and-persistence.md) for why reopened conversations can now restore evidence.
+This page depends on Grounded Domains for where `sources` events come from and on Backend State and Persistence for why reopened conversations can now restore evidence.
 
 ## Runtime-sensitive UI behavior
 
@@ -81,7 +48,7 @@ Clicking a citation now opens `SourceViewer`, not just a side-panel snippet. `So
 
 The highlight logic is factored into `lib/source-highlight.ts`. It normalizes whitespace, maps normalized text positions back to real DOM text nodes, and marks the longest matching prefix of the cited snippet. The explicit design choice is best-effort highlighting: failure to find an exact span should not prevent the document from opening. [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/frontend/lib/source-highlight.ts#L1-L12) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/frontend/lib/source-highlight.ts#L29-L57) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/frontend/lib/source-highlight.ts#L95-L149)
 
-This UI depends on the backend `/source/*` API described in [Knowledge Pipeline](../backend/knowledge-pipeline.md). If that endpoint changes status mapping, cache headers, or payload shape, `SourceViewer` is the first consumer to update.
+This UI depends on the backend `/source/*` API described in Knowledge Pipeline. If that endpoint changes status mapping, cache headers, or payload shape, `SourceViewer` is the first consumer to update.
 
 ## Conversation replay and historical evidence
 
@@ -129,7 +96,7 @@ Consult this page when you are changing:
 - conversation replay semantics,
 - hosted/live toggles that could affect evidence subscriptions.
 
-Use [Frontend API and Proxy Layer](frontend-api-proxies.md) when the change is primarily about route handlers rather than console behavior.
+Use Frontend API and Proxy Layer when the change is primarily about route handlers rather than console behavior.
 
 ## Focused validation
 
