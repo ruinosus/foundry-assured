@@ -55,6 +55,14 @@ dependencies = [
 [tool.uv]
 prerelease = "allow"
 
+[tool.ruff.lint.flake8-bugbear]
+# `Depends(...)`/`Security(...)` como valor default de argumento é o idioma exigido pelo
+# FastAPI para injeção de dependência (routes.py chama a função a cada request; o objeto
+# default não é reavaliado por request). Não é o bug de "chamada mutável avaliada uma vez
+# no import" que B008 existe para pegar — declarar como imutável aqui mantém B008 vivo
+# para chamadas de verdade perigosas em outros defaults.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Security"]
+
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
