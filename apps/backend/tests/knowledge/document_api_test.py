@@ -1,7 +1,9 @@
 """`GET /source/{domain_id}/{name}` — o mapeamento de exceção pra status HTTP, exercitado DE
 VERDADE (I5). O teste antigo de `authorized_document` nunca chegava perto de `api.py`; não
-existia teste nenhum da rota. Chama o handler como função Python simples (sem TestClient/rede):
-`read_source` é uma corrotina comum, e `Response()` do FastAPI funciona standalone.
+existia teste nenhum da rota. A maior parte chama o handler como função Python simples (sem
+TestClient/rede): `read_source` é uma corrotina comum, e `Response()` do FastAPI funciona
+standalone — mas o caminho autorizado usa `TestClient` de verdade (ver comentário abaixo do
+POR QUÊ), e a exigência de sessão é verificada em subprocesso (`_probe_source_auth.py`).
 
 O que importa aqui, e por quê:
   · `PermissionError` -> 403, `FileNotFoundError` -> 404 — a distinção importa (fail-closed
@@ -12,18 +14,29 @@ O que importa aqui, e por quê:
   · domínio `kind == "tool"` -> 404, sem sequer chamar `authorized_document`.
   · sem `set_domain_lookup` a rota falha fechada (500), nunca abre passagem.
   · o gate de entitlement (I2) só roda no modo `shared` — fora dele, nem é chamado.
+  · SEM TOKEN -> 401: é a primeira rota de conteúdo integral do produto; se
+    `auth_dependencies()` virasse `[]`, nenhum outro gate perceberia (subprocesso, porque a
+    auth precisa estar LIGADA na importação do router — ver `_probe_source_auth.py`).
 """
 
 from __future__ import annotations
 
 import asyncio
+import pathlib
+import subprocess
 import sys
 from types import SimpleNamespace
 
-from fastapi import HTTPException, Response
+from fastapi import FastAPI, HTTPException, Response
+from fastapi.testclient import TestClient
 
+import app as _app
 from app.modules.knowledge import api
 from app.modules.knowledge.internal.document import NomeDocumentoInvalido
+
+# Ancorado no pacote `app`, não em `parents[N]` do próprio arquivo (tests/architecture/
+# filesystem_anchors_test.py é o gate) — usado para achar o cwd do subprocesso da sonda de auth.
+BACKEND = pathlib.Path(_app.__file__).resolve().parent.parent
 
 
 def main() -> int:
@@ -144,15 +157,28 @@ def main() -> int:
         except ValueError:
             check("ValueError genérico não vira 400 (propaga)", True)
 
-        # ── caminho autorizado: Cache-Control: no-store ───────────────────────────────
+        # ── caminho autorizado: Cache-Control: no-store, aferido numa resposta HTTP DE
+        # VERDADE ── um `Response()` avulso (como antes) tem o header setado pelo handler mas
+        # nunca prova que o FastAPI o devolve ao cliente; passaria mesmo se o framework
+        # descartasse o header no caminho de verdade. `TestClient` sobe o `router` real —
+        # inclui `dependencies=[*auth_dependencies()]`, então a sessão é dispensada via
+        # `dependency_overrides` (não importa se a auth está ligada ou desligada neste
+        # processo: se estiver desligada, o override simplesmente não casa com nada).
         async def autorizado(domain, name, user):
             return ("https://acct.blob.core.windows.net/c/page.md", "conteúdo")
 
         api.authorized_document = autorizado
-        resp = Response()
-        resultado = asyncio.run(api.read_source("selfwiki", "page.md", resp))
-        check("caminho autorizado devolve o conteúdo", resultado.get("content") == "conteúdo")
-        check("Cache-Control: no-store no caminho autorizado", resp.headers.get("cache-control") == "no-store")
+        app_teste = FastAPI()
+        app_teste.include_router(api.router)
+        from app.shared.auth import require_user as _require_user_dep
+
+        app_teste.dependency_overrides[_require_user_dep] = lambda: SimpleNamespace(oid="user-1")
+        resposta = TestClient(app_teste).get("/source/selfwiki/page.md")
+        check("caminho autorizado devolve o conteúdo", resposta.json().get("content") == "conteúdo")
+        check(
+            "Cache-Control: no-store no caminho autorizado (resposta HTTP real)",
+            resposta.headers.get("cache-control") == "no-store",
+        )
 
         # ── I2: o gate de entitlement só roda no modo shared ──────────────────────────
         chamadas_gate: list[str] = []
@@ -193,6 +219,22 @@ def main() -> int:
             )
     finally:
         restaurar()
+
+    # ── sem token de sessão -> 401 ───────────────────────────────────────────────────
+    # Em SUBPROCESSO: a auth precisa estar LIGADA na importação do `router`
+    # (`dependencies=[*auth_dependencies()]`), e este processo já importou `api` com a auth
+    # do ambiente de CI (sem ENTRA_*, desligada). Ver `_probe_source_auth.py`.
+    sonda = subprocess.run(
+        [sys.executable, "-m", "tests.knowledge._probe_source_auth"],
+        cwd=BACKEND,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    print(sonda.stdout, end="")
+    if sonda.returncode != 0:
+        print(sonda.stderr[-2000:])
+    check("GET /source sem token -> 401", sonda.returncode == 0)
 
     print()
     if falhas:

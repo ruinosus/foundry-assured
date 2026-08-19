@@ -40,6 +40,15 @@ class DomainSpec:
     registry never classifies. A grounded spec MUST resolve to a `kb_name` OR a `search_index`
     (else the retrieval fallback would hit `.../indexes/None/docs/search`) — enforced in
     __post_init__.
+
+    `document_access` é DECLARADO, não derivado: é ele — e só ele — que decide, na rota
+    `GET /source/{domain_id}/{name}` (knowledge/internal/document.py), se a leitura do
+    documento integral reautoriza pelo trim de ACL do índice (`"acl"`) ou se a sessão válida já
+    exigida pela rota é a regra inteira (`"session"`). Antes deste campo, a decisão vinha da
+    truthiness de `acl_group_map` — um valor de CONFIGURAÇÃO que, no modo shared, vem do tenant
+    store. Configuração ausente (grupos vazios em runtime) rebaixava em silêncio um domínio que
+    deveria ter ACL: o índice continuava carimbado, mas a rota parava de consultá-lo. O default
+    é o SEGURO (`"acl"`) de propósito — esquecer de declarar não pode rebaixar ninguém.
     """
 
     id: str
@@ -51,6 +60,7 @@ class DomainSpec:
     search_endpoint: str = ""
     corpus_container: str = ""  # container do blob que guarda o documento integral (rota /source)
     acl_group_map: dict | None = None  # name→objectID; None/empty → no ACL trim (no-op)
+    document_access: Literal["acl", "session"] = "acl"  # ver docstring da classe
     hosted_agent_name: str | None = None
 
     def __post_init__(self) -> None:
@@ -59,6 +69,14 @@ class DomainSpec:
         if self.kind == "grounded" and not (self.kb_name or self.search_index):
             raise ValueError(
                 f"grounded domain '{self.id}' must set kb_name or search_index"
+            )
+        # Mesma lógica para a rota de documento: um domínio que declara `document_access="acl"`
+        # sem `search_index` faria `document.authorized_document` montar
+        # `.../indexes/None/docs/search` na primeira requisição — falhe aqui, na construção do
+        # registry, não na requisição de alguém.
+        if self.document_access == "acl" and not self.search_index:
+            raise ValueError(
+                f"domain '{self.id}' declares document_access='acl' but has no search_index"
             )
 
 
@@ -118,6 +136,9 @@ def _domains() -> list[DomainSpec]:
             kind="workflow",
             hosted_agent_name=cfg.hosted_agent_name,
             corpus_container=cfg.azure_storage_container,
+            # Sem ACL de documento: helpdesk não declara grupo em documento nenhum (não é fonte
+            # com controle por documento) e não seta `search_index` — sessão válida é a regra.
+            document_access="session",
         ),
         DomainSpec(
             id="techdocs",
@@ -129,6 +150,7 @@ def _domains() -> list[DomainSpec]:
             search_endpoint=cfg.azure_search_endpoint,
             corpus_container=cfg.techdocs_storage_container,
             acl_group_map=cfg.acl_group_map,  # PARSED property (name→objectID), not the raw string
+            document_access="acl",
         ),
         DomainSpec(
             id="selfwiki",
@@ -143,8 +165,13 @@ def _domains() -> list[DomainSpec]:
             # ACL (ADR/spec 2026-07-02): the self-wiki is stamped with this group; retrieval sends the
             # OBO header because this map is truthy. Empty APP_USERS_GROUP_ID → no map (dev/single-user).
             acl_group_map=({"app-users": cfg.app_users_group_id} if cfg.app_users_group_id else None),
+            document_access="acl",
         ),
-        DomainSpec(id="platform", kind="tool"),
+        # `document_access="session"`: sem `search_index` (kind="tool"), e `GET /source` já
+        # devolve 404 pra domínio `tool` antes de tocar `authorized_document` (knowledge/api.py)
+        # — mas declarar aqui, em vez de herdar o default, deixa explícito que este domínio não
+        # tem ACL de documento, em vez de "esqueceu de configurar".
+        DomainSpec(id="platform", kind="tool", document_access="session"),
     ]
 
 

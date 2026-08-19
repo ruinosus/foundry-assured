@@ -1,9 +1,14 @@
-"""Serve o documento INTEGRAL, reautorizando a leitura a cada requisição.
+"""Serve o documento INTEGRAL, reautorizando a leitura a cada requisição — em domínio com
+controle de acesso por documento (`document_access="acl"`). Em domínio sem esse controle
+(`document_access="session"`, ex.: helpdesk), a sessão válida já exigida pela rota é a regra
+inteira e o trim abaixo NUNCA é chamado — não há DADO de ACL com que decidir, e rodar o trim
+sem ele quebraria contra `.../indexes/None/docs/search` (helpdesk não seta `search_index`).
 
-A REAUTORIZAÇÃO É O MESMO TRIM DA RECUPERAÇÃO, e isso não é economia de código — é a RULE #6.
-O acesso de cada documento é DADO (o campo `groups` que a ingestão carimba); comparar grupos
-aqui seria uma segunda implementação da regra, que divergiria da primeira no dia em que uma
-das duas mudasse. Reusar o filtro garante que não pode divergir, porque É a mesma.
+NO DOMÍNIO COM ACL, A REAUTORIZAÇÃO É O MESMO TRIM DA RECUPERAÇÃO, e isso não é economia de
+código — é a RULE #6. O acesso de cada documento é DADO (o campo `groups` que a ingestão
+carimba); comparar grupos aqui seria uma segunda implementação da regra, que divergiria da
+primeira no dia em que uma das duas mudasse. Reusar o filtro garante que não pode divergir,
+porque É a mesma.
 
 Medido em 19/ago/2026 contra `selfwiki-docbundles-ks-index`:
     filtro blob_url eq '<url>' + x-ms-query-source-authorization do usuário  →  5 trechos
@@ -29,14 +34,17 @@ from app.shared.settings import settings
 # I/O — um nome que vira caminho é o começo de um path traversal.
 _NOME_OK = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,255}$")
 _SEARCH_SCOPE = "https://search.azure.com/.default"
-# MEDIDA em 19/ago/2026 contra `selfwiki-docbundles-ks-index`: filtro `blob_url eq '<url>'` +
-# `x-ms-query-source-authorization` do usuário devolveu 5 trechos; o mesmo filtro sem
-# identidade devolveu 0; com token inválido, 401. Honra o header — é o que sustenta o
-# fail-closed abaixo. DIVERGE, de propósito, da versão usada em `retrieval.py`
-# (`2026-05-01-preview`, o retrieve nativo) e em `secure_search.py` (`2025-08-01-preview`, o
-# trim de `authorized_components`): cada uma foi medida contra o endpoint que usa: não são a
-# "mesma API" só porque fazem chamada parecida.
-_API = "2025-05-01-preview"
+# MESMA versão do `retrieval.py` DE PROPÓSITO: é o mesmo endpoint (`/indexes/{index}/docs/
+# search`) e o mesmo controle de segurança (o trim por `x-ms-query-source-authorization`), não
+# duas coisas parecidas por acaso. MEDIDO em 19/ago/2026 contra `selfwiki-docbundles-ks-index`,
+# filtro `blob_url eq '<url>'`, nas duas versões:
+#     2025-05-01-preview   COM identidade → 5    SEM identidade → 0
+#     2026-05-01-preview   COM identidade → 5    SEM identidade → 0
+# As duas honram o header de forma idêntica — é o que sustenta o fail-closed abaixo. Ficamos
+# na versão do `retrieval.py` para eliminar a divergência sem motivo. `secure_search.py`
+# continua em `2025-08-01-preview` — fato conhecido, não justificativa inventada; não foi
+# remedido aqui.
+_API = "2026-05-01-preview"
 
 
 class NomeDocumentoInvalido(Exception):
@@ -118,13 +126,19 @@ async def authorized_document(domain, name: str, user) -> tuple[str, str]:
 
     url = _blob_url(domain, name)
 
-    # A identidade do USUÁRIO só viaja em domínio com ACL — espelha `retrieval.retrieve`. Num
-    # domínio sem `acl_group_map` (ex.: helpdesk) não há grupo declarado em documento nenhum:
-    # não existe DADO de ACL com que decidir, então não há trim para rodar — e rodar um seria
-    # pior que inútil, porque `search_index` nem sempre existe nesses domínios (helpdesk não
-    # seta) e a chamada quebraria contra `.../indexes/None/docs/search`. Sessão válida (já
-    # exigida pela dependency do router, `auth_dependencies`) é a regra inteira aqui.
-    if getattr(domain, "acl_group_map", None):
+    # A decisão de rodar o trim é DECLARADA em `domain.document_access` (`DomainSpec`,
+    # registry.py), nunca DERIVADA da truthiness de `acl_group_map`. `acl_group_map` é valor de
+    # CONFIGURAÇÃO (no modo shared, vem do tenant store) — se decidíssemos por ele, um tenant
+    # com os grupos vazios em runtime rebaixaria em silêncio um domínio que deveria ter ACL: o
+    # índice continuaria carimbado (`permissionFilterOption=enabled`), mas esta rota pararia de
+    # consultá-lo e devolveria o documento integral a qualquer sessão válida. RULE #6 exige que
+    # o acesso seja DADO — mas DADO ausente não pode rebaixar controle, só a ausência de
+    # DECLARAÇÃO explícita pode dizer "este domínio não tem ACL" (é o caso do helpdesk, que
+    # declara `document_access="session"`: não há grupo declarado em documento nenhum, e
+    # `search_index` nem sempre existe nesses domínios — a chamada quebraria contra
+    # `.../indexes/None/docs/search`). Sessão válida (já exigida pela dependency do router,
+    # `auth_dependencies`) é a regra inteira nesse caso.
+    if getattr(domain, "document_access", "acl") == "acl":
         user_token = await _user_search_token(user)
         if settings.auth_enabled and user_token is None:
             # Fail-closed, não fail-open: um domínio COM ACL sem identidade de usuário jamais
