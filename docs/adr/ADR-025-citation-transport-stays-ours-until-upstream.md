@@ -57,19 +57,46 @@ Only the emission half applies to us.
 **Keep the hand-written grounded stream**, and keep the `CustomEvent` transport, until the adapter
 emits annotations.
 
-**Do not customize the adapter to work around it.** Three routes were considered:
+**There IS a public route, and it was found by looking again — so do not monkeypatch.**
 
-- *Monkeypatch `_emit_text` / `_emit_content`* — both are private, module-level functions with a
-  hard-coded dispatch. Our own loop breaks when *we* change it; a monkeypatch breaks when *they*
-  ship a minor. ADR-020 already decided this repository does not build on surfaces that move
-  faster than we can follow.
-- *Wrap the event stream* — also reaches non-public surface (`run_agent_stream`) and means
-  injecting into a stream we do not own. Fragile differently, not less.
-- *Contribute upstream* — small, precedented, and fixes it for everyone including us.
+The adapter's **workflow** runtime has a generic branch its own comment labels *"custom workflow
+events"*:
 
-Upstream is the right route, and it is a separate decision with its own cost (their CONTRIBUTING
-asks for a test with every fix and a discussion before large changes). This ADR does not commit to
-opening it; it records that the option is the good one and that the evidence to make it is ready.
+```python
+yield CustomEvent(name=_event_name(event), value=_custom_event_value(event))
+```
+
+`_event_name` returns `event.type`, and `WorkflowEventType` is a `Literal` — a type hint with no
+runtime effect. So `ctx.add_event(WorkflowEvent("sources", data=[...]))` from a workflow executor
+reaches the frontend as `CustomEvent(name="sources")`, through published API only:
+`WorkflowContext.add_event` and `WorkflowEvent` are both public. Verified end to end, and the branch
+order checked by reading — `sources` matches none of `superstep_*`, `executor_*`, `request_info`,
+`output`/`data`, `status`, so it falls through.
+
+The loose thread, said rather than hidden: `"sources"` is outside the `Literal`, so a type checker
+complains. That is a typing complaint, not a runtime one, and the generic branch exists for exactly
+this — but it is slack, not a guarantee, and `tests/helpdesk/sources_event_test.py` watches the two
+facts it rests on.
+
+This route already paid for itself: **the helpdesk gained the evidence panel it never had.** It is
+already a workflow, so the cost was one small executor; before it, the panel fell back to a regex
+guessing filenames out of the answer text.
+
+It also changes what converting the two grounded domains would cost. They were kept hand-written
+because a plain framework *agent* cannot emit the event; as *workflows* they can, with public API.
+That conversion is not taken here — it still rewrites the most delicate path in the system (OBO,
+ACL, citations) — but the reason for not doing it is now **cost, not impossibility**.
+
+The routes rejected:
+
+- *Monkeypatch `_emit_text` / `_emit_content`* — private, module-level, hard-coded dispatch. Our own
+  code breaks when *we* change it; a monkeypatch breaks when *they* ship a minor (ADR-020). With a
+  public route available this one has no argument left at all.
+- *Wrap the event stream* — also reaches non-public surface (`run_agent_stream`).
+
+*Contributing upstream* stays the right permanent fix, and is a separate decision with its own cost
+(their CONTRIBUTING asks for a test with every fix and discussion before large changes). This ADR
+does not commit to opening it; it records that the option is good and the evidence is ready.
 
 ## Consequences
 
@@ -99,3 +126,8 @@ package; it is the whole test.
 - [AG-UI protocol](https://docs.ag-ui.com/introduction) — 38 events, none for citations
 - [ADR-020](./ADR-020-canonical-frameworks-modular-organization.md) — why we do not abstract over volatile surfaces
 - `tests/grounded/citation_vocabulary_test.py` — the gate that keeps both sides on the canonical shape
+- `tests/helpdesk/sources_event_test.py` — the gate that keeps the public route from being lost by accident
+- [AI SDK stream protocol](https://ai-sdk.dev/docs/ai-sdk-ui/stream-protocol) — the neighbouring
+  protocol treats sources as first-class (`source-url`, `source-document`, plus a `<Sources>`
+  component). AG-UI has no citation event and, searched, **no issue asking for one** — the gap is
+  not a decision against it; nobody has raised it
