@@ -37,17 +37,17 @@ def main() -> int:
     # O emissor grounded tem o message_id em escopo — precisa usá-lo.
     check(
         "grounded.py emite sources com message_id",
-        bool(re.search(r'CustomEvent\(\s*name="sources"[^)]*message_id', g, re.S)),
+        bool(re.search(r'CustomEvent\(\s*name="sources"[^)]*message_id', g, re.DOTALL)),
     )
     check(
         "grounded.py emite sources com a chave citations",
-        bool(re.search(r'CustomEvent\(\s*name="sources"[^)]*"citations"', g, re.S)),
+        bool(re.search(r'CustomEvent\(\s*name="sources"[^)]*"citations"', g, re.DOTALL)),
     )
 
     e = EXECUTOR.read_text(encoding="utf-8")
     check(
         "sources_executor emite a mesma forma (dict com citations)",
-        bool(re.search(r'WorkflowEvent\(\s*"sources"[^)]*"citations"', e, re.S)),
+        bool(re.search(r'WorkflowEvent\(\s*"sources"[^)]*"citations"', e, re.DOTALL)),
     )
     check(
         "sources_executor manda message_id None e diz por quê",

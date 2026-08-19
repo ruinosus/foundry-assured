@@ -85,13 +85,14 @@ def setup_telemetry(*, connection_string: str | None = None) -> bool:
 
     if os.environ.get("OTEL_EXPORTER_OTLP_ENDPOINT"):
         try:
+            from agent_framework.observability import enable_instrumentation
             from opentelemetry import trace
-            from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
+            from opentelemetry.exporter.otlp.proto.http.trace_exporter import (
+                OTLPSpanExporter,
+            )
             from opentelemetry.sdk.resources import Resource
             from opentelemetry.sdk.trace import TracerProvider
             from opentelemetry.sdk.trace.export import BatchSpanProcessor
-
-            from agent_framework.observability import enable_instrumentation
         except ImportError:
             logger.warning("telemetry: OTLP HTTP exporter not installed — staying off")
             return False

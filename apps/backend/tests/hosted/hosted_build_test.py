@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import sys
 
-from app.modules.platform_ops.internal.mcp_registry import get_server
 from app.modules.platform_ops.internal import mcp_tools as T
+from app.modules.platform_ops.internal.mcp_registry import get_server
 from app.modules.tenancy.internal.tenant_store import Connection
 
 

@@ -143,8 +143,10 @@ def main() -> int:
     # repository eight weeks of signal once already. Staleness is a fact the operator must SEE
     # before ingesting, not a merge blocker.
     try:
+        import contextlib
+        import io
+
         from eval.wiki_freshness_test import main as freshness_main
-        import contextlib, io
 
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):

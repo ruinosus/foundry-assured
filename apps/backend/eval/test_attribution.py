@@ -13,8 +13,8 @@ from __future__ import annotations
 
 import sys
 
-from app.modules.knowledge.internal.secure_search import _chunk_component
 from app.modules.knowledge.internal.acl_setup import _component
+from app.modules.knowledge.internal.secure_search import _chunk_component
 
 # (blob name, chunk H1) → must resolve to the same component key.
 _CASES = [

@@ -33,7 +33,10 @@ def main() -> int:
     check("reads FOUNDRY_MODEL from env", cfg.foundry_model == "gpt-5-mini-canary")
     check("current_tenant_id() is None in single-tenant mode", current_tenant_id() is None)
 
-    from app.modules.tenancy.internal.tenant import MultiTenantConfigProvider, set_current_tenant
+    from app.modules.tenancy.internal.tenant import (
+        MultiTenantConfigProvider,
+        set_current_tenant,
+    )
     from app.modules.tenancy.internal.tenant_store import TenantRecord
     rec = TenantRecord(tid="t1", name="n", tier="shared", status="active",
                        data_plane=TenantConfig(foundry_model="model-x"))

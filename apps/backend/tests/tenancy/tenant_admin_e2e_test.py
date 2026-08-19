@@ -65,7 +65,6 @@ from types import SimpleNamespace
 
 from fastapi import HTTPException
 
-
 # ---------------------------------------------------------------------------
 # Gate: read env vars and decide whether to skip or run
 # ---------------------------------------------------------------------------
@@ -112,7 +111,7 @@ def main() -> int:
     # Import here (after the gate) so offline runs never import azure-data-tables.
     from azure.identity import DefaultAzureCredential
 
-    from app.shared.settings import settings
+    from app.modules.tenancy.internal.onboarding import onboarding_guard
     from app.modules.tenancy.internal.tenant import TenantConfig
     from app.modules.tenancy.internal.tenant_store import (
         Connection,
@@ -121,7 +120,7 @@ def main() -> int:
         with_connection,
         without_connection,
     )
-    from app.modules.tenancy.internal.onboarding import onboarding_guard
+    from app.shared.settings import settings
 
     failures: list[str] = []
 

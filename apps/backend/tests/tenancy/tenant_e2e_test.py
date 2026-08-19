@@ -68,7 +68,6 @@ from types import SimpleNamespace
 from fastapi import HTTPException
 
 from app.modules.tenancy.internal import tenant_resolution
-from app.shared import auth
 from app.modules.tenancy.internal.tenant import (
     MultiTenantConfigProvider,
     TenantConfig,
@@ -77,6 +76,7 @@ from app.modules.tenancy.internal.tenant import (
     set_provider,
 )
 from app.modules.tenancy.internal.tenant_store import InMemoryTenantStore, TenantRecord
+from app.shared import auth
 
 # Well-known Azure CLI ROPC client — used when ENTRA_API_CLIENT_ID is absent.
 _FALLBACK_ROPC_CLIENT = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"

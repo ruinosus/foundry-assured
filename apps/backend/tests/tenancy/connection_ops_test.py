@@ -8,13 +8,19 @@ from __future__ import annotations
 
 import sys
 
-from app.modules.tenancy.internal.tenant import TenantConfig
-from app.modules.tenancy.internal.tenant_store import (
-    Connection, TenantRecord, set_server_catalog, validate_kind, with_connection, without_connection,
-)
 # The catalog is injected by the composition root at boot (ADR-017); tests inject it too,
 # because tenancy no longer reaches into the platform registry for it.
 from app.modules.platform_ops.internal.mcp_registry import SERVERS
+from app.modules.tenancy.internal.tenant import TenantConfig
+from app.modules.tenancy.internal.tenant_store import (
+    Connection,
+    TenantRecord,
+    set_server_catalog,
+    validate_kind,
+    with_connection,
+    without_connection,
+)
+
 set_server_catalog(server.id for server in SERVERS)
 
 

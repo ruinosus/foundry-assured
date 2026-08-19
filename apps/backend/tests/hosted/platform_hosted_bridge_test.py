@@ -10,9 +10,9 @@ from __future__ import annotations
 import asyncio
 import sys
 
-import app.modules.hosted.internal.hosted as hosted
-from app.modules.tenancy.internal.tenant import TenantConfig
+from app.modules.hosted.internal import hosted
 from app.modules.hosted.public import stream_platform_agui
+from app.modules.tenancy.internal.tenant import TenantConfig
 
 
 def main() -> int:
