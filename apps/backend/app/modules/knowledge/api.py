@@ -23,6 +23,12 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/source", tags=["source"], dependencies=[*auth_dependencies()])
 
+# Teto do documento devolvido por esta rota. A cadeia soma QUATRO cópias em memória por clique
+# (blob → JSON do backend → `await r.json()` do proxy Next → parse no browser + Streamdown/Shiki),
+# e sem teto o tamanho de um documento na base vira o tamanho da resposta HTTP. 1 MB é folgado
+# para o corpus atual (runbooks/wiki em markdown) e pequeno o bastante para não custar caro.
+_TETO_DOCUMENTO_BYTES = 1_000_000
+
 # `DomainSpec`/`domain_spec` vivem em `app.registry` — a composition root, uma camada ACIMA
 # de `app.modules` (ADR-017/importlinter.toml: "Layers: composition > modules > shared"). Este
 # módulo não pode importar `app.registry`, então a composição EMPURRA a função de resolução
@@ -81,7 +87,15 @@ async def read_source(domain_id: str, name: str, response: Response) -> dict:
         raise HTTPException(status_code=404, detail="documento não encontrado") from None
 
     _auditar(domain_id, name, autorizado=True, url=url)
-    return {"name": name, "url": url, "content": conteudo}
+
+    # A truncagem é DECLARADA na resposta, nunca silenciosa: quem clica no `[n]` está prestes a
+    # confirmar uma evidência, e confirmar sobre um documento cortado sem saber é pior do que não
+    # ver o final dele. `truncated` deixa a interface avisar em vez de fingir que mostrou tudo.
+    bruto = conteudo.encode("utf-8")
+    truncado = len(bruto) > _TETO_DOCUMENTO_BYTES
+    if truncado:
+        conteudo = bruto[:_TETO_DOCUMENTO_BYTES].decode("utf-8", errors="ignore")
+    return {"name": name, "url": url, "content": conteudo, "truncated": truncado}
 
 
 def _auditar(domain_id: str, name: str, *, autorizado: bool, url: str | None) -> None:

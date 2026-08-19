@@ -30,6 +30,9 @@ export function SourceViewer() {
     "carregando",
   );
   const [conteudo, setConteudo] = useState("");
+  // Truncagem DECLARADA, nunca silenciosa: quem abriu a citação está prestes a confirmar
+  // evidência, e confirmar sobre um documento cortado sem saber é pior do que não ver o final.
+  const [truncado, setTruncado] = useState(false);
   const corpo = useRef<HTMLDivElement>(null);
   const fecharBtn = useRef<HTMLButtonElement>(null);
   // Quem tinha o foco antes de abrir — normalmente o botão [n] da citação, fora da árvore de
@@ -52,6 +55,7 @@ export function SourceViewer() {
       // do documento A.
       setEstado("carregando");
       setConteudo("");
+      setTruncado(false);
       setAberto((e as CustomEvent).detail as Aberto);
     };
     window.addEventListener("abrir-fonte", ao);
@@ -86,6 +90,7 @@ export function SourceViewer() {
         if (!r.ok) return setEstado("erro");
         const body = await r.json();
         setConteudo(String(body?.content ?? ""));
+        setTruncado(Boolean(body?.truncated));
         setEstado("ok");
       })
       .catch(() => !cancelado && setEstado("erro"));
@@ -134,7 +139,10 @@ export function SourceViewer() {
         {mensagem ? (
           <p className="muted">{mensagem}</p>
         ) : (
-          <CopilotChatAssistantMessage.MarkdownRenderer content={conteudo} />
+          <>
+            {truncado && <p className="muted source-viewer-truncated">{te("sourceTruncated")}</p>}
+            <CopilotChatAssistantMessage.MarkdownRenderer content={conteudo} />
+          </>
         )}
       </div>
     </div>

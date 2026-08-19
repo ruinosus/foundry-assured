@@ -711,6 +711,14 @@ table.evals tr:last-child td {
   padding: var(--space-3);
 }
 
+/* Aviso de truncagem — precisa se destacar do corpo do documento (é sobre o documento, não
+   parte dele), mas sem competir com o realce da citação (`.source-hit`, abaixo). */
+.source-viewer-truncated {
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
 /* O trecho que o agente citou, dentro do documento. Fundo em vez de cor de texto: o realce
    pode cair em cima de código, link ou célula de tabela, que já têm cor própria. */
 .source-hit {

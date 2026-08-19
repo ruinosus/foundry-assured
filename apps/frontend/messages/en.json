@@ -279,7 +279,6 @@
     "try": "Try:",
     "sources": "Sources",
     "guarantees": "Guarantees",
-    "sourcesEmpty": "The sources an answer cites appear here — every claim grounded in the base, never assumed.",
     "suggested": "Try:",
     "tabConversations": "Conversations",
     "tabGuarantees": "Guarantees",
@@ -378,7 +377,8 @@
     "sourceForbidden": "You do not have access to this document.",
     "sourceMissing": "Document not found.",
     "sourceError": "Could not open the document.",
-    "sourceClose": "Close"
+    "sourceClose": "Close",
+    "sourceTruncated": "Large document: showing only the beginning. The cited excerpt may be outside the shown part."
   },
   "fieldProposal": {
     "title": "Proposal for {field}",

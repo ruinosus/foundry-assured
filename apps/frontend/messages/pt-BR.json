@@ -279,7 +279,6 @@
     "try": "Experimente:",
     "sources": "Fontes",
     "guarantees": "Garantias",
-    "sourcesEmpty": "As fontes que a resposta citar aparecem aqui — cada afirmação fundamentada na base, não em suposição.",
     "suggested": "Experimente:",
     "tabConversations": "Conversas",
     "tabGuarantees": "Garantias",
@@ -378,7 +377,8 @@
     "sourceForbidden": "Você não tem acesso a este documento.",
     "sourceMissing": "Documento não encontrado.",
     "sourceError": "Não foi possível abrir o documento.",
-    "sourceClose": "Fechar"
+    "sourceClose": "Fechar",
+    "sourceTruncated": "Documento grande: mostrando só o começo. O trecho citado pode estar fora da parte exibida."
   },
   "fieldProposal": {
     "title": "Proposta para {field}",
