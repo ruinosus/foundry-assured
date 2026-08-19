@@ -251,7 +251,7 @@ async def stream_grounded(body: dict, domain, user=None, language: str | None = 
         # registro é explícito. Ver `conversations.record_turn`.
         _conversa = agent_name or getattr(domain, "id", "") or "grounded"
         _usuario = _conversation_user()
-        _record_turn(_usuario, _conversa, thread_id, user_text, "".join(resposta))
+        _record_turn(_usuario, _conversa, thread_id, user_text, "".join(resposta), citations=sources)
         # `len(sources)` é a contagem de REFERÊNCIAS de conhecimento desta resposta, e é o insumo
         # principal da fórmula Agent Assisted Hours. Ele já estava calculado aqui e era usado só
         # para desenhar o painel de evidência — medir custava zero e não estava sendo feito.

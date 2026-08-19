@@ -82,7 +82,13 @@ def _foundry_sessions(agent: str) -> list[dict]:
 
 
 def record_turn(
-    user_id: str, agent: str, conversation_id: str, user_text: str, assistant_text: str
+    user_id: str,
+    agent: str,
+    conversation_id: str,
+    user_text: str,
+    assistant_text: str,
+    *,
+    citations: list[dict] | None = None,
 ) -> None:
     """Grava um turno onde NÃO há agente do framework para carregar um `HistoryProvider`.
 
@@ -104,7 +110,17 @@ def record_turn(
     if user_text:
         linhas.append({"role": "user", "text": user_text})
     if assistant_text:
-        linhas.append({"role": "assistant", "text": assistant_text})
+        # A EVIDÊNCIA VIAJA COM A RESPOSTA. Sem isto, recarregar a página apagava a fonte de
+        # toda a conversa — a citação vivia só como evento ao vivo. Guardamos título, url,
+        # índice e o trecho que JÁ saiu na resposta; nunca o documento. O direito de ler o
+        # documento é verificado no clique (rota /source), nunca herdado daqui.
+        #
+        # `keyword-only` com default None para que os chamadores existentes não mudem, e a
+        # chave só existe quando há citação — mensagem sem fonte continua byte-idêntica.
+        mensagem = {"role": "assistant", "text": assistant_text}
+        if citations:
+            mensagem["annotations"] = citations
+        linhas.append(mensagem)
     if not linhas:
         return
     with contextlib.suppress(Exception):

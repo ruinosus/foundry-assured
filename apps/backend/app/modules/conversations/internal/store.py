@@ -175,6 +175,20 @@ def sanitize(messages: list[dict]) -> tuple[list[dict], list[str]]:
                     achados.extend(t for t in tipos if t not in achados)
                 novas.append(parte)
             copia["contents"] = novas
+        # A CITAÇÃO TAMBÉM CARREGA CONTEÚDO. `annotations[].snippet` é trecho de documento, e
+        # sem este ramo ele chegaria ao blob sem passar pelo redator — furando justamente o
+        # ponto que esta função existe para ser. Título, url e índice não são conteúdo e ficam
+        # como estão.
+        anotacoes = copia.get("annotations")
+        if isinstance(anotacoes, list):
+            novas_anot = []
+            for anot in anotacoes:
+                if isinstance(anot, dict) and isinstance(anot.get("snippet"), str):
+                    anot = dict(anot)
+                    anot["snippet"], tipos = redact(anot["snippet"])
+                    achados.extend(t for t in tipos if t not in achados)
+                novas_anot.append(anot)
+            copia["annotations"] = novas_anot
         saidas.append(copia)
     return saidas, achados
 
