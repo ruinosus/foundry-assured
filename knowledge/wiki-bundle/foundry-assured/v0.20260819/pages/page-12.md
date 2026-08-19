@@ -1,38 +1,8 @@
----
-type: reference
-title: Backend State and Persistence
-description: "State ownership map for backend runtime data: tenant records, memory, conversations, citations, tickets, hosted client caches, and interrupt durability constraints."
-tags: [backend, state, persistence]
-openwiki:
-  roles: [architecture, repository]
-  change_kinds: [storage, lifecycle]
-  source_paths:
-    - apps/backend/app/modules/conversations/internal/store.py
-    - apps/backend/app/modules/conversations/internal/listing.py
-    - apps/backend/app/modules/conversations/internal/recorder.py
-  symbols:
-    - InMemoryConversationStore
-    - record_turn
-    - record_usage
-    - bind_dependency
-    - sanitize
-  test_paths:
-    - apps/backend/tests/conversations/citations_persisted_test.py
-    - apps/backend/tests/conversations/duplicate_response_test.py
-    - apps/backend/tests/conversations/provider_invoked_test.py
-  invariants:
-    - Conversation evidence is stored with the assistant message as annotations, not as a session-global side channel.
-    - Usage accounting must attach to the active conversation before model calls run.
-    - Stored conversations must collapse duplicate assistant reconstructions from the published-agent path.
-  validation_commands:
-    - cd apps/backend && uv run pytest tests/conversations/citations_persisted_test.py tests/conversations/duplicate_response_test.py tests/conversations/provider_invoked_test.py
----
-
 # Backend state and persistence
 
 This repository does not hide runtime state behind one generic persistence layer. Different domains own different state because they have different correctness and lifecycle requirements. This page is the canonical map of those owners, with the conversations subsystem expanded because this range changed how evidence is persisted and replayed. [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/modules/conversations/public.py#L5-L25)
 
-This page is paired with [Grounded Domains](grounded-domains.md) for runtime emission of citations and with the frontend [Assurance Console](../frontend/assurance-console.md) for how persisted evidence is replayed in the UI.
+This page is paired with Grounded Domains for runtime emission of citations and with the frontend Assurance Console for how persisted evidence is replayed in the UI.
 
 ## Tenant control-plane state
 
@@ -101,7 +71,7 @@ Consult this page when changing:
 - durable ticket storage or hosted-client cache lifecycle;
 - any stateful runtime where losing ordering or dedupe changes externally visible behavior.
 
-For source-confirmation reads, continue in [Knowledge Pipeline](knowledge-pipeline.md). For frontend replay behavior, continue in [Assurance Console](../frontend/assurance-console.md).
+For source-confirmation reads, continue in Knowledge Pipeline. For frontend replay behavior, continue in Assurance Console.
 
 ## Focused tests and validation
 

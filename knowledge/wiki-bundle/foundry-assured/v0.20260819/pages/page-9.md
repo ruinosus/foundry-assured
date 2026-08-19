@@ -1,43 +1,12 @@
----
-type: pipeline
-title: Knowledge Pipeline
-description: "Source-grounded wiki and docbundle generation, adaptation, ingest, ACL stamping, retrieval, and full-document confirmation that feed the repository’s grounded domains."
-tags: [backend, knowledge, ingestion, wiki]
-openwiki:
-  roles: [architecture, workflow]
-  change_kinds: [data-flow, access-control]
-  source_paths:
-    - apps/backend/app/modules/knowledge/internal/wiki_builder.py
-    - apps/backend/app/modules/knowledge/internal/ingest_docbundles.py
-    - apps/backend/app/modules/knowledge/api.py
-    - apps/backend/app/modules/knowledge/internal/document.py
-  symbols:
-    - read_source
-    - authorized_document
-    - collect_pages
-    - _fidelity_report
-  test_paths:
-    - apps/backend/tests/knowledge/document_api_test.py
-    - apps/backend/tests/knowledge/document_access_test.py
-    - apps/backend/eval/wiki_fidelity_test.py
-  invariants:
-    - Missing groups and empty groups are different ACL meanings during ingest.
-    - Full-document confirmation must reapply document authorization at read time instead of trusting a prior citation.
-    - Source-confirmation responses must remain no-store because they serve ACL-controlled content.
-  validation_commands:
-    - cd apps/backend && uv run pytest tests/knowledge/document_api_test.py tests/knowledge/document_access_test.py tests/knowledge/retrieval_acl_parity_test.py
-    - cd apps/backend && uv run pytest eval/wiki_fidelity_test.py
----
-
 # Knowledge pipeline
 
 The knowledge pipeline is the backend subsystem that turns source or markdown corpora into retrievable knowledge bases with measurable fidelity. It spans generation, adaptation, ingest, ACL setup, retrieval, and now a full-document confirmation API used by the UI when a user opens a cited source. [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/modules/knowledge/public.py#L1-L17) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/modules/knowledge/api.py#L1-L24)
 
-This pipeline feeds [Grounded Domains](grounded-domains.md), and its source-confirmation endpoint is surfaced in the frontend through the [Assurance Console](../frontend/assurance-console.md) and [Frontend API and Proxy Layer](../frontend/frontend-api-proxies.md).
+This pipeline feeds Grounded Domains, and its source-confirmation endpoint is surfaced in the frontend through the Assurance Console and Frontend API and Proxy Layer.
 
 ## Generation paths
 
-The README still documents two wiki-generation paths for selfwiki: a Foundry pipeline implemented by `wiki_builder.py`, and Microsoft Agent Skills / OpenWiki-driven generation. `wiki_builder.py` itself keeps the local contract explicit: generate a faithful LLM wiki from real source, pace and bound the work, and emit the ingest bundle format that downstream ingestion already understands. [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/README.md#L93-L103) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/modules/knowledge/internal/wiki_builder.py#L1-L18) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/modules/knowledge/internal/wiki_builder.py#L29-L34)
+The README still documents two wiki-generation paths for selfwiki: a Foundry pipeline implemented by `wiki_builder.py`, and Microsoft Agent Skills / OpenWiki-driven generation. `wiki_builder.py` itself keeps the local contract explicit: generate a faithful LLM wiki from real source, pace and bound the work, and emit the ingest bundle format that downstream ingestion already understands. Source [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/modules/knowledge/internal/wiki_builder.py#L1-L18) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/modules/knowledge/internal/wiki_builder.py#L29-L34)
 
 A key invariant remains that the bundle format is a contract, not a private dialect: manifests are validated against the vendored schema before write. [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/modules/knowledge/internal/wiki_builder.py#L14-L27) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/modules/knowledge/internal/wiki_builder.py#L63-L64)
 
@@ -105,7 +74,7 @@ Consult this page when you are changing:
 - the `/source/*` document-confirmation path,
 - fidelity or shelf gates for externally generated wiki bundles.
 
-For response rendering and click behavior after the API returns, continue in [Assurance Console](../frontend/assurance-console.md).
+For response rendering and click behavior after the API returns, continue in Assurance Console.
 
 ## Focused validation
 
@@ -118,4 +87,4 @@ Conditional follow-up checks:
 
 - `cd apps/backend && uv run pytest tests/knowledge/corpus_container_parity_test.py` when moving corpus containers or blob naming,
 - `cd apps/backend && uv run pytest tests/knowledge/document_contar_autorizado_test.py` when changing the low-level authorized-count probe,
-- frontend smoke through the source viewer only when the change crosses the backend/frontend boundary described in [Assurance Console](../frontend/assurance-console.md).
+- frontend smoke through the source viewer only when the change crosses the backend/frontend boundary described in Assurance Console.

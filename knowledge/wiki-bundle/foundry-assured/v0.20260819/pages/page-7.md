@@ -1,38 +1,8 @@
----
-type: service
-title: Grounded Domains
-description: "Grounded question-answering domains such as selfwiki and techdocs, including the shared archetype, published-agent framework path, retrieval ACLs, and evidence emission contracts."
-tags: [backend, grounded, retrieval, citations]
-openwiki:
-  roles: [architecture, domain]
-  change_kinds: [lifecycle, public-api]
-  source_paths:
-    - apps/backend/app/modules/grounded/internal/grounded.py
-    - apps/backend/app/modules/grounded/internal/framework_agent.py
-    - apps/backend/app/modules/knowledge/internal/retrieval.py
-  symbols:
-    - stream_grounded
-    - build_grounded_agent
-    - build_grounded_workflow
-    - mount_grounded_via_framework
-    - via_framework
-  test_paths:
-    - apps/backend/tests/grounded/framework_agent_test.py
-    - apps/backend/tests/knowledge/retrieval_acl_parity_test.py
-    - apps/backend/tests/grounded/sources_message_id_test.py
-  invariants:
-    - ACL trimming happens before synthesis, not after answer generation.
-    - Grounded domains must emit citations in a message-addressable shape so the frontend can bind evidence to the right response.
-    - The framework path stays opt-in behind GROUNDED_VIA_FRAMEWORK until real-service ACL/OBO validation is accepted.
-  validation_commands:
-    - cd apps/backend && uv run pytest tests/grounded/framework_agent_test.py tests/grounded/sources_message_id_test.py tests/knowledge/retrieval_acl_parity_test.py
----
-
 # Grounded domains
 
 The backend’s grounded domains are `techdocs` and `selfwiki`. In the registry they are `kind: "grounded"` domains that resolve per-request tenant config and stream cited Q&A through the common grounded archetype, while still allowing the runtime implementation to switch between a hand-written SSE path and a framework-hosted published-agent path. [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/registry.py#L73-L75) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/registry.py#L96-L132) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/registry.py#L137-L160) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/modules/grounded/internal/framework_agent.py#L39-L49)
 
-This page is the canonical home for grounded runtime behavior. It depends on the [Knowledge Pipeline](knowledge-pipeline.md) for retrieval and document confirmation, and it persists its user-visible evidence through [Backend State and Persistence](state-and-persistence.md).
+This page is the canonical home for grounded runtime behavior. It depends on the Knowledge Pipeline for retrieval and document confirmation, and it persists its user-visible evidence through Backend State and Persistence.
 
 ## Shared archetype
 
@@ -61,7 +31,7 @@ Three details changed materially in this range:
 2. the emitted citations now use the framework vocabulary (`type`, `title`, `url`, `snippet`, `index`) rather than the earlier local naming; [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/modules/grounded/internal/grounded.py#L199-L227)
 3. the `sources` event is explicitly tied to the response `message_id`, which is what the frontend now uses to keep evidence attached to the right historical response. [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/app/modules/grounded/internal/grounded.py#L247-L266) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/tests/grounded/sources_message_id_test.py#L1-L22) [Source](https://github.com/ruinosus/foundry-assured/blob/8e5fef809b476602ff31f4821f13e5bb18b64830/apps/backend/tests/grounded/sources_message_id_test.py#L82-L110)
 
-The persistence side of that event shape lives in [Backend State and Persistence](state-and-persistence.md), because stored conversations now keep the same evidence payload in `annotations`.
+The persistence side of that event shape lives in Backend State and Persistence, because stored conversations now keep the same evidence payload in `annotations`.
 
 ## Framework path behind the flag
 
@@ -116,9 +86,9 @@ Consult this page when you are:
 
 Prefer narrower pages for adjacent concerns:
 
-- [Knowledge Pipeline](knowledge-pipeline.md) for `/source` and document-confirmation behavior,
-- [Backend State and Persistence](state-and-persistence.md) for stored conversations and annotations,
-- [Assurance Console](../frontend/assurance-console.md) for per-message evidence rendering.
+- Knowledge Pipeline for `/source` and document-confirmation behavior,
+- Backend State and Persistence for stored conversations and annotations,
+- Assurance Console for per-message evidence rendering.
 
 ## Focused tests and validation
 

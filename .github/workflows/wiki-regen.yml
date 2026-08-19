@@ -142,6 +142,33 @@ jobs:
             --component "$COMPONENT" \
             --version "$BUNDLE_VERSION"
 
+      # PODAR SÓ AQUI, e não antes: o passo acima é o gate. Um bundle abaixo do piso de
+      # fidelidade não pode chegar à base — se a poda viesse primeiro, uma geração ruim
+      # apagaria a boa e deixaria a prateleira vazia (ou pior, só com o ruim).
+      #
+      # POR QUE PODAR. `adapt_openwiki` escreve numa pasta datada nova e nunca remove a
+      # anterior, então cada regeneração soma uma versão. `collect_pages` varre a prateleira
+      # inteira: as duas gerações das MESMAS páginas entrariam na base, e a antiga seria
+      # servida sempre que ranqueasse melhor. `eval.wiki_shelf_test` reprova esse estado — e
+      # reprovou a PR da regeneração de 19/ago, que precisou de poda manual.
+      #
+      # Um bundle velho não precisa estar quebrado para fazer estrago; basta continuar ali.
+      # O git guarda o histórico, a prateleira guarda só a geração corrente.
+      - name: Retirar a geração anterior da prateleira
+        run: |
+          set -euo pipefail
+          DIR="$GITHUB_WORKSPACE/knowledge/wiki-bundle/$COMPONENT"
+          [ -d "$DIR" ] || { echo "sem prateleira em $DIR — nada a podar"; exit 0; }
+          for v in "$DIR"/*/; do
+            nome="$(basename "$v")"
+            if [ "$nome" != "$BUNDLE_VERSION" ]; then
+              echo "  removendo geração anterior: $COMPONENT/$nome"
+              rm -rf "$v"
+            fi
+          done
+          echo "  na prateleira agora:"
+          ls -1 "$DIR"
+
       - name: Open a pull request with the refreshed bundle
         uses: peter-evans/create-pull-request@v7
         with:
