@@ -85,7 +85,9 @@ def _graph(method: str, path: str, body: dict | None = None) -> dict | None:
         detail = e.read().decode(errors="ignore")
         try:
             detail = json.loads(detail).get("error", {}).get("message", detail)
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001, S110 — corpo de erro sem JSON válido: mantém o texto
+            # cru e segue para levantar o GraphError de qualquer forma; não há o que logar aqui
+            # que o `raise` logo abaixo já não carregue.
             pass
         raise GraphError(e.code, detail) from e
 

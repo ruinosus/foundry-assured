@@ -55,7 +55,7 @@ def main() -> int:
             check(f"recusa nome inválido {ruim[:18]!r}", False)
         except document.NomeDocumentoInvalido:
             check(f"recusa nome inválido {ruim[:18]!r}", True)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — captura qualquer exceção inesperada para reportar o tipo; é o "else" da asserção do teste, não fail-soft de produção
             check(f"recusa nome inválido {ruim[:18]!r} (veio {type(exc).__name__})", False)
 
     # ── o trim manda: zero resultados ⇒ PermissionError ─────────────────────────────
@@ -84,7 +84,7 @@ def main() -> int:
         check("zero no trim levanta PermissionError", False)
     except PermissionError:
         check("zero no trim levanta PermissionError", True)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — captura qualquer exceção inesperada para reportar o tipo; é o "else" da asserção do teste, não fail-soft de produção
         check(f"zero no trim levanta PermissionError (veio {type(exc).__name__}: {exc})", False)
 
     ultima = chamadas[-1] if chamadas else {}
@@ -107,7 +107,7 @@ def main() -> int:
         _url, conteudo = asyncio.run(document.authorized_document(sem_acl, "runbook-1.md", object()))
         check("domínio SEM acl autoriza sem chamar o trim", True)
         check("domínio SEM acl devolve o conteúdo do blob (mockado)", conteudo == "conteudo-fake")
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — captura qualquer exceção inesperada para reportar o tipo; é o "else" da asserção do teste, não fail-soft de produção
         check(f"domínio SEM acl autoriza sem chamar o trim (veio {type(exc).__name__}: {exc})", False)
     check("domínio SEM acl NUNCA chama _contar_autorizado", chamadas == [])
 
@@ -126,7 +126,7 @@ def main() -> int:
     try:
         asyncio.run(document.authorized_document(session_com_map_preenchido, "runbook-2.md", object()))
         check("document_access='session' não chama o trim mesmo com acl_group_map preenchido", True)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — captura qualquer exceção inesperada para reportar o tipo; é o "else" da asserção do teste, não fail-soft de produção
         check(
             f"document_access='session' não chama o trim mesmo com acl_group_map preenchido "
             f"(veio {type(exc).__name__}: {exc})",
@@ -148,7 +148,7 @@ def main() -> int:
         check("document_access='acl' chama o trim mesmo com acl_group_map vazio", False)
     except PermissionError:
         check("document_access='acl' chama o trim mesmo com acl_group_map vazio", True)
-    except Exception as exc:
+    except Exception as exc:  # noqa: BLE001 — captura qualquer exceção inesperada para reportar o tipo; é o "else" da asserção do teste, não fail-soft de produção
         check(
             f"document_access='acl' chama o trim mesmo com acl_group_map vazio "
             f"(veio {type(exc).__name__}: {exc})",
@@ -184,7 +184,7 @@ def main() -> int:
             check("ACL + auth ligada + sem token de usuário ⇒ PermissionError", False)
         except PermissionError:
             check("ACL + auth ligada + sem token de usuário ⇒ PermissionError", True)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — captura qualquer exceção inesperada para reportar o tipo; é o "else" da asserção do teste, não fail-soft de produção
             check(
                 f"ACL + auth ligada + sem token de usuário ⇒ PermissionError "
                 f"(veio {type(exc).__name__}: {exc})",

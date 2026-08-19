@@ -234,7 +234,9 @@ def _maybe_setup_observability() -> bool:
                 endpoint=tenant_config().foundry_project_endpoint, credential=DefaultAzureCredential()
             )
             conn = project.telemetry.get_application_insights_connection_string()
-        except Exception:
+        except Exception:  # noqa: BLE001 — telemetria best-effort: sem connection string,
+            # segue sem telemetria em vez de derrubar o boot (telemetria que derruba boot é
+            # pior que telemetria ausente)
             conn = None
     if not conn:
         return False

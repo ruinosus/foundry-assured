@@ -94,7 +94,7 @@ def main() -> int:
             check("status de erro (401) levanta", False)
         except httpx.HTTPStatusError:
             check("status de erro (401) levanta", True)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — captura qualquer exceção inesperada para reportar o tipo; é o "else" da asserção do teste, não fail-soft de produção
             check(f"status de erro (401) levanta (veio {type(exc).__name__}: {exc})", False)
 
     def handler_404(request: httpx.Request) -> httpx.Response:
@@ -111,7 +111,7 @@ def main() -> int:
             check("status de erro (404, índice inexistente) levanta", False)
         except httpx.HTTPStatusError:
             check("status de erro (404, índice inexistente) levanta", True)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 — captura qualquer exceção inesperada para reportar o tipo; é o "else" da asserção do teste, não fail-soft de produção
             check(f"status de erro (404) levanta (veio {type(exc).__name__}: {exc})", False)
 
     print()

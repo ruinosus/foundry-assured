@@ -139,7 +139,7 @@ async def stream_agui(body: dict, agent_name: str) -> AsyncGenerator[str]:
         yield enc.encode(TextMessageEndEvent(message_id=message_id))
         _registrar(agent_name, thread_id, user_text, "".join(resposta), tokens_in, tokens_out)
         yield enc.encode(RunFinishedEvent(thread_id=thread_id, run_id=run_id))
-    except Exception as exc:  # surface to the UI as a clean run error
+    except Exception as exc:  # noqa: BLE001 — surface to the UI as a clean run error
         yield enc.encode(TextMessageEndEvent(message_id=message_id))
         yield enc.encode(RunErrorEvent(message=str(exc), code=type(exc).__name__))
 
@@ -198,8 +198,9 @@ async def stream_platform_agui(body: dict) -> AsyncGenerator[str]:
         # TODO(infra-gated): confirm the request body shape against the deployed agent. The exact
         # AG-UI run-input envelope the Invocations endpoint expects is not verifiable offline
         # (Task 0) — relay the caller's AG-UI run body as-is; refine once verified against deploy.
-        async with httpx.AsyncClient(timeout=None) as http:
-            async with http.stream(
+        async with (
+            httpx.AsyncClient(timeout=None) as http,
+            http.stream(
                 "POST",
                 url,
                 headers={
@@ -208,19 +209,20 @@ async def stream_platform_agui(body: dict) -> AsyncGenerator[str]:
                     "Accept": "text/event-stream",
                 },
                 json=body,
-            ) as resp:
-                resp.raise_for_status()
-                # Passthrough: the endpoint's SSE lines are already AG-UI — relay UNTOUCHED.
-                # TODO(infra-gated): confirm the SSE framing against the deployed agent. NOTE:
-                # aiter_lines() strips line terminators and the `if line` filter drops SSE's
-                # blank-line event separators — so for a TRUE byte-identical AG-UI passthrough this
-                # very likely needs resp.aiter_bytes() (or aiter_raw()) yielding chunks UNCHANGED,
-                # NOT aiter_lines() (which would corrupt event boundaries). Verify the exact framing
-                # the Invocations endpoint emits before relying on it.
-                async for line in resp.aiter_lines():
-                    if line:
-                        yield line + "\n"
-    except Exception as exc:  # surface to the UI as a clean run error (mirrors stream_agui)
+            ) as resp,
+        ):
+            resp.raise_for_status()
+            # Passthrough: the endpoint's SSE lines are already AG-UI — relay UNTOUCHED.
+            # TODO(infra-gated): confirm the SSE framing against the deployed agent. NOTE:
+            # aiter_lines() strips line terminators and the `if line` filter drops SSE's
+            # blank-line event separators — so for a TRUE byte-identical AG-UI passthrough this
+            # very likely needs resp.aiter_bytes() (or aiter_raw()) yielding chunks UNCHANGED,
+            # NOT aiter_lines() (which would corrupt event boundaries). Verify the exact framing
+            # the Invocations endpoint emits before relying on it.
+            async for line in resp.aiter_lines():
+                if line:
+                    yield line + "\n"
+    except Exception as exc:  # noqa: BLE001 — surface to the UI as a clean run error (mirrors stream_agui)
         yield enc.encode(RunStartedEvent(thread_id=thread_id, run_id=run_id))
         yield enc.encode(TextMessageStartEvent(message_id=message_id, role="assistant"))
         yield enc.encode(TextMessageEndEvent(message_id=message_id))

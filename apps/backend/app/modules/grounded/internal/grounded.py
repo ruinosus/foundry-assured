@@ -265,7 +265,7 @@ async def stream_grounded(body: dict, domain, user=None, language: str | None = 
                 CustomEvent(name="sources", value={"message_id": message_id, "citations": sources})
             )
         yield enc.encode(RunFinishedEvent(thread_id=thread_id, run_id=run_id))
-    except Exception as exc:  # surface to the UI as a clean run error (mirrors hosted.stream_agui)
+    except Exception as exc:  # noqa: BLE001 — surface to the UI as a clean run error (mirrors hosted.stream_agui)
         yield enc.encode(TextMessageEndEvent(message_id=message_id))
         yield enc.encode(RunErrorEvent(message=str(exc), code=type(exc).__name__))
     finally:

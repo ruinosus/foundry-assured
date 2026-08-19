@@ -55,7 +55,8 @@ async def read_source(domain_id: str, name: str, response: Response) -> dict:
         raise HTTPException(status_code=500, detail="resolução de domínio não configurada")
     try:
         domain = _domain_lookup(domain_id)
-    except Exception:
+    except Exception:  # noqa: BLE001 — qualquer falha na resolução vira 404 genérico, sem
+        # vazar detalhe interno de qual domínio/config específica quebrou
         raise HTTPException(status_code=404, detail="domínio desconhecido") from None
     if getattr(domain, "kind", "") == "tool":
         raise HTTPException(status_code=404, detail="domínio não tem documentos")

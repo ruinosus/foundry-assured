@@ -250,7 +250,8 @@ def _decode_dockey(dockey: str) -> str:
         candidate = seg[: len(seg) - trim] if trim else seg
         try:
             text = base64.b64decode(candidate + "=" * (-len(candidate) % 4)).decode("utf-8")
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001, S112 — ver docstring: tenta cada corte de padding
+            # (0..3 bytes); logar cada tentativa falha seria ruído, só o caso final importa
             continue
         m = _BLOB_URL_IN_TEXT.search(text)
         if m:
