@@ -30,6 +30,7 @@ import { DomainPicker } from "@/components/console/DomainPicker";
 import { EvidencePanel } from "@/components/console/EvidencePanel";
 import { makeAssistantMessage } from "@/components/console/MessageEvidence";
 import { MermaidZoom } from "@/components/console/MermaidZoom";
+import { SourceViewer } from "@/components/console/SourceViewer";
 import { SuggestedPrompts } from "@/components/console/SuggestedPrompts";
 import { ToolActivity } from "@/components/console/ToolActivity";
 
@@ -136,6 +137,7 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
               <ToolActivity />
               <CopilotChat agentId={activeAgentId} threadId={threadId} messageView={messageView} />
               <MermaidZoom />
+              <SourceViewer />
             </CitationsProvider>
           </div>
         </div>

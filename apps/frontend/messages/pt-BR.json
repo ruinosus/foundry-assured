@@ -372,7 +372,12 @@
     "accessTitle": "Acesso",
     "evaluatedTitle": "Avaliação",
     "sources": "Fontes",
-    "openSource": "Abrir o documento"
+    "openSource": "Abrir o documento",
+    "sourceLoading": "Abrindo o documento…",
+    "sourceForbidden": "Você não tem acesso a este documento.",
+    "sourceMissing": "Documento não encontrado.",
+    "sourceError": "Não foi possível abrir o documento.",
+    "sourceClose": "Fechar"
   },
   "fieldProposal": {
     "title": "Proposta para {field}",
