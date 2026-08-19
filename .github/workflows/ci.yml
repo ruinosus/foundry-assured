@@ -1,7 +1,6 @@
 name: CI
 
-# Runs on every PR and on pushes to main. The hard gates (policy self-test,
-# typecheck, build, bicep) must pass; lint is advisory for now (continue-on-error).
+# Runs on every PR and on pushes to main. All gates below — including lint — must pass.
 on:
   pull_request:
   push:
@@ -26,11 +25,14 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           enable-cache: true
-      - name: Lint (ruff)
-        run: uvx ruff check .
-        continue-on-error: true
       - name: Install dependencies
         run: uv sync --frozen
+      # Versão do ruff fixada em `[dependency-groups.dev]` (pyproject.toml) e travada no
+      # uv.lock — `uv run` usa exatamente essa versão, não "a última disponível" como
+      # `uvx ruff` faria. Upgrade de ruff vira um PR que muda o lock, não uma surpresa
+      # silenciosa no gate. O ruleset em si é o `[tool.ruff.lint]` do mesmo pyproject.toml.
+      - name: Lint (ruff)
+        run: uv run ruff check .
       - name: Policy gate (planted-violation self-test)
         run: uv run python -m eval.run_eval --self-test
       - name: ACL attribution round-trip (chunk key == blob key)
@@ -41,6 +43,17 @@ jobs:
       # field the producer's model never had, and a second generator grew from it.
       - name: Doc-bundle contract (producer ↔ consumer field agreement)
         run: uv run python -m eval.docbundle_contract_test
+
+      # Fail-closed do controle de acesso a documento integral (rota GET /source), por mutação:
+      # planta o cenário "zero resultados no trim" e prova que o código levanta PermissionError em
+      # vez de servir o documento. Prova por mutação que ninguém roda não é controle, é comentário.
+      - name: Documento integral — fail-closed por mutação (document_access declarado, não derivado)
+        run: uv run python -m tests.knowledge.document_access_test
+      - name: Documento integral — contrato da rota HTTP (401/403/404, sem cache, SSRF)
+        run: uv run python -m tests.knowledge.document_api_test
+      - name: Documento integral — contagem autorizada (trim por blob_url, header de identidade)
+        run: uv run python -m tests.knowledge.document_contar_autorizado_test
+
       # The fidelity gate runs at GENERATION (wiki-regen.yml), on one bundle, once. The ingest
       # then walks knowledge/wiki-bundle/** and uploads whatever is committed — so a bundle stays in
       # the knowledge base long after the code it describes has moved. Two did: they scored
@@ -177,6 +190,15 @@ jobs:
       - name: A conversa é gravada de fato (provider invocado pelo framework)
         run: uv run python -m tests.conversations.provider_invoked_test
 
+      # A resposta do FoundryAgent publicado não é gravada duas vezes. Medido contra uma conversa
+      # real do selfwiki (GROUNDED_VIA_FRAMEWORK=true): `response.messages` trazia DUAS
+      # reconstruções da MESMA resposta em streaming — uma sem `message_id` (com `author_name` e
+      # um `text_reasoning` vazio) e outra com `message_id` (só o texto) — e o `HistoryProvider`
+      # gravava as duas. Diferente do dedup por thread-reenviada (gate acima): aqui as duas
+      # mensagens são NOVAS na mesma chamada, então `_ja_gravados` não pega — é outro bug.
+      - name: A resposta do FoundryAgent publicado não duplica no store
+        run: uv run python -m tests.conversations.duplicate_response_test
+
       # Os domínios de grafo gravam o TURNO, e uma vez só. O ponto não é o mesmo do token:
       # `on_llm_end` vê a chamada de MODELO (onde o token existe) e `on_chain_end` na RAIZ vê o
       # estado final do GRAFO (onde o turno existe). O filtro de raiz é o que impede duplicata —
@@ -192,12 +214,39 @@ jobs:
       - name: Vocabulário de citação (canônico, e os dois lados concordam)
         run: uv run python -m tests.grounded.citation_vocabulary_test
 
+      # O evento `sources` carrega o `message_id` da resposta que ele fundamenta — sem isso o
+      # painel de evidência só consegue guardar a última resposta da conversa.
+      - name: Evento `sources` carrega o id da resposta
+        run: uv run python -m tests.grounded.sources_message_id_test
+
+      # A citação persiste junto do turno gravado — não só passa pelo SSE. Sem isto, rolar a
+      # conversa para uma resposta antiga perde a evidência que a sustentava.
+      - name: Citações persistem com a conversa
+        run: uv run python -m tests.conversations.citations_persisted_test
+
       # O helpdesk emite as fontes por API PÚBLICA. A alternativa seria monkeypatch de `_emit_text`
       # — função privada de módulo num pacote que a ADR-020 já descreve como volátil. O nosso
       # código quebra quando NÓS mexemos; um monkeypatch quebra quando ELES publicam um minor.
       # Este gate vigia a rota pública para que ninguém a perca por engano e recorra à privada.
       - name: Fontes do helpdesk por API pública (sem monkeypatch)
         run: uv run python -m tests.helpdesk.sources_event_test
+
+      # A fábrica do helpdesk monta DE VERDADE — direto, com recuperação ativa (usuário
+      # resolvido), e pela fiação real de app.registry._mount_helpdesk. Os gates de rota/registry
+      # trocam build_helpdesk_workflow por um dublê para não precisar de Foundry, e um dublê não
+      # executa o corpo da fábrica — não pegaria nem um import adiado com nome errado (só estoura
+      # quando o domínio é USADO) nem uma incompatibilidade de tipo que só aparece quando
+      # WorkflowBuilder.build() valida o grafo com SourcesExecutor de fato na cadeia.
+      - name: Fábrica do helpdesk monta de verdade (import + tipos, com recuperação ativa)
+        run: uv run python -m tests.helpdesk.workflow_factory_test
+
+      # O grounded-como-agente monta certo e nasce DESLIGADO. O gate prova a montagem, não a
+      # conversa: essa é a única troca da série que não dá para verificar offline (toca OBO e ACL),
+      # e o modo de falha de errar não é "quebra" — é servir documento que a pessoa não deveria ver.
+      # Por isso o caminho antigo continua sendo o default até uma conversa real e o
+      # `eval/access_control_test` darem o aceite.
+      - name: Grounded como agente do framework (montagem + desligado por default)
+        run: uv run python -m tests.grounded.framework_agent_test
 
       - name: Approval decisions (edit is not a loophole)
         run: uv run python -m tests.hitl.decision_test
@@ -246,6 +295,17 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+      # O destaque do trecho citado (source-highlight.ts) roda contra um DOM real via jsdom —
+      # sem este gate, uma regressão na normalização de espaço em branco só aparece quando
+      # alguém clica numa citação e o trecho não acende.
+      - name: Realce do trecho citado (jsdom)
+        run: npm run verify:highlight
+      # Reabrir uma conversa antiga precisa mostrar a citação gravada junto da resposta, não só
+      # o texto — sem este gate, uma divergência entre o id que `toAguiMessages` atribui e o
+      # `message_id` que `historyCitationEvents` emite volta a colar (ou perder) a fonte em
+      # silêncio, do jeito que só aparece quando alguém reabre a conversa certa.
+      - name: Citações ao reabrir conversa
+        run: npm run verify:thread-citations
       # ENFORCING. This gate was advisory through two consecutive breakages, and each
       # time the breakage looked exactly like success: first `next lint` (removed in
       # Next 16) exited 1 reading "lint" as a directory; then ESLint 10 CRASHED loading

@@ -89,6 +89,45 @@ def main() -> int:
     finally:
         provider_mod.store = original
 
+    # ── a thread reenviada NÃO é regravada ────────────────────────────────────────────────
+    #
+    # No caminho AG-UI o cliente reenvia a CONVERSA INTEIRA a cada turno, e o framework repassa
+    # isso como `input_messages`. Com este store sendo append-only, cada turno regravava tudo.
+    # Medido numa conversa REAL de três perguntas: DOZE mensagens onde deviam ser seis, com a
+    # primeira pergunta aparecendo três vezes.
+    #
+    # E o estrago não era só tamanho: o histórico duplicado volta como contexto do agente, e quem
+    # procura "a última pergunta do usuário" nele acha uma pergunta antiga — foi o que fez a
+    # recuperação buscar documentos da pergunta errada, e a conversa responder só a primeira.
+    from agent_framework import Message as _Msg
+
+    from app.modules.conversations.internal import provider as pmod
+
+    memoria2 = store_mod.InMemoryConversationStore()
+    pmod.store = lambda: memoria2
+    prov = pmod.StoredHistoryProvider("u-1", "dominio", "th-1")
+
+    def _m(papel: str, texto: str, mid: str):
+        return _Msg(papel, [texto], message_id=mid)
+
+    async def _turno(entrada, resposta):
+        await prov.get_messages("th-1")
+        await prov.save_messages("th-1", [*entrada, resposta])
+
+    q1, a1 = _m("user", "Q1", "m1"), _m("assistant", "A1", "m2")
+    q2, a2 = _m("user", "Q2", "m3"), _m("assistant", "A2", "m4")
+    q3, a3 = _m("user", "Q3", "m5"), _m("assistant", "A3", "m6")
+    asyncio.run(_turno([q1], a1))
+    asyncio.run(_turno([q1, a1, q2], a2))
+    asyncio.run(_turno([q1, a1, q2, a2, q3], a3))
+    gravadas2 = memoria2.read("u-1", "dominio", "th-1")
+    check(
+        f"três turnos com a thread reenviada gravam SEIS mensagens, não doze ({len(gravadas2)})",
+        len(gravadas2) == 6,
+    )
+    textos2 = " ".join(str(m) for m in gravadas2)
+    check("…e cada pergunta aparece UMA vez", textos2.count("Q1") == 1 and textos2.count("Q3") == 1)
+
     if falhas:
         print(f"\n❌ {len(falhas)} verificação(ões) falharam — a conversa NÃO está sendo gravada.")
         return 1

@@ -20,10 +20,10 @@ The fix splits the two concerns: `DOMAIN_KINDS` is the static topology (safe at 
 
 from __future__ import annotations
 
+import dataclasses
 import sys
-from types import SimpleNamespace
 
-from app.modules.tenancy.public import set_current_tenant, set_provider
+from app.modules.tenancy.public import TenantConfig, set_current_tenant, set_provider
 from app.registry import DOMAIN_KINDS, domain_spec
 from app.shared.settings import settings
 
@@ -41,10 +41,27 @@ class _Provider:
 _CURRENT: dict[str, object] = {"record": None}
 
 
-def _tenant(name: str):
-    """A tenant config distinguishable by every field the grounded specs read."""
-    return SimpleNamespace(
+def _tenant(name: str) -> TenantConfig:
+    """A tenant config distinguishable by every field the grounded specs read.
+
+    Derivado de uma instância REAL de `TenantConfig` via `dataclasses.replace`, não de um
+    `SimpleNamespace` solto — um `SimpleNamespace` não tem vínculo estático com a dataclass:
+    campo novo que `_domains()` passasse a ler ficava faltando aqui sem lint nem typecheck
+    acusarem nada (foi assim que um gate de CI quebrou nesta série). `dataclasses.replace`
+    herda todo default de produção automaticamente, e um campo renomeado/removido na dataclass
+    real quebra esta chamada na hora — em vez de silenciosamente devolver `None`/`AttributeError`
+    só quando `_domains()` for ler o atributo ausente.
+    """
+    base = TenantConfig()
+    return dataclasses.replace(
+        base,
         hosted_agent_name=f"{name}-agent",
+        # `corpus_container` de cada domínio (helpdesk/techdocs/selfwiki) — `_domains()` lê os
+        # três em `app/registry.py`. Derivado do nome do tenant, como os campos vizinhos, para
+        # que a asserção de isolamento entre tenants continue significando algo.
+        azure_storage_container=f"{name}-corpus",
+        techdocs_storage_container=f"{name}-techdocs-corpus",
+        selfwiki_storage_container=f"{name}-selfwiki-corpus",
         techdocs_searchindex_knowledge_base=f"{name}-techdocs-kb",
         techdocs_searchindex_knowledge_source=f"{name}-techdocs-ks",
         techdocs_search_index=f"{name}-techdocs-index",
@@ -52,7 +69,11 @@ def _tenant(name: str):
         selfwiki_searchindex_knowledge_source=f"{name}-selfwiki-ks",
         selfwiki_search_index=f"{name}-selfwiki-index",
         azure_search_endpoint=f"https://{name}.invalid",
-        acl_group_map={f"{name}-group": f"oid-{name}"},
+        # `acl_group_map` é PROPRIEDADE computada (não campo) a partir do trio
+        # public/internal/confidential + `acl_extra_group_map` — não dá pra passar um dict
+        # pronto ao `replace`. `acl_extra_group_map` no formato "name:oid" produz o mesmo
+        # mapeamento efetivo que o `SimpleNamespace` antigo simulava direto.
+        acl_extra_group_map=f"{name}-group:oid-{name}",
         app_users_group_id=f"users-{name}",
     )
 
@@ -110,6 +131,10 @@ def main() -> int:
         check(
             "the two do not share an ACL group map (RULE #6 — leak would cross tenants)",
             alpha.acl_group_map != beta.acl_group_map,
+        )
+        check(
+            "the two do not share a corpus_container (GET /source would read the wrong tenant's blob)",
+            alpha.corpus_container != beta.corpus_container,
         )
 
         # --- Resolving again for A must return A's config, not the last one seen. ---

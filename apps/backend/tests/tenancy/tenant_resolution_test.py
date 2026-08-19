@@ -13,7 +13,11 @@ from types import SimpleNamespace
 from fastapi import HTTPException
 
 from app.modules.tenancy.internal import tenant_resolution
-from app.modules.tenancy.internal.tenant import TenantConfig, current_tenant_id, set_current_tenant
+from app.modules.tenancy.internal.tenant import (
+    TenantConfig,
+    current_tenant_id,
+    set_current_tenant,
+)
 from app.modules.tenancy.internal.tenant_store import InMemoryTenantStore, TenantRecord
 
 

@@ -61,7 +61,11 @@ def _ask_deployed(backend: str, token: str) -> tuple[int, list[str], str | None]
             if t == "TEXT_MESSAGE_CONTENT":
                 chars += len(ev.get("delta", ""))
             elif t == "CUSTOM" and ev.get("name") == "sources":
-                sources = [s.get("source", "") for s in (ev.get("value") or [])]
+                # `value` virou {"message_id", "citations"}; aceita a forma antiga (lista solta)
+                # porque este teste roda contra o app DEPLOYADO, que pode estar uma versão atrás.
+                valor = ev.get("value") or []
+                citacoes = valor.get("citations", []) if isinstance(valor, dict) else valor
+                sources = [s.get("source", "") for s in citacoes]
             elif t == "RUN_ERROR":
                 err = ev.get("message")
     return chars, sources, err

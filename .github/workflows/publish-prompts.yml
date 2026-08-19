@@ -1,0 +1,113 @@
+name: Publish agent prompts
+
+# Os prompts vivem no repo como documentos AgentSchema (apps/backend/agents/, ADR-013), mas o
+# agente EXISTE no Foundry e o backend lê o prompt de um mount do Azure Files — mudar o arquivo
+# aqui não muda nada em produção até alguém publicar. Passo manual documentado não acontece:
+# este mesmo repositório já teve um passo de ingestão documentado que nunca rodou, e o domínio
+# serviu conteúdo invisível por meses sem ninguém perceber. Este workflow automatiza as DUAS
+# pernas de publicação (ADR-014):
+#
+#   1) Foundry (cli.provision_agents)  → agentes runtime=foundry (selfwiki, techdocs, builder,
+#      platform) — cria uma VERSÃO NOVA no Foundry a cada execução.
+#   2) Azure Files (push-prompts.sh)   → agentes runtime=backend (triage, retrieve, resolve,
+#      concierge-*, oncall) — sobe apps/backend/agents/ para o share `assured-prompts`
+#      montado em /mnt/agents no container e reinicia a revisão para os prompts recomporem.
+#
+# Gatilho duplo:
+#   • push em main, filtrado por apps/backend/agents/** — o filtro é ESSENCIAL. Como
+#     `create_agent_version` (perna 1) cria uma versão nova a cada chamada, rodar isto em
+#     TODO push geraria versões idênticas a cada merge e o histórico de versões no portal do
+#     Foundry viraria lixo. Só dispara quando o conteúdo publicável de fato mudou.
+#   • workflow_dispatch, para publicar sob demanda (ex.: depois de um --dry manual, ou para
+#     forçar re-publicação sem tocar nos arquivos).
+#
+# Rollback: não existe mecanismo dedicado. `git revert` do commit que mudou o prompt + rodar
+# este workflow de novo publica uma NOVA versão do agente com o texto antigo (o Foundry mantém
+# o histórico de versões, nada é apagado) e reenvia o share com o conteúdo revertido.
+#
+# A perna 2 depende do container do backend estar de pé para reiniciar a revisão. Se estiver
+# escalado a zero, `push-prompts.sh` já trata isso como esperado (não falha o script): o
+# próximo cold start lê o share novo sozinho.
+on:
+  push:
+    branches: [main]
+    paths:
+      - apps/backend/agents/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write # Azure OIDC
+
+jobs:
+  publish-prompts:
+    name: Publish prompts (Foundry + Azure Files)
+    runs-on: ubuntu-latest
+    environment: production # add reviewers to this GitHub Environment to gate publishes
+    env:
+      AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+      AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Install dependencies
+        working-directory: apps/backend
+        run: uv sync --frozen
+
+      # Publicar prompt que não passa no próprio gate de conteúdo seria pior que não publicar —
+      # roda ANTES de qualquer login/escrita, para falhar rápido e sem tocar em nada no Azure.
+      - name: Content gate (composed AgentSchema definitions)
+        working-directory: apps/backend
+        run: uv run python -m eval.prompt_contract_test
+
+      # `az` (dentro de push-prompts.sh: keys de storage, restart de revisão) e `azd` (leitura do
+      # ambiente que o script consome) são credenciais separadas — cada CLI usa a sua.
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      - uses: Azure/setup-azd@v2
+      - name: azd login (OIDC)
+        run: >
+          azd auth login --federated-credential-provider github
+          --client-id "$AZURE_CLIENT_ID" --tenant-id "$AZURE_TENANT_ID"
+
+      # `push-prompts.sh` lê AZURE_STORAGE_ACCOUNT/AZURE_PROMPTS_FILE_SHARE/AZURE_ENV_NAME (para
+      # o resource group) de `azd env get-values`. O runner é efêmero e não tem o ambiente local
+      # de `azd up` — em vez de reprovisionar infra só para popular isso (o que `deploy.yml` faz
+      # porque ele DE FATO reprovisiona), criamos um ambiente azd vazio e plantamos só o valor
+      # que falta. AZURE_PROMPTS_FILE_SHARE não é uma variável do repo hoje (não está em
+      # scripts/sync-gh-variables.sh); o próprio script já cobre essa ausência com o default
+      # documentado `assured-prompts` — não precisamos inventar a variável.
+      - name: Configure azd env (only what push-prompts.sh reads)
+        run: |
+          azd env new "$AZURE_ENV_NAME" --no-prompt || azd env select "$AZURE_ENV_NAME"
+          azd env set AZURE_STORAGE_ACCOUNT "${{ vars.AZURE_STORAGE_ACCOUNT }}"
+
+      # Perna 1 — Foundry. --dry primeiro: o log do workflow registra o que SERIA publicado
+      # (nome, runtime, tamanho) antes de qualquer versão nova ser criada de verdade.
+      - name: Foundry — dry run (log what will be published)
+        working-directory: apps/backend
+        env:
+          FOUNDRY_PROJECT_ENDPOINT: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
+          FOUNDRY_MODEL: ${{ vars.FOUNDRY_MODEL }}
+        run: uv run python -m cli.provision_agents --dry
+      - name: Foundry — publish (creates a new agent version per run — see path filter above)
+        working-directory: apps/backend
+        env:
+          FOUNDRY_PROJECT_ENDPOINT: ${{ vars.FOUNDRY_PROJECT_ENDPOINT }}
+          FOUNDRY_MODEL: ${{ vars.FOUNDRY_MODEL }}
+        run: uv run python -m cli.provision_agents
+
+      # Perna 2 — Azure Files. O próprio script documenta as ressalvas honestas (upload
+      # sobrescreve mas NÃO apaga; scale-to-zero não falha, só adia o refresh pro cold start
+      # seguinte) — não duplicamos esse texto aqui, o cabeçalho do script é a fonte.
+      - name: Azure Files — publish (upload + restart backend revision)
+        run: ./scripts/push-prompts.sh

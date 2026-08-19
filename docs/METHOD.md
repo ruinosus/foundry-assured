@@ -53,6 +53,29 @@ flowchart TB
   BE --> OBS
 ```
 
+The helpdesk workflow itself — triage, retrieve, resolve, and a human-approved escalation:
+
+```mermaid
+flowchart LR
+  Q["Developer question"] --> T["triage"]
+  T --> R["retrieve (runbook KB)"]
+  R --> RES{"resolve: answer or action?"}
+  RES -->|"answer"| A["grounded answer + citation"]
+  RES -->|"action / low groundedness"| E["escalate → ApprovalCard"]
+  E -->|"approved"| TK["create_ticket"]
+  E -->|"rejected"| R
+```
+
+**Two ways to consume the same agent** (switchable in the UI):
+
+- **Live workflow (AG-UI)** — the rich experience: intermediate workflow steps
+  stream into the chat, the approval card gates ticket creation, and Foundry is
+  called *on-behalf-of* the signed-in developer (OBO) with per-user memory.
+- **Hosted agent (Foundry)** — the same `triage → retrieve → resolve` workflow,
+  deployed as a managed, autoscaling agent invoked by name over the Responses
+  API. Request→response (no live steps/HITL — those are inherent to AG-UI), runs
+  under its own platform identity, and costs nothing while idle.
+
 ## The guarantees, as controls (not promises)
 
 | Pillar | Guarantee | Gate (🟢/🔴) |

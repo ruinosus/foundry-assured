@@ -1,9 +1,12 @@
 """As citações falam o vocabulário do FRAMEWORK, e os dois lados concordam.
 
-POR QUE ISTO EXISTE. O painel de evidências é a peça central da história de assurance deste
-produto — é ele que mostra de onde cada afirmação veio. O dado que o alimenta atravessa uma
-fronteira de linguagem (Python → SSE → TypeScript), e uma fronteira assim quebra em silêncio: o
-backend renomeia um campo, o painel lê `undefined`, e a tela mostra "sem fontes" — que é
+POR QUE ISTO EXISTE. A evidência de cada resposta — de onde veio cada afirmação — é a peça
+central da história de assurance deste produto. Hoje ela mora SOB CADA MENSAGEM (não mais num
+painel lateral com a última resposta; ver `MessageEvidence.tsx`), mas quem efetivamente lê o
+payload bruto do evento SSE e o traduz para o vocabulário que o resto da tela consome é
+`lib/citations.tsx` — é ali, na função `normalizar()`, que a fronteira de linguagem (Python → SSE
+→ TypeScript) é atravessada. E uma fronteira assim quebra em silêncio: o backend renomeia um
+campo, `normalizar()` lê `undefined`, a citação some do array e a tela mostra "sem fontes" — que é
 indistinguível de uma resposta que de fato não citou nada. Falha grave com aparência de cosmética.
 
 O VOCABULÁRIO NÃO É NOSSO, e essa é a mudança que este teste guarda. Pesquisado e medido:
@@ -30,7 +33,13 @@ import sys
 import app as _app
 
 RAIZ = pathlib.Path(_app.__file__).resolve().parent.parent
-PAINEL = RAIZ.parent / "frontend" / "components" / "console" / "EvidencePanel.tsx"
+# NÃO é mais `EvidencePanel.tsx` — aquele componente hoje só renderiza as garantias estáticas de
+# assurance (fidelity/access/evaluated) e não lê citação nenhuma, de propósito (ver comentário no
+# topo do próprio arquivo). Quem lê o payload bruto do evento `sources` e traduz para o
+# vocabulário canônico é `lib/citations.tsx` — é o único lugar do frontend que faz essa tradução;
+# `MessageEvidence.tsx` e `SourceViewer.tsx`, que exibem a citação sob a resposta e destacam o
+# trecho no documento, só consomem o `Citation` já normalizado por este arquivo.
+CONSUMIDOR = RAIZ.parent / "frontend" / "lib" / "citations.tsx"
 
 #: Os campos canônicos do `agent_framework.Annotation` que usamos. `index` fica ao lado porque
 #: amarra a citação `[n]` do texto ao item da lista — o `annotated_regions` do framework faria isso
@@ -69,23 +78,26 @@ def main() -> int:
         not ({"source", "content"} & emitidos),
     )
 
-    # --- o painel lê nessa forma ------------------------------------------------------------
-    check("o painel de evidências existe onde este teste espera", PAINEL.is_file())
-    if PAINEL.is_file():
-        painel = PAINEL.read_text("utf-8")
-        for campo in ("title", "snippet"):
-            check(f"o painel lê `{campo}`", f"c.{campo}" in painel or f"v.{campo}" in painel)
+    # --- o consumidor real lê nessa forma -----------------------------------------------------
+    check("o consumidor de citações existe onde este teste espera", CONSUMIDOR.is_file())
+    if CONSUMIDOR.is_file():
+        consumidor = CONSUMIDOR.read_text("utf-8")
+        # Precisão equivalente à leitura anterior (`c.campo` literal, não "existe em algum lugar
+        # do arquivo") — checar substring solta passaria com o campo só num comentário.
+        for campo in ("title", "url", "snippet", "index"):
+            check(f"o consumidor lê `{campo}`", f"c.{campo}" in consumidor)
         # Compatibilidade com a forma anterior: uma aba aberta durante o deploy continua recebendo
-        # eventos do backend antigo, e um painel que esvazia no meio da conversa parece resposta
-        # sem fonte.
+        # eventos do backend antigo (`source`/`content`), e uma citação que esvazia no meio da
+        # conversa parece resposta sem fonte. A tolerância mora na mesma função (`normalizar()`)
+        # que faz a tradução — não em `MessageEvidence.tsx`, que só vê o `Citation` já traduzido.
         check(
-            "o painel ainda aceita a forma ANTERIOR (aba aberta durante o deploy)",
-            "v.source" in painel and "v.content" in painel,
+            "o consumidor ainda aceita a forma ANTERIOR (aba aberta durante o deploy)",
+            "c.source" in consumidor and "c.content" in consumidor,
         )
 
     if falhas:
         print(
-            f"\n❌ {len(falhas)} verificação(ões) falharam. O painel de evidências quebra em"
+            f"\n❌ {len(falhas)} verificação(ões) falharam. A evidência sob a resposta quebra em"
             " SILÊNCIO: campo renomeado vira `undefined`, e a tela mostra 'sem fontes' — que é"
             " indistinguível de uma resposta que não citou nada."
         )

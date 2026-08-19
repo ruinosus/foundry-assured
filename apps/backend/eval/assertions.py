@@ -22,7 +22,7 @@ from agent_framework import evaluator
 # Anchored on the `app` package (RULE #9). This read `.../app/knowledge/corpus`, the pre-ADR-017
 # layout; the module moved under `app/modules/` and this kept pointing at a directory that no
 # longer exists. It resolved to nothing and no test noticed.
-import app as _app  # noqa: E402  — imported here so the anchor sits beside what it anchors
+import app as _app
 
 _CORPUS = Path(_app.__file__).resolve().parents[3] / "knowledge" / "corpus"
 _TITLE_PREFIX = re.compile(r"^(?:Runbook|Reference|Policy):\s*", re.IGNORECASE)

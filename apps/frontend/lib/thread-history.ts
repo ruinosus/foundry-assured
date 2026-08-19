@@ -16,15 +16,64 @@
 
 export type ThreadHistory = { agent: string; messages: unknown[] };
 
+/** O id que o AG-UI atribui à mensagem gravada de índice `i` desta thread.
+ *
+ *  ÚNICA fonte da fórmula: `toAguiMessages` (monta a mensagem) e `historyCitationEvents`
+ *  (endereça a citação à mensagem) precisam concordar byte a byte, e uma revisão apontou que
+ *  as duas batiam por SORTE — cada uma derivava o id da própria variável `i` do seu próprio
+ *  `forEach`, sem nada que as obrigasse a ficar iguais. Um refactor futuro que trocasse o `i`
+ *  de um dos dois lados por `saida.length` (por exemplo, para pular mensagem sem texto ANTES de
+ *  atribuir o id) faria a citação colar na mensagem errada, em silêncio — sem esta função,
+ *  nada acusaria a divergência.
+ */
+function idDaMensagem(threadId: string, i: number): string {
+  return `${threadId}-${i}`;
+}
+
+/** Os eventos `CUSTOM name="sources"` que reproduzem, ao reabrir a conversa, as citações
+ *  gravadas junto de cada resposta (`record_turn(..., citations=)`, caminho grounded).
+ *
+ *  O `CitationsProvider` (lib/citations.tsx) já sabe ligar um evento assim direto pelo
+ *  `message_id` — essa metade não precisou mudar. O que faltava era emitir o evento na
+ *  reidratação: sem isto, reabrir uma conversa antiga mostrava a resposta sem fonte nenhuma,
+ *  porque o `connect` só replicava texto (`MESSAGES_SNAPSHOT`), nunca a citação gravada junto.
+ *
+ *  Só mensagem do ASSISTENTE com `annotations` não vazio produz evento: mensagem de usuário não
+ *  tem citação, e ausência de `annotations` (ex.: helpdesk, que grava pelo `HistoryProvider` do
+ *  framework sem citations= — ver relatório) não deve fabricar uma fonte que não existe.
+ */
+export function historyCitationEvents(threadId: string, gravadas: unknown[]): unknown[] {
+  const out: unknown[] = [];
+  gravadas.forEach((bruta, i) => {
+    const m = bruta as { role?: string; annotations?: unknown[] };
+    if (m.role !== "assistant" || !Array.isArray(m.annotations) || !m.annotations.length) return;
+    out.push({
+      type: "CUSTOM",
+      name: "sources",
+      value: { message_id: idDaMensagem(threadId, i), citations: m.annotations },
+    });
+  });
+  return out;
+}
+
 /** Os eventos que reproduzem uma transcrição num `connect`. Lista vazia quando não há
  *  mensagens — e vazio aqui significa "nada a replicar", que renderiza a tela de boas-vindas.
- *  Nunca se fabrica um evento para preencher silêncio. */
-export function historyConnectEvents(threadId: string, messages: unknown[]): unknown[] {
-  if (!messages.length) return [];
+ *  Nunca se fabrica um evento para preencher silêncio.
+ *
+ *  `gravadas` é a forma CRUA (a mesma que `toAguiMessages` e `historyCitationEvents` recebem) —
+ *  não o já convertido para AG-UI — porque as citações vivem só na forma crua (`annotations`) e
+ *  precisam do MESMO índice usado para o texto. Os eventos de citação entram ENTRE o
+ *  `MESSAGES_SNAPSHOT` e o `RUN_FINISHED`: o `RUN_FINISHED` é o que limpa a pendência do
+ *  `CitationsProvider` (ver lib/citations.tsx), e ficar dentro do run é o mais próximo do que o
+ *  caminho ao vivo faz. */
+export function historyConnectEvents(threadId: string, gravadas: unknown[]): unknown[] {
+  const mensagens = toAguiMessages(gravadas, threadId);
+  if (!mensagens.length) return [];
   const runId = `history-${threadId}`;
   return [
     { type: "RUN_STARTED", threadId, runId },
-    { type: "MESSAGES_SNAPSHOT", messages },
+    { type: "MESSAGES_SNAPSHOT", messages: mensagens },
+    ...historyCitationEvents(threadId, gravadas),
     { type: "RUN_FINISHED", threadId, runId },
   ];
 }
@@ -68,7 +117,7 @@ export function toAguiMessages(gravadas: unknown[], threadId: string): unknown[]
       m.text || (m.contents ?? []).map((c) => c?.text).filter(Boolean).join("\n") || "";
     if (!texto) return;
     saida.push({
-      id: `${threadId}-${i}`,
+      id: idDaMensagem(threadId, i),
       role: m.role === "assistant" ? "assistant" : "user",
       content: texto,
     });

@@ -30,19 +30,20 @@ import logging
 import uuid
 from collections.abc import AsyncGenerator
 
+from app.modules.agentdefs.public import (
+    CITATION_NUMBERED_DIRECTIVE as SYNTHESIS_DIRECTIVE,
+)
 from app.modules.tenancy.public import tenant_config
 from app.shared.settings import settings
 
-# Prepended to the synthesis input — the model answers ONLY from the retrieved documents and cites them
-# by their [n] number.
 logger = logging.getLogger(__name__)
 
-
-SYNTHESIS_DIRECTIVE = (
-    "Responda APENAS com base nos DOCUMENTOS fornecidos abaixo — nunca use conhecimento próprio. "
-    "Cite a fonte de cada afirmação pelo seu número entre colchetes, ex.: [1]. Se os documentos não "
-    "contiverem a resposta, diga que não sabe."
-)
+# Prepended to the synthesis input — the model answers ONLY from the retrieved documents and
+# cites them by their [n] number. RULE #7: a fonte deste texto é
+# `agents/helpdesk/guardrails/citation-numbered.md`, não mais um literal aqui — o nome
+# `SYNTHESIS_DIRECTIVE` fica porque este arquivo e `retrieval_provider.py` já o usam (e o
+# reexportam por `app/modules/grounded/public.py`). Ver o comentário do documento fonte para o
+# porquê de ele NÃO estar composto nas instructions de nenhum agente publicado.
 
 
 # O pedido de idioma que viaja com a requisição. Curto e imperativo de propósito: cada
@@ -251,15 +252,20 @@ async def stream_grounded(body: dict, domain, user=None, language: str | None = 
         # registro é explícito. Ver `conversations.record_turn`.
         _conversa = agent_name or getattr(domain, "id", "") or "grounded"
         _usuario = _conversation_user()
-        _record_turn(_usuario, _conversa, thread_id, user_text, "".join(resposta))
+        _record_turn(_usuario, _conversa, thread_id, user_text, "".join(resposta), citations=sources)
         # `len(sources)` é a contagem de REFERÊNCIAS de conhecimento desta resposta, e é o insumo
         # principal da fórmula Agent Assisted Hours. Ele já estava calculado aqui e era usado só
         # para desenhar o painel de evidência — medir custava zero e não estava sendo feito.
         _record_usage(_usuario, _conversa, thread_id, tokens_in, tokens_out, len(sources or []))
         if sources:
-            yield enc.encode(CustomEvent(name="sources", value=sources))
+            # A EVIDÊNCIA É DA RESPOSTA, não da sessão. Sem o `message_id` a tela recebia uma
+            # lista solta e só podia guardar a última — rolar a conversa para cima mostrava
+            # respostas antigas sem fonte nenhuma. O id está em escopo desde o início do turno.
+            yield enc.encode(
+                CustomEvent(name="sources", value={"message_id": message_id, "citations": sources})
+            )
         yield enc.encode(RunFinishedEvent(thread_id=thread_id, run_id=run_id))
-    except Exception as exc:  # surface to the UI as a clean run error (mirrors hosted.stream_agui)
+    except Exception as exc:  # noqa: BLE001 — surface to the UI as a clean run error (mirrors hosted.stream_agui)
         yield enc.encode(TextMessageEndEvent(message_id=message_id))
         yield enc.encode(RunErrorEvent(message=str(exc), code=type(exc).__name__))
     finally:

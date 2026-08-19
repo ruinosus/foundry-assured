@@ -28,7 +28,6 @@ import sys
 from pathlib import Path
 
 import app as _app
-
 from app.modules.tickets.internal.tickets import _STORE
 
 #: A raiz do repositório, ancorada no pacote `app` (regra 9): app → apps/backend → apps → raiz.

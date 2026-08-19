@@ -28,7 +28,7 @@ import contextvars
 import logging
 from typing import Any
 
-from agent_framework import ChatMiddleware
+from agent_framework import AgentMiddleware, ChatMiddleware
 from fastapi import Request
 
 logger = logging.getLogger(__name__)
@@ -141,6 +141,49 @@ class UsageRecorder(ChatMiddleware):
             # `record_usage` já é silencioso em falha: contabilidade não derruba chat.
             record_usage(conversation_user(), atual[0], atual[1], entrada, saida)
         return response
+
+
+class AgentUsageRecorder(AgentMiddleware):
+    """O mesmo `record_usage`, na camada de AGENTE.
+
+    POR QUE UMA TERCEIRA PORTA. `FoundryAgent` — a classe que fala com o agente PUBLICADO — aceita
+    `middleware`, mas a docstring do próprio pacote diz "agent-level middleware". Um `ChatMiddleware`
+    passado ali é **silenciosamente ignorado**: medido, ele não roda, e o efeito em produção foi
+    token zerado numa conversa que gravou tudo o mais. O `FoundryAgent` constrói o cliente por
+    dentro, então não há onde pendurar o middleware de chat.
+
+    A conta continua sendo UMA. `ChatMiddleware` para quem passa pela fábrica de cliente,
+    `on_llm_end` para o LangChain, e este para quem é `FoundryAgent` — três portas, um
+    `record_usage`. Dois contadores para a mesma pergunta divergem sem dar erro; três portas para o
+    mesmo contador, não.
+
+    Só entra onde o de chat NÃO alcança. Pendurar os dois no mesmo caminho contaria cada token duas
+    vezes — e um número dobrado num painel de custo é pior que um ausente, porque parece medido.
+    """
+
+    async def process(self, context, call_next):  # type: ignore[override]
+        context.stream_result_hooks.append(self._registrar)
+        await call_next()
+        resultado = getattr(context, "result", None)
+        if resultado is not None and hasattr(resultado, "usage_details"):
+            self._registrar(resultado)
+
+    def _registrar(self, response):
+        atual = current_conversation()
+        if atual is None:
+            return response
+        entrada, saida = _tokens(getattr(response, "usage_details", None))
+        if entrada or saida:
+            from app.modules.conversations.internal.listing import record_usage
+            from app.modules.conversations.internal.store import conversation_user
+
+            record_usage(conversation_user(), atual[0], atual[1], entrada, saida)
+        return response
+
+
+def agent_usage_recorder() -> AgentUsageRecorder:
+    """O gravador para agentes que não passam pela fábrica de cliente (ex.: `FoundryAgent`)."""
+    return AgentUsageRecorder()
 
 
 def usage_recorder() -> UsageRecorder:

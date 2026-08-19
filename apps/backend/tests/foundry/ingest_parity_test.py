@@ -47,7 +47,7 @@ def main() -> int:
     )
     check(
         "o CLI não declara uma lista AGENTS",
-        not re.search(r"^AGENTS\s*[:=]", fonte, re.M),
+        not re.search(r"^AGENTS\s*[:=]", fonte, re.MULTILINE),
     )
     check("o CLI deriva dos documentos", "composed_agents()" in fonte)
     check("o CLI deriva o runtime do registry", "DOMAIN_KINDS" in fonte)

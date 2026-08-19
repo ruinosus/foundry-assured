@@ -26,13 +26,12 @@ def main() -> int:
             failures.append(name)
 
     import app.modules.grounded.internal.concierge as _con
-    import app.modules.grounded.internal.techdocs as _cok
     import app.modules.grounded.internal.selfwiki as _sw
+    import app.modules.grounded.internal.techdocs as _cok
     import app.modules.platform_ops.internal.platform as _plat
-
     from app.modules.grounded.internal.concierge import _knowledge_configured
-    from app.modules.grounded.internal.techdocs import techdocs_configured
     from app.modules.grounded.internal.selfwiki import selfwiki_configured
+    from app.modules.grounded.internal.techdocs import techdocs_configured
     from app.modules.platform_ops.internal.platform import platform_configured
 
     def _boom():

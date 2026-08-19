@@ -166,6 +166,10 @@
     ],
     [
       "GET",
+      "/source/{domain_id}/{name}"
+    ],
+    [
+      "GET",
       "/tickets"
     ],
     [
@@ -481,6 +485,10 @@
     [
       "GET",
       "/redoc"
+    ],
+    [
+      "GET",
+      "/source/{domain_id}/{name}"
     ],
     [
       "GET",
@@ -803,6 +811,10 @@
     [
       "GET",
       "/redoc"
+    ],
+    [
+      "GET",
+      "/source/{domain_id}/{name}"
     ],
     [
       "GET",

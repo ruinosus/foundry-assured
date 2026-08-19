@@ -47,6 +47,11 @@ async def _run() -> int:
         {"index": 1, "source": "a.md", "url": "https://x/a.md", "snippet": "S1"},
         {"index": 2, "source": "a.md", "url": "https://x/a.md", "snippet": "dup"},
         {"index": 3, "source": "b.md", "url": "https://x/b.md", "snippet": "S2"},
+        # Item 3 da faxina: `_decode_dockey` sem decodificar devolve a chave crua como `source`
+        # — base64 com `=`/`+`/`/`, que `document._NOME_OK` recusa. `_project` tem que DROPAR
+        # a linha (não só passá-la adiante) — senão o `[n]` chega ao frontend como botão que a
+        # rota `/source` sempre recusa com 400.
+        {"index": 4, "source": "AbC+/def==", "url": "https://x/undecoded", "snippet": "S3"},
     ]
 
     called = {"cred": False}
@@ -80,10 +85,12 @@ async def _run() -> int:
     finally:
         _aio.DefaultAzureCredential = _orig  # type: ignore[assignment,misc]
 
-    assert [d["index"] for d in docs] == [1, 2], docs  # deduped to 2, reindexed 1-based
+    # deduped to 2 (a.md/b.md); a linha de nome inválido (índice 4) é DROPADA, não reindexada
+    assert [d["index"] for d in docs] == [1, 2], docs
     assert docs[0] == {"index": 1, "source": "a.md", "url": "https://x/a.md", "snippet": "S1"}, docs[0]
     assert docs[1] == {"index": 2, "source": "b.md", "url": "https://x/b.md", "snippet": "S2"}, docs[1]
     assert all("snippet" in d for d in docs), docs  # snippet present on every projected doc
+    assert all(d["source"] not in ("AbC+/def==",) for d in docs), docs  # nome inválido nunca vira citável
 
     print("✅ retrieve() contract holds (native path patched; deduped-by-url + 1-based reindex)")
     return 0

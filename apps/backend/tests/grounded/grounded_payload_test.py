@@ -11,7 +11,10 @@ from __future__ import annotations
 import sys
 from types import SimpleNamespace
 
-from app.modules.grounded.internal.grounded import SYNTHESIS_DIRECTIVE, build_synthesis_kwargs
+from app.modules.grounded.internal.grounded import (
+    SYNTHESIS_DIRECTIVE,
+    build_synthesis_kwargs,
+)
 
 
 def main() -> None:

@@ -40,6 +40,15 @@ class DomainSpec:
     registry never classifies. A grounded spec MUST resolve to a `kb_name` OR a `search_index`
     (else the retrieval fallback would hit `.../indexes/None/docs/search`) — enforced in
     __post_init__.
+
+    `document_access` é DECLARADO, não derivado: é ele — e só ele — que decide, na rota
+    `GET /source/{domain_id}/{name}` (knowledge/internal/document.py), se a leitura do
+    documento integral reautoriza pelo trim de ACL do índice (`"acl"`) ou se a sessão válida já
+    exigida pela rota é a regra inteira (`"session"`). Antes deste campo, a decisão vinha da
+    truthiness de `acl_group_map` — um valor de CONFIGURAÇÃO que, no modo shared, vem do tenant
+    store. Configuração ausente (grupos vazios em runtime) rebaixava em silêncio um domínio que
+    deveria ter ACL: o índice continuava carimbado, mas a rota parava de consultá-lo. O default
+    é o SEGURO (`"acl"`) de propósito — esquecer de declarar não pode rebaixar ninguém.
     """
 
     id: str
@@ -49,7 +58,9 @@ class DomainSpec:
     ks_name: str | None = None  # KB's knowledge-source name (native path); None → defaults to kb_name
     search_index: str | None = None
     search_endpoint: str = ""
+    corpus_container: str = ""  # container do blob que guarda o documento integral (rota /source)
     acl_group_map: dict | None = None  # name→objectID; None/empty → no ACL trim (no-op)
+    document_access: Literal["acl", "session"] = "acl"  # ver docstring da classe
     hosted_agent_name: str | None = None
 
     def __post_init__(self) -> None:
@@ -58,6 +69,14 @@ class DomainSpec:
         if self.kind == "grounded" and not (self.kb_name or self.search_index):
             raise ValueError(
                 f"grounded domain '{self.id}' must set kb_name or search_index"
+            )
+        # Mesma lógica para a rota de documento: um domínio que declara `document_access="acl"`
+        # sem `search_index` faria `document.authorized_document` montar
+        # `.../indexes/None/docs/search` na primeira requisição — falhe aqui, na construção do
+        # registry, não na requisição de alguém.
+        if self.document_access == "acl" and not self.search_index:
+            raise ValueError(
+                f"domain '{self.id}' declares document_access='acl' but has no search_index"
             )
 
 
@@ -116,6 +135,21 @@ def _domains() -> list[DomainSpec]:
             id="helpdesk",
             kind="workflow",
             hosted_agent_name=cfg.hosted_agent_name,
+            # ATENÇÃO antes de reusar este container para outra coisa: `document_access="session"`
+            # (linha abaixo) significa que QUALQUER sessão autenticada pode ler QUALQUER blob da
+            # raiz deste container pelo nome, via `GET /source/helpdesk/{name}` — não há trim de
+            # ACL nem `search_index` aqui contra o qual reautorizar (é o motivo do `"session"`).
+            # Hoje isso não vaza nada porque o container só recebe os runbooks da ingestão
+            # (conteúdo já público a quem usa o helpdesk); conversas e trilha de auditoria vivem em
+            # containers SEPARADOS de propósito. Mas o container deixou de ser só "insumo de
+            # ingestão" — ele é também "superfície de leitura autenticada". Antes de gravar
+            # qualquer coisa sensível aqui (ou de apontar outro domínio pra ele), pergunte: "uma
+            # sessão qualquer pode ler isto pelo nome?" — se a resposta for não, este não é o
+            # container certo.
+            corpus_container=cfg.azure_storage_container,
+            # Sem ACL de documento: helpdesk não declara grupo em documento nenhum (não é fonte
+            # com controle por documento) e não seta `search_index` — sessão válida é a regra.
+            document_access="session",
         ),
         DomainSpec(
             id="techdocs",
@@ -125,7 +159,9 @@ def _domains() -> list[DomainSpec]:
             ks_name=cfg.techdocs_searchindex_knowledge_source,  # techdocs-docbundles-si-ks
             search_index=cfg.techdocs_search_index,  # direct-search fallback target (ACL trims here too)
             search_endpoint=cfg.azure_search_endpoint,
+            corpus_container=cfg.techdocs_storage_container,
             acl_group_map=cfg.acl_group_map,  # PARSED property (name→objectID), not the raw string
+            document_access="acl",
         ),
         DomainSpec(
             id="selfwiki",
@@ -135,12 +171,18 @@ def _domains() -> list[DomainSpec]:
             ks_name=cfg.selfwiki_searchindex_knowledge_source,  # selfwiki-docbundles-si-ks
             search_index=cfg.selfwiki_search_index,  # direct-search fallback target (ACL trims here too)
             search_endpoint=cfg.azure_search_endpoint,
+            corpus_container=cfg.selfwiki_storage_container,
             # Single private audience = the app-users group (everyone with app access). Intentional
             # ACL (ADR/spec 2026-07-02): the self-wiki is stamped with this group; retrieval sends the
             # OBO header because this map is truthy. Empty APP_USERS_GROUP_ID → no map (dev/single-user).
             acl_group_map=({"app-users": cfg.app_users_group_id} if cfg.app_users_group_id else None),
+            document_access="acl",
         ),
-        DomainSpec(id="platform", kind="tool"),
+        # `document_access="session"`: sem `search_index` (kind="tool"), e `GET /source` já
+        # devolve 404 pra domínio `tool` antes de tocar `authorized_document` (knowledge/api.py)
+        # — mas declarar aqui, em vez de herdar o default, deixa explícito que este domínio não
+        # tem ACL de documento, em vez de "esqueceu de configurar".
+        DomainSpec(id="platform", kind="tool", document_access="session"),
     ]
 
 
@@ -173,8 +215,19 @@ def _mount_grounded(app: FastAPI, domain_id: str) -> None:
     """
 
     async def endpoint(request: Request) -> StreamingResponse:
-        from app.modules.grounded.public import stream_grounded
+        from app.modules.grounded.public import stream_grounded, via_framework
         from app.shared.auth import current_user
+
+        # DOIS CAMINHOS, e o novo nasce desligado. `via_framework()` liga o domínio como
+        # `FoundryAgent` — que responde COMO O AGENTE PUBLICADO e ganha histórico, uso e o adapter
+        # oficial por construção. O caminho à mão continua sendo o default porque é o único hoje
+        # verificado contra o serviço real: esta é a única troca da série que não dá para provar
+        # offline (toca OBO e ACL, e errar serve documento demais em silêncio). Desligar é uma
+        # variável, não um revert.
+        if via_framework():
+            from app.modules.grounded.public import mount_grounded_via_framework
+
+            return await mount_grounded_via_framework(request, domain_spec(domain_id), domain_id)
 
         # `Accept-Language` é o padrão da web para isto — o browser já o envia e o seletor de
         # idioma da interface o sobrescreve. Inventar um campo no corpo seria criar vocabulário
@@ -217,9 +270,23 @@ def _mount_helpdesk(app: FastAPI, domain_id: str) -> None:
     )
 
     if knowledge_configured():
+        # `build_helpdesk_workflow` precisa do DomainSpec do helpdesk para montar a recuperação
+        # com ACL (GroundedRetrieval), mas o módulo helpdesk não pode importar `domain_spec` —
+        # ela mora aqui, na composition root, e a ADR-017 proíbe um módulo importar dela. A saída
+        # é fechamento: o factory abaixo fecha sobre `domain_id` e só CHAMA `domain_spec` quando
+        # roda, isto é, por requisição (é isso que `workflow_factory(thread_id)` faz dentro do
+        # adapter). Resolver `domain_spec(domain_id)` aqui no mount quebraria o boot no modo
+        # `shared`: `domain_spec` lê `tenant_config()`, e no boot ainda não existe requisição com
+        # tenant resolvido (mesmo motivo que já mantém `_domains()` lazy — ver o comentário
+        # dela acima).
+        def _helpdesk_workflow_factory(thread_id: str | None):
+            return build_helpdesk_workflow(
+                thread_id, domain_spec_provider=lambda: domain_spec(domain_id)
+            )
+
         add_agent_framework_fastapi_endpoint(
             app,
-            agent=OrderedAgentFrameworkWorkflow(workflow_factory=build_helpdesk_workflow),
+            agent=OrderedAgentFrameworkWorkflow(workflow_factory=_helpdesk_workflow_factory),
             path=f"/{domain_id}",
             dependencies=domain_deps(domain_id),
         )
@@ -345,9 +412,15 @@ def include_routers(app) -> None:
     from app.modules.evaluation import api as evals
     from app.modules.foundry import api as foundry
     from app.modules.hosted import api as chat
+    from app.modules.knowledge import api as knowledge
     from app.modules.proposer import api as proposer
     from app.modules.tickets import api as tickets
     from app.modules.usecases import api as usecases
+
+    # `knowledge.api` não pode importar `app.registry` (camada de composição, ADR-017) — a
+    # composição empurra `domain_spec` pra lá, em vez do módulo puxá-la (mesmo padrão de
+    # `set_post_authenticate`).
+    knowledge.set_domain_lookup(domain_spec)
 
     for module in (
         api_health,
@@ -362,6 +435,7 @@ def include_routers(app) -> None:
         proposer,
         audit,
         builder_assist,
+        knowledge,
     ):
         app.include_router(module.router)
 

@@ -16,6 +16,7 @@ from app.modules.conversations.internal.provider import (
     build_history_provider,
 )
 from app.modules.conversations.internal.recorder import (
+    agent_usage_recorder,
     bind_conversation,
     bind_dependency,
     current_conversation,
@@ -25,6 +26,7 @@ from app.modules.conversations.internal.store import conversation_user
 
 __all__ = [
     "StoredHistoryProvider",
+    "agent_usage_recorder",
     "bind_conversation",
     "bind_dependency",
     "build_history_provider",

@@ -568,132 +568,6 @@ table.evals tr:last-child td {
   gap: var(--space-6);
 }
 
-.evidence-title {
-  font-size: var(--text-2xs);
-  font-weight: 700;
-  letter-spacing: var(--tracking-label);
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: var(--space-3);
-}
-
-.evidence-sources {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  /* Rolagem contida: muitas fontes rolam aqui em vez de empurrar "Garantias" para fora. */
-  max-height: 42vh;
-  overflow-y: auto;
-  padding-right: var(--space-1);
-}
-
-.source-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  font-size: var(--text-xs);
-  font-family: var(--font-mono);
-  color: var(--ink);
-  border: 1px solid var(--line);
-  background: var(--bg);
-  word-break: break-all;
-}
-
-/* Fonte de componente. Antes usava lilás cravado (#ddd6fe / #f5f3ff), invisível no tema
-   escuro. Agora é o accent lavado — a mesma cor que marca seleção, porque é disso que se
-   trata: esta fonte é de um componente específico, não do corpus geral. */
-.source-chip.component {
-  border-color: var(--accent);
-  background: var(--accent-wash);
-}
-
-.source-ico { font-family: var(--font-sans); flex: 0 0 auto; }
-
-/* Citações estruturadas: notas de rodapé numeradas e clicáveis. */
-.evidence-citations {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  max-height: 42vh;
-  overflow-y: auto;
-  padding-right: var(--space-1);
-}
-
-.citation-btn {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  width: 100%;
-  text-align: left;
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--line);
-  background: var(--bg);
-  color: var(--ink);
-  cursor: pointer;
-  font: inherit;
-  transition:
-    border-color var(--dur-fast) var(--ease-out),
-    background var(--dur-fast) var(--ease-out);
-}
-
-.citation-btn:hover { border-color: var(--accent); background: var(--accent-wash); }
-.citation-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-
-.citation-idx {
-  flex: 0 0 auto;
-  min-width: 1.25rem;
-  height: 1.25rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  color: var(--accent-ink);
-  font-size: var(--text-2xs);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-
-.citation-src {
-  font-size: var(--text-xs);
-  font-family: var(--font-mono);
-  word-break: break-all;
-}
-
-.citation-detail { padding: var(--space-2) var(--space-3) 0 2.2rem; }
-
-.citation-link {
-  font-size: var(--text-xs);
-  word-break: break-all;
-  color: var(--accent);
-}
-.citation-link:hover { text-decoration: underline; }
-
-.citation-content {
-  font-size: var(--text-xs);
-  line-height: var(--leading-normal);
-  color: var(--muted);
-  max-height: 11rem;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  border-left: 2px solid var(--line);
-  padding-left: var(--space-3);
-}
-
-.evidence-empty {
-  font-size: var(--text-sm);
-  line-height: var(--leading-snug);
-  color: var(--muted);
-  margin: 0;
-  text-wrap: pretty;
-}
-
 .evidence-guarantees {
   list-style: none;
   margin: 0;
@@ -711,6 +585,152 @@ table.evals tr:last-child td {
   line-height: var(--leading-snug);
   color: var(--muted);
   text-wrap: pretty;
+}
+
+/* ---------- Evidência sob a resposta ---------- */
+.msg-evidence {
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--line);
+}
+
+.msg-evidence-title {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  margin-bottom: var(--space-2);
+}
+
+.msg-evidence-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.msg-evidence-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  text-align: left;
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+}
+.msg-evidence-item:hover { border-color: var(--accent); background: var(--accent-wash); }
+.msg-evidence-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.cit-idx {
+  flex: 0 0 auto;
+  min-width: 1.25rem;
+  height: 1.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-size: var(--text-xs);
+}
+
+.cit-title {
+  font-size: var(--text-xs);
+  font-family: var(--font-mono);
+  word-break: break-all;
+}
+
+.cit-open { margin-left: auto; color: var(--muted); font-size: var(--text-xs); }
+
+/* O marcador [n] DENTRO do texto. `display:inline` de propósito: ele vive no meio de um
+   parágrafo, e qualquer coisa que gere caixa quebraria a linha no meio da frase. */
+.cit-ref {
+  display: inline;
+  padding: 0 0.15em;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  /* `<button>` puxa a fonte do controle do navegador por padrão, não a do parágrafo em volta —
+     sem isto o `[n]` no meio da frase troca de tipografia (o `.citation-btn` antigo já tinha
+     essa regra; ela se perdeu na migração para `.cit-ref`). */
+  font: inherit;
+  font-size: 0.85em;
+  vertical-align: super;
+  line-height: 1;
+  cursor: pointer;
+}
+.cit-ref:hover { text-decoration: underline; }
+.cit-ref:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 2px; }
+
+/* ---------- Visualizador do documento citado ---------- */
+.source-viewer {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(48rem, 92vw);
+  z-index: var(--z-modal);
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 24px rgb(0 0 0 / 12%);
+}
+
+.source-viewer-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.source-viewer-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  word-break: break-all;
+}
+
+.source-viewer-close {
+  margin-left: auto;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.source-viewer-close:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.source-viewer-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-3);
+}
+
+/* Aviso de truncagem — precisa se destacar do corpo do documento (é sobre o documento, não
+   parte dele), mas sem competir com o realce da citação (`.source-hit`, abaixo). */
+.source-viewer-truncated {
+  margin: 0 0 var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+/* O trecho que o agente citou, dentro do documento. Fundo em vez de cor de texto: o realce
+   pode cair em cima de código, link ou célula de tabela, que já têm cor própria. */
+.source-hit {
+  background: var(--accent-wash);
+  border-bottom: 2px solid var(--accent);
+  color: inherit;
+  padding: 0 0.05em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .source-viewer { animation: source-viewer-in 160ms ease-out; }
+  @keyframes source-viewer-in { from { transform: translateX(1rem); opacity: 0; } }
 }
 
 .domain-card:hover {
@@ -1797,6 +1817,15 @@ table.evals tr:last-child td { border-bottom: none; }
 }
 .evidence-guar summary::-webkit-details-marker { display: none; }
 .evidence-guar[open] summary { color: var(--ink); font-weight: 600; margin-bottom: var(--space-2); }
+/* Minor 4 (re-revisão): a seta girava só de cor/peso — apontava para o lado com o conteúdo já
+   aberto. Gira por transform, mesmo padrão de `prefers-reduced-motion` usado em `.step-pip`
+   acima: a transição só existe sob `no-preference`; o ângulo final (`[open]`) aplica sempre,
+   então quem pede menos movimento ainda vê a seta apontando pro lado certo, só sem animação. */
+.evidence-caret { display: inline-block; }
+.evidence-guar[open] .evidence-caret { transform: rotate(90deg); }
+@media (prefers-reduced-motion: no-preference) {
+  .evidence-caret { transition: transform 0.15s ease; }
+}
 
 /* 4 · Passos como fita de uma linha, só durante a execução. */
 .steps-strip {

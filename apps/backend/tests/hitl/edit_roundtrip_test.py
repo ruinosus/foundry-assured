@@ -67,7 +67,7 @@ def main() -> int:
         agent factory calls it unconditionally. Binding is a no-op: this spike tests the
         approval round-trip, not tool selection."""
 
-        def bind_tools(self, tools, **kwargs):  # noqa: ANN001, ANN003, ARG002
+        def bind_tools(self, tools, **kwargs):
             return self
 
     model = _ToolCapableFake(messages=iter([wrong, AIMessage(content="done")]))

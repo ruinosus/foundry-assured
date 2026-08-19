@@ -67,10 +67,23 @@ async def retrieve(query: str, user, domain, *, top: int = 8) -> list[dict]:
     app_cred = _AppCredential()
     try:
         primary = (await app_cred.get_token(_SEARCH_SCOPE)).token  # app MI (service credential)
-        # The per-user ACL header is attached ONLY on ACL'd domains (truthy acl_group_map) — RULE #6.
-        # A genuinely public domain (no acl_group_map) omits it and runs as the app identity; an ACL'd
-        # domain sends the user's OBO token so the index trims to what the user may read.
-        user_token = await _user_search_token(user) if getattr(domain, "acl_group_map", None) else None
+        # A decisão de anexar o header de identidade é DECLARADA em `domain.document_access`
+        # (`DomainSpec`, registry.py), nunca DERIVADA da truthiness de `acl_group_map` — o mesmo
+        # argumento de `document.py:authorized_document` vale idêntico aqui, e por desenho: as
+        # duas decisões agora vêm da MESMA fonte. `acl_group_map` é valor de CONFIGURAÇÃO (no modo
+        # shared, vem do tenant store); decidir por ele rebaixaria em silêncio um domínio que
+        # deveria ter ACL sempre que a config chegasse vazia em runtime (ex.: APP_USERS_GROUP_ID
+        # não setado) — o índice continuaria carimbado (permissionFilterOption=enabled), mas
+        # `retrieve()` passaria a rodar como identidade da aplicação, sem o trim. Isso já causava
+        # uma divergência concreta com `/source`: a lista de citações (aqui) e a abribilidade da
+        # citação (document.py) discordavam — a pessoa via o `[n]`, clicava, e levava 403 num
+        # documento que o próprio agente tinha acabado de citar. O default do campo é o SEGURO
+        # (`"acl"`) — esquecer de declarar não pode rebaixar ninguém.
+        user_token = (
+            await _user_search_token(user)
+            if getattr(domain, "document_access", "acl") == "acl"
+            else None
+        )
         if getattr(domain, "kb_name", None):  # PRIMARY: native agentic retrieve
             rows = await _native_retrieve(domain, query, primary, user_token)
         else:  # FALLBACK: direct-search-as-user (the engine lives here now)
@@ -237,7 +250,8 @@ def _decode_dockey(dockey: str) -> str:
         candidate = seg[: len(seg) - trim] if trim else seg
         try:
             text = base64.b64decode(candidate + "=" * (-len(candidate) % 4)).decode("utf-8")
-        except Exception:  # noqa: BLE001
+        except Exception:  # noqa: BLE001, S112 — ver docstring: tenta cada corte de padding
+            # (0..3 bytes); logar cada tentativa falha seria ruído, só o caso final importa
             continue
         m = _BLOB_URL_IN_TEXT.search(text)
         if m:
@@ -315,17 +329,34 @@ async def _direct_search_authorized(
 def _project(rows: list[dict]) -> list[dict]:
     """Centralized dedup-by-URL (first-wins) + 1-based reindex → [{index, source, url, snippet}].
 
-    Both engines feed through here, so index/dedup semantics live in exactly one place."""
+    Both engines feed through here, so index/dedup semantics live in exactly one place.
+
+    UMA CITAÇÃO COM NOME INVÁLIDO NUNCA VIRA DOCUMENTO CITÁVEL. Quando `_decode_dockey` não
+    consegue decodificar um `docKey` (searchIndex), ele devolve a chave crua como fallback
+    "legível" — legível para DEPURAR o problema, não para virar nome de arquivo: carrega `=`/
+    `+`/`/`, que `document._NOME_OK` (a MESMA validação que a rota `/source` aplica) sempre
+    recusa com 400. Sem este filtro, o `[n]` chegava ao usuário — no texto e na lista "Fontes"
+    — como botão que a rota nunca consegue abrir: mesma regra do índice órfão ("link que não
+    leva a lugar nenhum é pior que nenhum link"), aplicada aqui PORQUE o backend é quem sabe,
+    no momento em que a citação nasce, que ela não tem nome resolvível — arrumar só o clique no
+    frontend deixaria a lista "Fontes" (que não passa pelo mesmo gate do `[n]` no texto) com o
+    mesmo botão morto.
+    """
+    from app.modules.knowledge.internal.document import _NOME_OK
+
     docs: list[dict] = []
     seen: set[str] = set()
     for r in rows:
         url = r.get("url") or ""
         if not url or url in seen:
             continue
+        source = r.get("source") or (url.rsplit("/", 1)[-1] if url else "")
+        if not _NOME_OK.fullmatch(source):
+            continue
         seen.add(url)
         docs.append({
             "index": len(docs) + 1,
-            "source": r.get("source") or (url.rsplit("/", 1)[-1] if url else ""),
+            "source": source,
             "url": url,
             "snippet": r.get("snippet") or "",
         })

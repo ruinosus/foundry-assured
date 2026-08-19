@@ -120,6 +120,29 @@ def main() -> int:
         ok_index = False
     check("grounded guard allows search_index-only", ok_index)
 
+    # --- document_access guard (IMPORTANT 1): "acl" sem search_index é recusado NA
+    # CONSTRUÇÃO do registry, não na requisição. "acl" é o default — não precisa ser
+    # declarado para o guard disparar. ---
+    guard_raised = False
+    try:
+        DomainSpec(id="broken-acl", kind="grounded", kb_name="kb")  # default document_access="acl"
+    except ValueError:
+        guard_raised = True
+    check("document_access='acl' sem search_index é recusado na construção", guard_raised)
+
+    ok_session = True
+    try:
+        DomainSpec(id="ok-session", kind="workflow", document_access="session")
+    except ValueError:
+        ok_session = False
+    check("document_access='session' não exige search_index", ok_session)
+
+    # --- cada domínio declara o access certo (não deriva de acl_group_map) ---
+    check("helpdesk declara document_access='session'", by_id["helpdesk"].document_access == "session")
+    check("techdocs declara document_access='acl'", by_id["techdocs"].document_access == "acl")
+    check("selfwiki declara document_access='acl'", by_id["selfwiki"].document_access == "acl")
+    check("platform declara document_access='session'", by_id["platform"].document_access == "session")
+
     # --- domain_deps: duas funções com o mesmo nome, e a distinção importa ---------------
     #
     # `tenancy.domain_deps` guarda a promessa da ADR-017: em self_hosted é BYTE-IDÊNTICO a

@@ -18,7 +18,7 @@ from __future__ import annotations
 
 import sys
 
-import app.registry as registry
+from app import registry
 from app.modules.grounded.public import build_synthesis_kwargs
 
 

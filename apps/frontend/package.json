@@ -10,7 +10,9 @@
     "typecheck": "tsc --noEmit",
     "demo": "bash ../../scripts/demo.sh",
     "demo:record": "bash ../../scripts/demo-record.sh",
-    "check:i18n": "node ../../scripts/check-messages.mjs && node ../../scripts/check-hardcoded-text.mjs"
+    "check:i18n": "node ../../scripts/check-messages.mjs && node ../../scripts/check-hardcoded-text.mjs",
+    "verify:highlight": "node scripts/verify-highlight.mjs",
+    "verify:thread-citations": "node scripts/verify-thread-citations.mjs"
   },
   "dependencies": {
     "@ag-ui/client": "^0.0.57",
@@ -23,6 +25,7 @@
     "next-intl": "^4.13.7",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
+    "streamdown": "^1.6.11",
     "zod": "^4.4.3"
   },
   "devDependencies": {
@@ -32,6 +35,7 @@
     "@types/react-dom": "^19.2.4",
     "eslint": "^9.39.5",
     "eslint-config-next": "^16.3.1",
+    "jsdom": "^29.1.1",
     "typescript": "^6.0.3"
   }
 }

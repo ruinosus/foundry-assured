@@ -11,8 +11,8 @@ import sys
 from types import SimpleNamespace
 
 from app.modules.tenancy.internal import tenant_resolution
-from app.shared import auth
 from app.modules.tenancy.internal.tenant import set_current_tenant
+from app.shared import auth
 
 
 def main() -> int:

@@ -28,9 +28,13 @@ from agent_framework import Message
 from agent_framework.azure import AzureAISearchContextProvider
 from azure.identity import DefaultAzureCredential
 
-from app.modules.knowledge.internal.secure_search import _chunk_component, authorized_components, trim_agentic_content
-from app.shared.settings import settings
+from app.modules.knowledge.internal.secure_search import (
+    _chunk_component,
+    authorized_components,
+    trim_agentic_content,
+)
 from app.modules.tenancy.internal.tenant import tenant_config
+from app.shared.settings import settings
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"
 _ROPC_CLIENT = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"
@@ -62,7 +66,7 @@ async def _kept_components(provider, token: str) -> tuple[set[str], set[str]]:
     """Run the agentic retrieve as the caller, trim, and return (kept, authorized)."""
     orig = provider._retrieval_client.retrieve
 
-    async def as_user(*a, **k):  # noqa: ANN002, ANN003
+    async def as_user(*a, **k):
         k["x_ms_query_source_authorization"] = token
         return await orig(*a, **k)
 

@@ -279,10 +279,9 @@
     "try": "Try:",
     "sources": "Sources",
     "guarantees": "Guarantees",
-    "sourcesEmpty": "The sources an answer cites appear here — every claim grounded in the base, never assumed.",
     "suggested": "Try:",
     "tabConversations": "Conversations",
-    "tabEvidence": "Evidence",
+    "tabGuarantees": "Guarantees",
     "guaranteesCount": "{count} guarantees active"
   },
   "conversations": {
@@ -368,15 +367,18 @@
     "fidelity": "The wiki was generated from real code; ≥80% of citations resolve to a file that exists.",
     "access": "Retrieval trimmed per document — access follows the source (groups), injection-proof.",
     "evaluated": "Every answer cites its source or declines; deterministic gate + groundedness judges.",
-    "clickSource": "Click to see the source",
-    "sourceFile": "Source (file)",
-    "sourceComponent": "Source (component)",
     "fidelityTitle": "Fidelity",
     "accessTitle": "Access",
     "evaluatedTitle": "Evaluation",
-    "internalDoc": "internal document (secure retrieval; no preview)",
-    "empty": "The sources the answer cites show up here — every claim grounded in the knowledge base, not in guesswork.",
-    "sources": "Sources"
+    "sources": "Sources",
+    "openSource": "Open the document",
+    "sourceLoading": "Opening the document…",
+    "sourceSessionExpired": "Your session has expired. Sign in again to open this document.",
+    "sourceForbidden": "You do not have access to this document.",
+    "sourceMissing": "Document not found.",
+    "sourceError": "Could not open the document.",
+    "sourceClose": "Close",
+    "sourceTruncated": "Large document: showing only the beginning. The cited excerpt may be outside the shown part."
   },
   "fieldProposal": {
     "title": "Proposal for {field}",
