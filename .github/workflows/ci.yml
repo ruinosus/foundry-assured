@@ -199,6 +199,14 @@ jobs:
       - name: Fontes do helpdesk por API pública (sem monkeypatch)
         run: uv run python -m tests.helpdesk.sources_event_test
 
+      # O grounded-como-agente monta certo e nasce DESLIGADO. O gate prova a montagem, não a
+      # conversa: essa é a única troca da série que não dá para verificar offline (toca OBO e ACL),
+      # e o modo de falha de errar não é "quebra" — é servir documento que a pessoa não deveria ver.
+      # Por isso o caminho antigo continua sendo o default até uma conversa real e o
+      # `eval/access_control_test` darem o aceite.
+      - name: Grounded como agente do framework (montagem + desligado por default)
+        run: uv run python -m tests.grounded.framework_agent_test
+
       - name: Approval decisions (edit is not a loophole)
         run: uv run python -m tests.hitl.decision_test
       - name: Edit round-trips end to end

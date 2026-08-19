@@ -25,7 +25,6 @@ from app.modules.helpdesk.internal.agents import (
 )
 from app.modules.helpdesk.internal.escalation import EscalationExecutor
 from app.modules.helpdesk.internal.memory import build_memory_provider
-from app.modules.helpdesk.internal.sources_executor import SourcesExecutor
 from app.modules.tenancy.public import memory_scope
 from app.shared.auth import credential_for_request
 
@@ -48,7 +47,7 @@ def build_helpdesk_workflow(thread_id: str | None = None) -> Workflow:
     # A recuperação passa a usar o NOSSO provider, que trima por ACL e conta as referências. O
     # usuário é capturado AQUI, na fábrica por requisição, porque `retrieve()` precisa da identidade
     # para aplicar o entitlement — e porque este é o ponto que ainda está no contexto da requisição.
-    from app.modules.grounded.public import GroundedRetrieval
+    from app.modules.grounded.public import GroundedRetrieval, SourcesExecutor
     from app.modules.tenancy.public import domain_spec
     from app.shared.auth import current_user
 

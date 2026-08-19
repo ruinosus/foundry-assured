@@ -64,7 +64,7 @@ def main() -> int:
     from agent_framework import WorkflowContext, WorkflowEvent
     from agent_framework_ag_ui._workflow_run import _custom_event_value, _event_name
 
-    from app.modules.helpdesk.internal.sources_executor import SourcesExecutor
+    from app.modules.grounded.public import SourcesExecutor
 
     falhas: list[str] = []
 

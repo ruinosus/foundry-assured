@@ -1,7 +1,11 @@
 """Emite as fontes recuperadas como evento AG-UI — por API pública, sem tocar no adapter.
 
+MORA EM `grounded` PORQUE É DELE O ASSUNTO: ele emite citações, e quem as produz é o
+`GroundedRetrieval` deste mesmo módulo. O helpdesk o usa (a aresta `helpdesk -> grounded` já
+existe), e o caminho grounded-como-agente também — uma peça, dois consumidores, mesma carga.
+
 POR QUE ESTE EXECUTOR EXISTE, e por que ele é pequeno de propósito. O painel de evidências é
-alimentado por um `CustomEvent(name="sources")`. O caminho grounded o emite à mão, porque escreve o
+alimentado por um `CustomEvent(name="sources")`. O caminho grounded escrito à mão o emite dentro do
 próprio laço de SSE. O helpdesk não emitia — ele passa pelo adapter oficial, e o adapter descarta
 `content.annotations` (medido: `_emit_text` lê só `content.text`, enquanto `_emit_usage`, quatro
 linhas abaixo, emite `CustomEvent`). Resultado: o painel do helpdesk caía no heurístico de texto,

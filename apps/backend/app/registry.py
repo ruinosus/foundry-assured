@@ -173,8 +173,19 @@ def _mount_grounded(app: FastAPI, domain_id: str) -> None:
     """
 
     async def endpoint(request: Request) -> StreamingResponse:
-        from app.modules.grounded.public import stream_grounded
+        from app.modules.grounded.public import stream_grounded, via_framework
         from app.shared.auth import current_user
+
+        # DOIS CAMINHOS, e o novo nasce desligado. `via_framework()` liga o domínio como
+        # `FoundryAgent` — que responde COMO O AGENTE PUBLICADO e ganha histórico, uso e o adapter
+        # oficial por construção. O caminho à mão continua sendo o default porque é o único hoje
+        # verificado contra o serviço real: esta é a única troca da série que não dá para provar
+        # offline (toca OBO e ACL, e errar serve documento demais em silêncio). Desligar é uma
+        # variável, não um revert.
+        if via_framework():
+            from app.modules.grounded.public import mount_grounded_via_framework
+
+            return await mount_grounded_via_framework(request, domain_spec(domain_id), domain_id)
 
         # `Accept-Language` é o padrão da web para isto — o browser já o envia e o seletor de
         # idioma da interface o sobrescreve. Inventar um campo no corpo seria criar vocabulário
