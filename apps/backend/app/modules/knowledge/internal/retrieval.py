@@ -67,10 +67,23 @@ async def retrieve(query: str, user, domain, *, top: int = 8) -> list[dict]:
     app_cred = _AppCredential()
     try:
         primary = (await app_cred.get_token(_SEARCH_SCOPE)).token  # app MI (service credential)
-        # The per-user ACL header is attached ONLY on ACL'd domains (truthy acl_group_map) — RULE #6.
-        # A genuinely public domain (no acl_group_map) omits it and runs as the app identity; an ACL'd
-        # domain sends the user's OBO token so the index trims to what the user may read.
-        user_token = await _user_search_token(user) if getattr(domain, "acl_group_map", None) else None
+        # A decisão de anexar o header de identidade é DECLARADA em `domain.document_access`
+        # (`DomainSpec`, registry.py), nunca DERIVADA da truthiness de `acl_group_map` — o mesmo
+        # argumento de `document.py:authorized_document` vale idêntico aqui, e por desenho: as
+        # duas decisões agora vêm da MESMA fonte. `acl_group_map` é valor de CONFIGURAÇÃO (no modo
+        # shared, vem do tenant store); decidir por ele rebaixaria em silêncio um domínio que
+        # deveria ter ACL sempre que a config chegasse vazia em runtime (ex.: APP_USERS_GROUP_ID
+        # não setado) — o índice continuaria carimbado (permissionFilterOption=enabled), mas
+        # `retrieve()` passaria a rodar como identidade da aplicação, sem o trim. Isso já causava
+        # uma divergência concreta com `/source`: a lista de citações (aqui) e a abribilidade da
+        # citação (document.py) discordavam — a pessoa via o `[n]`, clicava, e levava 403 num
+        # documento que o próprio agente tinha acabado de citar. O default do campo é o SEGURO
+        # (`"acl"`) — esquecer de declarar não pode rebaixar ninguém.
+        user_token = (
+            await _user_search_token(user)
+            if getattr(domain, "document_access", "acl") == "acl"
+            else None
+        )
         if getattr(domain, "kb_name", None):  # PRIMARY: native agentic retrieve
             rows = await _native_retrieve(domain, query, primary, user_token)
         else:  # FALLBACK: direct-search-as-user (the engine lives here now)
