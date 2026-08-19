@@ -25,6 +25,7 @@ from app.modules.helpdesk.internal.agents import (
 )
 from app.modules.helpdesk.internal.escalation import EscalationExecutor
 from app.modules.helpdesk.internal.memory import build_memory_provider
+from app.modules.helpdesk.internal.sources_executor import SourcesExecutor
 from app.modules.tenancy.public import memory_scope
 from app.shared.auth import credential_for_request
 
@@ -63,6 +64,11 @@ def build_helpdesk_workflow(thread_id: str | None = None) -> Workflow:
     )
     escalate = EscalationExecutor()
 
+    # O passo que emite as fontes para o painel de evidências. Só entra quando houve recuperação
+    # com o NOSSO provider — sem ele não há documentos a mostrar, e um passo a mais na cadeia sem
+    # nada a fazer é latência sem contrapartida.
+    fontes = SourcesExecutor(recuperacao) if recuperacao is not None else None
+
     # triage -> retrieve -> resolve -> escalate. The escalate node turns a
     # "TICKET:" signal from resolve into a human-approval interrupt (request_info)
     # and only opens the ticket once approved. No explicit output_from: it caused
@@ -73,6 +79,8 @@ def build_helpdesk_workflow(thread_id: str | None = None) -> Workflow:
             description="Triage -> retrieve -> resolve -> escalate helpdesk workflow.",
             start_executor=triage,
         )
-        .add_chain([triage, retrieve, resolve, escalate])
+        .add_chain(
+            [triage, retrieve, *( [fontes] if fontes else [] ), resolve, escalate]
+        )
         .build()
     )
