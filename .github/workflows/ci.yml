@@ -220,6 +220,15 @@ jobs:
       - name: Fontes do helpdesk por API pública (sem monkeypatch)
         run: uv run python -m tests.helpdesk.sources_event_test
 
+      # A fábrica do helpdesk monta DE VERDADE — direto, com recuperação ativa (usuário
+      # resolvido), e pela fiação real de app.registry._mount_helpdesk. Os gates de rota/registry
+      # trocam build_helpdesk_workflow por um dublê para não precisar de Foundry, e um dublê não
+      # executa o corpo da fábrica — não pegaria nem um import adiado com nome errado (só estoura
+      # quando o domínio é USADO) nem uma incompatibilidade de tipo que só aparece quando
+      # WorkflowBuilder.build() valida o grafo com SourcesExecutor de fato na cadeia.
+      - name: Fábrica do helpdesk monta de verdade (import + tipos, com recuperação ativa)
+        run: uv run python -m tests.helpdesk.workflow_factory_test
+
       # O grounded-como-agente monta certo e nasce DESLIGADO. O gate prova a montagem, não a
       # conversa: essa é a única troca da série que não dá para verificar offline (toca OBO e ACL),
       # e o modo de falha de errar não é "quebra" — é servir documento que a pessoa não deveria ver.

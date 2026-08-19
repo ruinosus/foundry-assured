@@ -14,6 +14,8 @@ WorkflowBuilder API verified against agent-framework 1.9.0.
 """
 
 import contextlib
+from collections.abc import Callable
+from typing import Any
 
 from agent_framework import Workflow, WorkflowBuilder
 
@@ -29,8 +31,23 @@ from app.modules.tenancy.public import memory_scope
 from app.shared.auth import credential_for_request
 
 
-def build_helpdesk_workflow(thread_id: str | None = None) -> Workflow:
-    """Per-request factory: builds the workflow with the current user's identity."""
+def build_helpdesk_workflow(
+    thread_id: str | None = None,
+    *,
+    domain_spec_provider: Callable[[], Any] | None = None,
+) -> Workflow:
+    """Per-request factory: builds the workflow with the current user's identity.
+
+    `domain_spec_provider` é injetado por fechamento por quem monta o domínio
+    (`_mount_helpdesk` em `app/registry.py`), nunca importado daqui: `domain_spec()` vive na
+    composition root (`app.registry`), e a ADR-017 proíbe um módulo importar dela. Também não
+    dava para resolver o spec e capturá-lo pronto no fechamento — `domain_spec()` lê
+    `tenant_config()`, que no modo `shared` só existe DENTRO de uma requisição; resolvido no
+    mount (boot) ele quebraria o boot exatamente do jeito que o comentário de `_domains()` em
+    `app/registry.py` já descreve para esse caso. Por isso o que atravessa o fechamento é a
+    FUNÇÃO que resolve o spec, chamada aqui dentro — que já roda por requisição, junto do resto
+    desta fábrica. Sem provider (ex.: chamada direta em teste), a recuperação fica desligada,
+    igual já acontecia quando `current_user()` não resolvia."""
     credential = credential_for_request()
     scope = memory_scope()
 
@@ -48,14 +65,13 @@ def build_helpdesk_workflow(thread_id: str | None = None) -> Workflow:
     # usuário é capturado AQUI, na fábrica por requisição, porque `retrieve()` precisa da identidade
     # para aplicar o entitlement — e porque este é o ponto que ainda está no contexto da requisição.
     from app.modules.grounded.public import GroundedRetrieval, SourcesExecutor
-    from app.modules.tenancy.public import domain_spec
     from app.shared.auth import current_user
 
     recuperacao = None
     with contextlib.suppress(Exception):
         usuario = current_user()
-        if usuario is not None:
-            recuperacao = GroundedRetrieval(usuario, domain_spec("helpdesk"), agent_id="helpdesk")
+        if usuario is not None and domain_spec_provider is not None:
+            recuperacao = GroundedRetrieval(usuario, domain_spec_provider(), agent_id="helpdesk")
 
     retrieve = build_retrieve_agent(credential, recuperacao)
     resolve = build_resolve_agent(

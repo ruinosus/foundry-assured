@@ -27,7 +27,13 @@ from __future__ import annotations
 
 from typing import Any
 
-from agent_framework import Executor, WorkflowContext, WorkflowEvent, handler
+from agent_framework import (
+    AgentExecutorResponse,
+    Executor,
+    WorkflowContext,
+    WorkflowEvent,
+    handler,
+)
 
 
 class SourcesExecutor(Executor):
@@ -45,8 +51,19 @@ class SourcesExecutor(Executor):
         super().__init__(id=executor_id)
         self._provider = provider
 
+    # `WorkflowContext[Any, Any]` chegou a passar sem erro — mas só porque a cadeia com
+    # recuperação ativa nunca rodou de verdade (o `domain_spec` quebrado, consertado ao lado deste
+    # executor, estourava ANTES de `WorkflowBuilder.build()` validar o grafo). Assim que passou a
+    # rodar, `validate_workflow_graph` rejeitou a aresta 'sources' -> 'resolve':
+    # `is_type_compatible(Any, alvo)` é FALSO para saída (mas True para entrada, o que mascarava
+    # o problema do lado 'retrieve' -> 'sources'). `Any` não é curinga aqui — é só a ausência de
+    # tipo. O tipo concreto é o mesmo que atravessa de fato: `retrieve` é um `AgentExecutor`, que
+    # sempre emite `AgentExecutorResponse` (agent_framework/_workflows/_agent_executor.py), e este
+    # executor repassa a mensagem intacta — então a mesma classe é entrada e saída.
     @handler
-    async def on_retrieved(self, message: Any, ctx: WorkflowContext[Any, Any]) -> None:
+    async def on_retrieved(
+        self, message: AgentExecutorResponse, ctx: WorkflowContext[AgentExecutorResponse]
+    ) -> None:
         citacoes = []
         try:
             citacoes = self._provider.citations()

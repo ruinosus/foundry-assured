@@ -270,9 +270,23 @@ def _mount_helpdesk(app: FastAPI, domain_id: str) -> None:
     )
 
     if knowledge_configured():
+        # `build_helpdesk_workflow` precisa do DomainSpec do helpdesk para montar a recuperação
+        # com ACL (GroundedRetrieval), mas o módulo helpdesk não pode importar `domain_spec` —
+        # ela mora aqui, na composition root, e a ADR-017 proíbe um módulo importar dela. A saída
+        # é fechamento: o factory abaixo fecha sobre `domain_id` e só CHAMA `domain_spec` quando
+        # roda, isto é, por requisição (é isso que `workflow_factory(thread_id)` faz dentro do
+        # adapter). Resolver `domain_spec(domain_id)` aqui no mount quebraria o boot no modo
+        # `shared`: `domain_spec` lê `tenant_config()`, e no boot ainda não existe requisição com
+        # tenant resolvido (mesmo motivo que já mantém `_domains()` lazy — ver o comentário
+        # dela acima).
+        def _helpdesk_workflow_factory(thread_id: str | None):
+            return build_helpdesk_workflow(
+                thread_id, domain_spec_provider=lambda: domain_spec(domain_id)
+            )
+
         add_agent_framework_fastapi_endpoint(
             app,
-            agent=OrderedAgentFrameworkWorkflow(workflow_factory=build_helpdesk_workflow),
+            agent=OrderedAgentFrameworkWorkflow(workflow_factory=_helpdesk_workflow_factory),
             path=f"/{domain_id}",
             dependencies=domain_deps(domain_id),
         )
