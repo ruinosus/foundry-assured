@@ -49,6 +49,7 @@ class DomainSpec:
     ks_name: str | None = None  # KB's knowledge-source name (native path); None → defaults to kb_name
     search_index: str | None = None
     search_endpoint: str = ""
+    corpus_container: str = ""  # container do blob que guarda o documento integral (rota /source)
     acl_group_map: dict | None = None  # name→objectID; None/empty → no ACL trim (no-op)
     hosted_agent_name: str | None = None
 
@@ -116,6 +117,7 @@ def _domains() -> list[DomainSpec]:
             id="helpdesk",
             kind="workflow",
             hosted_agent_name=cfg.hosted_agent_name,
+            corpus_container=cfg.azure_storage_container,
         ),
         DomainSpec(
             id="techdocs",
@@ -125,6 +127,7 @@ def _domains() -> list[DomainSpec]:
             ks_name=cfg.techdocs_searchindex_knowledge_source,  # techdocs-docbundles-si-ks
             search_index=cfg.techdocs_search_index,  # direct-search fallback target (ACL trims here too)
             search_endpoint=cfg.azure_search_endpoint,
+            corpus_container=cfg.techdocs_storage_container,
             acl_group_map=cfg.acl_group_map,  # PARSED property (name→objectID), not the raw string
         ),
         DomainSpec(
@@ -135,6 +138,7 @@ def _domains() -> list[DomainSpec]:
             ks_name=cfg.selfwiki_searchindex_knowledge_source,  # selfwiki-docbundles-si-ks
             search_index=cfg.selfwiki_search_index,  # direct-search fallback target (ACL trims here too)
             search_endpoint=cfg.azure_search_endpoint,
+            corpus_container=cfg.selfwiki_storage_container,
             # Single private audience = the app-users group (everyone with app access). Intentional
             # ACL (ADR/spec 2026-07-02): the self-wiki is stamped with this group; retrieval sends the
             # OBO header because this map is truthy. Empty APP_USERS_GROUP_ID → no map (dev/single-user).
@@ -356,9 +360,15 @@ def include_routers(app) -> None:
     from app.modules.evaluation import api as evals
     from app.modules.foundry import api as foundry
     from app.modules.hosted import api as chat
+    from app.modules.knowledge import api as knowledge
     from app.modules.proposer import api as proposer
     from app.modules.tickets import api as tickets
     from app.modules.usecases import api as usecases
+
+    # `knowledge.api` não pode importar `app.registry` (camada de composição, ADR-017) — a
+    # composição empurra `domain_spec` pra lá, em vez do módulo puxá-la (mesmo padrão de
+    # `set_post_authenticate`).
+    knowledge.set_domain_lookup(domain_spec)
 
     for module in (
         api_health,
@@ -373,6 +383,7 @@ def include_routers(app) -> None:
         proposer,
         audit,
         builder_assist,
+        knowledge,
     ):
         app.include_router(module.router)
 

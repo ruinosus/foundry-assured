@@ -36,6 +36,9 @@
       "main.py",
       "registry.py"
     ],
+    "knowledge": [
+      "registry.py"
+    ],
     "oncall": [
       "registry.py"
     ],
@@ -168,6 +171,7 @@
       "modules/grounded/internal/concierge.py"
     ],
     "conversations": [
+      "modules/grounded/internal/framework_agent.py",
       "modules/grounded/internal/grounded.py",
       "modules/grounded/internal/per_request.py",
       "modules/grounded/internal/retrieval_provider.py"
@@ -184,12 +188,14 @@
     ],
     "shared": [
       "modules/grounded/internal/concierge.py",
+      "modules/grounded/internal/framework_agent.py",
       "modules/grounded/internal/grounded.py",
       "modules/grounded/internal/selfwiki.py",
       "modules/grounded/internal/techdocs.py"
     ],
     "tenancy": [
       "modules/grounded/internal/concierge.py",
+      "modules/grounded/internal/framework_agent.py",
       "modules/grounded/internal/grounded.py",
       "modules/grounded/internal/selfwiki.py",
       "modules/grounded/internal/techdocs.py"
@@ -251,17 +257,20 @@
   },
   "knowledge": {
     "audit": [
+      "modules/knowledge/api.py",
       "modules/knowledge/internal/retrieval.py"
     ],
     "foundry": [
       "modules/knowledge/internal/wiki_builder.py"
     ],
     "shared": [
+      "modules/knowledge/api.py",
       "modules/knowledge/internal/retrieval.py",
       "modules/knowledge/internal/wiki_builder.py"
     ],
     "tenancy": [
       "modules/knowledge/internal/acl_setup.py",
+      "modules/knowledge/internal/document.py",
       "modules/knowledge/internal/ingest.py",
       "modules/knowledge/internal/ingest_docbundles.py",
       "modules/knowledge/internal/secure_search.py",
