@@ -26,38 +26,38 @@
   section.slide {
     min-height: 100vh; width: 100%; scroll-snap-align: start;
     display: flex; flex-direction: column; justify-content: center;
-    padding: 6vh 8vw; position: relative; border-bottom: 1px solid rgba(255,255,255,.05);
+    padding: 6vh 8vw; position: relative; border-bottom: 1px solid color-mix(in oklch, var(--ink) 6%, transparent);
   }
   .kicker { font-size: 13px; letter-spacing: .22em; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
   h1 { font-size: clamp(34px, 6vw, 76px); line-height: 1.04; letter-spacing: -.02em; }
   h2 { font-size: clamp(26px, 3.6vw, 44px); line-height: 1.1; letter-spacing: -.01em; margin-bottom: 8px; }
   .lead { font-size: clamp(16px, 1.6vw, 21px); color: var(--muted); max-width: 64ch; line-height: 1.5; }
-  .grad { background: linear-gradient(100deg, #60a5fa 0%, #818cf8 45%, #c084fc 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .grad { background: linear-gradient(100deg, var(--ink-2) 0%, var(--ink-2) 45%, var(--ink-2) 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
   .badges { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
   .badge { border: 1px solid var(--card-border); background: var(--card); border-radius: 999px; padding: 7px 14px; font-size: 13px; color: var(--muted); }
   .dot { color: var(--green); }
   .footer { position: absolute; bottom: 22px; left: 8vw; right: 8vw; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); }
   .nav-dots { position: fixed; right: 22px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 10px; z-index: 50; }
-  .nav-dots a { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.18); display: block; transition: .2s; }
+  .nav-dots a { width: 9px; height: 9px; border-radius: 50%; background: color-mix(in oklch, var(--ink) 6%, transparent); display: block; transition: .2s; }
   .nav-dots a.on { background: linear-gradient(var(--blue), var(--violet)); transform: scale(1.35); }
   .under { margin-top: 18px; display: inline-flex; gap: 10px; align-items: center; font-size: 13px; color: var(--muted); border: 1px dashed var(--card-border); border-radius: 12px; padding: 10px 14px; max-width: 940px; }
-  code { color:#c4b5fd; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
+  code { color:var(--ink-2); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .92em; }
 
   /* embedded diagram — the saas SVGs render on a light mermaid theme, frame on near-white */
   .figure { margin-top: 22px; max-width: 1080px; width: 100%; }
-  .figure .frame { background: #f7f9fc; border: 1px solid var(--card-border); border-radius: 16px; padding: 14px; max-height: 64vh; overflow: auto; }
+  .figure .frame { background: var(--ink); border: 1px solid var(--card-border); border-radius: 16px; padding: 14px; max-height: 64vh; overflow: auto; }
   .figure .frame img { width: 100%; height: auto; display: block; }
   .figure figcaption { margin-top: 10px; font-size: 12.5px; color: var(--muted); }
-  .figure figcaption code { color:#93c5fd; }
+  .figure figcaption code { color:var(--ink-2); }
 
   /* seam table */
   .cmp { width: 100%; border-collapse: collapse; margin-top: 26px; max-width: 1040px; font-size: 14px; }
   .cmp th, .cmp td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--card-border); vertical-align: top; }
   .cmp thead th { font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
-  .cmp .a { color: #93c5fd; font-weight: 700; } .cmp .b { color: #c4b5fd; font-weight: 700; }
+  .cmp .a { color: var(--ink-2); font-weight: 700; } .cmp .b { color: var(--ink-2); font-weight: 700; }
   .cmp tbody tr td:first-child { color: var(--text); font-weight: 600; }
   .callout { margin-top: 22px; border-left: 3px solid var(--violet); background: var(--card); border-radius: 0 12px 12px 0; padding: 14px 18px; font-size: 14px; color: var(--text); max-width: 940px; }
-  .callout b { color: #c4b5fd; }
+  .callout b { color: var(--ink-2); }
 
   ul.clean { list-style: none; margin-top: 22px; display: grid; gap: 12px; max-width: 900px; }
   ul.clean li { display: flex; gap: 12px; font-size: 15px; color: var(--text); }
@@ -65,20 +65,26 @@
   ul.clean li small { color: var(--muted); }
   .hint { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--muted); z-index: 50; }
 </style>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/deck.css" />
+<link rel="stylesheet" href="assets/legado.css" />
+
 </head>
 <body>
 <div class="nav-dots" id="dots"></div>
 <div class="hint">↑ ↓ / espaço para navegar</div>
 
-<div style="position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;max-width:min(94vw,860px);border:1px solid var(--card-border);background:rgba(14,21,48,.92);backdrop-filter:blur(6px);border-radius:12px;padding:10px 16px;font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;">
+<div style="position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:60;max-width:min(94vw,860px);border:1px solid var(--card-border);background:color-mix(in oklch, var(--ink) 60%, transparent);backdrop-filter:blur(6px);border-radius:12px;padding:10px 16px;font-size:12.5px;color:var(--muted);line-height:1.5;text-align:center;">
   Anexo técnico — os <b style="color:var(--text)">diagramas as-built</b> do SaaS (control-plane × data-plane, fluxo de identidade, modelo de config por tenant). Companheiro de
-  <a href="./saas-architecture.html" style="color:#93c5fd;">saas-architecture.html</a>.
+  <a href="./saas-architecture.html" style="color:var(--surface);">saas-architecture.html</a>.
 </div>
 
 <div class="deck">
 
   <!-- 1 — HERO -->
-  <section class="slide" id="s1" style="background:radial-gradient(1200px 600px at 15% 0%, #16224a 0%, var(--bg) 55%);">
+  <section class="slide" id="s1" style="background:radial-gradient(1200px 600px at 15% 0%, var(--surface) 0%, var(--bg) 55%);">
     <div class="kicker">Microsoft Foundry · Arquitetura · anexo</div>
     <h1>Fluxo <span class="grad">multi-tenant</span><br/>& modelo de config</h1>
     <p class="lead" style="margin-top:22px;">
@@ -137,7 +143,7 @@
   </section>
 
   <!-- 5 — FAIL-CLOSED / FECHAMENTO -->
-  <section class="slide" id="s5" style="background:radial-gradient(1200px 600px at 85% 100%, #1a1640 0%, var(--bg) 55%);">
+  <section class="slide" id="s5" style="background:radial-gradient(1200px 600px at 85% 100%, var(--surface) 0%, var(--bg) 55%);">
     <div class="kicker">Tudo fail-closed</div>
     <h2 class="grad" style="font-size:clamp(28px,4.6vw,54px);">Erros fecham · vazamento é impossível por construção</h2>
     <ul class="clean">
