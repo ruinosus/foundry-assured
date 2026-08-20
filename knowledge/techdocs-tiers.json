@@ -1,0 +1,39 @@
+{
+  "$comment": "COMO o conteúdo do selfwiki se divide em níveis de acesso para o domínio techdocs. É DADO, não lógica (RULE #6): quem muda o recorte edita este arquivo, ninguém edita código. A chave é o título da página no manifest.json do wiki-bundle; o valor é o componente de destino. O nível de cada componente vive em techdocs-classification.json, ao lado — separado de propósito: este arquivo diz o que É cada coisa, aquele diz QUEM PODE LER.",
+  "components": {
+    "techdocs-overview": {
+      "title": "Visão geral da plataforma",
+      "pages": [
+        "OpenWiki Quickstart",
+        "Repository Architecture Overview",
+        "Backend Overview",
+        "Frontend Overview",
+        "Assurance Console",
+        "Grounded Domains"
+      ]
+    },
+    "techdocs-engineering": {
+      "title": "Engenharia e operação",
+      "pages": [
+        "Infrastructure and Deployment",
+        "Scripts and Runbooks",
+        "End-to-End Tests",
+        "Backend Evaluation and Tests",
+        "Knowledge Pipeline",
+        "Frontend API and Proxy Layer",
+        "Hosted Agents",
+        "Helpdesk Workflow Domain",
+        "Oncall LangGraph Domain",
+        "Platform Ops Domain"
+      ]
+    },
+    "techdocs-restricted": {
+      "title": "Estado, tenancy e administração",
+      "pages": [
+        "Backend State and Persistence",
+        "Tenancy and Admin",
+        "Admin and Operations UI"
+      ]
+    }
+  }
+}

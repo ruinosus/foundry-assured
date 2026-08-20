@@ -1454,7 +1454,7 @@ table.evals tr:last-child td { border-bottom: none; }
   overflow-wrap: anywhere;
 }
 
-/* Campo assistido: as ações aparecem no hover/foco, como no aap-kb — presentes quando se precisa
+/* Campo assistido: as ações aparecem no hover/foco, como num projeto anterior — presentes quando se precisa
    delas, invisíveis quando não. A sugestão fica ABAIXO e separada: substituir o campo direto
    tiraria da pessoa a chance de comparar com o que ela escreveu. */
 .assisted { display: grid; gap: var(--space-2); }

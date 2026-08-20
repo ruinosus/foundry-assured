@@ -1,6 +1,6 @@
 "use client";
 
-// Wizard de skill — quatro passos, no molde do `aap-kb`.
+// Wizard de skill — quatro passos, no molde do um projeto anterior.
 //
 // O que ele substitui: um campo de texto pedindo JSON cru. Quem sabe escrever aquele JSON não
 // precisa deste produto; quem precisa dele não sabe escrevê-lo. A sequência ensina enquanto

@@ -1,0 +1,7 @@
+{
+  "$comment": "QUEM PODE LER cada componente. Consumido por ACL_CLASSIFICATION (acl_setup.py). Nomes de grupo aqui, GUIDs na config via ACL_GROUP_MAP — nunca GUID no repositório. Componente sem entrada é FAIL-CLOSED: ninguém lê.",
+  "$semantica": "OR, NÃO hierarquia. O documento é legível por quem estiver em QUALQUER grupo listado. Por isso o nível mais restrito lista MENOS grupos, não mais — o erro natural é escrever ['public','internal'] para 'interno' pensando em acumular permissão, e isso libera o documento para quem só tem 'public'. Como os grupos aqui são aninhados por convenção (confidential ⊃ internal ⊃ public na prática, porque quem é confidencial também está nos outros), a lista de cada componente é o CONJUNTO DE QUEM ALCANÇA aquele nível.",
+  "techdocs-overview": ["public", "internal", "confidential"],
+  "techdocs-engineering": ["internal", "confidential"],
+  "techdocs-restricted": ["confidential"]
+}

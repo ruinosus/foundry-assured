@@ -73,3 +73,23 @@ uv run python -m eval.wiki_shelf_test       # todo bundle commitado: modelo atua
 uv run python -m eval.wiki_freshness_test   # o bundle é mais novo que o código que descreve?
 uv run python -m eval.docbundle_contract_test  # o manifesto respeita o schema do produtor
 ```
+
+## `techdocs-tiers.json` e `techdocs-classification.json`
+
+O domínio **techdocs** não tem corpus próprio: ele é o mesmo conteúdo do selfwiki, recortado em
+três componentes com níveis de acesso distintos. Os dois arquivos separam duas perguntas que se
+confundem quando moram juntas:
+
+| arquivo | responde |
+|---|---|
+| `techdocs-tiers.json` | **o que é** cada componente (quais páginas ele reúne) |
+| `techdocs-classification.json` | **quem pode ler** cada componente |
+
+`scripts/build-techdocs-bundles.py` deriva os bundles na hora de ingerir — não há cópia do
+conteúdo no repositório, porque uma segunda cópia divergiria na primeira regeneração da wiki, e
+divergência de conteúdo não dá erro: só faz um domínio responder com a versão velha.
+
+**Cuidado ao editar a classificação:** os grupos são avaliados por **OR**. Descrever um nível
+"interno" como `["public", "internal"]` parece acumular permissão e na verdade **libera** o
+conteúdo para quem só tem `public`. O nível mais restrito lista MENOS grupos, não mais.
+`tests/knowledge/techdocs_tiers_test.py` trava isso em todo push.

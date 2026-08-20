@@ -58,7 +58,7 @@ export function AiField({
 
   return (
     <div className="ai-field">
-      {/* As ações ficam ESCONDIDAS até o hover ou o foco, como no `aap-kb`. O motivo não é
+      {/* As ações ficam ESCONDIDAS até o hover ou o foco, como no um projeto anterior. O motivo não é
           estético: um formulário com um botão de IA ao lado de cada campo vira uma tela de
           botões de IA, e a pessoa passa a escolher entre eles em vez de preencher. Aparecendo no
           campo em que ela já está, a ajuda chega no momento certo e some no resto do tempo.

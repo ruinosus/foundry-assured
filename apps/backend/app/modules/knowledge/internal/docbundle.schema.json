@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$comment": "Contrato do doc bundle (manifest.json). GERADO de apps/agent/src/services/docbundle.py no projeto aap-kb — não edite à mão; rode docbundle.escrever_schema(). Cópias em outros projetos devem ser idênticas byte a byte.",
+  "$comment": "Contrato do doc bundle (manifest.json). GERADO de apps/agent/src/services/docbundle.py no projeto de origem — não edite à mão; rode docbundle.escrever_schema(). Cópias em outros projetos devem ser idênticas byte a byte.",
   "$defs": {
     "PageMeta": {
       "properties": {
