@@ -101,6 +101,13 @@ jobs:
             exit 1
           fi
           echo "TECHDOCS_DOCBUNDLES=$STAGE" >> "$GITHUB_ENV"
+          # Conta as páginas (manifest.json + pages/*.md) do lote selecionado — usado só como
+          # referência no passo de verificação (checagem 3, diagnóstico): o índice guarda chunks,
+          # não páginas, então a contagem final é MAIOR que esta (uma página vira N chunks). O
+          # que importa não é bater igual, é não desabar — ver comentário na verificação.
+          BUNDLE_PAGE_COUNT="$(find "$STAGE" -path '*/pages/*.md' -type f | wc -l | tr -d ' ')"
+          echo "  ▸ total de páginas no lote selecionado: $BUNDLE_PAGE_COUNT"
+          echo "BUNDLE_PAGE_COUNT=$BUNDLE_PAGE_COUNT" >> "$GITHUB_ENV"
 
       - name: Azure login (OIDC)
         uses: azure/login@v2
@@ -141,32 +148,45 @@ jobs:
         # sem erro, e o carimbo não tinha pego). Este passo PROVA visibilidade em vez de confiar
         # só no exit code do passo anterior, e FALHA o job se a prova não fechar.
         #
-        # Três buscas contra o MESMO índice, cada uma prova uma coisa diferente:
-        #   1) leitura elevada (header x-ms-enable-elevated-read — o mesmo mecanismo que
-        #      acl_setup.py e purge_orphans() já usam pra ler/escrever o índice) — bypassa o
-        #      filtro de permissão e prova que o campo `groups` foi REALMENTE escrito em cada
-        #      documento com o grupo certo. É exatamente o que faltou da vez passada:
-        #      permissionFilterOption=enabled com groups vazio, e esta é a única das três buscas
-        #      que teria pegado aquele incidente.
-        #   2) busca SEM identidade (sem o header x-ms-query-source-authorization) — num índice
-        #      com permissionFilterOption=enabled isso TEM que devolver zero por desenho (medido
-        #      em 19/ago contra este mesmo índice). Se devolver algo, o fail-closed quebrou.
-        #   3) busca COM a identidade OIDC deste próprio runner como
-        #      x-ms-query-source-authorization — a prova ponta a ponta mais forte (é o caminho
-        #      real que um usuário autenticado percorre), mas só é conclusiva se essa identidade
-        #      (o service principal de AZURE_CLIENT_ID) for MEMBRO do grupo app-users no Entra.
-        #      Não dá pra confirmar isso a partir daqui — um service principal de deploy
-        #      normalmente NÃO é membro de grupo de usuário final. Por isso este item é
-        #      diagnóstico (loga o resultado e explica as duas leituras possíveis) e NÃO derruba
-        #      o job sozinho: 1) e 2) já são o gate — cobrem exatamente o bug real, com tokens
-        #      que o runner com certeza tem (as mesmas roles que o passo de ingestão acima usou
-        #      pra escrever o índice).
+        # Desenho anterior (removido, não mantido como fallback): a checagem 1 usava o header
+        # `x-ms-enable-elevated-read` pra ler o índice sem passar pelo filtro de permissão. Em
+        # produção esse header sempre voltou HTTP 400 — "Search Index Data Contributor" TEM a
+        # ação `elevatedOperations/read`, o service principal do CI TEM esse papel no escopo
+        # certo, e mesmo assim a leitura elevada foi recusada; não foi possível isolar a causa
+        # além disso. Uma checagem que sempre falha vira ruído que ensina a ignorar o passo —
+        # por isso ela saiu, em vez de virar um `continue-on-error` disfarçado.
+        #
+        # No lugar dela, uma prova mais forte e que agora é possível: o service principal do CI
+        # (AZURE_CLIENT_ID) foi adicionado ao grupo app-users
+        # (`az ad group member check` confirmou membresia em 20/ago). Consultar o índice COM a
+        # identidade do próprio runner é o caminho real que um usuário autenticado percorre —
+        # prova o carimbo E o trim funcionando ao mesmo tempo, o que a leitura elevada nunca
+        # provou (ela só provava o carimbo).
+        #
+        # Três buscas contra o MESMO índice:
+        #   1) GATE — busca COM `x-ms-query-source-authorization` = token deste runner (escopo
+        #      https://search.azure.com/.default). Tem que voltar documento, e TODO documento
+        #      retornado tem que ter o grupo esperado em `groups`. Zero documentos derruba o job
+        #      — mas zero não diz sozinho qual das duas coisas quebrou (carimbo ausente ou
+        #      membresia de grupo perdida); a mensagem de erro lista as duas leituras possíveis
+        #      em vez de escolher uma.
+        #   2) GATE — a MESMA busca, agora SEM o header de identidade. Num índice com
+        #      `permissionFilterOption: enabled` isso TEM que devolver zero por desenho (medido
+        #      em 19/ago contra este mesmo índice: 115 documentos com identidade, 0 sem). Se
+        #      devolver algo, o fail-closed quebrou — falha grave, não sucesso parcial.
+        #   3) DIAGNÓSTICO — compara a contagem de documentos (chunks) da checagem 1 com o total
+        #      de páginas do bundle selecionado (BUNDLE_PAGE_COUNT, calculado no passo "Selecionar
+        #      a versão mais recente"). Não derruba o job: chunking faz uma página virar vários
+        #      documentos, então os números não batem igual — mas uma queda brusca entre
+        #      execuções é sinal que alguém vai querer investigar, por isso fica logado.
         env:
           AZURE_SEARCH_ENDPOINT: ${{ vars.AZURE_SEARCH_ENDPOINT }}
           APP_USERS_GROUP_ID: ${{ vars.APP_USERS_GROUP_ID }}
+          BUNDLE_PAGE_COUNT: ${{ env.BUNDLE_PAGE_COUNT }}
         run: |
           uv run python - <<'PY'
           import json
+          import os
           import sys
           import urllib.request
 
@@ -209,39 +229,43 @@ jobs:
                   skip += len(page)
               return rows
 
-          print(f"== 1/3: leitura elevada — o carimbo aconteceu? (índice '{index}') ==")
-          elevated = search({"x-ms-enable-elevated-read": "true"})
-          if not elevated:
-              sys.exit(f"❌ FALHA: índice '{index}' voltou vazio — a ingestão não populou nenhum documento.")
-          unstamped = [d.get("blob_url", d.get("uid")) for d in elevated if audience not in (d.get("groups") or [])]
+          print(f"== 1/3 (GATE): busca COM identidade do runner — carimbo + trim, o caminho real do usuário (índice '{index}') ==")
+          with_identity = search({"x-ms-query-source-authorization": f"Bearer {token}"})
+          if not with_identity:
+              sys.exit(
+                  "❌ FALHA: busca COM identidade voltou vazio. Duas leituras possíveis, não dá "
+                  "pra saber qual sem investigar: (a) o carimbo de ACL não rodou/não pegou nesta "
+                  f"execução (a ingestão terminou sem erro mas não escreveu `groups`); (b) o "
+                  f"service principal de AZURE_CLIENT_ID deixou de ser membro do grupo app-users "
+                  f"({audience}) no Entra — confirme com `az ad group member check --group "
+                  f"{audience} --member-id <object-id-do-SP>`."
+              )
+          unstamped = [d.get("blob_url", d.get("uid")) for d in with_identity if audience not in (d.get("groups") or [])]
           if unstamped:
-              print(f"❌ FALHA: {len(unstamped)}/{len(elevated)} documentos SEM o grupo {audience}:")
+              print(f"❌ FALHA: {len(unstamped)}/{len(with_identity)} documentos retornados SEM o grupo {audience}:")
               for u in unstamped[:15]:
                   print(f"   - {u}")
               sys.exit(1)
-          print(f"✅ {len(elevated)} documentos, todos carimbados com o grupo app-users ({audience}).")
+          print(f"✅ {len(with_identity)} documentos, todos carimbados com o grupo app-users ({audience}) e visíveis pra quem é membro.")
 
-          print("\n== 2/3: busca SEM identidade — tem que devolver zero (fail-closed) ==")
+          print("\n== 2/3 (GATE): busca SEM identidade — tem que devolver zero (fail-closed) ==")
           no_identity = search({}, top=1)
           if no_identity:
               sys.exit(f"❌ FALHA: busca sem identidade devolveu {len(no_identity)} documento(s) — fail-closed quebrado.")
           print("✅ 0 documentos — fail-closed confirmado.")
 
-          print("\n== 3/3 (diagnóstico, não derruba o job) — busca COM a identidade OIDC deste runner ==")
-          with_identity = search({"x-ms-query-source-authorization": f"Bearer {token}"}, top=1)
-          if with_identity:
+          print("\n== 3/3 (diagnóstico, não derruba o job): contagem de documentos vs. páginas do bundle ==")
+          bundle_pages = os.environ.get("BUNDLE_PAGE_COUNT", "").strip()
+          if bundle_pages:
               print(
-                  f"✅ {len(with_identity)}+ documento(s) — prova ponta a ponta: este runner é "
-                  "membro do grupo app-users e o trim por identidade funciona."
+                  f"  ▸ documentos no índice (chunks, checagem 1): {len(with_identity)}\n"
+                  f"  ▸ páginas no bundle selecionado (manifest.json): {bundle_pages}\n"
+                  "  (números não precisam bater — chunking faz uma página virar vários "
+                  "documentos; uma queda brusca em relação à execução anterior é o sinal a "
+                  "observar, não a igualdade.)"
               )
           else:
-              print(
-                  "⚠️  0 documentos. Esperado se o service principal de AZURE_CLIENT_ID não for "
-                  f"membro do grupo app-users ({audience}) no Entra — não temos como confirmar "
-                  "isso a partir daqui. As provas 1) e 2) acima já cobrem o bug que este workflow "
-                  "existe pra prevenir (documento sem grupo carimbado). Pra fechar também esta "
-                  "prova, adicione o service principal de deploy ao grupo app-users."
-              )
+              print("  ⚠️  BUNDLE_PAGE_COUNT não disponível — pulando a comparação.")
 
-          print("\n✅ verificação concluída — conteúdo do selfwiki está carimbado e o fail-closed está ativo.")
+          print("\n✅ verificação concluída — conteúdo do selfwiki está carimbado, visível por identidade e o fail-closed está ativo.")
           PY
