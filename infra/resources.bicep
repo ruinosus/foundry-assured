@@ -201,9 +201,22 @@ resource storage 'Microsoft.Storage/storageAccounts@2023-05-01' = {
   }
 }
 
+// `isVersioningEnabled` é pré-requisito de conta para `immutableStorageWithVersioning` nos
+// containers `audit`/`conversations` (ADR-023) — a dependência NÃO é óbvia a partir da doc dos
+// containers isoladamente, e só foi descoberta rodando `azd provision` de verdade: sem isto o
+// deploy falha com `RequiredFeatureDisabled: Required feature Versioning is disabled`, porque a
+// política de imutabilidade por versão precisa que a conta já versiona blobs antes de existir
+// versão para imutabilizar. `deleteRetentionPolicy` (soft delete) é recomendação da própria
+// Microsoft para reforço, não pré-requisito — decidido de propósito para FORA deste conserto:
+// é config de conta inteira, alcançaria também o container `corpus`, que já tem regra de
+// expurgo de versão antiga em 90 dias (linha ~296); ligar soft delete ali não foi pedido e
+// interagiria com essa regra sem necessidade.
 resource blobService 'Microsoft.Storage/storageAccounts/blobServices@2023-05-01' = {
   parent: storage
   name: 'default'
+  properties: {
+    isVersioningEnabled: true
+  }
 }
 
 resource corpusContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
