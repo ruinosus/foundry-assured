@@ -644,8 +644,9 @@ table.evals tr:last-child td {
   border-radius: var(--radius-pill);
   background: var(--accent);
   color: var(--accent-ink);
-  font-size: 0.6875rem;
-  font-weight: 650;
+  /* 11px era pequeno demais para um dígito que identifica a fonte. */
+  font-size: 0.75rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -677,10 +678,15 @@ table.evals tr:last-child td {
   border-radius: 4px;
   border: 0;
   background: var(--accent-wash);
-  color: var(--accent);
+  /* A COR É A DO TEXTO, não a do acento. MEDIDO no tema escuro: acento sobre o tingido dá
+     5,45:1 — passa no critério formal, mas fica a um TERÇO do contraste do corpo em volta
+     (16,23:1), e num parágrafo denso o olho lê isso como desbotado. Com a cor do texto sobe
+     para 12,22:1, quase o do corpo. O tingido continua sendo a affordance de clique; quem
+     carrega a legibilidade é a cor do número. */
+  color: var(--text);
   font: inherit;
-  font-size: 0.82em;
-  font-weight: 600;
+  font-size: 0.85em;
+  font-weight: 700;
   line-height: 1.3;
   vertical-align: baseline;
   text-align: center;
