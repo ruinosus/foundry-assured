@@ -183,12 +183,17 @@ jobs:
           AZURE_SEARCH_ENDPOINT: ${{ vars.AZURE_SEARCH_ENDPOINT }}
           APP_USERS_GROUP_ID: ${{ vars.APP_USERS_GROUP_ID }}
           BUNDLE_PAGE_COUNT: ${{ env.BUNDLE_PAGE_COUNT }}
+          ENTRA_TENANT_ID: ${{ vars.ENTRA_TENANT_ID }}
+          TECHDOCS_TEST_USER_A: ${{ vars.TECHDOCS_TEST_USER_A }}
+          TECHDOCS_TEST_USER_B: ${{ vars.TECHDOCS_TEST_USER_B }}
+          TECHDOCS_TEST_PASSWORD: ${{ secrets.TECHDOCS_TEST_PASSWORD }}
         run: |
           uv run python - <<'PY'
           import json
           import os
           import sys
           import urllib.error
+          import urllib.parse
           import urllib.request
 
           from azure.identity import DefaultAzureCredential
@@ -197,6 +202,7 @@ jobs:
 
           API = "2025-08-01-preview"
           SCOPE = "https://search.azure.com/.default"
+          ROPC_CLIENT = "04b07795-8ddb-461a-bbee-02f9e1bf7b46"  # Azure CLI, o mesmo dos gates de eval
 
           cfg = tenant_config()
           index = cfg.selfwiki_search_index
@@ -205,7 +211,40 @@ jobs:
           if not audience:
               sys.exit("❌ APP_USERS_GROUP_ID vazio — nada pra verificar (o carimbo também não rodou).")
 
+          # O token do RUNNER não serve para `x-ms-query-source-authorization`: a Azure recusa
+          # token de service principal nesse header, por princípio ("JWT token is invalid, please
+          # confirm that you are not using a service principal token"). Não é permissão faltando
+          # — é a CATEGORIA de identidade que é recusada, então nenhum papel resolve. O runner
+          # segue autenticando o serviço (`Authorization`); quem viaja no header de identidade é
+          # um usuário de verdade, obtido por ROPC.
           token = DefaultAzureCredential().get_token(SCOPE).token
+
+          upn_a = os.environ.get("TECHDOCS_TEST_USER_A", "").strip()
+          upn_b = os.environ.get("TECHDOCS_TEST_USER_B", "").strip()
+          senha = os.environ.get("TECHDOCS_TEST_PASSWORD", "")
+          if not (upn_a and upn_b and senha):
+              # FALHA, não SKIP. Pular quando falta credencial foi o que manteve `security-gates`
+              # verde por semanas sem executar nada — a mesma doença que este workflow existe
+              # para tratar. Um workflow que ingere sem provar é o bug original.
+              sys.exit(
+                  "❌ faltam as identidades de teste: TECHDOCS_TEST_USER_A/B (vars) e "
+                  "TECHDOCS_TEST_PASSWORD (secret). Sem elas não há como provar o trim por "
+                  "usuário — a Azure recusa token de service principal no header de identidade. "
+                  "Crie com infra/entra/create-acl-identities.sh."
+              )
+
+          def user_token(upn: str) -> str:
+              corpo = urllib.parse.urlencode({
+                  "grant_type": "password", "client_id": ROPC_CLIENT, "scope": SCOPE,
+                  "username": upn, "password": senha,
+              }).encode()
+              url = f"https://login.microsoftonline.com/{os.environ['ENTRA_TENANT_ID']}/oauth2/v2.0/token"
+              try:
+                  with urllib.request.urlopen(urllib.request.Request(url, data=corpo), timeout=60) as r:
+                      return json.load(r)["access_token"]
+              except urllib.error.HTTPError as e:
+                  d = json.loads(e.read().decode() or "{}")
+                  sys.exit(f"❌ ROPC falhou para {upn}: {d.get('error_description', '')[:200]}")
 
           def search(extra_headers, top=1000):
               rows, skip = [], 0
@@ -235,7 +274,7 @@ jobs:
                   skip += len(page)
               return rows
 
-          print(f"== 1/3 (GATE): busca COM identidade do runner — carimbo + trim, o caminho real do usuário (índice '{index}') ==")
+          print(f"== 1/3 (GATE): busca como o usuário A (membro da audiência) — índice '{index}' ==")
           # TOKEN CRU, SEM `Bearer `. Ao contrário do `Authorization`, este header recebe o
           # token puro — com o prefixo a Azure devolve 401
           # `Invalid header 'x-ms-query-source-authorization': BearerReadAccessTokenFailed`,
@@ -244,7 +283,7 @@ jobs:
           # com prefixo → 401; sem prefixo → 3 documentos, carimbados. Todo o código de
           # produção (secure_search.py, document.py, retrieval.py) já passa cru; só este
           # verificador divergia, por ter remontado a requisição à mão.
-          with_identity = search({"x-ms-query-source-authorization": token})
+          with_identity = search({"x-ms-query-source-authorization": user_token(upn_a)})
           if not with_identity:
               sys.exit(
                   "❌ FALHA: busca COM identidade voltou vazio. Duas leituras possíveis, não dá "
@@ -262,11 +301,20 @@ jobs:
               sys.exit(1)
           print(f"✅ {len(with_identity)} documentos, todos carimbados com o grupo app-users ({audience}) e visíveis pra quem é membro.")
 
-          print("\n== 2/3 (GATE): busca SEM identidade — tem que devolver zero (fail-closed) ==")
-          no_identity = search({}, top=1)
-          if no_identity:
-              sys.exit(f"❌ FALHA: busca sem identidade devolveu {len(no_identity)} documento(s) — fail-closed quebrado.")
-          print("✅ 0 documentos — fail-closed confirmado.")
+          # O par A/B é o que torna esta checagem uma prova de CONTROLE DE ACESSO, e não só de
+          # configuração. "Sem header devolve zero" prova apenas que o filtro está ligado —
+          # um índice vazio passaria igual. "B, autenticado e com header válido, mesmo assim não
+          # enxerga" só pode ser verdade se o trim estiver comparando a identidade dele contra o
+          # carimbo do documento. B é idêntico a A em tudo, menos na membresia do grupo.
+          print("\n== 2/3 (GATE): busca como o usuário B (FORA da audiência) — tem que devolver zero ==")
+          como_b = search({"x-ms-query-source-authorization": user_token(upn_b)}, top=5)
+          if como_b:
+              sys.exit(
+                  f"❌ VAZAMENTO: {upn_b} não é membro de {audience} e mesmo assim recebeu "
+                  f"{len(como_b)} documento(s). O trim por documento não está discriminando por "
+                  "identidade — é falha de controle de acesso, não de configuração."
+              )
+          print(f"✅ 0 documentos para {upn_b} — o trim discrimina por identidade, não só pela presença do header.")
 
           print("\n== 3/3 (diagnóstico, não derruba o job): contagem de documentos vs. páginas do bundle ==")
           bundle_pages = os.environ.get("BUNDLE_PAGE_COUNT", "").strip()
