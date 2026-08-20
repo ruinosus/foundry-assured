@@ -595,74 +595,98 @@ table.evals tr:last-child td {
 }
 
 .msg-evidence-title {
-  font-size: var(--text-xs);
+  /* Era `--text-xs` (12px) em cinza: tecnicamente contrastado, praticamente ilegível numa
+     região densa. Rótulo pequeno pode ser discreto sem ser ilegível. */
+  font-size: 0.8125rem;
+  font-weight: 620;
   color: var(--muted);
   margin-bottom: var(--space-2);
 }
 
 .msg-evidence-list {
+  /* FICHAS QUE QUEBRAM LINHA, não lista vertical. Com 14 fontes a lista ocupava 14 linhas e
+     empurrava a resposta para fora da tela — e o nome do arquivo se repetia inteiro em cada
+     uma, com só o número da página mudando. Em ficha, as mesmas 14 cabem em duas ou três
+     linhas e ficam varríveis de relance. */
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
 }
 
 .msg-evidence-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
-  width: 100%;
-  text-align: left;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
-  border: 1px solid transparent;
-  background: transparent;
+  gap: 0.375rem;
+  padding: 0.2rem 0.5rem 0.2rem 0.3rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  /* `<button>` não herda a cor do texto: sem isto ele cai no preto padrão do navegador, que no
+     tema CLARO passa despercebido e no ESCURO fica preto sobre quase-preto — invisível. Mesma
+     armadilha do `font: inherit` no `.cit-ref`. */
+  color: var(--text);
   cursor: pointer;
+  max-width: 100%;
 }
 .msg-evidence-item:hover { border-color: var(--accent); background: var(--accent-wash); }
 .msg-evidence-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 
 .cit-idx {
   flex: 0 0 auto;
-  min-width: 1.25rem;
-  height: 1.25rem;
+  min-width: 1.15rem;
+  height: 1.15rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-pill);
   background: var(--accent);
   color: var(--accent-ink);
-  font-size: var(--text-xs);
+  font-size: 0.6875rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
 }
 
 .cit-title {
   font-size: var(--text-xs);
   font-family: var(--font-mono);
-  word-break: break-all;
+  /* O nome curto já cabe; `break-all` era necessário quando o caminho inteiro aparecia. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.cit-open { margin-left: auto; color: var(--muted); font-size: var(--text-xs); }
+.cit-open { color: var(--faint, var(--muted)); font-size: 0.6875rem; }
 
 /* O marcador [n] DENTRO do texto. `display:inline` de propósito: ele vive no meio de um
    parágrafo, e qualquer coisa que gere caixa quebraria a linha no meio da frase. */
 .cit-ref {
-  display: inline;
-  padding: 0 0.15em;
+  /* FICHA, não sobrescrito. Antes era `font-size: .85em` + `vertical-align: super`, e o
+     resultado na tela era um resíduo pálido flutuando fora da linha de base: `[13]` ficava
+     ilegível e nada indicava que dava para clicar. O contraste sempre esteve certo (o acento
+     sobre o fundo claro); o que faltava era TRATAMENTO.
+
+     O fundo tingido é o que torna o número legível em tamanho pequeno — não o tamanho. E
+     `vertical-align: baseline` devolve a altura de linha do parágrafo, que o `super` distorcia. */
+  display: inline-block;
+  min-width: 1.15em;
+  padding: 0.05em 0.36em;
+  margin: 0 0.12em;
+  border-radius: 4px;
   border: 0;
-  background: none;
+  background: var(--accent-wash);
   color: var(--accent);
-  /* `<button>` puxa a fonte do controle do navegador por padrão, não a do parágrafo em volta —
-     sem isto o `[n]` no meio da frase troca de tipografia (o `.citation-btn` antigo já tinha
-     essa regra; ela se perdeu na migração para `.cit-ref`). */
   font: inherit;
-  font-size: 0.85em;
-  vertical-align: super;
-  line-height: 1;
+  font-size: 0.82em;
+  font-weight: 600;
+  line-height: 1.3;
+  vertical-align: baseline;
+  text-align: center;
   cursor: pointer;
 }
-.cit-ref:hover { text-decoration: underline; }
+.cit-ref:hover { background: var(--accent); color: var(--accent-ink); }
 .cit-ref:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; border-radius: 2px; }
 
 /* ---------- Visualizador do documento citado ---------- */

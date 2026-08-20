@@ -78,15 +78,50 @@ function BotaoCitacao({
       aria-label={`${openLabel}: ${titulo}`}
       onClick={() => abrirFonte(domainId, titulo, snippet)}
     >
-      [{indice}]
+      {/* SEM colchetes: a ficha tingida já é o delimitador, e `[13]` gastava ~30% mais largura
+          no meio da frase sem informar nada. O significado para leitor de tela continua no
+          `aria-label`, que nomeia o documento — coisa que o `[n]` nunca disse. */}
+      {indice}
     </button>
   );
+}
+
+/** O que distingue uma fonte das outras, sem o prefixo que todas repetem.
+ *
+ * As 14 fontes de uma resposta costumam vir do MESMO bundle, e o nome completo
+ * (`foundry-assured-v0.20260819__page-8.md`) é quase todo prefixo idêntico — o que muda é o
+ * fim. Mostrar o nome inteiro em cada ficha gastava a largura toda repetindo a mesma coisa.
+ *
+ * O prefixo é calculado sobre AS FONTES DESTA RESPOSTA, não fixo: quando elas vêm de documentos
+ * diferentes não há prefixo comum, e cada uma aparece por inteiro. O nome completo continua no
+ * `title` do botão, para quem precisar dele.
+ */
+function encurtar(titulos: string[]): (t: string) => string {
+  if (titulos.length < 2) return (t) => t;
+  let prefixo = titulos[0];
+  for (const t of titulos.slice(1)) {
+    let i = 0;
+    while (i < prefixo.length && i < t.length && prefixo[i] === t[i]) i++;
+    prefixo = prefixo.slice(0, i);
+    if (!prefixo) break;
+  }
+  // RECUA ATÉ UMA FRONTEIRA. Sem isto o prefixo comum come metade de uma palavra:
+  // `…__page-8.md` e `…__page-5.md` compartilham até `page-`, e o nome curto viraria "8" — um
+  // número solto ao lado do número da citação, que é outro número. Recuando até o último
+  // separador, sobra `page-8`, que ainda diz o que é.
+  const corte = Math.max(prefixo.lastIndexOf("_"), prefixo.lastIndexOf("/"), prefixo.lastIndexOf("."));
+  prefixo = corte > 0 ? prefixo.slice(0, corte + 1) : prefixo;
+
+  // Só vale a pena se o prefixo for substancial; senão o nome curto vira enigma.
+  if (prefixo.length < 8) return (t) => t;
+  return (t) => t.slice(prefixo.length).replace(/\.md$/, "") || t;
 }
 
 export function makeAssistantMessage(domainId: string): typeof CopilotChatAssistantMessage {
   function AssistantMessageComEvidencia(props: CopilotChatAssistantMessageProps) {
     const te = useTranslations("evidence");
     const citations = useCitationsFor(props.message.id);
+    const curto = useMemo(() => encurtar(citations.map((c) => c.title)), [citations]);
     const openLabel = te("openSource");
 
     // Roda DEPOIS dos plugins padrão do Streamdown (raw → katex → sanitize → harden, nessa
@@ -170,12 +205,13 @@ export function makeAssistantMessage(domainId: string): typeof CopilotChatAssist
                   <button
                     type="button"
                     className="msg-evidence-item"
+                    title={c.title}
                     onClick={() => abrirFonte(domainId, c.title, c.snippet)}
                   >
                     <span className="cit-idx" aria-hidden>
                       {c.index}
                     </span>
-                    <span className="cit-title">{c.title}</span>
+                    <span className="cit-title">{curto(c.title)}</span>
                     <span className="cit-open" aria-hidden>
                       ↗
                     </span>
