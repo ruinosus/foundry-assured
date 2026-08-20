@@ -378,6 +378,12 @@ jobs:
       - name: Clone novo sem sign-in consegue subir o backend
         run: python3 scripts/verify-optional-secret.py
 
+      # O Pages serve `main:/docs` e o deploy dele SEMPRE passa — copia bytes, não valida
+      # conteúdo. Uma página pode servir link morto por meses com o ambiente verde: a landing
+      # linkava `docs/wiki` como "deep-wiki gerado" desde que a wiki virou `openwiki/`.
+      - name: Links publicados no Pages resolvem
+        run: python3 scripts/verify-docs-links.py
+
   # Single required status check for branch protection — green only when all
   # matrix jobs above succeed (so you protect one check, not three).
   ci-ok:
