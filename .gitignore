@@ -63,3 +63,6 @@ TEST-CREDENTIALS.local.md
 apps/backend/app/modules/data/
 experimento-mcp.sh
 reingestar-selfwiki.sh
+
+# Claude Code — a config do time é versionada; overrides pessoais não
+.claude/settings.local.json

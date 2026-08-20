@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/prompt-source-guard.sh\"",
+            "timeout": 10,
+            "statusMessage": "Regra 7 \u00b7 prompt mora no AgentSchema"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/architecture-guard.sh\"",
+            "timeout": 60,
+            "statusMessage": "Regras 8 e 9 \u00b7 fronteiras e \u00e2ncoras"
+          }
+        ]
+      }
+    ]
+  }
+}

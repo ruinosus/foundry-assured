@@ -194,45 +194,33 @@ npm run demo                        # modo demo com fixtures gravadas, sem Azure
 
 ### Gates (o que o CI exige)
 
-Os testes são **módulos executáveis, não pytest** — cada um tem `main()` e sai com código ≠ 0 ao falhar. Rodar um teste isolado = rodar o módulo. Todos abaixo são **offline e determinísticos** (não precisam de Azure):
+Os testes são **módulos executáveis, não pytest** — cada um tem `main()` e sai com código ≠ 0 ao
+falhar. Rodar um teste isolado = rodar o módulo.
+
+**A lista de gates NÃO mora aqui.** Ela mora em `.github/workflows/ci.yml`, que é quem barra o
+merge, e `scripts/gates.py` a deriva de lá para rodar tudo local:
 
 ```bash
-# de apps/backend/
-uvx ruff check .                            # lint (advisory no CI)
-uv run python -m eval.run_eval --self-test  # policy gate: planta violação e prova que pega
-uv run python -m eval.test_attribution      # ACL attribution round-trip (chunk key == blob key)
-uv run python -m eval.docbundle_contract_test  # contrato do doc-bundle (produtor ↔ consumidor)
-uv run python -m eval.prompt_contract_test  # invariantes dos prompts AgentSchema
+# do repo root — job `backend` (offline e determinístico), que é o que o CI exige
+uv run --project apps/backend --no-sync python scripts/gates.py
+uv run --project apps/backend --no-sync python scripts/gates.py --list   # só lista
+uv run --project apps/backend --no-sync python scripts/gates.py --all    # + frontend + infra
+uv run --project apps/backend --no-sync python scripts/gates.py -k citation
+```
 
-# gates de arquitetura (ADR-017)
-uv run lint-imports --config importlinter.toml           # 14 contratos de fronteira
-uv run python -m tests.smoke.routes_snapshot_test        # superfície HTTP (self_hosted + shared)
-uv run python -m tests.architecture.module_graph_test    # nenhuma dependência cross-module nova
-uv run python -m tests.architecture.filesystem_anchors_test  # nenhum parents[N] contado do arquivo
-uv run python -m tests.shared.telemetry_test             # telemetria off por default; captura opt-in
-uv run python -m tests.architecture.proposer_read_only_test  # ADR-022: o propositor nunca publica
-uv run python -m tests.audit.trail_test                  # ADR-023: cadeia, redator e fail-closed
-uv run python -m tests.tickets.store_path_test           # o chamado cai dentro do volume do bicep
-uv run python -m tests.usecases.aah_formula_test         # AAH bate com o exemplo publicado pela Microsoft
-uv run python -m tests.conversations.usage_seam_test     # nenhum cliente de chat fora da fábrica que mede
-uv run python -m tests.pricing.azure_prices_test          # o preço por token confere com a lista da Azure
-uv run python -m tests.architecture.instrumentation_matrix_test  # agente autenticado e declarando o que grava
-uv run python -m tests.grounded.contextvar_survival_test   # a identidade atravessa o StreamingResponse
-uv run python -m tests.conversations.provider_invoked_test # a conversa é gravada de fato, não só ligada
-uv run python -m tests.conversations.langgraph_recording_test # os grafos gravam o turno, uma vez
-uv run python -m tests.grounded.citation_vocabulary_test  # citação no vocabulário do framework, backend ↔ painel
-uv run python -m tests.helpdesk.sources_event_test        # o helpdesk emite fontes por API pública
-uv run python -m tests.grounded.framework_agent_test      # grounded-como-agente: montagem + desligado por default
+No Claude Code, `/gates` roda o mesmo e tria só o que falhou.
 
-# fecho diário da trilha (roda por agenda em .github/workflows/audit-anchor.yml)
+Esta seção já teve a lista copiada à mão e ela divergiu: o `ci.yml` rodava 42 gates enquanto o
+`CLAUDE.md` listava 35 — 21 nunca haviam sido citados fora do workflow, incluindo
+`tests.hitl.decision_test` e `tests.registry.domain_registry_test`. É a SEGUNDA MÁXIMA aplicada
+aos próprios gates: duas listas divergem no primeiro item novo, e a divergência não dá erro —
+só faz o dev achar que rodou tudo. Gate novo entra no `ci.yml`; nada a atualizar aqui.
+
+Fora do `ci.yml`, porque não são gates de PR:
+
+```bash
+# de apps/backend/ — fecho diário da trilha, por agenda em .github/workflows/audit-anchor.yml
 uv run python -m cli.close_audit_day                     # ancora o dia; write-once, idempotente
-uv run python -m tests.conversations.conversation_store_test # a conversa acumula e isola por pessoa
-
-# de apps/frontend/
-npm run typecheck && npm run lint && npm run build
-
-# do repo root
-bicep build infra/main.bicep --stdout > /dev/null
 ```
 
 Gates de segurança (workflow `security-gates.yml`, precisam de identidades de teste + Azure):
