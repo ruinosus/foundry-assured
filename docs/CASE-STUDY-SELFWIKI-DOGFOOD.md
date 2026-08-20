@@ -65,7 +65,7 @@ The `docs/` bundle then scored **71%** — still below the floor. But a docs/ove
 *legitimately* cites files across `apps/` and `infra/`, and the gate resolved citations
 only against the bundle's own `--repo` gather (`docs/` alone). Scored against the whole
 monorepo — the fair denominator — it's **85%**. Added a `--fidelity-root` flag so a
-monorepo sub-area bundle resolves citations against the repo root. (Cockpit, where
+monorepo sub-area bundle resolves citations against the repo root. (TechDocs, where
 `--repo` *is* the whole component, is unaffected.)
 
 ### 4. A freshly-provisioned Foundry project 404s under burst
@@ -79,17 +79,17 @@ it, one flaky call crashes a whole run; with it, the runs converge.
 ## What it proved: the mechanism is domain-generic
 
 The strongest result is what *didn't* need new code. The selfwiki domain reuses the
-Cockpit ingest **verbatim** — the only difference is environment:
+TechDocs ingest **verbatim** — the only difference is environment:
 
 ```bash
 KB_KNOWLEDGE_SOURCE=selfwiki-docbundles-ks \
-COCKPIT_STORAGE_CONTAINER=selfwiki-corpus \
+TECHDOCS_STORAGE_CONTAINER=selfwiki-corpus \
 COCKPIT_SEARCH_KNOWLEDGE_BASE=selfwiki-kb \
-COCKPIT_DOCBUNDLES=../../docs/wiki \
+TECHDOCS_DOCBUNDLES=../../docs/wiki \
   uv run python -m app.modules.knowledge.internal.ingest_docbundles
 ```
 
-The agent (`app/modules/grounded/internal/selfwiki.py`) is a thin mirror of the Cockpit agent pointed at a
+The agent (`app/modules/grounded/internal/selfwiki.py`) is a thin mirror of the TechDocs agent pointed at a
 different KB. "Same machine, different corpus + prompts" stopped being a claim and became
 the actual implementation — a third domain that ships by configuration.
 
@@ -113,7 +113,7 @@ The golden set is **18 source-verified Q&A** about this project, spanning all fo
 area + document, often a real file path) or declined; none leaked a secret. The gate is
 deterministic and CI-blocking. Spot-checking the answers confirmed grounding, not just the
 presence of a citation: e.g. *"which AG-UI endpoints does the backend expose"* returned
-`/helpdesk`, `/cockpit`, `/selfwiki` cited to `app/main.py`; *"how does document-level
+`/helpdesk`, `/d/techdocs`, `/selfwiki` cited to `app/main.py`; *"how does document-level
 access control work"* described the `groups` field + the `secure_search` trim, cited to
 the backend ACL pages.
 

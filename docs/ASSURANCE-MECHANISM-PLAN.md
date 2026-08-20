@@ -49,7 +49,7 @@ and a red-team Attack-Success-Rate kept under a ceiling. "100%" expressed as con
 | --- | --- |
 | `app/modules/knowledge/internal/wiki_builder.py` — generate→verify→ingest, claims cited to real files | 1 (build right) |
 | `app/modules/knowledge/internal/ingest_docbundles.py` — indexer + `purge_orphans` reconciliation | 1 |
-| `AzureAISearchContextProvider` (agentic) + `cockpit-kb` knowledge agent | 2 (retrieve) |
+| `AzureAISearchContextProvider` (agentic) + `techdocs-kb` knowledge agent | 2 (retrieve) |
 | `eval/run_eval.py` + `eval/assertions.py` + source-verified golden (gitignored) | 3 (eval) |
 | Entra OBO on `/helpdesk` (per-user identity) | 4 (secure access) — identity half only |
 | OTEL → Application Insights tracing | 3/5 (observability) |
@@ -116,7 +116,7 @@ today (asked for all MCP servers, the agent listed 6 of ~9, retrieval surfaced 7
 families).
 
 **Build.**
-- Tune the `cockpit-kb` knowledge agent for **recall**: `retrieval_reasoning_effort =
+- Tune the `techdocs-kb` knowledge agent for **recall**: `retrieval_reasoning_effort =
   medium` (enables iterative search — Microsoft's tests showed large completeness gains),
   review `rerankerThreshold` (lower → more docs pass), and the sub-query / output limits.
 - Prompt **exhaustiveness rule** for enumeration ("when asked to list *all*, sweep every
@@ -143,7 +143,7 @@ the full, correctly-classified set.
 **Build.**
 - Extend `eval/run_eval.py` with Foundry evaluators: **Groundedness**, **Answer/Response
   Completeness**, **Relevance**, plus the Phase-2 **Retrieval** evaluator.
-- Grow the golden with the 8 source-verified Cockpit questions (enumeration,
+- Grow the golden with the 8 source-verified TechDocs questions (enumeration,
   disambiguation server×SDK, per-server detail, anti-hallucination) + per-domain seeds.
 - Wire the **CI gate** (`ai-agent-evals` action / FoundryEvals) — merges blocked below
   thresholds. Add **continuous evaluation** sampling prod traffic into Azure Monitor.
@@ -219,12 +219,12 @@ Prompt Shields call on retrieved chunks.
 
 ## Phase 6 — Generalize & package the mechanism
 
-**Objective.** Turn the cockpit-specific build into the reusable **mechanism** — the
+**Objective.** Turn the techdocs-specific build into the reusable **mechanism** — the
 "what / how / how-used" any company runs on its own repos/KB.
 
 **Build.**
 - Parameterize end-to-end (`--repo` / `--kb` / corpus + prompts + identities), so nothing
-  is hard-coded to Cockpit. Confirm the four swap points (`CUSTOMIZE.md`) still hold with
+  is hard-coded to TechDocs. Confirm the four swap points (`CUSTOMIZE.md`) still hold with
   Phases 4–5 added.
 - A **METHOD doc**: the pipeline, the gates, the thresholds, the identities — with a
   one-command bring-up (`azd up` + bootstrap + the assurance gates) for a new KB.
@@ -232,7 +232,7 @@ Prompt Shields call on retrieved chunks.
   and the release→deploy automation, so a fresh clone inherits the guarantees.
 
 **Guarantee.** 🟢 a second, unrelated repo/KB goes through the whole pipeline with the same
-gates and zero Cockpit-specific code. 🔴 the mechanism only works for Cockpit.
+gates and zero TechDocs-specific code. 🔴 the mechanism only works for TechDocs.
 
 **Acceptance.** A dry-run on a different corpus reaches "answers + secure + gated" using
 only parameters + docs.

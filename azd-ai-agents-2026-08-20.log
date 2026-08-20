@@ -1,0 +1,586 @@
+[2026-08-20T11:25:42-03:00] Retry: =====> Try=1 for GET https://graph.microsoft.com/v1.0/me
+[2026-08-20T11:25:43-03:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://graph.microsoft.com/.default"
+[2026-08-20T11:25:43-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://graph.microsoft.com/v1.0/me
+   Authorization: REDACTED
+   User-Agent: azsdk-go-graph/1.0.0 (go1.26.4-X:loopvar; darwin)
+
+[2026-08-20T11:25:44-03:00] Response: ==> REQUEST/RESPONSE (Try=1/470.843834ms, OpTime=470.900084ms) -- RESPONSE RECEIVED
+   GET https://graph.microsoft.com/v1.0/me
+   Authorization: REDACTED
+   User-Agent: azsdk-go-graph/1.0.0 (go1.26.4-X:loopvar; darwin)
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Client-Request-Id: REDACTED
+   Content-Type: application/json;odata.metadata=minimal;odata.streaming=true;IEEE754Compatible=false;charset=utf-8
+   Date: Thu, 20 Aug 2026 14:25:44 GMT
+   Odata-Version: REDACTED
+   Request-Id: 106264f8-0b06-4690-8349-40b2d73969a0
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Ms-Ags-Diagnostic: REDACTED
+   X-Ms-Resource-Unit: REDACTED
+
+[2026-08-20T11:25:44-03:00] Retry: response 200
+[2026-08-20T11:25:44-03:00] Retry: exit due to non-retriable status code
+[2026-08-20T11:25:44-03:00] Retry: =====> Try=1 for GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+[2026-08-20T11:25:45-03:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://management.core.windows.net//.default"
+[2026-08-20T11:25:45-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+
+[2026-08-20T11:25:45-03:00] Response: ==> REQUEST/RESPONSE (Try=1/670.017666ms, OpTime=670.097208ms) -- RESPONSE RECEIVED
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Content-Length: 2644
+   Content-Type: application/json; charset=utf-8
+   Date: Thu, 20 Aug 2026 14:25:45 GMT
+   Expires: -1
+   Pragma: no-cache
+   Strict-Transport-Security: REDACTED
+   X-Cache: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Correlation-Request-Id: REDACTED
+   X-Ms-Operation-Identifier: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Global-Reads: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Reads: REDACTED
+   X-Ms-Request-Id: 832b1266-9d80-4b85-98ca-854874ed3739
+   X-Ms-Routing-Request-Id: REDACTED
+   X-Msedge-Ref: REDACTED
+
+[2026-08-20T11:25:45-03:00] Retry: response 200
+[2026-08-20T11:25:45-03:00] Retry: exit due to non-retriable status code
+[2026-08-20T11:25:45-03:00] Retry: =====> Try=1 for GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+[2026-08-20T11:25:46-03:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://management.core.windows.net//.default"
+[2026-08-20T11:25:46-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+
+[2026-08-20T11:25:47-03:00] Response: ==> REQUEST/RESPONSE (Try=1/343.867833ms, OpTime=343.936125ms) -- RESPONSE RECEIVED
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Content-Length: 2644
+   Content-Type: application/json; charset=utf-8
+   Date: Thu, 20 Aug 2026 14:25:47 GMT
+   Expires: -1
+   Pragma: no-cache
+   Strict-Transport-Security: REDACTED
+   X-Cache: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Correlation-Request-Id: REDACTED
+   X-Ms-Operation-Identifier: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Global-Reads: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Reads: REDACTED
+   X-Ms-Request-Id: f0f2b5be-a96f-4c81-afb5-ab643ea56453
+   X-Ms-Routing-Request-Id: REDACTED
+   X-Msedge-Ref: REDACTED
+
+[2026-08-20T11:25:47-03:00] Retry: response 200
+[2026-08-20T11:25:47-03:00] Retry: exit due to non-retriable status code
+[2026-08-20T11:25:47-03:00] Retry: =====> Try=1 for GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/providers/Microsoft.ContainerRegistry/registries?api-version=2025-03-01-preview
+[2026-08-20T11:25:47-03:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://management.core.windows.net//.default"
+[2026-08-20T11:25:47-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/providers/Microsoft.ContainerRegistry/registries?api-version=2025-03-01-preview
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armcontainerregistry/v1.3.0-beta.3 (go1.26.4-X:loopvar; darwin)
+
+[2026-08-20T11:25:49-03:00] Response: ==> REQUEST/RESPONSE (Try=1/1.132550375s, OpTime=1.132597375s) -- RESPONSE RECEIVED
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/providers/Microsoft.ContainerRegistry/registries?api-version=2025-03-01-preview
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armcontainerregistry/v1.3.0-beta.3 (go1.26.4-X:loopvar; darwin)
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Content-Length: 4681
+   Content-Type: application/json; charset=utf-8
+   Date: Thu, 20 Aug 2026 14:25:49 GMT
+   Expires: -1
+   Pragma: no-cache
+   Strict-Transport-Security: REDACTED
+   X-Cache: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Correlation-Request-Id: REDACTED
+   X-Ms-Original-Request-Ids: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Global-Reads: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Reads: REDACTED
+   X-Ms-Request-Id: 0f367d1b-910f-486e-a5f8-10b43f5b49af
+   X-Ms-Routing-Request-Id: REDACTED
+   X-Msedge-Ref: REDACTED
+
+[2026-08-20T11:25:49-03:00] Retry: response 200
+[2026-08-20T11:25:49-03:00] Retry: exit due to non-retriable status code
+[2026-08-20T11:25:49-03:00] Retry: =====> Try=1 for GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.ContainerRegistry/registries/acrassuredf2pijerpyr3zi/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+[2026-08-20T11:25:49-03:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://management.core.windows.net//.default"
+[2026-08-20T11:25:49-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.ContainerRegistry/registries/acrassuredf2pijerpyr3zi/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+
+[2026-08-20T11:25:50-03:00] Response: ==> REQUEST/RESPONSE (Try=1/230.75575ms, OpTime=230.861833ms) -- RESPONSE RECEIVED
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.ContainerRegistry/registries/acrassuredf2pijerpyr3zi/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Content-Length: 1602
+   Content-Type: application/json; charset=utf-8
+   Date: Thu, 20 Aug 2026 14:25:50 GMT
+   Expires: -1
+   Pragma: no-cache
+   Strict-Transport-Security: REDACTED
+   X-Cache: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Correlation-Request-Id: REDACTED
+   X-Ms-Operation-Identifier: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Global-Reads: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Reads: REDACTED
+   X-Ms-Request-Id: d3053337-0d4b-4ec5-9999-0a3ac24c51b5
+   X-Ms-Routing-Request-Id: REDACTED
+   X-Msedge-Ref: REDACTED
+
+[2026-08-20T11:25:50-03:00] Retry: response 200
+[2026-08-20T11:25:50-03:00] Retry: exit due to non-retriable status code
+[2026-08-20T11:29:39-03:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://ai.azure.com/.default"
+[2026-08-20T11:29:39-03:00] Retry: =====> Try=1 for GET https://aif-assured-f2pijerpyr3zi.services.ai.azure.com/api/projects/foundry-assured/agents/helpdesk-concierge/versions/2?api-version=v1
+[2026-08-20T11:29:39-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://aif-assured-f2pijerpyr3zi.services.ai.azure.com/api/projects/foundry-assured/agents/helpdesk-concierge/versions/2?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; darwin),azd-ext-azure-ai-agents/0.1.41-preview
+   X-Ms-Correlation-Request-Id: 4ed36efb8d108b6ce6463bcfe4063c1e
+   Request contained no body
+
+[2026-08-20T11:29:40-03:00] Response: ==> REQUEST/RESPONSE (Try=1/932.04525ms, OpTime=932.109792ms) -- RESPONSE RECEIVED
+   GET https://aif-assured-f2pijerpyr3zi.services.ai.azure.com/api/projects/foundry-assured/agents/helpdesk-concierge/versions/2?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; darwin),azd-ext-azure-ai-agents/0.1.41-preview
+   X-Ms-Correlation-Request-Id: 4ed36efb8d108b6ce6463bcfe4063c1e
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Access-Control-Expose-Headers: REDACTED
+   Api-Supported-Versions: REDACTED
+   Apim-Request-Id: REDACTED
+   Azureml-Served-By-Cluster: REDACTED
+   Content-Type: application/json; charset=utf-8
+   Date: Thu, 20 Aug 2026 14:29:39 GMT
+   Request-Context: REDACTED
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Region: REDACTED
+   X-Ms-Response-Type: REDACTED
+   X-Request-Id: 4585b98687aa5497203e1fbde5f37077
+   --------------------------------------------------------------------------------
+{
+  "metadata": {
+    "enableVnextExperience": "true"
+  },
+  "object": "agent.version",
+  "id": "helpdesk-concierge:2",
+  "name": "helpdesk-concierge",
+  "version": "2",
+  "description": "",
+  "created_at": 1787234711,
+  "definition": {
+    "kind": "hosted",
+    "image": "acrassuredf2pijerpyr3zi.azurecr.io/foundry-assured/helpdesk-concierge-fa-dev@sha256:e568bb5864000ab1bbd122d5e823110585a3bb6c8c64564d46989e2ca3bd5924",
+    "container_protocol_versions": [{"protocol":"responses","version":"1.0.0"}],
+    "cpu": "0.5",
+    "memory": "1Gi",
+    "environment_variables": {
+      "AZURE_AI_MODEL_DEPLOYMENT_NAME": "gpt-5-mini",
+      "AZURE_SEARCH_ENDPOINT": "https://srch-assured-f2pijerpyr3zi.search.windows.net",
+      "AZURE_SEARCH_KNOWLEDGE_BASE": "helpdesk-kb"
+    }
+  },
+  "draft": false,
+  "status": "active",
+  "instance_identity": {
+    "principal_id": "ade39fc1-67a8-4452-8117-58545e45f228",
+    "client_id": "ade39fc1-67a8-4452-8117-58545e45f228"
+  },
+  "blueprint": {
+    "principal_id": "ab516e3b-12db-4693-8e37-275965df15a9",
+    "client_id": "1cf2d641-fca1-4671-a3e9-7d1661ae250b"
+  },
+  "blueprint_reference": {
+    "type": "ManagedAgentIdentityBlueprint",
+    "blueprint_id": "helpdesk-concierge-8722e"
+  },
+  "agent_guid": "8722ee7b-dab5-4be2-b360-3da7781bcc37"
+}
+   --------------------------------------------------------------------------------
+
+[2026-08-20T11:29:40-03:00] Retry: response 200
+[2026-08-20T11:29:40-03:00] Retry: exit due to non-retriable status code
+[2026-08-20T11:29:40-03:00] Retry: =====> Try=1 for GET https://aif-assured-f2pijerpyr3zi.services.ai.azure.com/api/projects/foundry-assured/agents/platform-concierge/versions/1?api-version=v1
+[2026-08-20T11:29:40-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://aif-assured-f2pijerpyr3zi.services.ai.azure.com/api/projects/foundry-assured/agents/platform-concierge/versions/1?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; darwin),azd-ext-azure-ai-agents/0.1.41-preview
+   X-Ms-Correlation-Request-Id: 4ed36efb8d108b6ce6463bcfe4063c1e
+   Request contained no body
+
+[2026-08-20T11:29:40-03:00] Response: ==> REQUEST/RESPONSE (Try=1/189.347292ms, OpTime=189.402583ms) -- RESPONSE RECEIVED
+   GET https://aif-assured-f2pijerpyr3zi.services.ai.azure.com/api/projects/foundry-assured/agents/platform-concierge/versions/1?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; darwin),azd-ext-azure-ai-agents/0.1.41-preview
+   X-Ms-Correlation-Request-Id: 4ed36efb8d108b6ce6463bcfe4063c1e
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Access-Control-Expose-Headers: REDACTED
+   Api-Supported-Versions: REDACTED
+   Apim-Request-Id: REDACTED
+   Azureml-Served-By-Cluster: REDACTED
+   Content-Type: application/json; charset=utf-8
+   Date: Thu, 20 Aug 2026 14:29:40 GMT
+   Request-Context: REDACTED
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Region: REDACTED
+   X-Ms-Response-Type: REDACTED
+   X-Request-Id: fdd01f191e0f8524013cffa82a3ea213
+   --------------------------------------------------------------------------------
+{
+  "metadata": {
+    "enableVnextExperience": "true"
+  },
+  "object": "agent.version",
+  "id": "platform-concierge:1",
+  "name": "platform-concierge",
+  "version": "1",
+  "description": "",
+  "created_at": 1787234779,
+  "definition": {
+    "kind": "hosted",
+    "image": "acrassuredf2pijerpyr3zi.azurecr.io/foundry-assured/platform-concierge-fa-dev@sha256:684b0a5facc4dc446d128691968cfc02aa66eb4a10d04fe8eb4221f5fcf04099",
+    "container_protocol_versions": [{"protocol":"invocations","version":"1.0.0"}],
+    "cpu": "0.5",
+    "memory": "1Gi",
+    "environment_variables": {
+      "AZURE_AI_MODEL_DEPLOYMENT_NAME": "gpt-5-mini"
+    }
+  },
+  "draft": false,
+  "status": "active",
+  "instance_identity": {
+    "principal_id": "153859f2-5c27-495d-a6fc-8de8d6456a48",
+    "client_id": "153859f2-5c27-495d-a6fc-8de8d6456a48"
+  },
+  "blueprint": {
+    "principal_id": "09ec44b8-ebb5-4277-9b63-b704892aeeb3",
+    "client_id": "f015c846-4e9d-43af-966e-f6a1f43b6c00"
+  },
+  "blueprint_reference": {
+    "type": "ManagedAgentIdentityBlueprint",
+    "blueprint_id": "platform-concierge-f726d"
+  },
+  "agent_guid": "f726de83-8d9b-42bf-a6b8-84f0d1f495b6"
+}
+   --------------------------------------------------------------------------------
+
+[2026-08-20T11:29:40-03:00] Retry: response 200
+[2026-08-20T11:29:40-03:00] Retry: exit due to non-retriable status code
+[2026-08-20T11:29:40-03:00] Retry: =====> Try=1 for GET https://aif-assured-f2pijerpyr3zi.services.ai.azure.com/api/projects/foundry-assured/agents/selfwiki-expert/versions/1?api-version=v1
+[2026-08-20T11:29:40-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://aif-assured-f2pijerpyr3zi.services.ai.azure.com/api/projects/foundry-assured/agents/selfwiki-expert/versions/1?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; darwin),azd-ext-azure-ai-agents/0.1.41-preview
+   X-Ms-Correlation-Request-Id: 4ed36efb8d108b6ce6463bcfe4063c1e
+   Request contained no body
+
+[2026-08-20T11:29:40-03:00] Response: ==> REQUEST/RESPONSE (Try=1/189.581583ms, OpTime=189.653958ms) -- RESPONSE RECEIVED
+   GET https://aif-assured-f2pijerpyr3zi.services.ai.azure.com/api/projects/foundry-assured/agents/selfwiki-expert/versions/1?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; darwin),azd-ext-azure-ai-agents/0.1.41-preview
+   X-Ms-Correlation-Request-Id: 4ed36efb8d108b6ce6463bcfe4063c1e
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Access-Control-Expose-Headers: REDACTED
+   Api-Supported-Versions: REDACTED
+   Apim-Request-Id: REDACTED
+   Azureml-Served-By-Cluster: REDACTED
+   Content-Type: application/json; charset=utf-8
+   Date: Thu, 20 Aug 2026 14:29:40 GMT
+   Request-Context: REDACTED
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Region: REDACTED
+   X-Ms-Response-Type: REDACTED
+   X-Request-Id: 00fb9a5d8b80a0916e8ef9c87ba009f5
+   --------------------------------------------------------------------------------
+{
+  "metadata": {
+    "enableVnextExperience": "true"
+  },
+  "object": "agent.version",
+  "id": "selfwiki-expert:1",
+  "name": "selfwiki-expert",
+  "version": "1",
+  "description": "",
+  "created_at": 1787234837,
+  "definition": {
+    "kind": "hosted",
+    "image": "acrassuredf2pijerpyr3zi.azurecr.io/foundry-assured/selfwiki-expert-fa-dev@sha256:87aa18a0e983120ffd3365a8a9acc701e0190436bc90e1f63fc40be730d030b7",
+    "container_protocol_versions": [{"protocol":"responses","version":"1.0.0"}],
+    "cpu": "0.5",
+    "memory": "1Gi",
+    "environment_variables": {
+      "AZURE_AI_MODEL_DEPLOYMENT_NAME": "gpt-5-mini",
+      "AZURE_SEARCH_ENDPOINT": "https://srch-assured-f2pijerpyr3zi.search.windows.net",
+      "AZURE_SEARCH_KNOWLEDGE_BASE": "selfwiki-kb"
+    }
+  },
+  "draft": false,
+  "status": "active",
+  "instance_identity": {
+    "principal_id": "f1d843ee-e54c-4d71-9b82-491c28686925",
+    "client_id": "f1d843ee-e54c-4d71-9b82-491c28686925"
+  },
+  "blueprint": {
+    "principal_id": "8aa27308-c6d2-4dcb-83cc-df4e109b7629",
+    "client_id": "98e5bc91-3224-4064-a3a5-11dc33bb19b5"
+  },
+  "blueprint_reference": {
+    "type": "ManagedAgentIdentityBlueprint",
+    "blueprint_id": "selfwiki-expert-98bd0"
+  },
+  "agent_guid": "98bd0e2f-132a-49ce-9231-97ae10901832"
+}
+   --------------------------------------------------------------------------------
+
+[2026-08-20T11:29:40-03:00] Retry: response 200
+[2026-08-20T11:29:40-03:00] Retry: exit due to non-retriable status code
+[2026-08-20T11:29:40-03:00] Retry: =====> Try=1 for GET https://aif-assured-f2pijerpyr3zi.services.ai.azure.com/api/projects/foundry-assured/agents/techdocs-expert/versions/1?api-version=v1
+[2026-08-20T11:29:40-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://aif-assured-f2pijerpyr3zi.services.ai.azure.com/api/projects/foundry-assured/agents/techdocs-expert/versions/1?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; darwin),azd-ext-azure-ai-agents/0.1.41-preview
+   X-Ms-Correlation-Request-Id: 4ed36efb8d108b6ce6463bcfe4063c1e
+   Request contained no body
+
+[2026-08-20T11:29:41-03:00] Response: ==> REQUEST/RESPONSE (Try=1/183.435333ms, OpTime=183.86175ms) -- RESPONSE RECEIVED
+   GET https://aif-assured-f2pijerpyr3zi.services.ai.azure.com/api/projects/foundry-assured/agents/techdocs-expert/versions/1?api-version=v1
+   Authorization: REDACTED
+   User-Agent: azsdk-go-azure-ai-agents/v1.0.0 (go1.26.4-X:loopvar; darwin),azd-ext-azure-ai-agents/0.1.41-preview
+   X-Ms-Correlation-Request-Id: 4ed36efb8d108b6ce6463bcfe4063c1e
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Access-Control-Expose-Headers: REDACTED
+   Api-Supported-Versions: REDACTED
+   Apim-Request-Id: REDACTED
+   Azureml-Served-By-Cluster: REDACTED
+   Content-Type: application/json; charset=utf-8
+   Date: Thu, 20 Aug 2026 14:29:40 GMT
+   Request-Context: REDACTED
+   Strict-Transport-Security: REDACTED
+   Vary: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Region: REDACTED
+   X-Ms-Response-Type: REDACTED
+   X-Request-Id: 3525e54a98f79b9221e5280d2b474cf1
+   --------------------------------------------------------------------------------
+{
+  "metadata": {
+    "enableVnextExperience": "true"
+  },
+  "object": "agent.version",
+  "id": "techdocs-expert:1",
+  "name": "techdocs-expert",
+  "version": "1",
+  "description": "",
+  "created_at": 1787234895,
+  "definition": {
+    "kind": "hosted",
+    "image": "acrassuredf2pijerpyr3zi.azurecr.io/foundry-assured/techdocs-expert-fa-dev@sha256:276399d10b4fc1e669011048d1a13a2e7e4bdd30855baff138ee3205e707e255",
+    "container_protocol_versions": [{"protocol":"responses","version":"1.0.0"}],
+    "cpu": "0.5",
+    "memory": "1Gi",
+    "environment_variables": {
+      "AZURE_AI_MODEL_DEPLOYMENT_NAME": "gpt-5-mini",
+      "AZURE_SEARCH_ENDPOINT": "https://srch-assured-f2pijerpyr3zi.search.windows.net",
+      "AZURE_SEARCH_KNOWLEDGE_BASE": "techdocs-kb"
+    }
+  },
+  "draft": false,
+  "status": "active",
+  "instance_identity": {
+    "principal_id": "c0d73069-5d8c-4640-82ac-8da81710cc15",
+    "client_id": "c0d73069-5d8c-4640-82ac-8da81710cc15"
+  },
+  "blueprint": {
+    "principal_id": "3104e34b-3f4e-4201-9d7f-675c56635298",
+    "client_id": "848c9bba-b1dd-4801-8cf0-51fe2d79e361"
+  },
+  "blueprint_reference": {
+    "type": "ManagedAgentIdentityBlueprint",
+    "blueprint_id": "techdocs-expert-ddf54"
+  },
+  "agent_guid": "ddf543e3-d617-49ef-b760-03b64499405e"
+}
+   --------------------------------------------------------------------------------
+
+[2026-08-20T11:29:41-03:00] Retry: response 200
+[2026-08-20T11:29:41-03:00] Retry: exit due to non-retriable status code
+[2026-08-20T11:29:41-03:00] Retry: =====> Try=1 for GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+[2026-08-20T11:29:41-03:00] Retry: =====> Try=1 for GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+[2026-08-20T11:29:41-03:00] Retry: =====> Try=1 for GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+[2026-08-20T11:29:41-03:00] Retry: =====> Try=1 for GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+[2026-08-20T11:29:42-03:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://management.core.windows.net//.default"
+[2026-08-20T11:29:42-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+
+[2026-08-20T11:29:42-03:00] Response: ==> REQUEST/RESPONSE (Try=1/593.231584ms, OpTime=593.29775ms) -- RESPONSE RECEIVED
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Content-Length: 18924
+   Content-Type: application/json; charset=utf-8
+   Date: Thu, 20 Aug 2026 14:29:42 GMT
+   Expires: -1
+   Pragma: no-cache
+   Strict-Transport-Security: REDACTED
+   X-Cache: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Correlation-Request-Id: REDACTED
+   X-Ms-Operation-Identifier: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Global-Reads: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Reads: REDACTED
+   X-Ms-Request-Id: ffdab40b-044a-4a61-b197-02dc67c2522a
+   X-Ms-Routing-Request-Id: REDACTED
+   X-Msedge-Ref: REDACTED
+
+[2026-08-20T11:29:42-03:00] Retry: response 200
+[2026-08-20T11:29:42-03:00] Retry: exit due to non-retriable status code
+[2026-08-20T11:29:42-03:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://management.core.windows.net//.default"
+[2026-08-20T11:29:42-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+
+[2026-08-20T11:29:43-03:00] Response: ==> REQUEST/RESPONSE (Try=1/424.928208ms, OpTime=425.0085ms) -- RESPONSE RECEIVED
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Content-Length: 18924
+   Content-Type: application/json; charset=utf-8
+   Date: Thu, 20 Aug 2026 14:29:42 GMT
+   Expires: -1
+   Pragma: no-cache
+   Strict-Transport-Security: REDACTED
+   X-Cache: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Correlation-Request-Id: REDACTED
+   X-Ms-Operation-Identifier: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Global-Reads: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Reads: REDACTED
+   X-Ms-Request-Id: f636f8b4-6394-43cf-99dd-bbcd727f330c
+   X-Ms-Routing-Request-Id: REDACTED
+   X-Msedge-Ref: REDACTED
+
+[2026-08-20T11:29:43-03:00] Retry: response 200
+[2026-08-20T11:29:43-03:00] Retry: exit due to non-retriable status code
+[2026-08-20T11:29:43-03:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://management.core.windows.net//.default"
+[2026-08-20T11:29:43-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+
+[2026-08-20T11:29:44-03:00] Response: ==> REQUEST/RESPONSE (Try=1/508.765708ms, OpTime=508.821833ms) -- RESPONSE RECEIVED
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Content-Length: 18924
+   Content-Type: application/json; charset=utf-8
+   Date: Thu, 20 Aug 2026 14:29:43 GMT
+   Expires: -1
+   Pragma: no-cache
+   Strict-Transport-Security: REDACTED
+   X-Cache: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Correlation-Request-Id: REDACTED
+   X-Ms-Operation-Identifier: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Global-Reads: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Reads: REDACTED
+   X-Ms-Request-Id: 9cf94a14-cb09-4762-b962-b13fd561010e
+   X-Ms-Routing-Request-Id: REDACTED
+   X-Msedge-Ref: REDACTED
+
+[2026-08-20T11:29:44-03:00] Retry: response 200
+[2026-08-20T11:29:44-03:00] Retry: exit due to non-retriable status code
+[2026-08-20T11:29:44-03:00] Authentication: AzureDeveloperCLICredential.GetToken() acquired a token for scope "https://management.core.windows.net//.default"
+[2026-08-20T11:29:44-03:00] Request: ==> OUTGOING REQUEST (Try=1)
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+
+[2026-08-20T11:29:44-03:00] Response: ==> REQUEST/RESPONSE (Try=1/275.89375ms, OpTime=275.941584ms) -- RESPONSE RECEIVED
+   GET https://management.azure.com/subscriptions/cdabeea8-90e4-4752-b06d-64e333ec1521/resourceGroups/rg-fa-dev/providers/Microsoft.CognitiveServices/accounts/aif-assured-f2pijerpyr3zi/projects/foundry-assured/providers/Microsoft.Authorization/roleAssignments?%24filter=REDACTED&api-version=2022-04-01
+   Accept: application/json
+   Authorization: REDACTED
+   User-Agent: azsdk-go-armauthorization/v3.0.0-beta.2 (go1.26.4-X:loopvar; darwin)
+   --------------------------------------------------------------------------------
+   RESPONSE Status: 200 OK
+   Cache-Control: no-cache
+   Content-Length: 18924
+   Content-Type: application/json; charset=utf-8
+   Date: Thu, 20 Aug 2026 14:29:44 GMT
+   Expires: -1
+   Pragma: no-cache
+   Strict-Transport-Security: REDACTED
+   X-Cache: REDACTED
+   X-Content-Type-Options: REDACTED
+   X-Ms-Correlation-Request-Id: REDACTED
+   X-Ms-Operation-Identifier: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Global-Reads: REDACTED
+   X-Ms-Ratelimit-Remaining-Subscription-Reads: REDACTED
+   X-Ms-Request-Id: 258bcf01-820c-432e-8d90-b21652b308c0
+   X-Ms-Routing-Request-Id: REDACTED
+   X-Msedge-Ref: REDACTED
+
+[2026-08-20T11:29:44-03:00] Retry: response 200
+[2026-08-20T11:29:44-03:00] Retry: exit due to non-retriable status code
+2026/08/20 11:29:44 postdeploy: reporting optimization deployments for 4 hosted agents
+2026/08/20 11:29:44 postdeploy: no optimization candidate for helpdesk-concierge, skipping
+2026/08/20 11:29:44 postdeploy: no optimization candidate for platform-concierge, skipping
+2026/08/20 11:29:44 postdeploy: no optimization candidate for selfwiki-expert, skipping
+2026/08/20 11:29:44 postdeploy: no optimization candidate for techdocs-expert, skipping

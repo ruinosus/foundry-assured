@@ -11,7 +11,7 @@ mudar nada:
 
     ✅ helpdesk (triage/retrieve/resolve) — agent-framework
     ✅ platform                            — agent-framework, tool-driven
-    ✅ concierge, cockpit, selfwiki        — grounded (Responses API direto)
+    ✅ concierge, techdocs, selfwiki        — grounded (Responses API direto)
     ⚠️ oncall (LangGraph)                  — tem o prompt cravado em graph.py, fora do padrão;
                                              passa a valer quando migrar para AgentSchema
     ❌ hosted agents                        — o prompt vive DENTRO do Foundry, não aqui; para eles

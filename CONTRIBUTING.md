@@ -110,13 +110,15 @@ The cloud workflows authenticate to Azure with **OIDC** (no stored credentials).
      `AZURE_ENV_NAME`, `AZURE_LOCATION`, `FOUNDRY_PROJECT_ENDPOINT`, `FOUNDRY_MODEL`,
      `AZURE_SEARCH_ENDPOINT`, `AZURE_SEARCH_KNOWLEDGE_BASE`, `AZURE_STORAGE_*`,
      `NEXT_PUBLIC_ENTRA_*`, `ENTRA_TENANT_ID`, `ENTRA_API_CLIENT_ID`.
-     - For **`security-gates.yml`** (assurance security gates): `COCKPIT_TEST_USER_A`,
-       `COCKPIT_TEST_USER_B` (the two test identities the access-control / red-team gates
-       run as). Entitlement is derived from the live search ACL, so the `COCKPIT_ACL_*_GROUP`
+     - For **`security-gates.yml`** (assurance security gates): `TECHDOCS_TEST_USER_A`,
+       `TECHDOCS_TEST_USER_B` (the two test identities the access-control / red-team gates
+       run as). The names are `TECHDOCS_*` because that is what the code reads — they were
+       registered as `COCKPIT_*` after the domain was renamed, and the mismatch silently
+       skipped every security gate for weeks (each test SKIPs when the vars are absent). Entitlement is derived from the live search ACL, so the `COCKPIT_ACL_*_GROUP`
        trio (`COCKPIT_ACL_PUBLIC_GROUP` / `_INTERNAL_GROUP` / `_CONFIDENTIAL_GROUP`) is only
-       needed if you ingest with the demo group map rather than your own `COCKPIT_ACL_GROUP_MAP`.
+       needed if you ingest with the demo group map rather than your own `ACL_GROUP_MAP`.
      - For **`release.yml`** (release-please GitHub App): `RELEASE_APP_ID`.
-   - **Secrets:** `ENTRA_API_CLIENT_SECRET`; `COCKPIT_TEST_PASSWORD` (test-identity password
+   - **Secrets:** `ENTRA_API_CLIENT_SECRET`; `TECHDOCS_TEST_PASSWORD` (test-identity password
      for the security gates); `RELEASE_APP_PRIVATE_KEY` (the release GitHub App key).
    The variables above are **derived from the azd environment** — do not type them by hand.
    `./scripts/sync-gh-variables.sh` reports drift and `--apply` writes them; they silently

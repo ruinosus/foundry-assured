@@ -191,14 +191,14 @@ cd apps/backend
 # Helpdesk KB — ~13 fake runbooks (a few minutes; the script polls until it settles)
 uv run python -m app.modules.knowledge.internal.ingest
 
-# Cockpit KB — point at a folder of Cockpit doc bundles
-COCKPIT_DOCBUNDLES=/path/to/cockpit/docbundles \
+# TechDocs KB — point at a folder of TechDocs doc bundles
+TECHDOCS_DOCBUNDLES=/path/to/d/techdocs/docbundles \
   uv run python -m app.modules.knowledge.internal.ingest_docbundles
 
 # Selfwiki KB — this repo's own deep-wiki (knowledge/wiki-bundle); reuses ingest_docbundles via ENV override
 KB_KNOWLEDGE_SOURCE=selfwiki-docbundles-ks \
 KB_DOMAIN_LABEL="o projeto foundry-assured" \
-COCKPIT_STORAGE_CONTAINER=selfwiki-corpus \
+TECHDOCS_STORAGE_CONTAINER=selfwiki-corpus \
 COCKPIT_SEARCH_KNOWLEDGE_BASE=selfwiki-kb \
 COCKPIT_SEARCH_INDEX=selfwiki-docbundles-ks-index \
 TECHDOCS_DOCBUNDLES=../../knowledge/wiki-bundle \
