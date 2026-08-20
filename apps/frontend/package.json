@@ -12,7 +12,8 @@
     "demo:record": "bash ../../scripts/demo-record.sh",
     "check:i18n": "node ../../scripts/check-messages.mjs && node ../../scripts/check-hardcoded-text.mjs",
     "verify:highlight": "node scripts/verify-highlight.mjs",
-    "verify:thread-citations": "node scripts/verify-thread-citations.mjs"
+    "verify:thread-citations": "node scripts/verify-thread-citations.mjs",
+    "verify:headers": "node scripts/verify-merged-headers.mjs"
   },
   "dependencies": {
     "@ag-ui/client": "^0.0.57",
