@@ -1,8 +1,6 @@
 import { redirect } from "next/navigation";
 
-// The TechDocs expert moved into the unified Assurance Console (/d/<domain>). It's TEMP-hidden
-// (KB not provisioned in this env — see lib/domains.ts), so send the legacy path home instead of
-// to a "domain not found" screen. Restore the /d/techdocs redirect when the domain is re-enabled.
+// The TechDocs expert moved into the unified Assurance Console (/d/<domain>).
 export default function TechDocsRedirect() {
-  redirect("/");
+  redirect("/d/techdocs");
 }

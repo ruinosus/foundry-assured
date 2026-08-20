@@ -302,6 +302,22 @@
     "unreachable": "Could not load conversations."
   },
   "domains": {
+    "builder": {
+      "label": "Assistant builder",
+      "blurb": "Helps fill the creation form — proposes each field's text, with the source it came from. Never publishes.",
+      "demonstrates": "",
+      "suggested": []
+    },
+    "deepcall": {
+      "label": "On-call (deepagents)",
+      "blurb": "The same on-call problem on the deepagents harness — to compare the two in practice.",
+      "demonstrates": "Two harnesses solving the same problem, with runtime self-evaluation against a rubric",
+      "suggested": [
+        "Checkout is down for all users.",
+        "The payments service error rate climbed to 8%.",
+        "A nightly job failed, but nobody was affected."
+      ]
+    },
     "helpdesk": {
       "label": "Helpdesk concierge",
       "blurb": "Triage → ground → resolve → escalate, with human approval before opening a ticket.",
@@ -310,16 +326,6 @@
         "How do I roll back a production deploy?",
         "I need production access — can you open a ticket for me?",
         "My pod is in CrashLoopBackOff, where do I start?"
-      ]
-    },
-    "selfwiki": {
-      "label": "Project wiki",
-      "blurb": "Ask about this very repository — the deep-wiki generated from the monorepo's real code.",
-      "demonstrates": "Documentation written by AI from the code, with a fidelity gate and per-document access",
-      "suggested": [
-        "Which AG-UI endpoints does the backend expose?",
-        "How does per-document access control work?",
-        "What are the project's implementation phases?"
       ]
     },
     "oncall": {
@@ -342,21 +348,25 @@
         "How much did I spend on AI Search this month?"
       ]
     },
-    "deepcall": {
-      "label": "On-call (deepagents)",
-      "blurb": "The same on-call problem on the deepagents harness — to compare the two in practice.",
-      "demonstrates": "Two harnesses solving the same problem, with runtime self-evaluation against a rubric",
+    "selfwiki": {
+      "label": "Project wiki",
+      "blurb": "Ask about this very repository — the deep-wiki generated from the monorepo's real code.",
+      "demonstrates": "Documentation written by AI from the code, with a fidelity gate and per-document access",
       "suggested": [
-        "Checkout is down for all users.",
-        "The payments service error rate climbed to 8%.",
-        "A nightly job failed, but nobody was affected."
+        "Which AG-UI endpoints does the backend expose?",
+        "How does per-document access control work?",
+        "What are the project's implementation phases?"
       ]
     },
-    "builder": {
-      "label": "Assistant builder",
-      "blurb": "Helps fill the creation form — proposes each field's text, with the source it came from. Never publishes.",
-      "demonstrates": "",
-      "suggested": []
+    "techdocs": {
+      "label": "TechDocs expert",
+      "blurb": "Grounded Q&A over the TechDocs platform corpus — every claim cites its component and document.",
+      "demonstrates": "Retrieval trimmed by access tier: the same corpus answers differently depending on the asker's group",
+      "suggested": [
+        "What are all the TechDocs MCP servers?",
+        "What is the architecture of techdocs-portal-api?",
+        "How does the multi-tenancy hierarchy work?"
+      ]
     }
   },
   "evals": {
