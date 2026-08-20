@@ -153,7 +153,22 @@ class ThreadHistoryRunner extends InMemoryAgentRunner {
     if (this.getThreadEvents(request.threadId).length > 0) {
       return super.connect(request);
     }
-    const cabecalhos = { ...this.headers, ...(request.headers ?? {}) };
+    // MESCLA SEM DUPLICAR, e a caixa é o motivo. `this.headers` traz `Authorization` (nós
+    // montamos) e `request.headers` traz `authorization` (o runtime normaliza). Chave de objeto
+    // em JavaScript diferencia maiúscula de minúscula, então o spread ingênuo produzia AS DUAS —
+    // e o `Headers` do fetch, ao normalizar, COMBINA valores repetidos com vírgula:
+    //
+    //     authorization: Bearer eyJ0…, Bearer eyJ0…
+    //
+    // Dois tokens num header só é inválido, e o backend devolvia 401 em toda reidratação de
+    // conversa. MEDIDO: 13 de 13 chamadas a `/conversations/by-id` falhavam assim.
+    //
+    // Passou despercebido porque enquanto o handler NÃO repassava o token existia uma chave só.
+    // O repasse — acrescentado justamente para consertar um 401 — foi o que criou a duplicata.
+    const cabecalhos: Record<string, string> = {};
+    for (const [k, v] of Object.entries({ ...this.headers, ...(request.headers ?? {}) })) {
+      if (typeof v === "string") cabecalhos[k.toLowerCase()] = v;
+    }
     return new Observable((subscriber) => {
       let cancelado = false;
       void (async () => {
