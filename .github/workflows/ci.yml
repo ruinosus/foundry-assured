@@ -241,6 +241,13 @@ jobs:
       - name: O header de identidade do Search leva token cru, nunca `Bearer`
         run: uv run python -m tests.knowledge.identity_header_test
 
+      # O recorte do techdocs em níveis de acesso é DADO (knowledge/techdocs-*.json), e dado
+      # errado aqui não dá erro — vaza. Os grupos são avaliados por OR, então descrever um nível
+      # "interno" como ["public","internal"] LIBERA o conteúdo para quem só tem `public`. Este
+      # gate simula o trim em aritmética de conjuntos, offline, em todo push.
+      - name: O recorte do techdocs não vaza nível
+        run: uv run python -m tests.knowledge.techdocs_tiers_test
+
       # Compartilhar uma conversa é um caminho EXPLÍCITO e SEPARADO do filtro por dono — nunca
       # uma relaxação dele. Prova as cinco propriedades: não-compartilhada continua ilegível para
       # outro usuário, compartilhada é legível por terceiro autenticado, a leitura por terceiro
