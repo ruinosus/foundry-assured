@@ -1,0 +1,144 @@
+/* Sistema visual das páginas por público.
+ *
+ * A cena decidiu o tema: quem lê isto está num laptop com um checklist na outra aba, procurando
+ * motivo para recusar — ou no celular, entre reuniões. Deck escuro lê como pitch; documento claro
+ * lê como REGISTRO, e o assunto aqui é prova. Por isso claro, e por isso a cor tem semântica:
+ * verde só aparece onde algo foi verificado, âmbar só onde algo quebraria. A paleta É o gate.
+ *
+ * Tipografia com eixo de contraste, e o contraste carrega sentido: serifada para a AFIRMAÇÃO
+ * (prosa, títulos), monoespaçada para a PROVA (números, nomes de gate, caminhos de arquivo).
+ * Quem bate o olho distingue o que é argumento do que é evidência sem ler.
+ */
+
+:root {
+  /* Neutros com viés levemente verde — escolhidos, não herdados do cinza puro. */
+  --ground: oklch(0.985 0.004 165);
+  --surface: oklch(0.962 0.008 165);
+  --rule: oklch(0.885 0.012 175);
+  --ink: oklch(0.24 0.021 205);
+  --ink-2: oklch(0.44 0.020 205);   /* 4.5:1+ sobre --ground; conferido */
+  --proven: oklch(0.50 0.125 155);  /* SÓ para o que foi verificado */
+  --fail: oklch(0.53 0.165 32);     /* SÓ para o que quebraria */
+  --proven-wash: oklch(0.955 0.030 155);
+  --fail-wash: oklch(0.960 0.032 40);
+
+  --serif: "Newsreader", ui-serif, Georgia, "Times New Roman", serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --z-sticky: 100;
+  --z-dialog: 300;
+
+  --step--1: clamp(0.82rem, 0.79rem + 0.14vw, 0.9rem);
+  --step-0: clamp(1rem, 0.96rem + 0.2vw, 1.12rem);
+  --step-1: clamp(1.32rem, 1.2rem + 0.6vw, 1.7rem);
+  --step-2: clamp(1.8rem, 1.5rem + 1.4vw, 2.6rem);
+  --step-3: clamp(2.4rem, 1.8rem + 2.8vw, 4rem);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground: oklch(0.185 0.014 200);
+    --surface: oklch(0.225 0.017 200);
+    --rule: oklch(0.34 0.018 200);
+    --ink: oklch(0.945 0.008 180);
+    --ink-2: oklch(0.775 0.015 185);
+    --proven: oklch(0.76 0.14 158);
+    --fail: oklch(0.75 0.15 45);
+    --proven-wash: oklch(0.27 0.045 158);
+    --fail-wash: oklch(0.28 0.050 45);
+  }
+}
+:root[data-theme="dark"] {
+  --ground: oklch(0.185 0.014 200);
+  --surface: oklch(0.225 0.017 200);
+  --rule: oklch(0.34 0.018 200);
+  --ink: oklch(0.945 0.008 180);
+  --ink-2: oklch(0.775 0.015 185);
+  --proven: oklch(0.76 0.14 158);
+  --fail: oklch(0.75 0.15 45);
+  --proven-wash: oklch(0.27 0.045 158);
+  --fail-wash: oklch(0.28 0.050 45);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: var(--step-0);
+  line-height: 1.62;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.wrap { width: min(72ch, calc(100% - 2.5rem)); margin-inline: auto; }
+.wide { width: min(104ch, calc(100% - 2.5rem)); margin-inline: auto; }
+
+h1, h2, h3 { text-wrap: balance; letter-spacing: -0.022em; line-height: 1.12; margin: 0; font-weight: 600; }
+h1 { font-size: var(--step-3); }
+h2 { font-size: var(--step-2); }
+h3 { font-size: var(--step-1); }
+p { text-wrap: pretty; margin: 0; }
+
+a { color: inherit; text-underline-offset: 0.18em; text-decoration-thickness: from-font; }
+a:focus-visible, button:focus-visible, summary:focus-visible {
+  outline: 2px solid var(--proven); outline-offset: 3px; border-radius: 2px;
+}
+
+/* — o cabeçalho que identifica o público, presente em todas as cinco páginas — */
+.para {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem 1rem;
+  padding: 1.1rem 0; border-bottom: 1px solid var(--rule); margin-bottom: 3.2rem;
+}
+.para__quem { font-family: var(--mono); font-size: var(--step--1); color: var(--ink-2); }
+.para__nav { margin-left: auto; display: flex; flex-wrap: wrap; gap: 0.9rem;
+             font-family: var(--mono); font-size: var(--step--1); }
+.para__nav a { color: var(--ink-2); text-decoration: none; }
+.para__nav a:hover { color: var(--ink); text-decoration: underline; }
+.para__nav a[aria-current="page"] { color: var(--ink); font-weight: 700; }
+
+/* — prova: monoespaçada, porque prova não é prosa — */
+.prova { font-family: var(--mono); font-size: 0.92em; }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; font-weight: 700; }
+
+/* Verificado. Só entra aqui o que foi medido — se não foi, não usa este componente. */
+.verificado {
+  display: grid; grid-template-columns: auto 1fr; gap: 0.45rem 0.75rem;
+  align-items: start; padding: 0.85rem 1.05rem;
+  background: var(--proven-wash); border: 1px solid color-mix(in oklch, var(--proven) 35%, transparent);
+  border-radius: 10px;
+}
+.verificado__marca { color: var(--proven); font-family: var(--mono); font-weight: 700; }
+.verificado p { font-size: var(--step--1); color: var(--ink-2); grid-column: 2; }
+
+.quebraria {
+  padding: 0.85rem 1.05rem; background: var(--fail-wash);
+  border: 1px solid color-mix(in oklch, var(--fail) 32%, transparent); border-radius: 10px;
+}
+.quebraria b { color: var(--fail); }
+
+/* — tabela de evidência: o formato que um arquiteto de segurança realmente lê — */
+.evid { width: 100%; border-collapse: collapse; font-size: var(--step--1); }
+.evid th, .evid td { text-align: left; padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.evid th { font-family: var(--mono); font-weight: 700; color: var(--ink-2); text-transform: none; }
+.evid td:first-child { font-family: var(--mono); white-space: nowrap; }
+.rolagem { overflow-x: auto; }
+
+.dl { display: grid; gap: 1.6rem; }
+@media (min-width: 46rem) { .dl { grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); } }
+
+.sep { border: 0; border-top: 1px solid var(--rule); margin: 3.6rem 0; }
+.rodape { padding: 2.4rem 0 3.6rem; border-top: 1px solid var(--rule); margin-top: 4rem;
+          font-family: var(--mono); font-size: var(--step--1); color: var(--ink-2);
+          display: flex; flex-wrap: wrap; gap: 0.8rem 1.6rem; }
+
+.entrada { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .entrada { animation: sobe 620ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .entrada:nth-child(2) { animation-delay: 70ms; }
+  .entrada:nth-child(3) { animation-delay: 140ms; }
+  .entrada:nth-child(4) { animation-delay: 210ms; }
+  @keyframes sobe { from { opacity: 0; transform: translateY(0.75rem); } to { opacity: 1; transform: none; } }
+}

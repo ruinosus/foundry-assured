@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Foundry Assured — para segurança e compliance</title>
+<meta name="description" content="Controle de acesso por documento, trilha de auditoria imutável e gates adversariais — com o que foi medido e o que não foi." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/deck.css" />
+</head>
+<body>
+<div class="wide">
+  <div class="para">
+    <span class="para__quem">para&nbsp;/ segurança &amp; compliance</span>
+    <nav class="para__nav" aria-label="Outros públicos">
+      <a href="executivo.html">executivo</a>
+      <a href="seguranca.html" aria-current="page">segurança</a>
+      <a href="infra.html">infra</a>
+      <a href="engenharia.html">engenharia</a>
+      <a href="negocio.html">negócio</a>
+    </nav>
+  </div>
+
+  <main>
+    <section class="entrada" style="max-width:72ch;">
+      <h1>O que você precisa ver antes de aprovar</h1>
+      <p style="margin-top:1.4rem; font-size:var(--step-1); color:var(--ink-2);">
+        Esta página está organizada como checklist, não como apresentação. Cada linha diz o que o
+        sistema faz, <b>como isso é verificado</b>, e — onde for o caso — o que ainda não é.
+      </p>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>Controle de acesso</h2>
+      <p style="margin-top:1rem; max-width:72ch; color:var(--ink-2);">
+        O corte é feito pelo Azure AI Search, com a identidade de quem perguntou, <b>antes</b> de o
+        modelo receber o texto. O modelo não vê o documento fora do direito da pessoa — então não
+        há prompt que o convença a revelá-lo.
+      </p>
+      <div class="rolagem" style="margin-top:1.8rem;">
+        <table class="evid">
+          <thead><tr><th>Controle</th><th>Como funciona</th><th>Como é verificado</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>Corte por documento</td>
+              <td>Cada documento é carimbado com os grupos do Entra que podem lê-lo. O serviço filtra por identidade a cada consulta.</td>
+              <td>Duas identidades reais consultam o mesmo índice. Quem tem direito recebe; quem não tem recebe <span class="num">0</span>.</td>
+            </tr>
+            <tr>
+              <td>Documento sem classificação</td>
+              <td><b>Fail-closed</b>: sem acesso declarado, ninguém lê. Não há default permissivo.</td>
+              <td>Verificado a cada push, sem nuvem.</td>
+            </tr>
+            <tr>
+              <td>Abrir documento citado</td>
+              <td>Cada clique é <b>reautorizado</b> com a identidade de quem clicou — nunca herda a permissão de quem gerou a resposta.</td>
+              <td>Gate dedicado nega o documento restrito para quem não pode.</td>
+            </tr>
+            <tr>
+              <td>Conversa compartilhada</td>
+              <td>Ver a conversa de outra pessoa <b>não</b> dá acesso às fontes dela: as citações são reavaliadas por identidade.</td>
+              <td>Caminho de leitura separado, nunca um afrouxamento do filtro por dono.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="verificado" style="margin-top:1.8rem; max-width:76ch;">
+        <span class="verificado__marca" aria-hidden="true">✓</span>
+        <div><b>Medido, não estimado.</b></div>
+        <p>
+          Identidade com direito: <span class="num">93</span> documentos, todos carimbados.
+          Identidade sem direito: <span class="num">0</span>. As duas contas são idênticas em
+          tudo, menos na participação no grupo — o que isola a variável.
+        </p>
+      </div>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>Resistência a ataque</h2>
+      <p style="margin-top:1rem; max-width:72ch; color:var(--ink-2);">
+        Um conjunto adversarial tenta extrair conteúdo fora do direito por injeção de prompt e
+        engenharia de contexto. O ponto não é o modelo resistir à persuasão: é que <b>o material
+        nunca chega até ele</b>. O corte é anterior.
+      </p>
+      <div class="verificado" style="margin-top:1.6rem; max-width:76ch;">
+        <span class="verificado__marca" aria-hidden="true">✓</span>
+        <div><b>Red-team: todo ataque ficou dentro do direito da identidade atacante.</b></div>
+        <p>O gate reprova a entrega se a taxa de sucesso passar do teto declarado em configuração.</p>
+      </div>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>Trilha de auditoria</h2>
+      <div class="rolagem" style="margin-top:1.4rem;">
+        <table class="evid">
+          <thead><tr><th>Propriedade</th><th>Como é garantida</th></tr></thead>
+          <tbody>
+            <tr><td>Imutável</td><td>Container com política de imutabilidade e versionamento na conta de armazenamento. Apagar um registro não é uma operação disponível.</td></tr>
+            <tr><td>Encadeada</td><td>Cada evento referencia o anterior; um evento removido quebra a cadeia de forma detectável.</td></tr>
+            <tr><td>Sem dado sensível</td><td>Ponto único de escrita que redige o conteúdo antes de gravar.</td></tr>
+            <tr><td>Aprovação é fail-closed</td><td>Se a gravação do evento falhar, a ação aprovada <b>não acontece</b>. Leitura é fail-soft; aprovação não.</td></tr>
+            <tr><td>Fechamento diário</td><td>Rotina agendada ancora o dia — write-once e idempotente.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>Identidade</h2>
+      <p style="margin-top:1rem; max-width:72ch; color:var(--ink-2);">
+        Autenticação por Entra ID; a aplicação age <b>em nome do usuário</b> (On-Behalf-Of) ao
+        consultar a base — não com uma identidade de serviço privilegiada. Autorização por papéis
+        (Admin / Autor / Aprovador / Leitor) no token. Nenhuma chave de API no código: todo acesso
+        é por identidade gerenciada ou OBO.
+      </p>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>O que <em>não</em> está resolvido</h2>
+      <p style="margin-top:1rem; max-width:72ch; color:var(--ink-2);">
+        Esta seção existe porque uma página que só lista acertos não ajuda quem precisa avaliar
+        risco.
+      </p>
+      <div class="quebraria" style="margin-top:1.6rem; max-width:76ch;">
+        <p style="margin-bottom:0.7rem;"><b>Link de conversa compartilhada não tem lista de destinatários.</b>
+        Qualquer pessoa autenticada que tenha o link lê a conversa — as citações continuam
+        reautorizadas por identidade, mas o texto da conversa não. O identificador da conversa
+        passa a ser o segredo. É decisão de produto, e é revogável.</p>
+        <p><b>Residência de dados e retenção</b> seguem a configuração da assinatura onde a stack
+        roda; não há controle próprio por cima disso.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <span>Foundry Assured</span>
+    <span><a href="index.html">todos os públicos</a></span>
+    <span><a href="engenharia.html">como o corte é implementado</a></span>
+    <span><a href="https://github.com/ruinosus/foundry-assured/tree/main/docs/adr">decisões de arquitetura</a></span>
+  </footer>
+</div>
+</body>
+</html>
