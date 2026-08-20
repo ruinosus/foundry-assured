@@ -122,7 +122,13 @@ The cloud workflows authenticate to Azure with **OIDC** (no stored credentials).
    `./scripts/sync-gh-variables.sh` reports drift and `--apply` writes them; they silently
    drifted through a resource rename once and every scheduled cloud run failed for eight weeks.
 3. **Environments → `production`:** add required reviewers (gates `deploy.yml` / `provision-kb.yml`).
-4. **Grant the CI identity its data-plane roles — through the Bicep, never by hand:**
+4. **The CI identity's data-plane roles — through the Bicep, never by hand:**
+   `deploy.yml` now resolves `AZURE_CI_PRINCIPAL_ID` itself on every run (`az ad sp show --id
+   $AZURE_CLIENT_ID`) and fails the job if the roles didn't land, so this is normally automatic —
+   nothing to do here once `deploy.yml` has run once against an environment. Run it by hand only
+   if you need the roles granted **before** the first `deploy.yml` run (e.g. to unblock
+   `provision-kb.yml`/`eval-cloud.yml` standalone), or the Graph lookup in CI keeps failing
+   (insufficient permission to read its own SP is common in locked-down tenants):
    ```bash
    azd env set AZURE_CI_PRINCIPAL_ID "$(az ad sp show --id <appId> --query id -o tsv)"
    azd provision      # creates Azure AI User + Search Service/Index Contributor + Storage Blob Data Contributor
