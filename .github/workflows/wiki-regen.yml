@@ -170,7 +170,7 @@ jobs:
           ls -1 "$DIR"
 
       - name: Open a pull request with the refreshed bundle
-        uses: peter-evans/create-pull-request@v7
+        uses: peter-evans/create-pull-request@v8
         with:
           add-paths: |
             openwiki

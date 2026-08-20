@@ -282,7 +282,16 @@
     "suggested": "Experimente:",
     "tabConversations": "Conversas",
     "tabGuarantees": "Garantias",
-    "guaranteesCount": "{count} garantias ativas"
+    "guaranteesCount": "{count} garantias ativas",
+    "share": {
+      "button": "Compartilhar",
+      "shared": "Compartilhada",
+      "off": "Parar de compartilhar",
+      "copied": "Link copiado — qualquer pessoa autenticada consegue ler esta conversa.",
+      "on": "Qualquer pessoa autenticada com o link lê esta conversa.",
+      "errorOn": "Envie uma mensagem antes — ainda não há o que compartilhar.",
+      "errorOff": "Não foi possível parar de compartilhar. Tente de novo."
+    }
   },
   "conversations": {
     "title": "Conversas",

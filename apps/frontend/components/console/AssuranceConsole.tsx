@@ -17,7 +17,7 @@ import { CopilotChat, CopilotKitProvider } from "@copilotkit/react-core/v2";
 import { useIsAuthenticated, useMsal } from "@azure/msal-react";
 import { useLocale, useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
@@ -30,9 +30,11 @@ import { DomainPicker } from "@/components/console/DomainPicker";
 import { EvidencePanel } from "@/components/console/EvidencePanel";
 import { makeAssistantMessage } from "@/components/console/MessageEvidence";
 import { MermaidZoom } from "@/components/console/MermaidZoom";
+import { ShareButton } from "@/components/console/ShareButton";
 import { SourceViewer } from "@/components/console/SourceViewer";
 import { SuggestedPrompts } from "@/components/console/SuggestedPrompts";
 import { ToolActivity } from "@/components/console/ToolActivity";
+import { PARAMETRO_CONVERSA } from "@/lib/conversation-url";
 
 const WorkflowSteps = dynamic(
   () => import("@/components/chat/WorkflowSteps").then((m) => m.WorkflowSteps),
@@ -57,15 +59,41 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
   // hostedAgentId, so any domain that later gains a Foundry hosted twin gets the toggle
   // for free (no per-domain special-casing here).
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState<"conv" | "ev">("conv");
   const [mode, setMode] = useState<"live" | "hosted">("live");
   const activeAgentId =
     mode === "hosted" && domain.hostedAgentId ? domain.hostedAgentId : domain.id;
 
-  // A conversa ativa. Começa vazia e o CopilotKit cria a sua; ao abrir uma anterior, o id passa a
-  // ser prop-controlado e o backend continua NAQUELA conversa (o HistoryProvider carrega o
-  // histórico pelo mesmo id).
-  const [threadId, setThreadId] = useState<string>(() => crypto.randomUUID());
+  // A conversa ativa vive na URL (`?c=<threadId>`) — abrir o link começa NAQUELA conversa em vez
+  // de criar uma nova, e é o que permite compartilhar (ShareButton) e sobreviver a um F5 (antes,
+  // um reload sorteava um `crypto.randomUUID()` novo e a conversa "sumia", mesmo gravada no
+  // backend). Lido só na MONTAGEM: dali em diante o estado do React manda, e a URL é espelho — o
+  // efeito abaixo escreve nela, nunca o contrário (ver o comentário lá para o porquê).
+  const [threadId, setThreadId] = useState<string>(
+    () => searchParams.get(PARAMETRO_CONVERSA) || crypto.randomUUID(),
+  );
+
+  // Espelha a conversa ativa na URL SEM navegar — `history.replaceState`, não o router do Next.
+  //
+  // POR QUE `history.replaceState` e não `router.replace()`. Isto não é uma navegação: é
+  // sincronizar a barra de endereço com um estado que já mudou na tela (nova conversa, ou
+  // conversa aberta pelo painel). `router.replace()` do App Router entra no ciclo de transição do
+  // Next — reavalia a árvore da rota a cada chamada — e faria isso a cada nova conversa/troca
+  // sem motivo, correndo o risco de um re-render que reseta o `CopilotChat` que a troca de
+  // `threadId` já cuida de remontar sozinha. `history.replaceState` só troca a URL visível, sem
+  // tocar em React nem em rede.
+  //
+  // `replaceState`, não `pushState`: cada nova conversa ou troca de conversa não deve virar um
+  // degrau no botão Voltar — voltar entre quarenta conversas trocadas ao longo de uma sessão não
+  // é "página anterior" para quem está usando o produto, e empurrar mesmo assim quebraria a
+  // navegação do navegador (Voltar nunca sairia da tela do console).
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    url.searchParams.set(PARAMETRO_CONVERSA, threadId);
+    window.history.replaceState(null, "", url);
+  }, [threadId]);
+
   // A gravação é por DOMÍNIO, não pelo gêmeo hospedado: live e hosted são a mesma conversa do
   // ponto de vista de quem conversa, e separá-las esconderia metade do histórico ao alternar.
   const conversationKey = domain.id;
@@ -101,6 +129,7 @@ function Console({ domain, authorization }: { domain: Domain; authorization?: st
           <div className="console-bar">
             <DomainPicker current={domain} onPick={(id) => router.push(`/d/${id}`)} />
             <div className="console-bar-end">
+              <ShareButton agent={domain.id} conversationId={threadId} />
               <span className="t-xs t-mono muted-line">{domain.kind}</span>
               {domain.hostedAgentId && (
                 <div className="seg seg-sm">
