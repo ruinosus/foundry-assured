@@ -10,6 +10,10 @@
     ],
     [
       "DELETE",
+      "/conversations/{agent}/{conversation_id}/share"
+    ],
+    [
+      "DELETE",
       "/foundry/agents/{name}"
     ],
     [
@@ -71,6 +75,10 @@
     [
       "GET",
       "/conversations/{agent}/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/conversations/{agent}/{conversation_id}/share"
     ],
     [
       "GET",
@@ -222,6 +230,10 @@
     ],
     [
       "POST",
+      "/conversations/{agent}/{conversation_id}/share"
+    ],
+    [
+      "POST",
       "/foundry-agent/{name}"
     ],
     [
@@ -324,6 +336,10 @@
     ],
     [
       "DELETE",
+      "/conversations/{agent}/{conversation_id}/share"
+    ],
+    [
+      "DELETE",
       "/foundry/agents/{name}"
     ],
     [
@@ -385,6 +401,10 @@
     [
       "GET",
       "/conversations/{agent}/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/conversations/{agent}/{conversation_id}/share"
     ],
     [
       "GET",
@@ -544,6 +564,10 @@
     ],
     [
       "POST",
+      "/conversations/{agent}/{conversation_id}/share"
+    ],
+    [
+      "POST",
       "/deepcall"
     ],
     [
@@ -654,6 +678,10 @@
     ],
     [
       "DELETE",
+      "/conversations/{agent}/{conversation_id}/share"
+    ],
+    [
+      "DELETE",
       "/foundry/agents/{name}"
     ],
     [
@@ -719,6 +747,10 @@
     [
       "GET",
       "/conversations/{agent}/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/conversations/{agent}/{conversation_id}/share"
     ],
     [
       "GET",
@@ -879,6 +911,10 @@
     [
       "POST",
       "/builder-assist/proposals"
+    ],
+    [
+      "POST",
+      "/conversations/{agent}/{conversation_id}/share"
     ],
     [
       "POST",

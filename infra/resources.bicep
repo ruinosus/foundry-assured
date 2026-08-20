@@ -282,6 +282,25 @@ resource conversationsImmutability 'Microsoft.Storage/storageAccounts/blobServic
   }
 }
 
+// O ÍNDICE de compartilhamento — quais conversas têm link ativo. Um blob por conversa
+// compartilhada, existe porque quem abre um link só tem o `conversation_id`, e o caminho da
+// conversa começa pelo object-id do dono: sem índice, achar por id seria varrer o storage.
+//
+// DELIBERADAMENTE SEM IMUTABILIDADE, ao contrário dos dois acima. Revogar um compartilhamento
+// é apagar o registro; uma política de imutabilidade aqui tornaria o link IRREVOGÁVEL por um
+// dia — o oposto exato do controle que o botão promete ao dono. Quem for "consertar" a
+// inconsistência com os containers vizinhos precisa ler isto antes: a diferença é a feature.
+//
+// O que se perde é o rastro de quem compartilhou e revogou — e esse rastro não mora aqui, mora
+// na trilha de auditoria (`scope="approvals"`), que é imutável e registra os dois eventos.
+resource conversationsSharedContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2023-05-01' = {
+  parent: blobService
+  name: 'conversations-shared'
+  properties: {
+    publicAccess: 'None'
+  }
+}
+
 // ── RETENÇÃO DECLARADA ───────────────────────────────────────────────────────────────────────
 //
 // Sem política, "quanto tempo guardamos" não tem resposta — e a pergunta é feita em toda
