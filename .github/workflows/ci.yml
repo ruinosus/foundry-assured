@@ -94,6 +94,14 @@ jobs:
       - name: Architecture gate (import-linter)
         run: uv run lint-imports --config importlinter.toml
 
+      # ...e o import-linter só verifica o que a config MANDA verificar. Cada contrato
+      # `<x> internals are private` lista os módulos-fonte à mão, e cada lista congelou na
+      # época em que nasceu: em 2026-08 dava `22 kept, 0 broken` com `builder`/`pricing` sem
+      # contrato e `oncall -> knowledge.internal` passando batido. Buraco de cobertura é a
+      # AUSÊNCIA de uma linha — não se anuncia. Este gate compara a config com app/modules/.
+      - name: Import-linter cobre todos os módulos (sem buraco silencioso)
+        run: uv run python -m tests.architecture.importlinter_coverage_test
+
       # Inter-module dependency graph (ADR-017). import-linter can only guard directories
       # that exist; until Phase 3 creates them, this pins the same question against the
       # target module map and fails on a NEW cross-module edge, naming the file. Also the
