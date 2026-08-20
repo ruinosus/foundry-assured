@@ -188,6 +188,7 @@ jobs:
           import json
           import os
           import sys
+          import urllib.error
           import urllib.request
 
           from azure.identity import DefaultAzureCredential
@@ -221,8 +222,13 @@ jobs:
                           {"search": "*", "select": "uid,blob_url,groups", "top": top, "skip": skip}
                       ).encode(),
                   )
-                  with urllib.request.urlopen(req, timeout=60) as r:
-                      page = json.load(r).get("value", [])
+                  try:
+                      with urllib.request.urlopen(req, timeout=60) as r:
+                          page = json.load(r).get("value", [])
+                  except urllib.error.HTTPError as e:
+                      # O corpo traz a razão da Azure; sem isto o traceback só diz "401" e a
+                      # causa (prefixo indevido no header) fica invisível.
+                      sys.exit(f"❌ busca falhou: HTTP {e.code} — {e.read().decode()[:400]}")
                   rows += page
                   if len(page) < top:
                       break
@@ -230,7 +236,15 @@ jobs:
               return rows
 
           print(f"== 1/3 (GATE): busca COM identidade do runner — carimbo + trim, o caminho real do usuário (índice '{index}') ==")
-          with_identity = search({"x-ms-query-source-authorization": f"Bearer {token}"})
+          # TOKEN CRU, SEM `Bearer `. Ao contrário do `Authorization`, este header recebe o
+          # token puro — com o prefixo a Azure devolve 401
+          # `Invalid header 'x-ms-query-source-authorization': BearerReadAccessTokenFailed`,
+          # um nome que soa como "o token falhou" quando na verdade significa "li a string
+          # 'Bearer …' COMO SE fosse o token". Medido nos dois sentidos contra este índice:
+          # com prefixo → 401; sem prefixo → 3 documentos, carimbados. Todo o código de
+          # produção (secure_search.py, document.py, retrieval.py) já passa cru; só este
+          # verificador divergia, por ter remontado a requisição à mão.
+          with_identity = search({"x-ms-query-source-authorization": token})
           if not with_identity:
               sys.exit(
                   "❌ FALHA: busca COM identidade voltou vazio. Duas leituras possíveis, não dá "

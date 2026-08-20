@@ -234,6 +234,13 @@ jobs:
       - name: Citações persistem com a conversa
         run: uv run python -m tests.conversations.citations_persisted_test
 
+      # O header que faz o trim por documento acontecer leva o token CRU — o `Authorization` da
+      # MESMA requisição leva `Bearer <token>`, e as duas regras opostas convivem lado a lado.
+      # Errar dá 401 `BearerReadAccessTokenFailed`, nome que manda quem lê procurar problema de
+      # permissão em vez do prefixo. Custou uma investigação inteira no verificador do selfwiki.
+      - name: O header de identidade do Search leva token cru, nunca `Bearer`
+        run: uv run python -m tests.knowledge.identity_header_test
+
       # Compartilhar uma conversa é um caminho EXPLÍCITO e SEPARADO do filtro por dono — nunca
       # uma relaxação dele. Prova as cinco propriedades: não-compartilhada continua ilegível para
       # outro usuário, compartilhada é legível por terceiro autenticado, a leitura por terceiro
