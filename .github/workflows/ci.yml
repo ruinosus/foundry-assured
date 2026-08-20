@@ -108,6 +108,16 @@ jobs:
       - name: Filesystem anchors (no parents[N] path counting)
         run: uv run python -m tests.architecture.filesystem_anchors_test
 
+      # Imutabilidade declarada em infra/resources.bicep (ADR-023) precisa ser SATISFAZÍVEL.
+      # `azd provision` falhou com `RequiredFeatureDisabled: Required feature Versioning is
+      # disabled` porque os containers `audit`/`conversations` declaravam
+      # immutableStorageWithVersioning sem o blobService pai ligar isVersioningEnabled — bicep
+      # build passava porque a combinação só é rejeitada pelo Resource Manager, em deploy real.
+      # Este gate prova offline que a dependência entre as duas propriedades não volta a ficar
+      # implícita, e que todo container imutável tem a immutabilityPolicies correspondente.
+      - name: Imutabilidade do blob storage é satisfazível (versioning + policy declarados juntos)
+        run: uv run python -m tests.architecture.blob_immutability_test
+
       # Module invocations in YAML and shell. The other architecture gates all read Python,
       # so none of them saw that ADR-017 broke four `python -m app.knowledge.*` calls in
       # workflows and scripts. wiki-regen is workflow_dispatch, so the break only surfaced
