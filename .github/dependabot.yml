@@ -46,6 +46,19 @@ updates:
       # property" e nunca menciona duplicata, que é o que realmente aconteceu — medido em #185.
       - dependency-name: "@ag-ui/*"
 
+      # jsdom 30 exige Node >= 22.22 e o CI roda Node 20; `engines` do npm é AVISO, não trava,
+      # então a incompatibilidade não aparece no install — aparece no gate que usa jsdom, longe
+      # da causa. Junto vinham `@asamuzakjp/*`, `whatwg-url` e `undici`, todos da subárvore dele.
+      # Volta a ser bumpável quando o Node do CI subir (#185).
+      - dependency-name: jsdom
+        update-types: ["version-update:semver-major"]
+      # Mesma razão do `typescript` logo acima, outro pacote: eslint 10 removeu
+      # `context.getFilename()`, que o `eslint-plugin-react` dentro do `eslint-config-next`
+      # ainda chama — `npm run lint` não reprova, QUEBRA com TypeError. Quem decide o major do
+      # ESLint é o Next; bump à mão, junto com ele.
+      - dependency-name: eslint
+        update-types: ["version-update:semver-major"]
+
   # GitHub Actions
   - package-ecosystem: github-actions
     directory: /
