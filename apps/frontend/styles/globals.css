@@ -598,8 +598,14 @@ table.evals tr:last-child td {
   /* Era `--text-xs` (12px) em cinza: tecnicamente contrastado, praticamente ilegível numa
      região densa. Rótulo pequeno pode ser discreto sem ser ilegível. */
   font-size: 0.8125rem;
-  font-weight: 620;
-  color: var(--muted);
+  font-weight: 650;
+  /* A COR DO TEXTO, não a esmaecida. Medido: `--muted` dava 5,9:1 no claro e 7,9:1 no escuro —
+     adequado pelo critério formal, e ainda assim reportado como ilegível duas vezes. A lição é a
+     mesma do marcador: o que decide a leitura é a prominência RELATIVA ao que está em volta, não
+     a razão isolada. Um rótulo pode ser discreto pelo tamanho e pelo espaçamento sem ser apagado
+     pela cor. */
+  color: var(--text);
+  letter-spacing: 0.01em;
   margin-bottom: var(--space-2);
 }
 

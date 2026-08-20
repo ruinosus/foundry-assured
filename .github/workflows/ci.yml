@@ -337,6 +337,8 @@ jobs:
       # silêncio, do jeito que só aparece quando alguém reabre a conversa certa.
       - name: Citações ao reabrir conversa
         run: npm run verify:thread-citations
+      - name: Cabeçalhos mesclados sem duplicar a caixa
+        run: npm run verify:headers
       # ENFORCING. This gate was advisory through two consecutive breakages, and each
       # time the breakage looked exactly like success: first `next lint` (removed in
       # Next 16) exited 1 reading "lint" as a directory; then ESLint 10 CRASHED loading
