@@ -93,7 +93,7 @@ def record_turn(
 ) -> None:
     """Grava um turno onde NÃO há agente do framework para carregar um `HistoryProvider`.
 
-    Os domínios grounded (cockpit, techdocs, selfwiki) não constroem um agente do
+    Os domínios grounded (techdocs, selfwiki) não constroem um agente do
     `agent_framework`: chamam `responses.create()` direto no cliente do Foundry. Sem agente não há
     `context_providers`, e portanto não há onde plugar o provider — então o turno é gravado aqui,
     explicitamente, com o mesmo formato de mensagem para que a leitura seja uma só.

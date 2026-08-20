@@ -64,7 +64,7 @@ flowchart TB
 
 ## The On-Behalf-Of chain (grounded answers as the user)
 
-The grounded domains (Cockpit, Selfwiki) answer **as the signed-in user** via On-Behalf-Of (OBO), so
+The grounded domains (TechDocs, Selfwiki) answer **as the signed-in user** via On-Behalf-Of (OBO), so
 inference is attributable and per-user document ACL works. That's a **three-tier OBO chain** —
 `SPA → API app → downstream` — and it has three requirements, all set by `scripts/setup-entra.sh`:
 
@@ -84,7 +84,7 @@ flowchart LR
 
 Requirement **(3)** is the non-obvious one: consent to the SPA must **cascade** to the API's downstream
 permissions (combined consent), which only happens when the SPA is a known client of the API. Verified
-in-session: with (3) missing the deployed `/cockpit` streamed `RUN_ERROR: 403` for signed-in users
+in-session: with (3) missing the deployed `/d/techdocs` streamed `RUN_ERROR: 403` for signed-in users
 even though a direct API-app→OBO→Responses call returned 200.
 
 Beyond the app registrations, each **app user needs `Foundry User`** on the Foundry account (they run

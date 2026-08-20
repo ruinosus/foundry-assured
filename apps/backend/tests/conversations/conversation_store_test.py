@@ -52,7 +52,7 @@ def main() -> int:
     check("a lista de u1 não mostra a conversa de u2", len(s.list("u1")) == 1)
 
     # SEPARA POR AGENTE. O filtro da tela depende disto.
-    s.append("u1", "cockpit", "c9", [{"role": "user", "text": "outro domínio"}])
+    s.append("u1", "techdocs", "c9", [{"role": "user", "text": "outro domínio"}])
     check("sem filtro, vêm as duas", len(s.list("u1")) == 2)
     check("com filtro, vem uma", len(s.list("u1", "helpdesk")) == 1)
 

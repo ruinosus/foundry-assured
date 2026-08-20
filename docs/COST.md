@@ -58,7 +58,7 @@ a Foundry (Cognitive Services `AIServices` **S0**) account + project, **gpt-5-mi
 Basic**, **Storage** `Standard_LRS` (corpus blobs + a 1 GiB file share for `tickets.jsonl`),
 **Log Analytics** `PerGB2018` + Application Insights, **Container Registry Basic**, a **Container
 Apps** environment with 2 apps (backend `min 0/max 1`, web `min 0/max 3`, both scale-to-zero), and
-**3 Foundry hosted agents** (`helpdesk-concierge`, `cockpit-expert`, `platform-concierge`, 0.5 vCPU /
+**3 Foundry hosted agents** (`helpdesk-concierge`, `techdocs-expert`, `platform-concierge`, 0.5 vCPU /
 1 GiB each — the 3rd, platform, is the D-packaging Invocations twin). Managed identity, role
 assignments, connections, blob containers and the file service are free.
 

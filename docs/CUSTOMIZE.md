@@ -163,7 +163,7 @@ adding a new *policy* — the secret-leak and citation policies are domain-neutr
 ## 7 — A whole new domain (add — keep helpdesk, run side-by-side)
 
 Swap points #1–#6 *replace* the helpdesk. If instead you want to **add** another assistant
-alongside it — the showcase ships three (helpdesk, cockpit, selfwiki) — domains are
+alongside it — the showcase ships three (helpdesk, techdocs, selfwiki) — domains are
 **config-driven**. Adding one is three additions, no engine changes:
 
 1. **Frontend** — add **one entry** to `apps/frontend/lib/domains.ts` (id, label, the

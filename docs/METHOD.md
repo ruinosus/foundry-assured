@@ -34,11 +34,11 @@ The frontend talks to the backend over AG-UI; the backend runs the workflow agai
 ```mermaid
 flowchart TB
   subgraph FE["Frontend · Next.js + CopilotKit"]
-    UI["/helpdesk and /cockpit chat (MSAL sign-in)"]
+    UI["/helpdesk and /d/techdocs chat (MSAL sign-in)"]
   end
   subgraph BE["Backend · FastAPI (AG-UI over SSE)"]
     WF["/helpdesk · multi-agent workflow"]
-    CK["/cockpit · grounded agent + secure_search trim"]
+    CK["/d/techdocs · grounded agent + secure_search trim"]
   end
   subgraph FDY["Microsoft Foundry"]
     KB["Foundry IQ KB · Azure AI Search"]
@@ -138,7 +138,7 @@ There is **no classification logic in the code** — access *follows the source*
    sequenceDiagram
      actor U as Signed-in user
      participant FE as Frontend (MSAL)
-     participant BE as Backend /cockpit (OBO)
+     participant BE as Backend /d/techdocs (OBO)
      participant SP as SecureAzureAISearchProvider
      participant S as Azure AI Search (Foundry IQ)
      participant M as Model
