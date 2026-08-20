@@ -370,6 +370,14 @@ jobs:
       - name: Compile-check Bicep
         run: bicep build infra/main.bicep --stdout > /dev/null
 
+      # Compilar não prova que sobe. Este gate lê o ARM gerado e trava a condição que faltava:
+      # o segredo do Entra é OPCIONAL (o repo suporta rodar sem sign-in), mas a Azure recusa um
+      # Container App secret vazio e derruba o container app inteiro — o backend simplesmente
+      # não é criado, enquanto o `web` sobe normal. Um clone novo rodando o caminho padrão
+      # (`up-all.sh` sem `--with-auth`) caía exatamente aí.
+      - name: Clone novo sem sign-in consegue subir o backend
+        run: python3 scripts/verify-optional-secret.py
+
   # Single required status check for branch protection — green only when all
   # matrix jobs above succeed (so you protect one check, not three).
   ci-ok:

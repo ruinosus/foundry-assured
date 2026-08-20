@@ -134,7 +134,16 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
       registries: [
         { server: '${registryName}.azurecr.io', identity: appIdentityId }
       ]
-      secrets: [
+      // SÓ declara o segredo quando ELE EXISTE. A Azure recusa um secret sem valor
+      // (`ContainerAppSecretInvalid: value or keyVaultUrl and identity should be provided`) e
+      // derruba o container app INTEIRO — o backend simplesmente não é criado, enquanto o `web`,
+      // que não declara segredo nenhum, sobe normal. O resultado é um resource group com tudo
+      // no lugar e um buraco em forma de backend, que não se parece com uma falha de deploy.
+      //
+      // O caminho PADRÃO do repositório cai exatamente aqui: `up-all.sh` sem `--with-auth` não
+      // cria as app registrations, então `entraApiClientSecret` fica `''` — e um clone novo não
+      // conseguia subir. Vazio agora significa "sem sign-in", que é um modo suportado.
+      secrets: empty(entraApiClientSecret) ? [] : [
         { name: 'entra-api-secret', value: entraApiClientSecret }
       ]
     }
@@ -144,7 +153,7 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
           name: 'backend'
           image: placeholderImage
           resources: { cpu: json('0.5'), memory: '1.0Gi' }
-          env: [
+          env: concat([
             { name: 'FOUNDRY_PROJECT_ENDPOINT', value: foundryProjectEndpoint }
             { name: 'FOUNDRY_MODEL', value: foundryModel }
             { name: 'AZURE_SEARCH_ENDPOINT', value: azureSearchEndpoint }
@@ -159,7 +168,6 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'AZURE_CLIENT_ID', value: appIdentityClientId }
             { name: 'ENTRA_TENANT_ID', value: entraTenantId }
             { name: 'ENTRA_API_CLIENT_ID', value: entraApiClientId }
-            { name: 'ENTRA_API_CLIENT_SECRET', secretRef: 'entra-api-secret' }
             // selfwiki audience: the app-users group is the self-wiki's private read audience;
             // retrieval sends the OBO ACL header only when this is set (else /selfwiki fails closed).
             { name: 'APP_USERS_GROUP_ID', value: appUsersGroupId }
@@ -168,7 +176,11 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             // scope exists on the mounted share, else falls back (loudly) to
             // the copy baked into the image. Prompt update = push-prompts.sh.
             { name: 'AGENTS_DIR', value: '/mnt/agents' }
-          ]
+          ], empty(entraApiClientSecret) ? [] : [
+            // Pareado com o `secrets` acima: um `secretRef` apontando para um segredo que não
+            // foi declarado é o MESMO erro de deployment. Os dois aparecem ou somem juntos.
+            { name: 'ENTRA_API_CLIENT_SECRET', secretRef: 'entra-api-secret' }
+          ])
           volumeMounts: [
             { volumeName: 'data', mountPath: '/app/data' } // tickets.jsonl persists here
             { volumeName: 'prompts', mountPath: '/mnt/agents' } // agent definitions (read-only share)
