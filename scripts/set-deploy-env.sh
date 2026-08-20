@@ -17,7 +17,11 @@ set_from() { # KEY FILE
   local v
   v="$(val "$1" "$2")"
   if [ -n "$v" ]; then
-    azd env set "$1" "$v" "${ENVFLAG[@]}" >/dev/null && echo "  ✔ $1"
+    # `${A[@]+"${A[@]}"}`, e não `"${A[@]}"`: no bash 3.2 (o padrão do macOS) expandir um
+    # array VAZIO sob `set -u` aborta com "unbound variable". O script morria na primeira chave,
+    # o hook mascarava com `|| echo "(nothing to push)"`, e o resultado era uma imagem web
+    # construída SEM config de sign-in — sem nenhum erro visível em lugar nenhum.
+    azd env set "$1" "$v" ${ENVFLAG[@]+"${ENVFLAG[@]}"} >/dev/null && echo "  ✔ $1"
   else
     echo "  · skip $1 (empty in ${2##*/})"
   fi
