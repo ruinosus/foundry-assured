@@ -106,6 +106,13 @@ output WEB_URL string = apps.outputs.WEB_URL
 
 // Surfaced into .azure/<env>/.env by azd — feed these to the backend / ingestion.
 output FOUNDRY_PROJECT_ENDPOINT string = resources.outputs.FOUNDRY_PROJECT_ENDPOINT
+// O azd EXIGE isto no ambiente para invocar qualquer hook — sem ele, `azd deploy` aborta com
+// "AZURE_TENANT_ID is not set in the environment" DEPOIS de já ter publicado o serviço, e o
+// `continueOnError: true` do hook não protege: o erro é do azd invocando, não do script rodando.
+// Nada no repositório definia este valor; ele só existia por acaso, quando o azd o herdava do
+// login. Ambiente novo, ou clone de outra pessoa, ficava sem — que é o caso que motivou o output.
+output AZURE_TENANT_ID string = tenant().tenantId
+
 output AZURE_AI_PROJECT_ID string = resources.outputs.AZURE_AI_PROJECT_ID   // azd uses this to deploy hosted agents
 output AZURE_AI_ACCOUNT_ID string = resources.outputs.AZURE_AI_ACCOUNT_ID   // postdeploy hook: agent RBAC scope
 output AZURE_SEARCH_ID string = resources.outputs.AZURE_SEARCH_ID           // postdeploy hook: agent RBAC scope
