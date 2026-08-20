@@ -60,7 +60,11 @@
           pergunte → fundamente com citações → resolva com aprovação humana → lembre. Tudo avaliado,
           rastreável, e com <strong>controle de acesso por documento</strong>.
         </p>
-        <a class="cta" href="https://ca-web-s3vvlng2zilqy.whitecliff-a55615e6.eastus2.azurecontainerapps.io"
+        <a class="cta" <!-- FQDN DE AMBIENTE: muda toda vez que o resource group é recriado, e o gate
+     scripts/verify-docs-links.py NÃO consegue vigiar isto (exigiria rede). O link
+     anterior apontou para um ambiente morto por semanas com o Pages verde. Ao
+     reprovisionar: `azd env get-value WEB_URL` e atualize aqui. -->
+        href="https://ca-web-f2pijerpyr3zi.nicesky-374a17d8.eastus2.azurecontainerapps.io"
           >Abrir o app ↗</a
         >
         <a class="cta secondary" href="https://github.com/ruinosus/foundry-assured">Repositório ↗</a>
@@ -93,7 +97,7 @@
       <footer>
         Páginas geradas e mantidas no repositório sob <code>docs/</code>, publicadas via GitHub Pages.
         A documentação técnica viva está no <a href="https://github.com/ruinosus/foundry-assured/tree/main/docs">repositório</a>
-        (incluindo o <a href="https://github.com/ruinosus/foundry-assured/tree/main/docs/wiki">deep-wiki gerado</a> e as
+        (incluindo o <a href="https://github.com/ruinosus/foundry-assured/tree/main/openwiki">deep-wiki gerado</a> e as
         <a href="https://github.com/ruinosus/foundry-assured/tree/main/docs/adr">ADRs</a>).
       </footer>
     </div>
