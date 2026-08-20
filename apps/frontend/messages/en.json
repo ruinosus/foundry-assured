@@ -282,7 +282,16 @@
     "suggested": "Try:",
     "tabConversations": "Conversations",
     "tabGuarantees": "Guarantees",
-    "guaranteesCount": "{count} guarantees active"
+    "guaranteesCount": "{count} guarantees active",
+    "share": {
+      "button": "Share",
+      "shared": "Shared",
+      "off": "Stop sharing",
+      "copied": "Link copied — anyone signed in can read this conversation.",
+      "on": "Anyone signed in with the link can read this conversation.",
+      "errorOn": "Send a message first — there's nothing to share yet.",
+      "errorOff": "Could not stop sharing. Try again."
+    }
   },
   "conversations": {
     "title": "Conversations",
