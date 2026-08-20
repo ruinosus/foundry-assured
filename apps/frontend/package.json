@@ -16,7 +16,7 @@
     "verify:headers": "node scripts/verify-merged-headers.mjs"
   },
   "dependencies": {
-    "@ag-ui/client": "^0.0.58",
+    "@ag-ui/client": "^0.0.57",
     "@azure/msal-browser": "^5.18.0",
     "@azure/msal-react": "^5.5.5",
     "@copilotkit/react-core": "^1.68.1",
