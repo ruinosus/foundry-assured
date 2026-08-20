@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Foundry Assured — para arquitetura e infraestrutura</title>
+<meta name="description" content="Três modos de entrega sobre um codebase, o que cada um consome, e o que é preciso para subir do zero." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/deck.css" />
+</head>
+<body>
+<div class="wide">
+  <div class="para">
+    <span class="para__quem">para&nbsp;/ arquitetura &amp; infraestrutura</span>
+    <nav class="para__nav" aria-label="Outros públicos">
+      <a href="executivo.html">executivo</a>
+      <a href="seguranca.html">segurança</a>
+      <a href="infra.html" aria-current="page">infra</a>
+      <a href="engenharia.html">engenharia</a>
+      <a href="negocio.html">negócio</a>
+    </nav>
+  </div>
+
+  <main>
+    <section class="entrada" style="max-width:72ch;">
+      <h1>Como isto entra no seu ambiente</h1>
+      <p style="margin-top:1.4rem; font-size:var(--step-1); color:var(--ink-2);">
+        Um único codebase, três formas de entregar. A escolha não é de código — é de onde os
+        dados ficam e de quem opera.
+      </p>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>Três modos de entrega</h2>
+      <div class="rolagem" style="margin-top:1.6rem;">
+        <table class="evid">
+          <thead><tr><th>Modo</th><th>Onde roda</th><th>Isolamento</th><th>Quem opera</th></tr></thead>
+          <tbody>
+            <tr>
+              <td>self-hosted</td>
+              <td>Sua assinatura, uma instalação por organização.</td>
+              <td>Total — nada é compartilhado.</td>
+              <td>Você.</td>
+            </tr>
+            <tr>
+              <td>dedicated</td>
+              <td>Sua assinatura, publicado como Azure <b>Managed Application</b>.</td>
+              <td>Total, com o fornecedor operando via <b>Lighthouse</b> sem acesso permanente.</td>
+              <td>Fornecedor, com escopo delegado e auditável.</td>
+            </tr>
+            <tr>
+              <td>shared</td>
+              <td>Assinatura do fornecedor, multi-tenant real.</td>
+              <td>Por tenant, resolvido a cada requisição pelo identificador do Entra.</td>
+              <td>Fornecedor.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="verificado" style="margin-top:1.8rem; max-width:76ch;">
+        <span class="verificado__marca" aria-hidden="true">✓</span>
+        <div><b>O modo padrão é byte-idêntico ao que existia antes do multi-tenant.</b></div>
+        <p>A separação por tenant é um seam, não uma reescrita — quem roda single-tenant não paga o custo do que não usa.</p>
+      </div>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>O que é provisionado</h2>
+      <p style="margin-top:1rem; max-width:72ch; color:var(--ink-2);">
+        Tudo descrito em Bicep e aplicado por <span class="prova">azd</span>. Sem passo manual de
+        console para a infraestrutura.
+      </p>
+      <div class="rolagem" style="margin-top:1.6rem;">
+        <table class="evid">
+          <thead><tr><th>Recurso</th><th>Para quê</th></tr></thead>
+          <tbody>
+            <tr><td>Container Apps</td><td>Backend e frontend, com identidade gerenciada e ingresso HTTPS.</td></tr>
+            <tr><td>Microsoft Foundry</td><td>Projeto, modelos e agentes gerenciados.</td></tr>
+            <tr><td>Azure AI Search</td><td>Índices com filtro de permissão por documento habilitado.</td></tr>
+            <tr><td>Storage</td><td>Corpus, conversas e trilha de auditoria — os dois últimos com imutabilidade e versionamento.</td></tr>
+            <tr><td>Container Registry</td><td>Imagens, construídas remotamente pelo próprio registry.</td></tr>
+            <tr><td>Application Insights</td><td>Rastreamento OpenTelemetry de cada interação.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>Identidade e segredos</h2>
+      <p style="margin-top:1rem; max-width:72ch; color:var(--ink-2);">
+        Nenhuma chave de API no código ou em variável de ambiente de aplicação. Os serviços se
+        autenticam por <b>identidade gerenciada</b>; as consultas à base viajam com a identidade
+        do usuário via OBO. O único segredo é o do registro de aplicação do Entra, e ele é
+        opcional — sem ele, a stack sobe em modo de identidade única.
+      </p>
+      <div class="quebraria" style="margin-top:1.6rem; max-width:76ch;">
+        <p><b>Detalhe que já custou caro:</b> o Azure recusa um segredo de Container App declarado
+        sem valor, e a recusa derruba o container app inteiro. O frontend, que não declara segredo,
+        sobe normal — e o ambiente fica com tudo no lugar e um buraco em forma de backend, que não
+        se parece com falha de deploy. Hoje o segredo só é declarado quando existe, e há uma
+        verificação automática que impede a volta disso.</p>
+      </div>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>Subir do zero</h2>
+      <p style="margin-top:1rem; max-width:72ch; color:var(--ink-2);">
+        Um comando orquestra o caminho inteiro: verificação de pré-requisitos, provisionamento,
+        build, deploy e ingestão da base. O que continua manual é o que é legitimamente externo —
+        consentimento no Entra e publicação em marketplace.
+      </p>
+      <p class="prova" style="margin-top:1.4rem; padding:0.9rem 1.1rem; background:var(--surface); border:1px solid var(--rule); border-radius:8px; overflow-x:auto;">
+        ./scripts/up-all.sh --with-auth
+      </p>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>Observabilidade</h2>
+      <p style="margin-top:1rem; max-width:72ch; color:var(--ink-2);">
+        Cada interação gera rastro OpenTelemetry no Application Insights, e as avaliações de
+        qualidade ficam ligadas aos rastros — dá para ir de uma nota ruim até a requisição que a
+        produziu. A telemetria é <b>desligada por padrão</b> e ligada explicitamente por
+        configuração, o que é verificado por um teste.
+      </p>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <span>Foundry Assured</span>
+    <span><a href="index.html">todos os públicos</a></span>
+    <span><a href="seguranca.html">controles de segurança</a></span>
+    <span><a href="https://github.com/ruinosus/foundry-assured/tree/main/infra">bicep</a></span>
+  </footer>
+</div>
+</body>
+</html>

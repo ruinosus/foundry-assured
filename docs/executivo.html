@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Foundry Assured — para executivos</title>
+<meta name="description" content="Por que um assistente de IA interno pode entrar em produção: o que este projeto prova, e como." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/deck.css" />
+</head>
+<body>
+<div class="wrap">
+  <div class="para">
+    <span class="para__quem">para&nbsp;/ executivo · 90 segundos</span>
+    <nav class="para__nav" aria-label="Outros públicos">
+      <a href="executivo.html" aria-current="page">executivo</a>
+      <a href="seguranca.html">segurança</a>
+      <a href="infra.html">infra</a>
+      <a href="engenharia.html">engenharia</a>
+      <a href="negocio.html">negócio</a>
+    </nav>
+  </div>
+
+  <main>
+    <section class="entrada">
+      <h1>A pergunta não é se a IA consegue responder.<br />É se você pode confiar na resposta.</h1>
+      <p style="margin-top:1.6rem; font-size:var(--step-1); color:var(--ink-2);">
+        Assistentes internos falham em produção por três motivos, sempre os mesmos: inventam,
+        mostram o que a pessoa não deveria ver, e agem sozinhos. Este projeto trata os três como
+        requisito de engenharia — não como ajuste de prompt.
+      </p>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>O que está resolvido</h2>
+      <div class="dl" style="margin-top:2rem;">
+        <div>
+          <h3>Não inventa</h3>
+          <p style="margin-top:0.6rem; color:var(--ink-2);">
+            Toda resposta cita a fonte, e a citação abre o documento. Sem fonte, o sistema
+            declina em vez de arriscar. Isso é verificado a cada mudança de código — não é
+            promessa de configuração.
+          </p>
+        </div>
+        <div>
+          <h3>Não vaza</h3>
+          <p style="margin-top:0.6rem; color:var(--ink-2);">
+            Cada pessoa vê apenas os documentos aos quais tem direito. O corte acontece no
+            serviço de busca, <b>antes</b> de o modelo ler — então não há como convencê-lo a
+            revelar o que ele nunca recebeu.
+          </p>
+        </div>
+        <div>
+          <h3>Não age sozinho</h3>
+          <p style="margin-top:0.6rem; color:var(--ink-2);">
+            Abrir chamado, escalar, escrever em sistema de terceiro: nada acontece sem uma
+            pessoa autorizada aprovar na tela. A aprovação fica registrada.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>Por que isso importa agora</h2>
+      <p style="margin-top:1.2rem; color:var(--ink-2);">
+        Em comitês de compra de plataforma de IA, <b>segurança, autenticação e trilha de
+        auditoria decidem a lista curta antes de alguém discutir a qualidade das respostas</b>.
+        Um piloto que impressiona na demonstração e não passa nesse crivo não vira produto.
+      </p>
+      <div class="verificado" style="margin-top:1.8rem;">
+        <span class="verificado__marca" aria-hidden="true">✓</span>
+        <div><b>Duas identidades reais, medido em produção.</b></div>
+        <p>
+          A pessoa com direito recebeu <span class="num">93</span> documentos. A pessoa sem
+          direito recebeu <span class="num">0</span> — não uma recusa educada, nada. É a
+          diferença entre um controle que funciona e um que parece funcionar.
+        </p>
+      </div>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>O que sustenta a confiança</h2>
+      <p style="margin-top:1.2rem; color:var(--ink-2);">
+        <span class="num">58</span> verificações automáticas rodam a cada alteração de código.
+        Elas não conferem se o sistema funciona: elas tentam <b>quebrá-lo</b>, e reprovam a
+        entrega quando conseguem. Uma delas simula ataques de injeção; outra planta uma violação
+        de propósito e falha se o mecanismo não a pegar.
+      </p>
+      <div class="quebraria" style="margin-top:1.8rem;">
+        <p><b>O princípio que organiza tudo:</b> um teste que só roda quando alguém lembra não é
+        uma garantia, é uma intenção. Aqui, o que não é verificado automaticamente não conta
+        como resolvido.</p>
+      </div>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>O que decidir</h2>
+      <div class="rolagem" style="margin-top:1.4rem;">
+        <table class="evid">
+          <thead><tr><th>Se você quer</th><th>Vá para</th></tr></thead>
+          <tbody>
+            <tr><td><a href="seguranca.html">avaliar o risco</a></td><td>o que o time de segurança precisa ver antes de aprovar</td></tr>
+            <tr><td><a href="infra.html">entender o custo</a></td><td>três formas de entregar, e o que cada uma consome</td></tr>
+            <tr><td><a href="negocio.html">ver funcionando</a></td><td>o fluxo real, do jeito que a pessoa usa</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <span>Foundry Assured</span>
+    <span><a href="index.html">todos os públicos</a></span>
+    <span><a href="https://github.com/ruinosus/foundry-assured">repositório</a></span>
+  </footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Foundry Assured — para engenharia</title>
+<meta name="description" content="Como o sistema é organizado, o que o mantém coeso, e as decisões que valeram a pena registrar." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,600&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="assets/deck.css" />
+</head>
+<body>
+<div class="wide">
+  <div class="para">
+    <span class="para__quem">para&nbsp;/ engenharia</span>
+    <nav class="para__nav" aria-label="Outros públicos">
+      <a href="executivo.html">executivo</a>
+      <a href="seguranca.html">segurança</a>
+      <a href="infra.html">infra</a>
+      <a href="engenharia.html" aria-current="page">engenharia</a>
+      <a href="negocio.html">negócio</a>
+    </nav>
+  </div>
+
+  <main>
+    <section class="entrada" style="max-width:72ch;">
+      <h1>Como isto é organizado, e o que impede de apodrecer</h1>
+      <p style="margin-top:1.4rem; font-size:var(--step-1); color:var(--ink-2);">
+        A pergunta que organiza o código não é “que tipo de arquivo é este?”, é
+        <b>“de que negócio este arquivo é?”</b> — e há um verificador que mantém a resposta
+        honesta.
+      </p>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>A regra que o CI verifica</h2>
+      <p style="margin-top:1rem; max-width:72ch; color:var(--ink-2);">
+        Monolito modular por domínio. Cada módulo expõe uma única superfície importável; o resto é
+        privado. Um kernel compartilhado não importa módulo nenhum. <span class="num">22</span>
+        contratos de fronteira reprovam a entrega quando alguém atravessa.
+      </p>
+      <p class="prova" style="margin-top:1.4rem; padding:1rem 1.2rem; background:var(--surface); border:1px solid var(--rule); border-radius:8px; overflow-x:auto; line-height:1.9;">
+        composition&nbsp;&nbsp;→ o <b>public</b> de qualquer módulo<br />
+        modules/&lt;m&gt;&nbsp;→ shared + o <b>public</b> de outro módulo<br />
+        shared/&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;→ nada de dentro do app
+      </p>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>Quatro domínios, um mecanismo</h2>
+      <div class="rolagem" style="margin-top:1.6rem;">
+        <table class="evid">
+          <thead><tr><th>Domínio</th><th>Tipo</th><th>O que o distingue</th></tr></thead>
+          <tbody>
+            <tr><td>helpdesk</td><td>workflow</td><td>Grafo multi-agente: tria, busca, redige, decide se precisa de aprovação humana.</td></tr>
+            <tr><td>techdocs</td><td>grounded</td><td>Documentação com três níveis de acesso, cortada por identidade.</td></tr>
+            <tr><td>selfwiki</td><td>grounded</td><td>O próprio repositório como base — o sistema explica a si mesmo.</td></tr>
+            <tr><td>platform</td><td>tool</td><td>Ferramentas MCP first-party da Microsoft, com aprovação humana nas escritas.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:1.4rem; max-width:72ch; color:var(--ink-2);">
+        Adicionar um domínio são três coisas: uma linha no registry do backend, uma no do frontend,
+        e o agente. Os dois registries são espelhos — e um teste guarda esse contrato, porque
+        espelhos divergem em silêncio.
+      </p>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>Prompt não se edita em Python</h2>
+      <p style="margin-top:1rem; max-width:72ch; color:var(--ink-2);">
+        Cada agente é um documento <b>AgentSchema</b> — <span class="num">11</span> deles —
+        publicável sem rebuild, por montagem de um compartilhamento de arquivos. Persona e
+        guardrails ficam ao lado, referenciados por nome, e a composição tem ordem fixa.
+        Mudou o contrato de um prompt? O caso de avaliação correspondente muda no mesmo PR, e há
+        um gate que cobra isso.
+      </p>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>A máxima que governa o resto</h2>
+      <div class="quebraria" style="margin-top:1.2rem; max-width:76ch;">
+        <p><b>Se a plataforma já resolve, ela ganha do nosso código por definição</b> — mesmo que
+        o nosso ficasse mais elegante. O teto do que se escreve aqui é a cola: endpoints finos
+        orquestrando serviços de primeira parte. Escrever código próprio exige demonstrar que se
+        procurou e não existe.</p>
+      </div>
+      <p style="margin-top:1.4rem; max-width:72ch; color:var(--ink-2);">
+        A exceção é calibrada e única: a <b>camada de garantia</b> é nossa. Os gates, a
+        resolubilidade das citações, o contrato de decisão humana. Não há equivalente de primeira
+        parte, e é o que diferencia o projeto.
+      </p>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>O que reprova a entrega</h2>
+      <p style="margin-top:1rem; max-width:72ch; color:var(--ink-2);">
+        <span class="num">58</span> verificações, todas offline e determinísticas — rodam sem
+        credencial de nuvem, justamente para poderem ser exigidas em todo push. Elas não são
+        testes de que funciona: várias plantam o defeito e falham se o mecanismo não o pegar.
+      </p>
+      <div class="dl" style="margin-top:2rem;">
+        <div>
+          <h3>Fronteiras</h3>
+          <p style="margin-top:0.5rem; color:var(--ink-2); font-size:var(--step--1);">
+            Nenhuma dependência nova entre módulos. Nenhum caminho de arquivo calculado contando
+            diretórios acima — três quebraram assim, dois em silêncio.
+          </p>
+        </div>
+        <div>
+          <h3>Contratos</h3>
+          <p style="margin-top:0.5rem; color:var(--ink-2); font-size:var(--step--1);">
+            Produtor e consumidor do doc-bundle concordam. Citação no vocabulário do framework,
+            do backend até o painel.
+          </p>
+        </div>
+        <div>
+          <h3>Armadilhas medidas</h3>
+          <p style="margin-top:0.5rem; color:var(--ink-2); font-size:var(--step--1);">
+            Cada gate desta família nasceu de um defeito real. Um exemplo: o cabeçalho de
+            identidade do Search leva o token <b>cru</b>, enquanto o de autorização, na mesma
+            requisição, leva com prefixo. Errar devolve um erro que manda procurar permissão.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <hr class="sep" />
+
+    <section class="entrada">
+      <h2>Onde as decisões moram</h2>
+      <p style="margin-top:1rem; max-width:72ch; color:var(--ink-2);">
+        <span class="num">26</span> registros de decisão de arquitetura. Não descrevem o que o
+        código faz — isso o código já diz. Registram <b>o que foi considerado e por que a
+        alternativa perdeu</b>, que é o que se perde primeiro.
+      </p>
+      <p style="margin-top:1.2rem;">
+        <a href="https://github.com/ruinosus/foundry-assured/tree/main/docs/adr" class="prova">docs/adr →</a>
+      </p>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <span>Foundry Assured</span>
+    <span><a href="index.html">todos os públicos</a></span>
+    <span><a href="grounded-citations-explainer.html">citações + ACL em detalhe</a></span>
+    <span><a href="https://github.com/ruinosus/foundry-assured">repositório</a></span>
+  </footer>
+</div>
+</body>
+</html>
