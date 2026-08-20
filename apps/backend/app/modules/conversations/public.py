@@ -6,9 +6,13 @@ from app.modules.conversations.internal.langchain_recording import usage_callbac
 from app.modules.conversations.internal.listing import (
     find_conversation,
     get_conversation,
+    is_shared,
     list_conversations,
+    read_shared_conversation,
     record_turn,
     record_usage,
+    share_conversation,
+    unshare_conversation,
     usage_totals,
 )
 from app.modules.conversations.internal.provider import (
@@ -34,9 +38,13 @@ __all__ = [
     "current_conversation",
     "find_conversation",
     "get_conversation",
+    "is_shared",
     "list_conversations",
+    "read_shared_conversation",
     "record_turn",
     "record_usage",
+    "share_conversation",
+    "unshare_conversation",
     "usage_callback",
     "usage_recorder",
     "usage_totals",

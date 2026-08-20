@@ -25,6 +25,7 @@ from __future__ import annotations
 import contextlib
 from dataclasses import asdict
 
+from app.modules.conversations.internal.sharing import share_index
 from app.modules.conversations.internal.store import store
 
 
@@ -188,3 +189,97 @@ def find_conversation(user_id: str, conversation_id: str) -> dict:
         if meta.id == alvo:
             return {"agent": meta.agent, "messages": store().read(user_id, meta.agent, alvo)}
     return {}
+
+
+def share_conversation(user_id: str, agent: str, conversation_id: str) -> bool:
+    """Liga o compartilhamento — só quem É DONO consegue.
+
+    A posse é confirmada por LER a própria conversa (`store().read`, o MESMO caminho que já é o
+    controle de acesso hoje, sem duplicar a regra em outro lugar): vazio significa "não existe ou
+    não é minha", e as duas situações se comportam igual — RULE #6, o acesso é o DADO (a conversa
+    existe sob o meu caminho ou não existe), nunca uma lógica de classificação nova aqui.
+    """
+    if not (user_id and agent and conversation_id):
+        return False
+    if not store().read(user_id, agent, conversation_id):
+        return False
+    share_index().set(conversation_id, user_id, agent)
+    with contextlib.suppress(Exception):
+        from app.modules.audit.public import actor, actor_detail, record
+
+        record(
+            scope="approvals",
+            actor=actor(),
+            kind="write",
+            summary="compartilhamento de conversa ligado",
+            ref=f"{agent}/{conversation_id}",
+            detail=actor_detail(),
+        )
+    return True
+
+
+def unshare_conversation(user_id: str, agent: str, conversation_id: str) -> bool:
+    """Desliga — só o DONO do registro pode, comparado contra QUEM PEDE.
+
+    O `conversation_id` sozinho não é segredo (é o próprio link, por desenho) e não pode ser
+    prova de posse; por isso a checagem é contra o `owner` gravado no índice de compartilhamento,
+    não contra o id em si.
+    """
+    if not (user_id and agent and conversation_id):
+        return False
+    registro = share_index().get(conversation_id)
+    if not registro or registro.owner != user_id or registro.agent != agent:
+        return False
+    share_index().clear(conversation_id)
+    with contextlib.suppress(Exception):
+        from app.modules.audit.public import actor, actor_detail, record
+
+        record(
+            scope="approvals",
+            actor=actor(),
+            kind="write",
+            summary="compartilhamento de conversa revogado",
+            ref=f"{agent}/{conversation_id}",
+            detail=actor_detail(),
+        )
+    return True
+
+
+def is_shared(agent: str, conversation_id: str) -> bool:
+    """Se a conversa está compartilhada agora — para a tela do dono mostrar o estado do botão."""
+    registro = share_index().get(conversation_id)
+    return bool(registro and registro.agent == agent)
+
+
+def read_shared_conversation(conversation_id: str) -> dict:
+    """A conversa pelo link — CAMINHO EXPLÍCITO E SEPARADO de `find_conversation`.
+
+    `find_conversation`/`get_conversation` continuam INTOCADAS, filtrando pelo usuário
+    autenticado: esta função nunca substitui aquela checagem, só é chamada DEPOIS que ela já
+    devolveu vazio (ver api.py `por_id`). A autorização aqui é o link em si — decisão do produto,
+    qualquer autenticado com o `conversation_id` lê, sem lista de destinatários — mas o link só
+    funciona enquanto o dono mantiver o registro em `share_index()`; revogar apaga o registro e
+    esta função volta a devolver `{}`, o mesmo vazio de "nunca existiu".
+
+    NÃO devolve o `owner`: quem lê pelo link não precisa saber quem é o dono, e não é este
+    endpoint que decide se o leitor pode abrir um documento citado — isso é sempre re-decidido
+    por `/source` com a identidade de quem clica (nunca herdado daqui).
+    """
+    registro = share_index().get(conversation_id)
+    if not registro:
+        return {}
+    mensagens = store().read(registro.owner, registro.agent, conversation_id)
+    if not mensagens:
+        return {}
+    with contextlib.suppress(Exception):
+        from app.modules.audit.public import actor, actor_detail, record
+
+        record(
+            scope="access",
+            actor=actor(),
+            kind="access",
+            summary="conversa compartilhada lida por terceiro",
+            ref=f"{registro.agent}/{conversation_id}",
+            detail=actor_detail(),
+        )
+    return {"agent": registro.agent, "messages": mensagens}

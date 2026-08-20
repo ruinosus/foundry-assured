@@ -234,6 +234,15 @@ jobs:
       - name: Citações persistem com a conversa
         run: uv run python -m tests.conversations.citations_persisted_test
 
+      # Compartilhar uma conversa é um caminho EXPLÍCITO e SEPARADO do filtro por dono — nunca
+      # uma relaxação dele. Prova as cinco propriedades: não-compartilhada continua ilegível para
+      # outro usuário, compartilhada é legível por terceiro autenticado, a leitura por terceiro
+      # nunca devolve conteúdo de documento (só a referência — quem lê o documento é sempre
+      # reautorizado em `/source`, com a PRÓPRIA identidade), revogar volta ao estado original, e
+      # cada transição (compartilhar/revogar/ler por terceiro) grava o evento certo na trilha.
+      - name: Conversa compartilhada é caminho explícito, nunca relaxamento do filtro por dono
+        run: uv run python -m tests.conversations.sharing_test
+
       # O helpdesk emite as fontes por API PÚBLICA. A alternativa seria monkeypatch de `_emit_text`
       # — função privada de módulo num pacote que a ADR-020 já descreve como volátil. O nosso
       # código quebra quando NÓS mexemos; um monkeypatch quebra quando ELES publicam um minor.
