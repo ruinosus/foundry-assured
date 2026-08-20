@@ -26,7 +26,7 @@ load_dotenv()
 # IQ pattern for KB-grounded Q&A: grounding from the search context provider (with
 # citations), answering discipline in the instructions, no consume-side Agent Skill.
 TECHDOCS_INSTRUCTIONS = (
-    "Você é um especialista na plataforma **TechDocs** (Avanade AAP). Responda SEMPRE em "
+    "Você é um especialista na plataforma **TechDocs**. Responda SEMPRE em "
     "português (pt-BR).\n\n"
     "Fundamente a resposta **exclusivamente** nos documentos da base de conhecimento do "
     "TechDocs que foram recuperados e estão no seu contexto (Foundry IQ) — nunca em "
@@ -76,7 +76,7 @@ async def main() -> None:
     async with search:
         agent = client.as_agent(
             name="TechDocsExpert",
-            description="Avanade TechDocs platform expert grounded in the TechDocs knowledge base.",
+            description="TechDocs platform expert grounded in the TechDocs knowledge base.",
             instructions=TECHDOCS_INSTRUCTIONS,
             context_providers=[search],
             # Foundry hosting manages conversation history; don't double-store.

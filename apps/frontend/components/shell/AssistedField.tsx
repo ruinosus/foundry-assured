@@ -1,8 +1,8 @@
 "use client";
 
-// Campo assistido — o padrão `AIFieldBlock` do `aap-kb`, adaptado.
+// Campo assistido — o padrão `AIFieldBlock` do um projeto anterior, adaptado.
 //
-// A DIFERENÇA EM RELAÇÃO AO ORIGINAL, e por que ela é aceitável. No `aap-kb` o clique manda um
+// A DIFERENÇA EM RELAÇÃO AO ORIGINAL, e por que ela é aceitável. No um projeto anterior o clique manda um
 // prompt ao CHAT, e quem escreve o campo é o agente pelo caminho normal — o que evita criar um
 // segundo caminho de escrita. Aqui não há chat ao lado do wizard, então a sugestão volta como
 // PROPOSTA: aparece abaixo do campo, e só entra se a pessoa clicar em usar.

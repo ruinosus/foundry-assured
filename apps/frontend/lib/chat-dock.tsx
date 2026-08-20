@@ -6,7 +6,7 @@
 // (que alterna) e o painel na página (que aparece). Passar por props obrigaria cada tela a
 // carregar o estado só para repassá-lo.
 //
-// O padrão vem do `aap-kb` (`lib/chat-dock.tsx`), e o motivo de existir é o mesmo: um campo do
+// O padrão vem de um projeto anterior (`lib/chat-dock.tsx`), e o motivo de existir é o mesmo: um campo do
 // wizard pode pedir ajuda ao agente, e o pedido precisa ABRIR o chat para a pessoa ver a
 // conversa acontecendo. Ajuda que chega sem mostrar de onde veio é ajuda que não se audita.
 

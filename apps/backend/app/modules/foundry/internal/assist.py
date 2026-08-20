@@ -1,6 +1,6 @@
 """Assistência do wizard — redigir e revisar campo, com o catálogo real como contexto.
 
-O QUE ISTO É, e o que NÃO é. O padrão do `aap-kb` manda o pedido ao CHAT, e quem escreve o campo
+O QUE ISTO É, e o que NÃO é. O padrão de um projeto anterior manda o pedido ao CHAT, e quem escreve o campo
 é o agente, pelo caminho normal — o que evita criar um segundo caminho de escrita. Aqui não há
 chat ao lado do wizard, então a sugestão volta como PROPOSTA: a tela mostra, a pessoa aceita ou
 descarta, e nada é gravado sem esse gesto. Não é o mesmo desenho, mas preserva a propriedade que

@@ -7,7 +7,7 @@
 // todos de ORDEM: o efeito rodava antes de o chat montar; a rejeição do run era engolida; e a
 // limpeza do efeito cancelava o próprio envio que ela deveria proteger.
 //
-// O `aap-kb` — que faz isto há mais tempo e funciona — não tem ponte: o hook chama `useAgent` no
+// O um projeto anterior — que faz isto há mais tempo e funciona — não tem ponte: o hook chama `useAgent` no
 // componente que clica e envia no manipulador. Sem efeito, sem estado intermediário, sem ordem
 // para acertar. É a mesma API que o composer do CopilotKit usa por dentro (verificado no bundle):
 //

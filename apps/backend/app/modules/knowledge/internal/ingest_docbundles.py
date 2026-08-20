@@ -6,7 +6,7 @@ pages across 21 components + the platform release). Builds a separate blob conta
 knowledge source and knowledge base (`techdocs-kb`) so the TechDocs expert agent
 retrieves only TechDocs content.
 
-The corpus is INTERNAL (Avanade TechDocs platform docs) — this reads it from an
+The corpus is INTERNAL (TechDocs platform docs) — this reads it from an
 external path (`TECHDOCS_DOCBUNDLES`) and ships it only to the cloud KB; the content
 is never copied into this (public) repo.
 
@@ -60,7 +60,7 @@ from app.modules.tenancy.public import tenant_config
 # domain; the selfwiki domain (this repo's own deep-wiki) reuses this module verbatim by
 # overriding KB_KNOWLEDGE_SOURCE + TECHDOCS_STORAGE_CONTAINER + TECHDOCS_SEARCH_KNOWLEDGE_BASE.
 KNOWLEDGE_SOURCE_NAME = os.environ.get("KB_KNOWLEDGE_SOURCE", "techdocs-docbundles-ks")
-DOMAIN_LABEL = os.environ.get("KB_DOMAIN_LABEL", "Avanade TechDocs platform")
+DOMAIN_LABEL = os.environ.get("KB_DOMAIN_LABEL", "TechDocs platform")
 # Foundry IQ derives these from the knowledge source name.
 INDEXER_NAME = f"{KNOWLEDGE_SOURCE_NAME}-indexer"
 INDEX_NAME = f"{KNOWLEDGE_SOURCE_NAME}-index"

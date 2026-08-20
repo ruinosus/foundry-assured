@@ -1,6 +1,6 @@
 "use client";
 
-// Chat lateral nas telas de gestão — o padrão do `aap-kb`, com uma diferença de escopo.
+// Chat lateral nas telas de gestão — um padrão de projeto anterior, com uma diferença de escopo.
 //
 // POR QUE UM CHAT AQUI. As telas de agentes, conhecimento e skills mostram catálogo e formulário;
 // nenhuma delas responde "qual base eu uso para isso?" ou "como escrevo essa instrução?". O chat
@@ -28,7 +28,7 @@ export function ChatDock() {
   // suas próprias mensagens no core, então não há histórico vazando de um para o outro — era o
   // que o antigo `key={agentId}` (que remontava o provider) protegia, e o que eu havia trocado
   // por thread fixa. Controlar a thread aqui acrescentava uma variável a um caminho que o
-  // `aap-kb` resolve sem ela, e caminho com peça a menos é caminho com bug a menos.
+  // o projeto de origem resolvia sem ela, e caminho com peça a menos é caminho com bug a menos.
 
   // FICA MONTADO MESMO FECHADO, escondido por CSS. Não é preferência de estilo: o
   // `<CopilotChat>` só CONECTA o agente quando monta, e enquanto ele nunca montou um pedido vindo
