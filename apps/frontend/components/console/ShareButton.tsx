@@ -20,6 +20,12 @@ import { sharedConversationUrl } from "@/lib/conversation-url";
 export function ShareButton({ agent, conversationId }: { agent: string; conversationId: string }) {
   const t = useTranslations("console");
   const [shared, setShared] = useState(false);
+  // A MESMA tela abre para o dono e para quem chegou pelo link. Quem chegou pelo link não
+  // pode revogar (o backend compara contra o `owner` do índice), então não pode ver o botão:
+  // um controle que promete o que vai ser recusado é pior que controle nenhum. Começa em
+  // `false` e só liga quando o backend confirma — um botão que aparece tarde é preferível a
+  // um botão que aparece errado.
+  const [dono, setDono] = useState(false);
   const [ocupado, setOcupado] = useState(false);
   const [aviso, setAviso] = useState<string | null>(null);
 
@@ -35,10 +41,14 @@ export function ShareButton({ agent, conversationId }: { agent: string; conversa
     })
       .then((r) => r.json().catch(() => ({})))
       .then((body) => {
-        if (ativo) setShared(Boolean(body?.shared));
+        if (!ativo) return;
+        setShared(Boolean(body?.shared));
+        setDono(Boolean(body?.owner));
       })
       .catch(() => {
-        if (ativo) setShared(false);
+        if (!ativo) return;
+        setShared(false);
+        setDono(false);
       });
     return () => {
       ativo = false;
@@ -78,7 +88,7 @@ export function ShareButton({ agent, conversationId }: { agent: string; conversa
     }
   };
 
-  if (!conversationId) return null;
+  if (!conversationId || !dono) return null;
 
   return (
     <div className="share-btn-wrap">

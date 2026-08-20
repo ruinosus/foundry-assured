@@ -243,6 +243,18 @@ jobs:
       - name: Conversa compartilhada é caminho explícito, nunca relaxamento do filtro por dono
         run: uv run python -m tests.conversations.sharing_test
 
+      # Os dois abaixo JÁ EXISTIAM e o CI nunca os rodou — o `trail_test` inclusive consta como
+      # gate obrigatório no CLAUDE.md. Um teste fora do CI não é um gate, é uma intenção: ele
+      # passa a vida inteira sem ser executado e só "reprova" quando alguém lembra de rodá-lo à
+      # mão, que é justamente quando ninguém lembra. Entram aqui porque o compartilhamento
+      # depende dos dois: a trilha registra compartilhar/revogar/ler, e o store guarda o que o
+      # link expõe.
+      - name: Trilha de auditoria — cadeia, redator e fail-closed (ADR-023)
+        run: uv run python -m tests.audit.trail_test
+
+      - name: A conversa acumula e isola por pessoa
+        run: uv run python -m tests.conversations.conversation_store_test
+
       # O helpdesk emite as fontes por API PÚBLICA. A alternativa seria monkeypatch de `_emit_text`
       # — função privada de módulo num pacote que a ADR-020 já descreve como volátil. O nosso
       # código quebra quando NÓS mexemos; um monkeypatch quebra quando ELES publicam um minor.

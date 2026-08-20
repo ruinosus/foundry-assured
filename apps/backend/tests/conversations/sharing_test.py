@@ -157,6 +157,23 @@ def main() -> int:
         check("is_shared reflete a revogação", listing.is_shared("helpdesk", "conv-1") is False)
         check("is_shared reflete o que continua ligado", listing.is_shared("helpdesk", "conv-2") is True)
 
+        # ── 4b. a tela distingue DONO de quem chegou pelo link ─────────────────────────────
+        # `conv-2` continua compartilhada. Sem `owner`, a mesma resposta serviria aos dois e o
+        # botão "parar de compartilhar" apareceria para quem não pode revogar — um controle que
+        # promete o que o backend recusa.
+        check(
+            "para o dono, o estado diz compartilhada E dono",
+            listing.sharing_status("alice", "helpdesk", "conv-2") == {"shared": True, "owner": True},
+        )
+        check(
+            "para quem chegou pelo link, diz compartilhada mas NÃO dono",
+            listing.sharing_status("bob", "helpdesk", "conv-2") == {"shared": True, "owner": False},
+        )
+        check(
+            "quem não é dono também não revoga — o `owner: False` bate com o que o backend faz",
+            listing.unshare_conversation("bob", "helpdesk", "conv-2") is False,
+        )
+
         # ── 5. cada transição grava o evento certo na trilha ───────────────────────────────
         # Eventos de `approvals` até aqui: share(bob,conv-1)→recusado (nenhum), share(alice,conv-1)
         # →1, share(alice,conv-2)→1, unshare(bob,conv-1)→recusado (nenhum), unshare(alice,conv-1)

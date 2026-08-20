@@ -17,10 +17,10 @@ from app.modules.conversations.public import (
     conversation_user,
     find_conversation,
     get_conversation,
-    is_shared,
     list_conversations,
     read_shared_conversation,
     share_conversation,
+    sharing_status,
     unshare_conversation,
 )
 from app.shared.auth import auth_dependencies
@@ -92,8 +92,12 @@ def abrir(agent: str, conversation_id: str) -> dict:
 
 @router.get("/{agent}/{conversation_id}/share")
 def status_compartilhamento(agent: str, conversation_id: str) -> dict:
-    """Se a conversa está compartilhada agora — o que a tela usa para desenhar o botão."""
-    return {"shared": is_shared(agent, conversation_id)}
+    """Se está compartilhada E se quem pergunta é o dono — o que a tela usa para o botão.
+
+    O `owner` existe porque a mesma tela abre para o dono e para quem chegou pelo link; sem ele,
+    o segundo vê um botão de revogar que o backend recusaria.
+    """
+    return sharing_status(conversation_user(), agent, conversation_id)
 
 
 @router.post("/{agent}/{conversation_id}/share")

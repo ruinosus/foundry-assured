@@ -251,6 +251,22 @@ def is_shared(agent: str, conversation_id: str) -> bool:
     return bool(registro and registro.agent == agent)
 
 
+def sharing_status(user_id: str, agent: str, conversation_id: str) -> dict:
+    """O estado do compartilhamento MAIS se quem pergunta é o dono.
+
+    Sem o segundo campo a tela desenha um botão "parar de compartilhar" para quem abriu o link:
+    um controle que promete uma ação que o backend vai recusar (`unshare` compara contra o
+    `owner` do índice). Um botão que mente sobre o que faz é pior que um botão ausente.
+
+    A posse sai do MESMO caminho de `share_conversation` — ler a própria conversa — e não de uma
+    regra nova. Devolver `owner: false` não revela QUEM é o dono, só que não é quem perguntou.
+    """
+    return {
+        "shared": is_shared(agent, conversation_id),
+        "owner": bool(user_id and store().read(user_id, agent, conversation_id)),
+    }
+
+
 def read_shared_conversation(conversation_id: str) -> dict:
     """A conversa pelo link — CAMINHO EXPLÍCITO E SEPARADO de `find_conversation`.
 
