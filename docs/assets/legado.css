@@ -1,0 +1,115 @@
+/* Ponte para as páginas anteriores ao sistema visual atual.
+ *
+ * Elas têm layout próprio — diagramas posicionados, tabelas comparativas — e reescrever tudo à
+ * mão trocaria um risco pequeno (paleta datada) por um grande (quebrar diagrama em silêncio).
+ * Então esta camada REDEFINE as variáveis que aquelas páginas já usam, apontando cada uma para
+ * o token semântico correspondente. O layout continua exatamente onde estava; só a cor muda.
+ *
+ * Carrega DEPOIS do <style> de cada página, por isso vence.
+ *
+ * Também neutraliza dois padrões que o sistema atual não usa:
+ *   · `.grad` — texto com gradiente. Decorativo, nunca semântico; vira cor sólida.
+ *   · `.kicker` — eyebrow em maiúsculas espaçadas acima de toda seção. Vira o mesmo rótulo
+ *     monoespaçado que identifica seção nas páginas novas.
+ */
+
+:root, html {
+  /* fundos */
+  --bg: var(--ground) !important;
+  --bg2: var(--surface) !important;
+  --panel: var(--surface) !important;
+  --panel2: var(--surface) !important;
+  --panel-2: var(--surface) !important;
+  --card: var(--surface) !important;
+  --card2: var(--surface) !important;
+  --node: var(--surface) !important;
+
+  /* traços */
+  --line: var(--rule) !important;
+  --line-soft: var(--rule) !important;
+  --border: var(--rule) !important;
+  --card-border: var(--rule) !important;
+  --accent-line: color-mix(in oklch, var(--proven) 45%, transparent) !important;
+  --gold-line: color-mix(in oklch, var(--fail) 45%, transparent) !important;
+
+  /* texto */
+  --text: var(--ink) !important;
+  --txt: var(--ink) !important;
+  --txt-strong: var(--ink) !important;
+  --ink: var(--ink) !important;
+  --muted: var(--ink-2) !important;
+  --dim: var(--ink-2) !important;
+
+  /* semântica: verde = verificado, âmbar/vermelho = risco. Tudo o mais é neutro, de propósito —
+     seis cores decorativas competindo é o que fazia a página parecer um painel de aeroporto. */
+  --accent: var(--proven) !important;
+  --accent-dim: var(--proven-wash) !important;
+  --green: var(--proven) !important;
+  --ok: var(--proven) !important;
+  --yes: var(--proven) !important;
+  --red: var(--fail) !important;
+  --no: var(--fail) !important;
+  --warn: var(--fail) !important;
+  --amber: var(--fail) !important;
+  --gold: var(--fail) !important;
+  --gold-dim: var(--fail-wash) !important;
+  --part: var(--ink-2) !important;
+
+  --blue: var(--ink-2) !important;
+  --indigo: var(--ink-2) !important;
+  --violet: var(--ink-2) !important;
+  --cyan: var(--ink-2) !important;
+  --pink: var(--ink-2) !important;
+  --pub: var(--ink-2) !important;
+  --plat: var(--ink-2) !important;
+  --price: var(--ink-2) !important;
+  --fraud: var(--fail) !important;
+}
+
+body { font-family: var(--serif) !important; color: var(--ink); background: var(--ground); }
+code, pre, .mono, .prova { font-family: var(--mono) !important; }
+
+/* Texto com gradiente → cor sólida. Ênfase por peso e tamanho, não por decoração. */
+.grad {
+  background: none !important; -webkit-background-clip: initial !important;
+  background-clip: initial !important; color: var(--ink) !important;
+}
+
+/* Eyebrow → rótulo monoespaçado, o mesmo componente das páginas novas. */
+.kicker {
+  font-family: var(--mono) !important; text-transform: none !important;
+  letter-spacing: 0 !important; color: var(--proven) !important; font-weight: 700 !important;
+  font-size: var(--step--1) !important;
+}
+
+.badge, .tag, .selo { font-family: var(--mono) !important; }
+.card, .node, .panel { border-radius: 12px !important; }
+
+/* — correções que só aparecem depois de ver renderizado — */
+
+/* Títulos: o `body` acima não alcança quem declara família própria. */
+h1, h2, h3, .lead { font-family: var(--serif) !important; }
+
+/* Link herdando cor clara pensada para fundo escuro fica invisível no claro.
+   Aqui ele volta a ter a cor do texto, com sublinhado — que é o que o identifica como link. */
+a { color: var(--ink) !important; }
+a:hover { color: var(--proven) !important; }
+.pe a, .footer a, .rodape a { color: var(--ink-2) !important; }
+
+/* Tabela larga tem que rolar DENTRO de si, nunca empurrar a página.
+   O comparativo tinha cinco colunas cortadas à direita — o conteúdo existia e não era alcançável. */
+table { display: block !important; overflow-x: auto !important; max-width: 100% !important; }
+table thead, table tbody { display: table !important; width: 100% !important; }
+
+/* Ponto ativo da navegação: era um gradiente entre duas cores decorativas. */
+.nav-dots a.on { background: var(--proven) !important; }
+.nav-dots a { background: color-mix(in oklch, var(--ink) 22%, transparent) !important; }
+
+/* Faixa fixa no topo de alguns decks: o fundo dela era translúcido sobre escuro. No claro,
+   translúcido deixa o texto de baixo aparecer através — vira sopa. Fundo sólido resolve. */
+[style*="position:fixed"][style*="top:14px"],
+[style*="position: fixed"][style*="top: 14px"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--rule) !important;
+  backdrop-filter: none !important;
+}
