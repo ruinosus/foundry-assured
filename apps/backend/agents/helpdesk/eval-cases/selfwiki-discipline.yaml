@@ -24,6 +24,21 @@ checks:
 # persona to every agent that did not override its prompt template.
 - type: not_contains
   value: Helpdesk Concierge
+# A regra de sintaxe do Mermaid virou guardrail (guardrails/mermaid-syntax.md) e passou a
+# valer para os dois agentes que desenham diagramas, em vez de existir duplicada na
+# instrução de cada um. As invariantes abaixo protegem o que o parser realmente exige:
+# um diagrama que não parseia OCUPA o lugar da explicação e mostra ao usuário o erro cru
+# do mermaid — foi o que aconteceu em 2026-08-21, com rótulos como
+# `C{Emite "citations" (evento "sources")}` (aspas dentro de {}) e
+# `F[/api/source/{domain}/{name} (authedFetch)]` (chaves e barras sem aspas envolvendo).
+# A instrução antiga existia, mas como parêntese no fim de uma frase que já tinha outro
+# parêntese — e foi ignorada nos dois diagramas medidos.
+- type: contains
+  value: Envolva TODO rótulo em aspas duplas
+- type: contains
+  value: Nunca use aspas duplas DENTRO do rótulo
+- type: contains
+  value: '```mermaid'
 - type: min_length
   value: 1500
 expected: The selfwiki prompt keeps the dogfood grounding discipline and the short honest-gap behavior.
