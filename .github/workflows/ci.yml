@@ -361,6 +361,15 @@ jobs:
         run: npm run verify:thread-citations
       - name: Cabeçalhos mesclados sem duplicar a caixa
         run: npm run verify:headers
+
+      # O app importa `defaultRehypePlugins` de "streamdown" e entrega a lista ao renderer do
+      # CopilotKit — o que só funciona enquanto os dois resolvem a MESMA cópia. Em 2026-08-20 o
+      # dependabot subiu a declaração do app de ^1.6.11 para ^2.5.0 (major); o CopilotKit ficou
+      # em ^1.3.0 com uma cópia aninhada, e o Mermaid parou de renderizar. Build verde,
+      # typecheck limpo, nenhum erro — o sintoma aparece no render, longe da causa.
+      - name: Renderer resolvido numa cópia só (app ↔ CopilotKit)
+        working-directory: .
+        run: node scripts/check-renderer-single-copy.mjs
       # ENFORCING. This gate was advisory through two consecutive breakages, and each
       # time the breakage looked exactly like success: first `next lint` (removed in
       # Next 16) exited 1 reading "lint" as a directory; then ESLint 10 CRASHED loading
