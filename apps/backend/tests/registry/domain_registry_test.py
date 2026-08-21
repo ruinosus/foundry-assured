@@ -9,8 +9,11 @@ the heavy factories/adapter monkeypatched so the dispatch-by-kind is exercised c
 
 from __future__ import annotations
 
+import pathlib
+import re
 import sys
 
+import app as _app
 import app.registry as domains_mod
 from app.registry import DomainSpec, _domains, domain_deps, mount_domains
 
@@ -77,6 +80,39 @@ class _FakeApp:
         return decorator
 
 
+
+# Ancorado no pacote `app`, nunca contado por `parents[N]` a partir deste arquivo (regra 9).
+FRONTEND_REGISTRY = pathlib.Path(_app.__file__).resolve().parents[3] / "apps/frontend/lib/domains.ts"
+
+#: Comentário de bloco e de linha, removidos ANTES de procurar `id:`/`kind:`. Um domínio
+#: comentado (o techdocs passou semanas assim) não pode contar como declarado — foi exatamente
+#: essa a divergência que este gate deveria ter pegado e não pegou.
+_COMENTARIO = re.compile(r"/\*.*?\*/|(?<![:\w])//[^\n]*", re.DOTALL)
+_ENTRADA = re.compile(r'id:\s*"([a-z_]+)"(.*?)(?=\n\s{2}\}|\Z)', re.DOTALL)
+_KIND = re.compile(r'kind:\s*"([a-z]+)"')
+
+
+def kinds_do_frontend() -> dict[str, str]:
+    """`{id: kind}` lido do registry do FRONTEND — o arquivo, não uma cópia dele.
+
+    O check que existia aqui se chamava "kind map matches domains.ts" e nunca abria o
+    `domains.ts`: comparava `_domains()` com um dicionário literal escrito no próprio teste. Ou
+    seja, o backend contra uma cópia de si mesmo. Ficou verde durante todo o tempo em que o
+    `techdocs` existia no backend e estava COMENTADO no frontend — a divergência que o nome do
+    check prometia detectar.
+
+    Um parser de TypeScript seria exagero: o registry é uma lista de literais com forma fixa, e
+    `domain_registry_test` roda offline. O que não pode faltar é remover os comentários antes.
+    """
+    fonte = _COMENTARIO.sub("", FRONTEND_REGISTRY.read_text(encoding="utf-8"))
+    achados: dict[str, str] = {}
+    for domain_id, corpo in _ENTRADA.findall(fonte):
+        kind = _KIND.search(corpo)
+        if kind:
+            achados[domain_id] = kind.group(1)
+    return achados
+
+
 def main() -> int:
     failures: list[str] = []
 
@@ -89,10 +125,22 @@ def main() -> int:
     specs = _domains()
     by_id = {d.id: d for d in specs}
     check("four domains", len(specs) == 4 and set(by_id) == {"helpdesk", "techdocs", "selfwiki", "platform"})
-    kind_map = {d.id: d.kind for d in specs}
+    # DOMAIN_KINDS (todos os domínios montáveis) contra o registry do FRONTEND, lido do disco.
+    # `_domains()` é o subconjunto que carrega config por request; comparar só ele deixava
+    # `builder`, `oncall` e `deepcall` fora de qualquer verificação de espelho.
+    frontend = kinds_do_frontend()
+    backend = dict(domains_mod.DOMAIN_KINDS)
+    so_no_backend = sorted(set(backend) - set(frontend))
+    so_no_frontend = sorted(set(frontend) - set(backend))
+    divergentes = sorted(k for k in set(backend) & set(frontend) if backend[k] != frontend[k])
+    if so_no_backend or so_no_frontend or divergentes:
+        print(f"      só no backend : {so_no_backend or '—'}")
+        print(f"      só no frontend: {so_no_frontend or '—'}")
+        for k in divergentes:
+            print(f"      kind diverge  : {k} (backend={backend[k]}, frontend={frontend[k]})")
     check(
-        "kind map matches domains.ts",
-        kind_map == {"helpdesk": "workflow", "techdocs": "grounded", "selfwiki": "grounded", "platform": "tool"},
+        f"kind map matches domains.ts ({len(frontend)} domínios lidos do arquivo)",
+        backend == frontend,
     )
 
     for gid in ("techdocs", "selfwiki"):
