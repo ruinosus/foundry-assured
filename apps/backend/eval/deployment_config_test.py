@@ -72,6 +72,44 @@ def contradicoes(env: dict[str, str]) -> list[str]:
     return achados
 
 
+def sem_role_de_storage(app_name: str, rg: str, conta: str) -> str | None:
+    """A identidade do app escreve conversas e trilha em blob — precisa de role no storage.
+
+    Ter a variável não basta: por meses `AZURE_STORAGE_ACCOUNT` estava vazia E a identidade não
+    tinha role nenhuma no storage, e os dois defeitos se escondiam um atrás do outro — a URL
+    inválida fazia o SDK falhar ANTES de tentar autenticar, então a ausência de permissão nunca
+    aparecia. Corrigida a variável, o primeiro `create_container` levou `AuthorizationFailure`
+    e virou 502 em /conversations.
+    """
+    principal = subprocess.run(
+        ["az", "containerapp", "show", "-n", app_name, "-g", rg,
+         "--query", "identity.userAssignedIdentities.*.principalId | [0]", "-o", "tsv"],
+        capture_output=True, text=True, timeout=120, check=False,
+    ).stdout.strip()
+    if not principal:
+        return None  # sem identidade gerenciada declarada — fora do escopo deste gate
+
+    escopo = subprocess.run(
+        ["az", "storage", "account", "show", "-n", conta, "-g", rg, "--query", "id", "-o", "tsv"],
+        capture_output=True, text=True, timeout=120, check=False,
+    ).stdout.strip()
+    if not escopo:
+        return None
+
+    roles = subprocess.run(
+        ["az", "role", "assignment", "list", "--assignee", principal, "--scope", escopo,
+         "--query", "[].roleDefinitionName", "-o", "tsv"],
+        capture_output=True, text=True, timeout=180, check=False,
+    ).stdout.split()
+    if any("Storage Blob Data Contributor" in r or "Storage Blob Data Owner" in r for r in
+           [" ".join(roles)] + roles):
+        return None
+    return (
+        f"a identidade do app não tem 'Storage Blob Data Contributor' em '{conta}' — "
+        f"o store de conversas e a trilha de auditoria escrevem em blob e vão dar 502"
+    )
+
+
 def main() -> int:
     app_name = os.environ.get("AZURE_TARGET_APP", "")
     rg = os.environ.get("AZURE_TARGET_RG", "")
@@ -85,14 +123,20 @@ def main() -> int:
         return 1
 
     achados = contradicoes(env)
+    conta = env.get("AZURE_STORAGE_ACCOUNT", "")
+    if conta:
+        problema = sem_role_de_storage(app_name, rg, conta)
+        if problema:
+            achados.append(problema)
     if achados:
         print(f"❌ a configuração de '{app_name}' contradiz o que o registry declara:\n")
         for a in achados:
             print(f"  ✗ {a}")
         print(
-            "\n   Nenhuma dessas falha alto em runtime: o app sobe, responde 200 e serve os"
-            "\n   domínios sem ACL — só o que depende delas fica mudo. Declare as variáveis em"
-            "\n   infra/containerapps.bicep (não basta estar no azd env / GitHub Variables)."
+            "\n   Nenhuma dessas falha alto no boot: o app sobe, responde 200 no health e serve"
+            "\n   os domínios que não dependem delas. Variável faltando declara-se em"
+            "\n   infra/containerapps.bicep (não basta estar no azd env / GitHub Variables);"
+            "\n   role faltando, em infra/resources.bicep, para a identidade do app."
         )
         return 1
 

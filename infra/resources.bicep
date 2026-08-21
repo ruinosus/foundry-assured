@@ -512,6 +512,24 @@ resource userSearchIndexContributor 'Microsoft.Authorization/roleAssignments@202
   }
 }
 
+// App -> o store de CONVERSAS e a trilha de AUDITORIA vivem em blob, e o app ESCREVE neles.
+//
+// Esta atribuição faltava desde sempre e ninguém percebeu, porque `AZURE_STORAGE_ACCOUNT` também
+// não chegava ao container: a URL nascia como `https://.blob.core.windows.net/...` e o SDK falhava
+// antes de tentar autenticar. Com a variável no lugar, o app passou a de fato chamar o storage e
+// levou `AuthorizationFailure` no primeiro `create_container` — 502 em /conversations.
+//
+// Contributor, não Reader: o store grava a transcrição e cria o container na primeira escrita.
+resource appStorageContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
+  name: guid(storage.id, appIdentity.id, roleStorageBlobDataContributor)
+  scope: storage
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', roleStorageBlobDataContributor)
+    principalId: appIdentity.properties.principalId
+    principalType: 'ServicePrincipal'
+  }
+}
+
 // Caller -> upload corpus markdown to blob during ingestion.
 resource userStorageContributor 'Microsoft.Authorization/roleAssignments@2022-04-01' = if (!empty(principalId)) {
   name: guid(storage.id, principalId, roleStorageBlobDataContributor)
