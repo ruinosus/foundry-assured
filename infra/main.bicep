@@ -92,6 +92,10 @@ module apps 'containerapps.bicep' = {
     azureSearchEndpoint: resources.outputs.AZURE_SEARCH_ENDPOINT
     azureSearchKnowledgeBase: resources.outputs.AZURE_SEARCH_KNOWLEDGE_BASE
     storageAccountName: resources.outputs.AZURE_STORAGE_ACCOUNT
+    corpusContainerName: resources.outputs.AZURE_STORAGE_CONTAINER
+    storageResourceId: resources.outputs.AZURE_STORAGE_RESOURCE_ID
+    azureAiOpenAiEndpoint: resources.outputs.AZURE_AI_OPENAI_ENDPOINT
+    embeddingModelName: resources.outputs.FOUNDRY_EMBEDDING_MODEL
     fileShareName: resources.outputs.AZURE_FILE_SHARE
     promptsShareName: resources.outputs.AZURE_PROMPTS_FILE_SHARE
     entraTenantId: entraTenantId

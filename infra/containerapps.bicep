@@ -38,6 +38,14 @@ param appUsersGroupId string = ''
 
 @description('Storage account backing the Azure Files share for persisted app data.')
 param storageAccountName string
+@description('Blob container do corpus (azd: AZURE_STORAGE_CONTAINER). O backend monta a URL do documento com ele.')
+param corpusContainerName string = ''
+@description('Resource id da conta de storage (azd: AZURE_STORAGE_RESOURCE_ID).')
+param storageResourceId string = ''
+@description('Endpoint Azure OpenAI do recurso Foundry (azd: AZURE_AI_OPENAI_ENDPOINT).')
+param azureAiOpenAiEndpoint string = ''
+@description('Deployment de embedding (azd: FOUNDRY_EMBEDDING_MODEL).')
+param embeddingModelName string = ''
 
 @description('Azure Files share mounted into the backend at /app/data (tickets.jsonl).')
 param fileShareName string
@@ -175,6 +183,17 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             // backend composes prompts from $AGENTS_DIR/helpdesk when that
             // scope exists on the mounted share, else falls back (loudly) to
             // the copy baked into the image. Prompt update = push-prompts.sh.
+            // ── Storage. SEM estes o backend monta `https://.blob.core.windows.net/...`:
+            // `/source` filtra o índice por `blob_url eq` e não casa com nada (403 numa citação
+            // que o agente acabou de emitir), e o store de conversas não acha container nenhum
+            // (lista vazia + 404 em /conversations/by-id). O parâmetro storageAccountName já
+            // chegava aqui desde sempre — era usado só para o file share, nunca exposto ao app.
+            { name: 'AZURE_STORAGE_ACCOUNT', value: storageAccountName }
+            { name: 'AZURE_STORAGE_CONTAINER', value: corpusContainerName }
+            { name: 'AZURE_STORAGE_RESOURCE_ID', value: storageResourceId }
+            // Usados pela escrita de conhecimento e pela ingestão a partir do app.
+            { name: 'AZURE_AI_OPENAI_ENDPOINT', value: azureAiOpenAiEndpoint }
+            { name: 'FOUNDRY_EMBEDDING_MODEL', value: embeddingModelName }
             { name: 'AGENTS_DIR', value: '/mnt/agents' }
           ], empty(entraApiClientSecret) ? [] : [
             // Pareado com o `secrets` acima: um `secretRef` apontando para um segredo que não
