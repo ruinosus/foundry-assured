@@ -121,6 +121,21 @@ jobs:
           for svc in ${{ inputs.services || 'backend web' }}; do
             azd deploy "$svc" --no-prompt
           done
+      # O deploy termina "verde" mesmo quando o app nasce mudo: em 2026-08 ele subiu com
+      # AZURE_STORAGE_ACCOUNT vazia (nunca declarada no bicep) e respondeu 200 no health, serviu
+      # o helpdesk, e ao mesmo tempo dava 403 em toda citação e 404 em toda conversa — sem um
+      # único erro no log. Este passo compara a config que CHEGOU ao container com o que o
+      # registry declara e falha quando uma contradiz a outra.
+      - name: Config do ambiente sustenta o registry (pós-deploy)
+        working-directory: apps/backend
+        env:
+          AZURE_TARGET_APP: ca-backend-${{ env.AZURE_RESOURCE_TOKEN }}
+          AZURE_TARGET_RG: ${{ env.AZURE_RESOURCE_GROUP }}
+        run: |
+          APP="$(az containerapp list -g "$AZURE_TARGET_RG" \
+                 --query "[?starts_with(name,'ca-backend')].name | [0]" -o tsv)"
+          AZURE_TARGET_APP="$APP" uv run python -m eval.deployment_config_test
+
       - name: Web URL
         if: always()
         run: azd env get-values | grep -E '^WEB_URL=' >> "$GITHUB_STEP_SUMMARY" || true
