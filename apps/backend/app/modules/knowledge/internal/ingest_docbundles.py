@@ -66,6 +66,44 @@ INDEXER_NAME = f"{KNOWLEDGE_SOURCE_NAME}-indexer"
 INDEX_NAME = f"{KNOWLEDGE_SOURCE_NAME}-index"
 
 
+def _drop_schedule(indexer_client: SearchIndexerClient, name: str) -> None:
+    """Tira a agenda automática do indexer. Idempotente; erro aqui NUNCA aborta a ingestão.
+
+    O `AzureBlobKnowledgeSource` cria o indexer com `schedule` de ~1 dia POR PADRÃO DO AZURE —
+    nada neste repositório pede isso (`grep -rn schedule app/ cli/ infra/` não acha nenhuma
+    definição). E essa agenda é incompatível com o desenho de ACL daqui:
+
+      - o campo `groups` NÃO existe no blob; quem o escreve é `setup_acl`, por PATCH direto no
+        índice, no último passo da ingestão;
+      - o indexer reescreve o documento inteiro a partir do blob, então cada execução dele
+        ZERA o `groups`;
+      - com `permissionFilterOption: enabled`, documento sem grupo é invisível para TODOS
+        (fail-closed).
+
+    Ou seja: os dois escritores do campo se sobrescrevem, e o que tem relógio ganha sempre.
+    Em 2026-08-20 o selfwiki foi ingerido e carimbado às 18:41, a agenda disparou às 19:58, e o
+    domínio inteiro ficou mudo — com o CI verde, porque ele verifica logo depois da ingestão,
+    dentro da janela em que o carimbo ainda existe.
+
+    A agenda também não serve para nada aqui: os blobs vêm de um upload nosso (a wiki gerada
+    deste repo), não mudam sozinhos, e a ingestão já dispara o indexer explicitamente. Reindexar
+    conteúdo idêntico todo dia só apaga o carimbo.
+
+    A alternativa nativa — `indexer_permission_options=["groupIds"]` na data source, que faria a
+    permissão vir da FONTE e sobreviver à reindexação — exige ADLS Gen2 (hierarchical namespace).
+    O storage aqui é StorageV2 flat, então ela não está disponível. Ver o comentário no PR.
+    """
+    try:
+        indexer = indexer_client.get_indexer(name)
+        if indexer.schedule is None:
+            return
+        indexer.schedule = None
+        indexer_client.create_or_update_indexer(indexer)
+        print(f"  agenda automática removida de '{name}' (ela apagaria o carimbo de ACL)")
+    except HttpResponseError as e:  # pragma: no cover - defensivo
+        print(f"  ⚠️  não consegui remover a agenda de '{name}': {e}")
+
+
 def trigger_indexer(
     indexer_client: SearchIndexerClient, *, indexer_name: str | None = None, wait_s: int = 0, poll_s: int = 8
 ) -> None:
@@ -83,6 +121,7 @@ def trigger_indexer(
     `wait_s > 0` only when you must confirm completion synchronously.
     """
     name = indexer_name or INDEXER_NAME
+    _drop_schedule(indexer_client, name)
     try:
         indexer_client.run_indexer(name)
     except HttpResponseError as e:

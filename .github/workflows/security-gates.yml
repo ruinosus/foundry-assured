@@ -51,6 +51,14 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
       - name: Install deps
         run: uv sync --frozen
+      # Os gates abaixo medem VISIBILIDADE, e por isso não veriam o defeito de 2026-08-20:
+      # o carimbo de ACL estava certo às 18:41 e apagado às 19:58, sem nada rodar no meio a
+      # não ser a agenda automática do indexer. Um estado correto dentro da janela não prova
+      # durabilidade. Este gate mede a CONFIGURAÇÃO, que não tem janela — vem primeiro porque
+      # é barato e porque um carimbo com prazo de validade invalida o que vem depois.
+      - name: ACL durability (nenhum índice com trim depende de indexer agendado)
+        run: uv run python -m eval.acl_durability_test
+
       - name: Access-control gate (no cross-group leak — agentic retrieval path)
         run: uv run python -m eval.access_control_test
       - name: Access-control gate (no cross-group leak — GET /source document path)

@@ -302,6 +302,22 @@
     "unreachable": "Não foi possível carregar as conversas."
   },
   "domains": {
+    "builder": {
+      "label": "Construtor de assistentes",
+      "blurb": "Ajuda a preencher o formulário de criação — propõe o texto de cada campo, com a fonte de onde tirou. Nunca publica.",
+      "demonstrates": "",
+      "suggested": []
+    },
+    "deepcall": {
+      "label": "Plantão (deepagents)",
+      "blurb": "O mesmo problema do plantão, no harness deepagents — para comparar os dois na prática.",
+      "demonstrates": "Dois harnesses resolvendo o mesmo problema, com autoavaliação por rubrica no runtime",
+      "suggested": [
+        "O checkout está fora do ar para todos os usuários.",
+        "A taxa de erro do serviço de pagamentos subiu para 8%.",
+        "Um job noturno falhou, mas ninguém foi impactado."
+      ]
+    },
     "helpdesk": {
       "label": "Helpdesk concierge",
       "blurb": "Triagem → fundamenta → resolve → escala, com aprovação humana antes de abrir um chamado.",
@@ -310,16 +326,6 @@
         "Como faço rollback de um deploy em produção?",
         "Preciso de acesso de produção — abre um chamado pra mim?",
         "Meu pod está em CrashLoopBackOff, por onde começo?"
-      ]
-    },
-    "selfwiki": {
-      "label": "Wiki do projeto",
-      "blurb": "Pergunte sobre este próprio repositório — a deep-wiki gerada do código real do monorepo.",
-      "demonstrates": "Documentação escrita pela IA a partir do código, com gate de fidelidade e acesso por documento",
-      "suggested": [
-        "Quais endpoints AG-UI o backend expõe?",
-        "Como funciona o controle de acesso por documento?",
-        "Quais são as fases de implementação do projeto?"
       ]
     },
     "oncall": {
@@ -342,21 +348,25 @@
         "Quanto gastei em AI Search neste mês?"
       ]
     },
-    "deepcall": {
-      "label": "Plantão (deepagents)",
-      "blurb": "O mesmo problema do plantão, no harness deepagents — para comparar os dois na prática.",
-      "demonstrates": "Dois harnesses resolvendo o mesmo problema, com autoavaliação por rubrica no runtime",
+    "selfwiki": {
+      "label": "Wiki do projeto",
+      "blurb": "Pergunte sobre este próprio repositório — a deep-wiki gerada do código real do monorepo.",
+      "demonstrates": "Documentação escrita pela IA a partir do código, com gate de fidelidade e acesso por documento",
       "suggested": [
-        "O checkout está fora do ar para todos os usuários.",
-        "A taxa de erro do serviço de pagamentos subiu para 8%.",
-        "Um job noturno falhou, mas ninguém foi impactado."
+        "Quais endpoints AG-UI o backend expõe?",
+        "Como funciona o controle de acesso por documento?",
+        "Quais são as fases de implementação do projeto?"
       ]
     },
-    "builder": {
-      "label": "Construtor de assistentes",
-      "blurb": "Ajuda a preencher o formulário de criação — propõe o texto de cada campo, com a fonte de onde tirou. Nunca publica.",
-      "demonstrates": "",
-      "suggested": []
+    "techdocs": {
+      "label": "TechDocs expert",
+      "blurb": "Q&A fundamentado na base da plataforma TechDocs — cita o componente e o documento de cada afirmação.",
+      "demonstrates": "Recuperação com recorte por nível de acesso: o mesmo corpus responde diferente conforme o grupo de quem pergunta",
+      "suggested": [
+        "Quais são todos os servidores MCP do TechDocs?",
+        "Qual é a arquitetura do techdocs-portal-api?",
+        "Como funciona a hierarquia de multi-tenancy?"
+      ]
     }
   },
   "evals": {

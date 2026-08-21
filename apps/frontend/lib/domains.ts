@@ -63,25 +63,14 @@ export const DOMAINS: Domain[] = [
     // authorized for, unlike raw model inference (/openai/v1/responses) which 403s on this project.
     hostedAgentId: "helpdesk-hosted",
   },
-  // TEMP: techdocs hidden from the app — its Foundry KB (techdocs-si-kb) isn't provisioned in this
-  // env, so the domain 404s on retrieve. Corpus + backend agent are untouched; restore this block
-  // (and ingest the KB) to bring it back.
-  // {
-  //   id: "techdocs",
-  //   framework: "agent-framework",
-  //   icon: "🛰️",
-  //   label: "TechDocs expert",
-  //   kind: "grounded",
-  //   blurb:
-  //     "Q&A fundamentado na base da plataforma TechDocs — cita o componente e o documento de cada afirmação.",
-  //   suggested: [
-  //     "Quais são todos os servidores MCP do TechDocs?",
-  //     "Qual é a arquitetura do techdocs-portal-api?",
-  //     "Como funciona a hierarquia de multi-tenancy?",
-  //   ],
-  //   endpoint: "/techdocs",
-  //   // Grounded runs live via OBO — no hosted twin needed.
-  // },
+  {
+    id: "techdocs",
+    framework: "agent-framework",
+    icon: "🛰️",
+    kind: "grounded",
+    endpoint: "/techdocs",
+    // Grounded roda ao vivo via OBO — sem gêmeo hospedado.
+  },
   {
     id: "selfwiki",
     framework: "agent-framework",
