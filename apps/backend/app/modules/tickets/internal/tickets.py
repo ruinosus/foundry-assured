@@ -1,12 +1,9 @@
 """A real (persisted) ticket tool — replaces the simulated ticket id.
 
 `create_ticket` is a genuine action: it persists a ticket to data/tickets.jsonl
-and returns it. It's also exposed as an agent-framework `@tool` (FunctionTool) so a
-model can call it autonomously (the hosted agent does this); in the live workflow
-it's gated behind human approval and invoked by the EscalationExecutor. Tickets are
-viewable via the backend `GET /tickets` and the frontend `/tickets` page.
-
-Tool API verified against agent-framework 1.9.0 (`agent_framework.tool`).
+and returns it. In the live workflow it's gated behind human approval and invoked
+by the EscalationExecutor. Tickets are viewable via the backend `GET /tickets` and
+the frontend `/tickets` page.
 """
 
 from __future__ import annotations
@@ -16,8 +13,6 @@ import json
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
-
-from agent_framework import tool
 
 import app as _app
 
@@ -117,12 +112,3 @@ def list_tickets(limit: int = 50, domain: str = "") -> list[dict]:
         rows = [r for r in rows if r.get("domain") == domain]
     rows.reverse()
     return rows[:limit]
-
-
-# The same action as a model-callable tool (used by the hosted agent).
-create_ticket_tool = tool(
-    create_ticket,
-    name="create_ticket",
-    description="Open a support ticket when the developer needs an action the runbooks "
-    "can't resolve (replace hardware, reset access, escalate to a team). Returns the ticket id.",
-)
