@@ -320,6 +320,21 @@ jobs:
       - name: Shared mode resolves domain config per tenant
         run: uv run python -m tests.registry.shared_domain_spec_test
 
+      # MCP server: Resource Server (não authorization server), papel decide as tools visíveis,
+      # sem token não responde (com WWW-Authenticate apontando onde autenticar), e o token do
+      # CHAMADOR — não da aplicação — chega ao retrieve. O último é o que impede a falha mais cara
+      # desta camada: a tool responder bonito buscando como a identidade da aplicação, e o usuário
+      # receber documento que não pode ver — sem erro, sem log, sem sintoma. Offline; o gate de
+      # vazamento de verdade (com nuvem e identidades de teste) roda em security-gates.yml.
+      - name: MCP — Resource Server (issuer, escopo, provider desligado sem auth)
+        run: uv run python -m tests.mcpserver.auth_test
+      - name: MCP — papel do Entra decide as tools visíveis
+        run: uv run python -m tests.mcpserver.authz_test
+      - name: MCP — sem token não responde (401 + WWW-Authenticate)
+        run: uv run python -m tests.mcpserver.unauthenticated_test
+      - name: MCP — o token do chamador atravessa até o retrieve (identity passthrough)
+        run: uv run python -m tests.mcpserver.identity_passthrough_test
+
   frontend:
     name: Frontend · typecheck + build
     runs-on: ubuntu-latest
