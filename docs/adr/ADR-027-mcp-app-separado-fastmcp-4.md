@@ -48,8 +48,8 @@ num interpretador limpo e checando `sys.modules`:
 | `app.modules.knowledge.public` | **limpo** |
 | `app.modules.audit.public` | **limpo** |
 | `app.modules.tenancy.public` | **limpo** |
-| `app.modules.hitl.public` | `langchain`, `langgraph` |
-| `app.modules.tickets.public` | `agent_framework` |
+| `app.modules.hitl.public` | ~~`langchain`, `langgraph`~~ → **limpo** (ver abaixo) |
+| `app.modules.tickets.public` | ~~`agent_framework`~~ → **limpo** (ver abaixo) |
 
 Isso não foi planejado — é consequência da ADR-017. As fronteiras que existiam para organizar o
 código produziram, de graça, um **núcleo instalável sem framework de agente**.
@@ -59,6 +59,29 @@ empacotável** (`[build-system]` + `[tool.hatch.build.targets.wheel] packages = 
 outro app pode depender dele por path; e os `apps/hosted-*` já estabelecem que este repositório
 comporta mais de uma unidade de deploy — embora sejam standalone e não sirvam de precedente para
 importar o monolito.
+
+### Os dois módulos sujos deixaram de ser — e custou menos do que parecia
+
+A primeira versão desta ADR tratava `tickets` e `hitl` como fronteira permanente: leitura migraria,
+escrita ficaria. Ao medir **por que** cada um importava, a fronteira evaporou.
+
+**`tickets` estava sujo por código morto.** `create_ticket_tool = tool(create_ticket, ...)` era
+construído no import e não tinha **um único consumidor** no repositório — não era exportado pelo
+`public.py`, e a docstring afirmava que um hosted agent o usava (nenhum dos quatro menciona
+tickets). Os consumidores reais importam a função nua. O ajuste foi deleção: o objeto, o import e
+a frase que mentia.
+
+**`hitl` estava sujo por um adaptador no lugar errado.** O contrato de decisão (aprovar · editar ·
+rejeitar · responder + gate de papel) é nosso e sempre foi limpo; o que sujava era o `public.py`
+reexportar `recording_hitl`, o middleware de HITL do LangGraph, consumido só por `oncall` e
+`deepcall`. O ajuste foi import preguiçoso — o mesmo padrão de `tenancy.require_domain`.
+
+**O gate tem duas metades, e a segunda é a que prova.** Um contrato `forbidden` no
+`importlinter.toml` cobre o grafo **estático**; `tests/architecture/nucleo_limpo_test.py` importa
+cada módulo **num subprocesso próprio** e inspeciona o `sys.modules`, que é o único jeito de ver o
+**transitivo**. `hitl` fica fora do contrato estático de propósito: import preguiçoso e import a
+frio produzem a mesma aresta no grafo, e silenciá-la com `ignore_imports` cegaria o contrato para
+uma regressão de verdade — medido. Para `hitl`, a prova é o teste de runtime.
 
 O obstáculo real, portanto, não é o import: é o **empacotamento**. `apps/backend/pyproject.toml`
 declara `agent-framework` como dependência **dura**. Instalar o pacote como biblioteca puxa o
@@ -84,9 +107,10 @@ MCP instala o pacote base sem o extra.
 FastMCP 4, e importa `app.modules.knowledge.public`. O `import-linter` prova o grafo de import; só
 a instalação prova a instalabilidade — e é a instalabilidade que quebra.
 
-**5. A leitura migra; a escrita fica.** `search_docs` e as camadas de leitura (T5 resources/prompts,
-T6 selo) vão para o app novo. `create_ticket` e o HITL continuam no monolito enquanto `tickets` e
-`hitl` importarem os frameworks pesados. Essa fronteira é **declarada**, não descoberta.
+**5. Não há fronteira leitura/escrita.** Com `tickets` e `hitl` limpos, o app novo pode servir
+também o **T3 (escrita com HITL)** — e sobre o `InputRequiredResult` nativo do FastMCP 4, em vez
+das duas tools improvisadas que a spec desenhava como contorno. O que decide o que migra passa a
+ser produto, não empacotamento.
 
 ## Consequências
 
@@ -96,7 +120,7 @@ T6 selo) vão para o app novo. `create_ticket` e o HITL continuam no monolito en
   É o diferencial do produto ocupando o lugar que o protocolo reserva para ele, em vez de uma ponte
   via `meta` que existia só para contornar o bloqueio.
 - `UserSession`, `require_roles` de biblioteca (elimina a ponte escrita à mão em `authz.py`),
-  `@mcp.completion`, cache de resposta, e `InputRequiredResult` para quando a escrita atravessar.
+  `@mcp.completion`, cache de resposta, e o `InputRequiredResult` nativo para a escrita.
 - Isolamento de blast radius: um upgrade de FastMCP deixa de poder derrubar o backend inteiro.
 
 ### O que isto custa, dito antes de alguém descobrir
@@ -106,9 +130,10 @@ T6 selo) vão para o app novo. `create_ticket` e o HITL continuam no monolito en
   `agent_framework` e morrer no import — falha **alta**, não silenciosa, que é a única coisa boa
   desta classe de mudança.
 - **Duas unidades de deploy** para operar, com identidade e configuração próprias.
-- **O produto fica partido em leitura e escrita** até `tickets` e `hitl` serem limpos. Duas
-  superfícies MCP, ou nenhuma escrita por MCP — e a escolha entre as duas é decisão de produto,
-  não de engenharia.
+- ~~O produto fica partido em leitura e escrita.~~ **Custo eliminado antes da execução**: os dois
+  módulos foram limpos (uma deleção e um import preguiçoso), e a limpeza virou gate. Fica o
+  registro de que este era o maior custo previsto e que medir *por que* eles importavam foi o que
+  o dissolveu — a estimativa vinha de supor refactor onde havia código morto.
 - O `httpx` → `httpx2` do FastMCP 4 vale para o app novo, e os `except httpx.` viram código morto
   **silencioso** onde houver.
 
