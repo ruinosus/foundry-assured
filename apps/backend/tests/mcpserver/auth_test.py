@@ -49,6 +49,16 @@ def main() -> int:
             "escopo exigido é o mesmo do resto do backend",
             provider.token_verifier.required_scopes == ["access_as_user"],
         )
+        check(
+            "issuer do verifier é o tenant_id, não o client_id",
+            provider.token_verifier.issuer
+            == "https://login.microsoftonline.com/11111111-1111-1111-1111-111111111111/v2.0",
+        )
+        check(
+            "audience do verifier é o client_id, não o tenant_id",
+            provider.token_verifier.audience
+            == ["22222222-2222-2222-2222-222222222222", "api://22222222-2222-2222-2222-222222222222"],
+        )
     finally:
         settings.entra_tenant_id, settings.entra_api_client_id = original
 

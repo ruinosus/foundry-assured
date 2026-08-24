@@ -38,7 +38,7 @@ from fastapi_azure_auth import (
 )
 from fastapi_azure_auth.user import User
 
-from app.shared.settings import settings
+from app.shared.settings import ENTRA_API_SCOPE_NAME, settings
 
 # App roles the app owns (Entra App Roles → token `roles` claim). The company maps its own
 # groups onto these; the app keeps the set small. See docs/RBAC-AND-USER-MANAGEMENT-PLAN.md.
@@ -62,7 +62,7 @@ if settings.auth_enabled:
         azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
             app_client_id=settings.entra_api_client_id,
             tenant_id=settings.entra_tenant_id,
-            scopes={settings.entra_api_scope: "access_as_user"},
+            scopes={settings.entra_api_scope: ENTRA_API_SCOPE_NAME},
             # The dev account is a guest (personal MS account invited to the tenant);
             # allow guests so it can sign in. Tighten for a production tenant.
             allow_guest_users=True,
@@ -70,7 +70,7 @@ if settings.auth_enabled:
     else:  # shared
         azure_scheme = MultiTenantAzureAuthorizationCodeBearer(
             app_client_id=settings.entra_api_client_id,
-            scopes={settings.entra_api_scope: "access_as_user"},
+            scopes={settings.entra_api_scope: ENTRA_API_SCOPE_NAME},
             validate_iss=True,
             # Per-tenant issuer validation; fastapi_azure_auth requires iss_callable when
             # validate_iss=True. The callable's parameter must be named exactly `tid`.

@@ -14,11 +14,7 @@ from __future__ import annotations
 from fastmcp.server.auth import RemoteAuthProvider
 from fastmcp.server.auth.providers.azure import AzureJWTVerifier
 
-from app.shared.settings import settings
-
-#: O mesmo escopo que `settings.entra_api_scope` compõe (`api://<client_id>/access_as_user`).
-#: O verifier recebe só o nome, porque ele prefixa com o `identifier_uri` sozinho.
-SCOPE = "access_as_user"
+from app.shared.settings import ENTRA_API_SCOPE_NAME, settings
 
 
 def build_auth(base_url: str) -> RemoteAuthProvider | None:
@@ -34,7 +30,7 @@ def build_auth(base_url: str) -> RemoteAuthProvider | None:
     verifier = AzureJWTVerifier(
         client_id=settings.entra_api_client_id,
         tenant_id=settings.entra_tenant_id,
-        required_scopes=[SCOPE],
+        required_scopes=[ENTRA_API_SCOPE_NAME],
     )
     return RemoteAuthProvider(
         token_verifier=verifier,
