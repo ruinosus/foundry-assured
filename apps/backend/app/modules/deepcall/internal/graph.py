@@ -16,7 +16,7 @@ diferentes, não a mesma coisa com nome diferente.
 O QUE ESTE ARQUIVO MANTÉM IGUAL AO `oncall`, de propósito:
   * as duas tools, com o mesmo comportamento;
   * `interrupt_on` idêntico — approve/edit/reject na tool de escrita;
-  * o prompt, vindo do mesmo documento AgentSchema (`agents/helpdesk/oncall.yaml`);
+  * o prompt, vindo do mesmo documento AgentSchema (`agents/assured/oncall.yaml`);
   * `DefaultAzureCredential` com token provider (RULE #2 sobrevive à troca de harness).
 
 O QUE DIFERE, e é o que está sendo medido: o harness. `create_deep_agent` empilha filesystem,
@@ -178,7 +178,7 @@ def build_deepcall_graph():
     )
 
 
-#: A rubrica deste domínio — os MESMOS critérios que `agents/helpdesk/eval-cases/oncall-contract`
+#: A rubrica deste domínio — os MESMOS critérios que `agents/assured/eval-cases/oncall-contract`
 #: fixa no CI. A diferença é quando eles agem: o gate reprova depois, o rubric corrige antes.
 #: Passada no estado da invocação (`{"messages": [...], "rubric": ONCALL_RUBRIC}`).
 ONCALL_RUBRIC = """A resposta será aceita apenas se:

@@ -16,7 +16,7 @@ serializes to **Agent Framework declarative YAML** (`kind: Workflow` + `trigger`
 which the backend validates by building it with the runtime's own `WorkflowFactory` before
 accepting it.
 
-That YAML was being written to `apps/backend/agents/helpdesk/workflows/<case>.yaml` — the
+That YAML was being written to `apps/backend/agents/helpdesk/workflows/<case>.yaml` [renamed to `agents/assured/workflows/<case>.yaml` on 2026-08-24] — the
 container's own disk. Two things are wrong with that. In production the disk is ephemeral, so a
 flow assembled through the UI disappears at the next restart, silently and with no error. And a
 product resource living outside the platform is exactly what the **SEGUNDA MÁXIMA** forbids:

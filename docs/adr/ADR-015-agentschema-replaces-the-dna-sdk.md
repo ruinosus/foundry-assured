@@ -46,7 +46,7 @@ with Microsoft's official reader, and drop `dna-sdk`. Everything AgentSchema
 does not model stays this repository's own data, with a small loader — because
 it always was this repository's data.**
 
-- **The eight agents** are now `agents/helpdesk/<name>.yaml`, `kind: prompt`, no
+- **The eight agents** are now `agents/helpdesk/<name>.yaml` [renamed to `agents/assured/<name>.yaml` on 2026-08-24], `kind: prompt`, no
   `apiVersion` (AgentSchema's discriminator is `kind`). Field mapping:
   `metadata.name → name`, `metadata.description → description`,
   `spec.instruction → instructions`. `model` is deliberately **absent** although

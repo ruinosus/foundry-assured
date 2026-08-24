@@ -20,7 +20,7 @@ NADA É DECLARADO AQUI, e essa é a correção mais importante. A primeira vers�
 tinha uma lista `AGENTS = [...]` com nome, prompt e runtime de cada um — uma SEGUNDA VERDADE ao
 lado do registry e dos documentos, que divergiria no primeiro agente novo. Agora tudo é derivado:
 
-  * QUAIS agentes    → os documentos em `agents/helpdesk/*.yaml` (a fonte de prompt, ADR-013)
+  * QUAIS agentes    → os documentos em `agents/assured/*.yaml` (a fonte de prompt, ADR-013)
   * QUAL prompt      → `agentdefs` compõe (persona + instruções + guardrails + skills)
   * QUAL runtime     → o `kind` do domínio no `app/registry.py`
 

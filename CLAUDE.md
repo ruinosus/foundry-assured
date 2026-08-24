@@ -8,7 +8,7 @@ Repositório **shipped** (v0.6.0): todas as 6 fases do showcase estão verdes (K
 
 **Por cima disso, shipou a evolução para SaaS multi-tenant (A→B→C→D, tudo as-built):** um seam de **deployment mode** com três modos — `self_hosted` (single-tenant de hoje, default byte-idêntico), `dedicated` (stamp Azure **Managed Application** + **Lighthouse** na subscription do cliente) e `shared` (multi-tenant real, tenant resolvido por request do `tid` do Entra). **Sub-projeto A** = fundação multi-tenant (`TenantConfigProvider` Single/Multi, resolução de tenant por request + OBO downstream, memória namespaced por tenant, tenant store swappable Azure Table/in-memory). **Sub-projeto B** = `TenantRecord` + `Connection` que **referenciam** connections do Foundry (nunca guarda segredo), API admin `/tenant` + página de Connections. **Sub-projeto C** = brokering de credenciais Microsoft-nativo (OBO p/ servers de audiência Microsoft; Foundry connections caso contrário) + governança de escrita (RBAC por tool, stricter-of-both; tools de WRITE atrás da tool-approval nativa do framework). **Sub-projeto D-runtime** = domínios montam globalmente e são gated por tenant via **DomainAssignment** (entitlement de licença, `enabled_domains`, ADR-010) + endpoint gêmeo `/platform-hosted`. **Sub-projeto D-packaging** = o **platform hosted agent** deployável (Invocations + Foundry Toolbox + OAuth identity passthrough, ADR-011) e o **dedicated stamp** (`infra/managed-app/` + `infra/lighthouse/`, ADR-002). Há um **4º domínio — `platform`**: concierge de ops **tool-driven** sobre MCP servers first-party da Microsoft (Learn, Azure, Entra, ADO, GitHub) com HITL nas ações de escrita.
 
-**Camada mais recente — prompts declarativos:** os prompts dos agentes saíram do Python e viraram **documentos AgentSchema** em `apps/backend/agents/helpdesk/` (ADR-013), publicáveis sem rebuild via mount do Azure Files (ADR-014), lidos pelo reader oficial da Microsoft `agent-framework-declarative` depois que o DNA SDK foi removido (ADR-015). Ver "Prompts declarativos" abaixo.
+**Camada mais recente — prompts declarativos:** os prompts dos agentes saíram do Python e viraram **documentos AgentSchema** em `apps/backend/agents/assured/` (ADR-013), publicáveis sem rebuild via mount do Azure Files (ADR-014), lidos pelo reader oficial da Microsoft `agent-framework-declarative` depois que o DNA SDK foi removido (ADR-015). Ver "Prompts declarativos" abaixo.
 
 A fonte de verdade hoje é o código + o [`README.md`](./README.md) e [`docs/METHOD.md`](./docs/METHOD.md) (modelo as-built); a arquitetura-alvo SaaS está em [`docs/superpowers/specs/2026-06-29-saas-target-architecture-design.md`](./docs/superpowers/specs/2026-06-29-saas-target-architecture-design.md), as decisões nas **ADRs 001–023** ([`docs/adr/README.md`](./docs/adr/README.md)), os designs/planos em `docs/superpowers/specs/` + `docs/superpowers/plans/`, e o runbook de empacotamento em [`docs/D-PACKAGING-RUNBOOK.md`](./docs/D-PACKAGING-RUNBOOK.md). A `foundry-helpdesk-spec.md` e a [`docs/ASSURANCE-MECHANISM-PLAN.md`](./docs/ASSURANCE-MECHANISM-PLAN.md) são plano/histórico (as 6 fases do showcase, com seus critérios verde/vermelho, estão lá) — leia-as como contexto, não como o estado atual.
 
@@ -51,7 +51,7 @@ apps/backend/
                          tickets · hosted · evaluation · agentdefs · hitl · oncall · deepcall
                          usecases · foundry · conversations · proposer · builder · audit
                          pricing · mcpserver
-  agents/helpdesk/       documentos AgentSchema (prompts) — NÃO se move (contrato de deploy)
+  agents/assured/       documentos AgentSchema (prompts) — NÃO se move (contrato de deploy)
   eval/                  harness de assurance = PRODUTO (8 gates que os workflows invocam)
   tests/<módulo>/        testes, espelhando os módulos; + smoke/ e architecture/
   importlinter.toml      contratos de fronteira (um por módulo + camadas)
@@ -84,13 +84,13 @@ shared/                             →  nada de dentro do app
 
 ## Prompts declarativos (AgentSchema)
 
-**Prompt não se edita em Python.** A fonte de cada prompt é um documento **AgentSchema `PromptAgent`** em `apps/backend/agents/helpdesk/` (`triage.yaml`, `retrieve.yaml`, `resolve.yaml`, `concierge-{grounded,ungrounded}.yaml`, `techdocs.yaml`, `selfwiki.yaml`, `platform.yaml`).
+**Prompt não se edita em Python.** A fonte de cada prompt é um documento **AgentSchema `PromptAgent`** em `apps/backend/agents/assured/` (`triage.yaml`, `retrieve.yaml`, `resolve.yaml`, `concierge-{grounded,ungrounded}.yaml`, `techdocs.yaml`, `selfwiki.yaml`, `platform.yaml`).
 
 - O que o AgentSchema **não** modela mora ao lado, como dado do repositório: catálogo do escopo (`scope.yaml`), persona compartilhada (`personas/*.md`), regras cross-cutting (`guardrails/*.md`). Um agente referencia persona/guardrail **por nome** no `metadata`, sob a chave `x-foundry-assured`.
 - `app/modules/agentdefs/internal/definitions.py` carrega e compõe (ordem fixa: persona → instructions → additionalInstructions → guardrails); `app/modules/agentdefs/public.py` é o **único ponto de consumo** e compõe no import. Não altere esses dois para mudar texto de prompt.
 - `AGENTS_DIR` seleciona um diretório externo de definições (no ACA, o mount read-only do Azure Files em `/mnt/agents`) — ADR-014: sem a env var usa a cópia baked; com a env var e escopo ausente cai pra baked com log alto; com escopo presente, qualquer falha de load é **loud**. `scripts/push-prompts.sh` publica sem redeploy.
 - **PowerFx (`=Env.X`) é recusado no load**, não usado — o reader devolveria a string literal quando o runtime .NET falta. Ver docstring de `definitions.py`.
-- Mudou contrato de prompt? Atualize o caso correspondente em `agents/helpdesk/eval-cases/` **no mesmo PR** — `uv run python -m eval.prompt_contract_test` é o guarda de CI.
+- Mudou contrato de prompt? Atualize o caso correspondente em `agents/assured/eval-cases/` **no mesmo PR** — `uv run python -m eval.prompt_contract_test` é o guarda de CI.
 
 ## MÁXIMA MAIOR — a Microsoft já resolveu; nosso trabalho é ligar
 

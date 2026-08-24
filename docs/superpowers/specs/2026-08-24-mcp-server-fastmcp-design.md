@@ -355,7 +355,7 @@ padrão em templates; no 3.4.7 essa validação é nossa e precisa de teste expl
 caminho absoluto, byte nulo).
 
 **Prompts — o item mais barato e mais alinhado do lote.** Os documentos AgentSchema em
-`apps/backend/agents/helpdesk/` já são a fonte única das instruções (ADR-013/015). Publicá-los
+`apps/backend/agents/assured/` já são a fonte única das instruções (ADR-013/015). Publicá-los
 como `@mcp.prompt` **deriva** dessa fonte; não cria lista nova. É a SEGUNDA MÁXIMA cumprida sem
 esforço: um só lugar, dois caminhos até ele.
 

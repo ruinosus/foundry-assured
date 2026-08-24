@@ -8,7 +8,7 @@
 > declarative data and `prompts.py` is a composition shim. What changed is what
 > reads that data — the documents are now
 > [AgentSchema](https://github.com/microsoft/AgentSchema) `PromptAgent` files in
-> `apps/backend/agents/helpdesk/`, read with Microsoft's official
+> `apps/backend/agents/helpdesk/` [renamed to `agents/assured/` on 2026-08-24], read with Microsoft's official
 > `agent-framework-declarative`; `dna-sdk` is gone. Read every `.dna/helpdesk/`
 > path below as `agents/helpdesk/`, "Soul" as "persona", and "DNA scope" as "the
 > agent definitions". The record is kept as written, including the alternative

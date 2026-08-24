@@ -14,7 +14,7 @@ O diagnóstico da rev. 1 se sustenta; as conclusões de desenho mudaram em cinco
 | # | O que mudou | Por quê |
 |---|---|---|
 | R-1 | ADR de fronteiras é **017**, não 015 | ADR-015 (AgentSchema substitui o DNA SDK) e ADR-016 (OpenWiki) já existem |
-| R-2 | **I-7 reescrito** | o `dna-sdk` saiu do `pyproject.toml`; a fronteira a proteger virou `agents/helpdesk/` + `AGENTS_DIR` |
+| R-2 | **I-7 reescrito** | o `dna-sdk` saiu do `pyproject.toml`; a fronteira a proteger virou `agents/helpdesk/` [renomeado para `agents/assured/` em 2026-08-24] + `AGENTS_DIR` |
 | R-3 | **Módulo `orchestration` cortado**; Fase 3.5 vira trabalho declarativo | ports para um segundo runtime que não existe = abstração prematura. Ver §2.5 |
 | R-4 | **OTEL dividido**: 5.5a antes da Fase 3, 5.5b depois | refatorar sem observabilidade no serving path é refatorar às cegas; snapshot de rota não pega regressão de latência/custo/erro |
 | R-5 | **Fase 6 descartada** (era opcional) | medido: 53–88 linhas de código divergentes por par, não "quase idênticos" |

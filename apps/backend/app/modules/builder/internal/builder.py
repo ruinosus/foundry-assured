@@ -4,7 +4,7 @@ POR QUE ELE EXISTE COMO DOMÍNIO. O prompt que ajuda alguém a preencher o formu
 existia: era uma string dentro de `foundry/internal/assist.py`. Comportamento de produto que vive
 só como configuração de código é exatamente o que a SEGUNDA MÁXIMA proíbe — a tela "Meus agentes"
 mostrava dez, e esse décimo primeiro atendia sem nunca aparecer. Agora ele é um documento
-AgentSchema (`agents/helpdesk/builder.yaml`) publicado como qualquer outro.
+AgentSchema (`agents/assured/builder.yaml`) publicado como qualquer outro.
 
 POR QUE `kind: tool` E NÃO `grounded`. O ponto do agente é chamar a tool `propose_field`, que é
 uma tool de FRONTEND registrada pela tela. Medido: o adapter oficial

@@ -1,6 +1,6 @@
 ---
 name: prompt-change
-description: Use ao criar ou editar qualquer documento AgentSchema em apps/backend/agents/helpdesk/ (triage.yaml, resolve.yaml, techdocs.yaml, platform.yaml, personas/, guardrails/, scope.yaml) — ou quando pedirem para mudar o comportamento, a persona, o tom ou as regras de um agente. Garante que o eval-case correspondente mude no mesmo PR e que o Foundry seja republicado.
+description: Use ao criar ou editar qualquer documento AgentSchema em apps/backend/agents/assured/ (triage.yaml, resolve.yaml, techdocs.yaml, platform.yaml, personas/, guardrails/, scope.yaml) — ou quando pedirem para mudar o comportamento, a persona, o tom ou as regras de um agente. Garante que o eval-case correspondente mude no mesmo PR e que o Foundry seja republicado.
 ---
 
 # Mudança de prompt declarativo
@@ -10,11 +10,11 @@ NÃO se enxerga só olhando o `.yaml`.
 
 ## 1. Antes de editar — descubra o que o prompt já promete
 
-O eval-case correspondente em `agents/helpdesk/eval-cases/` é a lista de invariantes que aquele
+O eval-case correspondente em `agents/assured/eval-cases/` é a lista de invariantes que aquele
 prompt sustenta, **cada uma com o motivo escrito ao lado**. Leia antes de mexer:
 
 ```bash
-ls apps/backend/agents/helpdesk/eval-cases/
+ls apps/backend/agents/assured/eval-cases/
 ```
 
 Uma invariante lá não é preferência de estilo — é comportamento que alguém já perdeu uma vez.
@@ -25,10 +25,10 @@ removendo uma garantia.
 
 | O quê | Onde |
 |---|---|
-| Instrução do agente | `agents/helpdesk/<agente>.yaml` (o delta daquele agente) |
-| Persona compartilhada | `agents/helpdesk/personas/*.md` |
-| Regra cross-cutting | `agents/helpdesk/guardrails/*.md` |
-| Catálogo de escopo | `agents/helpdesk/scope.yaml` |
+| Instrução do agente | `agents/assured/<agente>.yaml` (o delta daquele agente) |
+| Persona compartilhada | `agents/assured/personas/*.md` |
+| Regra cross-cutting | `agents/assured/guardrails/*.md` |
+| Catálogo de escopo | `agents/assured/scope.yaml` |
 
 Um agente referencia persona/guardrail **por nome**, em `metadata`, sob `x-foundry-assured`.
 A composição é de ordem fixa: persona → instructions → additionalInstructions → guardrails.

@@ -43,7 +43,7 @@ INTERRUPT_ON = {
     "escalate_incident": {"allowed_decisions": ["approve", "edit", "reject"]},
 }
 
-# O prompt vem do documento AgentSchema (`agents/helpdesk/oncall.yaml`), como o dos demais
+# O prompt vem do documento AgentSchema (`agents/assured/oncall.yaml`), como o dos demais
 # agentes. Ele vivia aqui como constante, e era a última exceção à regra 7 do CLAUDE.md — o que
 # impedia publicar texto sem rebuild (ADR-014) e deixava este agente sem persona, guardrails e
 # skills. O runtime segue sendo LangGraph: migrar o prompt não migra o grafo.

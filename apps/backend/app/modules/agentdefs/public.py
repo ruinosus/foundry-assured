@@ -11,7 +11,7 @@ the composed constants, so no consumer changes. To change a prompt, edit the
 document — not this file.
 
 Since ADR-015 those documents are **AgentSchema** ``PromptAgent`` files in
-``apps/backend/agents/helpdesk/``, read with Microsoft's own reader
+``apps/backend/agents/assured/``, read with Microsoft's own reader
 (``agent-framework-declarative``); the ``dna-sdk`` dependency they used to be
 read with is gone. What the schema does not model — the scope catalog, the
 shared persona, the guardrails — stays repository-owned data next to it; see
@@ -47,7 +47,7 @@ _logger = logging.getLogger(__name__)
 # not an implementation detail of whoever reads them.
 _BACKEND_ROOT = Path(_app_package.__file__).resolve().parent.parent
 _BAKED_BASE_DIR = _BACKEND_ROOT / AGENTS_DIRECTORY
-_SCOPE = "helpdesk"
+_SCOPE = "assured"
 
 
 def _resolve_base_dir() -> Path:
@@ -92,7 +92,7 @@ def _resolve_base_dir() -> Path:
 
 _BASE_DIR = _resolve_base_dir()
 
-#: constant name -> agent document name (agents/helpdesk/<name>.yaml)
+#: constant name -> agent document name (agents/assured/<name>.yaml)
 _AGENT_FOR_CONSTANT = {
     "TRIAGE_INSTRUCTIONS": "triage",
     "RETRIEVE_INSTRUCTIONS": "retrieve",
