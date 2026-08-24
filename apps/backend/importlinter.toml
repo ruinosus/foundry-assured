@@ -16,6 +16,7 @@ root_packages = ["app"]
 # --- C1 — the three layers. composition may see everything; a module may see shared and other
 # modules' public; shared may see nothing inside the app.
 
+[[tool.importlinter.contracts]]
 name = "Layers: composition > modules > shared"
 type = "layers"
 layers = [
