@@ -176,6 +176,10 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'AZURE_CLIENT_ID', value: appIdentityClientId }
             { name: 'ENTRA_TENANT_ID', value: entraTenantId }
             { name: 'ENTRA_API_CLIENT_ID', value: entraApiClientId }
+            // `resource` da metadata OAuth do MCP (RFC 9728). Sem isto o app anuncia o default
+            // localhost:8000 e nenhum cliente MCP externo consegue descobrir onde se autenticar —
+            // a mesma família de falha do commit 007f399.
+            { name: 'MCP_PUBLIC_BASE_URL', value: 'https://${backendFqdn}' }
             // selfwiki audience: the app-users group is the self-wiki's private read audience;
             // retrieval sends the OBO ACL header only when this is set (else /selfwiki fails closed).
             { name: 'APP_USERS_GROUP_ID', value: appUsersGroupId }

@@ -95,6 +95,11 @@ is 13 generic engineering runbooks (2FA recovery, deploy rollback, pod crashloop
 credential rotation, incident severity…), which is enough to see it work and not enough
 to be useful to your team. Making it yours: [`docs/CUSTOMIZE.md`](./docs/CUSTOMIZE.md).
 
+There's also a machine-facing surface: `/mcp` exposes a `search_docs` tool over the same
+access-controlled knowledge base, for MCP clients rather than the chat UI. It authenticates
+as an Entra Resource Server — no client secret, just a bearer token the client obtains per
+RFC 9728 — and every search is trimmed by the caller's own document ACL, same as the chat.
+
 ## Quickstart
 
 ```bash
