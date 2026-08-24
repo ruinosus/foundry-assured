@@ -62,14 +62,26 @@ def tenant_store():
     return _tenant_store
 
 
-def resolve_tenant(user, store) -> None:
-    """Authorization choke point: onboarded+active tid → set _current_tenant, else 403."""
+def resolve_tenant_record(user, store) -> object | None:
+    """Resolve o tenant do chamador e o grava na requisição. Devolve None se não elegível.
+
+    Sem `HTTPException`: quem decide é o tenancy, quem traduz o erro é cada superfície. O
+    caminho MCP levanta `ToolError`, o caminho web levanta 403 — mesma decisão, vocabulários
+    diferentes.
+    """
     from app.modules.tenancy.internal.tenant import set_current_tenant
 
     rec = store.get(getattr(user, "tid", None))
     if rec is None or rec.status != "active":
-        raise HTTPException(status_code=403, detail="tenant not onboarded")
+        return None
     set_current_tenant(rec)
+    return rec
+
+
+def resolve_tenant(user, store) -> None:
+    """Authorization choke point: onboarded+active tid → set _current_tenant, else 403."""
+    if resolve_tenant_record(user, store) is None:
+        raise HTTPException(status_code=403, detail="tenant not onboarded")
 
 
 def memory_scope() -> str:

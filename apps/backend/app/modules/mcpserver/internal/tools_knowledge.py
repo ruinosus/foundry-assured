@@ -26,6 +26,7 @@ from fastmcp.server.dependencies import get_access_token
 
 from app.modules.knowledge.public import retrieve
 from app.modules.mcpserver.internal.authz import role_check
+from app.modules.tenancy.public import domain_enabled, resolve_tenant_record
 from app.shared.auth import set_current_user
 from app.shared.settings import settings
 
@@ -34,6 +35,11 @@ from app.shared.settings import settings
 #: composição (ADR-017). Mesmo padrão de `knowledge.api.set_domain_lookup`.
 _domain_lookup: Callable[[str], Any] | None = None
 _grounded_domains: tuple[str, ...] = ()
+
+#: A loja de tenants, empurrada pela composition root (o módulo não pode importar de lá).
+#: `None` fora do modo shared — e aí nada de tenant é resolvido, que é o comportamento
+#: byte-idêntico de self_hosted/dedicated.
+_tenant_store: Callable[[str], Any] | None = None
 
 
 def set_domain_registry(lookup: Callable[[str], Any], grounded: tuple[str, ...]) -> None:
@@ -48,6 +54,27 @@ def set_domain_registry(lookup: Callable[[str], Any], grounded: tuple[str, ...])
     global _domain_lookup, _grounded_domains
     _domain_lookup = lookup
     _grounded_domains = tuple(grounded)
+
+
+def set_tenant_store(fn: Callable[[str], Any] | None) -> None:
+    """Recebe da composition root a função que resolve um tid para o `TenantRecord` — só no
+    modo shared (`app/registry.py`). O seam é uma função, não a loja em si, no mesmo espírito de
+    `set_domain_registry`: quem chama não precisa saber que a loja tem `.get`."""
+    global _tenant_store
+    _tenant_store = fn
+
+
+class _StoreAdapter:
+    """Embrulha o seam (uma função `tid -> TenantRecord | None`) no vocabulário `.get(tid)` que
+    `tenancy.resolve_tenant_record` espera — ela é compartilhada com o caminho web, que resolve
+    contra um objeto de loja de verdade. Sem isso, `resolve_tenant_record` teria que aprender
+    dois formatos de loja."""
+
+    def __init__(self, fn: Callable[[str], Any]) -> None:
+        self._fn = fn
+
+    def get(self, tid: str) -> Any:
+        return self._fn(tid)
 
 
 class _Chamador:
@@ -65,6 +92,9 @@ class _Chamador:
         self.preferred_username = str(claims.get("preferred_username") or "")
         self.email = str(claims.get("email") or "")
         self.roles = list(claims.get("roles") or [])
+        # `tid` só importa no modo shared: é a chave que `tenancy.resolve_tenant_record` lê para
+        # achar o `TenantRecord` do chamador — mesmo claim que `require_user` já lê no caminho web.
+        self.tid = str(claims.get("tid") or "")
 
 
 async def search_docs(domain: str, query: str) -> dict[str, Any]:
@@ -98,6 +128,18 @@ async def search_docs(domain: str, query: str) -> dict[str, Any]:
         # Só com token: com a auth desligada não HÁ chamador, e declarar um sem identidade faria
         # a trilha gravar um `human:` inventado onde `process:app` é a verdade.
         set_current_user(chamador)
+
+    # MODO SHARED: resolver o tenant E cobrar o entitlement. As duas coisas, sempre juntas —
+    # resolver sem cobrar serve domínio não licenciado, que é pior que falhar. A regra é a
+    # MESMA do `require_domain` do FastAPI (ADR-010) — `tenancy.domain_enabled` — para que as
+    # duas superfícies nunca divirjam sobre quem pode ler o quê.
+    if settings.deployment_mode == "shared":
+        if _tenant_store is None:
+            raise ToolError("tenant store não registrado")
+        if resolve_tenant_record(chamador, _StoreAdapter(_tenant_store)) is None:
+            raise ToolError("tenant não habilitado")
+        if not domain_enabled(domain):
+            raise ToolError(f"domínio não habilitado para o tenant: {domain}")
 
     linhas = await retrieve(query, chamador, _domain_lookup(domain))
 

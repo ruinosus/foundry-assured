@@ -434,6 +434,19 @@ def include_routers(app) -> None:
         domain_spec, tuple(d for d, kind in DOMAIN_KINDS.items() if kind == "grounded")
     )
 
+    # Mesmo empurrão, só no modo shared: fora dele `tenant_store()` não foi construída
+    # (`tenancy.install()` é no-op) e o MCP não precisa resolver tenant nenhum — o
+    # comportamento de self_hosted/dedicated fica byte-idêntico.
+    #
+    # `.get` — o método vinculado, não a loja em si: o seam do mcpserver é uma FUNÇÃO
+    # (`tid -> TenantRecord | None`), no mesmo espírito de `set_domain_registry`. A loja tem
+    # `.get`, mas não é chamável — passá-la direto quebraria em runtime, não no import.
+    if settings.deployment_mode == "shared":
+        from app.modules.mcpserver.public import set_tenant_store
+        from app.modules.tenancy.public import tenant_store
+
+        set_tenant_store(tenant_store().get)
+
     for module in (
         api_health,
         tickets,

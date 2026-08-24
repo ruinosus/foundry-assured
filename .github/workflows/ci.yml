@@ -336,6 +336,8 @@ jobs:
         run: uv run python -m tests.mcpserver.identity_passthrough_test
       - name: MCP — erro não conta a infraestrutura para o chamador
         run: uv run python -m tests.mcpserver.error_masking_test
+      - name: MCP — no modo shared resolve tenant e cobra entitlement (ADR-010)
+        run: uv run python -m tests.mcpserver.shared_tenancy_test
 
   frontend:
     name: Frontend · typecheck + build
