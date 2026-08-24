@@ -18,6 +18,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.modules.hosted.public import aclose as hosted_aclose
+from app.modules.mcpserver.public import build_mcp_app
 from app.modules.platform_ops.public import SERVERS
 from app.modules.tenancy import public as tenancy
 from app.registry import include_routers, mount_domains
@@ -112,7 +113,10 @@ async def lifespan(app: FastAPI):
     # Pre-load the Entra OpenID config so the first authenticated request is fast.
     if azure_scheme is not None:
         await azure_scheme.openid_config.load_config()
-    yield
+    # O gerenciador de sessão do MCP nasce no lifespan DELE; sem entrar aqui, o sub-app sobe
+    # sem sessão e a primeira requisição falha.
+    async with _mcp_app.lifespan(app):
+        yield
     await hosted_aclose()
 
 
@@ -131,6 +135,12 @@ include_routers(app)
 # (workflow → helpdesk AG-UI; grounded → techdocs/selfwiki cited Q&A; tool → platform
 # AG-UI). The hosted twins stay in app/api/chat.py.
 mount_domains(app)
+
+# O MCP entra como SUB-APP, com CORS próprio (ver mcpserver/internal/server.py): o
+# CORSMiddleware aplicado acima vale para o app inteiro e, sobre um MCP com OAuth montado em
+# prefixo, derruba as rotas `.well-known` e o preflight.
+_mcp_app = build_mcp_app(base_url=settings.mcp_public_base_url)
+app.mount("/mcp", _mcp_app)
 
 
 if __name__ == "__main__":

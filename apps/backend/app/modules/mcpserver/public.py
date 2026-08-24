@@ -8,4 +8,6 @@ não é este módulo.
 
 from __future__ import annotations
 
-__all__: list[str] = []
+from app.modules.mcpserver.internal.server import build_app as build_mcp_app
+
+__all__ = ["build_mcp_app"]

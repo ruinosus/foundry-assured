@@ -70,6 +70,11 @@ class PlatformSettings(BaseSettings):
     # CORS origin for the local Next.js frontend
     frontend_origin: str = "http://localhost:3000"
 
+    #: URL pública DESTE backend. Vira o `resource` da metadata OAuth do MCP (RFC 9728), que é
+    #: o que o cliente usa para descobrir onde se autenticar. `frontend_origin` NÃO serve: é a
+    #: origem do frontend, outro host. Vazio em dev → localhost.
+    mcp_public_base_url: str = "http://localhost:8000"
+
     @property
     def auth_enabled(self) -> bool:
         """OBO/Entra is active only when the API app registration is configured.

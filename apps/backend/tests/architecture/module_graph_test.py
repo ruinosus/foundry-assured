@@ -73,6 +73,9 @@ MODULES = (
     # ADR-023: a camada de EVIDÊNCIA. Trilha encadeada por hash + o redator que roda antes de
     # qualquer gravação. A imutabilidade é do Azure (política WORM no container); o evento é nosso.
     "audit",
+    # O servidor MCP (T0-T2). Traduz o que `knowledge.public`/`app.shared.auth` já expõem para o
+    # vocabulário MCP — não implementa regra de acesso, consulta ou prompt nenhum.
+    "mcpserver",
 )
 
 PREFIXES = (
