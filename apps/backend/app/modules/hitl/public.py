@@ -26,10 +26,12 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field, replace
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
-from app.modules.hitl.internal.langgraph_recording import recording_hitl
 from app.shared.auth import current_roles, has_role
+
+if TYPE_CHECKING:
+    from app.modules.hitl.internal.langgraph_recording import RecordingHumanInTheLoop
 
 logger = logging.getLogger(__name__)
 
@@ -174,3 +176,19 @@ def _registrar(request: ApprovalRequest, decisao: ApprovalDecision) -> dict:
             ) from exc
         logger.warning("falha ao registrar a decisão '%s' na trilha: %s", decisao.type, exc)
         return {}
+
+
+def recording_hitl(interrupt_on: dict, domain: str) -> RecordingHumanInTheLoop:
+    """O middleware de HITL do LangGraph, com a decisão registrada na trilha (ADR-023).
+
+    Importado por dentro DE PROPÓSITO, no mesmo espírito de `tenancy.internal.tenant.
+    require_domain`: o contrato de decisão deste módulo (`decide`, `ApprovalDecision`) é limpo —
+    não depende de nenhum framework de agente. Só quem usa grafo (`oncall`, `deepcall`) precisa
+    do adaptador do LangGraph, e importar o LangChain no topo custaria essa dependência a quem só
+    quer ler `decide`. Ver `tests/architecture/nucleo_limpo_test.py`.
+    """
+    from app.modules.hitl.internal.langgraph_recording import (
+        recording_hitl as _recording_hitl,
+    )
+
+    return _recording_hitl(interrupt_on, domain)
