@@ -34,11 +34,23 @@ from __future__ import annotations
 
 import subprocess
 import sys
+import tomllib
 from pathlib import Path
 
 import app as _app
 
 BACKEND = Path(_app.__file__).resolve().parent.parent
+IMPORTLINTER_TOML = BACKEND / "importlinter.toml"
+
+#: Nome do contrato C4b em `importlinter.toml`, cujos `source_modules` devem espelhar `MODULES`
+#: abaixo (exceto `hitl` — ver `checar_paridade_com_toml`).
+CONTRATO_C4B = "nucleo limpo: sem framework de agente"
+
+#: `hitl` existe só aqui, nunca em `source_modules` do contrato estático: o contrato C4b prova o
+#: grafo ESTÁTICO, cego a quando um import roda, e `hitl/public.py` mantém de propósito um import
+#: PREGUIÇOSO que alcança LangChain só sob chamada — a mesma aresta, no grafo estático, de uma
+#: regressão real (import a frio). Ver o comentário do contrato C4b em `importlinter.toml`.
+EXCECAO_NOMEADA = "app.modules.hitl.public"
 
 #: Os quatro pacotes pesados de framework de agente. Qualquer um em `sys.modules` depois do
 #: import do módulo é uma regressão.
@@ -55,6 +67,35 @@ MODULES = (
     "app.shared.auth",
 )
 
+
+def checar_paridade_com_toml() -> str | None:
+    """Confere que `MODULES` e os `source_modules` do contrato C4b são o mesmo conjunto, com
+    `hitl` como a única exceção nomeada. Nada amarrava as duas listas antes deste teste: um
+    módulo novo adicionado só a uma recebia metade da cobertura, sem erro — só menos gate.
+
+    Retorna uma mensagem de erro (com o módulo e o lado onde ele diverge) ou `None` se bater.
+    """
+    dados = tomllib.loads(IMPORTLINTER_TOML.read_text())
+    contratos = dados["tool"]["importlinter"]["contracts"]
+    contrato = next((c for c in contratos if c["name"] == CONTRATO_C4B), None)
+    if contrato is None:
+        return f"contrato {CONTRATO_C4B!r} não encontrado em {IMPORTLINTER_TOML}"
+
+    do_toml = set(contrato["source_modules"])
+    do_teste = set(MODULES) - {EXCECAO_NOMEADA}
+
+    so_no_teste = do_teste - do_toml
+    so_no_toml = do_toml - do_teste
+    if so_no_teste or so_no_toml:
+        partes = []
+        if so_no_teste:
+            partes.append(f"só em MODULES (nucleo_limpo_test.py): {sorted(so_no_teste)}")
+        if so_no_toml:
+            partes.append(f"só em source_modules (importlinter.toml, contrato C4b): {sorted(so_no_toml)}")
+        return "MODULES e o contrato C4b divergem — " + "; ".join(partes)
+
+    return None
+
 _PROBE = """
 import sys, importlib
 importlib.import_module({module!r})
@@ -64,23 +105,40 @@ print(",".join(found))
 
 
 def puxados(module: str) -> list[str]:
-    """Os pacotes de framework que entraram em `sys.modules` ao importar `module`, num processo novo."""
+    """Os pacotes de framework que entraram em `sys.modules` ao importar `module`, num processo novo.
+
+    Levanta `RuntimeError` (com o `stderr` do subprocesso) se o próprio import falhar — para o
+    gate nomear o módulo e mostrar a causa, em vez de morrer com um `CalledProcessError` cru que
+    o CI mostraria como traceback do harness, não como "módulo X não importa".
+    """
     script = _PROBE.format(module=module, frameworks=FRAMEWORKS)
     result = subprocess.run(
         [sys.executable, "-c", script],
         cwd=BACKEND,
         capture_output=True,
         text=True,
-        check=True,
+        check=False,
     )
+    if result.returncode != 0:
+        raise RuntimeError(f"{module} não importa:\n{result.stderr}")
     saida = result.stdout.strip()
     return saida.split(",") if saida else []
 
 
 def main() -> int:
     ok = True
+
+    divergencia = checar_paridade_com_toml()
+    if divergencia:
+        print(f"  ❌ {divergencia}")
+        return 1
+
     for module in MODULES:
-        achados = puxados(module)
+        try:
+            achados = puxados(module)
+        except RuntimeError as exc:
+            print(f"  ❌ {exc}")
+            return 1
         if achados:
             ok = False
             print(f"  ❌ {module} puxa: {', '.join(achados)}")

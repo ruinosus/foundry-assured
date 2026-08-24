@@ -186,6 +186,10 @@ def recording_hitl(interrupt_on: dict, domain: str) -> RecordingHumanInTheLoop:
     não depende de nenhum framework de agente. Só quem usa grafo (`oncall`, `deepcall`) precisa
     do adaptador do LangGraph, e importar o LangChain no topo custaria essa dependência a quem só
     quer ler `decide`. Ver `tests/architecture/nucleo_limpo_test.py`.
+
+    A anotação de retorno é só de type-check: `RecordingHumanInTheLoop` existe apenas sob
+    `TYPE_CHECKING`, então `typing.get_type_hints()` levanta `NameError` para quem introspecta
+    esta função em runtime (`pydantic.validate_call`, o FastAPI, `agent_framework.tool(...)`).
     """
     from app.modules.hitl.internal.langgraph_recording import (
         recording_hitl as _recording_hitl,
