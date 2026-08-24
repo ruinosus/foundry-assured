@@ -99,6 +99,16 @@ There's also a machine-facing surface: `/mcp` exposes a `search_docs` tool over 
 access-controlled knowledge base, for MCP clients rather than the chat UI. It authenticates
 as an Entra Resource Server — no client secret, just a bearer token the client obtains per
 RFC 9728 — and every search is trimmed by the caller's own document ACL, same as the chat.
+The tool covers the domains that *have* a knowledge base (`techdocs`, `selfwiki`); the list in
+its description is derived from the registry, not written twice.
+
+**Point your client at `https://<host>/mcp/`, with the trailing slash.** The server is mounted
+at that prefix, so the endpoint itself is `/mcp/` and that is what the OAuth metadata advertises
+as the protected resource. `https://<host>/mcp` still works — it answers `307` to the canonical
+form, and the `Authorization` header survives the same-origin redirect (measured) — but every
+call then costs an extra round trip. Discovery needs no configuration: the `401` carries
+`WWW-Authenticate: Bearer resource_metadata="https://<host>/.well-known/oauth-protected-resource/mcp/"`,
+served from the root of the host as RFC 9728 requires.
 
 ## Quickstart
 
