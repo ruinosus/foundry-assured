@@ -121,8 +121,14 @@ def _collect_routes(routes, prefix: str = "") -> list[tuple[str, str]]:
     return entries
 
 
-def main() -> int:
-    profile = sys.argv[1]
+def build_app_under(profile: str):
+    """Boota `app.main:app` sob um perfil sintético — sem credencial, sem rede.
+
+    Extraído de `main()` porque passou a ter um segundo consumidor: o gate do MCP precisa
+    exercitar a TOPOLOGIA REAL (o sub-app montado + as rotas registradas na raiz), e montar o
+    sub-app isolado foi como o defeito da metadata passou batido. Um lugar só sabe bootar o app
+    sem credencial; dois divergiriam no primeiro fator novo.
+    """
     # A profile must be HERMETIC, not merely additive. `settings` reads `.env` from the cwd,
     # so a developer's local file was enough to change the captured surface: setting
     # AZURE_OPENAI_ENDPOINT there mounted /oncall inside the `self_hosted` profile, whose
@@ -162,6 +168,12 @@ def main() -> int:
         from app.main import app
     finally:
         domains.add_agent_framework_fastapi_endpoint = real_adapter
+    return app
+
+
+def main() -> int:
+    profile = sys.argv[1]
+    app = build_app_under(profile)
 
     # `--deps` é um SEGUNDO modo de saída, não um campo a mais no primeiro: a fixture do snapshot
     # é `[[método, caminho]]` e acrescentar coluna a ela invalidaria o baseline inteiro por um

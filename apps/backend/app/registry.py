@@ -422,10 +422,17 @@ def include_routers(app) -> None:
     # `set_post_authenticate`).
     knowledge.set_domain_lookup(domain_spec)
 
-    # Mesmo empurrão, mesmo motivo: `mcpserver` não pode importar a camada de composição.
-    from app.modules.mcpserver.public import set_domain_lookup as _mcp_set_domain_lookup
+    # Mesmo empurrão, mesmo motivo: `mcpserver` não pode importar a camada de composição. Vai
+    # junto a lista de domínios COM base de conhecimento, derivada do `DOMAIN_KINDS` — a tool
+    # `search_docs` só aceita esses, e a descrição dela os nomeia. Derivada, e não escrita lá,
+    # porque duas listas divergem no primeiro domínio novo.
+    from app.modules.mcpserver.public import (
+        set_domain_registry as _mcp_set_domain_registry,
+    )
 
-    _mcp_set_domain_lookup(domain_spec)
+    _mcp_set_domain_registry(
+        domain_spec, tuple(d for d, kind in DOMAIN_KINDS.items() if kind == "grounded")
+    )
 
     for module in (
         api_health,

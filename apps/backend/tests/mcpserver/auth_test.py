@@ -16,6 +16,7 @@ from __future__ import annotations
 import sys
 
 from app.modules.mcpserver.internal.auth import build_auth
+from app.modules.mcpserver.internal.server import MOUNT_PATH
 from app.shared.settings import settings
 
 BASE = "https://exemplo.invalid"
@@ -33,11 +34,11 @@ def main() -> int:
     try:
         settings.entra_tenant_id = ""
         settings.entra_api_client_id = ""
-        check("auth desligada → sem provider", build_auth(BASE) is None)
+        check("auth desligada → sem provider", build_auth(BASE, MOUNT_PATH) is None)
 
         settings.entra_tenant_id = "11111111-1111-1111-1111-111111111111"
         settings.entra_api_client_id = "22222222-2222-2222-2222-222222222222"
-        provider = build_auth(BASE)
+        provider = build_auth(BASE, MOUNT_PATH)
         check("auth ligada → provider construído", provider is not None)
 
         servers = [str(u) for u in provider.authorization_servers]
@@ -58,6 +59,12 @@ def main() -> int:
             "audience do verifier é o client_id, não o tenant_id",
             provider.token_verifier.audience
             == ["22222222-2222-2222-2222-222222222222", "api://22222222-2222-2222-2222-222222222222"],
+        )
+        # O recurso anunciado é o ENDPOINT, não a raiz do backend: é o que o cliente compara com
+        # o servidor que está chamando, e é de onde sai a URL da metadata no desafio 401.
+        check(
+            "o recurso protegido é o endpoint montado, não a raiz",
+            str(provider.resource_base_url).rstrip("/") == f"{BASE}{MOUNT_PATH}",
         )
     finally:
         settings.entra_tenant_id, settings.entra_api_client_id = original

@@ -18,6 +18,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.modules.hosted.public import aclose as hosted_aclose
+from app.modules.mcpserver.public import MOUNT_PATH as MCP_MOUNT_PATH
 from app.modules.mcpserver.public import build_mcp_app
 from app.modules.platform_ops.public import SERVERS
 from app.modules.tenancy import public as tenancy
@@ -144,11 +145,21 @@ include_routers(app)
 # AG-UI). The hosted twins stay in app/api/chat.py.
 mount_domains(app)
 
-# O MCP entra como SUB-APP, com CORS próprio (ver mcpserver/internal/server.py): o
-# CORSMiddleware aplicado acima vale para o app inteiro e, sobre um MCP com OAuth montado em
-# prefixo, derruba as rotas `.well-known` e o preflight.
-_mcp_app = build_mcp_app(base_url=settings.mcp_public_base_url)
-app.mount("/mcp", _mcp_app)
+# O MCP entra como SUB-APP montado em prefixo. O CORS de todo mundo — inclusive dele — é o
+# `CORSMiddleware` aplicado acima: middleware roda antes do roteamento, então ele já responde o
+# preflight de `/mcp` sem que o sub-app seja consultado (medido — ver mcpserver/internal/server).
+#
+# AS ROTAS `.well-known` NÃO ENTRAM NO MOUNT. O desafio 401 do MCP aponta para
+# `https://host/.well-known/oauth-protected-resource/mcp/`, uma URL absoluta a partir do host
+# (RFC 9728); a cópia que o FastMCP registra dentro do sub-app fica em `/mcp/.well-known/…` e
+# não atende essa URL. `build_mcp_app` devolve as mesmas rotas construídas pelo provider para
+# serem registradas AQUI, na raiz — é o lugar que o próprio fastmcp documenta em
+# `AuthProvider.get_well_known_routes`. Registrar direto na lista do router é como o próprio
+# FastAPI acumula rotas (`include_router`/`mount` fazem o mesmo); não há `add_route` que aceite
+# um `Route` já construído, e reconstruí-lo aqui duplicaria a metadata à mão.
+_mcp_app, _mcp_well_known = build_mcp_app(base_url=settings.mcp_public_base_url)
+app.mount(MCP_MOUNT_PATH, _mcp_app)
+app.router.routes.extend(_mcp_well_known)
 
 
 if __name__ == "__main__":

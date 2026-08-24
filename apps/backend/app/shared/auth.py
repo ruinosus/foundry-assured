@@ -144,6 +144,28 @@ def require_role(*roles: str):
     return _check
 
 
+def set_current_user(user) -> None:
+    """Declara quem é o chamador da requisição atual, FORA do fluxo de dependência do FastAPI.
+
+    O contextvar `_current_user` é o seam por onde a identidade chega a quem não recebe o
+    `Request` — a credencial OBO, e a trilha de auditoria (`audit.actor()`). Até aqui ele só
+    tinha um escritor, o `require_user`, que é dependência de rota FastAPI. Superfície que não
+    passa por rota FastAPI — o servidor MCP, que autentica no middleware ASGI do fastmcp —
+    ficava com o contextvar vazio, e toda leitura dela entrava na trilha imutável como
+    `process:app`: a ADR-023 existe para responder "quem leu o quê", e a resposta ficava errada
+    justo na superfície nova.
+
+    Isto NÃO é uma segunda malha de identidade: quem valida o token continua sendo o verifier do
+    Entra de cada superfície. Aqui só se DECLARA o resultado no mesmo seam que o resto do
+    backend já lê — inventar um caminho paralelo para o ator do MCP é que daria duas respostas
+    para "quem é o chamador".
+
+    Sem `reset`, igual ao `require_user`: cada requisição roda na sua própria cópia de contexto
+    (é a garantia do ASGI/anyio), então o valor não vaza para a requisição seguinte.
+    """
+    _current_user.set(user)
+
+
 def current_user() -> User | None:
     return _current_user.get()
 

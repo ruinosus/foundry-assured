@@ -722,6 +722,10 @@
     ],
     [
       "GET",
+      "/.well-known/oauth-protected-resource/mcp/"
+    ],
+    [
+      "GET",
       "/admin/role-assignments"
     ],
     [
@@ -850,7 +854,7 @@
     ],
     [
       "GET",
-      "/mcp/.well-known/oauth-protected-resource"
+      "/mcp/.well-known/oauth-protected-resource/mcp/"
     ],
     [
       "GET",
@@ -902,6 +906,10 @@
     ],
     [
       "HEAD",
+      "/.well-known/oauth-protected-resource/mcp/"
+    ],
+    [
+      "HEAD",
       "/docs"
     ],
     [
@@ -914,7 +922,7 @@
     ],
     [
       "HEAD",
-      "/mcp/.well-known/oauth-protected-resource"
+      "/mcp/.well-known/oauth-protected-resource/mcp/"
     ],
     [
       "HEAD",
@@ -930,7 +938,11 @@
     ],
     [
       "OPTIONS",
-      "/mcp/.well-known/oauth-protected-resource"
+      "/.well-known/oauth-protected-resource/mcp/"
+    ],
+    [
+      "OPTIONS",
+      "/mcp/.well-known/oauth-protected-resource/mcp/"
     ],
     [
       "POST",
