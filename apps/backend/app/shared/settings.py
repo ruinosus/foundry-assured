@@ -7,6 +7,11 @@ This module keeps only platform-global settings (auth, CORS, tenant-store wiring
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+#: Nome do escopo delegado exposto pela app registration. Fonte ÚNICA: `entra_api_scope` o
+#: compõe, `shared/auth.py` o anuncia no bearer scheme, e o MCP o exige no verifier. Três
+#: cópias literais era o que havia antes, e nenhuma derivava das outras.
+ENTRA_API_SCOPE_NAME = "access_as_user"
+
 
 class PlatformSettings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -65,6 +70,11 @@ class PlatformSettings(BaseSettings):
     # CORS origin for the local Next.js frontend
     frontend_origin: str = "http://localhost:3000"
 
+    #: URL pública DESTE backend. Vira o `resource` da metadata OAuth do MCP (RFC 9728), que é
+    #: o que o cliente usa para descobrir onde se autenticar. `frontend_origin` NÃO serve: é a
+    #: origem do frontend, outro host. Vazio em dev → localhost.
+    mcp_public_base_url: str = "http://localhost:8000"
+
     @property
     def auth_enabled(self) -> bool:
         """OBO/Entra is active only when the API app registration is configured.
@@ -76,7 +86,7 @@ class PlatformSettings(BaseSettings):
 
     @property
     def entra_api_scope(self) -> str:
-        return f"api://{self.entra_api_client_id}/access_as_user"
+        return f"api://{self.entra_api_client_id}/{ENTRA_API_SCOPE_NAME}"
 
 
 settings = PlatformSettings()

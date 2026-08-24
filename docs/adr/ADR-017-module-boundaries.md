@@ -77,7 +77,7 @@ current coupling is synchronous and works, and introducing events would be a beh
 `definitions.py`, and from the spec's Phase 3.5 also the approval policy and per-tool role
 gates. The spec's first revision called it `prompts` and described it as a re-export; with
 `definitions.py` inside it, that name would lie. The documents themselves
-(`apps/backend/agents/helpdesk/`) **do not move** — their path is a deployment contract
+(`apps/backend/agents/helpdesk/` [renamed to `agents/assured/` on 2026-08-24]) **do not move** — their path is a deployment contract
 (ADR-014's Azure Files mount at `/mnt/agents`), not an implementation detail.
 
 ### What the measured graph forced us to change

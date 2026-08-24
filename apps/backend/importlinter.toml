@@ -15,6 +15,7 @@ root_packages = ["app"]
 
 # --- C1 — the three layers. composition may see everything; a module may see shared and other
 # modules' public; shared may see nothing inside the app.
+
 [[tool.importlinter.contracts]]
 name = "Layers: composition > modules > shared"
 type = "layers"
@@ -77,6 +78,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -107,6 +109,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -137,6 +140,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -167,6 +171,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -197,6 +202,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -227,6 +233,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -257,6 +264,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -287,6 +295,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -317,6 +326,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -347,6 +357,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -377,6 +388,7 @@ source_modules = [
     "app.modules.helpdesk",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -407,6 +419,7 @@ source_modules = [
     "app.modules.helpdesk",
     "app.modules.hitl",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -437,6 +450,7 @@ source_modules = [
     "app.modules.helpdesk",
     "app.modules.hitl",
     "app.modules.hosted",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -449,6 +463,37 @@ source_modules = [
     "app.shared",
 ]
 forbidden_modules = ["app.modules.knowledge.internal"]
+
+[[tool.importlinter.contracts]]
+name = "mcpserver internals are private"
+type = "forbidden"
+allow_indirect_imports = true
+source_modules = [
+    "app.modules.admin",
+    "app.modules.agentdefs",
+    "app.modules.audit",
+    "app.modules.builder",
+    "app.modules.conversations",
+    "app.modules.deepcall",
+    "app.modules.evaluation",
+    "app.modules.foundry",
+    "app.modules.grounded",
+    "app.modules.helpdesk",
+    "app.modules.hitl",
+    "app.modules.hosted",
+    "app.modules.knowledge",
+    "app.modules.oncall",
+    "app.modules.platform_ops",
+    "app.modules.pricing",
+    "app.modules.proposer",
+    "app.modules.tenancy",
+    "app.modules.tickets",
+    "app.modules.usecases",
+    "app.main",
+    "app.registry",
+    "app.shared",
+]
+forbidden_modules = ["app.modules.mcpserver.internal"]
 
 [[tool.importlinter.contracts]]
 name = "oncall internals are private"
@@ -468,6 +513,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.platform_ops",
     "app.modules.pricing",
     "app.modules.proposer",
@@ -498,6 +544,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.pricing",
     "app.modules.proposer",
@@ -528,6 +575,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.proposer",
@@ -558,6 +606,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -588,6 +637,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -618,6 +668,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",
@@ -648,6 +699,7 @@ source_modules = [
     "app.modules.hitl",
     "app.modules.hosted",
     "app.modules.knowledge",
+    "app.modules.mcpserver",
     "app.modules.oncall",
     "app.modules.platform_ops",
     "app.modules.pricing",

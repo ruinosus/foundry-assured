@@ -42,13 +42,13 @@ Scopes: `backend`, `frontend`, `hosted-agent`, `infra`, `eval`, `auth`, `deps`, 
 
 - **Never invent SDK signatures.** Verify against the installed package / Microsoft
   docs before fixing any `azure-ai-projects` / `agent-framework` call.
-- **Agent prompts** change only in `apps/backend/agents/helpdesk/` — one
+- **Agent prompts** change only in `apps/backend/agents/assured/` — one
   [AgentSchema](https://github.com/microsoft/AgentSchema) `PromptAgent` per agent holding its
   variant delta, the shared persona in `personas/`, cross-cutting rules in `guardrails/`
   ([ADR-013](./docs/adr/ADR-013-declarative-agent-prompts-dna.md),
   [ADR-015](./docs/adr/ADR-015-agentschema-replaces-the-dna-sdk.md)); `app/agents/prompts.py` is the
   single consumption point and composes them at import. When a prompt contract changes, update the
-  matching case in `agents/helpdesk/eval-cases/` in the same PR —
+  matching case in `agents/assured/eval-cases/` in the same PR —
   `uv run python -m eval.prompt_contract_test` is the CI guard.
 - Auth is **keyless** (`DefaultAzureCredential` / OBO) — no API keys in code.
 - Every resolver answer **must cite a source** (the eval policy gate enforces it).

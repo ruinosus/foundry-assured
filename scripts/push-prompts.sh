@@ -7,7 +7,7 @@
 #
 # The prod prompt loop — no image build, no `azd deploy`:
 #
-#   $EDITOR apps/backend/agents/helpdesk/techdocs.yaml
+#   $EDITOR apps/backend/agents/assured/techdocs.yaml
 #   (cd apps/backend && uv run python -m eval.prompt_contract_test)  # the content gate (CI runs it too)
 #   ./scripts/push-prompts.sh                                        # upload + revision restart
 #
@@ -25,6 +25,13 @@
 # - ⚠️ ONE-TIME, on an environment provisioned before ADR-015: the share still
 #   holds the old DNA scope (`helpdesk/agents/*.yaml` with `apiVersion:`), which
 #   the AgentSchema reader refuses loudly. Run `--mirror` once to replace it.
+# - ⚠️ ONE-TIME, 2026-08-24: the agent scope directory under `apps/backend/agents/`
+#   was renamed from the old `helpdesk` name to `assured` (`_SCOPE` in
+#   app/modules/agentdefs/public.py follows). The share still holds the old
+#   scope directory from before this rename — upload never deletes (see
+#   above), so a plain push leaves it there as dead weight. The NEXT push
+#   after this change MUST be `--mirror` so the stale directory dies on the
+#   share.
 #
 # Reads everything from the azd env (bicep outputs) — run after `azd up`.
 set -euo pipefail

@@ -22,8 +22,8 @@
 - [ ] CI is green (policy gate, typecheck, build, bicep)
 - [ ] No SDK signatures invented — verified against the installed package / docs (CLAUDE.md rule #1)
 - [ ] No secrets, keys, or `.env` values committed
-- [ ] Agent prompts changed only in `apps/backend/agents/helpdesk/*.yaml` (AgentSchema, ADR-013/015),
-      with the matching case in `agents/helpdesk/eval-cases/` updated in the same PR
+- [ ] Agent prompts changed only in `apps/backend/agents/assured/*.yaml` (AgentSchema, ADR-013/015),
+      with the matching case in `agents/assured/eval-cases/` updated in the same PR
 - [ ] Docs updated (`README.md` / `docs/DEPLOYMENT.md`) if behavior or setup changed
 - [ ] Eval impact considered (new policy / golden item / safety case if relevant)
 

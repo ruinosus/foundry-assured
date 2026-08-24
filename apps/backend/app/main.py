@@ -18,6 +18,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.modules.hosted.public import aclose as hosted_aclose
+from app.modules.mcpserver.public import MOUNT_PATH as MCP_MOUNT_PATH
+from app.modules.mcpserver.public import build_mcp_app
 from app.modules.platform_ops.public import SERVERS
 from app.modules.tenancy import public as tenancy
 from app.registry import include_routers, mount_domains
@@ -112,7 +114,18 @@ async def lifespan(app: FastAPI):
     # Pre-load the Entra OpenID config so the first authenticated request is fast.
     if azure_scheme is not None:
         await azure_scheme.openid_config.load_config()
-    yield
+    # O gerenciador de sessão do MCP nasce no lifespan DELE; sem entrar aqui, o sub-app sobe
+    # sem sessão e a primeira requisição falha.
+    #
+    # `_mcp_app` ainda não existe nesta linha do arquivo (só é atribuído lá embaixo, junto do
+    # `app.mount`) — funciona porque este corpo só EXECUTA quando o servidor ASGI chama o
+    # context manager no startup, e a essa altura o módulo já terminou de importar. Depende de
+    # `lifespan` continuar definido aqui, no mesmo módulo, DEPOIS do qual `_mcp_app` é atribuído
+    # antes do primeiro request: mover este `async def` para outro arquivo, ou mover a atribuição
+    # de `_mcp_app` para depois do `uvicorn.run`, quebra essa garantia sem erro de import — só no
+    # primeiro request, com um `NameError`.
+    async with _mcp_app.lifespan(app):
+        yield
     await hosted_aclose()
 
 
@@ -131,6 +144,22 @@ include_routers(app)
 # (workflow → helpdesk AG-UI; grounded → techdocs/selfwiki cited Q&A; tool → platform
 # AG-UI). The hosted twins stay in app/api/chat.py.
 mount_domains(app)
+
+# O MCP entra como SUB-APP montado em prefixo. O CORS de todo mundo — inclusive dele — é o
+# `CORSMiddleware` aplicado acima: middleware roda antes do roteamento, então ele já responde o
+# preflight de `/mcp` sem que o sub-app seja consultado (medido — ver mcpserver/internal/server).
+#
+# AS ROTAS `.well-known` NÃO ENTRAM NO MOUNT. O desafio 401 do MCP aponta para
+# `https://host/.well-known/oauth-protected-resource/mcp/`, uma URL absoluta a partir do host
+# (RFC 9728); a cópia que o FastMCP registra dentro do sub-app fica em `/mcp/.well-known/…` e
+# não atende essa URL. `build_mcp_app` devolve as mesmas rotas construídas pelo provider para
+# serem registradas AQUI, na raiz — é o lugar que o próprio fastmcp documenta em
+# `AuthProvider.get_well_known_routes`. Registrar direto na lista do router é como o próprio
+# FastAPI acumula rotas (`include_router`/`mount` fazem o mesmo); não há `add_route` que aceite
+# um `Route` já construído, e reconstruí-lo aqui duplicaria a metadata à mão.
+_mcp_app, _mcp_well_known = build_mcp_app(base_url=settings.mcp_public_base_url)
+app.mount(MCP_MOUNT_PATH, _mcp_app)
+app.router.routes.extend(_mcp_well_known)
 
 
 if __name__ == "__main__":

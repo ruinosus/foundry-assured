@@ -3,7 +3,7 @@
 # agents, its default, or the shared documents they compose. That is application
 # configuration, so it is declared here instead of being forced into an agent
 # document. Read by app/agents/definitions.py.
-name: helpdesk
+name: assured
 description: >-
   Declarative agent definitions for the foundry-assured backend — one
   AgentSchema PromptAgent per instruction block the backend builds an agent

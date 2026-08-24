@@ -38,7 +38,7 @@ from fastapi_azure_auth import (
 )
 from fastapi_azure_auth.user import User
 
-from app.shared.settings import settings
+from app.shared.settings import ENTRA_API_SCOPE_NAME, settings
 
 # App roles the app owns (Entra App Roles → token `roles` claim). The company maps its own
 # groups onto these; the app keeps the set small. See docs/RBAC-AND-USER-MANAGEMENT-PLAN.md.
@@ -62,7 +62,7 @@ if settings.auth_enabled:
         azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
             app_client_id=settings.entra_api_client_id,
             tenant_id=settings.entra_tenant_id,
-            scopes={settings.entra_api_scope: "access_as_user"},
+            scopes={settings.entra_api_scope: ENTRA_API_SCOPE_NAME},
             # The dev account is a guest (personal MS account invited to the tenant);
             # allow guests so it can sign in. Tighten for a production tenant.
             allow_guest_users=True,
@@ -70,7 +70,7 @@ if settings.auth_enabled:
     else:  # shared
         azure_scheme = MultiTenantAzureAuthorizationCodeBearer(
             app_client_id=settings.entra_api_client_id,
-            scopes={settings.entra_api_scope: "access_as_user"},
+            scopes={settings.entra_api_scope: ENTRA_API_SCOPE_NAME},
             validate_iss=True,
             # Per-tenant issuer validation; fastapi_azure_auth requires iss_callable when
             # validate_iss=True. The callable's parameter must be named exactly `tid`.
@@ -142,6 +142,28 @@ def require_role(*roles: str):
         return user
 
     return _check
+
+
+def set_current_user(user) -> None:
+    """Declara quem é o chamador da requisição atual, FORA do fluxo de dependência do FastAPI.
+
+    O contextvar `_current_user` é o seam por onde a identidade chega a quem não recebe o
+    `Request` — a credencial OBO, e a trilha de auditoria (`audit.actor()`). Até aqui ele só
+    tinha um escritor, o `require_user`, que é dependência de rota FastAPI. Superfície que não
+    passa por rota FastAPI — o servidor MCP, que autentica no middleware ASGI do fastmcp —
+    ficava com o contextvar vazio, e toda leitura dela entrava na trilha imutável como
+    `process:app`: a ADR-023 existe para responder "quem leu o quê", e a resposta ficava errada
+    justo na superfície nova.
+
+    Isto NÃO é uma segunda malha de identidade: quem valida o token continua sendo o verifier do
+    Entra de cada superfície. Aqui só se DECLARA o resultado no mesmo seam que o resto do
+    backend já lê — inventar um caminho paralelo para o ator do MCP é que daria duas respostas
+    para "quem é o chamador".
+
+    Sem `reset`, igual ao `require_user`: cada requisição roda na sua própria cópia de contexto
+    (é a garantia do ASGI/anyio), então o valor não vaza para a requisição seguinte.
+    """
+    _current_user.set(user)
 
 
 def current_user() -> User | None:

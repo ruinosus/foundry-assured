@@ -422,6 +422,31 @@ def include_routers(app) -> None:
     # `set_post_authenticate`).
     knowledge.set_domain_lookup(domain_spec)
 
+    # Mesmo empurrão, mesmo motivo: `mcpserver` não pode importar a camada de composição. Vai
+    # junto a lista de domínios COM base de conhecimento, derivada do `DOMAIN_KINDS` — a tool
+    # `search_docs` só aceita esses, e a descrição dela os nomeia. Derivada, e não escrita lá,
+    # porque duas listas divergem no primeiro domínio novo.
+    from app.modules.mcpserver.public import (
+        set_domain_registry as _mcp_set_domain_registry,
+    )
+
+    _mcp_set_domain_registry(
+        domain_spec, tuple(d for d, kind in DOMAIN_KINDS.items() if kind == "grounded")
+    )
+
+    # Mesmo empurrão, só no modo shared: fora dele `tenant_store()` não foi construída
+    # (`tenancy.install()` é no-op) e o MCP não precisa resolver tenant nenhum — o
+    # comportamento de self_hosted/dedicated fica byte-idêntico.
+    #
+    # `.get` — o método vinculado, não a loja em si: o seam do mcpserver é uma FUNÇÃO
+    # (`tid -> TenantRecord | None`), no mesmo espírito de `set_domain_registry`. A loja tem
+    # `.get`, mas não é chamável — passá-la direto quebraria em runtime, não no import.
+    if settings.deployment_mode == "shared":
+        from app.modules.mcpserver.public import set_tenant_store
+        from app.modules.tenancy.public import tenant_store
+
+        set_tenant_store(tenant_store().get)
+
     for module in (
         api_health,
         tickets,

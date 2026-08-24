@@ -40,7 +40,7 @@ logger = logging.getLogger(__name__)
 
 # Prepended to the synthesis input — the model answers ONLY from the retrieved documents and
 # cites them by their [n] number. RULE #7: a fonte deste texto é
-# `agents/helpdesk/guardrails/citation-numbered.md`, não mais um literal aqui — o nome
+# `agents/assured/guardrails/citation-numbered.md`, não mais um literal aqui — o nome
 # `SYNTHESIS_DIRECTIVE` fica porque este arquivo e `retrieval_provider.py` já o usam (e o
 # reexportam por `app/modules/grounded/public.py`). Ver o comentário do documento fonte para o
 # porquê de ele NÃO estar composto nas instructions de nenhum agente publicado.

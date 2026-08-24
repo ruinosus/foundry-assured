@@ -3,7 +3,7 @@
 THE guard of record for the agent definitions since ADR-013 phase 2 (the
 byte-equivalence gate `eval/prompts_equivalence_test.py` retired once the
 prompts started legitimately evolving). Each case in
-`agents/helpdesk/eval-cases/` pins a semantic contract something else relies on:
+`agents/assured/eval-cases/` pins a semantic contract something else relies on:
 the RESOLVE `TICKET:` and RETRIEVE `NO_MATCH` sentinels the workflow branches
 on, the grounded citation duty the ASSERT policy enforces, the ungrounded
 variant FORBIDDING that duty, the platform HITL never-claim-a-write rule, and
@@ -47,7 +47,7 @@ from app.modules.agentdefs.internal.definitions import (
 
 _BACKEND = Path(__file__).resolve().parents[1]
 _BASE_DIR = _BACKEND / "agents"
-_SCOPE = "helpdesk"
+_SCOPE = "assured"
 
 
 def _load_document(path: Path) -> dict[str, Any]:

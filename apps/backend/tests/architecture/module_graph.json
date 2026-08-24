@@ -39,6 +39,10 @@
     "knowledge": [
       "registry.py"
     ],
+    "mcpserver": [
+      "main.py",
+      "registry.py"
+    ],
     "oncall": [
       "registry.py"
     ],
@@ -106,6 +110,7 @@
   },
   "conversations": {
     "audit": [
+      "modules/conversations/internal/listing.py",
       "modules/conversations/internal/store.py"
     ],
     "foundry": [
@@ -116,6 +121,7 @@
       "modules/conversations/internal/store.py"
     ],
     "tenancy": [
+      "modules/conversations/internal/sharing.py",
       "modules/conversations/internal/store.py"
     ]
   },
@@ -168,7 +174,8 @@
   },
   "grounded": {
     "agentdefs": [
-      "modules/grounded/internal/concierge.py"
+      "modules/grounded/internal/concierge.py",
+      "modules/grounded/internal/grounded.py"
     ],
     "conversations": [
       "modules/grounded/internal/framework_agent.py",
@@ -277,6 +284,19 @@
       "modules/knowledge/internal/ingest_docbundles.py",
       "modules/knowledge/internal/secure_search.py",
       "modules/knowledge/internal/wiki_builder.py"
+    ]
+  },
+  "mcpserver": {
+    "knowledge": [
+      "modules/mcpserver/internal/tools_knowledge.py"
+    ],
+    "shared": [
+      "modules/mcpserver/internal/auth.py",
+      "modules/mcpserver/internal/authz.py",
+      "modules/mcpserver/internal/tools_knowledge.py"
+    ],
+    "tenancy": [
+      "modules/mcpserver/internal/tools_knowledge.py"
     ]
   },
   "oncall": {

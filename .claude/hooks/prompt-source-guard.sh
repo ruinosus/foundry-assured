@@ -2,7 +2,7 @@
 # REGRA 7 (CLAUDE.md) — prompt muda no documento AgentSchema, nunca no Python que o compõe.
 #
 # `app/modules/agentdefs/` CARREGA e COMPÕE os prompts; o texto deles mora em
-# `apps/backend/agents/helpdesk/*.yaml`. Editar o Python para mudar redação faz o prompt
+# `apps/backend/agents/assured/*.yaml`. Editar o Python para mudar redação faz o prompt
 # divergir do documento que o `provision_agents` publica no Foundry — e o portal passa a
 # mostrar uma versão que ninguém escreveu.
 #
@@ -23,6 +23,6 @@ jq -n '{
   hookSpecificOutput: {
     hookEventName: "PreToolUse",
     permissionDecision: "ask",
-    permissionDecisionReason: "REGRA 7: este arquivo compõe prompts, não os contém. Se a mudança é de TEXTO de prompt, ela pertence a apps/backend/agents/helpdesk/*.yaml (+ o eval-case correspondente, no mesmo PR). Se é de LÓGICA de composição, siga."
+    permissionDecisionReason: "REGRA 7: este arquivo compõe prompts, não os contém. Se a mudança é de TEXTO de prompt, ela pertence a apps/backend/agents/assured/*.yaml (+ o eval-case correspondente, no mesmo PR). Se é de LÓGICA de composição, siga."
   }
 }'

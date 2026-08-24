@@ -35,7 +35,7 @@ derives (with `ast`) the fields we read and write and fails if any is outside it
 vendored copy hasn't drifted.
 
 The declarative prompt layer (ADR-013) is guarded YAML-natively next to the definitions
-themselves: `../agents/helpdesk/eval-{cases,suites}/` — nine offline invariant cases run
+themselves: `../agents/assured/eval-{cases,suites}/` — nine offline invariant cases run
 in CI by `prompt_contract_test.py` (TICKET/NO_MATCH sentinels, the grounded citation duty
 via the wired `grounded-citation` guardrail, `not_contains` checks proving the ungrounded
 variant does NOT carry it, HITL never-claim-a-write, pt-BR discipline, and — since

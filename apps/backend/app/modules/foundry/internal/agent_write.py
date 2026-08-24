@@ -14,7 +14,7 @@ O caminho para definição enviada pelo usuário é `create_version(agent_name, 
 no pacote instalado.
 
 ISSO CAIU BEM, porque o formato que o usuário envia pode ser o MESMO que este repositório já usa
-para seus próprios agentes: o documento AgentSchema da ADR-013 (`agents/helpdesk/*.yaml`), que
+para seus próprios agentes: o documento AgentSchema da ADR-013 (`agents/assured/*.yaml`), que
 tem exatamente `model` e `instructions`. Então "criar agente" não inventa um formato nosso — usa
 o que já é o padrão aqui, e a tradução para `PromptAgentDefinition` é o mapeamento de dois campos.
 

@@ -17,7 +17,7 @@ linha só de um lado passa no seu teste local e quebra o gate.
 | `apps/frontend/lib/domains.ts` | uma entrada: `id`, `kind`, `endpoint`, `framework`, `icon`, `surface` |
 | `apps/backend/app/registry.py` | `DOMAIN_KINDS` + um `DomainSpec` em `_domains()` |
 | `apps/frontend/messages/{en,pt-BR}.json` | **todo o texto**, sob `domains.<id>` |
-| o agente | documento AgentSchema em `apps/backend/agents/helpdesk/<id>.yaml` + KB, se `grounded` |
+| o agente | documento AgentSchema em `apps/backend/agents/assured/<id>.yaml` + KB, se `grounded` |
 
 ## Três armadilhas, todas com cicatriz no repo
 

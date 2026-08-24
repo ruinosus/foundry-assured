@@ -55,7 +55,7 @@ conteúdo do selfwiki pode ser gerado por idioma, sem tradutor no meio.
 
 `"Responda SEMPRE em português (pt-BR)"` aparece cravado em `selfwiki.yaml` e `techdocs.yaml`.
 É regra transversal escrita em cada arquivo — e o repositório já tem o lugar certo para isso:
-`agents/helpdesk/guardrails/`, hoje com `grounded-citation.md` e `no-write-claims.md`.
+`agents/assured/guardrails/`, hoje com `grounded-citation.md` e `no-write-claims.md`.
 
 ### A composição é estática
 

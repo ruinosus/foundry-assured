@@ -16,6 +16,7 @@ from app.modules.tenancy.internal.tenant import (
     MultiTenantConfigProvider,
     TenantConfig,
     current_tenant_id,
+    domain_enabled,
     domains_for_tier,
     require_domain,
     set_current_tenant,
@@ -25,6 +26,7 @@ from app.modules.tenancy.internal.tenant import (
 from app.modules.tenancy.internal.tenant_resolution import (
     install,
     memory_scope,
+    resolve_tenant_record,
     tenant_store,
 )
 from app.modules.tenancy.internal.tenant_store import (
@@ -49,11 +51,13 @@ __all__ = [
     "TenantRecord",
     "current_tenant_id",
     "domain_deps",
+    "domain_enabled",
     "domains_for_tier",
     "install",
     "memory_scope",
     "onboarding_guard",
     "require_domain",
+    "resolve_tenant_record",
     "set_current_tenant",
     "set_provider",
     "set_server_catalog",

@@ -231,6 +231,20 @@ def domains_for_tier(tier: str | None) -> tuple[str, ...]:
     return TIER_DOMAINS.get(tier or "", DOMAIN_IDS)
 
 
+def domain_enabled(domain_id: str) -> bool:
+    """A regra de entitlement da ADR-010, sem vocabulário de transporte.
+
+    Existe como função porque há DUAS superfícies que precisam dela — a dependency do FastAPI
+    (`require_domain`) e o servidor MCP, que não passa por dependency nenhuma. Duas cópias da
+    mesma regra divergiriam na primeira mudança, e a divergência não daria erro: serviria
+    domínio não licenciado em silêncio numa das duas.
+    """
+    rec = _current_tenant.get()
+    if rec is None:
+        return False
+    return domain_id in (getattr(rec, "enabled_domains", None) or ())
+
+
 def require_domain(domain_id: str):
     """Shared-mode per-tenant entitlement gate (ADR-010). Fail-closed: 403 unless the
     resolved tenant's enabled_domains contains domain_id.
@@ -244,9 +258,7 @@ def require_domain(domain_id: str):
     from app.shared.auth import require_user
 
     async def _check(_user=Depends(require_user)) -> None:
-        rec = _current_tenant.get()
-        enabled = getattr(rec, "enabled_domains", None) or ()
-        if rec is None or domain_id not in enabled:
+        if not domain_enabled(domain_id):
             raise HTTPException(status_code=403, detail=f"domain '{domain_id}' not enabled for tenant")
 
     return _check

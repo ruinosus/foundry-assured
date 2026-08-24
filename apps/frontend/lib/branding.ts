@@ -6,7 +6,7 @@
 // `branding.description` em `messages/<locale>.json` — porque frase tem idioma, e aqui ela
 // nascia em inglês e ficava em inglês mesmo para quem escolheu português.
 //
-// A cópia da visão geral (app/page.tsx) e as instruções dos agentes (backend, agents/helpdesk/)
+// A cópia da visão geral (app/page.tsx) e as instruções dos agentes (backend, agents/assured/)
 // são *conteúdo* de domínio, reescritos à parte — ver docs/CUSTOMIZE.md.
 export const branding = {
   /** Product name — browser title, sidebar brand, login screen. */

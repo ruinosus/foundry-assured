@@ -20,7 +20,7 @@ uv run uvicorn app.main:app --port 8000 --reload
 
 ### Where the agent instructions live (ADR-013/ADR-015)
 
-`agents/helpdesk/` holds one [AgentSchema](https://github.com/microsoft/AgentSchema)
+`agents/assured/` holds one [AgentSchema](https://github.com/microsoft/AgentSchema)
 `PromptAgent` document per agent, read with Microsoft's own reader
 (`agent-framework-declarative`) and composed by `app/agents/prompts.py` at import.
 **To change a prompt, edit the YAML — not the Python.**
@@ -30,10 +30,10 @@ file saying so in its own header:
 
 | concept | where | why not AgentSchema |
 |---|---|---|
-| the scope catalog (`defaultAgent`) | `agents/helpdesk/scope.yaml` | the schema describes one agent, not a directory of them |
-| the shared concierge persona | `agents/helpdesk/personas/*.md` | the schema has no shared-identity document |
-| cross-cutting rules (`## Guardrail:` sections) | `agents/helpdesk/guardrails/*.md` | the schema has no guardrail concept |
-| the prompt-contract suite | `agents/helpdesk/eval-{cases,suites}/` | the schema describes an agent, not a test of one |
+| the scope catalog (`defaultAgent`) | `agents/assured/scope.yaml` | the schema describes one agent, not a directory of them |
+| the shared concierge persona | `agents/assured/personas/*.md` | the schema has no shared-identity document |
+| cross-cutting rules (`## Guardrail:` sections) | `agents/assured/guardrails/*.md` | the schema has no guardrail concept |
+| the prompt-contract suite | `agents/assured/eval-{cases,suites}/` | the schema describes an agent, not a test of one |
 
 An agent references a persona/guardrail **by name** from AgentSchema's standard
 `metadata` bag under the `x-foundry-assured` key; `app/agents/definitions.py`
@@ -53,7 +53,7 @@ a **restart, not a rebuild**:
 
 ```bash
 docker compose up -d                     # build once, run
-$EDITOR agents/helpdesk/techdocs.yaml     # change a prompt
+$EDITOR agents/assured/techdocs.yaml     # change a prompt
 docker compose restart backend           # restart picks it up — no image build
 ```
 
@@ -66,13 +66,13 @@ mounted read-only at `/mnt/agents` and selected via `AGENTS_DIR` (ADR-014,
 production leg). Publish with:
 
 ```bash
-$EDITOR agents/helpdesk/techdocs.yaml            # change a prompt
+$EDITOR agents/assured/techdocs.yaml            # change a prompt
 uv run python -m eval.prompt_contract_test      # content gate (CI runs it too)
 ../../scripts/push-prompts.sh                   # upload + revision restart — no image build
 ```
 
 Set `AGENTS_DIR` to point the backend at any external definition directory: if
-`$AGENTS_DIR/helpdesk` exists it wins (and a broken directory fails the boot
+`$AGENTS_DIR/assured` exists it wins (and a broken directory fails the boot
 loudly); if it is absent (empty/unseeded share) the backend logs a warning and
 falls back to the copy baked into the image, so a fresh provision never
 crash-loops. Unset means the baked-in copy.
