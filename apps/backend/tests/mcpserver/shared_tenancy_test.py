@@ -75,27 +75,68 @@ def main() -> int:
             asyncio.run(tools_knowledge.search_docs("techdocs", "q"))
             check("domínio NÃO licenciado é recusado", False)
         except Exception as exc:  # noqa: BLE001 — é o texto do erro que está sob teste
-            check("domínio NÃO licenciado é recusado", "não habilitado" in str(exc))
+            # Mensagem EXATA, não substring: "tenant não habilitado" também contém
+            # "não habilitado" — uma comparação frouxa passaria mesmo se o mutante que a
+            # revisão rodou (apagar `domain_enabled` do caminho MCP) removesse este gate.
+            check(
+                "domínio NÃO licenciado é recusado",
+                str(exc) == "domínio não habilitado para o tenant: techdocs",
+            )
 
         tools_knowledge.get_access_token = lambda: _Token("t-off")
         try:
             asyncio.run(tools_knowledge.search_docs("techdocs", "q"))
             check("tenant suspenso é recusado", False)
         except Exception as exc:  # noqa: BLE001 — é o texto do erro que está sob teste
-            check("tenant suspenso é recusado", "tenant" in str(exc).lower())
+            check("tenant suspenso é recusado", str(exc) == "tenant não habilitado")
 
         tools_knowledge.get_access_token = lambda: _Token("t-inexistente")
         try:
             asyncio.run(tools_knowledge.search_docs("techdocs", "q"))
             check("tenant desconhecido é recusado", False)
         except Exception as exc:  # noqa: BLE001 — é o texto do erro que está sob teste
-            check("tenant desconhecido é recusado", "tenant" in str(exc).lower())
+            check("tenant desconhecido é recusado", str(exc) == "tenant não habilitado")
+
+        # Seam quebrado (setup, não entitlement): se a composition root deixar de empurrar a
+        # loja, o erro é OUTRO ("tenant store não registrado") — precisa continuar distinto do
+        # "tenant não habilitado" acima, senão as três checagens de recusa passariam pelo
+        # motivo errado quando `set_tenant_store` parar de ser chamado.
+        tools_knowledge.set_tenant_store(None)
+        tools_knowledge.get_access_token = lambda: _Token("t-ok")
+        try:
+            asyncio.run(tools_knowledge.search_docs("techdocs", "q"))
+            check("loja de tenant não registrada é recusada, com o motivo certo", False)
+        except Exception as exc:  # noqa: BLE001 — é o texto do erro que está sob teste
+            check(
+                "loja de tenant não registrada é recusada, com o motivo certo",
+                str(exc) == "tenant store não registrado",
+            )
+        tools_knowledge.set_tenant_store(lambda tid: loja.get(tid))
+
+        # A composition root empurra `tenant_store().get` — o MÉTODO vinculado, não a loja em
+        # si (app/registry.py:448). A loja tem `.get` mas não é chamável: se alguém passasse o
+        # objeto cru por engano, o boot ficaria verde e só a primeira chamada da tool quebraria.
+        tools_knowledge.set_tenant_store(loja)  # type: ignore[arg-type] — propositalmente errado
+        try:
+            asyncio.run(tools_knowledge.search_docs("techdocs", "q"))
+            check("loja crua (não a função `.get`) quebra na primeira chamada", False)
+        except TypeError:
+            check("loja crua (não a função `.get`) quebra na primeira chamada", True)
+        except Exception:  # noqa: BLE001 — só o TypeError de "não é chamável" prova o ponto
+            check("loja crua (não a função `.get`) quebra na primeira chamada", False)
+        tools_knowledge.set_tenant_store(lambda tid: loja.get(tid))
 
         settings.deployment_mode = "self_hosted"
         tools_knowledge.get_access_token = lambda: _Token(None)
         set_current_tenant(None)
         r = asyncio.run(tools_knowledge.search_docs("techdocs", "q"))
-        check("fora do shared, nada de tenant é exigido", bool(r.get("sources")))
+        check("fora do shared, nada de tenant é exigido (self_hosted)", bool(r.get("sources")))
+
+        settings.deployment_mode = "dedicated"
+        tools_knowledge.get_access_token = lambda: _Token(None)
+        set_current_tenant(None)
+        r = asyncio.run(tools_knowledge.search_docs("techdocs", "q"))
+        check("fora do shared, nada de tenant é exigido (dedicated)", bool(r.get("sources")))
     finally:
         (tools_knowledge.retrieve, tools_knowledge.get_access_token,
          settings.deployment_mode, settings.entra_tenant_id,
