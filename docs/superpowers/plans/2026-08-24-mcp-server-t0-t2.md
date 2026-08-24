@@ -1065,3 +1065,295 @@ git commit -m "docs: registra o endpoint MCP e o que ele expõe"
 Abrir PR com título `feat(backend): MCP server T0–T2 — endpoint autenticado, papel e busca com ACL`,
 citando a spec e evidenciando: gates offline verdes, `eval.access_control_test` verde, e o
 teste manual com cliente MCP real.
+
+---
+
+### Task 7: modo `shared` — o MCP resolve tenant e cobra entitlement
+
+Acrescentada depois da revisão final, que mediu a lacuna: no modo `shared`, o caminho MCP não
+atravessa o `require_user` do FastAPI, e é ele quem dispara o hook que resolve o tenant. Hoje
+`search_docs` chega a `tenant_config()` sem tenant e **falha** — fail-closed, mas quebrado, e
+sem gate. O risco maior não é a falha: é quem for consertá-la resolvendo o tenant **sem**
+aplicar o gate de entitlement da ADR-010, e passar a servir domínio não licenciado.
+
+**A decisão de desenho que esta tarefa carrega:** `require_domain` é uma *dependency do FastAPI*
+e o MCP não tem como usá-la. Reescrever a checagem dentro do `mcpserver` seria criar duas regras
+para a mesma pergunta — o padrão que este repositório trata como causa raiz. Em vez disso, a
+regra é extraída para uma função simples no `tenancy`, e as **duas** superfícies passam a
+chamá-la. Uma regra, dois consumidores.
+
+Pelo mesmo motivo, o `tenancy` não pode levantar `HTTPException` no caminho MCP: quem decide é
+o `tenancy`, quem traduz o erro é cada superfície.
+
+**Files:**
+- Modify: `apps/backend/app/modules/tenancy/internal/tenant.py`
+- Modify: `apps/backend/app/modules/tenancy/internal/tenant_resolution.py`
+- Modify: `apps/backend/app/modules/tenancy/public.py`
+- Modify: `apps/backend/app/modules/mcpserver/internal/tools_knowledge.py`
+- Create: `apps/backend/tests/mcpserver/shared_tenancy_test.py`
+- Modify: `.github/workflows/ci.yml`
+
+**Interfaces:**
+- Produces em `tenancy.public`: `domain_enabled(domain_id: str) -> bool` (a regra, sem HTTP) e
+  `resolve_tenant_record(user) -> object | None` (resolve e grava o tenant da requisição;
+  devolve `None` quando não onboarded/inativo, sem levantar).
+- Consumes em `mcpserver`: as duas acima, mais o `_Chamador` que já existe.
+
+- [ ] **Step 1: Escrever o teste que falha**
+
+`apps/backend/tests/mcpserver/shared_tenancy_test.py`:
+
+```python
+"""No modo `shared`, o MCP resolve o tenant do chamador e cobra o entitlement.
+
+DUAS COISAS SEPARADAS, e a segunda é a que a revisão final apontou como perigosa. Resolver o
+tenant sem cobrar o entitlement (ADR-010) serve domínio NÃO LICENCIADO — e é o conserto
+"óbvio" que alguém faria olhando só o sintoma (a busca falhando por falta de tenant).
+
+A regra de entitlement é UMA (`tenancy.domain_enabled`) e vale para as duas superfícies. Este
+teste prova que o caminho MCP a usa; `require_domain` continua provando o lado do FastAPI.
+
+    uv run python -m tests.mcpserver.shared_tenancy_test
+"""
+
+from __future__ import annotations
+
+import asyncio
+import sys
+
+from app.modules.mcpserver.internal import tools_knowledge
+from app.modules.tenancy.public import set_current_tenant
+from app.shared.settings import settings
+
+
+class _Registro:
+    def __init__(self, tid, enabled, status="active"):
+        self.tid = tid
+        self.enabled_domains = enabled
+        self.status = status
+
+
+class _Token:
+    def __init__(self, tid):
+        self.token = "token-do-chamador"
+        self.claims = {"oid": "o-1", "roles": ["Reader"], "tid": tid}
+
+
+def main() -> int:
+    falhas: list[str] = []
+    visto: dict = {}
+
+    def check(rotulo: str, condicao: bool) -> None:
+        print(f"  {'✅' if condicao else '❌'} {rotulo}")
+        if not condicao:
+            falhas.append(rotulo)
+
+    async def falso_retrieve(query, user, domain, *, top=8):
+        visto["tid_no_retrieve"] = getattr(user, "tid", None)
+        return [{"index": 1, "source": "d.md", "url": "https://x/1", "snippet": "s"}]
+
+    loja = {"t-ok": _Registro("t-ok", ("techdocs",)),
+            "t-sem": _Registro("t-sem", ("selfwiki",)),
+            "t-off": _Registro("t-off", ("techdocs",), status="suspended")}
+
+    originais = (tools_knowledge.retrieve, tools_knowledge.get_access_token,
+                 settings.deployment_mode, settings.entra_tenant_id,
+                 settings.entra_api_client_id)
+    try:
+        tools_knowledge.retrieve = falso_retrieve
+        settings.deployment_mode = "shared"
+        settings.entra_tenant_id = "11111111-1111-1111-1111-111111111111"
+        settings.entra_api_client_id = "22222222-2222-2222-2222-222222222222"
+        tools_knowledge.set_tenant_store(lambda tid: loja.get(tid))
+
+        tools_knowledge.get_access_token = lambda: _Token("t-ok")
+        r = asyncio.run(tools_knowledge.search_docs("techdocs", "q"))
+        check("tenant licenciado passa", bool(r.get("sources")))
+        check("o tid do chamador chegou ao retrieve", visto.get("tid_no_retrieve") == "t-ok")
+
+        tools_knowledge.get_access_token = lambda: _Token("t-sem")
+        try:
+            asyncio.run(tools_knowledge.search_docs("techdocs", "q"))
+            check("domínio NÃO licenciado é recusado", False)
+        except Exception as exc:
+            check("domínio NÃO licenciado é recusado", "não habilitado" in str(exc))
+
+        tools_knowledge.get_access_token = lambda: _Token("t-off")
+        try:
+            asyncio.run(tools_knowledge.search_docs("techdocs", "q"))
+            check("tenant suspenso é recusado", False)
+        except Exception as exc:
+            check("tenant suspenso é recusado", "tenant" in str(exc).lower())
+
+        tools_knowledge.get_access_token = lambda: _Token("t-inexistente")
+        try:
+            asyncio.run(tools_knowledge.search_docs("techdocs", "q"))
+            check("tenant desconhecido é recusado", False)
+        except Exception as exc:
+            check("tenant desconhecido é recusado", "tenant" in str(exc).lower())
+
+        settings.deployment_mode = "self_hosted"
+        tools_knowledge.get_access_token = lambda: _Token(None)
+        set_current_tenant(None)
+        r = asyncio.run(tools_knowledge.search_docs("techdocs", "q"))
+        check("fora do shared, nada de tenant é exigido", bool(r.get("sources")))
+    finally:
+        (tools_knowledge.retrieve, tools_knowledge.get_access_token,
+         settings.deployment_mode, settings.entra_tenant_id,
+         settings.entra_api_client_id) = originais
+        set_current_tenant(None)
+
+    if falhas:
+        print(f"\n❌ {len(falhas)} verificação(ões) falharam.")
+        return 1
+    print("\n✅ o MCP no shared resolve tenant E cobra entitlement.")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+```
+
+- [ ] **Step 2: Rodar o teste e ver falhar**
+
+Run: `cd apps/backend && uv run python -m tests.mcpserver.shared_tenancy_test`
+Esperado: FALHA com `AttributeError: module ... has no attribute 'set_tenant_store'`.
+
+- [ ] **Step 3: Extrair a regra de entitlement no `tenancy`**
+
+Em `apps/backend/app/modules/tenancy/internal/tenant.py`, acrescente a regra como função, e faça
+`require_domain` passar a usá-la (sem mudar o comportamento HTTP):
+
+```python
+def domain_enabled(domain_id: str) -> bool:
+    """A regra de entitlement da ADR-010, sem vocabulário de transporte.
+
+    Existe como função porque há DUAS superfícies que precisam dela — a dependency do FastAPI
+    (`require_domain`) e o servidor MCP, que não passa por dependency nenhuma. Duas cópias da
+    mesma regra divergiriam na primeira mudança, e a divergência não daria erro: serviria
+    domínio não licenciado em silêncio numa das duas.
+    """
+    rec = _current_tenant.get()
+    if rec is None:
+        return False
+    return domain_id in (getattr(rec, "enabled_domains", None) or ())
+```
+
+E dentro de `require_domain._check`, substitua o corpo por:
+
+```python
+    async def _check(_user=Depends(require_user)) -> None:
+        if not domain_enabled(domain_id):
+            raise HTTPException(status_code=403, detail=f"domain '{domain_id}' not enabled for tenant")
+```
+
+- [ ] **Step 4: Dar ao `tenancy` uma resolução sem HTTP**
+
+Em `apps/backend/app/modules/tenancy/internal/tenant_resolution.py`, extraia a decisão de
+`resolve_tenant` e deixe a versão HTTP por cima dela:
+
+```python
+def resolve_tenant_record(user, store) -> object | None:
+    """Resolve o tenant do chamador e o grava na requisição. Devolve None se não elegível.
+
+    Sem `HTTPException`: quem decide é o tenancy, quem traduz o erro é cada superfície. O
+    caminho MCP levanta `ToolError`, o caminho web levanta 403 — mesma decisão, vocabulários
+    diferentes.
+    """
+    from app.modules.tenancy.internal.tenant import set_current_tenant
+
+    rec = store.get(getattr(user, "tid", None))
+    if rec is None or rec.status != "active":
+        return None
+    set_current_tenant(rec)
+    return rec
+
+
+def resolve_tenant(user, store) -> None:
+    """Authorization choke point: onboarded+active tid → set _current_tenant, else 403."""
+    if resolve_tenant_record(user, store) is None:
+        raise HTTPException(status_code=403, detail="tenant not onboarded")
+```
+
+- [ ] **Step 5: Exportar pelo `public.py` do tenancy**
+
+Em `apps/backend/app/modules/tenancy/public.py`, importe `domain_enabled` de `internal.tenant` e
+`resolve_tenant_record` de `internal.tenant_resolution`, e acrescente os dois ao `__all__`, na
+ordem alfabética que o arquivo já mantém.
+
+- [ ] **Step 6: Ligar no caminho MCP**
+
+Em `apps/backend/app/modules/mcpserver/internal/tools_knowledge.py`:
+
+1. `_Chamador.__init__` ganha `self.tid = str(claims.get("tid") or "")` — o `resolve_tenant_record`
+   lê exatamente esse atributo.
+2. Um seam de loja de tenants empurrado pela composition root, no mesmo padrão do
+   `set_domain_registry` que já existe ali:
+
+```python
+#: A loja de tenants, empurrada pela composition root (o módulo não pode importar de lá).
+#: `None` fora do modo shared — e aí nada de tenant é resolvido, que é o comportamento
+#: byte-idêntico de self_hosted/dedicated.
+_tenant_store: Callable[[str], Any] | None = None
+
+
+def set_tenant_store(fn: Callable[[str], Any] | None) -> None:
+    global _tenant_store
+    _tenant_store = fn
+```
+
+3. Dentro de `search_docs`, DEPOIS do `set_current_user(chamador)` e ANTES do `retrieve`:
+
+```python
+    # MODO SHARED: resolver o tenant E cobrar o entitlement. As duas coisas, sempre juntas —
+    # resolver sem cobrar serve domínio não licenciado, que é pior que falhar.
+    if settings.deployment_mode == "shared":
+        if _tenant_store is None:
+            raise ToolError("tenant store não registrado")
+        if resolve_tenant_record(chamador, _StoreAdapter(_tenant_store)) is None:
+            raise ToolError("tenant não habilitado")
+        if not domain_enabled(domain):
+            raise ToolError(f"domínio não habilitado para o tenant: {domain}")
+```
+
+O `_StoreAdapter` existe porque `resolve_tenant_record` chama `store.get(tid)`; se o seam for
+uma função, embrulhe-a num objeto com `.get`. Se preferir empurrar a própria loja (que já tem
+`.get`), faça isso e ajuste o teste do Step 1 — mas então diga no relatório.
+
+- [ ] **Step 7: Empurrar a loja na composition root**
+
+Em `apps/backend/app/registry.py`, ao lado do empurrão do registry de domínios que já existe,
+registre a loja **apenas no modo shared** (fora dele, `tenant_store()` não é construída):
+
+```python
+    if settings.deployment_mode == "shared":
+        from app.modules.mcpserver.public import set_tenant_store
+        from app.modules.tenancy.public import tenant_store
+
+        set_tenant_store(tenant_store())
+```
+
+- [ ] **Step 8: Rodar o teste e ver passar**
+
+Run: `cd apps/backend && uv run python -m tests.mcpserver.shared_tenancy_test`
+Esperado: `✅ o MCP no shared resolve tenant E cobra entitlement.`
+
+- [ ] **Step 9: Registrar no CI**
+
+Acrescente `tests.mcpserver.shared_tenancy_test` ao job `backend` do `.github/workflows/ci.yml`,
+seguindo o padrão dos quatro passos de MCP que já estão lá. Confirme com
+`uv run --project apps/backend --no-sync python scripts/gates.py --list` que a contagem sobe.
+
+- [ ] **Step 10: Bateria completa e commit**
+
+```bash
+cd /Users/jefferson.barnabe/projects/foundry-spec
+uv run --project apps/backend --no-sync python scripts/gates.py
+```
+
+Esperado: todos verdes, contagem = anterior + 1.
+
+```bash
+git add -A apps/backend .github/workflows/ci.yml
+git commit -m "feat(backend): o MCP resolve tenant e cobra entitlement no modo shared"
+```
