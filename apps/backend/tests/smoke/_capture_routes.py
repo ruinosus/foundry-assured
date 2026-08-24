@@ -14,6 +14,8 @@ import json
 import os
 import sys
 
+from starlette.routing import Mount
+
 # Synthetic, non-secret values. They exist so the eager factories can be constructed;
 # every heavy object is replaced below, so nothing here reaches the network.
 PROFILES = {
@@ -70,6 +72,53 @@ PROFILES = {
         "TENANT_STORE_BACKEND": "memory",
     },
 }
+
+
+def _collect_routes(routes, prefix: str = "") -> list[tuple[str, str]]:
+    """Achata a árvore de rotas — inclusive o que está apenas MONTADO (`Mount`).
+
+    Até esta função existir, `app.mount(...)` era um ponto cego do snapshot: o laço final
+    fazia `getattr(route, "methods", ())`, e `starlette.routing.Mount` não tem `.methods` —
+    a comprehension recebia `()` e a rota inteira desaparecia sem erro nenhum. Isso era só
+    um risco teórico até `app/main.py` passar a montar o servidor MCP em `/mcp`: o snapshot,
+    cujo próprio docstring o descreve como a rede de segurança contra "um router que deixa
+    de ser incluído", registrou zero linhas para essa superfície nova. Gate verde, cobertura
+    zero — pior que vermelho, porque não avisa.
+
+    Cada `Mount` agora rende duas coisas:
+      - uma entrada sentinela `("MOUNT", <prefixo + caminho do mount>)`, provando que a
+        montagem em si está registrada — mesmo quando o app montado é um ASGI arbitrário
+        sem `.routes` enumerável (ex.: `StaticFiles`), caso em que não há mais nada a fazer;
+      - quando o app montado EXPÕE `.routes` (é um `Router`/`Starlette`, o caso do FastMCP),
+        as rotas internas dele, recursivamente, com o caminho já prefixado pelo mount.
+
+    A recursão cobre mount-dentro-de-mount (o `http_app()` do FastMCP pode aninhar um) e
+    termina porque só desce por `.routes` quando o atributo existe — uma folha sem `.routes`
+    não tem por onde a recursão continuar.
+
+    Uma rota comum pode chegar aqui sem `.methods` explícito (o endpoint ASGI "cru" que o
+    FastMCP registra quando a auth está desligada, por exemplo) — nesse caso o método vira
+    o sentinela `"ANY"`, nunca um método inventado como `"GET"`: quem lê o snapshot precisa
+    conseguir distinguir "esta rota aceita qualquer método" de "esta rota é GET".
+    """
+    entries: list[tuple[str, str]] = []
+    for route in routes:
+        path = getattr(route, "path", None)
+        if path is None:
+            continue
+        full_path = f"{prefix}{path}"
+        if isinstance(route, Mount):
+            entries.append(("MOUNT", full_path))
+            sub_routes = getattr(route.app, "routes", None)
+            if sub_routes:
+                entries.extend(_collect_routes(sub_routes, prefix=full_path))
+            continue
+        methods = getattr(route, "methods", None)
+        if not methods:
+            entries.append(("ANY", full_path))
+            continue
+        entries.extend((method, full_path) for method in methods)
+    return entries
 
 
 def main() -> int:
@@ -135,9 +184,7 @@ def main() -> int:
         print(json.dumps(sorted(saida), indent=2))
         return 0
 
-    routes = sorted(
-        {(method, route.path) for route in app.routes for method in getattr(route, "methods", ())}
-    )
+    routes = sorted(set(_collect_routes(app.routes)))
     print(json.dumps([[m, p] for m, p in routes], indent=2))
     return 0
 

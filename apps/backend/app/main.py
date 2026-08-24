@@ -115,6 +115,14 @@ async def lifespan(app: FastAPI):
         await azure_scheme.openid_config.load_config()
     # O gerenciador de sessão do MCP nasce no lifespan DELE; sem entrar aqui, o sub-app sobe
     # sem sessão e a primeira requisição falha.
+    #
+    # `_mcp_app` ainda não existe nesta linha do arquivo (só é atribuído lá embaixo, junto do
+    # `app.mount`) — funciona porque este corpo só EXECUTA quando o servidor ASGI chama o
+    # context manager no startup, e a essa altura o módulo já terminou de importar. Depende de
+    # `lifespan` continuar definido aqui, no mesmo módulo, DEPOIS do qual `_mcp_app` é atribuído
+    # antes do primeiro request: mover este `async def` para outro arquivo, ou mover a atribuição
+    # de `_mcp_app` para depois do `uvicorn.run`, quebra essa garantia sem erro de import — só no
+    # primeiro request, com um `NameError`.
     async with _mcp_app.lifespan(app):
         yield
     await hosted_aclose()
