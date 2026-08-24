@@ -121,6 +121,62 @@ def _collect_routes(routes, prefix: str = "") -> list[tuple[str, str]]:
     return entries
 
 
+def _normaliza(path: str) -> str:
+    """`/mcp/` → `/mcp`. Uma rota `"/"` dentro de um mount `"/mcp"` rende `"/mcp/"`, e o nome
+    pelo qual essa superfície é conhecida (README, matriz de instrumentação, configuração de
+    cliente) é `/mcp`. Sem normalizar, os dois lados falariam de caminhos diferentes."""
+    return path.rstrip("/") or "/"
+
+
+def _deps_de(route) -> list[str]:
+    """Os nomes do que exige identidade nesta rota.
+
+    DUAS TOPOLOGIAS, DUAS EVIDÊNCIAS. Numa rota do FastAPI, quem exige identidade é uma
+    dependência, e ela aparece no `dependant` resolvido. Numa rota que vive dentro de um sub-app
+    ASGI montado — o servidor MCP — não existe `dependant`: quem exige identidade é o
+    `RequireAuthMiddleware` que o fastmcp põe COMO endpoint da rota protegida (é ele quem
+    devolve o 401 com o desafio). Então a evidência ali é o nome da classe do endpoint.
+
+    Emitir `[]` para toda rota montada — que é o que acontecia enquanto este ramo não descia em
+    `Mount` — não era "sem informação": era responder "desprotegida" sobre uma rota protegida,
+    caso o gate chegasse a olhar. E ele nem chegava: a rota inteira não aparecia.
+    """
+    dependant = getattr(route, "dependant", None)
+    if dependant is not None:
+        nomes = {
+            getattr(getattr(d, "call", None), "__name__", "")
+            for d in (getattr(dependant, "dependencies", []) or [])
+        }
+        return sorted(n for n in nomes if n)
+    return [type(getattr(route, "app", None)).__name__]
+
+
+def _collect_post_deps(routes, prefix: str = "") -> list[list]:
+    """`[[caminho, [dependências]]]` de toda rota POST, INCLUSIVE dentro de `Mount`.
+
+    O ramo `--deps` não descia em mount, e por isso `/mcp` era invisível para o gate de
+    superfícies de agente (`tests/architecture/instrumentation_matrix_test`) — que cobra
+    autenticação e declaração de gravação, e reprova superfície órfã. Gate verde sobre uma
+    superfície que ele nunca viu: exatamente a falha que o `_collect_routes` (abaixo) já tinha
+    consertado para o snapshot, repetida no ramo gêmeo.
+    """
+    saida: list[list] = []
+    for route in routes:
+        path = getattr(route, "path", None)
+        if path is None:
+            continue
+        full = f"{prefix}{path}"
+        if isinstance(route, Mount):
+            sub = getattr(route.app, "routes", None)
+            if sub:
+                saida.extend(_collect_post_deps(sub, prefix=full))
+            continue
+        if "POST" not in (getattr(route, "methods", set()) or set()):
+            continue
+        saida.append([_normaliza(full), _deps_de(route)])
+    return saida
+
+
 def build_app_under(profile: str):
     """Boota `app.main:app` sob um perfil sintético — sem credencial, sem rede.
 
@@ -181,19 +237,7 @@ def main() -> int:
     # `tests/architecture/instrumentation_matrix_test.py`, que precisa saber se a rota exige
     # identidade — coisa que o snapshot deliberadamente não olha.
     if "--deps" in sys.argv:
-        saida = []
-        for route in app.routes:
-            if "POST" not in (getattr(route, "methods", set()) or set()):
-                continue
-            dependant = getattr(route, "dependant", None)
-            nomes = sorted(
-                {
-                    getattr(getattr(d, "call", None), "__name__", "")
-                    for d in (getattr(dependant, "dependencies", []) or [])
-                }
-            )
-            saida.append([route.path, [n for n in nomes if n]])
-        print(json.dumps(sorted(saida), indent=2))
+        print(json.dumps(sorted(_collect_post_deps(app.routes)), indent=2))
         return 0
 
     routes = sorted(set(_collect_routes(app.routes)))
