@@ -12,6 +12,10 @@
 
 [tool.importlinter]
 root_packages = ["app"]
+# Ligados só pelo contrato C4b (núcleo limpo) abaixo — nenhum outro contrato deste arquivo
+# depende de pacote externo nem de import guardado por TYPE_CHECKING.
+include_external_packages = true
+exclude_type_checking_imports = true
 
 # --- C1 — the three layers. composition may see everything; a module may see shared and other
 # modules' public; shared may see nothing inside the app.
@@ -50,6 +54,39 @@ name = "tenancy does not import platform_ops (the dead cycle)"
 type = "forbidden"
 source_modules = ["app.modules.tenancy"]
 forbidden_modules = ["app.modules.platform_ops"]
+
+# --- C4b — núcleo limpo: quem só lê a KB não deve puxar framework de agente. Uma medição
+# mostrou que a maioria dos módulos já não importa `agent_framework`/`langchain`/`langgraph`/
+# `deepagents` — consequência não planejada das fronteiras da ADR-017. Este contrato prova o
+# grafo ESTÁTICO para os módulos que devem ficar assim; `tests/architecture/nucleo_limpo_test.py`
+# prova o grafo REAL (transitivo, num subprocesso), que é a prova de verdade — este contrato é
+# complementar, não substituto.
+#
+# `import-linter` 2.13 aceita módulos externos em `forbidden_modules` desde que
+# `include_external_packages = true` no nível de sessão (ver acima); sem isso o `lint-imports`
+# recusa a config. `exclude_type_checking_imports = true` evita falso-positivo do import só de
+# tipo em `hitl/public.py` (guardado por `if TYPE_CHECKING:` — nunca roda, mas o grimp o veria
+# como uma aresta real se não fosse ignorado).
+#
+# `hitl` FICA DE FORA desta lista, e a ausência é deliberada, não esquecimento. O Ajuste 2
+# manteve em `hitl/public.py` um import PREGUIÇOSO (dentro da função `recording_hitl`) que
+# alcança LangChain só quando `oncall`/`deepcall` de fato chamam a função — o mesmo padrão de
+# `tenancy/internal/tenant.py:require_domain`. Um contrato `forbidden` estático não distingue
+# "alcançável só sob chamada" de "alcançável no import a frio": as duas viram a mesma aresta no
+# grafo. Testado (ver relatório): silenciar essa aresta com `ignore_imports` cega o contrato até
+# para uma REGRESSÃO real (voltar o import pro topo do arquivo) — pior que não ter o contrato.
+# Por isso `hitl` só é coberto pelo teste dinâmico (b), que é o que sabe separar as duas coisas.
+[[tool.importlinter.contracts]]
+name = "nucleo limpo: sem framework de agente"
+type = "forbidden"
+source_modules = [
+    "app.modules.knowledge.public",
+    "app.modules.audit.public",
+    "app.modules.tenancy.public",
+    "app.modules.tickets.public",
+    "app.shared.auth",
+]
+forbidden_modules = ["agent_framework", "langchain", "langgraph", "deepagents"]
 
 # --- C5 — internals are private. One contract per module; sources are every OTHER module
 # plus the composition root, so a module can still reach its own internal.

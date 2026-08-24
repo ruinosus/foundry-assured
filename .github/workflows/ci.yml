@@ -116,6 +116,16 @@ jobs:
       - name: Filesystem anchors (no parents[N] path counting)
         run: uv run python -m tests.architecture.filesystem_anchors_test
 
+      # Núcleo limpo: tickets/hitl/knowledge/audit/tenancy/shared.auth não devem puxar
+      # framework de agente (agent_framework/langchain/langgraph/deepagents) — consequência
+      # não planejada das fronteiras da ADR-017, que abre caminho para um app separado
+      # (ADR-027). O contrato `forbidden` do import-linter prova o grafo estático para a
+      # maioria; este teste importa cada módulo num subprocesso e prova o grafo REAL — inclui
+      # `hitl`, que o contrato estático não cobre porque mantém de propósito um import
+      # preguiçoso que só alcança LangChain quando `oncall`/`deepcall` chamam a função.
+      - name: Núcleo limpo (sem framework de agente nos módulos que só leem/decidem/registram)
+        run: uv run python -m tests.architecture.nucleo_limpo_test
+
       # Imutabilidade declarada em infra/resources.bicep (ADR-023) precisa ser SATISFAZÍVEL.
       # `azd provision` falhou com `RequiredFeatureDisabled: Required feature Versioning is
       # disabled` porque os containers `audit`/`conversations` declaravam
