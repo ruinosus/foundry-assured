@@ -184,7 +184,7 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             // retrieval sends the OBO ACL header only when this is set (else /selfwiki fails closed).
             { name: 'APP_USERS_GROUP_ID', value: appUsersGroupId }
             // Runtime agent-definition override (ADR-014, production leg): the
-            // backend composes prompts from $AGENTS_DIR/helpdesk when that
+            // backend composes prompts from $AGENTS_DIR/assured when that
             // scope exists on the mounted share, else falls back (loudly) to
             // the copy baked into the image. Prompt update = push-prompts.sh.
             // ── Storage. SEM estes o backend monta `https://.blob.core.windows.net/...`:
