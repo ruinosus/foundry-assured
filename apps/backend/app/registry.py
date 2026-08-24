@@ -422,6 +422,11 @@ def include_routers(app) -> None:
     # `set_post_authenticate`).
     knowledge.set_domain_lookup(domain_spec)
 
+    # Mesmo empurrão, mesmo motivo: `mcpserver` não pode importar a camada de composição.
+    from app.modules.mcpserver.public import set_domain_lookup as _mcp_set_domain_lookup
+
+    _mcp_set_domain_lookup(domain_spec)
+
     for module in (
         api_health,
         tickets,

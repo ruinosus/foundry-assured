@@ -9,5 +9,6 @@ não é este módulo.
 from __future__ import annotations
 
 from app.modules.mcpserver.internal.server import build_app as build_mcp_app
+from app.modules.mcpserver.internal.tools_knowledge import set_domain_lookup
 
-__all__ = ["build_mcp_app"]
+__all__ = ["build_mcp_app", "set_domain_lookup"]

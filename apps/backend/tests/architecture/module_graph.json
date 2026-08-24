@@ -40,7 +40,8 @@
       "registry.py"
     ],
     "mcpserver": [
-      "main.py"
+      "main.py",
+      "registry.py"
     ],
     "oncall": [
       "registry.py"
@@ -286,8 +287,12 @@
     ]
   },
   "mcpserver": {
+    "knowledge": [
+      "modules/mcpserver/internal/tools_knowledge.py"
+    ],
     "shared": [
       "modules/mcpserver/internal/auth.py",
+      "modules/mcpserver/internal/authz.py",
       "modules/mcpserver/internal/server.py"
     ]
   },

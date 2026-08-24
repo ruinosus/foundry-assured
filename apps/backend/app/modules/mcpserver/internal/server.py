@@ -23,11 +23,15 @@ INSTRUCTIONS = (
 
 
 def build_mcp(base_url: str) -> FastMCP:
-    return FastMCP(
+    from app.modules.mcpserver.internal import tools_knowledge
+
+    mcp = FastMCP(
         "Foundry Assured",
         instructions=INSTRUCTIONS,
         auth=build_auth(base_url),
     )
+    tools_knowledge.register(mcp)
+    return mcp
 
 
 def build_app(base_url: str) -> ASGIApp:
