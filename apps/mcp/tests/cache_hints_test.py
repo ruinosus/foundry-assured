@@ -1,140 +1,218 @@
-"""Este servidor NÃO emite hint de cache (SEP-2549) — e o gate existe porque ligar um seria
-a única mudança de UMA LINHA, nesta spec inteira, capaz de causar dano em silêncio.
+"""O hint de cache (SEP-2549) alcança as LISTAGENS e nunca `resources/read` — medido no fio.
 
-POR QUE ISTO É UM GATE DE ITEM RECUSADO, E NÃO DE ITEM ENTREGUE. A Fase 5 (T7) avaliou
-`cache_ttl`/`cache_scope` e recusou. Uma recusa escrita só na spec deixa a arma carregada: quem
-amanhã acrescentar `cache_ttl=300` ao construtor não vai ler a spec, vai ler o construtor — e o
-construtor aceita, sem aviso, sem erro e sem sintoma. Este arquivo é a recusa em forma
-executável.
+A Fase 5 recusou o cache com a medição de que o botão do FastMCP é uniforme e portanto ligaria
+TTL também para `resources/read` — o documento integral com ACL, cuja leitura é o que produz o
+evento da trilha (ADR-023). A recusa caiu quando a medição foi completada um andar abaixo: o
+mapa de hints do SDK é **por método** (`Server.cache_hints`, consultado em `runner.py:357` com
+`.get(method)`), e quem é uniforme é só o atalho do construtor. `mcp_app/cache_hints.py` escreve
+a decisão inteira; este arquivo é a prova dela.
 
-O QUE FOI MEDIDO (fastmcp 4.0.0b3 + mcp 2.1.0 instalados, regra 1):
+ESTE GATE NÃO OLHA O ATRIBUTO — OLHA O FIO. Um teste que conferisse
+`mcp._mcp_server.cache_hints` ficaria verde para sempre a partir do dia em que o FastMCP
+renomeasse o seam: o hint sumiria do fio e o dicionário que o teste lê continuaria existindo,
+porque o teste o leria do mesmo objeto que o código escreve. Aqui todo `ttlMs` vem de uma
+resposta de protocolo recebida por um `Client` de verdade, em memória. Se o seam sumir, as
+listagens voltam a `ttlMs=0` e a verificação 3 fica vermelha.
 
-1. `tools/call` NÃO É UM MÉTODO CACHEÁVEL. `CacheableMethod` são seis, e a chamada de tool não
-   está entre eles. O vazamento que a spec temia — "a resposta de busca de um chamador servida a
-   outro, com o trim de ACL feito para o primeiro" — é impossível POR CONSTRUÇÃO nesta versão do
-   protocolo. Não porque configuramos bem: porque o botão não alcança essa superfície.
+AS QUATRO PROPRIEDADES, e por que nenhuma se prova sozinha:
 
-2. O HINT É UNIFORME POR CONSTRUÇÃO. `build_cache_hints` faz
-   `dict.fromkeys(get_args(CacheableMethod), hint)` — um valor de servidor para TODOS os métodos
-   cacheáveis. Não existe "cachear só as listagens": ligar o TTL para `tools/list` liga junto
-   `resources/read`, que aqui é `document://{domain}/{name}` — o documento integral, controlado
-   por ACL e registrado na trilha (ADR-023) leitura a leitura, inclusive as NEGADAS.
+  1. `tools/call` NÃO é cacheável nesta versão do protocolo. É o que faz o cache alcançar só a
+     vitrine: toda chamada chega aqui e revalida papel, tenant e ACL. Se o SDK um dia tornar
+     `tools/call` cacheável, esta linha fica vermelha ANTES de o produto passar a servir
+     resposta de busca do armazenamento do cliente.
+  2. `resources/read` É cacheável — é a superfície que o TTL alcançaria, e é por isso que ela
+     precisa ser excluída de propósito. Se o SDK tirá-la da lista, a exclusão vira código morto
+     e esta linha avisa.
+  3. NO FIO: as listagens saem com `ttlMs` > 0 e `resources/read` sai com `ttlMs = 0` — o mesmo
+     valor de um servidor que nunca ligou cache. É a verificação central.
+  4. Escopo `private` em tudo que recebe hint. `public` autorizaria compartilhar entre contextos
+     de autorização — e as listagens deste servidor são FILTRADAS por papel e por tenant. A
+     biblioteca aceita `public` sem erro e sem aviso (provado por mutação abaixo), então o freio
+     é este gate.
 
-   É aí que mora o dano real, e ele não é vazamento entre pessoas: é um BURACO NA TRILHA. Um
-   hint em `resources/read` autoriza o cliente a servir a leitura do armazenamento dele. Essa
-   leitura nunca chega aqui, então nunca vira evento — e o produto passa a afirmar "toda leitura
-   de documento controlado fica registrada" sobre leituras que ele não vê mais. Uma revogação de
-   acesso também só passa a valer depois do TTL.
+PROVA POR MUTAÇÃO, e ela é dupla aqui. Uma listagem com `ttlMs` positivo poderia ser um acidente
+do default; um `resources/read` com `ttlMs=0` poderia ser vácuo (nenhum hint funcionando em
+lugar nenhum). Por isso o teste monta DOIS servidores descartáveis ao lado do real: um sem cache
+(mostra que 0 é o valor de repouso, inclusive nas listagens) e um com o atalho uniforme
+`cache_ttl=` (mostra `resources/read` recebendo TTL — o desfecho que a exclusão evita).
 
-3. A PROVA EXIGIDA PARA ENTRAR NÃO É PRODUZÍVEL DESTE LADO. O critério da fase era provar por
-   teste que dois chamadores com ACLs diferentes não compartilham entrada de cache. Não há
-   entrada de cache aqui para testar: o servidor não guarda nada — ele emite uma DICA, e quem
-   guarda (ou não) é o cliente. `cache_scope="private"` é um pedido ao cliente, não uma garantia
-   nossa. Sem prova possível, não entra — e é essa a regra que este gate trava.
-
-O gate NÃO proíbe cache para sempre. Ele obriga quem quiser ligá-lo a passar por aqui e
-responder ao que está escrito acima — hoje, a resposta que faltaria é o que fazer com a trilha
-de `resources/read`.
+Offline e sem daemon: `Client(mcp)` é o transporte em memória do próprio fastmcp, e com
+`ENTRA_*` em branco não há provider de auth. Zero rede.
 
     uv run python -m tests.cache_hints_test
 """
 
 from __future__ import annotations
 
+import asyncio
 import sys
-from typing import get_args
+
+from fastmcp import Client
+
+#: O que uma resposta de repouso carrega. `CacheHint.ttl_ms` tem default 0 e o modelo de
+#: resultado também, então "sem hint" e "hint de 0ms" são indistinguíveis no fio — e é
+#: exatamente por isso que excluir `resources/read` deixa aquele método BYTE-IDÊNTICO ao de
+#: antes desta fase, em vez de trocá-lo por um valor novo.
+SEM_TTL = 0
 
 
-def _hints_do_servidor(mcp) -> dict:
-    """Os hints que este servidor vai carimbar no fio, lidos de onde eles de fato moram.
+async def _do_fio(mcp) -> dict[str, tuple[int | None, str | None]]:
+    """`(ttlMs, cacheScope)` de cada método, lidos de respostas de protocolo de verdade.
 
-    O FastMCP não guarda `cache_ttl`: ele converte no construtor e entrega o mapa ao servidor
-    de baixo nível (`LowLevelServer.cache_hints`), que é quem preenche `ttlMs`/`cacheScope` em
-    cada resultado cacheável. Ler o mapa final — e não o argumento — é o que faz este gate
-    enxergar também um hint que chegue por outro caminho (um `Server(cache_hints=…)` montado à
-    mão, por exemplo).
+    Usa `client.session.*` (a sessão de baixo nível) e não os atalhos do `Client`: os atalhos
+    devolvem só o conteúdo — a lista de tools, o conteúdo do recurso —, e os campos de cache
+    moram no ENVELOPE do resultado, que é o que precisa ser medido.
     """
-    return dict(getattr(mcp._mcp_server, "cache_hints", {}))
+    async with Client(mcp) as client:
+        medidas = {}
+        for metodo, chamada in (
+            ("tools/list", client.session.list_tools()),
+            ("prompts/list", client.session.list_prompts()),
+            ("resources/read", client.session.read_resource("cache-test://sonda")),
+        ):
+            resultado = await chamada
+            medidas[metodo] = (
+                getattr(resultado, "ttl_ms", None),
+                getattr(resultado, "cache_scope", None),
+            )
+        return medidas
+
+
+def _servidor_descartavel(**kwargs):
+    """Um FastMCP mínimo com uma tool e um recurso, para as duas provas por mutação.
+
+    Precisa das duas superfícies porque as duas metades da decisão são medidas em métodos
+    diferentes: `tools/list` é o que DEVE ganhar TTL e `resources/read` é o que NÃO deve.
+    """
+    from fastmcp import FastMCP
+
+    servidor = FastMCP("cache-descartável", tools=[], **kwargs)
+
+    @servidor.tool
+    def sonda() -> str:
+        return "ok"
+
+    @servidor.resource("cache-test://sonda")
+    def documento() -> str:
+        return "conteúdo"
+
+    return servidor
 
 
 def main() -> int:
-    from mcp_types.methods import CacheableMethod
+    from mcp_types.methods import CACHEABLE_METHODS
 
     from app.shared.settings import settings
+    from mcp_app import cache_hints, resources_knowledge, tools_knowledge
     from mcp_app.auth import build_auth
-    from mcp_app.main import build_mcp
+    from mcp_app.main import build_mcp, wire_registry
 
     falhas: list[str] = []
 
-    def check(nome: str, cond: bool) -> None:
-        print(f"  {'✓' if cond else '✗'} {nome}")
-        if not cond:
-            falhas.append(nome)
+    def check(rotulo: str, condicao: bool) -> None:
+        print(f"  {'✅' if condicao else '❌'} {rotulo}")
+        if not condicao:
+            falhas.append(rotulo)
 
-    cacheaveis = set(get_args(CacheableMethod))
-
-    # --- 1 · a chamada de tool não é cacheável — o vazamento temido é impossível aqui -------
+    # --- 1 e 2 · o que o protocolo torna cacheável, que é o que decide o desenho -------------
     check(
-        f"`tools/call` não é método cacheável nesta versão ({len(cacheaveis)} são: "
-        f"{', '.join(sorted(cacheaveis))})",
-        "tools/call" not in cacheaveis,
+        f"`tools/call` NÃO é cacheável ({len(CACHEABLE_METHODS)} métodos são: "
+        f"{', '.join(sorted(CACHEABLE_METHODS))}) — o cache alcança a vitrine, nunca a porta",
+        "tools/call" not in CACHEABLE_METHODS,
     )
-    # E `resources/read` É — é a superfície controlada por ACL que um TTL alcançaria. Se um dia
-    # o SDK tirar `resources/read` da lista, este check fica vermelho e a metade 2 do raciocínio
-    # acima precisa ser reescrita antes de a recusa continuar valendo.
     check(
-        "`resources/read` É cacheável — é a superfície com ACL que um TTL alcançaria",
-        "resources/read" in cacheaveis,
+        "`resources/read` É cacheável — é a superfície com ACL que a exclusão existe para tirar",
+        "resources/read" in CACHEABLE_METHODS,
     )
 
-    # --- 2 · o servidor REAL não emite hint nenhum ------------------------------------------
-    mcp = build_mcp(build_auth(settings.mcp_public_base_url))
-    hints = _hints_do_servidor(mcp)
+    # --- 3 · O FIO DO SERVIDOR REAL — a verificação central ---------------------------------
+    wire_registry()
+    real = build_mcp(build_auth(settings.mcp_public_base_url))
+    tools_knowledge.register(real)
+    resources_knowledge.register(real)
+
+    # O recurso-sonda entra NO SERVIDOR REAL porque `document://{domain}/{name}` é um TEMPLATE:
+    # ler um documento de verdade exigiria backend, ACL e blob. O que está sob medição é o
+    # ENVELOPE de `resources/read`, que o runner preenche por MÉTODO — não por recurso. Um
+    # recurso trivial mede o mesmo método pelo mesmo caminho, sem rede.
+    @real.resource("cache-test://sonda")
+    def _sonda() -> str:
+        return "conteúdo"
+
+    medido = asyncio.run(_do_fio(real))
+    print(f"     fio do servidor real: {medido}")
+
+    ttl_esperado = cache_hints.TTL_SEGUNDOS * 1000
     check(
-        "o servidor deste app não emite hint de cache"
-        + (f" — EMITE: {sorted(hints)}" if hints else ""),
-        not hints,
+        f"NO FIO: `tools/list` sai com ttlMs={ttl_esperado} (medido: {medido['tools/list'][0]})",
+        medido["tools/list"][0] == ttl_esperado,
+    )
+    check(
+        f"NO FIO: `prompts/list` sai com ttlMs={ttl_esperado} "
+        f"(medido: {medido['prompts/list'][0]})",
+        medido["prompts/list"][0] == ttl_esperado,
+    )
+    check(
+        "NO FIO: `resources/read` sai com ttlMs=0 — o documento com ACL chega SEMPRE aqui, e é "
+        f"a chegada que vira evento na trilha (medido: {medido['resources/read'][0]})",
+        medido["resources/read"][0] == SEM_TTL,
     )
 
-    # --- 3 · prova por mutação: o botão é único e alcança o documento com ACL ---------------
-    # Sem isto, a verificação 2 poderia estar verde por vácuo (um `cache_hints` que nunca é
-    # preenchido por caminho nenhum). Aqui se liga o TTL num servidor descartável e se mostra,
-    # medido, as duas propriedades que fundamentam a recusa: o hint cobre TODOS os métodos
-    # cacheáveis de uma vez, `resources/read` entre eles.
+    # --- 4 · escopo: nunca `public` ---------------------------------------------------------
+    escopos = {m: escopo for m, (ttl, escopo) in medido.items() if ttl}
+    check(
+        f"tudo que recebe hint sai com escopo `private` (medido: {escopos}) — `public` "
+        "autorizaria servir a listagem filtrada de um chamador a outro",
+        set(escopos.values()) == {cache_hints.ESCOPO} == {"private"},
+    )
+
+    # --- prova por mutação A · 0 é o valor de REPOUSO, não um efeito nosso -------------------
+    repouso = asyncio.run(_do_fio(_servidor_descartavel()))
+    check(
+        f"servidor SEM cache: tudo em ttlMs=0, listagens inclusive (medido: {repouso}) — é o "
+        "que torna `resources/read` byte-idêntico ao de antes desta fase",
+        {ttl for ttl, _ in repouso.values()} == {SEM_TTL},
+    )
+
+    # --- prova por mutação B · o atalho uniforme alcança `resources/read` --------------------
+    # É a medição que fundamentou a recusa da Fase 5 e que continua verdadeira: quem usar
+    # `cache_ttl=` no construtor liga o TTL para o documento com ACL junto. Mantê-la aqui é o
+    # que impede alguém de "simplificar" `cache_hints.aplicar` de volta para o atalho.
+    uniforme = asyncio.run(_do_fio(_servidor_descartavel(cache_ttl=60)))
+    check(
+        f"o atalho `cache_ttl=` do construtor ALCANÇA `resources/read` (medido: {uniforme}) — "
+        "é por isso que o mapa por método existe, e por que trocá-lo pelo atalho é regressão",
+        uniforme["resources/read"][0] == 60_000 and uniforme["tools/list"][0] == 60_000,
+    )
+
+    # --- prova por mutação C · a biblioteca não freia o escopo perigoso ----------------------
     from fastmcp import FastMCP
 
-    ligado = FastMCP("cache-descartável", tools=[], cache_ttl=60)
-    hints_ligado = _hints_do_servidor(ligado)
+    publico = FastMCP("cache-público-descartável", tools=[], cache_ttl=60, cache_scope="public")
+    aceitou_public = {
+        h.scope for h in dict(getattr(publico._mcp_server, "cache_hints", {})).values()
+    } == {"public"}
     check(
-        "com `cache_ttl`, o hint cobre TODOS os métodos cacheáveis (não há 'só as listagens')"
-        + (f" — cobriu {sorted(hints_ligado)}" if set(hints_ligado) != cacheaveis else ""),
-        set(hints_ligado) == cacheaveis,
-    )
-    check(
-        "e alcança `resources/read` — o documento integral, controlado por ACL e auditado",
-        "resources/read" in hints_ligado,
+        "a biblioteca aceita `cache_scope='public'` sem erro nem aviso — o freio contra "
+        "compartilhar listagem entre identidades é ESTE gate, não ela",
+        aceitou_public,
     )
 
-    # --- 4 · nada na biblioteca impede o escopo perigoso ------------------------------------
-    # `cache_scope="public"` significa "pode ser compartilhado entre contextos de autorização".
-    # A biblioteca só recusa escopo SEM TTL (seria inócuo); com TTL ela aceita `public` sem um
-    # aviso sequer. Medir isso é o que transforma "tome cuidado" em "o freio é este gate".
-    publico = FastMCP("cache-público-descartável", tools=[], cache_ttl=60, cache_scope="public")
-    escopos = {h.scope for h in _hints_do_servidor(publico).values()}
+    # --- a cobertura é DERIVADA, não escrita -------------------------------------------------
     check(
-        f"a biblioteca aceita `cache_scope='public'` sem erro nem aviso (escopos: {sorted(escopos)}) "
-        "— o freio contra compartilhar entre identidades é ESTE gate, não ela",
-        escopos == {"public"},
+        f"o mapa cobre exatamente os cacheáveis menos {sorted(cache_hints.SEM_HINT)} — derivado "
+        "de `CACHEABLE_METHODS`, então um método novo do SDK não passa despercebido",
+        set(cache_hints.hints()) == set(CACHEABLE_METHODS) - cache_hints.SEM_HINT,
     )
 
     if falhas:
         print(f"\n❌ {len(falhas)} verificação(ões) falharam.")
         print(
-            "   Se a intenção foi LIGAR cache: leia o topo deste arquivo. O que falta responder "
-            "não é o escopo — é o que acontece com a trilha (ADR-023) de `resources/read`."
+            "   Se a intenção foi mexer no cache: leia `mcp_app/cache_hints.py`. A pergunta que "
+            "decide não é o TTL — é se a resposta cacheada é catálogo ou conteúdo controlado."
         )
         return 1
-    print("\n✅ nenhum hint de cache sai deste servidor — a recusa da Fase 5 está travada.")
+    print("\n✅ o hint cobre as listagens; `resources/read` continua chegando aqui a cada leitura.")
     return 0
 
 

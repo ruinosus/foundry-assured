@@ -37,6 +37,7 @@ from app.shared.settings import settings
 from app.shared.telemetry import setup_telemetry
 from mcp_app import (
     assurance_extension,
+    cache_hints,
     prompts_agentdefs,
     request_state,
     resources_knowledge,
@@ -60,7 +61,7 @@ setup_telemetry()
 def build_mcp(auth) -> FastMCP:
     """O servidor FastMCP com a tool registrada. Separado de `build_app` para o teste de
     mascaramento poder falar com ele pelo cliente em memória, sem HTTP."""
-    return FastMCP(
+    mcp = FastMCP(
         "Foundry Assured",
         instructions=INSTRUCTIONS,
         auth=auth,
@@ -81,6 +82,13 @@ def build_mcp(auth) -> FastMCP:
         # Toda a justificativa está em `mcp_app/request_state.py`.
         request_state_security=request_state.politica(),
     )
+    # O HINT DE CACHE (SEP-2549), E ELE NÃO CABE NO CONSTRUTOR ACIMA. `cache_ttl=` é uniforme —
+    # ligaria o TTL também para `resources/read`, que é o documento integral com ACL e o que
+    # produz o evento da trilha (ADR-023). O mapa POR MÉTODO existe no SDK debaixo do FastMCP e
+    # é isso que `cache_hints.aplicar` instala: as listagens ganham TTL, `resources/read` fica
+    # com o mesmo `ttlMs=0` de um servidor sem cache nenhum. Toda a medição está lá.
+    cache_hints.aplicar(mcp)
+    return mcp
 
 
 def wire_registry() -> None:
