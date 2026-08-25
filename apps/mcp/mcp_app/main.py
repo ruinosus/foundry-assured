@@ -29,9 +29,7 @@ dá erro; só faz as duas superfícies discordarem sobre o que o usuário pode v
 from __future__ import annotations
 
 import uvicorn
-from fastapi.middleware.cors import CORSMiddleware
 from fastmcp import FastMCP
-from starlette.middleware import Middleware
 
 from app.modules.domains.public import DOMAIN_KINDS, domain_spec, domain_specs
 from app.modules.tenancy import public as tenancy
@@ -171,24 +169,28 @@ def build_app():
     """A aplicação ASGI. Serve o MCP em `MCP_PATH` e, quando há auth, as rotas `.well-known`
     na raiz — as duas na mesma lista de rotas, porque este app não é montado em prefixo.
 
-    O CORS VEIO DA PARIDADE COM O MONOLITO. Lá o `/mcp` herdava o `CORSMiddleware` aplicado a
-    todo `app/main.py` (mesma origem: `settings.frontend_origin`); sem o equivalente aqui, o
-    preflight (`OPTIONS`) de um cliente de browser recebe 405 sem `access-control-allow-origin`
-    (medido). Hoje nenhum cliente de browser chama este endpoint — o frontend fala AG-UI com o
-    monolito, não MCP —, então este middleware é a permissão que o monolito dava, preservada em
-    vez de retirada em silêncio. Retirá-la é uma decisão possível e separada: quem a tomar deve
-    dizer que está fechando uma porta, não descobrir depois que fechou.
+    SEM CORS, E A PORTA ESTÁ FECHADA DE PROPÓSITO. Até aqui havia um `CORSMiddleware` com
+    `allow_origins=[settings.frontend_origin]`, herdado por PARIDADE: no monolito o `/mcp`
+    ficava debaixo do middleware que `app/main.py` aplica a tudo, e a Fase 0c preservou a
+    permissão em vez de retirá-la em silêncio — dizendo, ali mesmo, que retirá-la seria uma
+    decisão separada e explícita. É esta.
+
+    O que o middleware permitia não tem cliente: o frontend fala **AG-UI com o backend**, não
+    MCP, e um cliente MCP não roda em browser (o transporte é servidor-a-servidor, sem
+    same-origin policy e sem preflight). Ele era a única cópia sobrevivente de uma regra que
+    mora no monolito — e uma permissão de origem cruzada sem consumidor é superfície de ataque
+    que ninguém revisa, porque ninguém sabe que ela está lá. Reduzir superfície é a diretriz
+    NORDOR-122 aplicada ao caso mais barato possível.
+
+    O QUE MUDA NO FIO: um `OPTIONS` de browser passa a receber 405 sem
+    `access-control-allow-origin` (medido antes de remover, era o comportamento SEM o
+    middleware). Se um dia existir um cliente de browser, isto volta como decisão, com o
+    consumidor nomeado.
     """
     wire_registry()
     mcp = build_mcp(build_auth(settings.mcp_public_base_url))
     register_surfaces(mcp)
-    cors = Middleware(
-        CORSMiddleware,
-        allow_origins=[settings.frontend_origin],
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-    return mcp.http_app(path=MCP_PATH, middleware=[cors])
+    return mcp.http_app(path=MCP_PATH)
 
 
 app = build_app()

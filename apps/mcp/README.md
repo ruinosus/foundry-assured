@@ -208,6 +208,20 @@ token — o mesmo degradar-aberto do resto do backend em dev local. Com elas, `P
 token devolve **401** com `WWW-Authenticate: Bearer … resource_metadata="…"`, e essa URL
 responde 200 com a metadata RFC 9728.
 
+### A porta de CORS foi fechada
+
+Este app **não** tem `CORSMiddleware`, e a ausência é uma decisão, não um esquecimento. Ele
+existiu por PARIDADE: no monolito o `/mcp` ficava debaixo do middleware que `app/main.py` aplica
+a tudo, e a Fase 0c preservou a permissão em vez de retirá-la em silêncio — dizendo, ali mesmo,
+que retirá-la seria decisão separada.
+
+Foi retirada porque a permissão não tem consumidor: o frontend fala **AG-UI com o backend**, não
+MCP, e um cliente MCP não roda em browser (o transporte é servidor-a-servidor — sem same-origin
+policy, sem preflight). O que sobrava era uma cópia solitária de uma regra que mora no monolito,
+e uma permissão de origem cruzada sem consumidor é superfície que ninguém revisa. No fio, um
+`OPTIONS` de browser volta a receber 405 sem `access-control-allow-origin`. Se um dia existir um
+cliente de browser, o middleware volta como decisão, com o consumidor nomeado.
+
 ## Gates
 
 ```bash

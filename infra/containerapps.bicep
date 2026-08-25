@@ -398,7 +398,10 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
             // falha do commit 007f399, só que mais silenciosa — o 401 traz uma placa que leva a
             // um host que não hospeda este recurso.
             { name: 'MCP_PUBLIC_BASE_URL', value: 'https://${mcpFqdn}' }
-            { name: 'FRONTEND_ORIGIN', value: 'https://${webFqdn}' }
+            // `FRONTEND_ORIGIN` SAIU DAQUI junto com o `CORSMiddleware` deste app: era a
+            // única coisa que o lia. Uma variável de ambiente que ninguém consome parece
+            // configuração feita e não é. O backend continua com a dele (linha ~185), que
+            // tem consumidor de verdade.
             { name: 'AZURE_STORAGE_ACCOUNT', value: storageAccountName }
             { name: 'AZURE_STORAGE_CONTAINER', value: corpusContainerName }
             { name: 'AZURE_STORAGE_RESOURCE_ID', value: storageResourceId }
