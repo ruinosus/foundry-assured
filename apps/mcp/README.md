@@ -6,6 +6,16 @@ Ele serve auth de Resource Server do Entra, autorização por App Role, e a tool
 com trim de ACL sob a identidade do chamador — exatamente o que o `/mcp` do monolito servia,
 porque nasceu como porte com critério de **paridade**.
 
+Desde a **Fase 1 (T5)** ele publica mais duas famílias de superfície, e nenhuma das duas declara
+conteúdo próprio:
+
+- **prompts** — um por agente do escopo, DERIVADOS dos documentos AgentSchema em
+  `apps/backend/agents/assured/` via `app.modules.agentdefs.public.composed_agents()`. Prompt
+  literal dentro deste app é PR errado; `tests/prompts_mirror_test.py` é o gate.
+- **resource** `document://{domain}/{name}` — o documento integral, reautorizado a cada leitura
+  por `app.modules.knowledge.public.authorized_document`, que é a MESMA função da rota
+  `GET /source/{domain_id}/{name}` do backend. Mais a **completion** dos dois parâmetros.
+
 > **É a ÚNICA superfície MCP do produto.** Na Fase 0c `app/modules/mcpserver/` foi deletado do
 > backend, junto com o `fastmcp==3.4.7` do extra `agents` que o sustentava. Duas superfícies
 > servindo a mesma tool é a divergência que este projeto mais teme: uma delas pode passar a
@@ -29,12 +39,19 @@ continua assim.
 
 ```
 mcp_app/
-  main.py            composition root: telemetria → empurra o registry → constrói → serve
-  auth.py            AzureJWTVerifier + RemoteAuthProvider, e o gate de App Role
-  tools_knowledge.py a tool `search_docs`
-tests/               os gates (módulos executáveis com main(), não pytest)
-Dockerfile           contexto de build = a RAIZ do repositório (depende de ../backend por path)
+  main.py                 composition root: telemetria → empurra o registry → constrói → serve
+  auth.py                 AzureJWTVerifier + RemoteAuthProvider, e o gate de App Role
+  caller.py               quem perguntou: token do FastMCP → usuário do backend + trilha
+  tools_knowledge.py      a tool `search_docs`
+  prompts_agentdefs.py    os prompts, derivados dos documentos AgentSchema
+  resources_knowledge.py  o documento integral (mesmo ACL da rota /source) + a completion
+tests/                    os gates (módulos executáveis com main(), não pytest)
+Dockerfile                contexto de build = a RAIZ do repositório (depende de ../backend por path)
 ```
+
+`register_surfaces()` em `main.py` é o ÚNICO lugar que lista as superfícies publicadas — e é o
+mesmo ponto que o gate de instrumentação monta, para provar o que o app monta e não o que o
+teste monta.
 
 **O pacote se chama `mcp_app`, não `app`.** O backend se instala como o pacote `app`; um
 diretório `app/` aqui venceria o instalado em `sys.path` e `import app.modules.knowledge.public`
@@ -42,10 +59,12 @@ quebraria. `mcp` também está fora — é o SDK do protocolo.
 
 ## O que este app importa do monolito
 
-`app.modules.knowledge.public` (a busca e o trim de ACL), `app.modules.tenancy.public` (tenant e
-entitlement no modo `shared`), `app.shared.{auth,settings,telemetry}` — e
+`app.modules.knowledge.public` (a busca, o trim de ACL e a autorização do documento integral),
+`app.modules.tenancy.public` (tenant e entitlement no modo `shared`),
+`app.modules.audit.public` (a trilha da ADR-023), `app.modules.agentdefs.public` (os prompts
+compostos dos documentos AgentSchema), `app.shared.{auth,settings,telemetry}` — e
 `app.modules.domains.public`, o **catálogo** de domínios (`DomainSpec`, `DOMAIN_KINDS`,
-`domain_spec`).
+`domain_spec`, `domain_specs`).
 
 Tudo isso é `<módulo>.public`, e nada é da camada de composição do monolito. Nem sempre foi
 assim: no porte (Fase 0b) o catálogo morava em `apps/backend/app/registry.py`, e este app — que
@@ -82,9 +101,13 @@ uv run python -m tests.unauthenticated_test        # 401 + a placa que leva a al
 uv run python -m tests.identity_passthrough_test   # o token do CHAMADOR chega ao retrieve
 uv run python -m tests.error_masking_test          # erro não conta a infraestrutura
 uv run python -m tests.shared_tenancy_test         # no shared, resolve tenant E cobra entitlement
+uv run python -m tests.instrumentation_matrix_test # toda superfície tem papel e declara o que grava
+uv run python -m tests.prompts_mirror_test         # os prompts publicados == os agentes compostos
+uv run python -m tests.resource_document_test      # o ACL do documento é o do backend; `..` recusado
+uv run python -m tests.completion_test             # só sugere o que existe e o que o chamador pode abrir
 ```
 
-O CI roda os seis no job `mcp-app` (`.github/workflows/ci.yml`), que **também** é o gate de
+O CI roda os dez no job `mcp-app` (`.github/workflows/ci.yml`), que **também** é o gate de
 instalabilidade: ele instala a base sem o extra `agents` mais FastMCP 4 e importa
 `app.modules.knowledge.public`. O `import-linter` prova o grafo de import; só a instalação prova
 a instalabilidade — e é a instalabilidade que quebra.

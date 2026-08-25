@@ -33,11 +33,11 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastmcp import FastMCP
 from starlette.middleware import Middleware
 
-from app.modules.domains.public import DOMAIN_KINDS, domain_spec
+from app.modules.domains.public import DOMAIN_KINDS, domain_spec, domain_specs
 from app.modules.tenancy import public as tenancy
 from app.shared.settings import settings
 from app.shared.telemetry import setup_telemetry
-from mcp_app import tools_knowledge
+from mcp_app import prompts_agentdefs, resources_knowledge, tools_knowledge
 from mcp_app.auth import MCP_PATH, build_auth
 
 INSTRUCTIONS = (
@@ -80,6 +80,10 @@ def wire_registry() -> None:
     tools_knowledge.set_domain_registry(
         domain_spec, tuple(d for d, kind in DOMAIN_KINDS.items() if kind == "grounded")
     )
+    # O resource do documento integral resolve UM domínio (como a rota `/source` faz) e, só
+    # para a completion, lista TODOS os do tenant da requisição. Nenhuma lista literal dos dois
+    # lados — ver `resources_knowledge.set_domain_registry`.
+    resources_knowledge.set_domain_registry(domain_spec, domain_specs)
 
     # Só no modo shared: fora dele `tenant_store()` não foi construída (`tenancy.install()` é
     # no-op) e o MCP não resolve tenant nenhum — o comportamento de self_hosted/dedicated fica
@@ -92,6 +96,23 @@ def wire_registry() -> None:
                 "DEPLOYMENT_MODE=shared sem tenant store — o MCP não resolveria tenant nenhum"
             )
         tools_knowledge.set_tenant_store(loja.get)
+
+
+def register_surfaces(mcp: FastMCP) -> None:
+    """As TRÊS superfícies que este servidor publica, num lugar só.
+
+    Existe como função (e não como quatro linhas dentro de `build_app`) porque o gate de
+    instrumentação precisa montar exatamente o que o app monta — se ele registrasse à mão,
+    provaria a superfície que ELE monta, não a que o app monta, e uma superfície nova esquecida
+    aqui passaria despercebida justamente pelo teste que existe para pegá-la.
+
+    Nenhuma das três declara conteúdo próprio: a tool deriva o catálogo de domínios, os prompts
+    derivam os documentos AgentSchema, e o resource deriva a decisão de acesso do `knowledge`.
+    """
+    tools_knowledge.register(mcp)
+    prompts_agentdefs.register(mcp)
+    resources_knowledge.register(mcp)
+    resources_knowledge.register_completion(mcp)
 
 
 def build_app():
@@ -108,7 +129,7 @@ def build_app():
     """
     wire_registry()
     mcp = build_mcp(build_auth(settings.mcp_public_base_url))
-    tools_knowledge.register(mcp)
+    register_surfaces(mcp)
     cors = Middleware(
         CORSMiddleware,
         allow_origins=[settings.frontend_origin],

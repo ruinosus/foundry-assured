@@ -1,5 +1,5 @@
-"""Toda tool MCP é autenticada por papel e DECLARA o que grava — o gêmeo, neste app, do gate
-`tests/architecture/instrumentation_matrix_test.py` do monolito.
+"""Toda superfície MCP é autenticada por papel e DECLARA o que grava — o gêmeo, neste app, do
+gate `tests/architecture/instrumentation_matrix_test.py` do monolito.
 
 POR QUE ESTE GATE EXISTE AQUI TAMBÉM. A Fase 0c tirou a linha `/mcp` da matriz do monolito — o
 comentário que ficou no lugar dela diz, corretamente, que a superfície é `apps/mcp` agora e que
@@ -10,6 +10,21 @@ lado, que a ÚNICA tool de hoje (`search_docs`) grava citação e trilha — mas
 o teste à mão, não por um mecanismo que reprova sozinho quando uma tool NOVA esquece uma das
 duas. Este arquivo é esse mecanismo.
 
+SUPERFÍCIE NÃO É SÓ TOOL — E ISSO MUDOU NA FASE 1. O servidor passou a publicar PROMPTS (as
+instruções compostas dos documentos AgentSchema) e um RESOURCE template (o documento integral,
+com o ACL do backend). Os dois são superfície pelo mesmo motivo que uma tool é: aparecem na
+listagem de um cliente autenticado e devolvem conteúdo. Uma matriz que só olhasse tools ficaria
+verde sobre um resource sem `auth=` — e o resource é justamente o que serve documento controlado
+por ACL. `_superficies()` descobre as três famílias.
+
+COMO OS PROMPTS ENTRAM SEM VIRAR UMA SEGUNDA LISTA. Enumerar os dez prompts nesta matriz seria
+recriar, aqui, a lista que `tests/prompts_mirror_test.py` existe para impedir — e ela divergiria
+no primeiro agente novo. Então a matriz declara a FAMÍLIA (`prompt:*`), e o cruzamento aceita um
+prompt como declarado somente se o id dele for um dos que `prompts_agentdefs.prompt_ids()`
+deriva. Um prompt escrito à mão (id que o `agentdefs` não compõe) não cai na família: ele aparece
+individualmente como não declarado, e o gate fica vermelho. As duas regras se reforçam em vez de
+se repetir.
+
 O CUIDADO QUE A VERSÃO DO MONOLITO NÃO TEVE, E A FORMA ESPELHADA QUE A ARMADILHA TOMA AQUI. Lá,
 uma rota sem auth se tornava invisível à captura (perdia `.methods`), e "nenhuma sem auth"
 passava vazio sobre zero rotas olhadas. Aqui a armadilha é a MESMA ideia com o sinal trocado —
@@ -19,9 +34,9 @@ medida, não deduzida (ver `_prova_por_mutacao`): `FastMCP.list_tools()` só fil
 `mcp.list_tools()` sem contexto faz o CONTRÁRIO do que se espera: a tool bem configurada
 (`search_docs`) desaparece da contagem, e a mal configurada permanece — corrompendo exatamente o
 cruzamento que a verificação 2 (declarada vs. encontrada) depende para pegar drift. Por isso a
-descoberta usa `Provider.list_tools(mcp)` — o método da CLASSE-BASE, chamado sem passar pelo
-override do `FastMCP` — que devolve o registro CRU, com `tool.auth` do jeito que
-`mcp.tool(..., auth=...)` deixou, filtro nenhum aplicado.
+descoberta usa `Provider.list_*(mcp)` — os métodos da CLASSE-BASE, chamados sem passar pelo
+override do `FastMCP` — que devolvem o registro CRU, com `.auth` do jeito que o registro deixou,
+filtro nenhum aplicado.
 
     uv run python -m tests.instrumentation_matrix_test
 """
@@ -30,14 +45,18 @@ from __future__ import annotations
 
 import sys
 
-#: As colunas que a matriz do monolito usa. Search_docs responde às seis; a maioria é `n/a`
-#: porque esta superfície não é um agente conversacional — é uma tool de busca avulsa.
+#: As colunas que a matriz do monolito usa. Nenhuma superfície daqui é um agente conversacional,
+#: então a maioria é `n/a` — e o texto do `n/a` é a justificativa, não um placeholder.
 COLUNAS = ("conversa", "tokens", "referencias", "chamado", "trilha", "caso_de_uso")
 
-#: A MATRIZ. Uma linha por tool registrada hoje — `search_docs` é a única. `True` = grava hoje;
-#: string = não grava, e o texto diz por quê (mesma convenção do monolito).
+#: A chave que representa TODOS os prompts derivados do `agentdefs`. Ver a nota no topo: a lista
+#: de ids não pode morar aqui.
+FAMILIA_PROMPTS = "prompt:*"
+
+#: A MATRIZ. Uma linha por superfície registrada hoje. `True` = grava hoje; string = não grava, e
+#: o texto diz por quê (mesma convenção do monolito).
 MATRIZ: dict[str, dict[str, object]] = {
-    "search_docs": {
+    "tool:search_docs": {
         "conversa": "n/a: chamada de tool avulsa — não há objeto de conversa para persistir",
         "tokens": "n/a: search_docs só busca, não chama modelo — não há uso de token a contar",
         # Regra 4 (CLAUDE.md): toda resposta fundamentada carrega citação. `identity_passthrough_test`
@@ -51,43 +70,94 @@ MATRIZ: dict[str, dict[str, object]] = {
         "trilha": True,
         "caso_de_uso": "n/a: módulo usecases não se aplica a uma busca avulsa por MCP",
     },
+    "resource:document://{domain}/{name}": {
+        "conversa": "n/a: leitura avulsa de documento — não há conversa para persistir",
+        "tokens": "n/a: serve o blob, não chama modelo — não há uso de token a contar",
+        # O recurso É a fonte: a URI identifica o documento e o corpo devolve o `url` do blob que
+        # respondeu. Não há resposta a fundamentar, então não há citação a anexar — a regra 4
+        # vale para quem AFIRMA coisas, e este endpoint só entrega o original.
+        "referencias": "n/a: o recurso é a própria fonte — a URI e o `url` do blob são a citação",
+        "chamado": "n/a: leitura, nunca escrita — este resource não abre chamado",
+        # ADR-023, e o PAR completo: a leitura autorizada e a NEGADA, que é o sinal mais
+        # interessante da trilha. `resource_document_test` trava os dois.
+        "trilha": True,
+        "caso_de_uso": "n/a: módulo usecases não se aplica à leitura de um documento",
+    },
+    FAMILIA_PROMPTS: {
+        "conversa": "n/a: um prompt é instrução publicada, não uma conversa",
+        "tokens": "n/a: publicar o texto não chama modelo — quem gasta token é o cliente depois",
+        "referencias": "n/a: instrução do produto, não resposta sobre a base — nada a citar",
+        "chamado": "n/a: prompts não executam nada, muito menos escrita",
+        # LACUNA CONHECIDA, não `n/a`: ler um prompt é ler uma DEFINIÇÃO do produto (documento
+        # AgentSchema versionado no repositório), não conteúdo controlado por ACL — a trilha da
+        # ADR-023 registra acesso a conteúdo. Fica declarado como lacuna, e não como "não se
+        # aplica", porque no dia em que um prompt carregar dado de tenant a resposta muda.
+        "trilha": "lacuna: leitura de definição do produto, não de conteúdo controlado — "
+        "revisitar se um prompt passar a carregar dado de tenant",
+        "caso_de_uso": "n/a: módulo usecases não se aplica à publicação de instruções",
+    },
 }
 
 
-def _tools_sem_auth(tools) -> list[str]:
-    """Nomes das tools SEM `auth=` — a checagem estrutural, isolada para o teste de mutação
+def _sem_auth(superficies) -> list[str]:
+    """Ids das superfícies SEM `auth=` — a checagem estrutural, isolada para o teste de mutação
     poder chamar a mesma função contra um registro descartável."""
-    return sorted(t.name for t in tools if t.auth is None)
+    return sorted(sid for sid, _nome, auth in superficies if auth is None)
 
 
-async def _registro_cru(mcp):
-    """O registro de tools TAL COMO FOI FEITO, sem o filtro de auth que `FastMCP.list_tools()`
-    aplica antes de devolver — ver a nota grande no topo do arquivo sobre por que isto importa.
+async def _registro_cru(mcp) -> list[tuple[str, str, object]]:
+    """Toda superfície registrada, TAL COMO FOI FEITA, sem o filtro de auth que os `list_*` do
+    `FastMCP` aplicam antes de devolver — ver a nota grande no topo do arquivo.
+
+    Devolve `(id da superfície, nome cru, auth)`. O id carrega a família no prefixo, porque uma
+    tool e um prompt podem ter o mesmo nome e não são a mesma superfície.
     """
     from fastmcp.server.providers.base import Provider
 
-    return list(await Provider.list_tools(mcp))
+    achadas: list[tuple[str, str, object]] = []
+    for t in await Provider.list_tools(mcp):
+        achadas.append((f"tool:{t.name}", t.name, t.auth))
+    for p in await Provider.list_prompts(mcp):
+        achadas.append((f"prompt:{p.name}", p.name, p.auth))
+    for r in await Provider.list_resources(mcp):
+        achadas.append((f"resource:{r.uri}", str(r.uri), r.auth))
+    for rt in await Provider.list_resource_templates(mcp):
+        achadas.append((f"resource:{rt.uri_template}", rt.uri_template, rt.auth))
+    return achadas
+
+
+def _declarado(sid: str, derivados: frozenset[str]) -> str:
+    """A chave da matriz que responde por esta superfície.
+
+    Um prompt cujo id o `agentdefs` deriva responde pela FAMÍLIA; qualquer outro responde por si
+    mesmo — e, como ninguém o declarou individualmente, aparece como não declarado. É assim que
+    um prompt escrito à mão fica vermelho aqui, além de ficar vermelho no gate espelhado.
+    """
+    if sid.startswith("prompt:") and sid.removeprefix("prompt:") in derivados:
+        return FAMILIA_PROMPTS
+    return sid
 
 
 async def _prova_por_mutacao() -> str | None:
-    """Registra duas tools num servidor descartável — uma SEM `auth=` (o defeito que a
-    verificação 1 tem que pegar) e uma COM `auth=` (o controle, que representa `search_docs`) —
-    e mostra duas coisas medidas, não afirmadas:
+    """Registra, num servidor descartável, uma superfície de CADA família sem `auth=` (o defeito
+    que a verificação 1 tem que pegar) e uma de cada COM `auth=` (o controle), e mostra duas
+    coisas medidas, não afirmadas:
 
-    1. `_tools_sem_auth` sobre o registro CRU acha exatamente a tool sem dono. Se esta função não
-       encontrar nada, a verificação 1 do `main()` seria decorativa.
+    1. `_sem_auth` sobre o registro CRU acha exatamente as três sem dono — tool, prompt E
+       resource. Antes da Fase 1 esta prova só cobria tool: um resource sem `auth=` passaria.
     2. A listagem FILTRADA (`FastMCP.list_tools()`, sem contexto de auth) faz o oposto do que se
        esperaria: perde a tool COM dono (ela falha no check de auth e é removida) e MANTÉM a tool
-       sem dono (que nunca é checada, porque `tool.auth is None` pula o filtro). É a prova de que
+       sem dono (que nunca é checada, porque `auth is None` pula o filtro). É a prova de que
        descobrir por aí, em vez de pelo registro cru, corromperia o cruzamento da verificação 2.
 
-    Devolve a mensagem de falha, ou `None` se as duas mutações foram corretamente pegas.
+    Devolve a mensagem de falha, ou `None` se as mutações foram corretamente pegas.
     """
     from fastmcp import FastMCP
 
     from mcp_app.auth import require_any_role
 
     descartavel = FastMCP("mutação-descartável", tools=[])
+    dono = require_any_role("Reader")
 
     def tool_sem_dono() -> str:
         return "nunca deveria existir sem auth="
@@ -95,15 +165,44 @@ async def _prova_por_mutacao() -> str | None:
     def tool_com_dono() -> str:
         return "o controle — representa search_docs"
 
+    def prompt_sem_dono() -> str:
+        return "prompt sem auth="
+
+    def prompt_com_dono() -> str:
+        return "o controle — representa os prompts do agentdefs"
+
+    def recurso_sem_dono(x: str) -> str:
+        return x
+
+    def recurso_com_dono(x: str) -> str:
+        return x
+
     descartavel.tool(tool_sem_dono, name="tool_sem_dono")  # sem `auth=`, de propósito
-    descartavel.tool(tool_com_dono, name="tool_com_dono", auth=require_any_role("Reader"))
+    descartavel.tool(tool_com_dono, name="tool_com_dono", auth=dono)
+    descartavel.prompt(prompt_sem_dono, name="prompt_sem_dono")
+    descartavel.prompt(prompt_com_dono, name="prompt_com_dono", auth=dono)
+    descartavel.resource("sem://{x}", name="recurso_sem_dono")(recurso_sem_dono)
+    descartavel.resource("com://{x}", name="recurso_com_dono", auth=dono)(recurso_com_dono)
 
     cru = await _registro_cru(descartavel)
-    achadas = _tools_sem_auth(cru)
-    if achadas != ["tool_sem_dono"]:
+    achadas = _sem_auth(cru)
+    esperadas = ["prompt:prompt_sem_dono", "resource:sem://{x}", "tool:tool_sem_dono"]
+    if achadas != esperadas:
         return (
             "a mutação não reproduziu o defeito esperado no registro cru — "
-            f"achadas={achadas!r} (esperava só 'tool_sem_dono')"
+            f"achadas={achadas!r} (esperava {esperadas!r})"
+        )
+
+    # A superfície nova MAL DECLARADA: `recurso_sem_dono` também não está em MATRIZ, e o
+    # cruzamento da verificação 2 tem que enxergá-la como não declarada.
+    derivados = frozenset()
+    nao_declaradas = sorted(
+        {_declarado(sid, derivados) for sid, _n, _a in cru} - set(MATRIZ)
+    )
+    if "resource:sem://{x}" not in nao_declaradas:
+        return (
+            "uma superfície NOVA não declarada passou pelo cruzamento — "
+            f"não declaradas={nao_declaradas!r}"
         )
 
     filtrada = sorted(t.name for t in await descartavel.list_tools())
@@ -116,18 +215,18 @@ async def _prova_por_mutacao() -> str | None:
     return None
 
 
-async def _superficies() -> list:
-    """As tools registradas HOJE pela composition root real (`mcp_app.main`), com a MESMA
-    fiação que `build_app()` usa — nada de registrar a tool à mão aqui, ou o teste provaria a
-    tool que ELE monta, não a que o app monta."""
+async def _superficies() -> list[tuple[str, str, object]]:
+    """As superfícies registradas HOJE pela composition root real (`mcp_app.main`), com a MESMA
+    fiação que `build_app()` usa — nada de registrar à mão aqui, ou o teste provaria a superfície
+    que ELE monta, não a que o app monta. É por isso que `register_surfaces` existe como função
+    em `main.py`."""
     from app.shared.settings import settings
-    from mcp_app import tools_knowledge
     from mcp_app.auth import build_auth
-    from mcp_app.main import build_mcp, wire_registry
+    from mcp_app.main import build_mcp, register_surfaces, wire_registry
 
     wire_registry()
     mcp = build_mcp(build_auth(settings.mcp_public_base_url))
-    tools_knowledge.register(mcp)
+    register_surfaces(mcp)
     return await _registro_cru(mcp)
 
 
@@ -135,6 +234,7 @@ def main() -> int:
     import asyncio
 
     from app.shared.settings import settings
+    from mcp_app.prompts_agentdefs import prompt_ids
 
     falhas: list[str] = []
 
@@ -149,21 +249,30 @@ def main() -> int:
         settings.mcp_public_base_url,
     )
     try:
-        # Auth LIGADA para a descoberta: sem `ENTRA_*` a tool nasce sem `auth=` nenhum (dev
+        # Auth LIGADA para a descoberta: sem `ENTRA_*` a superfície nasce sem `auth=` nenhum (dev
         # local degrada aberto — ver `require_any_role`), e a verificação 2 abaixo não
         # significaria nada.
         settings.entra_tenant_id = "11111111-1111-1111-1111-111111111111"
         settings.entra_api_client_id = "22222222-2222-2222-2222-222222222222"
         settings.mcp_public_base_url = "http://testserver"
 
-        tools = asyncio.run(_superficies())
-        nomes = sorted(t.name for t in tools)
-        check(f"a descoberta achou tools ({len(nomes)}: {', '.join(nomes)})", len(nomes) >= 1)
-
-        # --- 1 · toda tool exige papel do Entra --------------------------------------------
-        sem_auth = _tools_sem_auth(tools)
+        superficies = asyncio.run(_superficies())
+        derivados = frozenset(prompt_ids())
+        ids = sorted(sid for sid, _n, _a in superficies)
+        por_familia: dict[str, int] = {}
+        for sid in ids:
+            por_familia[sid.split(":", 1)[0]] = por_familia.get(sid.split(":", 1)[0], 0) + 1
+        resumo = ", ".join(f"{k}={v}" for k, v in sorted(por_familia.items()))
+        check(f"a descoberta achou superfícies ({len(ids)}: {resumo})", len(ids) >= 1)
         check(
-            "nenhuma tool sem `auth=`"
+            "as três famílias estão presentes (tool, prompt, resource)",
+            set(por_familia) == {"tool", "prompt", "resource"},
+        )
+
+        # --- 1 · toda superfície exige papel do Entra ---------------------------------------
+        sem_auth = _sem_auth(superficies)
+        check(
+            "nenhuma superfície sem `auth=`"
             + (f" — SEM AUTH: {', '.join(sem_auth)}" if sem_auth else ""),
             not sem_auth,
         )
@@ -171,21 +280,22 @@ def main() -> int:
         # --- prova de que a verificação acima SABE falhar (não é vácuo por filtro) ----------
         problema_mutacao = asyncio.run(_prova_por_mutacao())
         check(
-            "a checagem 1 é capaz de reprovar (provado por mutação, servidor descartável)"
+            "a checagem 1 é capaz de reprovar em TODA família (provado por mutação)"
             + (f" — {problema_mutacao}" if problema_mutacao else ""),
             problema_mutacao is None,
         )
 
-        # --- 2 · nenhuma tool órfã, dos dois lados ------------------------------------------
-        nao_declaradas = sorted(set(nomes) - set(MATRIZ))
+        # --- 2 · nenhuma superfície órfã, dos dois lados ------------------------------------
+        respondidas = {_declarado(sid, derivados) for sid in ids}
+        nao_declaradas = sorted(respondidas - set(MATRIZ))
         check(
-            "toda tool registrada está declarada na matriz"
+            "toda superfície registrada está declarada na matriz"
             + (f" — FALTAM: {', '.join(nao_declaradas)}" if nao_declaradas else ""),
             not nao_declaradas,
         )
-        orfas = sorted(set(MATRIZ) - set(nomes))
+        orfas = sorted(set(MATRIZ) - respondidas)
         check(
-            "nenhuma declaração aponta para tool inexistente"
+            "nenhuma declaração aponta para superfície inexistente"
             + (f" — ÓRFÃS: {', '.join(orfas)}" if orfas else ""),
             not orfas,
         )
@@ -226,7 +336,7 @@ def main() -> int:
     if falhas:
         print(f"\n❌ {len(falhas)} verificação(ões) falharam.")
         return 1
-    print("\n✅ toda tool MCP exige papel do Entra e declara o que grava.")
+    print("\n✅ toda superfície MCP exige papel do Entra e declara o que grava.")
     return 0
 
 

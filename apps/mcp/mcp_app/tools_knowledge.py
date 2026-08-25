@@ -7,12 +7,10 @@ o MCP e a interface discordarem sobre o que o usuário pode ver.
 
 `retrieve` usa do `user` apenas `.access_token`, como `user_assertion` do OnBehalfOfCredential
 (knowledge/internal/retrieval.py). O token do chamador MCP vem de `get_access_token()` e é
-embrulhado em `_Chamador` — um adaptador de atributos, não uma abstração.
-
-O `_Chamador` também é DECLARADO como usuário da requisição (`shared.auth.set_current_user`).
-Sem isso a trilha de auditoria da ADR-023 — gravada lá dentro do `retrieve`, via
-`audit.actor()`, que lê o mesmo contextvar — registrava toda leitura por MCP como
-`process:app`: acesso decidido pela identidade certa e registrado com a identidade errada.
+traduzido por `mcp_app.caller` — que também DECLARA o chamador como usuário da requisição, para
+que a trilha da ADR-023 grave quem perguntou em vez de `process:app`. Esse trecho morava aqui e
+saiu para `caller.py` quando o resource do documento integral passou a precisar do mesmo: uma
+implementação, três chamadores (tool, resource, completion).
 
 PORTADO DO MONOLITO (`app/modules/mcpserver/internal/tools_knowledge.py`) sem mudança de
 comportamento. O que mudou é de onde vem o empurrão do registry — ver `set_domain_registry`.
@@ -29,9 +27,9 @@ from fastmcp.server.dependencies import get_access_token
 
 from app.modules.knowledge.public import retrieve
 from app.modules.tenancy.public import domain_enabled, resolve_tenant_record
-from app.shared.auth import set_current_user
 from app.shared.settings import settings
 from mcp_app.auth import require_any_role
+from mcp_app.caller import identidade_do_chamador
 
 #: Empurrados pela composition root DESTE app (`mcp_app/main.py`), que é quem pode ver o
 #: registry de domínios. Continua sendo empurrão e não import direto por dois motivos: mantém
@@ -80,26 +78,6 @@ class _StoreAdapter:
         return self._fn(tid)
 
 
-class _Chamador:
-    """Quem perguntou, no vocabulário que o resto do backend já lê.
-
-    `access_token` é o único atributo que o `retrieve` usa (OBO). Os demais são os que
-    `audit.actor()`/`actor_detail()` e `shared.auth.current_roles()` leem do usuário do FastAPI
-    — vêm das claims do MESMO token do Entra, então a trilha grava a mesma identidade que
-    gravaria se a pergunta tivesse entrado pela web.
-    """
-
-    def __init__(self, access_token: str | None, claims: dict[str, Any]) -> None:
-        self.access_token = access_token
-        self.oid = str(claims.get("oid") or "")
-        self.preferred_username = str(claims.get("preferred_username") or "")
-        self.email = str(claims.get("email") or "")
-        self.roles = list(claims.get("roles") or [])
-        # `tid` só importa no modo shared: é a chave que `tenancy.resolve_tenant_record` lê para
-        # achar o `TenantRecord` do chamador — mesmo claim que `require_user` já lê no caminho web.
-        self.tid = str(claims.get("tid") or "")
-
-
 async def search_docs(domain: str, query: str) -> dict[str, Any]:
     """Busca na base de conhecimento do domínio, com o controle de acesso do chamador."""
     if _domain_lookup is None or not _grounded_domains:
@@ -115,22 +93,11 @@ async def search_docs(domain: str, query: str) -> dict[str, Any]:
             f"válidos: {', '.join(_grounded_domains)}"
         )
 
-    token = get_access_token()
-    bruto = getattr(token, "token", None) if token is not None else None
-
-    # FALHA FECHADA COM A AUTH LIGADA. Sem token do chamador, o `retrieve` cai no ramo
-    # "identidade da aplicação": em domínio de fallback ele manda `x-ms-enable-elevated-read`,
-    # isto é, LÊ TUDO como a app — sem erro, sem log, sem sintoma. Degradar assim é correto no
-    # dev local (a auth está desligada e é o comportamento do resto do backend), e é vazamento
-    # em produção. A distinção é `settings.auth_enabled`, a mesma que governa todo o resto.
-    if settings.auth_enabled and not bruto:
-        raise ToolError("busca sem identidade do chamador: envie o token do Entra")
-
-    chamador = _Chamador(bruto, getattr(token, "claims", None) or {})
-    if bruto:
-        # Só com token: com a auth desligada não HÁ chamador, e declarar um sem identidade faria
-        # a trilha gravar um `human:` inventado onde `process:app` é a verdade.
-        set_current_user(chamador)
+    # Falha fechada com a auth ligada, degrada aberto sem ela, e declara o chamador para a
+    # trilha — as três coisas moram em `caller.identidade_do_chamador`, ver o docstring de lá.
+    chamador = identidade_do_chamador(
+        get_access_token(), erro="busca sem identidade do chamador: envie o token do Entra"
+    )
 
     # MODO SHARED: resolver o tenant E cobrar o entitlement. As duas coisas, sempre juntas —
     # resolver sem cobrar serve domínio não licenciado, que é pior que falhar. A regra é a
