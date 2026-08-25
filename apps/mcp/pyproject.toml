@@ -5,7 +5,18 @@ description = "Servidor MCP do Foundry Assured, sobre FastMCP 4"
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "foundry-helpdesk-backend",
-    "fastmcp==4.0.0b3",
+    # OS DOIS EXTRAS SÃO DA FASE 5 (T7), e cada um traz uma peça que este servidor usa:
+    #   `tasks` → `fastmcp-tasks` + `pydocket`, o motor das background tasks (SEP-2663).
+    #             Sem ele, uma tool registrada com `task=True` derruba o HANDSHAKE do servidor
+    #             inteiro ("require the tasks extension") — falha alta, e a favor.
+    #   `apps`  → `prefab-ui`, o renderizador do app de evidências (`mcp_app/app_evidencias.py`).
+    "fastmcp[apps,tasks]==4.0.0b3",
+    # PIN EXATO SOBRE PACOTE BETA, e este é o caso que a spec mandava vigiar pelo nome: o extra
+    # `apps` declara `prefab-ui>=0.18.0` — faixa flutuante sobre uma biblioteca em beta que
+    # anuncia breaking changes. Medido, a faixa resolvia para 0.20.2 sozinha; deixá-la flutuar
+    # significa que um `uv lock` de terça-feira pode trocar a API do app sem ninguém pedir.
+    # Subir esta linha é uma decisão, e é para ser uma linha de diff.
+    "prefab-ui==0.20.2",
     "uvicorn[standard]>=0.52.1",
 ]
 

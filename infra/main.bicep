@@ -52,6 +52,13 @@ param entraApiClientSecret string = ''
 @description('Chave (>= 32 bytes) que assina o `requestState` da decisão humana do servidor MCP (azd mapeia MCP_REQUEST_STATE_KEY). Vem do cofre para o ambiente — nunca do repositório (ADR-005). Vazia: a escrita por MCP fica indisponível, o resto do servidor não muda. Gere com: python -c "import secrets; print(secrets.token_hex(32))"')
 param mcpRequestStateKey string = ''
 
+@secure()
+@description('Chave que cifra o snapshot de contexto das background tasks do MCP em repouso no Redis (azd mapeia MCP_TASKS_ENCRYPTION_KEY). O snapshot carrega o access token de quem submeteu — sem a chave, o pacote grava JSON em claro. Vazia: as tasks não sobem e a busca continua síncrona. Gere com: python -c "import secrets; print(secrets.token_hex(32))"')
+param mcpTasksEncryptionKey string = ''
+
+@description('Provisiona o Azure Cache for Redis (Basic C0, ~US$16/mês SEMPRE LIGADO) que sustenta as background tasks e a sessão por usuário do servidor MCP. FALSE mantém o ocioso em zero: a busca só roda síncrona e a sessão vira memória de processo, que o scale-to-zero apaga.')
+param deployRedis bool = true
+
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var effectiveSearchLocation = empty(searchLocation) ? location : searchLocation
 var tags = { 'azd-env-name': environmentName }
@@ -106,6 +113,8 @@ module apps 'containerapps.bicep' = {
     entraApiClientId: entraApiClientId
     entraApiClientSecret: entraApiClientSecret
     mcpRequestStateKey: mcpRequestStateKey
+    mcpTasksEncryptionKey: mcpTasksEncryptionKey
+    deployRedis: deployRedis
     appUsersGroupId: appUsersGroupId
   }
 }

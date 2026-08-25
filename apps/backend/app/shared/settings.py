@@ -94,6 +94,20 @@ class PlatformSettings(BaseSettings):
     #: instala este pacote e lê estas settings. Ver `apps/mcp/mcp_app/request_state.py`.
     mcp_request_state_key: str = ""
 
+    #: O ÚNICO ARMAZENAMENTO DURÁVEL DO SERVIDOR MCP, e ele serve DUAS peças da Fase 5 (T7): o
+    #: backend das background tasks (SEP-2663, via `pydocket`) e o `session_state_store` do
+    #: estado por usuário. Uma variável para as duas porque é UM recurso — o Azure Cache for
+    #: Redis que `infra/containerapps.bicep` provisiona quando `deployRedis` é verdadeiro.
+    #:
+    #: VAZIA É O MODO DE REPOUSO, e não uma falha: sem ela as tasks não sobem (a busca continua
+    #: síncrona, que é o comportamento de sempre) e a sessão cai no `MemoryStore()` de processo.
+    #: A degradação é declarada, não descoberta — ver `mcp_app/tasks_backend.py` e
+    #: `mcp_app/sessions.py`, e os gates que provam cada metade.
+    #:
+    #: Contém a chave de acesso do Redis, então nunca há valor de exemplo aqui nem no
+    #: `.env.example` (ADR-005): no ambiente publicado ela chega como Container App secret.
+    mcp_redis_url: str = ""
+
     @property
     def auth_enabled(self) -> bool:
         """OBO/Entra is active only when the API app registration is configured.

@@ -44,6 +44,13 @@ param appUsersGroupId string = ''
 @description('Chave (>= 32 bytes) que assina o `requestState` da decisão humana do MCP (SEP-2322). Vinda do cofre para o ambiente do azd — NUNCA um valor no repositório (ADR-005). Vazia é modo suportado: o servidor sobe e só a tool de escrita `open_ticket` se declara indisponível. Ver apps/mcp/mcp_app/request_state.py.')
 param mcpRequestStateKey string = ''
 
+@secure()
+@description('Chave que cifra o SNAPSHOT DE CONTEXTO das tasks em repouso no Redis (FASTMCP_TASKS_ENCRYPTION_KEY). O snapshot carrega o ACCESS TOKEN do chamador — sem a chave, o pacote grava JSON em claro, o que NORDOR-122 proíbe. Vazia é modo suportado: as tasks não sobem e a busca continua síncrona. Gere com: python -c "import secrets; print(secrets.token_hex(32))"')
+param mcpTasksEncryptionKey string = ''
+
+@description('Provisiona o Azure Cache for Redis (Basic C0, ~US$16/mês SEMPRE LIGADO) que sustenta as background tasks (SEP-2663) e o estado de sessão por usuário do servidor MCP. FALSE mantém o custo ocioso em zero e degrada as duas coisas de forma declarada: a busca só roda síncrona e a sessão vira memória de processo, que o `minReplicas: 0` apaga. Nada mais no produto depende dele.')
+param deployRedis bool = true
+
 @description('Storage account backing the Azure Files share for persisted app data.')
 param storageAccountName string
 @description('Blob container do corpus (azd: AZURE_STORAGE_CONTAINER). O backend monta a URL do documento com ele.')
@@ -60,6 +67,61 @@ param fileShareName string
 
 @description('Azure Files share holding the runtime agent definitions, mounted read-only into the backend at /mnt/agents (ADR-014). Empty share = backend falls back to the definitions baked into the image.')
 param promptsShareName string
+
+// O ÚNICO ARMAZENAMENTO DURÁVEL QUE O SERVIDOR MCP TEM PARA CHAMAR DE SEU, e ele existe por uma
+// razão só: `minReplicas: 0`. Este app não é um servidor ocioso — é um servidor que DESLIGA. Toda
+// peça de escala do FastMCP 4 assume, por padrão, memória de processo (`DocketSettings.url =
+// memory://`, descrito na própria fonte como "single process only"; `MemoryStore()` para sessão),
+// e memória de processo aqui é memória que some entre uma chamada e a seguinte, por design.
+//
+// MEDIDO ANTES DE PROVISIONAR: uma task submetida num processo e consultada de outro responde
+// `Task <id> not found` — DEPOIS de o servidor ter prometido `ttl_ms=900000` e
+// `poll_interval_ms=5000` ao cliente. Não é degradação; é uma promessa que o servidor não tem
+// como cumprir. Duas peças da Fase 5 (tasks e sessão por usuário) dependem disto e nenhuma outra
+// parte do produto depende: por isso um recurso só, e por isso ele é opcional.
+//
+// POR QUE AQUI E NÃO EM `resources.bicep`, onde moram storage e search. A URL de conexão do Redis
+// contém a chave de acesso, e passá-la de um módulo para outro exigiria um `output` com
+// `listKeys()` dentro — exatamente o que o linter do Bicep sinaliza
+// (`outputs-should-not-contain-secrets`), e com razão: output de módulo fica registrado no
+// histórico de deployment. Montada aqui, a URL nasce e morre dentro do mesmo arquivo que a
+// consome, e chega ao container como Container App secret, como os outros dois.
+//
+// POR QUE CHAVE DE ACESSO E NÃO ENTRA ID, que seria o caminho sem segredo. `pydocket` recebe uma
+// URL string (`Docket(url=...)`, lido na fonte instalada) e a repassa ao `redis-py`; a auth do
+// Entra para Redis exige um `CredentialProvider` que renove o token, porque o token expira em
+// ~1h. Não há como expressar isso numa URL estática. A ADR-005 continua de pé pelo mesmo motivo
+// que vale para `ENTRA_API_CLIENT_SECRET`: é credencial da NOSSA infraestrutura, entregue pelo
+// pipeline, nunca segredo de cliente e nunca um valor no repositório.
+//
+// `Basic C0` é o menor SKU e não tem réplica — perder o cache perde tasks em voo e preferências
+// de sessão, e nada além disso. Nenhum dado do produto mora aqui: chamado, trilha e documento
+// continuam no storage. TLS obrigatório (`enableNonSslPort: false`), que é o que torna o esquema
+// `rediss://` abaixo o único possível.
+resource redis 'Microsoft.Cache/redis@2024-11-01' = if (deployRedis) {
+  name: 'redis-mcp-${resourceToken}'
+  location: location
+  tags: tags
+  properties: {
+    sku: { name: 'Basic', family: 'C', capacity: 0 }
+    enableNonSslPort: false
+    minimumTlsVersion: '1.2'
+    publicNetworkAccess: 'Enabled' // o Container Apps environment sai pela internet; sem VNet aqui
+    redisConfiguration: {
+      // Sem persistência (o SKU Basic não a oferece) e, quando a memória enche, o que sai é a
+      // chave menos usada COM TTL. `allkeys-lru` despejaria também o que o docket usa para
+      // rastrear execução, o que corromperia uma task em voo em vez de expirá-la.
+      'maxmemory-policy': 'volatile-lru'
+    }
+  }
+}
+
+// A URL que o `pydocket` e o store de sessão recebem. `uriComponent()` NÃO É DECORAÇÃO: a chave
+// de acesso do Redis é base64 e pode conter `/` e `+`, e um `/` na senha parte a URL em dois —
+// o cliente tentaria conectar num host que não existe, com um erro que não fala de senha.
+var redisUrl = deployRedis
+  ? 'rediss://:${uriComponent(redis.listKeys().primaryKey)}@${redis.properties.hostName}:${redis.properties.sslPort}/0'
+  : ''
 
 var placeholderImage = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
 var backendAppName = 'ca-backend-${resourceToken}'
@@ -373,6 +435,17 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
         ],
         empty(entraApiClientSecret) ? [] : [
           { name: 'entra-api-secret', value: entraApiClientSecret }
+        ],
+        // OS DOIS DA FASE 5 (T7), E ELES ANDAM JUNTOS DE PROPÓSITO. O código exige AMBOS para
+        // ligar as tasks (`mcp_app/tasks_backend.py`): a URL sem a chave gravaria o snapshot de
+        // contexto — que carrega o access token do chamador — em JSON claro dentro do Redis, e
+        // um token de usuário em claro num cache é o achado que NORDOR-122 descreve por extenso.
+        // Falta um, as tasks não sobem; a busca continua síncrona e nada mais muda.
+        empty(redisUrl) ? [] : [
+          { name: 'mcp-redis-url', value: redisUrl }
+        ],
+        empty(mcpTasksEncryptionKey) ? [] : [
+          { name: 'mcp-tasks-encryption-key', value: mcpTasksEncryptionKey }
         ]
       )
     }
@@ -407,6 +480,18 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'AZURE_STORAGE_RESOURCE_ID', value: storageResourceId }
           ], empty(mcpRequestStateKey) ? [] : [
             { name: 'MCP_REQUEST_STATE_KEY', secretRef: 'mcp-request-state-key' }
+          ], empty(redisUrl) ? [] : [
+            // O BACKEND DURÁVEL DAS TASKS E DA SESSÃO POR USUÁRIO. Uma variável para as duas
+            // peças, porque é UM recurso: `mcp_app/tasks_backend.py` a entrega ao `TasksExtension`
+            // e `mcp_app/sessions.py` ao store do `session_state_store`. Ausente, as duas
+            // degradam de forma declarada e provada por gate.
+            { name: 'MCP_REDIS_URL', secretRef: 'mcp-redis-url' }
+          ], empty(mcpTasksEncryptionKey) ? [] : [
+            // O NOME É DO PACOTE, não nosso: `fastmcp_tasks.settings.TasksSettings` lê o prefixo
+            // `FASTMCP_TASKS_`. Repassar de uma variável nossa seria inventar um segundo nome
+            // para o mesmo valor — o pacote continuaria lendo o dele, e a configuração
+            // "aplicada" não teria efeito nenhum, em silêncio.
+            { name: 'FASTMCP_TASKS_ENCRYPTION_KEY', secretRef: 'mcp-tasks-encryption-key' }
           ], empty(entraApiClientSecret) ? [] : [
             // A CREDENCIAL DO OBO. `ENTRA_TENANT_ID` e `ENTRA_API_CLIENT_ID` já estavam aqui;
             // sem esta terceira, `knowledge.retrieve` levanta ao construir a credencial e

@@ -13,6 +13,8 @@
     "entraApiClientId": { "value": "${ENTRA_API_CLIENT_ID}" },
     "entraApiClientSecret": { "value": "${ENTRA_API_CLIENT_SECRET}" },
     "mcpRequestStateKey": { "value": "${MCP_REQUEST_STATE_KEY}" },
+    "mcpTasksEncryptionKey": { "value": "${MCP_TASKS_ENCRYPTION_KEY}" },
+    "deployRedis": { "value": "${DEPLOY_REDIS=true}" },
     "appUsersGroupId": { "value": "${APP_USERS_GROUP_ID}" }
   }
 }
