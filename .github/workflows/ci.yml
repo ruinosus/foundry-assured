@@ -497,7 +497,7 @@ jobs:
       # Offline e sem daemon como os vizinhos. O subprocesso que prova "não é memória de
       # processo" é o MESMO interpretador, sem rede — é o modelo do `minReplicas: 0` (a réplica
       # morre entre a pergunta e a resposta) e da segunda réplica.
-      - name: MCP — uma decisão humana, uma escrita (o estado não é replayável)
+      - name: MCP — um `requestState`, uma escrita (o estado não é replayável)
         run: uv run --no-sync python -m tests.decision_replay_test
       # A FASE 5 (T7) NÃO ACRESCENTOU SUPERFÍCIE — os quatro itens dela (tasks, sessions, cache,
       # MCP Apps) foram RECUSADOS com medição, e a spec registra cada medição e cada gatilho de

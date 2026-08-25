@@ -123,7 +123,7 @@ SEPARADOR_DO_ESTADO = ":"
 #: chamado que essa decisão autorizava já existe, e insistir cria um segundo sem um segundo
 #: humano por trás.
 MOTIVO_REPLAY = (
-    "decisão já usada: esta aprovação já abriu o chamado dela. Uma decisão humana autoriza UMA "
+    "decisão já usada: esta aprovação já abriu o chamado dela. Um `requestState` autoriza UMA "
     "escrita, então repetir a chamada com o mesmo estado não abre um segundo chamado — e a "
     "tentativa fica registrada na trilha. Se um chamado NOVO é necessário, chame `open_ticket` "
     "de novo e peça uma nova decisão. (Isto não é estado inválido nem expirado: o estado era "

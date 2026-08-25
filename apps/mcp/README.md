@@ -57,6 +57,13 @@ superfície MCP a mudar o mundo em vez de descrevê-lo — e a única atrás do 
   existir para quem não pode decidir; `hitl.decide` recusa de novo lá dentro — e é essa segunda
   que grava a decisão na trilha (ADR-023). Uma escrita aprovada deixa **dois** eventos: a
   decisão e a escrita.
+- **Um `requestState`, uma escrita** — e a afirmação é essa, não a versão forte. `mcp_app.decision_claim`
+  reserva o NONCE que viaja selado no estado, com `O_CREAT|O_EXCL` no share que já está montado,
+  então repetir a mesma chamada com o mesmo estado é recusado (e vira evento `replay` na trilha)
+  em vez de abrir um segundo chamado. O que isso **não** prende é o humano: um cliente pode
+  chamar `open_ticket` N vezes, receber N estados, mostrar o formulário uma vez e responder as N
+  com o mesmo conteúdo — saem N chamados. O protocolo não prova que há alguém do outro lado;
+  quem barra é o **papel** do token, que o cliente não escreve.
 - **O selo alcança a escrita.** A resposta final é carimbada e carrega os dois eventos da
   trilha; ela não ganha `citations` (esta tool não fundamenta nada — um `[]` mentiria dizendo
   que tentou citar). A rodada da *pergunta* não é carimbada: não é uma resposta.
@@ -218,7 +225,7 @@ uv run python -m tests.completion_test             # só sugere o que existe e o
 uv run python -m tests.client_surface_test         # um cliente REAL atravessa a pilha; sem papel não vê nada
 uv run python -m tests.assurance_seal_test         # o selo é negociado, não inventa e não vaza
 uv run python -m tests.write_decision_test         # as quatro decisões atravessam; sem papel nada escreve
-uv run python -m tests.decision_replay_test        # uma decisão humana, uma escrita — o estado não se repete
+uv run python -m tests.decision_replay_test        # um `requestState`, uma escrita — o estado não se repete
 uv run python -m tests.cache_hints_test            # nenhum hint de cache sai daqui (a recusa da Fase 5)
 uv run python -m tests.obo_credential_test         # o container recebe a credencial que o OBO exige
 uv run lint-imports --config importlinter.toml     # a entrada no backend é pelo `public` (ADR-017)

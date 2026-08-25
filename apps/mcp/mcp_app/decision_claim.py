@@ -1,4 +1,14 @@
-"""A RESERVA DA DECISÃO — o que faz "uma decisão humana" valer por UMA escrita, e não por N.
+"""A RESERVA DA DECISÃO — o que faz UM `requestState` valer por UMA escrita, e não por N.
+
+O QUE ELA PRENDE É O NONCE, NÃO O HUMANO, e a diferença precisa estar escrita porque a versão
+forte ("uma decisão humana, uma escrita") é sedutora e falsa. Um cliente pode chamar
+`open_ticket` N vezes, receber N estados selados (N nonces), mostrar o formulário ao aprovador
+UMA vez e responder as N chamadas com o mesmo conteúdo: saem N chamados e N eventos `approval`,
+de uma decisão humana só. O protocolo não prova que existe um humano do outro lado — quem barra
+de verdade é o PAPEL do token, e `tools_tickets` já diz isso no seu docstring. Esta reserva não
+conserta essa parte e não tenta. O invariante que ela estabelece é o do título, e o que ela
+fecha é o caminho barato: repetir o MESMO estado, que um retry banal de cliente LLM bastava para
+disparar.
 
 O `requestState` do protocolo (SEP-2322) é *verificável*, não é *de uso único*. Medido na fonte
 instalada (`mcp/server/request_state.py:364-407`): o envelope carrega método, tool, digest dos

@@ -1,4 +1,4 @@
-"""UMA DECISÃO HUMANA, UMA ESCRITA — o ataque do replay, medido antes e depois.
+"""UM `requestState`, UMA ESCRITA — o ataque do replay, medido antes e depois.
 
 O `requestState` do protocolo é *verificável*, não é *de uso único*. O envelope do SDK amarra
 método, tool, argumentos, principal e TTL (`mcp/server/request_state.py:364-407`) e não carrega
@@ -310,7 +310,7 @@ def main() -> int:
     if falhas:
         print(f"\n❌ {len(falhas)} verificação(ões) falharam.")
         return 1
-    print("\n✅ uma decisão humana, uma escrita — repetir o estado não abre um segundo chamado.")
+    print("\n✅ um `requestState`, uma escrita — repetir o estado não abre um segundo chamado.")
     return 0
 
 

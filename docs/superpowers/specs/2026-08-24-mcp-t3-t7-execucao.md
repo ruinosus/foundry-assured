@@ -375,7 +375,7 @@ marca é decisão de responsabilidade, não de engenharia. **Não foi avaliado n
 | Regra | O que significa aqui |
 |---|---|
 | #1 | nenhuma assinatura inventada — a tabela acima foi medida; o que não foi, mede-se antes |
-| #4 | toda resposta com citação — vale para as tools novas também |
+| #4 | toda resposta que FUNDAMENTA traz citação. `search_docs` traz; `open_ticket` **não cita**, e corretamente — ela não fundamenta nada, e um `[]` afirmaria que tentou |
 | #5 | escrita só após aprovação humana com papel (Fase 3) |
 | #6 | acesso é DADO; nenhuma classificação nova em código |
 | #8 | fronteiras: `public.py` é a única superfície; `import-linter` cobra |
