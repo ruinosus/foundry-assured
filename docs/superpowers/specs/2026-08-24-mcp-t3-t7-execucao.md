@@ -4,7 +4,7 @@ description: Do endpoint com uma tool de leitura ao produto — prompts e resour
 type: design
 audience: contributor
 status: draft
-updated: 2026-08-24
+updated: 2026-08-25
 ---
 
 # T3–T7: do endpoint ao produto
@@ -236,21 +236,137 @@ custa uma malha de identidade.
 OBO sem exigir o proxy), reavaliar — a conveniência da dependência de parâmetro é real. Verificar
 com o mesmo teste: `_find_azure_provider(build_auth(...))` deixando de ser `None`.
 
-## Fase 5 — T7: escala
+## Fase 5 — T7: escala — **OS QUATRO ITENS RECUSADOS, com medição**
 
-Quatro coisas independentes; nenhuma é fundação, cada uma entra sozinha.
+Quatro coisas independentes; nenhuma é fundação, cada uma entrava sozinha. **Nenhuma entrou.** A
+fase não acrescenta superfície: acrescenta quatro medições, quatro gatilhos de reavaliação e
+**um gate** — o do único item que fazia dano sem sintoma.
 
-- **Tasks** (`@mcp.tool(task=True)`, extra `[tasks]`): para eval run e reingestão. Backend padrão é
-  em memória e este produto roda com réplicas — **exige Redis/Valkey durável** antes de prometer.
-- **Sessions** (`UserSession`: `get`/`set`/`delete`/`clear`/`end`/`id`): exige auth (já temos).
-  Padrão é process-local; com réplicas, `session_state_store` compartilhado.
-- **Cache** (`cache_ttl`, `cache_scope`): barato, mas atenção — cachear resposta de busca com ACL
-  exige que o escopo seja **por usuário**, nunca `public`. Errar aqui vaza documento entre pessoas.
-- **MCP Apps** (`FastMCPApp`): o card de aprovação e a tabela de evidências como UI no cliente.
-  ⚠️ `prefab-ui` é beta com breaking changes; **pin exato antes de qualquer deploy**.
+Isto não é o mesmo que "não deu tempo". Cada recusa abaixo tem um número medido no pacote
+instalado ou no `infra/`, e o padrão é o da Fase 4: quando a peça de primeira parte não serve,
+dizer por que **com prova** vale mais que ligá-la e descobrir depois.
+
+O que atravessa as quatro é uma coisa só, e vale escrever antes delas: **este app roda com
+`minReplicas: 0`** (`infra/containerapps.bicep:375`). Ele não é um servidor ocioso caro, é um
+servidor que **desliga**. Toda peça de escala do FastMCP 4 assume, por padrão, memória de
+processo — e memória de processo, aqui, é memória que some por design entre uma chamada e a
+seguinte. A Fase 3 já tinha topado com isso e resolvido do lado certo: o estado da decisão humana
+viaja **selado no fio** (`request_state_security`), não guardado aqui.
+
+### 1 · Tasks (`@mcp.tool(task=True)`) — recusada
+
+**Medido**, em venv descartável com `fastmcp[tasks]==4.0.0b3` (arrasta `pydocket 0.24.1`):
+
+- o backend padrão é `memory://` — `DocketSettings.url`, descrito na própria fonte como
+  *"In-memory backend (single process only)"*;
+- uma task aceita e consultada de um **processo novo** (o modelo fiel do scale-to-zero: a réplica
+  morre entre a submissão e o poll) responde `Task <id> not found` — enquanto o cliente recebeu,
+  na aceitação, `ttl_ms=900000` e `poll_interval_ms=5000`. Isto é o pior formato possível de
+  falha: o servidor **prometeu** 15 minutos de vida e o cliente vai bater na porta 180 vezes
+  contra um id que não existe mais;
+- sem o extra, `task=True` não degrada — o **handshake do servidor inteiro falha** com
+  *"require the tasks extension"*. Falha alta, e é a favor: ninguém liga isto por engano.
+
+**O que adotá-la custaria:** um Redis/Valkey durável na assinatura (recurso Azure novo, com
+custo e operação), mais um pacote beta a mais no caminho de deploy.
+
+**O que se ganharia hoje: nada.** Não existe tool lenta neste servidor. `search_docs` é uma busca
+e `open_ticket` é uma escrita atrás de HITL. O eval run e a reingestão — que motivavam o item —
+**não são tools MCP**: são módulos de CLI do backend (`eval.run_eval`,
+`app.modules.knowledge.internal.ingest`). Transformá-los em tools é **superfície de produto
+nova** (operação administrativa de escrita exposta por MCP), com decisão própria de papel, trilha
+e HITL — não é um item de escala, e entrar por essa porta seria decidi-la sem discuti-la.
+
+**Gatilho de reavaliação:** quando existir uma tool MCP cuja execução passe de ~30s **e** houver
+um backend durável já na assinatura por outro motivo. Refazer as duas medições acima — a de
+`DocketSettings.url` e a do processo novo — antes de prometer qualquer TTL a um cliente.
+
+### 2 · Sessions (`UserSession`) — recusada
+
+**Medido:** sem `session_state_store`, o servidor cria `MemoryStore()`
+(`fastmcp/server/server.py:498`) — estado de processo. Com `minReplicas: 0`, é estado que evapora
+por ociosidade.
+
+Mas o argumento decisivo não é esse; é que **o produto não tem o problema**. As superfícies de
+leitura são sem estado por desenho, a memória entre sessões já existe no Foundry (memory store,
+pelo caminho do backend), e o **único** estado entre chamadas deste servidor — a decisão humana
+do `open_ticket` — já é resolvido, e resolvido melhor: ele viaja selado pelo SDK, amarrado ao
+principal, ao nome da tool, ao digest dos argumentos e a um TTL, **sem nada guardado aqui**.
+Trocar isso por `UserSession` exigiria um armazenamento durável novo para chegar a um resultado
+pior: estado do lado do servidor, que a réplica morrendo apaga. `mcp_app/request_state.py`
+escreve essa decisão por extenso.
+
+**Gatilho de reavaliação:** quando aparecer estado por usuário que **não caiba no fio** (o caso
+típico é um resultado acumulado grande) — e não antes. Se isso acontecer com `minReplicas: 0`
+ainda valendo, a resposta continua sendo não: a resposta certa passa a ser o armazenamento
+durável que o backend já tem, não um novo.
+
+### 3 · Cache (`cache_ttl` / `cache_scope`) — recusada, **e travada por gate**
+
+Era o item marcado como o único capaz de vazar por configuração (risco 5). A medição desmonta o
+risco temido e revela outro, pior por ser silencioso.
+
+**Medido** (`fastmcp 4.0.0b3` + `mcp 2.1.0`):
+
+1. **`tools/call` não é cacheável.** `CacheableMethod` são seis — `prompts/list`,
+   `resources/list`, `resources/read`, `resources/templates/list`, `server/discover`,
+   `tools/list` — e a chamada de tool não está entre eles. O vazamento que a spec temia (a
+   resposta de busca de um chamador servida a outro, com o trim de ACL feito para o primeiro) é
+   **impossível por construção**, não por configuração nossa.
+2. **O hint é uniforme por construção.** `build_cache_hints` faz
+   `dict.fromkeys(get_args(CacheableMethod), hint)`: um valor de servidor para todos os métodos
+   cacheáveis. **Não existe "cachear só as listagens"** — ligar o TTL liga junto `resources/read`,
+   que aqui é o documento integral controlado por ACL.
+3. **O dano real não é vazamento entre pessoas: é buraco na trilha.** Um hint em `resources/read`
+   autoriza o cliente a servir a leitura do armazenamento dele. Essa leitura **não chega mais
+   aqui**, logo não vira evento (ADR-023) — e o produto continua afirmando que registra toda
+   leitura de documento controlado, inclusive as negadas. Uma revogação de acesso, de quebra, só
+   passa a valer depois do TTL.
+4. **A prova exigida para entrar não é produzível deste lado.** O critério era provar por teste
+   que dois chamadores com ACLs diferentes não compartilham entrada de cache. **Não há entrada de
+   cache aqui**: o servidor não guarda nada, emite uma dica (SEP-2549) e quem guarda é o cliente.
+   `cache_scope="private"` é um pedido, não uma garantia nossa. Sem prova possível, não entra —
+   que é a regra da própria fase.
+5. **A biblioteca não freia o escopo perigoso.** `cache_ttl=60, cache_scope="public"` constrói
+   sem erro e sem aviso; só escopo *sem* TTL é recusado.
+
+**Por que este — e só este — ganhou gate.** As outras três recusas falham alto se alguém as
+contrariar (o handshake cai, o `UserSession` levanta, a tool de app sem `auth=` reprova na
+matriz). `cache_ttl=300` no construtor é aceito em silêncio. `apps/mcp/tests/cache_hints_test.py`
+trava as cinco medições acima e obriga quem quiser ligar cache a passar por elas.
+
+**Gatilho de reavaliação:** quando o FastMCP admitir hint **por método** (aí `tools/list` e
+`prompts/list` podem ser cacheados sem tocar `resources/read`), ou quando houver resposta escrita
+para o que fazer com a trilha de `resources/read` sob TTL. O gate fica vermelho sozinho se o SDK
+tirar `resources/read` da lista de cacheáveis — que é a outra forma de a recusa deixar de valer.
+
+### 4 · MCP Apps (`FastMCPApp`) — recusada
+
+O candidato natural era o card de aprovação, e o FastMCP 4 já traz um pronto
+(`fastmcp.apps.approval.Approval`). **Medido**, com `fastmcp[apps]` instalado (`prefab-ui 0.20.2`
+resolvido de um `>=0.18.0` — faixa flutuante sobre pacote beta, exatamente o que a spec mandava
+pinar):
+
+- o provider registra `request_approval` com **`auth=None`** — medido pelo mesmo `Provider.list_tools`
+  que a matriz usa. Adotá-lo como está deixaria `instrumentation_matrix_test` **vermelho**, e com
+  razão: seria a primeira superfície deste servidor sem gate de papel do Entra;
+- ele é **binário** (Approve/Reject). O contrato deste produto tem quatro decisões, e o `edit` é
+  a razão de a ADR-019 existir;
+- o desfecho volta como **mensagem de conversa** (`SendMessage`), documentado na fonte como
+  aparecendo *"as if the user sent it"*. Isto é: quem interpreta a aprovação passa a ser o
+  modelo, sobre um texto, sem papel cobrado e sem evento na trilha — o oposto exato do que a
+  Fase 3 construiu.
+
+Um app **próprio** com quatro botões seria possível (`FastMCPApp.ui()` aceita `auth=`), mas é
+ergonomia sobre um caminho que já funciona pelo protocolo, paga em dependência beta de faixa
+flutuante no caminho de deploy, e nasceria como superfície nova a declarar na matriz.
+
+**Gatilho de reavaliação:** quando `prefab-ui` sair de beta **e** o prefab de aprovação aceitar
+`auth=` mais um conjunto de decisões não-binário. Verificar com a mesma medição:
+`Provider.list_tools` sobre `Approval()` deixando de devolver `auth=None`.
 
 **Fora de escopo sem ADR:** o gateway sobre MCP de terceiros. Reexpor tool de outro sob a nossa
-marca é decisão de responsabilidade, não de engenharia.
+marca é decisão de responsabilidade, não de engenharia. **Não foi avaliado nesta fase.**
 
 ---
 
@@ -275,6 +391,10 @@ marca é decisão de responsabilidade, não de engenharia.
    janela zero (ver Fase 0). A 0b **não pode** mergear sem a 0c.
 5. **Cache com ACL** (Fase 5): escopo errado vaza documento entre usuários. É o único item desta
    spec que pode causar vazamento por configuração.
+   **Fechado na Fase 5, e o risco medido não era esse** — `tools/call` não é cacheável, então a
+   resposta de busca nunca entra em cache; o que o TTL alcança é `resources/read`, e o dano é
+   buraco na trilha, não vazamento. Ver "Fase 5 · item 3"; o freio é
+   `apps/mcp/tests/cache_hints_test.py`.
 
 ## O PR de release
 

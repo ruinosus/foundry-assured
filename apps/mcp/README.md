@@ -87,6 +87,20 @@ aparece em produção é a que ninguém descobre a tempo.
 python -c "import secrets; print(secrets.token_hex(32))"   # e coloque em MCP_REQUEST_STATE_KEY
 ```
 
+### O que este servidor deliberadamente NÃO tem (Fase 5, T7)
+
+A camada de escala do FastMCP 4 foi avaliada item a item e **nenhum dos quatro entrou**. As
+medições e os gatilhos de reavaliação estão na
+[spec](../../docs/superpowers/specs/2026-08-24-mcp-t3-t7-execucao.md#fase-5--t7-escala--os-quatro-itens-recusados-com-medição);
+o resumo, porque quem lê este README é quem seria tentado a ligá-los:
+
+| Item | Por que não | Como falharia se alguém ligasse |
+|---|---|---|
+| **Tasks** (`task=True`) | backend padrão é `memory://` e este app roda com `minReplicas: 0` — medido: processo novo responde `Task not found` depois de prometer `ttl_ms=900000`. E não existe tool lenta aqui | alto: sem o extra, o handshake do servidor inteiro cai |
+| **Sessions** (`UserSession`) | store padrão é `MemoryStore()`, de processo. O único estado entre chamadas deste servidor (a decisão humana) já viaja **selado no fio** — melhor que guardado aqui | alto: sem principal autenticado, levanta |
+| **Cache** (`cache_ttl`) | `tools/call` não é cacheável, então a busca nunca entra em cache; o hint é uniforme e alcança `resources/read` — o documento com ACL cuja leitura a trilha registra. Um TTL ali vira **buraco na trilha**, não vazamento | **silencioso** — e por isso `tests/cache_hints_test.py` existe |
+| **MCP Apps** (`FastMCPApp`) | o prefab `Approval` registra tool com `auth=None` (medido), é binário onde o contrato tem quatro decisões, e devolve o desfecho como mensagem de conversa — sem papel e sem trilha | a matriz de instrumentação fica vermelha |
+
 > **É a ÚNICA superfície MCP do produto.** Na Fase 0c `app/modules/mcpserver/` foi deletado do
 > backend, junto com o `fastmcp==3.4.7` do extra `agents` que o sustentava. Duas superfícies
 > servindo a mesma tool é a divergência que este projeto mais teme: uma delas pode passar a
@@ -183,6 +197,8 @@ uv run python -m tests.completion_test             # só sugere o que existe e o
 uv run python -m tests.client_surface_test         # um cliente REAL atravessa a pilha; sem papel não vê nada
 uv run python -m tests.assurance_seal_test         # o selo é negociado, não inventa e não vaza
 uv run python -m tests.write_decision_test         # as quatro decisões atravessam; sem papel nada escreve
+uv run python -m tests.decision_replay_test        # uma decisão humana, uma escrita — o estado não se repete
+uv run python -m tests.cache_hints_test            # nenhum hint de cache sai daqui (a recusa da Fase 5)
 ```
 
 O CI roda todos no job `mcp-app` (`.github/workflows/ci.yml`), que **também** é o gate de

@@ -483,6 +483,20 @@ jobs:
       # morre entre a pergunta e a resposta) e da segunda réplica.
       - name: MCP — uma decisão humana, uma escrita (o estado não é replayável)
         run: uv run --no-sync python -m tests.decision_replay_test
+      # A FASE 5 (T7) NÃO ACRESCENTOU SUPERFÍCIE — os quatro itens dela (tasks, sessions, cache,
+      # MCP Apps) foram RECUSADOS com medição, e a spec registra cada medição e cada gatilho de
+      # reavaliação. Três dessas recusas falham alto se alguém as contrariar: `task=True` sem o
+      # extra derruba o handshake do servidor, `UserSession` sem principal levanta, e um provider
+      # de app registra tool sem `auth=` — que a matriz acima já reprova.
+      #
+      # A QUARTA NÃO FALHA: `cache_ttl=300` no construtor é aceito em silêncio, e o hint é
+      # UNIFORME — alcança `resources/read`, que aqui é o documento controlado por ACL cuja
+      # leitura a trilha (ADR-023) registra uma a uma. Um TTL ali autoriza o cliente a servir a
+      # leitura do armazenamento dele: a leitura deixa de chegar aqui, deixa de virar evento, e o
+      # produto continua afirmando que registra toda leitura. Este gate é a recusa em forma
+      # executável — o único item da spec inteira que fazia dano sem sintoma.
+      - name: MCP — nenhum hint de cache sai daqui (a recusa da Fase 5, travada)
+        run: uv run --no-sync python -m tests.cache_hints_test
 
   # JOB SEPARADO DE PROPÓSITO, e a razão está em `scripts/gates.py:42`: o que entra em
   # `DEFAULT_JOBS` é prometido como "inteiramente offline e determinístico", e a bateria local
