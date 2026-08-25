@@ -547,6 +547,47 @@ jobs:
   #
   # Aqui ele continua BARRANDO O MERGE (está em `needs` do `ci-ok`), que é o que importa —
   # só deixa de ser arrastado para a bateria local.
+  # O CENÁRIO DO `minReplicas: 0`, com um Redis de verdade. Job próprio pelo mesmo motivo do
+  # `mcp-image`: precisa de daemon, e `scripts/gates.py` promete `DEFAULT_JOBS` inteiramente
+  # offline. Continua BARRANDO O MERGE (está em `needs` do `ci-ok`) — ele prova a propriedade
+  # que decidiu comprar o recurso, então não pode ser opcional.
+  #
+  # O gate offline vizinho (`tasks_backend_test`) prova a metade NEGATIVA: com `memory://`, um
+  # processo novo não acha a task. A metade positiva não cabe offline — só um backend
+  # compartilhado de verdade mostra a task sobrevivendo à réplica que a aceitou.
+  #
+  #   task     P1 aceita e MORRE ABRUPTAMENTE dentro da sessão (um desligamento gracioso deixa
+  #            o worker CANCELAR a execução, e o gate ficaria verde sobre o cenário errado).
+  #            P2 — interpretador novo, servidor novo — acha o id e a vê TERMINAR.
+  #   sessão   P1 grava sob um principal e morre; P2 lê o mesmo valor, e não lê o de outro
+  #            principal. Durabilidade e isolamento na mesma medição.
+  mcp-durable:
+    name: MCP app · task e sessão sobrevivem à réplica (Redis)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mcp
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Instala a base do backend SEM o extra `agents`, com FastMCP 4
+        run: uv sync --frozen
+      - name: MCP — a task e a sessão sobrevivem à morte da réplica
+        env:
+          MCP_REDIS_URL: redis://localhost:6379/0
+        run: uv run --no-sync python -m tests.durability_test
+
   mcp-image:
     name: MCP app · a imagem builda
     runs-on: ubuntu-latest
@@ -679,13 +720,14 @@ jobs:
   ci-ok:
     name: CI passed
     runs-on: ubuntu-latest
-    needs: [backend, mcp-app, mcp-image, frontend, infra]
+    needs: [backend, mcp-app, mcp-durable, mcp-image, frontend, infra]
     if: always()
     steps:
       - name: Verify all jobs passed
         run: |
           [ "${{ needs.backend.result }}" = "success" ] \
           && [ "${{ needs.mcp-app.result }}" = "success" ] \
+          && [ "${{ needs.mcp-durable.result }}" = "success" ] \
           && [ "${{ needs.mcp-image.result }}" = "success" ] \
           && [ "${{ needs.frontend.result }}" = "success" ] \
           && [ "${{ needs.infra.result }}" = "success" ] \
