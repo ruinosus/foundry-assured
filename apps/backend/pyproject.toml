@@ -233,15 +233,26 @@ dev = [
     # `uv` (0.9.5, verificado antes de escrever isto) não tem `[tool.uv] default-extras` —
     # só existe `default-groups`, e o pedido equivalente pra extras
     # (github.com/astral-sh/uv/issues/8607) segue aberto. Sem isso, `uv sync` sozinho
-    # deixaria de instalar `agent_framework` (o app quebraria no import) a menos que todo
-    # dev lembrasse de `--extra agents` pra sempre.
+    # deixaria o app quebrado no import, a menos que todo dev lembrasse de `--extra agents`
+    # pra sempre.
     #
     # Grupo `dev` já é instalado por padrão pelo `uv sync` (é o default-group nativo do
     # uv), então uma dependência auto-referente ao próprio pacote com o extra —
-    # `foundry-helpdesk-backend[agents]` — puxa o extra `agents` só por tabela estar aqui,
-    # sem flag nova. Testado (venv descartável): `uv sync` puxa o extra; `uv sync --no-dev`
-    # NÃO puxa — é exatamente o caminho que o app novo (FastMCP 4) usa pra instalar só a
-    # base.
+    # `foundry-helpdesk-backend[agents]` — puxa o extra `agents` só por estar aqui, sem
+    # flag nova.
+    #
+    # O QUE `--no-dev` DEIXA DE FORA, com precisão. NÃO é o módulo `agent_framework`: ele
+    # vem do `agent-framework-core`, que entra transitivamente pelo
+    # `agent-framework-declarative` da base — `import agent_framework` continua funcionando.
+    # O que falta é o resto da família (`agent-framework-azure-ai-search`, `-ag-ui`,
+    # langchain/langgraph/deepagents), e é por isso que `import app.main` quebra em
+    # `agent_framework.azure.AzureAISearchContextProvider`. Medido com traceback real; a
+    # versão anterior deste comentário afirmava a coisa errada porque testou
+    # `import agent_framework` em vez de `import app.main`.
+    #
+    # E é essa a assimetria que o app novo (FastMCP 4) usa: `--no-dev` dá a base, que
+    # convive com `mcp` 2.x porque o teto `mcp<2` mora no extra `all` do core, arrastado só
+    # pelo meta-pacote `agent-framework`.
     "foundry-helpdesk-backend[agents]",
 ]
 
