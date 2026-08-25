@@ -516,6 +516,23 @@ jobs:
       # estar no contexto de build. Nada provava que esse arranjo funciona até este gate.
       - name: Build da imagem (Dockerfile)
         run: docker build -f apps/mcp/Dockerfile -t foundry-assured-mcp:ci .
+      # E O QUE A IMAGEM RESOLVE COMO CAMINHO DE DADOS, comparado com o `mountPath` que o bicep
+      # declara PARA ELA. Mora aqui e não em `mcp-app` porque só existe resposta dentro da
+      # imagem: a raiz do backend é propriedade do Dockerfile (`/srv/backend` aqui, `/app` na
+      # imagem do backend), não da árvore de trabalho.
+      #
+      # Medido antes deste gate: o bicep montava `/app/data` no container do MCP, e `/app` NEM
+      # EXISTE nesta imagem. O chamado aberto por MCP ia para disco efêmero — e junto com ele a
+      # reserva de nonce, o que devolvia o replay que a Fase 3 tinha acabado de fechar. O gate
+      # vizinho (`decision_replay_test`) não pegava: ele prova que os dois caminhos são IRMÃOS,
+      # o que é verdade também no disco errado.
+      - name: MCP — o caminho de dados da IMAGEM é o mount que o bicep declara
+        run: |
+          docker run --rm \
+            -v "$PWD/infra:/infra:ro" \
+            -v "$PWD/apps/mcp/tests/image_data_path_test.py:/gate/image_data_path_test.py:ro" \
+            -e MCP_BICEP=/infra/containerapps.bicep -e PYTHONPATH=/gate \
+            foundry-assured-mcp:ci python -m image_data_path_test
 
   frontend:
     name: Frontend · typecheck + build

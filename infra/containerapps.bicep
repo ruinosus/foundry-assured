@@ -292,11 +292,28 @@ resource webApp 'Microsoft.App/containerApps@2024-03-01' = {
 //      do backend (só quando existe, senão a Azure recusa o container app INTEIRO com
 //      `ContainerAppSecretInvalid`), e vazio continua sendo modo suportado: o servidor sobe e a
 //      escrita se declara indisponível. Nunca há valor no repositório (ADR-005).
-//   2. O MOUNT `/app/data` — o MESMO share Azure Files do backend. `create_ticket` grava em
-//      `<raiz do backend>/data/tickets.jsonl`, e a raiz no container é `/app`. Sem este mount o
-//      chamado aberto por MCP cairia no disco efêmero da réplica: a escrita "funcionaria", o
-//      cliente receberia o id, e a página `/tickets` do produto nunca o veria. É a mesma falha
-//      que o comentário do `_STORE` em tickets.py descreve, vista de outro app.
+//   2. O MOUNT `/srv/backend/data` — o MESMO share Azure Files do backend, em OUTRO caminho.
+//      `create_ticket` grava em `<raiz do backend>/data/tickets.jsonl`, e a raiz do backend é
+//      diferente em cada imagem: no `apps/backend/Dockerfile` ela é `/app` (daí `/app/data` no
+//      container do backend), e no `apps/mcp/Dockerfile` ela é `/srv/backend`. Medido na
+//      imagem: `docker run … python -c "import app; print(app.__file__)"` →
+//      `/srv/backend/app/__init__.py`, e `/app` NEM EXISTE ali.
+//
+//      A primeira versão deste mount copiou o `/app/data` do backend, e o efeito foi
+//      exatamente o que ele existia para evitar: o chamado aberto por MCP caía no disco
+//      efêmero da réplica — a escrita "funcionava", o cliente recebia o id, e a página
+//      `/tickets` do produto nunca o via. Pior, `data/decisoes/` (a reserva de nonce da
+//      Fase 3) morria no scale-to-zero junto com a réplica, e o mesmo `requestState` selado
+//      escrevia de novo dentro do TTL — o invariante "um `requestState`, uma escrita"
+//      evaporava no cenário que ele existe para cobrir.
+//
+//      POR QUE O BICEP MUDA, E NÃO O DOCKERFILE. `apps/mcp/pyproject.toml` declara o backend
+//      por path (`{ path = "../backend" }`), o que obriga os dois a serem IRMÃOS na imagem —
+//      não há layout de diretórios que ponha a raiz do backend em `/app` e o app do MCP em
+//      `/srv/mcp` ao mesmo tempo. E o `mountPath` é declaração POR CONTAINER: cada imagem tem
+//      a sua raiz, e é o bicep que diz onde o share aparece em cada uma. Quem impede as duas
+//      de divergirem de novo é `apps/mcp/tests/image_data_path_test.py`, que roda DENTRO da
+//      imagem e compara o caminho que o código resolve com o `mountPath` daqui.
 resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: mcpAppName
   location: location
@@ -353,10 +370,11 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'MCP_REQUEST_STATE_KEY', secretRef: 'mcp-request-state-key' }
           ])
           volumeMounts: [
-            // O MESMO `/app/data` do backend, no MESMO share: os dois escrevem
-            // `tickets.jsonl`, e a página `/tickets` lê pelo backend. Ver o comentário grande
-            // acima do recurso.
-            { volumeName: 'data', mountPath: '/app/data' }
+            // O MESMO share do backend, em CAMINHO DIFERENTE — porque a raiz do backend nesta
+            // imagem é `/srv/backend`, não `/app` (medido; ver o comentário grande acima do
+            // recurso). Os dois apps escrevem o mesmo `tickets.jsonl` e as mesmas reservas de
+            // decisão; a página `/tickets` lê pelo backend.
+            { volumeName: 'data', mountPath: '/srv/backend/data' }
           ]
         }
       ]

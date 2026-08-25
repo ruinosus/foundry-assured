@@ -201,8 +201,25 @@ uv run python -m tests.decision_replay_test        # uma decisão humana, uma es
 uv run python -m tests.cache_hints_test            # nenhum hint de cache sai daqui (a recusa da Fase 5)
 ```
 
-O CI roda todos no job `mcp-app` (`.github/workflows/ci.yml`), que **também** é o gate de
-instalabilidade: ele instala a base sem o extra `agents` mais FastMCP 4 e importa
+Mais um que **só roda dentro da imagem**, e por isso mora no job `mcp-image` (precisa de
+`docker`, que não é offline nem determinístico — ver `scripts/gates.py:42`):
+
+```bash
+docker build -f apps/mcp/Dockerfile -t foundry-assured-mcp:ci .     # do repo root
+docker run --rm \
+  -v "$PWD/infra:/infra:ro" \
+  -v "$PWD/apps/mcp/tests/image_data_path_test.py:/gate/image_data_path_test.py:ro" \
+  -e MCP_BICEP=/infra/containerapps.bicep -e PYTHONPATH=/gate \
+  foundry-assured-mcp:ci python -m image_data_path_test
+```
+
+Ele compara o caminho que o código resolve NESTA imagem (`<raiz do backend>/data`, que aqui é
+`/srv/backend/data` e não `/app/data` — os Dockerfiles diferem) com o `mountPath` que o bicep
+declara para o container do MCP. Sem ele, o chamado aberto por MCP ia para disco efêmero e a
+reserva de decisão morria no scale-to-zero, devolvendo o replay que a Fase 3 tinha fechado.
+
+O CI roda todos os demais no job `mcp-app` (`.github/workflows/ci.yml`), que **também** é o gate
+de instalabilidade: ele instala a base sem o extra `agents` mais FastMCP 4 e importa
 `app.modules.knowledge.public`. O `import-linter` prova o grafo de import; só a instalação prova
 a instalabilidade — e é a instalabilidade que quebra.
 

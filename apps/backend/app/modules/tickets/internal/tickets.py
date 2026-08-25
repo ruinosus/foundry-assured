@@ -69,7 +69,8 @@ def create_ticket(summary: str, severity: str = "medium", *, domain: str = "") -
         #
         # Desde que o servidor MCP passou a abrir chamado, o backend e ele fazem append no MESMO
         # `tickets.jsonl`, no MESMO share SMB (`infra/containerapps.bicep` monta o volume `data`
-        # em `/app/data` nos dois). `O_APPEND` é atômico em disco local; sobre CIFS o cliente
+        # nos dois — em `/app/data` aqui e em `/srv/backend/data` lá, porque a raiz do backend
+        # difere entre as duas imagens). `O_APPEND` é atômico em disco local; sobre CIFS o cliente
         # não promete isso, e duas escritas simultâneas podem entrelaçar e produzir uma linha
         # ilegível — que `list_tickets` derrubaria com `JSONDecodeError`.
         #

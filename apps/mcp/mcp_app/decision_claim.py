@@ -30,9 +30,10 @@ POR QUE UM ARQUIVO, E NESTE LUGAR. O ambiente é hostil às duas soluções ing�
 `minReplicas: 0` (desliga entre a pergunta e a resposta, então memória de processo não serve) e
 pode haver mais de uma réplica (então um `set` local também não). O que sobrevive aos dois é
 armazenamento compartilhado — e ele **já está montado**: `infra/containerapps.bicep` monta o
-MESMO share do Azure Files em `/app/data` no backend e neste app, que é onde `tickets.jsonl`
-vive. A reserva mora ao lado, em `data/decisoes/`. Nenhum recurso novo de Azure, nenhuma
-dependência nova, nenhuma variável nova. Em SMB (que é como o share é montado —
+MESMO share do Azure Files nos dois apps, cada um na raiz do backend DA SUA IMAGEM (`/app/data`
+no backend, `/srv/backend/data` aqui — as raízes diferem porque os Dockerfiles diferem), que é
+onde `tickets.jsonl` vive. A reserva mora ao lado, em `data/decisoes/`. Nenhum recurso novo de
+Azure, nenhuma dependência nova, nenhuma variável nova. Em SMB (que é como o share é montado —
 `storageType: 'AzureFile'`), a criação com disposição *create-new* é atômica no servidor: é o
 mesmo mecanismo de lock-file de sempre, não uma aposta no cliente.
 
@@ -83,10 +84,16 @@ import app as _app
 logger = logging.getLogger(__name__)
 
 #: A RAIZ DO BACKEND, não o pacote `app` — o mesmo alvo (e a mesma armadilha) documentados em
-#: `app/modules/tickets/internal/tickets.py`: `/app/data` é o mount do Azure Files, `/app/app/data`
-#: é disco efêmero. Ancorado no pacote (regra 9), nunca contando `parents[N]` deste arquivo.
-#: `tests/decision_replay_test.py` compara este diretório com o de `tickets.jsonl`, para que os
-#: dois não possam divergir em silêncio.
+#: `app/modules/tickets/internal/tickets.py`: a raiz é onde o Azure Files é montado, e
+#: `<raiz>/app/data` é disco efêmero. Ancorado no pacote (regra 9), nunca contando `parents[N]`
+#: deste arquivo.
+#:
+#: NESTA IMAGEM A RAIZ É `/srv/backend`, não `/app` — o `apps/mcp/Dockerfile` põe o backend ali
+#: (é irmão de `/srv/mcp` porque `pyproject.toml` o declara por path `../backend`), e `/app` nem
+#: existe. `tests/decision_replay_test.py` compara este diretório com o de `tickets.jsonl` — os
+#: dois são calculados separadamente e não podem divergir —, mas ser IRMÃO do errado também é
+#: errado: quem compara com o `mountPath` do bicep, dentro da imagem, é
+#: `tests/image_data_path_test.py`.
 DIRETORIO = Path(_app.__file__).resolve().parent.parent / "data" / "decisoes"
 
 #: O nonce é nosso (`secrets.token_urlsafe(24)` → 32 caracteres do alfabeto URL-safe) e vira NOME
