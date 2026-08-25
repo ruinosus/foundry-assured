@@ -15,7 +15,17 @@ instruções compostas dos documentos AgentSchema) e um RESOURCE template (o doc
 com o ACL do backend). Os dois são superfície pelo mesmo motivo que uma tool é: aparecem na
 listagem de um cliente autenticado e devolvem conteúdo. Uma matriz que só olhasse tools ficaria
 verde sobre um resource sem `auth=` — e o resource é justamente o que serve documento controlado
-por ACL. `_superficies()` descobre as três famílias.
+por ACL. `_superficies()` descobre as famílias.
+
+E A QUARTA FAMÍLIA É A COMPLETION, QUE NENHUMA ENUMERAÇÃO DE COMPONENTE ALCANÇA. `completion/
+complete` não é um componente do FastMCP: é UM handler por servidor (`mcp._completion_handler`),
+sem campo `auth=` e sem check nenhum rodado por cima dele (`_on_complete` em
+`fastmcp/server/mixins/mcp_operations.py`). Enquanto esta matriz enumerava só tool/prompt/
+resource, ela afirmava "toda superfície exige papel do Entra" sobre uma superfície que não via —
+e a afirmação era falsa: medido, um token válido com `roles: []` recebia
+`['runbook-secreto.md']` da completion. O gate agora mora PENDURADO no handler
+(`resources_knowledge.completar.auth`), que é o mesmo objeto que ele executa a cada chamada — não
+uma declaração ao lado do código, que poderia divergir dele. É lá que `_registro_cru` olha.
 
 COMO OS PROMPTS ENTRAM SEM VIRAR UMA SEGUNDA LISTA. Enumerar os dez prompts nesta matriz seria
 recriar, aqui, a lista que `tests/prompts_mirror_test.py` existe para impedir — e ela divergiria
@@ -53,6 +63,11 @@ COLUNAS = ("conversa", "tokens", "referencias", "chamado", "trilha", "caso_de_us
 #: de ids não pode morar aqui.
 FAMILIA_PROMPTS = "prompt:*"
 
+#: A chave da COMPLETION. É família e não um id porque o FastMCP admite UM handler por servidor:
+#: nomear a linha pela função de hoje faria a matriz ficar órfã num rename, sem que nada tivesse
+#: mudado de fato na superfície.
+FAMILIA_COMPLETION = "completion:*"
+
 #: A MATRIZ. Uma linha por superfície registrada hoje. `True` = grava hoje; string = não grava, e
 #: o texto diz por quê (mesma convenção do monolito).
 MATRIZ: dict[str, dict[str, object]] = {
@@ -82,6 +97,19 @@ MATRIZ: dict[str, dict[str, object]] = {
         # interessante da trilha. `resource_document_test` trava os dois.
         "trilha": True,
         "caso_de_uso": "n/a: módulo usecases não se aplica à leitura de um documento",
+    },
+    FAMILIA_COMPLETION: {
+        "conversa": "n/a: autocompletar um argumento — não há conversa para persistir",
+        "tokens": "n/a: sugere a partir do índice, não chama modelo — não há token a contar",
+        "referencias": "n/a: devolve NOMES de documento; não afirma nada sobre o conteúdo deles, "
+        "então não há resposta a fundamentar",
+        "chamado": "n/a: sugestão de texto, nunca escrita",
+        # ADR-023: a sugestão de NOME passa pelo MESMO `retrieve` da tool, e é lá dentro que a
+        # leitura é registrada sob a identidade do chamador (`audit.actor()` lê o `Chamador` que
+        # a completion declara antes de buscar). A sugestão de DOMÍNIO não toca conteúdo nenhum —
+        # lê o catálogo —, então não há acesso a registrar nela.
+        "trilha": True,
+        "caso_de_uso": "n/a: módulo usecases não se aplica a um autocompletar",
     },
     FAMILIA_PROMPTS: {
         "conversa": "n/a: um prompt é instrução publicada, não uma conversa",
@@ -123,6 +151,14 @@ async def _registro_cru(mcp) -> list[tuple[str, str, object]]:
         achadas.append((f"resource:{r.uri}", str(r.uri), r.auth))
     for rt in await Provider.list_resource_templates(mcp):
         achadas.append((f"resource:{rt.uri_template}", rt.uri_template, rt.auth))
+    # A COMPLETION não é componente: é um handler solto no servidor, e o FastMCP não guarda
+    # `auth=` para ele (nem roda check algum). O gate dela viaja no atributo `.auth` do próprio
+    # handler — o mesmo objeto que ele executa —, então é daí que a coluna sai. Um handler que
+    # perdeu o gate perde o atributo, e cai na verificação 1 como qualquer outra superfície.
+    handler = getattr(mcp, "_completion_handler", None)
+    if handler is not None:
+        nome = getattr(handler, "__name__", repr(handler))
+        achadas.append((f"completion:{nome}", nome, getattr(handler, "auth", None)))
     return achadas
 
 
@@ -135,6 +171,8 @@ def _declarado(sid: str, derivados: frozenset[str]) -> str:
     """
     if sid.startswith("prompt:") and sid.removeprefix("prompt:") in derivados:
         return FAMILIA_PROMPTS
+    if sid.startswith("completion:"):
+        return FAMILIA_COMPLETION
     return sid
 
 
@@ -143,8 +181,10 @@ async def _prova_por_mutacao() -> str | None:
     que a verificação 1 tem que pegar) e uma de cada COM `auth=` (o controle), e mostra duas
     coisas medidas, não afirmadas:
 
-    1. `_sem_auth` sobre o registro CRU acha exatamente as três sem dono — tool, prompt E
-       resource. Antes da Fase 1 esta prova só cobria tool: um resource sem `auth=` passaria.
+    1. `_sem_auth` sobre o registro CRU acha exatamente as quatro sem dono — tool, prompt,
+       resource E completion. Antes da Fase 1 esta prova só cobria tool: um resource sem `auth=`
+       passaria. E até este conserto ela não cobria a completion, que é a superfície onde a falta
+       de gate foi de fato MEDIDA em produção do teste (roles vazios, sugestões devolvidas).
     2. A listagem FILTRADA (`FastMCP.list_tools()`, sem contexto de auth) faz o oposto do que se
        esperaria: perde a tool COM dono (ela falha no check de auth e é removida) e MANTÉM a tool
        sem dono (que nunca é checada, porque `auth is None` pula o filtro). É a prova de que
@@ -184,9 +224,22 @@ async def _prova_por_mutacao() -> str | None:
     descartavel.resource("sem://{x}", name="recurso_sem_dono")(recurso_sem_dono)
     descartavel.resource("com://{x}", name="recurso_com_dono", auth=dono)(recurso_com_dono)
 
+    # A COMPLETION é UMA por servidor, então a mutação registra a versão SEM gate — que é
+    # exatamente o defeito real que existia: um handler sem `.auth`. O controle (o handler COM
+    # gate) é o servidor de verdade, medido na verificação 1 logo acima desta prova.
+    async def completar_sem_dono(ref, argument, context):
+        return []
+
+    descartavel.completion(completar_sem_dono)
+
     cru = await _registro_cru(descartavel)
     achadas = _sem_auth(cru)
-    esperadas = ["prompt:prompt_sem_dono", "resource:sem://{x}", "tool:tool_sem_dono"]
+    esperadas = [
+        "completion:completar_sem_dono",
+        "prompt:prompt_sem_dono",
+        "resource:sem://{x}",
+        "tool:tool_sem_dono",
+    ]
     if achadas != esperadas:
         return (
             "a mutação não reproduziu o defeito esperado no registro cru — "
@@ -265,8 +318,8 @@ def main() -> int:
         resumo = ", ".join(f"{k}={v}" for k, v in sorted(por_familia.items()))
         check(f"a descoberta achou superfícies ({len(ids)}: {resumo})", len(ids) >= 1)
         check(
-            "as três famílias estão presentes (tool, prompt, resource)",
-            set(por_familia) == {"tool", "prompt", "resource"},
+            "as quatro famílias estão presentes (tool, prompt, resource, completion)",
+            set(por_familia) == {"tool", "prompt", "resource", "completion"},
         )
 
         # --- 1 · toda superfície exige papel do Entra ---------------------------------------

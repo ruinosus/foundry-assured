@@ -189,3 +189,36 @@ async def _baixar_blob(url: str, name: str) -> bytes:
 
         with contextlib.suppress(Exception):
             await cred.close()
+
+
+def record_document_access(domain_id: str, name: str, *, authorized: bool, url: str | None) -> None:
+    """A TRILHA de uma leitura de documento — a autorizada E a negada (ADR-023).
+
+    MORA AQUI PORQUE HÁ MAIS DE UM CONSUMIDOR, e a duplicação já custou. A rota
+    `GET /source/{domain_id}/{name}` (`knowledge/api.py`) e o resource `document://` do app do
+    MCP (`apps/mcp/mcp_app/resources_knowledge.py`) gravavam o MESMO evento por duas funções
+    `_auditar` gêmeas. Elas já divergiram no commit que as criou: a rota audita também a
+    negativa por entitlement de tenant (ADR-010), e o gêmeo do MCP não tinha esse caminho —
+    metade do par ficava de fora numa das superfícies, sem erro nenhum.
+
+    O dono do documento é quem grava o acesso a ele. `knowledge` é esse dono.
+
+    FAIL-SOFT, como era nas duas: ler é reversível, e negar a leitura por causa de um problema
+    de infraestrutura de auditoria puniria o usuário. A ausência aparece como lacuna no
+    relatório de verificação, que é onde deve aparecer.
+    """
+    import contextlib
+
+    with contextlib.suppress(Exception):
+        from app.modules.audit.public import actor, actor_detail, record
+
+        record(
+            scope="access",
+            actor=actor(),
+            kind="access",
+            summary=f"documento {'aberto' if authorized else 'NEGADO'}: {name}",
+            ref=domain_id,
+            # `url` é a CHAVE real do documento (o que o trim filtra por); `name` sozinho não
+            # identifica o recurso entre domínios/containers diferentes.
+            detail={"document": name, "url": url, "authorized": authorized, **actor_detail()},
+        )

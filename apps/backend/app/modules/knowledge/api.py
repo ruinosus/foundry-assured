@@ -14,7 +14,11 @@ from collections.abc import Callable
 
 from fastapi import APIRouter, HTTPException, Response
 
-from app.modules.knowledge.public import NomeDocumentoInvalido, authorized_document
+from app.modules.knowledge.public import (
+    NomeDocumentoInvalido,
+    authorized_document,
+    record_document_access,
+)
 from app.modules.tenancy.public import require_domain
 from app.shared.auth import auth_dependencies, current_user
 from app.shared.settings import settings
@@ -80,7 +84,7 @@ async def read_source(domain_id: str, name: str, response: Response) -> dict:
             # Mesmo par ACL: a negação por entitlement (ADR-010) é tão interessante para a
             # trilha quanto a negação por ACL logo abaixo — sem isto a auditoria ficava com
             # metade do par (só registrava quem passou pelo gate de tenant).
-            _auditar(domain_id, name, autorizado=False, url=None)
+            record_document_access(domain_id, name, authorized=False, url=None)
             raise
 
     # Conteúdo controlado por ACL: nunca cacheado por proxy/CDN/navegador — um cache
@@ -93,15 +97,15 @@ async def read_source(domain_id: str, name: str, response: Response) -> dict:
     except NomeDocumentoInvalido:
         raise HTTPException(status_code=400, detail="nome de documento inválido") from None
     except PermissionError as exc:
-        _auditar(domain_id, name, autorizado=False, url=getattr(exc, "url", None))
+        record_document_access(domain_id, name, authorized=False, url=getattr(exc, "url", None))
         # 403 e não 404: a pessoa está autenticada e a rota existe. Não vazamos se o documento
         # existe — `authorized_document` já não distingue os dois casos.
         raise HTTPException(status_code=403, detail="sem autorização para este documento") from None
     except FileNotFoundError as exc:
-        _auditar(domain_id, name, autorizado=False, url=getattr(exc, "url", None))
+        record_document_access(domain_id, name, authorized=False, url=getattr(exc, "url", None))
         raise HTTPException(status_code=404, detail="documento não encontrado") from None
 
-    _auditar(domain_id, name, autorizado=True, url=url)
+    record_document_access(domain_id, name, authorized=True, url=url)
 
     # A truncagem é DECLARADA na resposta, nunca silenciosa: quem clica no `[n]` está prestes a
     # confirmar uma evidência, e confirmar sobre um documento cortado sem saber é pior do que não
@@ -111,27 +115,3 @@ async def read_source(domain_id: str, name: str, response: Response) -> dict:
     if truncado:
         conteudo = bruto[:_TETO_DOCUMENTO_BYTES].decode("utf-8", errors="ignore")
     return {"name": name, "url": url, "content": conteudo, "truncated": truncado}
-
-
-def _auditar(domain_id: str, name: str, *, autorizado: bool, url: str | None) -> None:
-    """Registra a leitura — e TAMBÉM a negada, que é o sinal mais interessante da trilha.
-
-    Fail-soft como o registro do `retrieve()`: ler é reversível, e negar a leitura por causa
-    de um problema de infraestrutura de auditoria puniria o usuário. A ausência aparece como
-    lacuna no relatório de verificação, que é onde deve aparecer.
-    """
-    import contextlib
-
-    with contextlib.suppress(Exception):
-        from app.modules.audit.public import actor, actor_detail, record
-
-        record(
-            scope="access",
-            actor=actor(),
-            kind="access",
-            summary=f"documento {'aberto' if autorizado else 'NEGADO'}: {name}",
-            ref=domain_id,
-            # `url` é a CHAVE real do documento (o que o trim filtra por); `name` sozinho não
-            # identifica o recurso entre domínios/containers diferentes.
-            detail={"document": name, "url": url, "authorized": autorizado, **actor_detail()},
-        )

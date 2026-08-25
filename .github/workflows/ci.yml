@@ -419,6 +419,18 @@ jobs:
         run: uv run --no-sync python -m tests.resource_document_test
       - name: MCP — a completion só sugere o que existe e o que o chamador pode abrir
         run: uv run --no-sync python -m tests.completion_test
+      # O SEGUNDO CRITÉRIO DE PRONTO DA FASE 1 ("um cliente lista prompts e lê um resource com
+      # ACL aplicada") não era exercitado por gate nenhum: `authz_test` prova a função de
+      # decisão, a matriz prova que o `auth=` existe — nenhum dos dois prova que o FastMCP
+      # FILTRA. Este sobe a aplicação que `build_app()` monta e fala com ela por um `Client` de
+      # verdade, com dois tokens que diferem só no claim `roles`.
+      #
+      # Continua offline e sem daemon: o transporte é `httpx2.ASGITransport` (a pilha HTTP
+      # inteira, em processo, sem socket), e o verificador de token é estático — o
+      # `AzureJWTVerifier` buscaria o JWKS do Entra pela rede, que é o que tiraria este passo de
+      # `DEFAULT_JOBS` em `scripts/gates.py`.
+      - name: MCP — um cliente real lista prompts, lê o resource, e sem papel não vê nada
+        run: uv run --no-sync python -m tests.client_surface_test
 
   # JOB SEPARADO DE PROPÓSITO, e a razão está em `scripts/gates.py:42`: o que entra em
   # `DEFAULT_JOBS` é prometido como "inteiramente offline e determinístico", e a bateria local

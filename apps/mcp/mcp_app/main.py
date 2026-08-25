@@ -37,7 +37,7 @@ from app.modules.domains.public import DOMAIN_KINDS, domain_spec, domain_specs
 from app.modules.tenancy import public as tenancy
 from app.shared.settings import settings
 from app.shared.telemetry import setup_telemetry
-from mcp_app import prompts_agentdefs, resources_knowledge, tools_knowledge
+from mcp_app import prompts_agentdefs, resources_knowledge, tenant_gate, tools_knowledge
 from mcp_app.auth import MCP_PATH, build_auth
 
 INSTRUCTIONS = (
@@ -88,6 +88,11 @@ def wire_registry() -> None:
     # Só no modo shared: fora dele `tenant_store()` não foi construída (`tenancy.install()` é
     # no-op) e o MCP não resolve tenant nenhum — o comportamento de self_hosted/dedicated fica
     # byte-idêntico. `.get` é o método vinculado, não a loja: o seam é uma FUNÇÃO.
+    #
+    # O empurrão é UM para as quatro superfícies: `mcp_app.tenant_gate` é o dono da regra de
+    # tenant+entitlement, e tool, resource e as duas completions leem de lá. Enquanto a loja
+    # morava dentro de `tools_knowledge`, só a tool resolvia tenant — e o resource ficava morto
+    # no modo shared, respondendo "domínio desconhecido" a toda leitura.
     if settings.deployment_mode == "shared":
         tenancy.install()
         loja = tenancy.tenant_store()
@@ -95,19 +100,25 @@ def wire_registry() -> None:
             raise RuntimeError(
                 "DEPLOYMENT_MODE=shared sem tenant store — o MCP não resolveria tenant nenhum"
             )
-        tools_knowledge.set_tenant_store(loja.get)
+        tenant_gate.set_tenant_store(loja.get)
 
 
 def register_surfaces(mcp: FastMCP) -> None:
-    """As TRÊS superfícies que este servidor publica, num lugar só.
+    """As QUATRO superfícies que este servidor publica, num lugar só.
+
+    A quarta é a COMPLETION, e ela é superfície pelo mesmo motivo que as outras: responde a um
+    chamador autenticado e devolve conteúdo derivado da base. O FastMCP não a gateia — quem
+    roda o gate de papel dela é `resources_knowledge._pode_ler`, e a matriz de instrumentação
+    tem uma família `completion:*` justamente porque a enumeração de componentes não a alcança.
 
     Existe como função (e não como quatro linhas dentro de `build_app`) porque o gate de
     instrumentação precisa montar exatamente o que o app monta — se ele registrasse à mão,
     provaria a superfície que ELE monta, não a que o app monta, e uma superfície nova esquecida
     aqui passaria despercebida justamente pelo teste que existe para pegá-la.
 
-    Nenhuma das três declara conteúdo próprio: a tool deriva o catálogo de domínios, os prompts
-    derivam os documentos AgentSchema, e o resource deriva a decisão de acesso do `knowledge`.
+    Nenhuma das quatro declara conteúdo próprio: a tool deriva o catálogo de domínios, os
+    prompts derivam os documentos AgentSchema, e o resource (com a completion dele) deriva a
+    decisão de acesso do `knowledge`.
     """
     tools_knowledge.register(mcp)
     prompts_agentdefs.register(mcp)

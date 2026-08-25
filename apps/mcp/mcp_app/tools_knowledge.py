@@ -26,10 +26,9 @@ from fastmcp.exceptions import ToolError
 from fastmcp.server.dependencies import get_access_token
 
 from app.modules.knowledge.public import retrieve
-from app.modules.tenancy.public import domain_enabled, resolve_tenant_record
-from app.shared.settings import settings
 from mcp_app.auth import require_any_role
 from mcp_app.caller import identidade_do_chamador
+from mcp_app.tenant_gate import recusa_de_tenant
 
 #: Empurrados pela composition root DESTE app (`mcp_app/main.py`), que é quem pode ver o
 #: registry de domínios. Continua sendo empurrão e não import direto por dois motivos: mantém
@@ -37,10 +36,6 @@ from mcp_app.caller import identidade_do_chamador
 #: teste de identity passthrough injetar um registry falso sem subir o backend inteiro.
 _domain_lookup: Callable[[str], Any] | None = None
 _grounded_domains: tuple[str, ...] = ()
-
-#: A loja de tenants, empurrada pela composition root. `None` fora do modo shared — e aí nada
-#: de tenant é resolvido, que é o comportamento byte-idêntico de self_hosted/dedicated.
-_tenant_store: Callable[[str], Any] | None = None
 
 
 def set_domain_registry(lookup: Callable[[str], Any], grounded: tuple[str, ...]) -> None:
@@ -55,27 +50,6 @@ def set_domain_registry(lookup: Callable[[str], Any], grounded: tuple[str, ...])
     global _domain_lookup, _grounded_domains
     _domain_lookup = lookup
     _grounded_domains = tuple(grounded)
-
-
-def set_tenant_store(fn: Callable[[str], Any] | None) -> None:
-    """Recebe da composition root a função que resolve um tid para o `TenantRecord` — só no
-    modo shared. O seam é uma função, não a loja em si, no mesmo espírito de
-    `set_domain_registry`: quem chama não precisa saber que a loja tem `.get`."""
-    global _tenant_store
-    _tenant_store = fn
-
-
-class _StoreAdapter:
-    """Embrulha o seam (uma função `tid -> TenantRecord | None`) no vocabulário `.get(tid)` que
-    `tenancy.resolve_tenant_record` espera — ela é compartilhada com o caminho web, que resolve
-    contra um objeto de loja de verdade. Sem isso, `resolve_tenant_record` teria que aprender
-    dois formatos de loja."""
-
-    def __init__(self, fn: Callable[[str], Any]) -> None:
-        self._fn = fn
-
-    def get(self, tid: str) -> Any:
-        return self._fn(tid)
 
 
 async def search_docs(domain: str, query: str) -> dict[str, Any]:
@@ -100,16 +74,13 @@ async def search_docs(domain: str, query: str) -> dict[str, Any]:
     )
 
     # MODO SHARED: resolver o tenant E cobrar o entitlement. As duas coisas, sempre juntas —
-    # resolver sem cobrar serve domínio não licenciado, que é pior que falhar. A regra é a
-    # MESMA do `require_domain` do FastAPI (ADR-010) — `tenancy.domain_enabled` — para que as
-    # duas superfícies nunca divirjam sobre quem pode ler o quê.
-    if settings.deployment_mode == "shared":
-        if _tenant_store is None:
-            raise ToolError("tenant store não registrado")
-        if resolve_tenant_record(chamador, _StoreAdapter(_tenant_store)) is None:
-            raise ToolError("tenant não habilitado")
-        if not domain_enabled(domain):
-            raise ToolError(f"domínio não habilitado para o tenant: {domain}")
+    # resolver sem cobrar serve domínio não licenciado, que é pior que falhar. A regra mora em
+    # `mcp_app.tenant_gate`, que é a MESMA do `require_domain` do FastAPI (ADR-010), e agora
+    # tem quatro consumidores: esta tool, o resource `document://` e as duas completions dele.
+    # Aqui só se traduz a recusa para o vocabulário de tool.
+    motivo = recusa_de_tenant(chamador, domain)
+    if motivo:
+        raise ToolError(motivo)
 
     linhas = await retrieve(query, chamador, _domain_lookup(domain))
 
