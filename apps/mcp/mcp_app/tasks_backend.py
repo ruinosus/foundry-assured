@@ -65,9 +65,39 @@ Por isso **as duas juntas ou nada**. Faltando qualquer uma, `indisponivel()` dev
 extensão não é registrada e a tool nasce sem `task=`. A busca continua síncrona — o
 comportamento de sempre, byte por byte.
 
+O DESFECHO É O MESMO NOS DOIS SENTIDOS, O LOG NÃO É. Nenhuma das duas é o **modo de repouso**:
+um deployment inteiro e legítimo, `warning`. Uma sem a outra é uma **intenção pela metade**, e
+vai como `error` — quem preencheu a chave quis as tasks, e no ambiente publicado quem ligou
+`DEPLOY_REDIS` está pagando ~US$16/mês por um recurso que não liga nada sozinho. Foi por isso
+que o default de `deployRedis` virou `false`: com ele em `true` e a chave vazia (o default dela),
+o deploy padrão pagava o Redis e não subia as tasks — a pior das quatro combinações, e a que
+ninguém escolheu.
+
 A DEGRADAÇÃO É DECLARADA, NÃO DESCOBERTA, e é o mesmo desenho de `request_state.py`: o servidor
 sobe, a capacidade se declara indisponível, e o log diz por quê no boot. A alternativa (recusar
 subir) derrubaria cinco superfícies de leitura por causa de uma capacidade opcional.
+
+═══ E A TERCEIRA PERGUNTA: O BACKEND CONFIGURADO ESTÁ NO AR? ═══
+
+As duas perguntas acima cobriam CONFIGURAÇÃO — variável vazia, chave ausente. Faltava a
+pergunta sobre o MUNDO, e a falta tinha preço medido. Com `MCP_REDIS_URL` apontando para um
+Redis fora do ar, a extensão sobe (o `Docket` reconecta em laço, logando warning) e o cliente
+que PEDE task recebe `MCPError: Internal server error` — o `mask_error_details=True` do
+`main.py` fazendo o trabalho dele sobre um erro que não é do chamador. Uma capacidade que se
+anuncia no handshake e falha mascarada na primeira chamada é pior que uma capacidade ausente.
+
+`backend_no_ar()` faz um `PING` com timeout curto no boot. Ele não responde → a capacidade se
+declara indisponível pelo mesmo caminho das outras duas: extensão fora, `search_docs` síncrona,
+e o handshake NÃO anuncia `io.modelcontextprotocol/tasks`. Um cliente que insiste em
+`call_tool_task` recebe `ToolError: … did not run as a task: the server returned a
+CallToolResult instead of a task` — do lado dele, com a chamada tendo rodado síncrona, que é
+literalmente o contrato do `mode="optional"`. Medidos os dois, lado a lado, antes de escolher.
+
+O LIMITE DISTO É O BOOT, e dizê-lo é parte do desenho. Um Redis que cai DEPOIS leva a
+capacidade de tasks junto (a submissão falha) — o que ele não leva mais é a leitura, e essa
+metade é do `sessions.py`, onde a loja de sessão passou a cair para a memória de processo. As
+cinco superfícies de leitura ficam de pé nos dois casos; é a única promessa que este arquivo e o
+comentário do `infra/containerapps.bicep` sempre fizeram.
 
 O NOME DA SEGUNDA VARIÁVEL É DO PACOTE, e isso não é descuido: `fastmcp_tasks.settings` lê o
 prefixo `FASTMCP_TASKS_`. Reexportá-la de um nome nosso criaria a configuração que parece
@@ -102,12 +132,41 @@ MOTIVO_SEM_BACKEND = (
     "continua síncrona."
 )
 
+#: O MESMO FATO DO ANTERIOR, DITO PARA QUEM CLARAMENTE QUIS AS TASKS. Configurar a chave de cifra
+#: e não provisionar o Redis não é o modo de repouso — é uma intenção pela metade, e o único
+#: sintoma seria uma capacidade que não existe sem ninguém ter pedido isso. Vai ao log como
+#: ERROR, não warning, porque `DEPLOY_REDIS` e `MCP_TASKS_ENCRYPTION_KEY` andam juntas: uma sem
+#: a outra não liga nada e uma delas ainda custa ~US$16/mês.
+MOTIVO_CHAVE_SEM_BACKEND = (
+    "tasks indisponíveis: FASTMCP_TASKS_ENCRYPTION_KEY está configurada e MCP_REDIS_URL não. As "
+    "duas andam juntas — no ambiente publicado, `DEPLOY_REDIS=true` é o que produz a segunda. "
+    "Do jeito que está, a chave não tem efeito nenhum e a busca continua síncrona."
+)
+
 MOTIVO_SEM_CHAVE = (
     "tasks indisponíveis: o snapshot de contexto iria para o Redis SEM CIFRA "
     "(FASTMCP_TASKS_ENCRYPTION_KEY ausente ou lida tarde demais pelo pacote). Ele carrega o "
     "access token de quem submeteu — e, sem a chave, uma falha ao recuperá-lo faz a task rodar "
     "SEM a identidade do chamador, com o ACL e a trilha errados. A busca continua síncrona."
 )
+
+#: Leva o erro do `PING` junto: quem opera precisa distinguir "host errado" de "senha errada" de
+#: "manutenção do SKU Basic", e as três chegam aqui como exceções diferentes do `redis-py`.
+MOTIVO_BACKEND_FORA = (
+    "tasks indisponíveis: MCP_REDIS_URL está configurada, mas o backend não respondeu ao PING "
+    "no boot ({erro}). A capacidade fica de fora em vez de subir e falhar mascarada na primeira "
+    "submissão. A busca continua síncrona e as cinco superfícies de leitura não são afetadas."
+)
+
+#: Segundos para o `PING` do boot. Curto porque é boot: um backend que demora mais que isto para
+#: dizer "estou aqui" não vai sustentar uma fila, e o preço de errar é uma capacidade opcional
+#: fora do ar até o próximo start — não uma leitura recusada.
+TIMEOUT_PING_SEGUNDOS = 3
+
+#: Os esquemas que TÊM servidor para perguntar. `memory://` — o backend em processo do Docket —
+#: não tem nada a conectar e nada a cair; ele não serve a este app (é o item 1 acima) e existe
+#: aqui porque é o que o gate offline usa para exercitar as outras duas perguntas sem daemon.
+ESQUEMAS_COM_SERVIDOR = ("redis://", "rediss://", "unix://")
 
 
 def snapshot_cifrado() -> bool:
@@ -132,12 +191,55 @@ def snapshot_cifrado() -> bool:
     return bool(snapshot_codec().protected)
 
 
+def backend_no_ar(url: str) -> str | None:
+    """`None` se o backend respondeu ao `PING`; senão o texto do erro, para ir ao log.
+
+    SÍNCRONO E BLOQUEANTE, de propósito: roda no boot (`build_app()` é executado no import de
+    `mcp_app.main`, fora de qualquer event loop), e o cliente síncrono do `redis-py` é o que não
+    precisa de loop nenhum para responder. Três segundos de boot é o preço.
+
+    `PING` é a pergunta certa e a mais barata que existe: ela atravessa DNS, TCP, TLS e auth —
+    as quatro coisas que uma URL errada quebra —, e não escreve nada.
+    """
+    if not url.startswith(ESQUEMAS_COM_SERVIDOR):
+        return None
+
+    from redis import Redis
+    from redis.exceptions import RedisError
+
+    cliente = None
+    try:
+        cliente = Redis.from_url(
+            url,
+            socket_connect_timeout=TIMEOUT_PING_SEGUNDOS,
+            socket_timeout=TIMEOUT_PING_SEGUNDOS,
+        )
+        cliente.ping()
+    except (RedisError, OSError) as exc:
+        return f"{type(exc).__name__}: {exc}"
+    finally:
+        if cliente is not None:
+            cliente.close()
+    return None
+
+
 def indisponivel() -> str | None:
-    """`None` quando as tasks podem subir; senão o MOTIVO, no vocabulário do operador."""
-    if not settings.mcp_redis_url.strip():
-        return MOTIVO_SEM_BACKEND
+    """`None` quando as tasks podem subir; senão o MOTIVO, no vocabulário do operador.
+
+    NA ORDEM EM QUE CUSTAM: as duas perguntas de configuração são de memória, a do backend no ar
+    é de rede. Perguntar ao mundo antes de olhar a própria configuração pagaria um `PING` para
+    descobrir que a chave de cifra nem existe.
+    """
+    url = settings.mcp_redis_url.strip()
+    if not url:
+        # A CHAVE SEM O BACKEND É OUTRA COISA que a ausência dos dois: quem preencheu a chave
+        # quis as tasks. Mesmo desfecho, motivo diferente — e o `instalar` o registra mais alto.
+        return MOTIVO_CHAVE_SEM_BACKEND if snapshot_cifrado() else MOTIVO_SEM_BACKEND
     if not snapshot_cifrado():
         return MOTIVO_SEM_CHAVE
+    erro = backend_no_ar(url)
+    if erro:
+        return MOTIVO_BACKEND_FORA.format(erro=erro)
     return None
 
 
@@ -158,7 +260,15 @@ def instalar(mcp: FastMCP) -> bool:
         # `warning` e não `info`: num ambiente que se pretende completo, isto é uma capacidade
         # que não subiu. Num ambiente de dev é ruído esperado — e é por isso que o texto explica
         # o que se perde ("a busca continua síncrona") em vez de só nomear a variável.
-        logger.warning(motivo)
+        #
+        # `error` NOS DOIS CASOS EM QUE A CONFIGURAÇÃO SE CONTRADIZ: a chave sem o backend (quem
+        # preencheu a chave quis as tasks) e o backend configurado que não responde (quem
+        # provisionou o Redis está pagando por ele). O modo de repouso — nenhuma das duas — segue
+        # sendo `warning`, porque é um deployment inteiro e legítimo, não um engano.
+        alto = motivo == MOTIVO_CHAVE_SEM_BACKEND or motivo.startswith(
+            MOTIVO_BACKEND_FORA[:60]
+        )
+        logger.log(logging.ERROR if alto else logging.WARNING, motivo)
         return False
 
     from fastmcp_tasks import TasksExtension

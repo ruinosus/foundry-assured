@@ -534,10 +534,25 @@ jobs:
       # caminho padrão de MCP Apps o FastMCP SINTETIZA um renderizador `auth=None` que
       # `Provider.list_resources` não enxerga. Aqui a síntese tem que vir VAZIA — o app aponta
       # para uma URI própria e registra o recurso com o mesmo `require_any_role` do resto.
-      # E o renderizador vem do wheel (6,4 MiB), não de `cdn.jsdelivr.net`: o custo dos dois
+      # E o renderizador vem do wheel (6,3 MiB), não de `cdn.jsdelivr.net`: o custo dos dois
       # lados é medido no gate para não virar folclore.
       - name: MCP — a evidência chega a quem buscou, e o renderizador tem dono
         run: uv run --no-sync python -m tests.app_evidencias_test
+      # O REDIS CONFIGURADO E FORA DO AR — o cenário que o `Basic C0` torna rotina, porque o SKU
+      # não tem réplica e a manutenção dele é uma queda. Medido antes deste gate existir: as
+      # CINCO superfícies de leitura devolviam `MCPError: Internal server error`, inclusive a
+      # busca síncrona, que não usa Redis para nada. E a causa não era a extensão de tasks (o
+      # Docket reconecta em laço): era a LOJA DE SESSÃO — o FastMCP lê o `session_state_store` em
+      # toda requisição, por dentro (`transforms/visibility.py:316`).
+      #
+      # O gate prova as duas metades do conserto: a leitura de pé (a loja cai para memória de
+      # processo, que é o modo sem Redis já declarado) e a CAPACIDADE fora (o gate de boot passou
+      # a fazer `PING`, então a extensão nem sobe e quem pede task recebe erro que diz isso, em
+      # vez do mascarado). Prova por mutação junto: com a loja crua, a mesma leitura morre.
+      #
+      # Offline e sem daemon: uma porta fechada em `127.0.0.1` recusa a conexão na hora.
+      - name: MCP — Redis fora do ar derruba a capacidade, nunca as leituras
+        run: uv run --no-sync python -m tests.redis_outage_test
 
   # JOB SEPARADO DE PROPÓSITO, e a razão está em `scripts/gates.py:42`: o que entra em
   # `DEFAULT_JOBS` é prometido como "inteiramente offline e determinístico", e a bateria local

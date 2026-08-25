@@ -124,10 +124,10 @@ o resumo, porque quem lê este README é quem vai mexer neles:
 
 | Item | Como entrou | O que o segura |
 |---|---|---|
-| **Tasks** (`task=True`) | só `search_docs`, e só com `MCP_REDIS_URL` **e** `FASTMCP_TASKS_ENCRYPTION_KEY`. `mode="optional"`: quem escolhe é o cliente, e a chamada comum continua síncrona | `tasks_backend_test` (offline, com prova por mutação em `memory://`) + `durability_test` (Redis de verdade) |
+| **Tasks** (`task=True`) | só `search_docs`, e só com `MCP_REDIS_URL` **e** `FASTMCP_TASKS_ENCRYPTION_KEY` **e** o backend respondendo ao `PING` no boot. `mode="optional"`: quem escolhe é o cliente, e a chamada comum continua síncrona | `tasks_backend_test` (offline, com prova por mutação em `memory://`) + `redis_outage_test` (Redis fora do ar) + `durability_test` (Redis de verdade) |
 | **Sessão por usuário** | guarda as citações da última busca, com TTL de 1h. Nunca é permissão: papel, tenant e ACL rodam na mesma chamada | `app_evidencias_test` (dois principals) + `durability_test` |
 | **Cache** (`cache_ttl`) | só as LISTAGENS, escopo `private`, 60s. `resources/read` fica de fora — é o documento com ACL cuja chegada aqui vira evento na trilha | `cache_hints_test`, que mede o `ttlMs` no FIO, não o atributo |
-| **MCP App** (`show_evidence`) | a tabela de evidências, com renderizador **embutido** (6,4 MiB) e URI própria. NÃO é o prefab `Approval` | `app_evidencias_test` + a matriz, que passou a enumerar recursos sintetizados |
+| **MCP App** (`show_evidence`) | a tabela de evidências, com renderizador **embutido** (6,3 MiB) e URI própria. NÃO é o prefab `Approval` | `app_evidencias_test` + a matriz, que passou a enumerar recursos sintetizados |
 
 **As duas coisas que continuam fora, de propósito:**
 
@@ -140,7 +140,7 @@ o resumo, porque quem lê este README é quem vai mexer neles:
 - **`resources/read` NÃO É CACHEADO.** É a única exclusão do hint, e é a decisão inteira: um TTL
   ali autoriza o cliente a servir a leitura do próprio armazenamento — a leitura deixa de chegar
   aqui, deixa de virar evento (ADR-023), e o produto continuaria afirmando que registra toda
-  leitura de documento controlado. O renderizador do app paga essa conta (6,4 MiB por leitura); é
+  leitura de documento controlado. O renderizador do app paga essa conta (6,3 MiB por leitura); é
   o preço aceito para não ter origem de terceiro na interface nem buraco na trilha.
 
 **Duas armadilhas que custaram medição, e que continuam armadas para quem mexer aqui:**
@@ -152,6 +152,25 @@ o resumo, porque quem lê este README é quem vai mexer neles:
 2. Sem `FASTMCP_TASKS_ENCRYPTION_KEY`, uma falha ao restaurar o snapshot da task **não é fatal**:
    ela roda sem a identidade de quem submeteu — com o trim de ACL errado e a trilha gravando
    `process:app`. Por isso a chave é condição para as tasks subirem, e não um extra.
+3. O `session_state_store` é lido pelo FastMCP em **toda requisição**, por dentro
+   (`transforms/visibility.py:316`) — não só por `show_evidence`. Uma `RedisStore` crua ali
+   transformava um Redis fora do ar em **`Internal server error` nas cinco superfícies de
+   leitura**, inclusive a busca síncrona, que não usa Redis para nada. Hoje a loja é um
+   `FallbackWrapper` que cai para a memória de processo (o mesmo modo de quem não tem Redis), e
+   `redis_outage_test` guarda isso com prova por mutação.
+
+**Ligar as tasks e a sessão durável — as duas variáveis andam juntas.** O Redis **não** é
+provisionado por default (`DEPLOY_REDIS=false`): antes era, e o deploy padrão pagava ~US$16/mês
+por um recurso que não ligava nada, porque `MCP_TASKS_ENCRYPTION_KEY` é vazia por default. Para
+ligar de verdade:
+
+```bash
+azd env set DEPLOY_REDIS true
+azd env set MCP_TASKS_ENCRYPTION_KEY "$(python -c 'import secrets; print(secrets.token_hex(32))')"
+```
+
+Uma sem a outra não liga nada — e o servidor registra a metade faltante como **ERROR** no boot,
+em vez de degradar em silêncio.
 
 > **É a ÚNICA superfície MCP do produto.** Na Fase 0c `app/modules/mcpserver/` foi deletado do
 > backend, junto com o `fastmcp==3.4.7` do extra `agents` que o sustentava. Duas superfícies
@@ -267,6 +286,7 @@ uv run python -m tests.decision_replay_test        # um `requestState`, uma escr
 uv run python -m tests.cache_hints_test            # o cache cobre as listagens e nunca `resources/read`
 uv run python -m tests.tasks_backend_test          # só a busca vira task, e só com backend durável e cifra
 uv run python -m tests.app_evidencias_test         # a evidência chega a quem buscou; o renderizador tem dono
+uv run python -m tests.redis_outage_test           # Redis fora do ar derruba a capacidade, nunca as leituras
 uv run python -m tests.obo_credential_test         # o container recebe a credencial que o OBO exige
 uv run lint-imports --config importlinter.toml     # a entrada no backend é pelo `public` (ADR-017)
 ```

@@ -151,6 +151,19 @@ def main() -> int:
             motivo_sem_backend == tasks_backend.MOTIVO_SEM_BACKEND,
         )
 
+        # A OUTRA METADE DA MESMA FALTA, e ela existe porque o default do `deployRedis` virou
+        # `false`: quem preenche a chave de cifra e não provisiona o Redis não está no modo de
+        # repouso — está com uma intenção pela metade, pagando por uma configuração sem efeito.
+        # Mesmo desfecho (tasks fora), motivo diferente, e `instalar` o registra como ERROR.
+        _liga_cifra("x" * 40)
+        motivo_chave_sozinha = tasks_backend.indisponivel()
+        check(
+            "chave de cifra SEM backend tem motivo próprio — é engano de configuração, não modo "
+            f"de repouso ({(motivo_chave_sozinha or '')[:44]}…)",
+            motivo_chave_sozinha == tasks_backend.MOTIVO_CHAVE_SEM_BACKEND,
+        )
+        _liga_cifra(None)
+
         settings.mcp_redis_url = "memory://"
         motivo_sem_chave = tasks_backend.indisponivel()
         check(

@@ -48,6 +48,29 @@ com `TTL=3590`.
 Sem `MCP_REDIS_URL` a loja é a `MemoryStore()` de processo — o default do FastMCP. Não é um erro:
 é o modo de repouso, e com `minReplicas: 0` significa que a tabela some quando a réplica dorme.
 A degradação é declarada aqui e provada no gate, não descoberta em produção.
+
+═══ E COM `MCP_REDIS_URL` APONTANDO PARA UM REDIS QUE NÃO RESPONDE ═══
+
+Aqui estava o defeito, e ele era do tamanho do servidor inteiro. A loja NÃO é lida só por
+`guardar_evidencia`/`evidencia_guardada` — que engolem falha de propósito, ver abaixo. O FastMCP
+a lê em TODA requisição, por dentro: `transforms/visibility.py:316 get_visibility_rules` chama
+`Context.get_state`, que vai ao `_state_store`. Medido, com o Redis fora do ar e uma `RedisStore`
+crua: `tools/list`, `prompts/list`, `resources/list`, `resources/read` e `tools/call` voltam
+todos `MCPError: Internal server error`, com `redis.exceptions.ConnectionError` no traceback.
+As cinco superfícies de leitura morriam por causa de um cache — inclusive a busca síncrona, que
+não precisa de Redis para nada.
+
+O conserto é o `FallbackWrapper` do próprio pacote: falha do Redis cai para a `MemoryStore()` de
+processo, que é EXATAMENTE a loja do modo sem Redis. Isto é o que faz a degradação por
+indisponibilidade ser a MESMA degradação já declarada por ausência de configuração — nenhum
+comportamento novo para ninguém entender, e o Basic C0 (que não tem réplica, por escolha de SKU)
+pode entrar em manutenção sem levar a leitura junto.
+
+`write_to_fallback=True` de propósito: sem ele a escrita ainda levantaria, e a sessão de quem
+buscou durante a queda ficaria sem destino nenhum. Com ele, ela vive na memória da réplica —
+de novo, o modo de repouso. A inconsistência que o wrapper avisa (o que foi para a memória não
+volta ao Redis quando ele volta) é uma tabela de evidências que some, que é o que a pergunta 3
+acima diz que é aceitável perder.
 """
 
 from __future__ import annotations
@@ -59,15 +82,26 @@ from app.shared.settings import settings
 
 logger = logging.getLogger(__name__)
 
-#: A coleção (prefixo) das chaves de sessão dentro do Redis. Nomeada porque a mesma instância
-#: serve o Docket, que tem o prefixo dele: sem coleção própria, as duas famílias de chave
-#: dividiriam o keyspace e um `FLUSHDB` de manutenção de uma levaria a outra junto.
-COLECAO = "mcp_session_state"
+#: A COLEÇÃO NÃO É NOSSA, e havia aqui uma constante afirmando que era. `default_collection=` da
+#: loja é inerte neste caminho: o FastMCP embrulha o que passamos num
+#: `PydanticAdapter(default_collection="fastmcp_state")` (`server.py:499`), e o adapter passa a
+#: coleção EXPLÍCITA em toda chamada — o default da loja nunca é consultado. Medido, a chave real
+#: no Redis é `fastmcp_state::session:<sha256(principal)>:_user`.
+#:
+#: O keyspace separado que a constante prometia, portanto, já existe — sob o nome do FastMCP, não
+#: sob o nosso. E a justificativa que ela carregava era errada de qualquer jeito: `FLUSHDB` apaga
+#: o banco inteiro, prefixo nenhum protege de `FLUSHDB`. Fica o fato medido, no lugar da promessa.
 
 #: Uma hora. É a vida útil de "o que eu acabei de buscar" — passado isso, a pessoa buscou de
 #: novo ou já foi embora. Curto de propósito: cada hora a mais é uma hora a mais de nomes de
 #: documento em repouso, sem nenhum ganho para quem está usando.
 TTL_SEGUNDOS = 3600
+
+#: Segundos que uma operação da loja pode levar antes de o fallback assumir. UM segundo é ~20x o
+#: que um Redis na mesma região leva, e a loja está no caminho de TODA requisição — esperar mais
+#: que isso por um CACHE é transformar uma degradação em lentidão para quem só quis buscar.
+#: Medido: sem teto, o `redis-py` gasta os retries dele e cada requisição custava ~4s.
+TIMEOUT_LOJA_SEGUNDOS = 1.0
 
 #: Quantas citações a sessão guarda. A busca já devolve um punhado; o teto existe para que uma
 #: mudança de `top` lá não vire, sem ninguém decidir, um registro grande por usuário aqui.
@@ -93,14 +127,38 @@ def loja():
         )
         return None
 
+    from key_value.aio.stores.memory import MemoryStore
     from key_value.aio.stores.redis import RedisStore
+    from key_value.aio.wrappers.fallback import FallbackWrapper
+    from key_value.aio.wrappers.timeout import TimeoutWrapper
     from key_value.aio.wrappers.ttl_clamp import TTLClampWrapper
+    from redis.exceptions import RedisError
 
-    # `missing_ttl` é o parâmetro que faz o trabalho: ele é aplicado justamente ao `put` que
-    # chega SEM ttl, que é o único jeito como o FastMCP escreve sessão. `min`/`max` existem para
-    # aparar um ttl explícito, que aqui nunca acontece.
+    # O TTL POR FORA DOS DOIS, e não só por cima do Redis: `missing_ttl` é o que transforma o
+    # `put` sem ttl do FastMCP em algo que expira, e a memória de processo precisa dele tanto
+    # quanto o Redis — durante uma queda longa, é ela que guarda os nomes de documento.
+    # `min`/`max` existem para aparar um ttl explícito, que aqui nunca acontece.
     return TTLClampWrapper(
-        key_value=RedisStore(url=url, default_collection=COLECAO),
+        key_value=FallbackWrapper(
+            # O TIMEOUT NÃO É PARANOIA, É NÚMERO MEDIDO. Sem ele, o `redis-py` gasta os próprios
+            # retries com backoff antes de desistir: com o Redis fora do ar, CADA requisição do
+            # servidor levava ~4s para cair no fallback — e a loja está no caminho de toda
+            # requisição (é isso que o docstring explica). `TIMEOUT_LOJA_SEGUNDOS` é o teto, e
+            # `asyncio.TimeoutError` é `TimeoutError`, subclasse de `OSError`: ele cai no
+            # `fallback_on` abaixo sem precisar ser listado à parte.
+            primary_key_value=TimeoutWrapper(
+                key_value=RedisStore(url=url), timeout=TIMEOUT_LOJA_SEGUNDOS
+            ),
+            fallback_key_value=MemoryStore(),
+            # O ALVO É A INDISPONIBILIDADE, NÃO TODO ERRO. `redis.exceptions.RedisError` cobre
+            # conexão recusada, timeout e o servidor respondendo erro; `OSError` cobre o socket
+            # antes de o cliente ter algo a dizer. O default do wrapper é `(Exception,)` — largo
+            # demais: um defeito de serialização nosso viraria "leitura vazia" em silêncio, com
+            # o Redis de pé.
+            fallback_on=(RedisError, OSError),
+            # Ver o docstring: sem isto a ESCRITA continuaria levantando durante a queda.
+            write_to_fallback=True,
+        ),
         min_ttl=60,
         max_ttl=TTL_SEGUNDOS,
         missing_ttl=TTL_SEGUNDOS,
