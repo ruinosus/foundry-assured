@@ -1,6 +1,6 @@
 ---
 title: 'Execução: T3–T7 do MCP sobre o app separado (FastMCP 4)'
-description: Do endpoint com uma tool de leitura ao produto — prompts e resources derivados da fonte única, o selo de assurance como extensão de protocolo negociada, escrita atrás do contrato de decisão de quatro opções, OBO nativo, e a camada de escala. Cada API citada foi lida do pacote 4.0.0b3 instalado, não da documentação.
+description: Do endpoint com uma tool de leitura ao produto — prompts e resources derivados da fonte única, o selo de assurance como extensão de protocolo negociada, escrita atrás do contrato de decisão de quatro opções, OBO nativo, e a camada de escala (tasks, sessão por usuário, cache só das listagens, e a tabela de evidências como MCP App). Cada API citada foi lida do pacote 4.0.0b3 instalado, não da documentação.
 type: design
 audience: contributor
 status: draft
@@ -48,7 +48,7 @@ Fase 1  T5  prompts + resources  barato, e prova o app novo com risco baixo
 Fase 2  T6  o selo               o diferencial, e o motivo da Fase 0
 Fase 3  T3  escrita + HITL       maior superfície de risco; depois do selo, para nascer auditada
 Fase 4  T4  OBO                  substitui caminho existente; exige comparação
-Fase 5  T7  escala               tasks, sessions, cache, apps — cada um opcional
+Fase 5  T7  escala               tasks, sessions, cache, apps — os quatro, cada um opcional
 ```
 
 T5 antes de T6 porque é a fase que prova o app novo com o menor risco possível: se prompts e
@@ -236,137 +236,206 @@ custa uma malha de identidade.
 OBO sem exigir o proxy), reavaliar — a conveniência da dependência de parâmetro é real. Verificar
 com o mesmo teste: `_find_azure_provider(build_auth(...))` deixando de ser `None`.
 
-## Fase 5 — T7: escala — **OS QUATRO ITENS RECUSADOS, com medição**
+## Fase 5 — T7: escala — **OS QUATRO ITENS CONSTRUÍDOS**
 
-Quatro coisas independentes; nenhuma é fundação, cada uma entrava sozinha. **Nenhuma entrou.** A
-fase não acrescenta superfície: acrescenta quatro medições, quatro gatilhos de reavaliação e
-**um gate** — o do único item que fazia dano sem sintoma.
+Quatro coisas independentes; nenhuma é fundação, cada uma entrava sozinha.
 
-Isto não é o mesmo que "não deu tempo". Cada recusa abaixo tem um número medido no pacote
-instalado ou no `infra/`, e o padrão é o da Fase 4: quando a peça de primeira parte não serve,
-dizer por que **com prova** vale mais que ligá-la e descobrir depois.
+**Esta seção registrava quatro recusas.** Elas foram escritas com medição, e as medições
+continuam válidas — estão citadas abaixo, uma a uma, porque cada uma delas virou um requisito do
+que foi construído. O que mudou não foi o que o pacote faz: foi a **decisão do dono do projeto**
+sobre o custo, com este argumento, que a fase aceita como premissa:
 
-O que atravessa as quatro é uma coisa só, e vale escrever antes delas: **este app roda com
-`minReplicas: 0`** (`infra/containerapps.bicep:375`). Ele não é um servidor ocioso caro, é um
-servidor que **desliga**. Toda peça de escala do FastMCP 4 assume, por padrão, memória de
+> *"não temos tool lenta agora — mas pode ter, e até as atuais podem ser lentas"*
+
+É um argumento sobre a FORMA do trabalho, não sobre o relógio de hoje, e ele desmonta a recusa
+das tasks pela raiz: uma busca contra um índice grande já pode passar do aceitável, e esperar o
+sintoma significa decidir no dia em que o cliente já está esperando. Numa releitura, uma das
+quatro recusas também estava simplesmente **incompleta** — a do cache, cuja medição parou um
+andar acima de onde a resposta estava.
+
+O que atravessa as quatro continua sendo uma coisa só, e vale escrever antes delas: **este app
+roda com `minReplicas: 0`** (`infra/containerapps.bicep`). Ele não é um servidor ocioso caro, é
+um servidor que **desliga**. Toda peça de escala do FastMCP 4 assume, por padrão, memória de
 processo — e memória de processo, aqui, é memória que some por design entre uma chamada e a
-seguinte. A Fase 3 já tinha topado com isso e resolvido do lado certo: o estado da decisão humana
-viaja **selado no fio** (`request_state_security`), não guardado aqui.
+seguinte. Por isso o primeiro commit desta fase não liga nada: compra o **Azure Cache for Redis**
+(`deployRedis`, Basic C0, ~US$16/mês, `DEPLOY_REDIS=false` desliga) que os itens 1 e 2 exigem.
 
-### 1 · Tasks (`@mcp.tool(task=True)`) — recusada
+### 1 · Tasks (`@mcp.tool(task=True)`) — **construída**
 
-**Medido**, em venv descartável com `fastmcp[tasks]==4.0.0b3` (arrasta `pydocket 0.24.1`):
+**O critério, escrito antes da lista.** Uma tool vira task quando **o tempo dela não é nosso**:
+quando o custo dominante é uma chamada a um serviço remoto cuja latência não controlamos e não
+podemos limitar sem mentir sobre o resultado. Não vira task por ser importante, e não vira porque
+dá.
 
-- o backend padrão é `memory://` — `DocketSettings.url`, descrito na própria fonte como
-  *"In-memory backend (single process only)"*;
-- uma task aceita e consultada de um **processo novo** (o modelo fiel do scale-to-zero: a réplica
-  morre entre a submissão e o poll) responde `Task <id> not found` — enquanto o cliente recebeu,
-  na aceitação, `ttl_ms=900000` e `poll_interval_ms=5000`. Isto é o pior formato possível de
-  falha: o servidor **prometeu** 15 minutos de vida e o cliente vai bater na porta 180 vezes
-  contra um id que não existe mais;
-- sem o extra, `task=True` não degrada — o **handshake do servidor inteiro falha** com
-  *"require the tasks extension"*. Falha alta, e é a favor: ninguém liga isto por engano.
+- **`search_docs` vira.** É uma chamada ao Azure AI Search pelo `retrieve`, sob OBO, contra um
+  índice cujo tamanho é do cliente. Nada neste repositório governa esse número.
+- **`open_ticket` não vira.** O trabalho dela é um append de milissegundos; quem demora é o
+  HUMANO, e o humano já tem a suspensão do SEP-2322. Compor as duas suspensões poria dois
+  relógios sobre a mesma espera, e os dois desfechos de um vencer antes do outro são
+  inaceitáveis na única superfície de escrita: uma decisão aprovada que não escreve, ou uma
+  escrita cujo `requestState` já não vale.
+- **`show_evidence` não vira.** Lê a sessão e devolve; não há chamada remota a esperar.
 
-**O que adotá-la custaria:** um Redis/Valkey durável na assinatura (recurso Azure novo, com
-custo e operação), mais um pacote beta a mais no caminho de deploy.
+**Sem regressão:** `task=True` é `mode="optional"` — quem escolhe, chamada a chamada, é o
+cliente. Uma chamada comum continua síncrona.
 
-**O que se ganharia hoje: nada.** Não existe tool lenta neste servidor. `search_docs` é uma busca
-e `open_ticket` é uma escrita atrás de HITL. O eval run e a reingestão — que motivavam o item —
-**não são tools MCP**: são módulos de CLI do backend (`eval.run_eval`,
-`app.modules.knowledge.internal.ingest`). Transformá-los em tools é **superfície de produto
-nova** (operação administrativa de escrita exposta por MCP), com decisão própria de papel, trilha
-e HITL — não é um item de escala, e entrar por essa porta seria decidi-la sem discuti-la.
+**As duas medições da recusa viraram requisito, não obstáculo:**
 
-**Gatilho de reavaliação:** quando existir uma tool MCP cuja execução passe de ~30s **e** houver
-um backend durável já na assinatura por outro motivo. Refazer as duas medições acima — a de
-`DocketSettings.url` e a do processo novo — antes de prometer qualquer TTL a um cliente.
+- `DocketSettings.url = "memory://"` ("single process only") e o processo novo respondendo
+  `Task not found` depois de o servidor prometer `ttl_ms=900000` → é por isso que existe backend
+  durável, e é por isso que `MCP_REDIS_URL` é condição para as tasks subirem.
+- `task=True` sem o extra derruba o handshake → é por isso que a extensão e a tool saem da MESMA
+  decisão (`tasks_backend.instalar` devolve o booleano que `register` recebe). Medido de novo
+  nesta fase, com precisão maior: a falha é no **lifespan**, não no registro — o cliente nem
+  conecta.
 
-### 2 · Sessions (`UserSession`) — recusada
+**A medição NOVA, e é a que decidiu que o item podia entrar.** O snapshot de contexto que o
+pacote grava no backend carrega o **access token do chamador** e os headers dele. Sem
+`FASTMCP_TASKS_ENCRYPTION_KEY` ele vai em **JSON claro** (medido, lendo a chave crua do Redis) —
+e, pior, `restore_task_snapshot` documenta que sem chave uma falha ao recuperar o snapshot é
+**não-fatal: a task roda mesmo assim**, sem a identidade de quem submeteu. Para `search_docs`
+isso é o pior defeito que este servidor pode ter — a busca rodando como a aplicação, com o trim
+de ACL errado e a trilha gravando `process:app`. Com a chave, qualquer falha de restaurar o
+snapshot **falha a task**. A chave não é higiene de segredo com um bônus: é o que faz a task
+herdar a garantia de identidade que a chamada síncrona já tinha.
 
-**Medido:** sem `session_state_store`, o servidor cria `MemoryStore()`
-(`fastmcp/server/server.py:498`) — estado de processo. Com `minReplicas: 0`, é estado que evapora
-por ociosidade.
+Por isso o código exige **as duas variáveis**, e mede a segunda no **codec que grava**
+(`snapshot_codec().protected`) e não na variável de ambiente — o codec decide sobre o singleton
+lido no import, e uma leitura nossa divergiria dele exatamente no caso perigoso.
 
-Mas o argumento decisivo não é esse; é que **o produto não tem o problema**. As superfícies de
-leitura são sem estado por desenho, a memória entre sessões já existe no Foundry (memory store,
-pelo caminho do backend), e o **único** estado entre chamadas deste servidor — a decisão humana
-do `open_ticket` — já é resolvido, e resolvido melhor: ele viaja selado pelo SDK, amarrado ao
-principal, ao nome da tool, ao digest dos argumentos e a um TTL, **sem nada guardado aqui**.
-Trocar isso por `UserSession` exigiria um armazenamento durável novo para chegar a um resultado
-pior: estado do lado do servidor, que a réplica morrendo apaga. `mcp_app/request_state.py`
-escreve essa decisão por extenso.
+**Gates.** `tests/tasks_backend_test.py` (offline): o critério em forma executável, as duas
+variáveis na ordem, o efeito medido no codec, e duas provas por mutação — `task=True` sem
+extensão derrubando a conexão, e `memory://` perdendo a task para um subprocesso.
+`tests/durability_test.py` (job `mcp-durable`, com Redis): P1 aceita uma task e **morre
+abruptamente dentro da sessão**; P2, interpretador novo, a acha pelo id e a vê **terminar**.
+Matar graciosamente faria o worker CANCELAR a execução, e o gate ficaria verde sobre o cenário
+errado — medido.
 
-**Gatilho de reavaliação:** quando aparecer estado por usuário que **não caiba no fio** (o caso
-típico é um resultado acumulado grande) — e não antes. Se isso acontecer com `minReplicas: 0`
-ainda valendo, a resposta continua sendo não: a resposta certa passa a ser o armazenamento
-durável que o backend já tem, não um novo.
+### 2 · Sessions (`UserSession`) — **construída**
 
-### 3 · Cache (`cache_ttl` / `cache_scope`) — recusada, **e travada por gate**
+A recusa anterior dizia que sessão sem caso de uso é infraestrutura para nada. Estava certa: é
+por isso que este item e o item 4 são **uma feature**, e entram no mesmo commit.
 
-Era o item marcado como o único capaz de vazar por configuração (risco 5). A medição desmonta o
-risco temido e revela outro, pior por ser silencioso.
+**O caso de uso.** `search_docs` deposita as citações da busca na sessão do chamador;
+`show_evidence` (item 4) as mostra em tabela, sem refazer a busca. Três perguntas decidem se isso
+merece estado no servidor:
 
-**Medido** (`fastmcp 4.0.0b3` + `mcp 2.1.0`):
+| pergunta | resposta |
+|---|---|
+| não cabe no fio? | **Não.** O envelope do `RequestStateBoundary` é amarrado ao NOME DA TOOL e ao digest dos argumentos — estado emitido por `search_docs` é recusado quando devolvido a `show_evidence`. O fio costura duas rodadas da MESMA chamada; isto é outra chamada. |
+| não dá para recalcular? | **Não sem mentir.** Refazer a busca consultaria o índice de novo: outra ordem, possivelmente outros documentos. Uma tabela de evidências que discorda da evidência é pior que nenhuma tabela. |
+| o que se perde se sumir? | Uma tabela vazia dizendo "nenhuma busca nesta sessão". **A sessão nunca é uma permissão** — papel, tenant e ACL rodam na mesma chamada, sobre o mesmo chamador, como antes. |
 
-1. **`tools/call` não é cacheável.** `CacheableMethod` são seis — `prompts/list`,
-   `resources/list`, `resources/read`, `resources/templates/list`, `server/discover`,
-   `tools/list` — e a chamada de tool não está entre eles. O vazamento que a spec temia (a
-   resposta de busca de um chamador servida a outro, com o trim de ACL feito para o primeiro) é
-   **impossível por construção**, não por configuração nossa.
-2. **O hint é uniforme por construção.** `build_cache_hints` faz
-   `dict.fromkeys(get_args(CacheableMethod), hint)`: um valor de servidor para todos os métodos
-   cacheáveis. **Não existe "cachear só as listagens"** — ligar o TTL liga junto `resources/read`,
-   que aqui é o documento integral controlado por ACL.
-3. **O dano real não é vazamento entre pessoas: é buraco na trilha.** Um hint em `resources/read`
-   autoriza o cliente a servir a leitura do armazenamento dele. Essa leitura **não chega mais
-   aqui**, logo não vira evento (ADR-023) — e o produto continua afirmando que registra toda
-   leitura de documento controlado, inclusive as negadas. Uma revogação de acesso, de quebra, só
-   passa a valer depois do TTL.
-4. **A prova exigida para entrar não é produzível deste lado.** O critério era provar por teste
-   que dois chamadores com ACLs diferentes não compartilham entrada de cache. **Não há entrada de
-   cache aqui**: o servidor não guarda nada, emite uma dica (SEP-2549) e quem guarda é o cliente.
-   `cache_scope="private"` é um pedido, não uma garantia nossa. Sem prova possível, não entra —
-   que é a regra da própria fase.
-5. **A biblioteca não freia o escopo perigoso.** `cache_ttl=60, cache_scope="public"` constrói
-   sem erro e sem aviso; só escopo *sem* TTL é recusado.
+**O que não entra na loja:** a pergunta do usuário (conteúdo dela, sem consumidor no destino) e o
+conteúdo dos documentos. Só `index`/`source`/`url`, com teto — os três campos que a resposta já
+mostrou ao mesmo chamador.
 
-**Por que este — e só este — ganhou gate.** As outras três recusas falham alto se alguém as
-contrariar (o handshake cai, o `UserSession` levanta, a tool de app sem `auth=` reprova na
-matriz). `cache_ttl=300` no construtor é aceito em silêncio. `apps/mcp/tests/cache_hints_test.py`
-trava as cinco medições acima e obriga quem quiser ligar cache a passar por elas.
+**O TTL, que o FastMCP não impõe.** `Session._save_raw` chama `put` **sem ttl**; a fonte diz que a
+retenção é inteiramente da loja. Uma `RedisStore` crua guardaria as citações de cada usuário para
+sempre. `TTLClampWrapper(missing_ttl=3600)` é o que o próprio pacote oferece, e o gate põe a loja
+crua e a embrulhada lado a lado — `None` contra o prazo.
 
-**Gatilho de reavaliação:** quando o FastMCP admitir hint **por método** (aí `tools/list` e
-`prompts/list` podem ser cacheados sem tocar `resources/read`), ou quando houver resposta escrita
-para o que fazer com a trilha de `resources/read` sob TTL. O gate fica vermelho sozinho se o SDK
-tirar `resources/read` da lista de cacheáveis — que é a outra forma de a recusa deixar de valer.
+A medição da recusa (`MemoryStore()` de processo, `server.py:498`) continua valendo e virou o
+**modo de repouso declarado**: sem `MCP_REDIS_URL`, a loja é a de processo e a tabela some quando
+a réplica dorme. Está escrito no módulo e provado no gate.
 
-### 4 · MCP Apps (`FastMCPApp`) — recusada
+**Gates.** `tests/app_evidencias_test.py` (offline) prova o caso de uso ponta a ponta sobre a
+pilha HTTP real, com **dois principals**: a tabela de Ana traz as fontes dela, a de Bruno vem
+vazia. `tests/durability_test.py` prova a metade que não cabe offline: P1 grava e morre, P2 lê, e
+outro principal no mesmo Redis não lê nada.
 
-O candidato natural era o card de aprovação, e o FastMCP 4 já traz um pronto
-(`fastmcp.apps.approval.Approval`). **Medido**, com `fastmcp[apps]` instalado (`prefab-ui 0.20.2`
-resolvido de um `>=0.18.0` — faixa flutuante sobre pacote beta, exatamente o que a spec mandava
-pinar):
+### 3 · Cache (`cache_ttl` / `cache_scope`) — **construído, só para as listagens**
 
-- o provider registra `request_approval` com **`auth=None`** — medido pelo mesmo `Provider.list_tools`
-  que a matriz usa. Adotá-lo como está deixaria `instrumentation_matrix_test` **vermelho**, e com
-  razão: seria a primeira superfície deste servidor sem gate de papel do Entra;
-- ele é **binário** (Approve/Reject). O contrato deste produto tem quatro decisões, e o `edit` é
-  a razão de a ADR-019 existir;
-- o desfecho volta como **mensagem de conversa** (`SendMessage`), documentado na fonte como
-  aparecendo *"as if the user sent it"*. Isto é: quem interpreta a aprovação passa a ser o
-  modelo, sobre um texto, sem papel cobrado e sem evento na trilha — o oposto exato do que a
-  Fase 3 construiu.
+**A recusa anterior estava incompleta, e o que faltava não era do FastMCP — era do SDK debaixo
+dele.** A medição de então era verdadeira: `build_cache_hints` faz
+`dict.fromkeys(get_args(CacheableMethod), hint)`, então o atalho do construtor é uniforme e
+alcança `resources/read`. A conclusão tirada dali — "não existe cachear só as listagens" — é que
+não era. Medido nesta fase, em `mcp 2.1.0`:
 
-Um app **próprio** com quatro botões seria possível (`FastMCPApp.ui()` aceita `auth=`), mas é
-ergonomia sobre um caminho que já funciona pelo protocolo, paga em dependência beta de faixa
-flutuante no caminho de deploy, e nasceria como superfície nova a declarar na matriz.
+```
+lowlevel/server.py:421   self.cache_hints: dict[str, CacheHint] = validate_cache_hints(...)
+runner.py:357            if (hint := self.server.cache_hints.get(method)) is not None:
+```
 
-**Gatilho de reavaliação:** quando `prefab-ui` sair de beta **e** o prefab de aprovação aceitar
-`auth=` mais um conjunto de decisões não-binário. Verificar com a mesma medição:
-`Provider.list_tools` sobre `Approval()` deixando de devolver `auth=None`.
+O mapa é **por método** e o runner o consulta por método. Uniforme é só o ATALHO. Medido no fio,
+com um cliente de verdade:
+
+| configuração | `tools/list` | `resources/read` |
+|---|---|---|
+| `cache_ttl=60` (o atalho) | 60000 | **60000** |
+| sem cache nenhum | 0 | 0 |
+| mapa por método, sem `resources/read` | 60000 | **0** |
+
+A terceira linha é o que entrou. `resources/read` fica com o **mesmo `ttlMs=0` de antes desta
+fase** — não um valor novo, o valor de repouso.
+
+**As três decisões:**
+
+1. **`resources/read` fora.** É a superfície que serve o documento com ACL e cuja chegada aqui é
+   o que produz o evento da trilha (ADR-023). Um TTL ali autoriza o cliente a servir a leitura do
+   armazenamento dele: a leitura não chega mais, não vira evento, e o produto continua afirmando
+   que registra toda leitura. É o dano que a recusa identificou corretamente, e continua sendo
+   inaceitável.
+2. **Escopo `private`, nunca `public`.** As listagens são filtradas por papel e por tenant;
+   `public` autorizaria servir a listagem de um chamador a outro. A biblioteca aceita `public` sem
+   erro nem aviso — o freio é o gate.
+3. **TTL de 60s**, porque o cache alcança a **vitrine** e nunca a porta: `tools/call` não é
+   cacheável, então toda chamada chega aqui e revalida papel, tenant e ACL. O pior caso é ver na
+   lista, por até um minuto, uma tool que já não se pode chamar.
+
+**O gate mede o FIO, não o atributo.** Um teste que lesse `mcp._mcp_server.cache_hints` ficaria
+verde para sempre se o seam fosse renomeado — o hint sumiria das respostas e o dicionário
+continuaria existindo. Três provas por mutação ao lado, porque `ttlMs=0` em `resources/read` seria
+indistinguível de "nenhum hint funciona": servidor sem cache (0 é repouso), servidor com o atalho
+(alcança `resources/read`), e `cache_scope="public"` aceito em silêncio.
+
+### 4 · MCP Apps (`FastMCPApp`) — **construído, e não na aprovação**
+
+As três medições da recusa continuam válidas e **decidiram onde o app NÃO vai**: o prefab
+`fastmcp.apps.approval.Approval` registra `request_approval` com **`auth=None`**, é **binário**
+onde o contrato tem quatro decisões (o `edit` é a razão da ADR-019), e devolve o desfecho como
+mensagem de conversa — quem interpretaria a aprovação passaria a ser o modelo, sobre um texto, sem
+papel cobrado e sem evento na trilha. **Ele não é usado.** `open_ticket` fica exatamente como
+estava, com as quatro decisões pelo protocolo.
+
+O app vai onde MCP Apps de fato acrescenta: **mostrar**. `show_evidence` renderiza a tabela das
+fontes da última busca — leitura pura, e a cara do produto.
+
+**Duas armadilhas medidas, as duas bloqueantes:**
+
+1. **O renderizador nasceria sem gate, e invisível para a matriz.** Marcada com o placeholder
+   `ui://prefab/renderer.html`, uma tool faz o FastMCP **sintetizar** o recurso do renderizador na
+   hora de listar, **sem `auth=`** — e a síntese acontece dentro de `FastMCP.list_resources`,
+   depois do `super()`, então `Provider.list_resources` (de onde a matriz tira o registro cru)
+   devolve `[]` para ele. Seria uma superfície sem gate de papel, legível por qualquer chamador
+   autenticado, com o gate de instrumentação **verde**.
+   O conserto é apontar a tool para uma **URI nossa** (`_is_prefab_tool` só dispara no placeholder
+   literal) e registrar o recurso com o mesmo `require_any_role` do resto — medido: a síntese não
+   roda e nenhum recurso sem gate chega a nascer. `FastMCPApp.ui()` **não serve**: ele fixa o
+   placeholder no corpo do decorator; o caminho é `mcp.tool(..., app=PrefabAppConfig(resource_uri=…))`.
+   O preço, dito: pular a síntese pula também o `rewrite_tool_meta_for_wire`, que remove
+   `csp`/`permissions` do meta — a tool leva um `csp` a mais no fio.
+   **A matriz passou a enumerar os sintetizados**, com prova por mutação: um servidor descartável
+   com `app=True` produz o recurso sem gate, e a descoberta tem que vê-lo.
+2. **O renderizador vinha de CDN.** O default manda o cliente buscar CSS e JS em
+   `cdn.jsdelivr.net` (471 bytes de HTML, com a versão do `prefab-ui` soldada na URL).
+   `mode="bundled"` serve o mesmo renderizador de dentro do wheel: **6,4 MiB**,
+   `resource_domains: []`, e **zero** tags que busquem origem externa no parse — medido nos dois
+   lados. Sobra uma URL do Pyodide dentro do JS, alcançável só em modo generativo, que este
+   servidor nunca emite; o gate a **conta** em vez de afirmar zero.
+
+**O custo, com o agravante que esta mesma fase criou:** 6,4 MiB por leitura, e essa leitura **não
+é cacheável aqui** porque o item 3 excluiu `resources/read` para não abrir buraco na trilha. O
+renderizador paga a conta de uma decisão que não é sobre ele. Aceito assim — em troca não existe
+origem de terceiro no caminho da interface —, e trocável numa constante (`MODO_RENDERIZADOR`).
+
+`prefab-ui` é **pinado exato** (`==0.20.2`) e é dependência obrigatória, não opcional: medido, sem
+ele `FastMCPApp` e o decorator constroem **sem erro**, `_build_resource_for_tool` engole o
+`ImportError`, e o servidor sobe anunciando um renderizador que ninguém pode buscar. Não há falha
+alta para confiar.
 
 **Fora de escopo sem ADR:** o gateway sobre MCP de terceiros. Reexpor tool de outro sob a nossa
-marca é decisão de responsabilidade, não de engenharia. **Não foi avaliado nesta fase.**
+marca é decisão de responsabilidade, não de engenharia. **Não foi avaliado.**
 
 ---
 
@@ -392,9 +461,10 @@ marca é decisão de responsabilidade, não de engenharia. **Não foi avaliado n
 5. **Cache com ACL** (Fase 5): escopo errado vaza documento entre usuários. É o único item desta
    spec que pode causar vazamento por configuração.
    **Fechado na Fase 5, e o risco medido não era esse** — `tools/call` não é cacheável, então a
-   resposta de busca nunca entra em cache; o que o TTL alcança é `resources/read`, e o dano é
-   buraco na trilha, não vazamento. Ver "Fase 5 · item 3"; o freio é
-   `apps/mcp/tests/cache_hints_test.py`.
+   resposta de busca nunca entra em cache; o que o TTL alcançaria é `resources/read`, e o dano
+   seria buraco na trilha, não vazamento. O cache entrou **sem tocar `resources/read`**, pelo mapa
+   por método do SDK, com escopo `private`. Ver "Fase 5 · item 3"; o gate é
+   `apps/mcp/tests/cache_hints_test.py`, e ele mede o `ttlMs` que sai no fio.
 
 ## O PR de release
 
