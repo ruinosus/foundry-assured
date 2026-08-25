@@ -1,0 +1,41 @@
+# Contexto de build. SEM este arquivo o contexto da raiz era de 8,4 GB (medido) — o
+# `apps/mcp/Dockerfile` builda a partir daqui, porque depende de `apps/backend` por path.
+#
+# E há um motivo de SEGURANÇA além do tamanho: `apps/frontend/Dockerfile` faz `COPY . .`.
+# Sem ignore, qualquer `.env` presente no contexto entraria na imagem — e imagem publicada
+# é distribuição. Arquivos `.env*` são negados aqui e no `.dockerignore` do frontend.
+#
+# Regra para mexer: só entre nesta lista o que NENHUM Dockerfile copia. Os três copiam
+# caminhos explícitos (`app`, `agents`, `value`, `mcp_app`, os manifestos) — exceto o do
+# frontend, que copia o diretório dele inteiro.
+
+.git
+.gitignore
+**/.venv
+**/node_modules
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.ruff_cache
+**/.mypy_cache
+**/.next
+**/.turbo
+
+# Segredos: nunca dentro de uma imagem.
+**/.env
+**/.env.*
+!**/.env.example
+**/TEST-CREDENTIALS.local.md
+
+# Ferramental de dev e artefatos que nenhum Dockerfile copia.
+.superpowers
+.dna
+.claude
+.github
+docs
+e2e
+openwiki
+knowledge
+infra
+scripts
+**/*.log
