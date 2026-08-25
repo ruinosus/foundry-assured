@@ -39,6 +39,7 @@ import asyncio
 import json
 import logging
 import sys
+from html.parser import HTMLParser
 
 import httpx2
 from fastmcp import Client
@@ -289,6 +290,23 @@ def main() -> int:
             _tags_externas(embutido) == []
             and get_renderer_csp("bundled")["resource_domains"] == [],
         )
+        # A PROVA POR MUTAÇÃO DA PRÓPRIA ASSERÇÃO. A checagem acima só vale o que o detector
+        # enxerga: enquanto ele olhava `<script src>`/`<link href>`, um `<img>` externo passava e
+        # a linha continuava dizendo "NENHUMA tag que busque origem externa". As duas metades
+        # medidas juntas: o `<img>` no documento é PEGO, e o mesmo texto dentro de `<script>` —
+        # que é onde o bundle de fato tem `<iframe src="https://example.com"`, num docstring de
+        # `.py` do payload do Pyodide — NÃO é, porque não é markup para o navegador.
+        externo = '<img src="https://cdn.exemplo.invalid/x.png">'
+        check(
+            "e o detector PEGA um `<img>` externo, que a versão anterior deixava passar "
+            f"({_tags_externas(embutido + externo)})",
+            _tags_externas(embutido + externo) == ["img"],
+        )
+        check(
+            "sem confundir markup com TEXTO dentro de `<script>` — é por isso que o bundle, que "
+            "carrega um `<iframe src=…>` num docstring empacotado, não fica vermelho",
+            _tags_externas(f"<html><script>const t = '{externo}';</script></html>") == [],
+        )
         check(
             f"o modo `cdn` (recusado) carrega de fora no parse ({_tags_externas(do_cdn)}) e "
             f"aponta para {get_renderer_csp('cdn')['resource_domains']} em {len(do_cdn)} bytes",
@@ -355,18 +373,59 @@ def main() -> int:
     return 0
 
 
+#: As tags que fazem o navegador BUSCAR algo ao encontrar a tag — não toda tag com URL. `<a>` e
+#: `<area>` ficam de fora de propósito: um link para fora é navegação que a pessoa escolhe, não
+#: carga automática. `<input>` entra porque `type="image"` busca o `src`.
+_TAGS_QUE_BUSCAM = frozenset(
+    {"script", "link", "img", "image", "video", "audio", "source", "iframe", "embed",
+     "object", "track", "input", "frame"}
+)
+
+#: Os atributos por onde a URL chega em qualquer uma delas (`data` é do `<object>`).
+_ATRIBUTOS_DE_BUSCA = frozenset({"src", "srcset", "href", "poster", "data"})
+
+
+class _ColetorDeBuscas(HTMLParser):
+    """Coleta as tags do documento que apontam para uma origem `http(s)` externa.
+
+    PARSER, E NÃO REGEX, e a diferença tem medição por trás. A regex antiga olhava só
+    `<script src>` e `<link href>` — mais estreita que a frase que ela sustenta ("esta página,
+    ao abrir, vai à internet?"), porque `<img>`/`<video>`/`<iframe>` externos passariam. Alargar
+    a regex, porém, produz FALSO VERMELHO: medido, o bundle contém a string
+    `<iframe src="https://example.com"` **dentro do docstring de um `.py`** empacotado no
+    payload do Pyodide, e três `url(https://…)` dentro de mensagens de erro de JS. Nenhum é
+    markup.
+
+    `HTMLParser` responde a pergunta certa porque trata `<script>`/`<style>` como CDATA: o que
+    está lá dentro chega como texto, nunca como tag. É o parse do navegador, que é exatamente o
+    que a asserção afirma medir.
+    """
+
+    def __init__(self) -> None:
+        super().__init__(convert_charrefs=True)
+        self.achadas: set[str] = set()
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag not in _TAGS_QUE_BUSCAM:
+            return
+        for nome, valor in attrs:
+            if nome in _ATRIBUTOS_DE_BUSCA and (valor or "").strip().lower().startswith(
+                ("http://", "https://")
+            ):
+                self.achadas.add(tag)
+
+
 def _tags_externas(html: str) -> list[str]:
     """Os tipos de tag que fazem o navegador buscar coisa de fora AO CARREGAR a página.
 
     É a pergunta certa sobre um renderizador: não "a string do CDN aparece em algum lugar do
     arquivo?" (aparece — dentro de JS, em comentário e no fonte do próprio módulo embutido),
-    mas "esta página, ao abrir, vai à internet?". `<script src>` e `<link href>` para `http(s)`
-    são as duas formas de isso acontecer no parse.
+    mas "esta página, ao abrir, vai à internet?". Ver `_ColetorDeBuscas`.
     """
-    import re
-
-    padrao = re.compile(r"<(script|link)\b[^>]*\b(?:src|href)=[\"\']https?://", re.IGNORECASE)
-    return sorted({m.group(1).lower() for m in padrao.finditer(html)})
+    coletor = _ColetorDeBuscas()
+    coletor.feed(html)
+    coletor.close()
+    return sorted(coletor.achadas)
 
 
 async def _sintetizados(app, synthesize) -> list[str]:
