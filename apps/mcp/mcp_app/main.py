@@ -41,6 +41,7 @@ from mcp_app import (
     prompts_agentdefs,
     request_state,
     resources_knowledge,
+    tasks_backend,
     tenant_gate,
     tools_knowledge,
     tools_tickets,
@@ -150,10 +151,24 @@ def register_surfaces(mcp: FastMCP) -> None:
     a outra —, mas é a primeira que muda o mundo em vez de descrevê-lo, e por isso é a única
     atrás do contrato de decisão de quatro opções da ADR-019. Ver `mcp_app.tools_tickets`.
     """
-    tools_knowledge.register(mcp)
+    # AS TASKS ANTES DAS TOOLS, e a ordem não é estética: uma tool registrada com `task=True`
+    # num servidor sem a extensão derruba o LIFESPAN inteiro — medido, o cliente nem conecta
+    # ("require the tasks extension"). Registrar não dá erro; subir dá. Por isso a mesma
+    # decisão alimenta os dois lados, e ela mora em `tasks_backend.indisponivel()`.
+    #
+    # Sem backend durável e sem chave de cifra, `com_task` é falso e `search_docs` nasce como
+    # sempre foi: síncrona. Com os dois, ela passa a ACEITAR execução em task — quem escolhe,
+    # chamada a chamada, é o cliente (`mode="optional"`).
+    com_task = tasks_backend.instalar(mcp)
+    tools_knowledge.register(mcp, task=com_task)
     # A ESCRITA (Fase 3, T3). Continua sendo uma tool como as outras do ponto de vista do
     # protocolo — o que muda é que ela suspende para perguntar antes de escrever, e que o
     # `auth=` dela é Approver/Admin em vez do conjunto de leitura. Ver `tools_tickets`.
+    #
+    # SEM `task=`, e é decisão escrita: o trabalho dela é um append de milissegundos, quem
+    # demora é o humano, e o humano já tem a suspensão do SEP-2322. Duas suspensões sobre a
+    # mesma espera dariam dois relógios, e o desfecho de um vencer antes do outro é uma decisão
+    # aprovada que não escreve. O critério inteiro está em `tasks_backend`.
     tools_tickets.register(mcp)
     prompts_agentdefs.register(mcp)
     resources_knowledge.register(mcp)

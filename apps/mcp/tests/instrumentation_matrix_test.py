@@ -83,6 +83,17 @@ FAMILIA_COMPLETION = "completion:*"
 #: mudança que quebra clientes.
 EXTENSAO_SELO = "extension:br.com.rededor.foundry/assurance"
 
+#: A EXTENSÃO DE TASKS (SEP-2663), da Fase 5. Identificador do ecossistema, não nosso — ele vem
+#: de `fastmcp.utilities.tasks.TASKS_EXTENSION_ID` e é o mesmo em todo servidor que ligue tasks.
+#: Entra na matriz pelo mesmo motivo do selo: muda o que existe no fio (três métodos novos e um
+#: interceptador de `tools/call`) sem ser um componente com campo `auth=`.
+#:
+#: ELA SÓ EXISTE QUANDO CONFIGURADA, e é por isso que este gate LIGA as tasks antes de descobrir
+#: (ver `_superficies`). Uma matriz que descrevesse o servidor na configuração mínima deixaria
+#: uma superfície de produção permanentemente não declarada — que é exatamente o buraco que esta
+#: matriz existe para não ter.
+EXTENSAO_TASKS = "extension:io.modelcontextprotocol/tasks"
+
 #: A MATRIZ. Uma linha por superfície registrada hoje. `True` = grava hoje; string = não grava, e
 #: o texto diz por quê (mesma convenção do monolito).
 MATRIZ: dict[str, dict[str, object]] = {
@@ -159,6 +170,22 @@ MATRIZ: dict[str, dict[str, object]] = {
         "trilha": "n/a: referencia o evento que a tool gravou (escopo + id); não grava nenhum — "
         "um segundo evento por resposta duplicaria a trilha do mesmo acesso",
         "caso_de_uso": "n/a: módulo usecases não se aplica a metadado de resposta",
+    },
+    EXTENSAO_TASKS: {
+        "conversa": "n/a: executa uma tool em segundo plano — não há conversa a persistir",
+        "tokens": "n/a: a extensão move a execução de lugar; quem gasta token é a tool",
+        # A TOOL CONTINUA CITANDO. Rodar em task não muda o corpo de `search_docs`: o `sources`
+        # sai igual, e o selo de assurance continua envolvendo o `tools/call`.
+        "referencias": True,
+        "chamado": "n/a: só `search_docs` aceita task, e ela não abre chamado. `open_ticket` é "
+        "deliberadamente síncrona — ver `mcp_app/tasks_backend.py`",
+        # `True` PORQUE A TRILHA CONTINUA CERTA, e é essa a propriedade que decidiu o item: o
+        # worker restaura o snapshot com o access token do chamador, então `retrieve` grava sob
+        # a identidade de quem perguntou, e não `process:app`. Com a chave de cifra configurada
+        # — que é exigência para as tasks subirem — uma falha em restaurar esse snapshot FALHA
+        # A TASK em vez de rodá-la anônima. É a mesma garantia do caminho síncrono.
+        "trilha": True,
+        "caso_de_uso": "n/a: módulo usecases não se aplica a execução em segundo plano",
     },
     FAMILIA_PROMPTS: {
         "conversa": "n/a: um prompt é instrução publicada, não uma conversa",
@@ -349,15 +376,38 @@ async def _superficies() -> tuple[list[tuple[str, str, object]], list[str]]:
 
     Devolve os componentes (com o `auth=` cru) e as EXTENSÕES, separados: as duas listas
     respondem à mesma pergunta da matriz, mas só a primeira tem campo `auth=` para checar — ver
-    `_extensoes`."""
+    `_extensoes`.
+
+    DESCOBRE COM AS TASKS LIGADAS, na CONFIGURAÇÃO MÁXIMA. As background tasks (Fase 5) só
+    existem quando há backend durável e chave de cifra, e a extensão delas é superfície de fio.
+    Descobrir na configuração mínima deixaria essa superfície permanentemente fora da matriz —
+    ela existiria em produção e não existiria aqui, que é a forma da falha que este gate previne.
+    `memory://` basta: `instalar` só monta a extensão, e nada conecta enquanto o lifespan não
+    roda (este gate nunca o roda).
+    """
+    # A chave é ajustada NO SINGLETON que o pacote lê (`tasks_settings`), e não na variável de
+    # ambiente: é o singleton que `snapshot_codec()` consulta, e `clear_codec_cache()` é o que
+    # derruba o `lru_cache` que já respondeu "sem chave" nesta sessão. Ver `tasks_backend`.
+    from fastmcp_tasks.encryption import clear_codec_cache
+    from fastmcp_tasks.settings import tasks_settings
+    from pydantic import SecretStr
+
     from app.shared.settings import settings
     from mcp_app.auth import build_auth
     from mcp_app.main import build_mcp, register_surfaces, wire_registry
 
-    wire_registry()
-    mcp = build_mcp(build_auth(settings.mcp_public_base_url))
-    register_surfaces(mcp)
-    return await _registro_cru(mcp), _extensoes(mcp)
+    anterior = (settings.mcp_redis_url, tasks_settings.encryption_key)
+    settings.mcp_redis_url = "memory://"
+    tasks_settings.encryption_key = SecretStr("x" * 40)
+    clear_codec_cache()
+    try:
+        wire_registry()
+        mcp = build_mcp(build_auth(settings.mcp_public_base_url))
+        register_surfaces(mcp)
+        return await _registro_cru(mcp), _extensoes(mcp)
+    finally:
+        settings.mcp_redis_url, tasks_settings.encryption_key = anterior
+        clear_codec_cache()
 
 
 def main() -> int:
@@ -420,8 +470,8 @@ def main() -> int:
         # declaração: uma extensão registrada e não declarada — ou um identificador trocado,
         # que é quebra de contrato de fio — fica vermelha na verificação 2 logo abaixo.
         check(
-            f"a extensão de protocolo foi descoberta ({', '.join(extensoes) or 'NENHUMA'})",
-            extensoes == [EXTENSAO_SELO],
+            f"as extensões de protocolo foram descobertas ({', '.join(extensoes) or 'NENHUMA'})",
+            extensoes == sorted([EXTENSAO_SELO, EXTENSAO_TASKS]),
         )
 
         # --- 2 · nenhuma superfície órfã, dos dois lados ------------------------------------

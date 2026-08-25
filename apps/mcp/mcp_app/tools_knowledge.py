@@ -103,11 +103,20 @@ async def search_docs(domain: str, query: str) -> dict[str, Any]:
     }
 
 
-def register(mcp: FastMCP) -> None:
+def register(mcp: FastMCP, *, task: bool = False) -> None:
     """Registra a tool. Exige que a composition root já tenha empurrado o registry.
 
     Falhar alto aqui é de propósito — com a lista vazia a descrição anunciaria "válidos: " e o
     chamador ficaria sem saber o que passar.
+
+    `task` VEM DE FORA E NÃO É DECIDIDO AQUI. Ele diz se o servidor tem backend durável e chave
+    de cifra para as background tasks (SEP-2663) — a resposta é de `mcp_app.tasks_backend`, e o
+    critério de por que é ESTA tool que vira task está escrito lá. Aqui só se repassa, porque
+    registrar `task=True` num servidor sem a extensão derruba o HANDSHAKE inteiro, não a
+    chamada: os dois lados têm que sair da mesma decisão, no mesmo lugar.
+
+    `task=True` é `mode="optional"`: quem escolhe, chamada a chamada, é o cliente. Um cliente
+    que não pede task recebe a resposta síncrona de sempre — nada muda para quem já usa.
     """
     if not _grounded_domains:
         raise RuntimeError(
@@ -127,4 +136,5 @@ def register(mcp: FastMCP) -> None:
         ),
         tags={"knowledge", "read"},
         auth=require_any_role("Reader", "Author", "Approver", "Admin"),
+        task=task,
     )

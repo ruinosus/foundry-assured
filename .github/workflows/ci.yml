@@ -514,6 +514,18 @@ jobs:
       # `resources/read` seria indistinguível de "nenhum hint funciona".
       - name: MCP — o cache cobre as listagens e nunca `resources/read` (medido no fio)
         run: uv run --no-sync python -m tests.cache_hints_test
+      # AS BACKGROUND TASKS (SEP-2663). A metade OFFLINE do item: o critério de quem vira task em
+      # forma executável (`search_docs` sim, `open_ticket` não — quem demora nela é o humano, e o
+      # humano já tem a suspensão do SEP-2322), as duas variáveis que as ligam, e duas provas por
+      # mutação. A segunda variável é a que ninguém adivinharia: sem chave de cifra, o snapshot
+      # com o access token do chamador vai ao Redis em claro E uma falha ao restaurá-lo faz a
+      # task rodar SEM identidade — com o ACL e a trilha errados. O gate mede isso no CODEC, não
+      # na variável de ambiente, porque é o codec que decide na hora de gravar.
+      #
+      # Offline e sem daemon: `memory://` não precisa de nada, e é justamente ele que serve de
+      # prova negativa — um subprocesso não acha a task que este processo aceitou.
+      - name: MCP — só a busca vira task, e só com backend durável e cifra
+        run: uv run --no-sync python -m tests.tasks_backend_test
 
   # JOB SEPARADO DE PROPÓSITO, e a razão está em `scripts/gates.py:42`: o que entra em
   # `DEFAULT_JOBS` é prometido como "inteiramente offline e determinístico", e a bateria local
