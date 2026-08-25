@@ -203,21 +203,38 @@ sem papel nada escreve.
 
 ---
 
-## Fase 4 — T4: OBO nativo
+## Fase 4 — T4: OBO nativo — **RECUSADA, com medição**
 
-`EntraOBOToken(scopes: list[str]) -> str` como dependência de parâmetro, para tools que falem com
-Graph/Azure em nome do usuário.
+`EntraOBOToken(scopes: list[str]) -> str` seria a dependência de parâmetro para tools que falem
+com Graph/Azure em nome do usuário. **Não é adotável neste desenho**, e a razão foi medida na
+fonte instalada (`fastmcp==4.0.0b3`), não inferida:
 
-**A condição:** só entra se **substituir** o brokering que `tenancy` já faz no escopo MCP. Em
-paralelo, seriam duas respostas para "quem sou eu lá embaixo" — e a ADR-005 (nunca guardar segredo)
-vale para as duas.
+```python
+def _find_azure_provider(auth: AuthProvider | None) -> AzureProvider | None:
+    if isinstance(auth, AzureProvider):
+        return auth
+    if isinstance(auth, MultiAuth) and isinstance(auth.server, AzureProvider):
+        return auth.server
+    return None
+```
 
-**A medir antes de prometer:** o `EntraOBOToken` funciona com `RemoteAuthProvider` (o nosso caminho)
-ou só com `AzureProvider` (proxy)? A documentação apresenta OBO como extensão do proxy. **Se só
-funcionar com proxy, a fase morre aqui** — adotar o proxy custaria a segunda malha de identidade
-que o T0 recusou de propósito.
+Testado com o provider real do `apps/mcp` (`build_auth()`): devolve `RemoteAuthProvider`, e
+`_find_azure_provider` responde `None` — `EntraOBOToken` então levanta *"requires an AzureProvider
+as the auth provider"*.
 
----
+**O que adotá-lo custaria.** Trocar o Resource Server pelo `AzureProvider`, que exige
+`client_secret` e emite tokens próprios: exatamente a **segunda malha de identidade** que o T0
+recusou por desenho, e um segredo a mais para guardar (ADR-005).
+
+**O que se perde recusando: nada.** `tenancy` já faz brokering de credencial (OBO para audiência
+Microsoft, connections do Foundry no resto) e `knowledge.retrieve` já troca OBO pelo caminho
+existente — é ele que faz o trim de ACL acontecer sob a identidade de quem perguntou. Adotar o
+`EntraOBOToken` não preencheria lacuna; trocaria uma implementação que funciona por outra que
+custa uma malha de identidade.
+
+**Gatilho de reavaliação.** Se o `fastmcp` passar a aceitar `RemoteAuthProvider` (ou expor a troca
+OBO sem exigir o proxy), reavaliar — a conveniência da dependência de parâmetro é real. Verificar
+com o mesmo teste: `_find_azure_provider(build_auth(...))` deixando de ser `None`.
 
 ## Fase 5 — T7: escala
 
