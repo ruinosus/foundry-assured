@@ -36,11 +36,13 @@ from app.modules.tenancy import public as tenancy
 from app.shared.settings import settings
 from app.shared.telemetry import setup_telemetry
 from mcp_app import (
+    app_evidencias,
     assurance_extension,
     cache_hints,
     prompts_agentdefs,
     request_state,
     resources_knowledge,
+    sessions,
     tasks_backend,
     tenant_gate,
     tools_knowledge,
@@ -82,6 +84,11 @@ def build_mcp(auth) -> FastMCP:
         # leituras, que não emitem estado nenhum, e a ESCRITA se recusa a rodar com erro claro.
         # Toda a justificativa está em `mcp_app/request_state.py`.
         request_state_security=request_state.politica(),
+        # O ESTADO POR USUÁRIO ENTRE CHAMADAS. `None` (sem `MCP_REDIS_URL`) deixa o FastMCP
+        # construir o `MemoryStore()` dele, que com `minReplicas: 0` some quando a réplica
+        # dorme — modo de repouso declarado, não falha. O que ele guarda, por que não cabe no
+        # fio selado e por que expira em uma hora está em `mcp_app/sessions.py`.
+        session_state_store=sessions.loja(),
     )
     # O HINT DE CACHE (SEP-2549), E ELE NÃO CABE NO CONSTRUTOR ACIMA. `cache_ttl=` é uniforme —
     # ligaria o TTL também para `resources/read`, que é o documento integral com ACL e o que
@@ -173,6 +180,11 @@ def register_surfaces(mcp: FastMCP) -> None:
     prompts_agentdefs.register(mcp)
     resources_knowledge.register(mcp)
     resources_knowledge.register_completion(mcp)
+    # O APP DE EVIDÊNCIAS (Fase 5, T7) — DUAS superfícies, não uma: a tool de entrada
+    # `show_evidence` e o recurso do renderizador, ambos com o mesmo gate de papel. O recurso é
+    # NOSSO de propósito: pelo caminho padrão o FastMCP sintetizaria um sem `auth=` e invisível
+    # para o registro cru que a matriz lê. Ver `mcp_app/app_evidencias.py`.
+    app_evidencias.register(mcp)
 
     # O SELO NÃO É UMA QUINTA SUPERFÍCIE: ele não responde a método nenhum e não devolve
     # conteúdo próprio. É uma extensão de protocolo negociada (SEP-2133) que envolve o

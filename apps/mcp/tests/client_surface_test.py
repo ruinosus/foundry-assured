@@ -195,7 +195,15 @@ def main() -> int:
         print(f"     SEM papel : {sem['tools']} · {len(sem['prompts'])} prompts · {sem['templates']}")
 
         # ── o chamador COM papel: vê e consegue ─────────────────────────────────────────
-        check("com papel · a tool `search_docs` aparece", com["tools"] == ["search_docs"])
+        # AS DUAS TOOLS DE LEITURA, e a lista é literal de propósito: ela é o inventário do que
+        # um `Reader` enxerga. `open_ticket` NÃO está aqui, e a ausência é a asserção — ela exige
+        # Approver/Admin, então para este chamador a escrita simplesmente não existe.
+        # `show_evidence` entrou na Fase 5 (a tabela de evidências, MCP App); se um dia sumir
+        # daqui sem alguém mexer nesta linha, foi porque perdeu o gate ou perdeu o registro.
+        check(
+            f"com papel · as tools de leitura aparecem, e a de escrita não ({com['tools']})",
+            com["tools"] == ["search_docs", "show_evidence"],
+        )
         check(
             f"com papel · os prompts do produto aparecem ({len(com['prompts'])})",
             len(com["prompts"]) > 0,

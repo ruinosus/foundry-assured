@@ -526,6 +526,18 @@ jobs:
       # prova negativa — um subprocesso não acha a task que este processo aceitou.
       - name: MCP — só a busca vira task, e só com backend durável e cifra
         run: uv run --no-sync python -m tests.tasks_backend_test
+      # A TABELA DE EVIDÊNCIAS (MCP App) e o ESTADO POR USUÁRIO que a alimenta — as duas metades
+      # da mesma feature, num gate só, porque separadas cada uma passa sozinha sem provar o que
+      # importa: as citações que UM chamador recebeu chegam à tabela DELE e não à de outro.
+      #
+      # Ele também guarda a armadilha que quase deixou uma superfície sem gate nascer: pelo
+      # caminho padrão de MCP Apps o FastMCP SINTETIZA um renderizador `auth=None` que
+      # `Provider.list_resources` não enxerga. Aqui a síntese tem que vir VAZIA — o app aponta
+      # para uma URI própria e registra o recurso com o mesmo `require_any_role` do resto.
+      # E o renderizador vem do wheel (6,4 MiB), não de `cdn.jsdelivr.net`: o custo dos dois
+      # lados é medido no gate para não virar folclore.
+      - name: MCP — a evidência chega a quem buscou, e o renderizador tem dono
+        run: uv run --no-sync python -m tests.app_evidencias_test
 
   # JOB SEPARADO DE PROPÓSITO, e a razão está em `scripts/gates.py:42`: o que entra em
   # `DEFAULT_JOBS` é prometido como "inteiramente offline e determinístico", e a bateria local

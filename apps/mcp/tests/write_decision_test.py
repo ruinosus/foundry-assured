@@ -440,9 +440,13 @@ def main() -> int:
         )
 
         # ── 2 · a escrita é inalcançável sem decisão ────────────────────────────────────
+        # A LISTA É LITERAL, e é o inventário do que um Approver enxerga. O que ela afirma é
+        # uma AUSÊNCIA: nenhuma segunda tool que crie chamado. `show_evidence` entrou na Fase 5
+        # (a tabela de evidências) e é leitura pura — o gate `app_evidencias_test` prova que ela
+        # só republica ao próprio chamador as citações que `search_docs` já devolveu.
         check(
-            f"não existe uma segunda tool de criação: {r['tools_do_aprovador']}",
-            r["tools_do_aprovador"] == ["open_ticket", "search_docs"],
+            f"a única tool que escreve é `open_ticket` — o resto lê: {r['tools_do_aprovador']}",
+            r["tools_do_aprovador"] == ["open_ticket", "search_docs", "show_evidence"],
         )
         check(
             f"chamada DIRETA devolve a pergunta, não um chamado ({r['direto']})",
@@ -489,8 +493,8 @@ def main() -> int:
 
         # ── 3 · o papel é cobrado, nas duas linhas ──────────────────────────────────────
         check(
-            f"sem Approver/Admin a tool não EXISTE ({r['tools_do_leitor']})",
-            r["tools_do_leitor"] == ["search_docs"],
+            f"sem Approver/Admin a ESCRITA não existe — só as leituras ({r['tools_do_leitor']})",
+            r["tools_do_leitor"] == ["search_docs", "show_evidence"],
         )
         check(
             f"e a chamada direta dele é recusada ({r['leitor']})",
@@ -578,7 +582,7 @@ def main() -> int:
         check(
             f"e a escrita continua VISÍVEL, para o chamador saber que ela existe "
             f"({sem_chave['tools']})",
-            sem_chave["tools"] == ["open_ticket", "search_docs"],
+            sem_chave["tools"] == ["open_ticket", "search_docs", "show_evidence"],
         )
         check(
             f"chave PRESENTE porém curta: o app não sobe ({sem_chave['curta']})",

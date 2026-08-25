@@ -26,6 +26,7 @@ from fastmcp.exceptions import ToolError
 from fastmcp.server.dependencies import get_access_token
 
 from app.modules.knowledge.public import retrieve
+from mcp_app import sessions
 from mcp_app.auth import require_any_role
 from mcp_app.caller import identidade_do_chamador
 from mcp_app.tenant_gate import recusa_de_tenant
@@ -84,6 +85,22 @@ async def search_docs(domain: str, query: str) -> dict[str, Any]:
 
     linhas = await retrieve(query, chamador, _domain_lookup(domain))
 
+    fontes = [
+        {
+            "index": l.get("index"),
+            "source": l.get("source"),
+            "url": l.get("url"),
+        }
+        for l in linhas
+    ]
+
+    # AS CITAÇÕES FICAM NA SESSÃO DO CHAMADOR, para o app de evidências poder mostrá-las sem
+    # refazer a busca (refazê-la daria outro conjunto, e uma tabela de evidências que discorda da
+    # evidência é pior que nenhuma). Nada de novo é revelado: são os MESMOS três campos que
+    # acabaram de ir na resposta, ao mesmo chamador. Não levanta nunca — um cache indisponível
+    # não pode transformar uma busca bem-sucedida em erro. Ver `mcp_app/sessions.py`.
+    await sessions.guardar_evidencia(domain, fontes)
+
     return {
         # NUNCA TEXTO SEM FONTE (regra 4). O contexto é montado a partir das MESMAS linhas que
         # viram `sources`, então zero fonte implica contexto vazio por construção — o caso em
@@ -91,15 +108,10 @@ async def search_docs(domain: str, query: str) -> dict[str, Any]:
         # sem procedência.
         "answer_context": "\n\n".join(l.get("snippet", "") for l in linhas),
         # Regra 4 vira FORMATO aqui: quem consome recebe as fontes como dado estruturado, não
-        # como texto que ele precisa reparsear para saber de onde veio a resposta.
-        "sources": [
-            {
-                "index": l.get("index"),
-                "source": l.get("source"),
-                "url": l.get("url"),
-            }
-            for l in linhas
-        ],
+        # como texto que ele precisa reparsear para saber de onde veio a resposta. É a MESMA
+        # lista que foi para a sessão — uma construção, dois destinos, para a tabela de
+        # evidências não poder divergir da resposta que ela diz sustentar.
+        "sources": fontes,
     }
 
 

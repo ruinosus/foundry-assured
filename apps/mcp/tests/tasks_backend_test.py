@@ -193,6 +193,11 @@ def main() -> int:
             not tools["open_ticket"].task_config.supports_tasks(),
         )
         check(
+            "`show_evidence` NÃO aceita — lê a sessão e devolve; não há chamada remota a esperar "
+            f"({modos.get('show_evidence')})",
+            not tools["show_evidence"].task_config.supports_tasks(),
+        )
+        check(
             "o modo é `optional`: uma chamada comum continua SÍNCRONA — quem já usa não muda "
             f"({modos.get('search_docs')})",
             tools["search_docs"].task_config.mode == "optional",

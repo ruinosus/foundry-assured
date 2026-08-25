@@ -171,6 +171,39 @@ MATRIZ: dict[str, dict[str, object]] = {
         "um segundo evento por resposta duplicaria a trilha do mesmo acesso",
         "caso_de_uso": "n/a: módulo usecases não se aplica a metadado de resposta",
     },
+    "tool:show_evidence": {
+        "conversa": "n/a: abre uma tabela avulsa — não há objeto de conversa para persistir",
+        "tokens": "n/a: lê a sessão e monta componentes; não chama modelo",
+        # A TABELA É A CITAÇÃO — é literalmente a lista de fontes, em forma visual. Mas ela não
+        # produz citação nova: republica, para o mesmo chamador, as três colunas que
+        # `search_docs` já devolveu e depositou na sessão. `True` porque a resposta desta tool
+        # É referência; a regra 4 é honrada por construção, não por esforço.
+        "referencias": True,
+        "chamado": "n/a: leitura pura — esta tool não escreve nada, em lugar nenhum",
+        # NÃO É `True`, e a diferença importa: nenhum acesso a conteúdo acontece aqui. A tabela
+        # mostra NOMES e URLs que o chamador já recebeu, lidos da sessão dele; nenhuma linha de
+        # documento é buscada, nenhum blob é aberto. O evento da leitura que originou estas
+        # citações foi gravado quando `search_docs` rodou, e abrir qualquer um dos documentos
+        # continua passando por `document://`, que reautoriza e registra. Gravar um evento aqui
+        # duplicaria a trilha do mesmo acesso — o mesmo raciocínio do selo.
+        "trilha": "n/a: não acessa conteúdo — republica ao próprio chamador as citações que "
+        "`search_docs` já registrou; abrir um documento continua passando por `document://`",
+        "caso_de_uso": "n/a: módulo usecases não se aplica a uma tabela de evidências",
+    },
+    "resource:ui://foundry-assured/evidence-renderer.html": {
+        "conversa": "n/a: é o renderizador (HTML estático do pacote), não uma conversa",
+        "tokens": "n/a: serve um arquivo do wheel — não chama modelo",
+        "referencias": "n/a: não afirma nada sobre a base; é o programa que desenha a tabela",
+        "chamado": "n/a: leitura de um artefato estático, nunca escrita",
+        # NÃO É LACUNA E NÃO É `True`: não há conteúdo controlado aqui para registrar. O recurso
+        # é byte-idêntico para todo chamador e não carrega dado nenhum do produto (o gate prova).
+        # Ele TEM gate de papel mesmo assim, e de propósito — ver o docstring de
+        # `app_evidencias`: o caminho padrão o criaria sem gate, e uma superfície sem dono é
+        # como o buraco começa.
+        "trilha": "n/a: artefato estático do pacote, igual para todo mundo — não há acesso a "
+        "conteúdo controlado para registrar",
+        "caso_de_uso": "n/a: módulo usecases não se aplica a um renderizador",
+    },
     EXTENSAO_TASKS: {
         "conversa": "n/a: executa uma tool em segundo plano — não há conversa a persistir",
         "tokens": "n/a: a extensão move a execução de lugar; quem gasta token é a tool",
@@ -227,6 +260,25 @@ async def _registro_cru(mcp) -> list[tuple[str, str, object]]:
         achadas.append((f"resource:{r.uri}", str(r.uri), r.auth))
     for rt in await Provider.list_resource_templates(mcp):
         achadas.append((f"resource:{rt.uri_template}", rt.uri_template, rt.auth))
+    # E OS RECURSOS QUE NÃO ESTÃO NO REGISTRO — porque existem só na hora de listar. A Fase 5
+    # trouxe um MCP App, e com ele uma armadilha que a classe-base NÃO alcança: quando uma tool
+    # é marcada com o placeholder `ui://prefab/renderer.html`, o FastMCP SINTETIZA o recurso do
+    # renderizador dentro de `FastMCP.list_resources`, DEPOIS do `super()`, e o constrói sem
+    # `auth=`. Ou seja: uma superfície legível por qualquer chamador autenticado, viva no fio, e
+    # invisível para `Provider.list_resources` — a matriz ficaria verde por cima dela.
+    #
+    # `mcp_app.app_evidencias` evita a síntese apontando a tool para uma URI NOSSA, então hoje
+    # esta lista vem vazia. É justamente por isso que ela é enumerada: o dia em que alguém
+    # registrar uma tool de app pelo caminho padrão, o recurso sem gate aparece AQUI e cai na
+    # verificação 1 como qualquer outra superfície. Sem esta metade, não cairia em lugar nenhum.
+    #
+    # E NÃO se usa `await mcp.list_resources()` para isso: aquele método aplica o filtro de auth
+    # (`skip_auth` só é verdadeiro em stdio), então, offline, ele DESCARTA todo recurso COM gate
+    # e mantém os sem — o inverso exato do que um gate que caça `auth=None` precisa.
+    from fastmcp.server.providers.prefab_synthesis import synthesize_prefab_resources
+
+    for sint in await synthesize_prefab_resources(mcp):
+        achadas.append((f"resource:{sint.uri}", str(sint.uri), sint.auth))
     # A COMPLETION não é componente: é um handler solto no servidor, e o FastMCP não guarda
     # `auth=` para ele (nem roda check algum). O gate dela viaja no atributo `.auth` do próprio
     # handler — o mesmo objeto que ele executa —, então é daí que a coluna sai. Um handler que
@@ -332,6 +384,22 @@ async def _prova_por_mutacao() -> str | None:
 
     descartavel.completion(completar_sem_dono)
 
+    # A ARMADILHA DA FASE 5, e a razão de a descoberta ter ganhado uma segunda metade. Uma tool
+    # registrada com `app=True` (o caminho padrão de MCP Apps) leva o placeholder
+    # `ui://prefab/renderer.html` no meta, e o FastMCP SINTETIZA para ela um recurso de
+    # renderizador SEM `auth=` — que `Provider.list_resources` não enxerga, porque a síntese
+    # acontece depois, dentro de `FastMCP.list_resources`.
+    #
+    # Aqui ela é criada de propósito. Sem a metade nova de `_registro_cru`, esta mutação passaria
+    # despercebida e a matriz ficaria verde sobre uma superfície sem gate viva no fio — que é
+    # exatamente o estado em que o app de evidências teria nascido pelo caminho de menor esforço.
+    # O servidor real evita a síntese apontando a tool para uma URI própria, então lá a lista
+    # vem vazia; é esta mutação que prova que ela não vem vazia por o teste não saber olhar.
+    def tool_de_app_sem_dono() -> str:
+        return "o renderizador dela nasce sem auth="
+
+    descartavel.tool(tool_de_app_sem_dono, name="tool_de_app_sem_dono", auth=dono, app=True)
+
     cru = await _registro_cru(descartavel)
     achadas = _sem_auth(cru)
     esperadas = [
@@ -340,6 +408,15 @@ async def _prova_por_mutacao() -> str | None:
         "resource:sem://{x}",
         "tool:tool_sem_dono",
     ]
+    # O recurso sintetizado tem URI com hash (derivada de app+tool), então não cabe na lista
+    # literal acima — é conferido pela FORMA, que é o que importa: um `ui://prefab/...` sem gate.
+    sinteticos_sem_dono = [sid for sid in achadas if sid.startswith("resource:ui://prefab/")]
+    if len(sinteticos_sem_dono) != 1:
+        return (
+            "a descoberta NÃO viu o recurso sintetizado sem `auth=` — é a superfície que "
+            f"`Provider.list_resources` esconde; achadas sem auth={achadas!r}"
+        )
+    achadas = [sid for sid in achadas if sid not in sinteticos_sem_dono]
     if achadas != esperadas:
         return (
             "a mutação não reproduziu o defeito esperado no registro cru — "
