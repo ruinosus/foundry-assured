@@ -11,6 +11,19 @@ services:
         docker:
             path: Dockerfile
             remoteBuild: true
+    # O servidor MCP, unidade de deploy PRÓPRIA desde a Fase 0c (ADR-027) — o `/mcp` não é mais
+    # servido pelo `backend`. `context: ../..` porque o Dockerfile de `apps/mcp` precisa da raiz
+    # do repositório no contexto de build: o app depende de `apps/backend` por path
+    # (`[tool.uv.sources]`), então os dois têm que estar lá. É o que o cabeçalho daquele
+    # Dockerfile documenta, e o que o gate `mcp-image` do CI já exercita.
+    mcp:
+        project: apps/mcp
+        host: containerapp
+        language: docker
+        docker:
+            path: Dockerfile
+            context: ../..
+            remoteBuild: true
     helpdesk-concierge:
         project: apps/hosted-agent
         host: azure.ai.agent

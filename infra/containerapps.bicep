@@ -1,9 +1,13 @@
-// Phase 7 (publish): backend + web on Azure Container Apps. azd builds each image,
+// Phase 7 (publish): backend + web + mcp on Azure Container Apps. azd builds each image,
 // pushes to the ACR, and deploys it to the container app tagged with its
-// azd-service-name. Both run as the shared user-assigned identity (created in
-// resources.bicep) for ACR pull; the backend also calls Foundry + the search KB
-// as that identity. The two apps reference each other by FQDN derived from the
+// azd-service-name. All three run as the shared user-assigned identity (created in
+// resources.bicep) for ACR pull; the backend and the MCP server also call Foundry + the
+// search KB as that identity. The apps reference each other by FQDN derived from the
 // environment's defaultDomain, so there's no circular dependency between them.
+//
+// O `mcp` é uma unidade de deploy PRÓPRIA desde a Fase 0c (ADR-027) — o `/mcp` deixou de ser
+// servido pelo backend. Sobre FastMCP 4, num venv que não cabe no do backend: o teto `mcp<2`
+// vem do extra `agents` do backend, e o FastMCP 4 exige `mcp>=2,<3`.
 
 @description('Location for all resources.')
 param location string
@@ -56,6 +60,7 @@ param promptsShareName string
 var placeholderImage = 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
 var backendAppName = 'ca-backend-${resourceToken}'
 var webAppName = 'ca-web-${resourceToken}'
+var mcpAppName = 'ca-mcp-${resourceToken}'
 
 resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   name: 'log-assured-${resourceToken}'
@@ -121,6 +126,7 @@ resource envPromptsStorage 'Microsoft.App/managedEnvironments/storages@2024-03-0
 // backend⇄web circular reference (both derive from `env`, created first).
 var backendFqdn = '${backendAppName}.${env.properties.defaultDomain}'
 var webFqdn = '${webAppName}.${env.properties.defaultDomain}'
+var mcpFqdn = '${mcpAppName}.${env.properties.defaultDomain}'
 
 resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: backendAppName
@@ -176,10 +182,10 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'AZURE_CLIENT_ID', value: appIdentityClientId }
             { name: 'ENTRA_TENANT_ID', value: entraTenantId }
             { name: 'ENTRA_API_CLIENT_ID', value: entraApiClientId }
-            // `resource` da metadata OAuth do MCP (RFC 9728). Sem isto o app anuncia o default
-            // localhost:8000 e nenhum cliente MCP externo consegue descobrir onde se autenticar —
-            // a mesma família de falha do commit 007f399.
-            { name: 'MCP_PUBLIC_BASE_URL', value: 'https://${backendFqdn}' }
+            // `MCP_PUBLIC_BASE_URL` NÃO ENTRA AQUI. Desde a Fase 0c (ADR-027) o backend não serve
+            // `/mcp`: quem serve é o container app `mcp` (mais abaixo), e é lá que a variável
+            // precisa apontar para o ingress DELE. Deixá-la aqui faria o backend anunciar um
+            // recurso OAuth que ele não hospeda.
             // selfwiki audience: the app-users group is the self-wiki's private read audience;
             // retrieval sends the OBO ACL header only when this is set (else /selfwiki fails closed).
             { name: 'APP_USERS_GROUP_ID', value: appUsersGroupId }
@@ -265,5 +271,73 @@ resource webApp 'Microsoft.App/containerApps@2024-03-01' = {
   }
 }
 
+// O servidor MCP (ADR-027). SEM SEGREDO, e isso é a ADR-005 em forma de recurso: ele é um
+// Resource Server — valida o token do Entra com `AzureJWTVerifier`, que não pede
+// `client_secret` nenhum. Por isso não há bloco `secrets` aqui e nada a parear com ele.
+//
+// O que ele precisa é ler: o endpoint do Foundry e do Search (a tool `search_docs` chama o
+// MESMO `knowledge.retrieve` do backend, com o trim de ACL sob a identidade de quem perguntou),
+// o storage (trilha de auditoria da ADR-023 + a URL do documento) e o Entra (para saber quem é
+// o chamador). NÃO precisa do share de prompts: a tool não usa as instruções dos agentes, e sem
+// `AGENTS_DIR` o pacote usa a cópia embutida na imagem (ADR-014).
+resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
+  name: mcpAppName
+  location: location
+  tags: union(tags, { 'azd-service-name': 'mcp' })
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: { '${appIdentityId}': {} }
+  }
+  properties: {
+    managedEnvironmentId: env.id
+    configuration: {
+      activeRevisionsMode: 'Single'
+      ingress: {
+        external: true
+        targetPort: 8001 // o mesmo do Dockerfile de apps/mcp
+        transport: 'auto'
+      }
+      registries: [
+        { server: '${registryName}.azurecr.io', identity: appIdentityId }
+      ]
+    }
+    template: {
+      containers: [
+        {
+          name: 'mcp'
+          image: placeholderImage
+          resources: { cpu: json('0.5'), memory: '1.0Gi' }
+          env: [
+            { name: 'FOUNDRY_PROJECT_ENDPOINT', value: foundryProjectEndpoint }
+            { name: 'AZURE_SEARCH_ENDPOINT', value: azureSearchEndpoint }
+            { name: 'AZURE_SEARCH_KNOWLEDGE_BASE', value: azureSearchKnowledgeBase }
+            { name: 'SELFWIKI_SEARCH_KNOWLEDGE_BASE', value: 'selfwiki-kb' }
+            { name: 'APP_USERS_GROUP_ID', value: appUsersGroupId }
+            { name: 'AZURE_CLIENT_ID', value: appIdentityClientId }
+            { name: 'ENTRA_TENANT_ID', value: entraTenantId }
+            { name: 'ENTRA_API_CLIENT_ID', value: entraApiClientId }
+            // `resource` da metadata OAuth (RFC 9728) — o ingress DESTE app, não o do backend.
+            // Sem isto o servidor anuncia o default `http://localhost:8001` e nenhum cliente MCP
+            // externo descobre onde se autenticar. Era a variável que apontava para o backend
+            // enquanto o `/mcp` morava lá; apontá-la para o vizinho errado é a mesma família de
+            // falha do commit 007f399, só que mais silenciosa — o 401 traz uma placa que leva a
+            // um host que não hospeda este recurso.
+            { name: 'MCP_PUBLIC_BASE_URL', value: 'https://${mcpFqdn}' }
+            { name: 'FRONTEND_ORIGIN', value: 'https://${webFqdn}' }
+            { name: 'AZURE_STORAGE_ACCOUNT', value: storageAccountName }
+            { name: 'AZURE_STORAGE_CONTAINER', value: corpusContainerName }
+            { name: 'AZURE_STORAGE_RESOURCE_ID', value: storageResourceId }
+          ]
+        }
+      ]
+      // UMA RÉPLICA, e não por causa de arquivo: o transporte HTTP do MCP mantém sessão no
+      // processo, então duas réplicas sem afinidade fariam a segunda requisição de uma sessão
+      // cair num processo que não a conhece. Scale-to-zero continua valendo (ocioso = $0).
+      scale: { minReplicas: 0, maxReplicas: 1 }
+    }
+  }
+}
+
 output BACKEND_URL string = 'https://${backendApp.properties.configuration.ingress.fqdn}'
 output WEB_URL string = 'https://${webApp.properties.configuration.ingress.fqdn}'
+output MCP_URL string = 'https://${mcpApp.properties.configuration.ingress.fqdn}'

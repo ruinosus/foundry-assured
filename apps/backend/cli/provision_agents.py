@@ -22,7 +22,7 @@ lado do registry e dos documentos, que divergiria no primeiro agente novo. Agora
 
   * QUAIS agentes    → os documentos em `agents/assured/*.yaml` (a fonte de prompt, ADR-013)
   * QUAL prompt      → `agentdefs` compõe (persona + instruções + guardrails + skills)
-  * QUAL runtime     → o `kind` do domínio no `app/registry.py`
+  * QUAL runtime     → o `kind` do domínio no catálogo (`app.modules.domains`)
 
 Acrescentar um agente é acrescentar um documento. Nada aqui muda.
 
@@ -71,7 +71,7 @@ def _runtime_for(doc_name: str) -> str:
     histórico. Um documento sem domínio correspondente (ex.: `techdocs`, hoje desligado) fica
     como `foundry`: é um prompt simples, e é o que ele será quando voltar.
     """
-    from app.registry import DOMAIN_KINDS
+    from app.modules.domains.public import DOMAIN_KINDS
 
     dominio = _DOMAIN_FOR_DOC.get(doc_name, doc_name)
     kind = DOMAIN_KINDS.get(dominio, "grounded")

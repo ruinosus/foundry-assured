@@ -330,24 +330,10 @@ jobs:
       - name: Shared mode resolves domain config per tenant
         run: uv run python -m tests.registry.shared_domain_spec_test
 
-      # MCP server: Resource Server (não authorization server), papel decide as tools visíveis,
-      # sem token não responde (com WWW-Authenticate apontando onde autenticar), e o token do
-      # CHAMADOR — não da aplicação — chega ao retrieve. O último é o que impede a falha mais cara
-      # desta camada: a tool responder bonito buscando como a identidade da aplicação, e o usuário
-      # receber documento que não pode ver — sem erro, sem log, sem sintoma. Offline; o gate de
-      # vazamento de verdade (com nuvem e identidades de teste) roda em security-gates.yml.
-      - name: MCP — Resource Server (issuer, escopo, provider desligado sem auth)
-        run: uv run python -m tests.mcpserver.auth_test
-      - name: MCP — papel do Entra decide as tools visíveis
-        run: uv run python -m tests.mcpserver.authz_test
-      - name: MCP — sem token não responde (401 + WWW-Authenticate)
-        run: uv run python -m tests.mcpserver.unauthenticated_test
-      - name: MCP — o token do chamador atravessa até o retrieve (identity passthrough)
-        run: uv run python -m tests.mcpserver.identity_passthrough_test
-      - name: MCP — erro não conta a infraestrutura para o chamador
-        run: uv run python -m tests.mcpserver.error_masking_test
-      - name: MCP — no modo shared resolve tenant e cobra entitlement (ADR-010)
-        run: uv run python -m tests.mcpserver.shared_tenancy_test
+      # OS SEIS GATES DE MCP QUE MORAVAM AQUI SAÍRAM NA FASE 0c, junto com
+      # `app/modules/mcpserver/`. Eles não foram removidos: foram MOVIDOS — os equivalentes
+      # rodam no job `mcp-app` abaixo, contra `apps/mcp`, que é agora a única superfície MCP.
+      # A garantia mudou de endereço, não de existência.
 
   # ---------------------------------------------------------------------------
   # O app do MCP sobre FastMCP 4 (ADR-027). Este job é DOIS gates no mesmo lugar, e o primeiro
@@ -394,10 +380,12 @@ jobs:
               assert pesado not in sys.modules, pesado
           print('fastmcp', md.version('fastmcp'), '| mcp', md.version('mcp'))
           "
-      # Paridade com o `/mcp` do monolito. Os cinco espelham `tests/mcpserver/` lá; o de
-      # identidade é o que impede a falha mais cara desta camada — a tool responder bonito
-      # buscando como a identidade da APLICAÇÃO, e o usuário receber documento que não pode ver,
-      # sem erro, sem log, sem sintoma.
+      # A GARANTIA DO MCP MORA AQUI, e só aqui, desde a Fase 0c. Estes seis nasceram como
+      # paridade com o `/mcp` do monolito (`tests/mcpserver/`, deletado com ele); agora são o
+      # único lugar onde as propriedades são verificadas. O de identidade é o que impede a falha
+      # mais cara desta camada — a tool responder bonito buscando como a identidade da
+      # APLICAÇÃO, e o usuário receber documento que não pode ver, sem erro, sem log, sem
+      # sintoma.
       - name: MCP — Resource Server (issuer, escopo, provider desligado sem auth)
         run: uv run --no-sync python -m tests.auth_test
       - name: MCP — papel do Entra decide as tools visíveis (any-of, não all-of)

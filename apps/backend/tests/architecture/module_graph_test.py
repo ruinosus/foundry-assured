@@ -73,9 +73,10 @@ MODULES = (
     # ADR-023: a camada de EVIDÊNCIA. Trilha encadeada por hash + o redator que roda antes de
     # qualquer gravação. A imutabilidade é do Azure (política WORM no container); o evento é nosso.
     "audit",
-    # O servidor MCP (T0-T2). Traduz o que `knowledge.public`/`app.shared.auth` já expõem para o
-    # vocabulário MCP — não implementa regra de acesso, consulta ou prompt nenhum.
-    "mcpserver",
+    # O CATÁLOGO de domínios (Fase 0c): quais assistentes existem, de que kind, e como cada um
+    # está configurado para o tenant da requisição. Saiu de `app/registry.py` porque é dado de
+    # negócio, e porque DOIS composition roots o consomem — o monolito e `apps/mcp`.
+    "domains",
 )
 
 PREFIXES = (

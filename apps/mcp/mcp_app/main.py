@@ -3,36 +3,27 @@
 Roda como `mcp_app.main:app`. É o gêmeo de `apps/backend/app/main.py` para uma superfície só —
 fino de propósito: telemetria, empurrão dos seams, construção do servidor, e nada de regra.
 
-O QUE ESTE APP IMPORTA DO MONOLITO, E POR QUE ISSO É LEGAL (ADR-017 + ADR-027). A ADR-017
-proíbe **módulo → camada de composição**; ela não fala de dois composition roots, porque até
-agora só havia um. Este arquivo É um composition root — o segundo — sobre os MESMOS módulos, e
-composition root é justamente a camada com licença para ver mais de um módulo de uma vez.
+DESDE A FASE 0c ESTA É A ÚNICA SUPERFÍCIE MCP DO PRODUTO. O `/mcp` do monolito (que era
+`apps/backend/app/modules/mcpserver/`) foi deletado junto com o `fastmcp==3.4.7` que o
+sustentava: duas superfícies servindo a MESMA tool é a divergência que este projeto mais teme —
+uma delas pode passar a decidir diferente sobre o que o usuário pode ver, sem erro nenhum.
 
-Ele importa `app.registry` para duas coisas e só duas: `domain_spec` (como resolver um id para
-o `DomainSpec` do tenant da requisição) e `DOMAIN_KINDS` (quais domínios têm base de
-conhecimento). As alternativas foram pesadas:
+O QUE ESTE APP IMPORTA DO MONOLITO. `app.modules.knowledge.public` (a busca e o trim de ACL),
+`app.modules.tenancy.public` (tenant e entitlement no modo `shared`), `app.shared.{auth,settings,
+telemetry}` — e `app.modules.domains.public`, o CATÁLOGO de domínios.
 
-  - **Escrever a lista aqui.** É a que a ADR-027 rejeita por nome ("Duplicar os módulos no app
-    novo"), e a SEGUNDA MÁXIMA rejeita em geral: duas listas divergem no primeiro domínio novo,
-    e a divergência não dá erro — só faz as duas superfícies discordarem sobre o que o usuário
-    pode ver.
-  - **Extrair o registry para um módulo próprio.** É provavelmente o destino certo (o dado do
-    registry não é wiring de FastAPI), mas é refactor estrutural do monolito, e esta fase tem
-    paridade como critério.
-  - **Importar `app.registry`.** O que está feito. Custou UMA mudança no monolito: o
-    `from agent_framework_ag_ui import …` do topo de `app/registry.py` — pacote que vive no
-    extra `agents` — ganhou um `except ModuleNotFoundError` com um substituto que FALHA ALTO ao
-    ser chamado. Sem isso, `import app.registry` era impossível sem o extra.
+O catálogo virou módulo nesta fase, e isso resolveu a única tensão de fronteira que a Fase 0b
+deixou aberta. Antes, `DomainSpec`/`DOMAIN_KINDS`/`domain_spec` moravam em `app/registry.py` — a
+camada de COMPOSIÇÃO do monolito — e este arquivo (que é um segundo composition root) importava
+de lá. Funcionava, mas custava um `try/except ModuleNotFoundError` em volta do
+`from agent_framework_ag_ui import …` no topo daquele arquivo: o pacote vive no extra `agents`,
+que este app deliberadamente NÃO instala, e sem a guarda `import app.registry` era impossível
+aqui. Com o catálogo em `app.modules.domains` (dado de negócio, `public.py`/`internal/`,
+ADR-017), este app não toca mais a composição do monolito e aquele `except` foi embora.
 
-    A primeira tentativa foi descer aquele import para dentro das três funções de mount, o que
-    parecia mais limpo. Não é: o nome precisa continuar existindo como ATRIBUTO DO MÓDULO,
-    porque `tests/smoke/_capture_routes.py` e `tests/registry/domain_registry_test.py`
-    neutralizam o adapter trocando `app.registry.add_agent_framework_fastapi_endpoint`. Com o
-    import dentro das funções esse ponto de troca some — 7 gates do monolito ficaram vermelhos
-    antes de a medição apontar isso.
-
-`mount_domains`/`include_routers` não são chamados nem importados: este app não monta domínio
-nenhum. O que ele lê de lá é dado.
+O que NÃO mudou, e é o ponto: a lista de domínios continua sendo UMA só. Escrevê-la aqui é o que
+a ADR-027 rejeita por nome — duas listas divergem no primeiro domínio novo, e a divergência não
+dá erro; só faz as duas superfícies discordarem sobre o que o usuário pode ver.
 """
 
 from __future__ import annotations
@@ -42,8 +33,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastmcp import FastMCP
 from starlette.middleware import Middleware
 
+from app.modules.domains.public import DOMAIN_KINDS, domain_spec
 from app.modules.tenancy import public as tenancy
-from app.registry import DOMAIN_KINDS, domain_spec
 from app.shared.settings import settings
 from app.shared.telemetry import setup_telemetry
 from mcp_app import tools_knowledge
@@ -82,9 +73,9 @@ def build_mcp(auth) -> FastMCP:
 def wire_registry() -> None:
     """Empurra para a tool o que o registry sabe. Chamado uma vez, antes de registrar a tool.
 
-    A lista de domínios grounded é DERIVADA do `DOMAIN_KINDS`, nunca escrita: é o mesmo
-    empurrão que `app/registry.include_routers` faz para o `/mcp` do monolito, e derivar é o
-    que impede as duas superfícies de discordarem sobre quais domínios existem.
+    A lista de domínios grounded é DERIVADA do `DOMAIN_KINDS`, nunca escrita — derivar é o que
+    impede a tool de anunciar domínio que não existe (ou de esconder um que existe) quando um
+    domínio novo entra no catálogo.
     """
     tools_knowledge.set_domain_registry(
         domain_spec, tuple(d for d, kind in DOMAIN_KINDS.items() if kind == "grounded")
@@ -107,14 +98,13 @@ def build_app():
     """A aplicação ASGI. Serve o MCP em `MCP_PATH` e, quando há auth, as rotas `.well-known`
     na raiz — as duas na mesma lista de rotas, porque este app não é montado em prefixo.
 
-    O CORS É PARIDADE COM O MONOLITO, NÃO OPCIONAL. O `/mcp` de lá herda o `CORSMiddleware`
-    aplicado a todo `app/main.py` (mesma origem: `settings.frontend_origin`); este app é a
-    superfície inteira, então precisa aplicar o próprio — sem isso o preflight (`OPTIONS`) de
-    um cliente de browser recebe 405 sem `access-control-allow-origin` (medido). Hoje nenhum
-    cliente de browser chama este endpoint (o frontend fala AG-UI com o monolito, não MCP), mas
-    a Fase 0b trata divergência não declarada como defeito — e quando `/mcp` sair do monolito
-    (Fase 0c), este é o único CORS que sobra: vale reavaliar então se um servidor MCP precisa
-    dele.
+    O CORS VEIO DA PARIDADE COM O MONOLITO. Lá o `/mcp` herdava o `CORSMiddleware` aplicado a
+    todo `app/main.py` (mesma origem: `settings.frontend_origin`); sem o equivalente aqui, o
+    preflight (`OPTIONS`) de um cliente de browser recebe 405 sem `access-control-allow-origin`
+    (medido). Hoje nenhum cliente de browser chama este endpoint — o frontend fala AG-UI com o
+    monolito, não MCP —, então este middleware é a permissão que o monolito dava, preservada em
+    vez de retirada em silêncio. Retirá-la é uma decisão possível e separada: quem a tomar deve
+    dizer que está fechando uma porta, não descobrir depois que fechou.
     """
     wire_registry()
     mcp = build_mcp(build_auth(settings.mcp_public_base_url))

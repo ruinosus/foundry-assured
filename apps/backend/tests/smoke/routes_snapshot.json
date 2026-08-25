@@ -1,10 +1,6 @@
 {
   "self_hosted": [
     [
-      "ANY",
-      "/mcp/"
-    ],
-    [
       "DELETE",
       "/admin/role-assignments/{assignment_id}"
     ],
@@ -209,10 +205,6 @@
       "/redoc"
     ],
     [
-      "MOUNT",
-      "/mcp"
-    ],
-    [
       "POST",
       "/admin/role-assignments"
     ],
@@ -334,10 +326,6 @@
     ]
   ],
   "self_hosted_oncall": [
-    [
-      "ANY",
-      "/mcp/"
-    ],
     [
       "DELETE",
       "/admin/role-assignments/{assignment_id}"
@@ -551,10 +539,6 @@
       "/redoc"
     ],
     [
-      "MOUNT",
-      "/mcp"
-    ],
-    [
       "POST",
       "/admin/role-assignments"
     ],
@@ -714,15 +698,7 @@
     ],
     [
       "DELETE",
-      "/mcp/"
-    ],
-    [
-      "DELETE",
       "/tenant/connections/{conn_id}"
-    ],
-    [
-      "GET",
-      "/.well-known/oauth-protected-resource/mcp/"
     ],
     [
       "GET",
@@ -850,14 +826,6 @@
     ],
     [
       "GET",
-      "/mcp/"
-    ],
-    [
-      "GET",
-      "/mcp/.well-known/oauth-protected-resource/mcp/"
-    ],
-    [
-      "GET",
       "/me"
     ],
     [
@@ -906,10 +874,6 @@
     ],
     [
       "HEAD",
-      "/.well-known/oauth-protected-resource/mcp/"
-    ],
-    [
-      "HEAD",
       "/docs"
     ],
     [
@@ -918,31 +882,11 @@
     ],
     [
       "HEAD",
-      "/mcp/"
-    ],
-    [
-      "HEAD",
-      "/mcp/.well-known/oauth-protected-resource/mcp/"
-    ],
-    [
-      "HEAD",
       "/openapi.json"
     ],
     [
       "HEAD",
       "/redoc"
-    ],
-    [
-      "MOUNT",
-      "/mcp"
-    ],
-    [
-      "OPTIONS",
-      "/.well-known/oauth-protected-resource/mcp/"
-    ],
-    [
-      "OPTIONS",
-      "/mcp/.well-known/oauth-protected-resource/mcp/"
     ],
     [
       "POST",
@@ -1027,10 +971,6 @@
     [
       "POST",
       "/helpdesk-hosted"
-    ],
-    [
-      "POST",
-      "/mcp/"
     ],
     [
       "POST",

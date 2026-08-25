@@ -129,7 +129,7 @@ async def authorized_document(domain, name: str, user) -> tuple[str, str]:
     url = _blob_url(domain, name)
 
     # A decisão de rodar o trim é DECLARADA em `domain.document_access` (`DomainSpec`,
-    # registry.py), nunca DERIVADA da truthiness de `acl_group_map`. `acl_group_map` é valor de
+    # modules/domains), nunca DERIVADA da truthiness de `acl_group_map`. `acl_group_map` é valor de
     # CONFIGURAÇÃO (no modo shared, vem do tenant store) — se decidíssemos por ele, um tenant
     # com os grupos vazios em runtime rebaixaria em silêncio um domínio que deveria ter ACL: o
     # índice continuaria carimbado (`permissionFilterOption=enabled`), mas esta rota pararia de

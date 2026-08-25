@@ -107,6 +107,7 @@ module apps 'containerapps.bicep' = {
 
 output BACKEND_URL string = apps.outputs.BACKEND_URL
 output WEB_URL string = apps.outputs.WEB_URL
+output MCP_URL string = apps.outputs.MCP_URL
 
 // Surfaced into .azure/<env>/.env by azd — feed these to the backend / ingestion.
 output FOUNDRY_PROJECT_ENDPOINT string = resources.outputs.FOUNDRY_PROJECT_ENDPOINT

@@ -1,6 +1,6 @@
 # ADR-027 — O MCP vira app separado para alcançar o FastMCP 4; o núcleo limpo é o que ele importa
 
-- **Status:** Proposed
+- **Status:** Accepted — **as-built** desde a Fase 0c (2026-08-25)
 - **Date:** 2026-08-24
 - **Context:** [ADR-017](./ADR-017-module-boundaries.md) (as fronteiras que tornam isto possível),
   [ADR-020](./ADR-020-canonical-frameworks-modular-organization.md) (usar cada framework do jeito
@@ -97,6 +97,17 @@ teto de volta, mesmo com o grafo de import limpo. O código não precisa; a inst
 precisa.
 
 ## Decisão
+
+> **O que fechou a ADR.** As cinco decisões estão executadas. A que faltava provar era a (4), a
+> instalabilidade: com `fastmcp==3.4.7` ainda no extra `agents` (Fase 0b, para o monolito seguir
+> servindo `/mcp` durante a paridade), o pin impedia a demonstração. A Fase 0c deletou
+> `app/modules/mcpserver/` e tirou aquele `fastmcp` do extra; num venv descartável,
+> `pip install apps/backend` (sem o extra) + `fastmcp==4.0.0b3` resolve com **fastmcp 4.0.0b3 e
+> mcp 2.1.0**, e `import app.modules.knowledge.public` funciona. Existe UMA superfície MCP.
+>
+> A mesma fase extraiu o catálogo de domínios para `app/modules/domains/` — o app novo não
+> importa mais a camada de composição do monolito, e o `try/except ModuleNotFoundError` que
+> aquela travessia exigia deixou de existir.
 
 **1. Nasce `apps/mcp/`** — unidade de deploy própria, sobre **FastMCP 4**, servindo o endpoint MCP.
 Ele importa do monolito o que já é limpo (`knowledge`, `audit`, `tenancy`, `shared`) e **não**

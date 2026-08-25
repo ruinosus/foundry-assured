@@ -70,10 +70,13 @@ class PlatformSettings(BaseSettings):
     # CORS origin for the local Next.js frontend
     frontend_origin: str = "http://localhost:3000"
 
-    #: URL pública DESTE backend. Vira o `resource` da metadata OAuth do MCP (RFC 9728), que é
-    #: o que o cliente usa para descobrir onde se autenticar. `frontend_origin` NÃO serve: é a
-    #: origem do frontend, outro host. Vazio em dev → localhost.
-    mcp_public_base_url: str = "http://localhost:8000"
+    #: URL pública do SERVIDOR MCP (`apps/mcp`, ADR-027) — não deste backend. Vira o `resource`
+    #: da metadata OAuth (RFC 9728), que é o que o cliente usa para descobrir onde se autenticar.
+    #: `frontend_origin` NÃO serve: é a origem do frontend, outro host. O default é a porta 8001
+    #: porque é nela que `apps/mcp` sobe em dev; era 8000 enquanto o `/mcp` morava no monolito.
+    #: O campo continua aqui, no shared kernel, porque `apps/mcp` instala este pacote e lê as
+    #: mesmas settings — uma segunda classe de settings lá seria a segunda lista de sempre.
+    mcp_public_base_url: str = "http://localhost:8001"
 
     @property
     def auth_enabled(self) -> bool:

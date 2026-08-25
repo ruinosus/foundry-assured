@@ -29,11 +29,12 @@ router = APIRouter(prefix="/source", tags=["source"], dependencies=[*auth_depend
 # para o corpus atual (runbooks/wiki em markdown) e pequeno o bastante para não custar caro.
 _TETO_DOCUMENTO_BYTES = 1_000_000
 
-# `DomainSpec`/`domain_spec` vivem em `app.registry` — a composition root, uma camada ACIMA
-# de `app.modules` (ADR-017/importlinter.toml: "Layers: composition > modules > shared"). Este
-# módulo não pode importar `app.registry`, então a composição EMPURRA a função de resolução
-# aqui no boot (mesmo padrão de `app.shared.auth.set_post_authenticate`), em vez deste módulo
-# puxá-la de lá.
+# `DomainSpec`/`domain_spec` viviam em `app.registry` — a composition root, uma camada ACIMA
+# de `app.modules` (ADR-017) — e por isso a composição EMPURRA a função de resolução aqui no
+# boot (mesmo padrão de `app.shared.auth.set_post_authenticate`), em vez deste módulo puxá-la.
+# Desde a Fase 0c o catálogo é um MÓDULO (`app.modules.domains`) e este import seria legal; o
+# empurrão fica porque trocá-lo acrescentaria a aresta `knowledge -> domains` ao grafo, o que é
+# decisão de arquitetura própria. A razão do seam mudou; o seam não.
 _domain_lookup: Callable[[str], object] | None = None
 
 

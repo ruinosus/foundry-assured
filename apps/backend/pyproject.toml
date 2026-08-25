@@ -74,17 +74,12 @@ agents = [
     "ag-ui-langgraph>=0.0.43.dev1786716392",
     "langchain-openai>=1.5.1",
     "deepagents>=0.7,<0.8",
-    # O FastMCP 3.x veio para cá na Fase 0b, e o motivo é o mesmo que criou este extra:
-    # `fastmcp==3.4.7` exige `mcp>=1,<2` e `fastmcp==4.0.0b3` exige `mcp>=2,<3`. Enquanto o
-    # 3.4.7 estivesse na BASE, `apps/mcp` (que instala esta base por path e soma o FastMCP 4)
-    # não resolveria — conflito direto de `mcp`, não do framework de agente. Aqui ele convive
-    # com o teto `mcp<2` que o `agent-framework[all]` já impõe a este mesmo extra, então nada
-    # de novo é perdido: quem instala `agents` já estava preso ao `mcp` 1.x.
-    #
-    # SAI DE VEZ NA FASE 0c, junto com `app/modules/mcpserver/` — o monolito serve `/mcp` até
-    # lá de propósito (duas superfícies ao mesmo tempo, temporário), e `apps/mcp` assume
-    # sozinho depois. Um `fastmcp` sobrando neste extra depois da 0c é código morto.
-    "fastmcp==3.4.7",
+    # NADA DE `fastmcp` AQUI. Ele passou pela Fase 0b só para o monolito continuar servindo
+    # `/mcp` enquanto `apps/mcp` provava paridade; com `app/modules/mcpserver/` deletado (Fase
+    # 0c) nenhum código deste pacote importa `fastmcp`. O servidor MCP vive em `apps/mcp`, que
+    # instala ESTA BASE sem este extra mais `fastmcp==4.0.0b3` — e é exatamente a separação que
+    # torna isso resolvível: o teto `mcp<2` mora no `agent-framework[all]` deste extra, e o
+    # FastMCP 4 exige `mcp>=2,<3`. Trazer um `fastmcp` de volta para cá reabriria o conflito.
 ]
 
 [tool.uv]

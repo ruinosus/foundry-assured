@@ -2,13 +2,15 @@
 
 Serve o endpoint MCP do Foundry Assured sobre **FastMCP 4** ([ADR-027](../../docs/adr/ADR-027-mcp-app-separado-fastmcp-4.md)).
 
-Hoje ele serve **exatamente** o que o `/mcp` do monolito serve: auth de Resource Server do
-Entra, autorização por App Role, e a tool `search_docs` com trim de ACL sob a identidade do
-chamador. Nenhuma capacidade nova — o critério desta fase é **paridade**.
+Ele serve auth de Resource Server do Entra, autorização por App Role, e a tool `search_docs`
+com trim de ACL sob a identidade do chamador — exatamente o que o `/mcp` do monolito servia,
+porque nasceu como porte com critério de **paridade**.
 
-> **Duas superfícies ao mesmo tempo, de propósito.** O monolito continua servindo `/mcp` até a
-> Fase 0c, quando `app/modules/mcpserver/` (e o `fastmcp==3.4.7` que hoje mora no extra
-> `agents` do backend) saem de vez.
+> **É a ÚNICA superfície MCP do produto.** Na Fase 0c `app/modules/mcpserver/` foi deletado do
+> backend, junto com o `fastmcp==3.4.7` do extra `agents` que o sustentava. Duas superfícies
+> servindo a mesma tool é a divergência que este projeto mais teme: uma delas pode passar a
+> decidir diferente sobre o que o usuário pode ver, sem erro nenhum. A garantia também mudou de
+> endereço — os gates em `tests/` aqui são agora o único lugar onde ela é verificada.
 
 ## Por que um app separado
 
@@ -41,28 +43,21 @@ quebraria. `mcp` também está fora — é o SDK do protocolo.
 ## O que este app importa do monolito
 
 `app.modules.knowledge.public` (a busca e o trim de ACL), `app.modules.tenancy.public` (tenant e
-entitlement no modo `shared`), `app.shared.{auth,settings,telemetry}` — e `app.registry`, para
-`domain_spec` e `DOMAIN_KINDS`.
+entitlement no modo `shared`), `app.shared.{auth,settings,telemetry}` — e
+`app.modules.domains.public`, o **catálogo** de domínios (`DomainSpec`, `DOMAIN_KINDS`,
+`domain_spec`).
 
-O último merece explicação, porque parece atravessar uma fronteira. A ADR-017 proíbe **módulo →
-camada de composição**; ela não fala de dois composition roots, porque até agora só havia um.
-`mcp_app/main.py` **é** um composition root — o segundo, sobre os mesmos módulos. As alternativas
-foram escrever a lista de domínios aqui (a ADR-027 rejeita por nome: duas listas divergem no
-primeiro domínio novo, e a divergência não dá erro — só faz as duas superfícies discordarem
-sobre o que o usuário pode ver) ou extrair o registry para um módulo próprio (provavelmente o
-destino certo, mas refactor estrutural, e esta fase é de paridade). O raciocínio inteiro está no
-docstring de `mcp_app/main.py`.
+Tudo isso é `<módulo>.public`, e nada é da camada de composição do monolito. Nem sempre foi
+assim: no porte (Fase 0b) o catálogo morava em `apps/backend/app/registry.py`, e este app — que
+é um segundo composition root — importava de lá. Funcionava, mas custava um
+`try/except ModuleNotFoundError` em volta do `from agent_framework_ag_ui import …` no topo
+daquele arquivo, porque o pacote vive no extra `agents` que este app deliberadamente não
+instala. A Fase 0c extraiu o catálogo para `app/modules/domains/` (`public.py`/`internal/`,
+ADR-017) — ele é dado de negócio, não wiring de FastAPI — e aquele `except` foi embora.
 
-Custou **uma** mudança no monolito: o `from agent_framework_ag_ui import …` do topo de
-`app/registry.py` — pacote que vive no extra `agents` — ganhou um `except ModuleNotFoundError`
-com um substituto que **falha alto ao ser chamado**. Um backend instalado sem o extra sobe, e o
-primeiro domínio que ele tentar montar diz exatamente o que fazer; nada de endpoint que existe
-e não responde.
-
-A primeira tentativa foi descer aquele import para dentro das três funções de mount, o que
-parecia mais limpo. Não é: dois gates do monolito neutralizam o adapter **trocando o atributo**
-`app.registry.add_agent_framework_fastapi_endpoint`, e com o import dentro das funções esse
-ponto de troca some — 7 gates ficaram vermelhos antes de a medição apontar isso.
+O que **não** mudou: a lista de domínios continua sendo uma só. Escrevê-la aqui é o que a
+ADR-027 rejeita por nome — duas listas divergem no primeiro domínio novo, e a divergência não dá
+erro; só faz as duas superfícies discordarem sobre o que o usuário pode ver.
 
 ## Rodar
 
@@ -86,9 +81,10 @@ uv run python -m tests.authz_test                  # papel do Entra decide as to
 uv run python -m tests.unauthenticated_test        # 401 + a placa que leva a algum lugar
 uv run python -m tests.identity_passthrough_test   # o token do CHAMADOR chega ao retrieve
 uv run python -m tests.error_masking_test          # erro não conta a infraestrutura
+uv run python -m tests.shared_tenancy_test         # no shared, resolve tenant E cobra entitlement
 ```
 
-O CI roda os cinco no job `mcp-app` (`.github/workflows/ci.yml`), que **também** é o gate de
+O CI roda os seis no job `mcp-app` (`.github/workflows/ci.yml`), que **também** é o gate de
 instalabilidade: ele instala a base sem o extra `agents` mais FastMCP 4 e importa
 `app.modules.knowledge.public`. O `import-linter` prova o grafo de import; só a instalação prova
 a instalabilidade — e é a instalabilidade que quebra.
