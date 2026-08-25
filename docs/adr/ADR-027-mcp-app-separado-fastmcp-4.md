@@ -27,11 +27,19 @@ fastmcp.server.sessions    → ModuleNotFoundError
 E o 4 não entra neste venv:
 
 ```
-fastmcp 4.0.0b3                    → mcp>=2.0,<3  +  httpx2>=2.5
-agent-framework-core 1.14.0        → mcp>=1.24.0,<2      ← teto
-agent-framework-core 1.15.0        → mcp>=1.24.0,<2      ← ainda, na mais nova publicada
-agent-framework-foundry-hosting    → mcp>=1.24.0,<2
+fastmcp 4.0.0b3                       → mcp>=2.0,<3  +  httpx2>=2.5
+agent-framework 1.15.0 (meta-pacote)  → agent-framework-core[all]
+agent-framework-core[all]             → mcp>=1.24.0,<2      ← O TETO
+agent-framework-core (sem extras)     → NÃO depende de mcp   ← medido
 ```
+
+**O bloqueio é o extra `all`, não o framework.** Medido instalando de verdade: o conjunto
+`fastmcp==4.0.0b3` + `agent-framework-declarative` + `agent-framework-core 1.15.0` +
+`azure-ai-projects` + `fastapi-azure-auth` **resolve**, com `mcp 2.1.0`. O que não resolve é o
+meta-pacote `agent-framework`, porque ele é literalmente `agent-framework-core[all]`.
+
+Consequência prática: **o reader de AgentSchema (`agent-framework-declarative`) atravessa** para o
+app novo, porque precisa só do core sem extras. Os prompts (T5) não ficam para trás.
 
 **O bloqueio não é o SDK do MCP.** O `mcp` 2.0.0 e 2.1.0 estão publicados e estáveis no PyPI. O
 bloqueio é um teto de terceiro, sobre o qual não temos data — medido na versão mais recente que

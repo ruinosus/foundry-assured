@@ -63,8 +63,14 @@ trilha, em vez de ganhá-los depois.
 comportamento: auth de Resource Server, autorização por papel, `search_docs`. Nenhuma capacidade
 nova. O critério é **paridade**, não novidade.
 
-- `apps/backend/pyproject.toml`: `agent-framework*`, `langchain*`, `langgraph`, `deepagents`,
-  `ag-ui-*` saem de `dependencies` e entram em `[project.optional-dependencies] agents`.
+- `apps/backend/pyproject.toml`: a divisão é **cirúrgica, não por família**. Medido: o teto
+  `mcp<2` vem do extra `all` do `agent-framework-core`, arrastado pelo meta-pacote
+  `agent-framework`. Então vão para `[project.optional-dependencies] agents`:
+  `agent-framework` (meta), `agent-framework-ag-ui`, `langchain`, `langgraph`, `langchain-openai`,
+  `ag-ui-langgraph`, `deepagents`.
+  **`agent-framework-declarative` FICA na base** — ele precisa só do core sem extras, e é o que faz
+  os prompts (Fase 1) atravessarem para o app novo. Confirmado por instalação real ao lado do
+  `fastmcp==4.0.0b3`.
   Todo lugar que instala o backend passa a pedir `.[agents]`: `Dockerfile`, `compose.yaml`,
   `ci.yml`, `scripts/gates.py`, instruções de dev. **Esquecer um mata o backend no import** —
   falha alta, não silenciosa.
@@ -85,6 +91,10 @@ divergência que este repositório mais teme.
 ---
 
 ## Fase 1 — T5: prompts e resources
+
+**Viável no app novo — medido.** `agentdefs` importa `agent_framework_declarative._models`
+(`definitions.py:52`), e esse pacote resolve junto com FastMCP 4. Se ele tivesse exigido o
+meta-pacote, esta fase morreria aqui.
 
 **Prompts.** Os documentos AgentSchema em `apps/backend/agents/assured/` já são a fonte única
 (ADR-013/015). Publicá-los como `@mcp.prompt` **deriva** dessa fonte — não cria segunda lista. É a
