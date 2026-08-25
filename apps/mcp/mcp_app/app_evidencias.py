@@ -74,6 +74,20 @@ concedido. O motivo por extenso está no docstring de `sessions.py`.
 Nada aqui reautoriza nada: os três campos exibidos são os MESMOS que a tool já devolveu ao mesmo
 chamador, e abrir um documento continua passando por `document://`, que reautoriza a cada
 leitura.
+
+═══ E O GATE DE TENANT, QUE FALTAVA ═══
+
+Faltava, e o buraco era pequeno mas real: o entitlement do domínio (ADR-010) era cobrado quando
+`search_docs` gravou a sessão, e **não** quando `show_evidence` a lê. Entre as duas há até uma
+hora de TTL — então uma licença revogada dentro dessa janela ainda rendia a tabela. Nada de novo
+era revelado (mesmo principal, mesmos três campos que a resposta já mostrou), e por isso o item
+é menor; mas "revoguei e o produto continuou mostrando" é uma frase que este produto não pode
+precisar explicar.
+
+O gate roda sobre o domínio GUARDADO — é o dele que a tabela fala —, e só quando há evidência:
+uma tabela vazia não tem domínio para cobrar, e resolver tenant para dizer "nenhuma busca nesta
+sessão" seria uma ida à loja de tenants por nada. Fora do modo `shared`, `recusa_de_tenant`
+devolve `None` sem tocar em nada, como nas outras quatro superfícies.
 """
 
 from __future__ import annotations
@@ -82,10 +96,14 @@ from typing import Any
 
 from fastmcp import FastMCP
 from fastmcp.apps import PrefabAppConfig
+from fastmcp.exceptions import ToolError
 from fastmcp.resources import resource as declarar_resource
+from fastmcp.server.dependencies import get_access_token
 
 from mcp_app import sessions
 from mcp_app.auth import require_any_role
+from mcp_app.caller import identidade_do_chamador
+from mcp_app.tenant_gate import recusa_de_tenant
 
 #: A URI DO RENDERIZADOR, E ELA É NOSSA DE PROPÓSITO. Qualquer valor diferente de
 #: `ui://prefab/renderer.html` desliga a síntese automática — ver a armadilha 1 no docstring.
@@ -137,6 +155,17 @@ async def show_evidence() -> Any:
 
     guardado = await sessions.evidencia_guardada()
     linhas = _linhas(guardado)
+
+    # O ENTITLEMENT DO DOMÍNIO, COBRADO NA LEITURA E NÃO SÓ NA GRAVAÇÃO. Ver a seção "o gate de
+    # tenant" no docstring: sem isto, uma licença revogada continuava rendendo a tabela pelo
+    # resto do TTL de uma hora. Só quando há linhas — uma tabela vazia não tem domínio a cobrar.
+    if linhas:
+        chamador = identidade_do_chamador(
+            get_access_token(), erro="tabela sem identidade do chamador: envie o token do Entra"
+        )
+        motivo = recusa_de_tenant(chamador, str(guardado.get("domain") or "") or None)
+        if motivo:
+            raise ToolError(motivo)
 
     with Column() as vista:
         if not linhas:

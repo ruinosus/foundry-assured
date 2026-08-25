@@ -18,6 +18,10 @@ da mesma regra — enquanto ela morava na tool, só a tool resolvia tenant, e o 
 morto no modo `shared`. Este teste continua provando o lado da TOOL; o do resource está em
 `tests/resource_document_test.py`, contra o mesmo `tenant_gate`.
 
+E DESDE A REVISÃO DE T7 ele prova também a TABELA DE EVIDÊNCIAS. Ela lê da sessão, que guarda o
+domínio por até uma hora — e o entitlement era cobrado só na gravação, então uma licença
+revogada dentro da janela continuava rendendo a tabela. Mesma regra, mesma mensagem exata.
+
     uv run python -m tests.shared_tenancy_test
 """
 
@@ -28,7 +32,7 @@ import sys
 
 from app.modules.tenancy.public import set_current_tenant
 from app.shared.settings import settings
-from mcp_app import tenant_gate, tools_knowledge
+from mcp_app import app_evidencias, sessions, tenant_gate, tools_knowledge
 
 
 class _Registro:
@@ -93,6 +97,49 @@ def main() -> int:
                 "domínio NÃO licenciado é recusado",
                 str(exc) == "domínio não habilitado para o tenant: techdocs",
             )
+
+        # A TABELA DE EVIDÊNCIAS COBRA O MESMO ENTITLEMENT, e não cobrava. A sessão guarda o
+        # domínio por até uma hora (`sessions.TTL_SEGUNDOS`): sem este gate, uma licença
+        # revogada dentro da janela continuava rendendo a tabela, porque o entitlement só era
+        # cobrado quando `search_docs` GRAVOU. Mesma mensagem exata da tool, de propósito — a
+        # regra é uma só (`tenant_gate.recusa_de_tenant`).
+        evidencia_original = sessions.evidencia_guardada
+        token_original_app = app_evidencias.get_access_token
+        try:
+            async def evidencia_de_techdocs():
+                return {"domain": "techdocs",
+                        "sources": [{"index": 1, "source": "d.md", "url": "https://x/1"}]}
+
+            sessions.evidencia_guardada = evidencia_de_techdocs
+            app_evidencias.get_access_token = lambda: _Token("t-ok")
+            asyncio.run(app_evidencias.show_evidence())
+            check("a tabela do tenant LICENCIADO é renderizada", True)
+
+            app_evidencias.get_access_token = lambda: _Token("t-sem")
+            try:
+                asyncio.run(app_evidencias.show_evidence())
+                check("a tabela de domínio NÃO licenciado é recusada", False)
+            except Exception as exc:  # noqa: BLE001 — é o texto do erro que está sob teste
+                check(
+                    "a tabela de domínio NÃO licenciado é recusada, com a MESMA mensagem da tool",
+                    str(exc) == "domínio não habilitado para o tenant: techdocs",
+                )
+
+            # Tabela VAZIA não resolve tenant nenhum: não há domínio a cobrar, e ir à loja para
+            # dizer "nenhuma busca nesta sessão" seria trabalho por nada. O `t-inexistente`
+            # provaria o contrário na hora — ele levanta em qualquer chamada ao gate.
+            async def sem_evidencia():
+                return None
+
+            sessions.evidencia_guardada = sem_evidencia
+            app_evidencias.get_access_token = lambda: _Token("t-inexistente")
+            asyncio.run(app_evidencias.show_evidence())
+            check("a tabela VAZIA não resolve tenant — não há domínio a cobrar", True)
+        except Exception as exc:  # noqa: BLE001 — falha inesperada é falha do gate
+            check(f"o gate de tenant da tabela de evidências rodou ({exc!r})", False)
+        finally:
+            sessions.evidencia_guardada = evidencia_original
+            app_evidencias.get_access_token = token_original_app
 
         tools_knowledge.get_access_token = lambda: _Token("t-off")
         try:
