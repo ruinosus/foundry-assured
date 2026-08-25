@@ -28,12 +28,16 @@ O `action` do protocolo continua existindo e continua significando o que signifi
 
 Não há tool de criação separada: `open_ticket` é a única, e ela é uma *guard tool*. Na primeira
 rodada não existe caminho que chegue ao `create_ticket` — o corpo devolve a pergunta antes.
-Na segunda rodada, o corpo só segue se DUAS coisas chegarem juntas:
+Na segunda rodada, o corpo só segue se TRÊS coisas chegarem juntas:
 
-1. `ctx.input_responses` com a resposta do aprovador, e
-2. `ctx.request_state` igual à marca que ESTE servidor emitiu.
+1. `ctx.input_responses` com a resposta do aprovador,
+2. `ctx.request_state` com a marca que ESTE servidor emitiu, e
+3. o NONCE dessa marca ainda não reservado — a decisão nunca usada antes.
 
-A segunda é o que impede um cliente de pular a pergunta. O `request_state` é selado pelo
+A segunda é o que impede um cliente de pular a pergunta. A terceira é o que impede um cliente de
+REPETIR a resposta: o envelope do SDK é verificável, não é de uso único, e sem o consumo o mesmo
+`requestState` abria o segundo e o terceiro chamado (medido). Ver `mcp_app.decision_claim`, que é
+onde a reserva mora e onde o ataque está descrito. O `request_state` é selado pelo
 `RequestStateBoundary` (AES-256-GCM, ligado ao principal autenticado, ao nome da tool, ao digest
 dos argumentos e a um TTL) — medido: mandar respostas SEM estado devolve a pergunta de novo, e
 mandar um estado forjado ou em texto puro é recusado no fio como
@@ -61,6 +65,7 @@ abrem chamado. Uma regra, mais um consumidor — nunca uma cópia.
 
 from __future__ import annotations
 
+import contextlib
 from typing import Any
 
 import mcp_types
@@ -68,9 +73,10 @@ from fastmcp import FastMCP
 from fastmcp.exceptions import ToolError
 from fastmcp.server.dependencies import get_access_token, get_context
 
+from app.modules.audit.public import actor, actor_detail, record
 from app.modules.hitl.public import ApprovalRequest, NotAuthorized, decide
 from app.modules.tickets.public import create_ticket
-from mcp_app import request_state
+from mcp_app import decision_claim, request_state
 from mcp_app.auth import require_any_role
 from mcp_app.caller import identidade_do_chamador
 from mcp_app.tenant_gate import recusa_de_tenant
@@ -97,10 +103,32 @@ SEVERIDADES: tuple[str, ...] = ("low", "medium", "high")
 CHAVE_DA_PERGUNTA = "decisao"
 
 #: A MARCA do estado entre as rodadas. Vai em `request_state`, o SDK a sela, e na volta ela tem
-#: que bater exatamente. Não carrega dado nenhum da chamada de propósito: o resumo, a severidade
-#: e o domínio já viajam nos argumentos da tool, que o próprio selo amarra por digest — repetir
-#: qualquer um deles aqui criaria uma segunda cópia que poderia divergir da primeira.
+#: que bater. Não carrega dado nenhum da chamada de propósito: o resumo, a severidade e o domínio
+#: já viajam nos argumentos da tool, que o próprio selo amarra por digest — repetir qualquer um
+#: deles aqui criaria uma segunda cópia que poderia divergir da primeira.
+#:
+#: O QUE ELA CARREGA, E POR QUE PRECISOU CARREGAR: um NONCE por rodada, depois do `:`. Enquanto a
+#: marca era um literal fixo, não existia nada por rodada que desse para CONSUMIR — e o envelope
+#: do SDK, que amarra método, tool, argumentos, principal e TTL, não é de uso único. O aprovador
+#: decidia uma vez e o cliente repetia a chamada com o mesmo estado, abrindo o segundo e o
+#: terceiro chamado. Ver `mcp_app.decision_claim`, que mede o ataque e explica a reserva.
 MARCA_DO_ESTADO = "open_ticket/v1"
+
+#: Entre a marca e o nonce. O nonce é URL-safe (`[A-Za-z0-9_-]`), então `:` não colide com ele.
+SEPARADOR_DO_ESTADO = ":"
+
+#: O que o chamador lê quando repete uma decisão já usada. DISTINTO de "estado inválido ou
+#: expirado" (a mensagem congelada que o `RequestStateBoundary` devolve no fio) porque as duas
+#: pedem coisas opostas: um estado inválido pede recomeçar a chamada; um replay pede PARAR — o
+#: chamado que essa decisão autorizava já existe, e insistir cria um segundo sem um segundo
+#: humano por trás.
+MOTIVO_REPLAY = (
+    "decisão já usada: esta aprovação já abriu o chamado dela. Uma decisão humana autoriza UMA "
+    "escrita, então repetir a chamada com o mesmo estado não abre um segundo chamado — e a "
+    "tentativa fica registrada na trilha. Se um chamado NOVO é necessário, chame `open_ticket` "
+    "de novo e peça uma nova decisão. (Isto não é estado inválido nem expirado: o estado era "
+    "válido, e já foi consumido.)"
+)
 
 #: Empurrado pela composition root, como em `tools_knowledge.set_domain_registry`: os ids de
 #: domínio que existem. Vem do catálogo (`DOMAIN_KINDS`), nunca de um literal aqui — uma segunda
@@ -167,8 +195,44 @@ def _pergunta(pedido: ApprovalRequest) -> mcp_types.InputRequiredResult:
                 )
             )
         },
-        request_state=MARCA_DO_ESTADO,
+        # O NONCE DESTA RODADA. Nasce aqui, sai selado pelo `RequestStateBoundary` e é RESERVADO
+        # na volta — é o que faz esta pergunta autorizar uma escrita só.
+        request_state=MARCA_DO_ESTADO + SEPARADOR_DO_ESTADO + decision_claim.novo(),
     )
+
+
+def _nonce_do_estado(estado: str | None) -> str | None:
+    """O nonce de um `request_state` que ESTE servidor emitiu, ou `None`.
+
+    O estado chega aqui já em texto puro: o `RequestStateBoundary` desela antes e recusa no fio o
+    que não foi este servidor que emitiu, com este principal, nesta tool, com estes argumentos e
+    dentro do prazo. Esta função não repete nada disso — só separa a marca do nonce.
+    """
+    if not estado or not estado.startswith(MARCA_DO_ESTADO + SEPARADOR_DO_ESTADO):
+        return None
+    return estado[len(MARCA_DO_ESTADO) + len(SEPARADOR_DO_ESTADO) :]
+
+
+def _registrar_replay(nonce: str) -> None:
+    """A tentativa de replay VIRA EVENTO — a recusa é evidência, não só um erro na resposta.
+
+    Sem isto, um cliente poderia insistir indefinidamente e a única marca disso seriam logs de
+    aplicação, que não são encadeados nem imutáveis. O evento nomeia a decisão pelo DIGEST do
+    nonce (nunca em claro) e o ator pelo chamador que já foi declarado — o mesmo que a decisão
+    original gravou, quando é a mesma pessoa repetindo.
+
+    Best-effort DE PROPÓSITO, e é a única ordem segura: a escrita já está recusada quando esta
+    função roda, então uma falha de gravação não pode virar motivo para deixar a escrita passar.
+    """
+    with contextlib.suppress(Exception):
+        record(
+            scope="approvals",
+            actor=actor(),
+            kind="replay",
+            summary="decisão reapresentada em create_ticket — nenhum chamado foi aberto",
+            ref=f"decisao:{decision_claim.digest(nonce)}",
+            detail={"action": "create_ticket", **actor_detail()},
+        )
 
 
 def _ler_decisao(respostas: Any) -> tuple[str, dict, str]:
@@ -255,8 +319,29 @@ async def open_ticket(
     # sem estado significam que o cliente pulou a pergunta, e é exatamente o que não pode virar
     # escrita. O estado chega aqui já em texto puro — o `RequestStateBoundary` dessela antes, e
     # recusa no fio o que não foi este servidor que emitiu.
-    if not ctx.input_responses or ctx.request_state != MARCA_DO_ESTADO:
+    nonce = _nonce_do_estado(ctx.request_state)
+    if not ctx.input_responses or nonce is None:
         return _pergunta(pedido)
+
+    # ANTES DE LER A DECISÃO, e não depois. A reserva é o que transforma "o servidor perguntou"
+    # em "o servidor perguntou UMA vez": ela falha para a segunda tentativa, e a segunda
+    # tentativa é onde a resposta pode até vir diferente da primeira (o cliente escreve as
+    # `input_responses`; um `reject` seguido de um `approve` sobre o MESMO estado seria duas
+    # decisões saindo de uma). Reservar aqui recusa as duas leituras pelo mesmo motivo.
+    #
+    # Uma consequência assumida: um `edit` malformado (severidade que não existe, logo abaixo)
+    # queima a reserva, e o aprovador precisa recomeçar de `open_ticket`. É o lado certo para
+    # errar — recomeçar custa uma pergunta, e o outro lado custa um chamado a mais.
+    try:
+        primeira_vez = decision_claim.consumir(nonce)
+    except decision_claim.ConsumoIndisponivel as exc:
+        raise ToolError(
+            "não foi possível reservar esta decisão, então nenhum chamado foi aberto: o "
+            f"armazenamento das reservas não respondeu ({exc}). É configuração do operador."
+        ) from None
+    if not primeira_vez:
+        _registrar_replay(nonce)
+        raise ToolError(MOTIVO_REPLAY)
 
     tipo, args, mensagem = _ler_decisao(ctx.input_responses)
     # A severidade CORRIGIDA passa pela mesma régua da proposta, e ANTES de `decide` — depois

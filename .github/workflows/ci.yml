@@ -467,8 +467,22 @@ jobs:
       # Offline como os demais: `httpx2.ASGITransport`, verificador de token estático, chamados
       # num diretório temporário, e a chave do `requestState` GERADA na hora — nunca lida do
       # repositório, que é a ADR-005 aplicada ao próprio teste.
+      #   o estado é de UM  o `requestState` de um principal não serve para outro — nem para um
+      #                     segundo aprovador, mesmo papel, `sub` diferente. Também por MUTAÇÃO.
       - name: MCP — a escrita só atravessa com decisão humana e papel (as quatro decisões)
         run: uv run --no-sync python -m tests.write_decision_test
+      # E O INVARIANTE QUE FALTAVA: uma decisão humana, UMA escrita. O envelope do SDK é
+      # verificável mas não é de uso único — sem uma reserva por rodada, o cliente repetia
+      # `tools/call` com o mesmo `requestState` e abria o segundo e o terceiro chamado, inclusive
+      # de sessão nova, com a trilha gravando duas aprovações onde houve uma. Este gate carrega
+      # as DUAS metades da prova: roda o ataque com a reserva neutralizada (3 chamados) e com ela
+      # valendo (1), então ele fica vermelho no dia em que a reserva virar no-op.
+      #
+      # Offline e sem daemon como os vizinhos. O subprocesso que prova "não é memória de
+      # processo" é o MESMO interpretador, sem rede — é o modelo do `minReplicas: 0` (a réplica
+      # morre entre a pergunta e a resposta) e da segunda réplica.
+      - name: MCP — uma decisão humana, uma escrita (o estado não é replayável)
+        run: uv run --no-sync python -m tests.decision_replay_test
 
   # JOB SEPARADO DE PROPÓSITO, e a razão está em `scripts/gates.py:42`: o que entra em
   # `DEFAULT_JOBS` é prometido como "inteiramente offline e determinístico", e a bateria local

@@ -20,6 +20,16 @@ o arquivo de chamados, e o `retrieve` da tool de leitura):
                             certo — o chamador, nunca `process:app` (ADR-023).
     5. O SELO ALCANÇA       a resposta FINAL é carimbada e carrega os dois eventos da trilha; a
                             rodada da PERGUNTA não é carimbada, porque não é uma resposta.
+    6. O ESTADO É DE UM     o `requestState` emitido para um principal não serve para outro —
+                            nem para um SEGUNDO aprovador, que tem o mesmo papel e só difere no
+                            `sub`. É a propriedade que `mcp_app/request_state.py:12-15` chama de
+                            a mais forte do módulo, e que nenhum gate media: os tokens daqui não
+                            tinham `sub`, então todos degradavam para o mesmo principal e a
+                            amarração nunca era exercitada. Provada por MUTAÇÃO, com
+                            `bind_principal` removido.
+
+O QUE ESTE GATE NÃO COBRE, e mora ao lado: o REPLAY — a mesma decisão apresentada duas vezes.
+Está em `tests/decision_replay_test.py`, que é onde a reserva do nonce é medida antes e depois.
 
 E mais duas, sobre o segredo novo (ADR-005): sem `MCP_REQUEST_STATE_KEY` a escrita se declara
 indisponível **e a leitura continua funcionando**; com uma chave curta demais o app **não sobe**.
@@ -58,8 +68,8 @@ from app.modules.audit import public as audit
 from app.modules.tickets.internal import tickets as store
 from app.shared import auth as shared_auth
 from app.shared.settings import ENTRA_API_SCOPE_NAME, settings
+from mcp_app import decision_claim, tools_knowledge, tools_tickets
 from mcp_app import main as mcp_main
-from mcp_app import tools_knowledge, tools_tickets
 from mcp_app.assurance_extension import CHAVE_DO_SELO, IDENTIFICADOR
 from mcp_app.auth import MCP_PATH
 from mcp_app.request_state import MOTIVO_SEM_CHAVE
@@ -76,18 +86,55 @@ CORRECAO = {"summary": "Kubernetes pod em CrashLoopBackOff", "severity": "high"}
 
 APROVADOR = "aprovador@exemplo.invalid"
 
+#: AS QUATRO DECISÕES DA ADR-019, ESCRITAS AQUI COMO LITERAL — e é por isso que este gate
+#: consegue reprovar um rebaixamento.
+#:
+#: Enquanto a verificação comparava com `tools_tickets.DECISOES`, ela era tautológica: reduzir a
+#: constante do servidor a `("approve", "reject")` fazia o check imprimir ✅ com
+#: `['approve', 'reject']` — a única verificação nomeada pelo contrato-que-não-se-rebaixa não
+#: conseguia reprovar o rebaixamento (o gate só ficava vermelho depois, por `TypeError` ao ler o
+#: resultado do `edit`: um crash, não uma asserção). Um teste que lê a resposta do código não
+#: testa o contrato, testa o eco.
+#:
+#: ESTA LISTA ESPELHA A ADR-019. Mudá-la exige mudar a ADR primeiro — não o contrário. Se um dia
+#: o produto tiver uma quinta decisão, ela nasce lá e desce para cá.
+DECISOES_DA_ADR = ["approve", "edit", "reject", "respond"]
+
+#: TRÊS TOKENS, E OS TRÊS COM `sub` — que é o que faz deles TRÊS PRINCIPAIS.
+#:
+#: Sem `sub`, `principal_components` (`mcp/server/auth/provider.py:62-70`) degrada para
+#: `(client_id, issuer, None)`: como os três compartilham o mesmo `client_id` e o verificador
+#: estático não põe `iss`, os três viravam O MESMO principal — e a amarração por principal do
+#: `requestState`, que `mcp_app/request_state.py:12-15` chama de a propriedade mais forte do
+#: módulo ("o estado de uma aprovação não pode ser reaproveitado por outra pessoa"), não era
+#: medida por gate nenhum. Medido: sem `sub`, o estado do aprovador era aceito no token do
+#: leitor; com `sub`, é recusado.
+#:
+#: O SEGUNDO APROVADOR existe porque é ele quem isola a propriedade. O Reader também é recusado,
+#: mas pelo `auth=` da tool — o papel para antes do principal. Só um segundo aprovador (mesmo
+#: papel, `sub` diferente) chega ao ponto em que a ÚNICA coisa que pode recusá-lo é a amarração.
 TOKENS = {
     "tok-approver": {
         "client_id": CLIENT_ID,
         "scopes": [ENTRA_API_SCOPE_NAME],
         "roles": ["Approver"],
+        "sub": "00000000-0000-0000-0000-0000000000cc",
         "oid": "00000000-0000-0000-0000-0000000000cc",
         "preferred_username": APROVADOR,
+    },
+    "tok-approver-2": {
+        "client_id": CLIENT_ID,
+        "scopes": [ENTRA_API_SCOPE_NAME],
+        "roles": ["Approver"],
+        "sub": "00000000-0000-0000-0000-0000000000dd",
+        "oid": "00000000-0000-0000-0000-0000000000dd",
+        "preferred_username": "outro-aprovador@exemplo.invalid",
     },
     "tok-reader": {
         "client_id": CLIENT_ID,
         "scopes": [ENTRA_API_SCOPE_NAME],
         "roles": ["Reader"],
+        "sub": "00000000-0000-0000-0000-0000000000aa",
         "oid": "00000000-0000-0000-0000-0000000000aa",
         "preferred_username": "leitor@exemplo.invalid",
     },
@@ -141,6 +188,19 @@ def _cliente(app, token: str, *, decisao=None, acao="accept", negocia=False) -> 
     return cliente
 
 
+def _ticket(resultado: dict) -> dict:
+    """O chamado que uma rodada criou, ou `{}` quando ela foi recusada.
+
+    Existe para que uma asserção vermelha não vire um crash: quando o corpo é `"RECUSADO …"`
+    (uma string), indexar `["ticket"]["summary"]` levanta `TypeError` e leva o gate inteiro
+    junto — o relatório para de imprimir e quem lê não vê qual verificação falhou.
+    """
+    corpo = resultado.get("corpo")
+    if not isinstance(corpo, dict):
+        return {}
+    return corpo.get("ticket") or {}
+
+
 def main() -> int:
     falhas: list[str] = []
 
@@ -155,6 +215,7 @@ def main() -> int:
         mcp_main.build_auth,
         tools_knowledge.retrieve,
         store._STORE,
+        decision_claim.DIRETORIO,
         settings.entra_tenant_id,
         settings.entra_api_client_id,
         settings.mcp_public_base_url,
@@ -182,6 +243,9 @@ def main() -> int:
         mcp_main.build_auth = _auth_estatico
         tools_knowledge.retrieve = retrieve_falso
         store._STORE = Path(temporario.name) / "tickets.jsonl"
+        # As RESERVAS de decisão vão para o mesmo diretório temporário — em produção elas moram
+        # ao lado de `tickets.jsonl`, no share montado, e aqui o "share" é este tmpdir.
+        decision_claim.DIRETORIO = Path(temporario.name) / "decisoes"
 
         app = mcp_main.build_app()
 
@@ -271,6 +335,33 @@ def main() -> int:
                             saida[rotulo] = f"RECUSADO {type(exc).__name__}: {exc}"
                 saida["burla_criou"] = len(chamados()) - antes
 
+                # ── 2b · o estado de UMA pessoa não serve para OUTRA ──────────────────────
+                #
+                # A propriedade mais forte do módulo do selo, e a que não era medida por gate
+                # nenhum: `mcp/server/request_state.py` amarra o envelope ao PRINCIPAL
+                # autenticado, então "o servidor perguntou a você" não vira "o servidor
+                # perguntou a alguém".
+                #
+                # A pergunta é feita e NÃO é respondida de propósito: com o nonce ainda por
+                # reservar, a única coisa capaz de recusar o segundo aprovador é a amarração
+                # por principal. Se a resposta já tivesse sido dada, a reserva recusaria antes
+                # e o teste passaria pelo motivo errado.
+                antes = len(chamados())
+                async with Client(
+                    StreamableHttpTransport(
+                        url=BASE + MCP_PATH, auth="tok-approver", httpx_client_factory=_fabrica(app)
+                    )
+                ) as c:
+                    pergunta = await c.session.call_tool(
+                        name="open_ticket", arguments=PROPOSTA, allow_input_required=True
+                    )
+                saida["reuso"] = {}
+                for rotulo, token in (("aprovador_2", "tok-approver-2"), ("leitor", "tok-reader")):
+                    saida["reuso"][rotulo] = await _reusa_estado(
+                        app, token, pergunta.request_state, resposta_forjada
+                    )
+                saida["reuso_criou"] = len(chamados()) - antes
+
                 # ── 3 · o papel é cobrado (primeira linha: a tool não existe) ─────────────
                 antes = len(chamados())
                 async with _cliente(app, "tok-reader", decisao={"decision": "approve"}) as c:
@@ -288,21 +379,34 @@ def main() -> int:
         # ── 1 · as quatro decisões ──────────────────────────────────────────────────────
         gravados = chamados()
         print(f"     CHAMADOS   : {[t['summary'] for t in gravados]}")
+        # CONTRA O CONTRATO, NÃO CONTRA O CÓDIGO. As duas metades importam: a de baixo prova que o
+        # servidor não rebaixou a constante, a de cima prova que o vocabulário inteiro chegou ao
+        # cliente. Comparar a segunda com `tools_tickets.DECISOES` faria as duas dizerem a mesma
+        # coisa — e um rebaixamento passaria por ✅ nas duas.
         check(
-            f"as QUATRO decisões chegam ao cliente no `enum` do formulário ({r['approve']['opcoes'][0]})",
-            r["approve"]["opcoes"] == [list(tools_tickets.DECISOES)],
+            f"o contrato da ADR-019 tem QUATRO decisões, e é essa a constante do servidor "
+            f"({list(tools_tickets.DECISOES)})",
+            list(tools_tickets.DECISOES) == DECISOES_DA_ADR,
+        )
+        check(
+            f"e as QUATRO chegam ao cliente no `enum` do formulário ({r['approve']['opcoes'][:1]})",
+            r["approve"]["opcoes"] == [DECISOES_DA_ADR],
         )
         check(
             "approve · cria o chamado com o resumo proposto",
             r["approve"]["novos"] == 1
-            and r["approve"]["corpo"]["ticket"]["summary"] == PROPOSTA["summary"],
+            and _ticket(r["approve"]).get("summary") == PROPOSTA["summary"],
         )
+        # Leitura DEFENSIVA a partir daqui: sob a mutação que rebaixa `DECISOES`, o `edit` é
+        # recusado e `corpo` vira uma string. Ler `corpo["ticket"]["summary"]` direto estouraria
+        # com `TypeError` — o gate morreria de crash DEPOIS de a asserção certa já ter ficado
+        # vermelha, e o relatório sairia truncado justamente na hora em que ele é mais lido.
         check(
             f"edit · cria o chamado com a CORREÇÃO do aprovador "
-            f"({r['edit']['corpo']['ticket']['summary']!r}, {r['edit']['corpo']['ticket']['severity']!r})",
+            f"({_ticket(r['edit']).get('summary')!r}, {_ticket(r['edit']).get('severity')!r})",
             r["edit"]["novos"] == 1
-            and r["edit"]["corpo"]["ticket"]["summary"] == CORRECAO["summary"]
-            and r["edit"]["corpo"]["ticket"]["severity"] == CORRECAO["severity"],
+            and _ticket(r["edit"]).get("summary") == CORRECAO["summary"]
+            and _ticket(r["edit"]).get("severity") == CORRECAO["severity"],
         )
         check(
             "edit · e o texto que a CHAMADA propôs não foi gravado em lugar nenhum",
@@ -356,6 +460,31 @@ def main() -> int:
         check(
             f"e nenhuma das quatro tentativas escreveu nada ({r['burla_criou']} chamados)",
             r["burla_criou"] == 0,
+        )
+
+        # ── 2b · o estado de uma pessoa não serve para outra ────────────────────────────
+        reuso = r["reuso"]
+        print(f"     REUSO      : aprovador_2 → {reuso['aprovador_2'][:58]}")
+        check(
+            f"um SEGUNDO aprovador (mesmo papel, `sub` diferente) NÃO usa o estado do primeiro "
+            f"({reuso['aprovador_2'][:44]})",
+            reuso["aprovador_2"].startswith("RECUSADO")
+            and "Invalid or expired requestState" in reuso["aprovador_2"],
+        )
+        check(
+            f"e o Reader tampouco ({reuso['leitor'][:44]})",
+            reuso["leitor"].startswith("RECUSADO"),
+        )
+        check(
+            f"nenhum dos dois reusos escreveu ({r['reuso_criou']} chamados)",
+            r["reuso_criou"] == 0,
+        )
+        problema = asyncio.run(_mutacao_do_principal(chamados))
+        check(
+            "MUTAÇÃO · com `bind_principal` REMOVIDO, o segundo aprovador reusa o estado e "
+            "ESCREVE — é o que dá dentes à verificação acima"
+            + (f" — {problema}" if problema else ""),
+            problema is None,
         )
 
         # ── 3 · o papel é cobrado, nas duas linhas ──────────────────────────────────────
@@ -460,6 +589,7 @@ def main() -> int:
             mcp_main.build_auth,
             tools_knowledge.retrieve,
             store._STORE,
+            decision_claim.DIRETORIO,
             settings.entra_tenant_id,
             settings.entra_api_client_id,
             settings.mcp_public_base_url,
@@ -474,6 +604,75 @@ def main() -> int:
         return 1
     print("\n✅ as quatro decisões atravessam; sem decisão e sem papel, nada escreve.")
     return 0
+
+
+async def _reusa_estado(app, token: str, estado: str, resposta) -> str:
+    """Um token TENTA usar o `requestState` que o servidor emitiu para outro. O que volta."""
+    async with Client(
+        StreamableHttpTransport(url=BASE + MCP_PATH, auth=token, httpx_client_factory=_fabrica(app))
+    ) as c:
+        try:
+            saida = await c.session.call_tool(
+                name="open_ticket",
+                arguments=PROPOSTA,
+                input_responses={CHAVE_DA_PERGUNTA: resposta},
+                request_state=estado,
+                allow_input_required=True,
+            )
+        except Exception as exc:  # noqa: BLE001 — a recusa É o resultado
+            return f"RECUSADO {type(exc).__name__}: {exc}"
+    # `session.call_tool` é a camada CRUA: uma `ToolError` do servidor (o gate de papel, por
+    # exemplo) volta como resultado com `is_error`, não como exceção — só o `call_tool` de alto
+    # nível levanta. Sem esta leitura, uma recusa do Reader seria relatada como "PASSOU".
+    if getattr(saida, "is_error", False):
+        texto = " ".join(getattr(bloco, "text", "") for bloco in (saida.content or []))
+        return f"RECUSADO ToolError: {texto.strip()}"
+    corpo = getattr(saida, "structured_content", None)
+    return f"PASSOU {corpo}"
+
+
+async def _mutacao_do_principal(chamados) -> str | None:
+    """A amarração por principal REMOVIDA — e o segundo aprovador passa a escrever.
+
+    Sem esta mutação, a verificação acima (o estado de um não serve para outro) poderia estar
+    verde por qualquer outro motivo: um argumento que difere, um TTL, um erro de transporte. Aqui
+    a política é reconstruída com `bind_principal=None` (o único ponto trocado, e é o mesmo
+    parâmetro que `mcp/server/request_state.py:118-124` expõe) e o que se espera é o OPOSTO:
+    o estado do primeiro aprovador aceito no token do segundo, com o chamado criado.
+
+    Devolve `None` quando a mutação de fato afrouxou — isto é, quando a asserção normal tem
+    dentes.
+    """
+    from mcp.server.request_state import RequestStateSecurity
+
+    from mcp_app import request_state as rs
+
+    original = rs.politica
+    try:
+        rs.politica = lambda: RequestStateSecurity(
+            keys=[settings.mcp_request_state_key.strip()], bind_principal=None
+        )
+        app = mcp_main.build_app()
+    finally:
+        rs.politica = original
+
+    resposta = mcp_types.ElicitResult(action="accept", content={"decision": "approve"})
+    antes = len(chamados())
+    async with app.router.lifespan_context(app):
+        async with Client(
+            StreamableHttpTransport(
+                url=BASE + MCP_PATH, auth="tok-approver", httpx_client_factory=_fabrica(app)
+            )
+        ) as c:
+            pergunta = await c.session.call_tool(
+                name="open_ticket", arguments=PROPOSTA, allow_input_required=True
+            )
+        saida = await _reusa_estado(app, "tok-approver-2", pergunta.request_state, resposta)
+    if not saida.startswith("PASSOU"):
+        return f"a mutação não afrouxou nada — o reuso continuou recusado ({saida[:80]})"
+    if len(chamados()) != antes + 1:
+        return "a mutação passou mas não criou o chamado — o teste não mede o que diz medir"
+    return None
 
 
 async def _defesa_em_profundidade(chamados) -> str | None:
