@@ -100,6 +100,25 @@ MATRIZ: dict[str, dict[str, object]] = {
         "trilha": True,
         "caso_de_uso": "n/a: módulo usecases não se aplica a uma busca avulsa por MCP",
     },
+    "tool:open_ticket": {
+        "conversa": "n/a: escrita avulsa por tool — não há objeto de conversa para persistir",
+        "tokens": "n/a: não chama modelo; quem redigiu o resumo foi o cliente",
+        # A resposta é o RECIBO da própria escrita: o `ticket.id` que ela devolve é a referência,
+        # e não há afirmação sobre a base de conhecimento a fundamentar. A regra 4 vale para quem
+        # AFIRMA coisas sobre o corpus; esta tool só relata o que gravou. O que a sustenta é a
+        # coluna ao lado (trilha), não uma citação.
+        "referencias": "n/a: a resposta é o recibo da própria escrita — o `ticket.id` É a "
+        "referência, e nada é afirmado sobre a base",
+        # A ÚNICA LINHA DESTA MATRIZ COM `chamado: True`. É a fase inteira em uma célula.
+        "chamado": True,
+        # DOIS eventos por escrita aprovada, e são de perguntas diferentes: `hitl.decide` grava a
+        # DECISÃO (quem decidiu o quê, com que papel, e — no `edit` — que campos corrigiu) em
+        # `approvals`; `create_ticket` grava a ESCRITA (o id, a severidade, o domínio) no mesmo
+        # escopo. Um sem o outro não sustenta a regra 5: a decisão sem a escrita não prova que
+        # algo aconteceu, e a escrita sem a decisão é exatamente o que não pode existir.
+        "trilha": True,
+        "caso_de_uso": "n/a: módulo usecases não se aplica à abertura de um chamado avulso",
+    },
     "resource:document://{domain}/{name}": {
         "conversa": "n/a: leitura avulsa de documento — não há conversa para persistir",
         "tokens": "n/a: serve o blob, não chama modelo — não há uso de token a contar",

@@ -40,9 +40,11 @@ from app.shared.telemetry import setup_telemetry
 from mcp_app import (
     assurance_extension,
     prompts_agentdefs,
+    request_state,
     resources_knowledge,
     tenant_gate,
     tools_knowledge,
+    tools_tickets,
 )
 from mcp_app.auth import MCP_PATH, build_auth
 
@@ -73,6 +75,13 @@ def build_mcp(auth) -> FastMCP:
         # inválido, chamada sem identidade) são levantados como `ToolError` em `tools_knowledge`.
         mask_error_details=True,
         tools=[],
+        # A DECISÃO HUMANA ATRAVESSA DUAS CHAMADAS, e o estado que as costura volta pelo fio —
+        # isto é, pelas mãos do cliente. Esta política é o que faz o SDK selar o que sai e
+        # verificar o que volta, com chave compartilhada entre réplicas em vez da efêmera do
+        # processo. `None` (sem `MCP_REQUEST_STATE_KEY`) deixa o default efêmero valer para as
+        # leituras, que não emitem estado nenhum, e a ESCRITA se recusa a rodar com erro claro.
+        # Toda a justificativa está em `mcp_app/request_state.py`.
+        request_state_security=request_state.politica(),
     )
 
 
@@ -86,6 +95,10 @@ def wire_registry() -> None:
     tools_knowledge.set_domain_registry(
         domain_spec, tuple(d for d, kind in DOMAIN_KINDS.items() if kind == "grounded")
     )
+    # A ESCRITA aceita TODOS os domínios, não só os `grounded`: `helpdesk` não tem base de
+    # conhecimento nenhuma e é justamente o que mais abre chamado. As duas listas saem do MESMO
+    # `DOMAIN_KINDS` — a diferença é o filtro, não a fonte.
+    tools_tickets.set_domain_ids(tuple(DOMAIN_KINDS))
     # O resource do documento integral resolve UM domínio (como a rota `/source` faz) e, só
     # para a completion, lista TODOS os do tenant da requisição. Nenhuma lista literal dos dois
     # lados — ver `resources_knowledge.set_domain_registry`.
@@ -122,11 +135,20 @@ def register_surfaces(mcp: FastMCP) -> None:
     provaria a superfície que ELE monta, não a que o app monta, e uma superfície nova esquecida
     aqui passaria despercebida justamente pelo teste que existe para pegá-la.
 
-    Nenhuma das quatro declara conteúdo próprio: a tool deriva o catálogo de domínios, os
+    Nenhuma das quatro declara conteúdo próprio: as tools derivam o catálogo de domínios, os
     prompts derivam os documentos AgentSchema, e o resource (com a completion dele) deriva a
     decisão de acesso do `knowledge`.
+
+    A FAMÍLIA `tool` PASSOU A TER DUAS DESDE A FASE 3, e a segunda é a primeira ESCRITA
+    (`open_ticket`). Ela não abre família nova — do ponto de vista do protocolo é uma tool como
+    a outra —, mas é a primeira que muda o mundo em vez de descrevê-lo, e por isso é a única
+    atrás do contrato de decisão de quatro opções da ADR-019. Ver `mcp_app.tools_tickets`.
     """
     tools_knowledge.register(mcp)
+    # A ESCRITA (Fase 3, T3). Continua sendo uma tool como as outras do ponto de vista do
+    # protocolo — o que muda é que ela suspende para perguntar antes de escrever, e que o
+    # `auth=` dela é Approver/Admin em vez do conjunto de leitura. Ver `tools_tickets`.
+    tools_tickets.register(mcp)
     prompts_agentdefs.register(mcp)
     resources_knowledge.register(mcp)
     resources_knowledge.register_completion(mcp)

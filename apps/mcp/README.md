@@ -37,6 +37,56 @@ e anexa, ao `_meta` da resposta, as citações que a tool produziu e o **id do e
 o selo não pode carregar; `tests/assurance_seal_test.py` prova os dois sentidos do opt-in, a
 não-invenção por mutação da fonte, e a não-vazão com um chamador sem acesso.
 
+E desde a **Fase 3 (T3)** este servidor **escreve**: a tool `open_ticket`, que é a primeira
+superfície MCP a mudar o mundo em vez de descrevê-lo — e a única atrás do contrato de decisão da
+[ADR-019](../../docs/adr/ADR-019-langchain-hitl-comparison.md).
+
+- **O transporte é do protocolo, o vocabulário é nosso.** O padrão nativo
+  (`InputRequiredResult` + `ElicitResult.action`) é *aceitar-ou-recusar*. O contrato deste
+  produto tem **quatro** decisões — aprovar · **editar** · rejeitar · responder — e o `edit` é a
+  razão de a ADR existir. As quatro viajam no `enum` do `requested_schema` do
+  `ElicitRequestFormParams` e chegam inteiras a `app.modules.hitl.public.decide`, o **mesmo**
+  vocabulário que a escalação do helpdesk usa. Nada é reduzido a um booleano.
+- **A escrita é inalcançável sem a decisão.** Não há tool de criação separada: `open_ticket` é
+  uma *guard tool* que, na primeira rodada, devolve a pergunta. Na segunda ela só segue se
+  chegarem juntas a resposta do aprovador **e** o `request_state` que este servidor emitiu —
+  selado pelo SDK e amarrado ao principal autenticado, ao nome da tool, ao digest dos argumentos
+  e a um TTL. Medido: respostas sem estado recebem a pergunta de novo; estado forjado ou em
+  texto puro é recusado no fio, antes de o corpo rodar.
+- **O papel é cobrado duas vezes.** `auth=require_any_role("Approver", "Admin")` faz a tool não
+  existir para quem não pode decidir; `hitl.decide` recusa de novo lá dentro — e é essa segunda
+  que grava a decisão na trilha (ADR-023). Uma escrita aprovada deixa **dois** eventos: a
+  decisão e a escrita.
+- **O selo alcança a escrita.** A resposta final é carimbada e carrega os dois eventos da
+  trilha; ela não ganha `citations` (esta tool não fundamenta nada — um `[]` mentiria dizendo
+  que tentou citar). A rodada da *pergunta* não é carimbada: não é uma resposta.
+
+### O segredo novo: `MCP_REQUEST_STATE_KEY`
+
+A chave (>= 32 bytes) que assina o estado entre as rodadas, **igual em todas as réplicas**. Vem
+do ambiente, e no ambiente publicado vem do cofre para a variável — **nunca do repositório**
+(ADR-005); os gates geram a sua na hora.
+
+| Estado da variável | O que acontece |
+|---|---|
+| ausente | o servidor sobe; **só a escrita** se declara indisponível, com erro que diz que é configuração do operador. As quatro superfícies de leitura não mudam. |
+| presente, >= 32 bytes | a escrita funciona |
+| presente, < 32 bytes | **o app não sobe** — é configuração errada, não um modo |
+
+Derrubar o servidor inteiro por falta de um segredo que só a escrita usa trocaria uma lacuna de
+configuração de escrita por indisponibilidade de leitura, sem comprar segurança nenhuma. Deixar
+a escrita ligada sobre a chave efêmera do processo (o default do FastMCP) faria a aprovação
+falhar de forma intermitente — este app roda com `minReplicas: 0`, isto é, desliga por
+ociosidade **entre** a pergunta e a resposta. A justificativa completa está em
+`mcp_app/request_state.py`.
+
+Em dev local a regra é a mesma, sem exceção por `auth_enabled`: uma exigência de operação que só
+aparece em produção é a que ninguém descobre a tempo.
+
+```bash
+python -c "import secrets; print(secrets.token_hex(32))"   # e coloque em MCP_REQUEST_STATE_KEY
+```
+
 > **É a ÚNICA superfície MCP do produto.** Na Fase 0c `app/modules/mcpserver/` foi deletado do
 > backend, junto com o `fastmcp==3.4.7` do extra `agents` que o sustentava. Duas superfícies
 > servindo a mesma tool é a divergência que este projeto mais teme: uma delas pode passar a
@@ -64,6 +114,9 @@ mcp_app/
   auth.py                 AzureJWTVerifier + RemoteAuthProvider, e o gate de App Role
   caller.py               quem perguntou: token do FastMCP → usuário do backend + trilha
   tools_knowledge.py      a tool `search_docs`
+  tools_tickets.py        a ESCRITA `open_ticket`, atrás do contrato de decisão da ADR-019
+  request_state.py        a chave que assina o estado entre as rodadas — e o que fazer sem ela
+  tenant_gate.py          tenant + entitlement (ADR-010), a MESMA regra do `require_domain`
   prompts_agentdefs.py    os prompts, derivados dos documentos AgentSchema
   resources_knowledge.py  o documento integral (mesmo ACL da rota /source) + a completion
   assurance_extension.py  o SELO: extensão de protocolo negociada sobre o `tools/call`
@@ -129,6 +182,7 @@ uv run python -m tests.resource_document_test      # o ACL do documento é o do 
 uv run python -m tests.completion_test             # só sugere o que existe e o que o chamador pode abrir
 uv run python -m tests.client_surface_test         # um cliente REAL atravessa a pilha; sem papel não vê nada
 uv run python -m tests.assurance_seal_test         # o selo é negociado, não inventa e não vaza
+uv run python -m tests.write_decision_test         # as quatro decisões atravessam; sem papel nada escreve
 ```
 
 O CI roda todos no job `mcp-app` (`.github/workflows/ci.yml`), que **também** é o gate de

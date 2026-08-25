@@ -449,6 +449,26 @@ jobs:
       # `InMemoryTrail`, que encadeia por hash igual à de produção.
       - name: MCP — o selo é negociado, não inventa e não vaza (extensão de protocolo)
         run: uv run --no-sync python -m tests.assurance_seal_test
+      # A FASE 3 — a primeira ESCRITA por MCP, e por isso o gate mais caro de faltar. Ele guarda
+      # a regra 5 do projeto (`create_ticket` só dispara após aprovação humana explícita, com o
+      # papel Approver ou Admin) em cinco frentes, e nenhuma delas se prova sozinha:
+      #
+      #   as quatro    aprovar · EDITAR · rejeitar · responder atravessam inteiras. O `edit` é a
+      #                razão da ADR-019 e é o que um booleano não expressa; aqui ele grava o
+      #                texto do APROVADOR, não o que chegou na chamada.
+      #   inalcançável não há caminho até a escrita sem a decisão — nem chamando a tool direto,
+      #                nem mandando respostas sem o `requestState`, nem forjando um.
+      #   o papel      duas linhas, e a de baixo só se prova por MUTAÇÃO: com o `auth=` removido,
+      #                `hitl.decide` continua recusando quem não é aprovador.
+      #   a trilha     dois eventos por escrita (a decisão e a escrita), com o ator certo.
+      #   o segredo    sem `MCP_REQUEST_STATE_KEY` a escrita se declara indisponível e a LEITURA
+      #                continua de pé; com uma chave curta demais, o app não sobe.
+      #
+      # Offline como os demais: `httpx2.ASGITransport`, verificador de token estático, chamados
+      # num diretório temporário, e a chave do `requestState` GERADA na hora — nunca lida do
+      # repositório, que é a ADR-005 aplicada ao próprio teste.
+      - name: MCP — a escrita só atravessa com decisão humana e papel (as quatro decisões)
+        run: uv run --no-sync python -m tests.write_decision_test
 
   # JOB SEPARADO DE PROPÓSITO, e a razão está em `scripts/gates.py:42`: o que entra em
   # `DEFAULT_JOBS` é prometido como "inteiramente offline e determinístico", e a bateria local
@@ -555,7 +575,11 @@ jobs:
       # Container App secret vazio e derruba o container app inteiro — o backend simplesmente
       # não é criado, enquanto o `web` sobe normal. Um clone novo rodando o caminho padrão
       # (`up-all.sh` sem `--with-auth`) caía exatamente aí.
-      - name: Clone novo sem sign-in consegue subir o backend
+      #
+      # DESDE A FASE 3 (T3) ele olha DOIS apps: o `mcp` ganhou `MCP_REQUEST_STATE_KEY`, a chave
+      # que assina a decisão humana da escrita, opcional pelo mesmo desenho. Vigiar só o backend
+      # deixaria a mesma falha nascer no vizinho.
+      - name: Clone novo sem os segredos opcionais consegue subir backend e mcp
         run: python3 scripts/verify-optional-secret.py
 
       # O Pages serve `main:/docs` e o deploy dele SEMPRE passa — copia bytes, não valida

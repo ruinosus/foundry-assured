@@ -40,6 +40,10 @@ param entraApiClientSecret string = ''
 @description('Entra group of app users — the private read audience of the selfwiki KB. When set, retrieval sends the per-user OBO ACL header for /selfwiki; empty leaves selfwiki fail-closed.')
 param appUsersGroupId string = ''
 
+@secure()
+@description('Chave (>= 32 bytes) que assina o `requestState` da decisão humana do MCP (SEP-2322). Vinda do cofre para o ambiente do azd — NUNCA um valor no repositório (ADR-005). Vazia é modo suportado: o servidor sobe e só a tool de escrita `open_ticket` se declara indisponível. Ver apps/mcp/mcp_app/request_state.py.')
+param mcpRequestStateKey string = ''
+
 @description('Storage account backing the Azure Files share for persisted app data.')
 param storageAccountName string
 @description('Blob container do corpus (azd: AZURE_STORAGE_CONTAINER). O backend monta a URL do documento com ele.')
@@ -280,6 +284,19 @@ resource webApp 'Microsoft.App/containerApps@2024-03-01' = {
 // o storage (trilha de auditoria da ADR-023 + a URL do documento) e o Entra (para saber quem é
 // o chamador). NÃO precisa do share de prompts: a tool não usa as instruções dos agentes, e sem
 // `AGENTS_DIR` o pacote usa a cópia embutida na imagem (ADR-014).
+//
+// DESDE A FASE 3 ELE TAMBÉM ESCREVE, e isso trouxe DUAS coisas que ele não tinha:
+//
+//   1. UM SEGREDO — `MCP_REQUEST_STATE_KEY`, a chave que assina o `requestState` entre a
+//      pergunta ao aprovador e a resposta dele. Declarado exatamente como o `entra-api-secret`
+//      do backend (só quando existe, senão a Azure recusa o container app INTEIRO com
+//      `ContainerAppSecretInvalid`), e vazio continua sendo modo suportado: o servidor sobe e a
+//      escrita se declara indisponível. Nunca há valor no repositório (ADR-005).
+//   2. O MOUNT `/app/data` — o MESMO share Azure Files do backend. `create_ticket` grava em
+//      `<raiz do backend>/data/tickets.jsonl`, e a raiz no container é `/app`. Sem este mount o
+//      chamado aberto por MCP cairia no disco efêmero da réplica: a escrita "funcionaria", o
+//      cliente receberia o id, e a página `/tickets` do produto nunca o veria. É a mesma falha
+//      que o comentário do `_STORE` em tickets.py descreve, vista de outro app.
 resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
   name: mcpAppName
   location: location
@@ -300,6 +317,11 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
       registries: [
         { server: '${registryName}.azurecr.io', identity: appIdentityId }
       ]
+      // Mesma regra do backend: segredo sem valor derruba o container app inteiro, então ele só
+      // é declarado quando existe — e o `secretRef` abaixo aparece e some junto com ele.
+      secrets: empty(mcpRequestStateKey) ? [] : [
+        { name: 'mcp-request-state-key', value: mcpRequestStateKey }
+      ]
     }
     template: {
       containers: [
@@ -307,7 +329,7 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
           name: 'mcp'
           image: placeholderImage
           resources: { cpu: json('0.5'), memory: '1.0Gi' }
-          env: [
+          env: concat([
             { name: 'FOUNDRY_PROJECT_ENDPOINT', value: foundryProjectEndpoint }
             { name: 'AZURE_SEARCH_ENDPOINT', value: azureSearchEndpoint }
             { name: 'AZURE_SEARCH_KNOWLEDGE_BASE', value: azureSearchKnowledgeBase }
@@ -327,12 +349,29 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'AZURE_STORAGE_ACCOUNT', value: storageAccountName }
             { name: 'AZURE_STORAGE_CONTAINER', value: corpusContainerName }
             { name: 'AZURE_STORAGE_RESOURCE_ID', value: storageResourceId }
+          ], empty(mcpRequestStateKey) ? [] : [
+            { name: 'MCP_REQUEST_STATE_KEY', secretRef: 'mcp-request-state-key' }
+          ])
+          volumeMounts: [
+            // O MESMO `/app/data` do backend, no MESMO share: os dois escrevem
+            // `tickets.jsonl`, e a página `/tickets` lê pelo backend. Ver o comentário grande
+            // acima do recurso.
+            { volumeName: 'data', mountPath: '/app/data' }
           ]
         }
+      ]
+      volumes: [
+        { name: 'data', storageType: 'AzureFile', storageName: envDataStorage.name }
       ]
       // UMA RÉPLICA, e não por causa de arquivo: o transporte HTTP do MCP mantém sessão no
       // processo, então duas réplicas sem afinidade fariam a segunda requisição de uma sessão
       // cair num processo que não a conhece. Scale-to-zero continua valendo (ocioso = $0).
+      //
+      // A CHAVE DO `requestState` CONTINUA SENDO NECESSÁRIA MESMO COM UMA RÉPLICA SÓ, e é o
+      // `minReplicas: 0` que explica: a réplica MORRE por ociosidade entre a pergunta ao
+      // aprovador e a resposta dele. Com a chave efêmera do processo (o default do FastMCP), o
+      // estado emitido antes do desligamento não seria aceito depois — a aprovação viraria
+      // `Invalid or expired requestState` de forma intermitente.
       scale: { minReplicas: 0, maxReplicas: 1 }
     }
   }

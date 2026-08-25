@@ -48,6 +48,10 @@ param entraApiClientId string = ''
 @description('Backend API app client secret for OBO (optional; azd maps ENTRA_API_CLIENT_SECRET).')
 param entraApiClientSecret string = ''
 
+@secure()
+@description('Chave (>= 32 bytes) que assina o `requestState` da decisão humana do servidor MCP (azd mapeia MCP_REQUEST_STATE_KEY). Vem do cofre para o ambiente — nunca do repositório (ADR-005). Vazia: a escrita por MCP fica indisponível, o resto do servidor não muda. Gere com: python -c "import secrets; print(secrets.token_hex(32))"')
+param mcpRequestStateKey string = ''
+
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var effectiveSearchLocation = empty(searchLocation) ? location : searchLocation
 var tags = { 'azd-env-name': environmentName }
@@ -101,6 +105,7 @@ module apps 'containerapps.bicep' = {
     entraTenantId: entraTenantId
     entraApiClientId: entraApiClientId
     entraApiClientSecret: entraApiClientSecret
+    mcpRequestStateKey: mcpRequestStateKey
     appUsersGroupId: appUsersGroupId
   }
 }

@@ -78,6 +78,22 @@ class PlatformSettings(BaseSettings):
     #: mesmas settings — uma segunda classe de settings lá seria a segunda lista de sempre.
     mcp_public_base_url: str = "http://localhost:8001"
 
+    #: A CHAVE QUE ASSINA O ESTADO ENTRE AS RODADAS da decisão humana do MCP (SEP-2322) — o
+    #: `request_state` que o servidor emite junto com a pergunta e o cliente devolve junto com a
+    #: resposta do aprovador. Sem ela, o `request_state` seria selado com uma chave efêmera do
+    #: processo: a pergunta feita por uma réplica não seria aceita de volta por outra (nem pela
+    #: mesma depois de um restart), e a escrita ficaria intermitente.
+    #:
+    #: SEM VALOR DE EXEMPLO QUE FUNCIONE, aqui ou no `.env.example` (ADR-005): a chave vem do
+    #: ambiente, e no ambiente publicado vem do cofre. Vazio é um modo SUPORTADO — a escrita fica
+    #: indisponível com erro claro, o resto do servidor não muda. Presente e curta demais
+    #: (< 32 bytes) é ERRO: o `AESGCMRequestStateCodec` recusa na construção e o app não sobe,
+    #: que é o que separa "não configurado" de "configurado errado".
+    #:
+    #: Mora aqui, no shared kernel, pelo mesmo motivo de `mcp_public_base_url`: `apps/mcp`
+    #: instala este pacote e lê estas settings. Ver `apps/mcp/mcp_app/request_state.py`.
+    mcp_request_state_key: str = ""
+
     @property
     def auth_enabled(self) -> bool:
         """OBO/Entra is active only when the API app registration is configured.
