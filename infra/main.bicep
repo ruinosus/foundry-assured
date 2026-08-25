@@ -56,8 +56,8 @@ param mcpRequestStateKey string = ''
 @description('Chave que cifra o snapshot de contexto das background tasks do MCP em repouso no Redis (azd mapeia MCP_TASKS_ENCRYPTION_KEY). O snapshot carrega o access token de quem submeteu — sem a chave, o pacote grava JSON em claro. Vazia: as tasks não sobem e a busca continua síncrona. Gere com: python -c "import secrets; print(secrets.token_hex(32))"')
 param mcpTasksEncryptionKey string = ''
 
-@description('Provisiona o Azure Cache for Redis (Basic C0, ~US$16/mês SEMPRE LIGADO) que sustenta as background tasks e a sessão por usuário do servidor MCP. FALSE mantém o ocioso em zero: a busca só roda síncrona e a sessão vira memória de processo, que o scale-to-zero apaga.')
-param deployRedis bool = true
+@description('Provisiona o Azure Cache for Redis (Basic C0, ~US$16/mês SEMPRE LIGADO) que sustenta as background tasks e a sessão por usuário do servidor MCP. DEFAULT FALSE: o ocioso fica em zero, a busca só roda síncrona e a sessão vira memória de processo — degradação declarada e provada por gate. Ligar as tasks exige AS DUAS: DEPLOY_REDIS=true e MCP_TASKS_ENCRYPTION_KEY preenchida; uma sem a outra não liga nada.')
+param deployRedis bool = false
 
 var resourceToken = toLower(uniqueString(subscription().id, environmentName, location))
 var effectiveSearchLocation = empty(searchLocation) ? location : searchLocation

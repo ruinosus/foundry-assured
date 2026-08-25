@@ -48,8 +48,8 @@ param mcpRequestStateKey string = ''
 @description('Chave que cifra o SNAPSHOT DE CONTEXTO das tasks em repouso no Redis (FASTMCP_TASKS_ENCRYPTION_KEY). O snapshot carrega o ACCESS TOKEN do chamador — sem a chave, o pacote grava JSON em claro, o que NORDOR-122 proíbe. Vazia é modo suportado: as tasks não sobem e a busca continua síncrona. Gere com: python -c "import secrets; print(secrets.token_hex(32))"')
 param mcpTasksEncryptionKey string = ''
 
-@description('Provisiona o Azure Cache for Redis (Basic C0, ~US$16/mês SEMPRE LIGADO) que sustenta as background tasks (SEP-2663) e o estado de sessão por usuário do servidor MCP. FALSE mantém o custo ocioso em zero e degrada as duas coisas de forma declarada: a busca só roda síncrona e a sessão vira memória de processo, que o `minReplicas: 0` apaga. Nada mais no produto depende dele.')
-param deployRedis bool = true
+@description('Provisiona o Azure Cache for Redis (Basic C0, ~US$16/mês SEMPRE LIGADO) que sustenta as background tasks (SEP-2663) e o estado de sessão por usuário do servidor MCP. DEFAULT FALSE porque o par é indivisível: sem `mcpTasksEncryptionKey` — que também é vazia por default — o Redis é pago e as tasks não sobem, que era o deploy padrão até aqui. FALSE degrada as duas coisas de forma declarada: a busca só roda síncrona e a sessão vira memória de processo, que o `minReplicas: 0` apaga. Nada mais no produto depende dele.')
+param deployRedis bool = false
 
 @description('Storage account backing the Azure Files share for persisted app data.')
 param storageAccountName string
