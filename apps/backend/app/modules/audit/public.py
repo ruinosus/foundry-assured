@@ -1,11 +1,16 @@
 """Superfície da trilha de auditoria (ADR-023). Único ponto importável de fora.
 
-O que sai daqui: registrar um evento, ler a trilha, verificar a cadeia, e sanear texto antes de
-gravá-lo. O que NÃO sai: nada que apague ou reescreva — a trilha é append-only por contrato aqui,
-e por política do Azure no container.
+O que sai daqui: registrar um evento, ler a trilha, verificar a cadeia, sanear texto antes de
+gravá-lo — e RECOLHER o recibo do que foi gravado num bloco (`receipts`), para quem está por
+cima poder referenciar o evento sem reler a trilha. O que NÃO sai: nada que apague ou reescreva —
+a trilha é append-only por contrato aqui, e por política do Azure no container.
 """
 
 from __future__ import annotations
+
+from collections.abc import Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 
 from app.modules.audit.internal.anchor import (
     AnchorExists,
@@ -43,7 +48,55 @@ def record(
     """
     if kind not in KINDS:
         raise InvalidEvent(f"tipo de evento desconhecido: {kind!r} (use um de {', '.join(KINDS)})")
-    return trail().append(scope, actor, kind, summary, ref, detail)
+    evento = trail().append(scope, actor, kind, summary, ref, detail)
+    caixa = _recibos.get()
+    if caixa is not None:
+        # O ESCOPO VAI JUNTO PORQUE O EVENTO NÃO O CARREGA: `Event` tem seq/at/actor/kind/…, e o
+        # escopo é a partição em que ele foi gravado (o arquivo da trilha). Sem ele, um `hash`
+        # sozinho não localiza nada — quem for verificar precisa saber em qual trilha procurar.
+        caixa.append({"scope": scope, "event": evento})
+    return evento
+
+
+@contextmanager
+def receipts() -> Iterator[list[dict]]:
+    """Abre uma CAIXA que recolhe os eventos gravados dentro do bloco — o recibo da trilha.
+
+    POR QUE ISTO EXISTE, e por que mora aqui. `record()` sempre devolveu o evento que acabou de
+    escrever (com `seq` e `hash`), mas todo chamador o descarta: `retrieval.py` e `document.py`
+    gravam dentro de um `suppress(Exception)` e seguem. Quem está POR CIMA da chamada — o selo
+    de assurance do MCP, que precisa dizer ao cliente "esta resposta está na trilha, sob este
+    id" — não tem como saber o id. Ler a trilha depois para descobrir seria pior de três
+    maneiras: baixa o blob inteiro a cada resposta, corre com gravações concorrentes de outro
+    processo, e RECALCULA uma informação que já existia. Um selo que recalcula não prova nada.
+
+    O caminho de volta é uma caixa MUTÁVEL posta num ContextVar ANTES da chamada: o valor
+    desce para a task do handler (contexto copiado herda a referência) e as anexações sobem,
+    porque a lista é a mesma. Medido: o inverso — a callee dar `set()` num ContextVar e a
+    caller ler — NÃO funciona aqui, porque o FastMCP roda o corpo da tool com o contexto
+    copiado. Ver `apps/mcp/mcp_app/assurance_extension.py`.
+
+    Cada recibo é `{"scope": <partição>, "event": <o evento inteiro, como `record` o devolve>}`.
+    Vem INTEIRO de propósito: quem consome escolhe o que expor, e o selo do MCP publica só
+    `scope`, `kind` e `hash`, nunca o `detail` (que carrega nome de documento e identidade do
+    ator). A regra de não vazar é de quem publica, não desta caixa.
+
+    Reentrante por aninhamento é DE PROPÓSITO não suportado: um bloco interno substitui a caixa
+    do externo enquanto dura, e o externo volta a valer depois. Ninguém aninha hoje, e uma
+    caixa que se acumulasse em dois níveis faria o selo do nível de fora referenciar eventos
+    que não são da resposta dele.
+    """
+    caixa: list[dict] = []
+    token = _recibos.set(caixa)
+    try:
+        yield caixa
+    finally:
+        _recibos.reset(token)
+
+
+#: A caixa da requisição atual, ou `None` quando ninguém está recolhendo — que é o estado
+#: normal. `default=None` importa: sem ele, `record()` fora de um `receipts()` estouraria.
+_recibos: ContextVar[list[dict] | None] = ContextVar("recibos_da_trilha", default=None)
 
 
 def read(scope: str) -> list[dict]:
@@ -73,6 +126,7 @@ __all__ = [
     "close_day",
     "list_anchors",
     "read",
+    "receipts",
     "record",
     "redact",
     "verify",

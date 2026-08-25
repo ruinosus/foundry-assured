@@ -27,6 +27,15 @@ e a afirmação era falsa: medido, um token válido com `roles: []` recebia
 (`resources_knowledge.completar.auth`), que é o mesmo objeto que ele executa a cada chamada — não
 uma declaração ao lado do código, que poderia divergir dele. É lá que `_registro_cru` olha.
 
+E A FASE 2 TROUXE UMA COISA QUE NÃO É SUPERFÍCIE E MESMO ASSIM PRECISA SER VISTA: a EXTENSÃO de
+protocolo (SEP-2133) que carimba o selo de assurance. Ela não responde a método nenhum, não
+aparece em listagem e não tem campo `auth=` — mas MUDA o que sai no fio de toda resposta de tool
+para quem a negociou. A instrução desta série é que superfície nova entra na matriz no mesmo
+commit em que nasce; o veredito aqui é que a extensão entra na matriz (é declarada, e pelo
+identificador inteiro, porque ele é contrato de fio) mas NÃO na checagem de `auth=`. O que a
+vigia no lugar está escrito em `_extensoes`, junto com o motivo de isso não ser uma exceção
+disfarçada.
+
 COMO OS PROMPTS ENTRAM SEM VIRAR UMA SEGUNDA LISTA. Enumerar os dez prompts nesta matriz seria
 recriar, aqui, a lista que `tests/prompts_mirror_test.py` existe para impedir — e ela divergiria
 no primeiro agente novo. Então a matriz declara a FAMÍLIA (`prompt:*`), e o cruzamento aceita um
@@ -67,6 +76,12 @@ FAMILIA_PROMPTS = "prompt:*"
 #: nomear a linha pela função de hoje faria a matriz ficar órfã num rename, sem que nada tivesse
 #: mudado de fato na superfície.
 FAMILIA_COMPLETION = "completion:*"
+
+#: A EXTENSÃO. Aqui a chave é o IDENTIFICADOR INTEIRO, ao contrário das outras três — e a
+#: diferença é o ponto: o identificador de uma extensão é contrato de fio (SEP-2133), então
+#: trocá-lo TEM que ficar vermelho aqui. Uma família `extension:*` deixaria passar exatamente a
+#: mudança que quebra clientes.
+EXTENSAO_SELO = "extension:br.com.rededor.foundry/assurance"
 
 #: A MATRIZ. Uma linha por superfície registrada hoje. `True` = grava hoje; string = não grava, e
 #: o texto diz por quê (mesma convenção do monolito).
@@ -110,6 +125,21 @@ MATRIZ: dict[str, dict[str, object]] = {
         # lê o catálogo —, então não há acesso a registrar nela.
         "trilha": True,
         "caso_de_uso": "n/a: módulo usecases não se aplica a um autocompletar",
+    },
+    EXTENSAO_SELO: {
+        "conversa": "n/a: envolve uma chamada de tool avulsa — não há conversa para persistir",
+        "tokens": "n/a: o selo copia o que a tool devolveu; não chama modelo",
+        # É A RAZÃO DE ELE EXISTIR: as citações que a tool produziu viajam no `_meta` da
+        # resposta, em forma estável de protocolo, para o cliente que negociou a extensão.
+        # Regra 4 do CLAUDE.md continua sendo da TOOL — o selo torna verificável, não substitui.
+        "referencias": True,
+        "chamado": "n/a: o selo observa e anexa metadado; não executa nada, muito menos escrita",
+        # NÃO é `True`: o selo REFERENCIA o evento que a tool gravou (ADR-023), com escopo e id,
+        # e não grava um segundo. Gravar um evento por resposta duplicaria a trilha do mesmo
+        # acesso — e o que se quer provar é que a leitura está registrada, não que o selo rodou.
+        "trilha": "n/a: referencia o evento que a tool gravou (escopo + id); não grava nenhum — "
+        "um segundo evento por resposta duplicaria a trilha do mesmo acesso",
+        "caso_de_uso": "n/a: módulo usecases não se aplica a metadado de resposta",
     },
     FAMILIA_PROMPTS: {
         "conversa": "n/a: um prompt é instrução publicada, não uma conversa",
@@ -160,6 +190,30 @@ async def _registro_cru(mcp) -> list[tuple[str, str, object]]:
         nome = getattr(handler, "__name__", repr(handler))
         achadas.append((f"completion:{nome}", nome, getattr(handler, "auth", None)))
     return achadas
+
+
+def _extensoes(mcp) -> list[str]:
+    """As extensões de protocolo registradas na RAIZ deste servidor, pelo identificador de fio.
+
+    POR QUE UMA EXTENSÃO ENTRA NESTA MATRIZ, sendo que não é uma superfície. Ela não responde a
+    método nenhum e não devolve conteúdo próprio — mas MUDA o que sai no fio de toda resposta de
+    tool, para quem a negociou. A matriz existe para responder "o que este servidor entrega e o
+    que ele registra"; uma extensão que altera a resposta e não aparecesse aqui deixaria a
+    pergunta sem resposta justamente na camada que o produto vende.
+
+    E POR QUE ELA NÃO ENTRA NA VERIFICAÇÃO 1 (`auth=`). Extensão não tem campo `auth=` — não é
+    componente, é um envelope em volta do `tools/call`. O que a governa são duas coisas
+    medidas, não uma declaração: ela só roda como parte de uma chamada de tool, e a tool carrega
+    o gate de papel do Entra (verificação 1, sobre `tool:search_docs`); e o que ela anexa é
+    cópia do que aquela mesma chamada já devolveu ao mesmo chamador — provado, com um chamador
+    sem acesso, em `tests/assurance_seal_test.py`. Enfiá-la em `_sem_auth` só produziria um
+    `auth=None` que teria de ser dispensado com uma exceção; declarar aqui o que a vigia no
+    lugar é mais honesto que uma exceção.
+
+    Lê `mcp._extensions`, que é onde `add_extension` guarda o registro — não uma lista nossa em
+    paralelo, que divergiria na primeira extensão nova.
+    """
+    return sorted(f"extension:{i}" for i in getattr(mcp, "_extensions", {}))
 
 
 def _declarado(sid: str, derivados: frozenset[str]) -> str:
@@ -268,11 +322,15 @@ async def _prova_por_mutacao() -> str | None:
     return None
 
 
-async def _superficies() -> list[tuple[str, str, object]]:
-    """As superfícies registradas HOJE pela composition root real (`mcp_app.main`), com a MESMA
+async def _superficies() -> tuple[list[tuple[str, str, object]], list[str]]:
+    """O que este servidor publica HOJE pela composition root real (`mcp_app.main`), com a MESMA
     fiação que `build_app()` usa — nada de registrar à mão aqui, ou o teste provaria a superfície
     que ELE monta, não a que o app monta. É por isso que `register_surfaces` existe como função
-    em `main.py`."""
+    em `main.py`.
+
+    Devolve os componentes (com o `auth=` cru) e as EXTENSÕES, separados: as duas listas
+    respondem à mesma pergunta da matriz, mas só a primeira tem campo `auth=` para checar — ver
+    `_extensoes`."""
     from app.shared.settings import settings
     from mcp_app.auth import build_auth
     from mcp_app.main import build_mcp, register_surfaces, wire_registry
@@ -280,7 +338,7 @@ async def _superficies() -> list[tuple[str, str, object]]:
     wire_registry()
     mcp = build_mcp(build_auth(settings.mcp_public_base_url))
     register_surfaces(mcp)
-    return await _registro_cru(mcp)
+    return await _registro_cru(mcp), _extensoes(mcp)
 
 
 def main() -> int:
@@ -309,7 +367,7 @@ def main() -> int:
         settings.entra_api_client_id = "22222222-2222-2222-2222-222222222222"
         settings.mcp_public_base_url = "http://testserver"
 
-        superficies = asyncio.run(_superficies())
+        superficies, extensoes = asyncio.run(_superficies())
         derivados = frozenset(prompt_ids())
         ids = sorted(sid for sid, _n, _a in superficies)
         por_familia: dict[str, int] = {}
@@ -338,8 +396,17 @@ def main() -> int:
             problema_mutacao is None,
         )
 
+        # --- 1b · a extensão de protocolo é VISTA pela matriz --------------------------------
+        # Ela não passa pela checagem de `auth=` (ver `_extensoes`), mas passa pela de
+        # declaração: uma extensão registrada e não declarada — ou um identificador trocado,
+        # que é quebra de contrato de fio — fica vermelha na verificação 2 logo abaixo.
+        check(
+            f"a extensão de protocolo foi descoberta ({', '.join(extensoes) or 'NENHUMA'})",
+            extensoes == [EXTENSAO_SELO],
+        )
+
         # --- 2 · nenhuma superfície órfã, dos dois lados ------------------------------------
-        respondidas = {_declarado(sid, derivados) for sid in ids}
+        respondidas = {_declarado(sid, derivados) for sid in ids} | set(extensoes)
         nao_declaradas = sorted(respondidas - set(MATRIZ))
         check(
             "toda superfície registrada está declarada na matriz"

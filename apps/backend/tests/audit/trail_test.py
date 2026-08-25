@@ -10,7 +10,9 @@ SILÊNCIO — que é o pior modo para uma auditoria:
   2. um redator que mascara demais estraga dado legítimo e é desligado na primeira semana; um que
      mascara de menos deixa passar o que existe para barrar;
   3. uma aprovação cuja gravação falhou, mas que roda a ação mesmo assim, produz escrita sem
-     rastro — exatamente o buraco que a trilha existe para não ter.
+     rastro — exatamente o buraco que a trilha existe para não ter;
+  4. um recibo que recolhe o evento errado faz o selo de assurance do MCP apontar para outro
+     acesso — e apontar para o evento errado é pior que não apontar para nenhum.
 
 Roda offline, sobre o fake em memória: o que está travado é o CONTRATO, não o SDK do Azure.
 """
@@ -126,6 +128,33 @@ def main() -> int:
     from app.modules.audit.internal.export import ESCOPOS
 
     check("os escopos do fecho são os mesmos do pacote", set(ESCOPOS) == {"approvals", "access", "redactions"})
+
+    # ── recibo da trilha ──────────────────────────────────────────────────────
+    # `record()` sempre devolveu o evento, e todo chamador o descarta (grava dentro de um
+    # `suppress` e segue). Quem está POR CIMA — o selo de assurance do MCP, que diz ao cliente
+    # "esta resposta está na trilha, sob este id" — precisa do id sem reler a trilha. Ler para
+    # descobrir baixaria o blob inteiro a cada resposta, correria com outro processo, e
+    # RECALCULARIA o que já existia; um selo que recalcula não prova nada.
+    #
+    # O que se trava aqui é o contrato da caixa, não o do selo: recolhe o que foi gravado
+    # DENTRO dela, com o escopo junto (o `Event` não carrega escopo — ele é a partição), e nada
+    # do que aconteceu fora.
+    from app.modules.audit.public import receipts, record
+
+    antes = record(scope="access", actor="process:test", kind="access", summary="antes")
+    with receipts() as caixa:
+        um = record(scope="access", actor="process:test", kind="access", summary="dentro 1")
+        dois = record(scope="redactions", actor="process:test", kind="redaction", summary="dentro 2")
+    depois = record(scope="access", actor="process:test", kind="access", summary="depois")
+
+    check("a caixa recolhe os eventos gravados dentro dela, na ordem",
+          [r["event"]["hash"] for r in caixa] == [um["hash"], dois["hash"]])
+    check("com o escopo junto, que o evento sozinho não carrega",
+          [r["scope"] for r in caixa] == ["access", "redactions"])
+    check("e nada do que foi gravado fora dela entra",
+          all(r["event"]["hash"] not in (antes["hash"], depois["hash"]) for r in caixa))
+    # `record` fora de qualquer caixa não pode estourar: é o caminho normal de todo o backend.
+    check("gravar fora de uma caixa continua funcionando", bool(depois["hash"]))
 
     if failures:
         print(f"\n❌ {len(failures)} assertion(s) failed.")

@@ -37,7 +37,13 @@ from app.modules.domains.public import DOMAIN_KINDS, domain_spec, domain_specs
 from app.modules.tenancy import public as tenancy
 from app.shared.settings import settings
 from app.shared.telemetry import setup_telemetry
-from mcp_app import prompts_agentdefs, resources_knowledge, tenant_gate, tools_knowledge
+from mcp_app import (
+    assurance_extension,
+    prompts_agentdefs,
+    resources_knowledge,
+    tenant_gate,
+    tools_knowledge,
+)
 from mcp_app.auth import MCP_PATH, build_auth
 
 INSTRUCTIONS = (
@@ -104,7 +110,7 @@ def wire_registry() -> None:
 
 
 def register_surfaces(mcp: FastMCP) -> None:
-    """As QUATRO superfícies que este servidor publica, num lugar só.
+    """As QUATRO superfícies que este servidor publica — e o SELO por cima delas, num lugar só.
 
     A quarta é a COMPLETION, e ela é superfície pelo mesmo motivo que as outras: responde a um
     chamador autenticado e devolve conteúdo derivado da base. O FastMCP não a gateia — quem
@@ -124,6 +130,16 @@ def register_surfaces(mcp: FastMCP) -> None:
     prompts_agentdefs.register(mcp)
     resources_knowledge.register(mcp)
     resources_knowledge.register_completion(mcp)
+
+    # O SELO NÃO É UMA QUINTA SUPERFÍCIE: ele não responde a método nenhum e não devolve
+    # conteúdo próprio. É uma extensão de protocolo negociada (SEP-2133) que envolve o
+    # `tools/call` e anexa, ao `_meta` da resposta, o que a tool JÁ produziu — as citações e a
+    # referência do evento na trilha. Quem não negocia a extensão recebe a resposta idêntica.
+    #
+    # REGISTRADO NA RAIZ, e isto é do protocolo: extensão de servidor montado não sobe para o
+    # pai (`FastMCP.add_extension`). Este app é a raiz, então registrar aqui basta — mas se um
+    # dia ele for montado dentro de outro servidor, o selo some do fio SEM ERRO.
+    assurance_extension.register(mcp)
 
 
 def build_app():

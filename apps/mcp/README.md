@@ -16,6 +16,20 @@ conteúdo próprio:
   por `app.modules.knowledge.public.authorized_document`, que é a MESMA função da rota
   `GET /source/{domain_id}/{name}` do backend. Mais a **completion** dos dois parâmetros.
 
+E desde a **Fase 2 (T6)**, por cima de tudo isso, o **selo de assurance** — a camada que motivou
+a ADR-027 e a única parte deste produto sem equivalente de primeira parte. É uma **extensão de
+protocolo negociada** (SEP-2133, `br.com.rededor.foundry/assurance`) que envolve o `tools/call`
+e anexa, ao `_meta` da resposta, as citações que a tool produziu e o **id do evento na trilha**
+(ADR-023). Duas propriedades a definem, e as duas são de gate:
+
+- **negociada** — quem não anuncia a extensão recebe a resposta **idêntica** à de antes dela;
+- **não calcula nada** — cada campo é cópia de algo que já existia. Um selo que recalcula não
+  prova nada, prova a si mesmo.
+
+`mcp_app/assurance_extension.py` explica a escolha do identificador (é contrato de fio) e o que
+o selo não pode carregar; `tests/assurance_seal_test.py` prova os dois sentidos do opt-in, a
+não-invenção por mutação da fonte, e a não-vazão com um chamador sem acesso.
+
 > **É a ÚNICA superfície MCP do produto.** Na Fase 0c `app/modules/mcpserver/` foi deletado do
 > backend, junto com o `fastmcp==3.4.7` do extra `agents` que o sustentava. Duas superfícies
 > servindo a mesma tool é a divergência que este projeto mais teme: uma delas pode passar a
@@ -45,6 +59,7 @@ mcp_app/
   tools_knowledge.py      a tool `search_docs`
   prompts_agentdefs.py    os prompts, derivados dos documentos AgentSchema
   resources_knowledge.py  o documento integral (mesmo ACL da rota /source) + a completion
+  assurance_extension.py  o SELO: extensão de protocolo negociada sobre o `tools/call`
 tests/                    os gates (módulos executáveis com main(), não pytest)
 Dockerfile                contexto de build = a RAIZ do repositório (depende de ../backend por path)
 ```
@@ -105,9 +120,11 @@ uv run python -m tests.instrumentation_matrix_test # toda superfície tem papel 
 uv run python -m tests.prompts_mirror_test         # os prompts publicados == os agentes compostos
 uv run python -m tests.resource_document_test      # o ACL do documento é o do backend; `..` recusado
 uv run python -m tests.completion_test             # só sugere o que existe e o que o chamador pode abrir
+uv run python -m tests.client_surface_test         # um cliente REAL atravessa a pilha; sem papel não vê nada
+uv run python -m tests.assurance_seal_test         # o selo é negociado, não inventa e não vaza
 ```
 
-O CI roda os dez no job `mcp-app` (`.github/workflows/ci.yml`), que **também** é o gate de
+O CI roda todos no job `mcp-app` (`.github/workflows/ci.yml`), que **também** é o gate de
 instalabilidade: ele instala a base sem o extra `agents` mais FastMCP 4 e importa
 `app.modules.knowledge.public`. O `import-linter` prova o grafo de import; só a instalação prova
 a instalabilidade — e é a instalabilidade que quebra.

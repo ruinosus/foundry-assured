@@ -387,8 +387,9 @@ jobs:
       # APLICAÇÃO, e o usuário receber documento que não pode ver, sem erro, sem log, sem
       # sintoma. O sétimo (matriz) é o vigia de superfície NOVA que a matriz do monolito perdeu
       # quando `/mcp` saiu de lá na Fase 0c — sem ele, uma superfície nova podia nascer sem
-      # `auth=` ou sem declarar o que grava, e nada aqui reprovaria. Os três últimos guardam o
-      # que a Fase 1 acrescentou.
+      # `auth=` ou sem declarar o que grava, e nada aqui reprovaria. Os seguintes guardam o que
+      # a Fase 1 acrescentou (prompts, resource, completion, e o cliente real que atravessa a
+      # pilha), e o último guarda a Fase 2 — o selo de assurance.
       - name: MCP — Resource Server (issuer, escopo, provider desligado sem auth)
         run: uv run --no-sync python -m tests.auth_test
       - name: MCP — papel do Entra decide as tools visíveis (any-of, não all-of)
@@ -431,6 +432,23 @@ jobs:
       # `DEFAULT_JOBS` em `scripts/gates.py`.
       - name: MCP — um cliente real lista prompts, lê o resource, e sem papel não vê nada
         run: uv run --no-sync python -m tests.client_surface_test
+      # A FASE 2 — o SELO, que é a camada que motivou separar o MCP num app próprio (ADR-027).
+      # Este gate guarda as três propriedades que decidem se o selo vale alguma coisa, e todas
+      # as três falham em SILÊNCIO se ninguém as vigiar:
+      #
+      #   negociado    quem não anuncia a extensão tem que receber a resposta IDÊNTICA à de
+      #                antes desta fase. O teste compara contra um servidor montado SEM a
+      #                extensão — não contra uma expectativa escrita à mão, que envelheceria.
+      #   não inventa  cada campo do selo é copiado de uma fonte que já existia. Provado por
+      #                MUTAÇÃO: muda-se a fonte e mostra-se o selo mudando junto.
+      #   não vaza     com um chamador sem acesso, o evento que a trilha grava NOMEIA o
+      #                documento negado, e o selo carrega o id do evento sem carregar o nome.
+      #
+      # Offline como os outros: `httpx2.ASGITransport`, verificador de token estático,
+      # `retrieve` substituído. A TRILHA é a real — sem `AZURE_STORAGE_ACCOUNT` ela cai no
+      # `InMemoryTrail`, que encadeia por hash igual à de produção.
+      - name: MCP — o selo é negociado, não inventa e não vaza (extensão de protocolo)
+        run: uv run --no-sync python -m tests.assurance_seal_test
 
   # JOB SEPARADO DE PROPÓSITO, e a razão está em `scripts/gates.py:42`: o que entra em
   # `DEFAULT_JOBS` é prometido como "inteiramente offline e determinístico", e a bateria local
