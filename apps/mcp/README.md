@@ -16,15 +16,22 @@ conteúdo próprio:
   por `app.modules.knowledge.public.authorized_document`, que é a MESMA função da rota
   `GET /source/{domain_id}/{name}` do backend. Mais a **completion** dos dois parâmetros.
 
-E desde a **Fase 2 (T6)**, por cima de tudo isso, o **selo de assurance** — a camada que motivou
+E desde a **Fase 2 (T6)**, por cima da tool, o **selo de assurance** — a camada que motivou
 a ADR-027 e a única parte deste produto sem equivalente de primeira parte. É uma **extensão de
 protocolo negociada** (SEP-2133, `br.com.rededor.foundry/assurance`) que envolve o `tools/call`
 e anexa, ao `_meta` da resposta, as citações que a tool produziu e o **id do evento na trilha**
 (ADR-023). Duas propriedades a definem, e as duas são de gate:
 
-- **negociada** — quem não anuncia a extensão recebe a resposta **idêntica** à de antes dela;
-- **não calcula nada** — cada campo é cópia de algo que já existia. Um selo que recalcula não
-  prova nada, prova a si mesmo.
+- **negociada** — quem não anuncia a extensão recebe a resposta de `tools/call` **idêntica** à
+  de antes dela. O identificador em si vai para `capabilities.extensions` de TODO cliente que faz
+  handshake, negocie ou não (é assim que ele descobre a extensão para poder negociá-la) — só o
+  carimbo na resposta de `tools/call` fica condicionado ao opt-in.
+- **não calcula nada** — cada campo de conteúdo é cópia de algo que já existia. Um selo que
+  recalcula não prova nada, prova a si mesmo.
+- **alcance limitado** — `intercept_tool_call` é o único gancho de resposta que a
+  `ServerExtension` oferece nesta versão do protocolo: o resource `document://` e a completion
+  continuam SEM selo, não por não merecerem, mas porque o protocolo ainda não tem o gancho
+  equivalente para eles.
 
 `mcp_app/assurance_extension.py` explica a escolha do identificador (é contrato de fio) e o que
 o selo não pode carregar; `tests/assurance_seal_test.py` prova os dois sentidos do opt-in, a

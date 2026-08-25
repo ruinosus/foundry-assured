@@ -36,6 +36,10 @@ from app.modules.audit.internal.trail import (
     verify,
 )
 
+#: A caixa da requisição atual, ou `None` quando ninguém está recolhendo — que é o estado
+#: normal. `default=None` importa: sem ele, `record()` fora de um `receipts()` estouraria.
+_recibos: ContextVar[list[dict] | None] = ContextVar("recibos_da_trilha", default=None)
+
 
 def record(
     scope: str, actor: str, kind: str, summary: str, ref: str = "", detail: dict | None = None
@@ -72,9 +76,14 @@ def receipts() -> Iterator[list[dict]]:
 
     O caminho de volta é uma caixa MUTÁVEL posta num ContextVar ANTES da chamada: o valor
     desce para a task do handler (contexto copiado herda a referência) e as anexações sobem,
-    porque a lista é a mesma. Medido: o inverso — a callee dar `set()` num ContextVar e a
-    caller ler — NÃO funciona aqui, porque o FastMCP roda o corpo da tool com o contexto
-    copiado. Ver `apps/mcp/mcp_app/assurance_extension.py`.
+    porque a lista é a mesma. Medido sobre a mesma pilha ASGI dos gates: o inverso — a callee
+    dar `set()` num ContextVar e a caller ler — FUNCIONA quando o corpo da tool é `async`
+    (o caso de `search_docs`), mas lê `None` quando o corpo é síncrono, porque aí ele roda numa
+    worker thread cujo contexto é CÓPIA — propriedade do `sync`, não do FastMCP. A caixa
+    mutável continua sendo a escolha certa por dois motivos: é a única forma que funciona nos
+    DOIS casos, e o id teria que sair daqui de qualquer jeito — quem chama `record()` em
+    `retrieval.py:107-110` descarta o retorno dentro de um `suppress(Exception)`. Ver
+    `apps/mcp/mcp_app/assurance_extension.py`.
 
     Cada recibo é `{"scope": <partição>, "event": <o evento inteiro, como `record` o devolve>}`.
     Vem INTEIRO de propósito: quem consome escolhe o que expor, e o selo do MCP publica só
@@ -92,11 +101,6 @@ def receipts() -> Iterator[list[dict]]:
         yield caixa
     finally:
         _recibos.reset(token)
-
-
-#: A caixa da requisição atual, ou `None` quando ninguém está recolhendo — que é o estado
-#: normal. `default=None` importa: sem ele, `record()` fora de um `receipts()` estouraria.
-_recibos: ContextVar[list[dict] | None] = ContextVar("recibos_da_trilha", default=None)
 
 
 def read(scope: str) -> list[dict]:

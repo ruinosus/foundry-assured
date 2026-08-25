@@ -134,7 +134,10 @@ def register_surfaces(mcp: FastMCP) -> None:
     # O SELO NÃO É UMA QUINTA SUPERFÍCIE: ele não responde a método nenhum e não devolve
     # conteúdo próprio. É uma extensão de protocolo negociada (SEP-2133) que envolve o
     # `tools/call` e anexa, ao `_meta` da resposta, o que a tool JÁ produziu — as citações e a
-    # referência do evento na trilha. Quem não negocia a extensão recebe a resposta idêntica.
+    # referência do evento na trilha. Quem não negocia a extensão recebe a resposta de
+    # `tools/call` idêntica — o handshake é outra história: o identificador vai para
+    # `capabilities.extensions` de todo cliente, negocie ou não, porque é dali que ele aprende
+    # que a extensão existe.
     #
     # REGISTRADO NA RAIZ, e isto é do protocolo: extensão de servidor montado não sobe para o
     # pai (`FastMCP.add_extension`). Este app é a raiz, então registrar aqui basta — mas se um

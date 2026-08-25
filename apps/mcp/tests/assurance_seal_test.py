@@ -287,11 +287,14 @@ def main() -> int:
 
         # ── 2 · o selo não inventa: cada campo tem fonte, e a fonte manda ────────────────
         corpo = r["negociado"].structured_content or {}
-        do_corpo = [{"source": f["source"], "url": f["url"]} for f in corpo.get("sources", [])]
+        do_corpo = [
+            {"index": f["index"], "source": f["source"], "url": f["url"]}
+            for f in corpo.get("sources", [])
+        ]
         check(
-            "as citações do selo são as MESMAS que a tool devolveu no corpo",
+            "as citações do selo são as MESMAS que a tool devolveu no corpo (index incluso)",
             (selo or {}).get("citations") == do_corpo == [
-                {"source": l["source"], "url": l["url"]} for l in LINHAS
+                {"index": l["index"], "source": l["source"], "url": l["url"]} for l in LINHAS
             ],
         )
         evento = r["evento_negociado"]

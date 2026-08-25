@@ -6,8 +6,10 @@ que não tem equivalente de primeira parte: um servidor MCP cuja resposta carreg
 A MÁXIMA MAIOR não a alcança pela exceção que o próprio CLAUDE.md calibra — a camada de
 assurance é nossa, e foi procurada antes de ser escrita.
 
-O SELO NÃO CALCULA NADA. É a propriedade que o faz valer alguma coisa: cada campo é uma cópia de
-algo que já existia antes de a extensão rodar.
+O SELO NÃO CALCULA NADA. É a propriedade que o faz valer alguma coisa: cada campo de conteúdo é
+uma cópia de algo que já existia antes de a extensão rodar. Ressalva: `version` foge à regra por
+descrever o FORMATO do selo, não a resposta — não é cópia de nada, é o número que o próprio selo
+carrega sobre si mesmo (ver `VERSAO_DO_SELO` abaixo).
 
     citations  ←  `sources` que a própria tool devolveu (já aparado pelo ACL do chamador)
     audit      ←  o recibo de `audit.public.receipts()`, o evento que a tool gravou
@@ -87,6 +89,10 @@ IDENTIFICADOR = "br.com.rededor.foundry/assurance"
 #: cliente que negociou a extensão sabe procurar exatamente onde ela se chamou.
 CHAVE_DO_SELO = IDENTIFICADOR
 
+#: A versão DO SELO (não do produto — ver a ressalva no docstring do módulo). Uma constante só,
+#: para `settings()` e o selo que `intercept_tool_call` monta nunca divergirem entre si.
+VERSAO_DO_SELO = 1
+
 
 def _citacoes(resultado: ToolResult) -> list[dict[str, Any]] | None:
     """As citações que a TOOL produziu, ou `None` quando ela não produz citações.
@@ -102,10 +108,12 @@ def _citacoes(resultado: ToolResult) -> list[dict[str, Any]] | None:
     fontes = estruturado.get("sources")
     if not isinstance(fontes, list):
         return None
-    # Cópia rasa dos campos que a tool já publicou. Nada é derivado: `source` e `url` são os
-    # mesmos valores que o chamador acabou de receber no corpo.
+    # Cópia rasa dos campos que a tool já publicou. Nada é derivado: `index`, `source` e `url`
+    # são os mesmos valores que o chamador acabou de receber no corpo. `index` viaja junto de
+    # propósito — sem ele, resolver uma citação como "[2]" dependeria de confiar que a ordem da
+    # lista não mudou entre o corpo e o selo, e citação resolvível é a tese do produto.
     return [
-        {"source": f.get("source"), "url": f.get("url")}
+        {"index": f.get("index"), "source": f.get("source"), "url": f.get("url")}
         for f in fontes
         if isinstance(f, dict)
     ]
@@ -151,8 +159,18 @@ class SeloDeAssurance(ServerExtension):
 
         `version` é do SELO, não do produto: o dia em que a forma do selo mudar de maneira
         incompatível, este número sobe e um cliente antigo sabe que não entende o que recebeu.
+
+        `scope` diz ONDE o selo chega: só `tools/call`. `intercept_tool_call` é o único gancho
+        de resposta que a `ServerExtension` oferece — o resource `document://` e a completion
+        continuam sem selo (ver a seção "onde ele não chega" no docstring do módulo). Sem este
+        campo, o cliente só aprenderia o limite lendo o README ou tentando.
         """
-        return {"version": 1, "citations": True, "audit_trail": True}
+        return {
+            "version": VERSAO_DO_SELO,
+            "citations": True,
+            "audit_trail": True,
+            "scope": ["tools/call"],
+        }
 
     def _opt_in(self, context: Any) -> dict[str, Any] | None:
         """As configurações que o CLIENTE declarou para esta extensão nesta requisição, ou
@@ -192,8 +210,10 @@ class SeloDeAssurance(ServerExtension):
         if self._opt_in(context) is None:
             return await call_next()
 
-        # A caixa desce para a task do handler pelo ContextVar e volta preenchida — ver a
-        # docstring de `audit.public.receipts`, que explica por que o sentido é esse.
+        # A caixa desce para a task do handler pelo ContextVar e volta preenchida — funciona
+        # porque `search_docs` é `async` (medido: um corpo síncrono rodaria em worker thread com
+        # contexto copiado, e a caixa não voltaria preenchida). Ver a docstring de
+        # `audit.public.receipts`, que traz a medição completa.
         with receipts() as recibos:
             resultado = await call_next()
 
@@ -204,7 +224,7 @@ class SeloDeAssurance(ServerExtension):
         if not isinstance(resultado, ToolResult) or isinstance(resultado, InputRequiredToolResult):
             return resultado
 
-        selo: dict[str, Any] = {"version": 1}
+        selo: dict[str, Any] = {"version": VERSAO_DO_SELO}
         citacoes = _citacoes(resultado)
         if citacoes is not None:
             selo["citations"] = citacoes

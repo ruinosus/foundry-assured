@@ -23,6 +23,7 @@ import sys
 
 from app.modules.audit.internal.redact import redact
 from app.modules.audit.internal.trail import GENESIS, InMemoryTrail, verify
+from app.modules.audit.public import receipts, record
 
 failures: list[str] = []
 
@@ -139,8 +140,6 @@ def main() -> int:
     # O que se trava aqui é o contrato da caixa, não o do selo: recolhe o que foi gravado
     # DENTRO dela, com o escopo junto (o `Event` não carrega escopo — ele é a partição), e nada
     # do que aconteceu fora.
-    from app.modules.audit.public import receipts, record
-
     antes = record(scope="access", actor="process:test", kind="access", summary="antes")
     with receipts() as caixa:
         um = record(scope="access", actor="process:test", kind="access", summary="dentro 1")

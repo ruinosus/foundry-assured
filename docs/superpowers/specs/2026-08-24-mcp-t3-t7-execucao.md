@@ -138,7 +138,10 @@ aplicada.
 ## Fase 2 — T6: o selo de assurance
 
 **A camada que justifica a separação.** Uma `ServerExtension` com identificador reverse-DNS que
-anexa, a cada resposta: citações resolvíveis, groundedness, e o id do evento na trilha (ADR-023).
+anexa, a cada resposta: citações resolvíveis e o id do evento na trilha (ADR-023). Groundedness
+FICA DE FORA, e é uma omissão deliberada, não um esquecimento: não existe groundedness
+pré-calculada em `tools/call` para copiar, e calculá-la aqui violaria o princípio da fase — o
+selo não calcula nada, só copia o que já existe.
 
 ```
 identifier = "br.com.rededor.foundry/assurance"   # sem default na classe: obrigatório
