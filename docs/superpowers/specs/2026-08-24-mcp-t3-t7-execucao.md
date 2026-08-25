@@ -29,7 +29,7 @@ Esta spec cobre o resto: **T3 a T7**, sobre o app separado da ADR-027.
 | Peça | Assinatura real |
 |---|---|
 | `ServerExtension` | `identifier` (**sem default** — obrigatório), `settings() -> dict`, `methods() -> Sequence[MethodBinding]`, `intercept_tool_call(params, context, call_next) -> ToolCallOutcome`, `lifespan()`, `client_settings`, `server` |
-| `require_roles` | `(*roles: str, extract: Callable[[dict], Iterable[str]]) -> AuthCheck` — `extract` é **obrigatório**, não tem default |
+| `require_roles` | `(*roles: str, extract: Callable[[dict], Iterable[str]]) -> AuthCheck` — `extract` é **obrigatório**; e a semântica é **AND**, não OR (medido na Fase 0b) |
 | `EntraOBOToken` | `(scopes: list[str]) -> str` |
 | `AzureJWTVerifier` | `(*, client_id, tenant_id, required_scopes=None, identifier_uri=None, base_authority='login.microsoftonline.com')` — **idêntica à do 3.4.7** |
 | `UserSession` | `get` · `set` · `delete` · `clear` · `end` · `id` |
@@ -75,8 +75,12 @@ nova. O critério é **paridade**, não novidade.
   `ci.yml`, `scripts/gates.py`, instruções de dev. **Esquecer um mata o backend no import** —
   falha alta, não silenciosa.
 - `apps/mcp/pyproject.toml`: depende do backend por path, **sem** o extra, mais `fastmcp==4.0.0b3`.
-- `authz.py` **morre**: `require_roles("Reader", extract=lambda c: c.get("roles") or [])` substitui
-  a ponte escrita à mão. Atenção ao `extract` obrigatório.
+- `authz.py` **morre**, mas não vira uma linha: `require_roles` do 4.0.0b3 exige **TODOS** os papéis
+  passados (AND). `require_roles("Reader","Author","Approver","Admin", …)` — que era o que a primeira
+  versão desta spec previa — faria a tool sumir do `tools/list` para todo mundo, **sem erro**, porque
+  tool negada por `auth=` é filtrada, não recusada. O OR ("qualquer um destes papéis") é composto por
+  cima: um `require_roles` de biblioteca por papel, e só a composição é nossa. Trave as duas semânticas
+  em teste — a diferença é invisível em runtime.
 - `httpx` → `httpx2` onde o app novo tocar. Os `except httpx.` viram código morto **silencioso** —
   varredura, não bump.
 
