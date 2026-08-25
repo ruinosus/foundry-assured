@@ -25,6 +25,12 @@ desligamento gracioso deixa o worker CANCELAR a execução em voo, e P2 então l
 `status='cancelled'` — o que faria o gate verde sobre o cenário errado (uma réplica que se
 despede não é uma réplica que morre). Matar dentro da sessão dá `working` → `completed`.
 
+E A ASSERÇÃO COBRA ISSO, o que não acontecia antes. Ela aceitava `inicial in ("working", …,
+"completed")` — e com `completed` na lista, uma saída graciosa passava: medido, P2 lia
+`completed` e o gate ficava VERDE sem nunca ter medido a retomada de trabalho órfão, que é a
+propriedade inteira. A asserção dependia de ninguém "limpar" o `os._exit(0)`. Hoje é `working`
+exato: trocar o `os._exit` por saída graciosa deixa o gate VERMELHO, medido por mutação.
+
 `redelivery_timeout` é encurtado para 2s de propósito. O default do Docket é 300s: é o tempo que
 o backend espera antes de devolver à fila a execução de um worker que sumiu. Em produção 300s é
 o valor certo; num gate, seria cinco minutos de espera para provar a mesma propriedade.
@@ -200,9 +206,16 @@ def main() -> int:
         p2 = _roda(_P2_TASK, p1["task_id"], url=url)
         print(f"     P2 (processo novo) viu: {p2} · {time.monotonic() - inicio:.0f}s")
         check(
-            "um PROCESSO NOVO acha a task pelo id — o backend durável é o que sustenta a "
-            f"promessa de TTL que o servidor fez ao cliente ({p2.get('inicial')})",
-            p2.get("inicial") in ("working", "TaskStatus.working", "completed"),
+            "um PROCESSO NOVO acha a task ÓRFÃ pelo id, ainda `working` — o backend durável é o "
+            f"que sustenta a promessa de TTL que o servidor fez ao cliente ({p2.get('inicial')})",
+            # `working` EXATO, e não "working ou completed". Aceitar `completed` aqui aceitava
+            # também o cenário errado: um P1 que se despede graciosamente deixa o worker
+            # terminar (ou cancelar) o trabalho antes de sair, e P2 então lê um desfecho pronto —
+            # o gate ficava verde sem NUNCA ter medido a retomada de trabalho órfão, que é a
+            # propriedade que justifica o `os._exit(0)` da linha 91. Medido pelo revisor: com
+            # saída graciosa, P2 lia `completed` e o gate passava. A asserção passou a depender
+            # do `os._exit`, e não da boa vontade de quem o encontrar.
+            p2.get("inicial") in ("working", "TaskStatus.working"),
         )
         check(
             f"e ela TERMINA nesse processo novo ({p2.get('final')}) — o worker da réplica nova "
