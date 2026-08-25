@@ -33,7 +33,7 @@ import os
 import subprocess
 import sys
 
-from app import registry
+from app.modules.domains.public import domain_specs
 
 
 def env_do_alvo(app_name: str, rg: str) -> dict[str, str]:
@@ -50,7 +50,7 @@ def env_do_alvo(app_name: str, rg: str) -> dict[str, str]:
 def contradicoes(env: dict[str, str]) -> list[str]:
     """Cada item: o registry declara algo que esta configuração torna impossível."""
     achados: list[str] = []
-    specs = registry._domains()
+    specs = domain_specs()
 
     if any(getattr(d, "corpus_container", "") for d in specs) and not env.get("AZURE_STORAGE_ACCOUNT"):
         quais = ", ".join(d.id for d in specs if getattr(d, "corpus_container", ""))
@@ -140,7 +140,7 @@ def main() -> int:
         )
         return 1
 
-    print(f"✅ a configuração de '{app_name}' sustenta os {len(registry._domains())} domínios do registry.")
+    print(f"✅ a configuração de '{app_name}' sustenta os {len(domain_specs())} domínios do registry.")
     return 0
 
 
