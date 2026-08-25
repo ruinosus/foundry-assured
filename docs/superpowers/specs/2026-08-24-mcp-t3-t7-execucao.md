@@ -88,9 +88,25 @@ nova. O critério é **paridade**, não novidade.
 `app.modules.knowledge.public`. O `import-linter` prova o grafo; só a instalação prova a
 instalabilidade, e é ela que quebra.
 
-**Pronto quando:** os quatro gates de MCP de hoje passam contra o app novo, e o `/mcp` do monolito
-sai do ar no mesmo commit em que o novo entra — duas superfícies servindo a mesma tool é a
-divergência que este repositório mais teme.
+**A fase foi partida em três, e a razão é de risco.** A versão original desta spec exigia que o
+`/mcp` do monolito saísse **no mesmo commit** em que o novo entrasse, para nunca haver duas
+superfícies. Na execução isso se mostrou pior: um único commit misturaria mudança de
+empacotamento, app novo e remoção — e um vermelho no meio não diria qual das três causou.
+
+O corte que ficou:
+
+- **0a** — o framework de agente vira extra. Nada de app novo; a base fica instalável sem o teto.
+- **0b** — nasce `apps/mcp/` com paridade. As duas superfícies coexistem, **de propósito e por pouco
+  tempo**, com gates provando que decidem igual (autorização, identidade, ACL, metadata OAuth).
+- **0c** — o `/mcp` sai do monolito, e os gates dele são portados **antes** de morrerem.
+
+O risco de duas superfícies é real e continua listado abaixo. A mitigação passa a ser *paridade
+provada por gate* em vez de *janela zero* — e a 0c fecha a janela. O que **não** se admite é 0b
+mergear sem a 0c: a divergência silenciosa sobre o que o usuário pode ver é o pior desfecho
+possível deste projeto.
+
+**Pronto quando (0b):** os gates de MCP passam contra o app novo com as mesmas asserções, e a
+metadata OAuth anunciada responde 200 na URL exata que o 401 aponta.
 
 ---
 
@@ -217,7 +233,8 @@ marca é decisão de responsabilidade, não de engenharia.
 1. **A migração do extra** toca cinco lugares que instalam o backend. Falha alta, mas larga.
 2. **Beta em produção:** `fastmcp==4.0.0b3` e `prefab-ui`. Pin exato, sempre.
 3. **`httpx` → `httpx2`:** os `except httpx.` viram código morto silencioso.
-4. **Duas superfícies MCP** durante a Fase 0 — mitigado por retirar a antiga no mesmo commit.
+4. **Duas superfícies MCP** entre a 0b e a 0c — mitigado por paridade provada em gate, não por
+   janela zero (ver Fase 0). A 0b **não pode** mergear sem a 0c.
 5. **Cache com ACL** (Fase 5): escopo errado vaza documento entre usuários. É o único item desta
    spec que pode causar vazamento por configuração.
 
