@@ -57,8 +57,15 @@ def gates(only_jobs: tuple[str, ...] | None, pattern: str | None) -> list[tuple[
     for job_name, job in workflow.get("jobs", {}).items():
         if only_jobs and job_name not in only_jobs:
             continue
-        workdir = job.get("defaults", {}).get("run", {}).get("working-directory", ".")
+        padrao = job.get("defaults", {}).get("run", {}).get("working-directory", ".")
         for step in job.get("steps", []):
+            # O `working-directory` de STEP vence o do job, e é relativo à raiz do repo — é o que
+            # o GitHub Actions faz. Ler só o `defaults.run` do job produzia FALSO VERMELHO: o gate
+            # `check-renderer-single-copy` declara `working-directory: .` para rodar da raiz, e a
+            # bateria o rodava de `apps/frontend`, onde o caminho não resolve. Um agente leu esse
+            # vermelho como "a main está quebrada" e quase mandou consertar um gate saudável —
+            # falso vermelho custa a mesma confiança que falso verde.
+            workdir = step.get("working-directory", padrao)
             command = step.get("run")
             if not command or "\n" in command.strip():
                 continue  # sem `run:` (uma action), ou script multi-linha de setup
