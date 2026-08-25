@@ -42,9 +42,16 @@ from fastapi.responses import StreamingResponse
 # O substituto FALHA ALTO ao ser chamado, e é isso que impede a versão silenciosa desta troca:
 # um backend instalado sem o extra sobe, mas o primeiro domínio que ele tentar montar diz
 # exatamente o que fazer. Nada de endpoint que existe e não responde.
+#
+# O `except` checa `exc.name`, não captura qualquer `ModuleNotFoundError`: sem isso, uma
+# dependência INTERNA do adapter faltando (com o extra `agents` instalado) caía no mesmo ramo e
+# mentia a mesma mensagem — "instale o extra" para quem já instalou. `exc.name` é o módulo que
+# faltou, não o módulo que o import pediu; só interessa quando é o próprio pacote do extra.
 try:
     from agent_framework_ag_ui import add_agent_framework_fastapi_endpoint
-except ModuleNotFoundError:  # instalação sem o extra `agents` — só o app do MCP faz isso
+except ModuleNotFoundError as exc:  # instalação sem o extra `agents` — só o app do MCP faz isso
+    if exc.name != "agent_framework_ag_ui":
+        raise
 
     def add_agent_framework_fastapi_endpoint(*_args, **_kwargs):  # type: ignore[misc]
         raise RuntimeError(

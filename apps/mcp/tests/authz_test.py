@@ -86,6 +86,25 @@ def main() -> int:
         # Claim de tipo inesperado nega em vez de explodir — `_RequireRoles` captura `TypeError`.
         check("claim de tipo errado nega em vez de explodir", not gate(com_papeis(7)))
 
+        # ── DIVERGÊNCIA EM RELAÇÃO AO MONOLITO, documentada — não corrigida ────────────────
+        # `app/modules/mcpserver/internal/authz.py:29` faz `isinstance(concedidos, list)` e
+        # NEGA os dois casos acima: string nua ("Approver") e tupla (("Approver",)) — só lista
+        # concede lá. Este app CONCEDE os dois, porque `_RequireRoles.__call__` (biblioteca)
+        # faz `set(extracted)` sobre qualquer coisa que não seja `str` — uma tupla vira
+        # `{"Approver"}` igual a uma lista.
+        #
+        # O monolito é o MAIS ESTRITO dos dois — e é o comportamento correto por acidente, não
+        # por design: a checagem existe para negar claim malformado, não para aceitar só um
+        # tipo específico de coleção. A divergência NÃO É ALCANÇÁVEL hoje: o Entra sempre emite
+        # `roles` como array JSON (nunca string nem tupla — tupla nem existe em JSON), então
+        # nenhum token real do Entra cai neste ramo. Registrado aqui para não parecer
+        # comportamento não-testado; a correção (se algum dia importar) é decisão de produto,
+        # não deste PR — trocar de biblioteca não é.
+        check(
+            "DIVERGÊNCIA: tupla de papel único também concede aqui (o monolito negaria)",
+            gate(com_papeis(("Approver",))),
+        )
+
         # ── os quatro papéis reais da tool ───────────────────────────────────────────────
         tool_gate = require_any_role("Reader", "Author", "Approver", "Admin")
         for papel in ("Reader", "Author", "Approver", "Admin"):

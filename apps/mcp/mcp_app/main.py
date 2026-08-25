@@ -38,7 +38,9 @@ nenhum. O que ele lê de lá é dado.
 from __future__ import annotations
 
 import uvicorn
+from fastapi.middleware.cors import CORSMiddleware
 from fastmcp import FastMCP
+from starlette.middleware import Middleware
 
 from app.modules.tenancy import public as tenancy
 from app.registry import DOMAIN_KINDS, domain_spec
@@ -103,11 +105,27 @@ def wire_registry() -> None:
 
 def build_app():
     """A aplicação ASGI. Serve o MCP em `MCP_PATH` e, quando há auth, as rotas `.well-known`
-    na raiz — as duas na mesma lista de rotas, porque este app não é montado em prefixo."""
+    na raiz — as duas na mesma lista de rotas, porque este app não é montado em prefixo.
+
+    O CORS É PARIDADE COM O MONOLITO, NÃO OPCIONAL. O `/mcp` de lá herda o `CORSMiddleware`
+    aplicado a todo `app/main.py` (mesma origem: `settings.frontend_origin`); este app é a
+    superfície inteira, então precisa aplicar o próprio — sem isso o preflight (`OPTIONS`) de
+    um cliente de browser recebe 405 sem `access-control-allow-origin` (medido). Hoje nenhum
+    cliente de browser chama este endpoint (o frontend fala AG-UI com o monolito, não MCP), mas
+    a Fase 0b trata divergência não declarada como defeito — e quando `/mcp` sair do monolito
+    (Fase 0c), este é o único CORS que sobra: vale reavaliar então se um servidor MCP precisa
+    dele.
+    """
     wire_registry()
     mcp = build_mcp(build_auth(settings.mcp_public_base_url))
     tools_knowledge.register(mcp)
-    return mcp.http_app(path=MCP_PATH)
+    cors = Middleware(
+        CORSMiddleware,
+        allow_origins=[settings.frontend_origin],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    return mcp.http_app(path=MCP_PATH, middleware=[cors])
 
 
 app = build_app()
