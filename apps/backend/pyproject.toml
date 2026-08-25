@@ -5,8 +5,6 @@ description = "Foundry Helpdesk backend — multi-agent workflow over AG-UI"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "agent-framework>=1.13.0",
-    "agent-framework-ag-ui>=1.0.1",
     "azure-ai-projects>=2.4.0",
     "azure-identity>=1.25.3",
     "azure-search-documents>=11.7.0b2",
@@ -50,6 +48,32 @@ dependencies = [
     # no mesmo venv. Medido no PyPI em 2026-08-24. Subir para 4.x só depois que o
     # agent-framework levantar esse teto; o caminho está na spec.
     "fastmcp==3.4.7",
+]
+
+# ---------------------------------------------------------------------------
+# extra `agents` — separa o framework de agente do teto do `mcp`
+#
+# Medido de verdade (instalando, não lendo changelog): o teto que impede
+# `fastmcp==4.x` (que exige `mcp>=2,<3`) de conviver neste venv NÃO vem do
+# `agent-framework` em si — vem do extra `[all]` que o pacote meta puxa.
+# `agent-framework-core` sem extras não depende de `mcp` nenhum; é
+# `agent-framework-core[all]` (arrastado pelo meta-pacote `agent-framework`)
+# quem fixa `mcp>=1.24.0,<2`. Um app novo que precise de FastMCP 4 só pode
+# conviver com esta base se o meta-pacote `agent-framework` — e tudo que só
+# existe para orquestrar agente sobre ele (LangChain/LangGraph) — sair da
+# instalação base.
+#
+# Por isso a linha de corte é cirúrgica, não por família de pacote:
+# `agent-framework-declarative` FICA na base (não entra aqui) porque ele só
+# precisa do `agent-framework-core` SEM extras — é o que faz os prompts
+# (AgentSchema) atravessarem para o app novo sem arrastar o `[all]`. Mover o
+# `declarative` para este extra quebraria exatamente o que o app novo
+# precisa herdar: ler os documentos de prompt sem instalar o framework de
+# execução inteiro.
+[project.optional-dependencies]
+agents = [
+    "agent-framework>=1.13.0",
+    "agent-framework-ag-ui>=1.0.1",
     "langchain>=1.3.15",
     "langgraph>=1.2.11",
     "ag-ui-langgraph>=0.0.43.dev1786716392",
@@ -206,6 +230,19 @@ dev = [
     # isso, `uvx ruff` puxa a última disponível e um upgrade pode reabrir o gate sozinho
     # com regras novas que ninguém selecionou (ver comentário em `[tool.ruff]` acima).
     "ruff==0.16.3",
+    # `uv` (0.9.5, verificado antes de escrever isto) não tem `[tool.uv] default-extras` —
+    # só existe `default-groups`, e o pedido equivalente pra extras
+    # (github.com/astral-sh/uv/issues/8607) segue aberto. Sem isso, `uv sync` sozinho
+    # deixaria de instalar `agent_framework` (o app quebraria no import) a menos que todo
+    # dev lembrasse de `--extra agents` pra sempre.
+    #
+    # Grupo `dev` já é instalado por padrão pelo `uv sync` (é o default-group nativo do
+    # uv), então uma dependência auto-referente ao próprio pacote com o extra —
+    # `foundry-helpdesk-backend[agents]` — puxa o extra `agents` só por tabela estar aqui,
+    # sem flag nova. Testado (venv descartável): `uv sync` puxa o extra; `uv sync --no-dev`
+    # NÃO puxa — é exatamente o caminho que o app novo (FastMCP 4) usa pra instalar só a
+    # base.
+    "foundry-helpdesk-backend[agents]",
 ]
 
 [tool.hatch.build.targets.wheel]

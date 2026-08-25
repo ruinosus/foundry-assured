@@ -10,7 +10,11 @@ RUN pip install --no-cache-dir uv
 
 # Dependencies first (cached), then the app code.
 COPY pyproject.toml uv.lock ./
-RUN uv sync --frozen --no-dev --no-install-project
+# `--no-dev` skips the `dev` group — which is also where the `agents` extra rides for local
+# `uv sync` ergonomics (see the comment on `[dependency-groups] dev` in pyproject.toml, and
+# `[project.optional-dependencies] agents` for the why). A production image needs the runtime
+# framework without the dev tooling, so it asks for the extra explicitly instead.
+RUN uv sync --frozen --no-dev --no-install-project --extra agents
 
 COPY app ./app
 # Declarative agent definitions — AgentSchema documents (ADR-013/ADR-015),
