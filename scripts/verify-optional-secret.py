@@ -38,7 +38,12 @@ RAIZ = Path(__file__).resolve().parent.parent
 #: secret). A lista é a fonte; acrescentar um app aqui é o passo que faz o gate enxergá-lo.
 OPCIONAIS = (
     ("backend", "backend", "entraApiClientSecret", "entra-api-secret"),
-    ("mcp", "mcp", "mcpRequestStateKey", "mcp-request-state-key"),
+    ("mcp/estado", "mcp", "mcpRequestStateKey", "mcp-request-state-key"),
+    # O `mcp` tem DOIS segredos opcionais desde o conserto do OBO: além da chave que sela a
+    # decisão da escrita, a credencial da app registration que o `knowledge.retrieve` usa para
+    # trocar o token do chamador por um de busca. São independentes — um deployment sem sign-in
+    # não tem o segundo, um sem escrita não tem o primeiro, e os dois modos precisam subir.
+    ("mcp/obo", "mcp", "entraApiClientSecret", "entra-api-secret"),
 )
 
 

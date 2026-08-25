@@ -402,6 +402,15 @@ jobs:
         run: uv run --no-sync python -m tests.error_masking_test
       - name: MCP — modo shared resolve tenant E cobra entitlement (ADR-010)
         run: uv run --no-sync python -m tests.shared_tenancy_test
+      # E A CREDENCIAL QUE A LEITURA EXIGE, que é da camada de DEPLOY e por isso nenhum gate
+      # daqui via. `search_docs`, `document://` e a completion chamam o `knowledge.retrieve` do
+      # backend, que faz OBO — fluxo de cliente confidencial. O `env` do container do MCP
+      # carregava `ENTRA_TENANT_ID` e `ENTRA_API_CLIENT_ID` e NÃO o segredo, e
+      # `OnBehalfOfCredential` nem constrói assim (medido). Na `main` isso não existia: o `/mcp`
+      # morava no backend, que tem o segredo. Este gate compara o que o CÓDIGO lê (derivado da
+      # fonte de `_user_search_token`) com o que o BICEP declara.
+      - name: MCP — o container recebe a credencial que o OBO exige
+        run: uv run --no-sync python -m tests.obo_credential_test
       - name: MCP — toda superfície exige papel do Entra e declara o que grava (matriz)
         run: uv run --no-sync python -m tests.instrumentation_matrix_test
       # A FASE 1 acrescentou DUAS famílias de superfície — prompts e um resource template — e os

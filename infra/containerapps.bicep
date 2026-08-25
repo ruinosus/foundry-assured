@@ -275,9 +275,37 @@ resource webApp 'Microsoft.App/containerApps@2024-03-01' = {
   }
 }
 
-// O servidor MCP (ADR-027). SEM SEGREDO, e isso é a ADR-005 em forma de recurso: ele é um
-// Resource Server — valida o token do Entra com `AzureJWTVerifier`, que não pede
-// `client_secret` nenhum. Por isso não há bloco `secrets` aqui e nada a parear com ele.
+// O servidor MCP (ADR-027). ELE TEM DOIS SEGREDOS, e o comentário que dizia "SEM SEGREDO" foi
+// reescrito porque envelheceu duas vezes.
+//
+// A frase original era verdadeira para a Fase 0c: como Resource Server, ele valida o token do
+// Entra com `AzureJWTVerifier`, que não pede `client_secret` nenhum. A Fase 3 (T3) já a
+// contradisse ao trazer `MCP_REQUEST_STATE_KEY` — e ela também não cobria o que ele SEMPRE fez:
+// `search_docs` chama o `knowledge.retrieve` do backend, que troca o token do chamador por um
+// token de busca via **OBO**, e OBO é fluxo de cliente confidencial. Sem credencial de cliente,
+// `OnBehalfOfCredential(..., client_secret='')` levanta, medido:
+//
+//     TypeError: Either "client_certificate", "client_secret", or "client_assertion_func"
+//     must be provided
+//
+// Enquanto o `/mcp` morava no monolito isso nunca apareceu: o backend tem o segredo. Separado o
+// app e copiadas só `ENTRA_TENANT_ID`/`ENTRA_API_CLIENT_ID`, a tool principal nasceria morta no
+// primeiro deploy autenticado — e `mask_error_details=True` a devolveria como erro interno
+// genérico.
+//
+// A ADR-005 CONTINUA DE PÉ, e é bom dizer por quê em vez de deixar a dúvida. Ela proíbe guardar
+// **segredo do cliente** no control plane; `ENTRA_API_CLIENT_SECRET` é a credencial da NOSSA app
+// registration, entregue como Container App secret pelo mesmo pipeline que já a entrega ao
+// backend — nenhum segredo de cliente é armazenado, e nenhum valor mora no repositório.
+//
+// A ALTERNATIVA SEM SEGREDO FOI AVALIADA E RECUSADA POR ORA: `client_assertion_func` sobre a
+// managed identity (federated identity credential) é aceito por esta versão do `azure-identity`
+// (assinatura lida na fonte instalada, 1.26.0b2). O que falta não é código — é a federação no
+// Entra: uma FIC na app registration da API confiando na identidade gerenciada, que só existe
+// depois do `azd provision`, enquanto `scripts/setup-entra.sh` roda ANTES dele (`up-all.sh`).
+// Sem essa configuração, o app trocaria "nasce morto por falta de segredo" por "nasce morto por
+// falta de federação" — com o agravante de o segundo virar um 401 do Entra no meio da primeira
+// busca, em vez de um erro de construção. Fica registrado como o próximo passo, não como este.
 //
 // O que ele precisa é ler: o endpoint do Foundry e do Search (a tool `search_docs` chama o
 // MESMO `knowledge.retrieve` do backend, com o trim de ACL sob a identidade de quem perguntou),
@@ -287,7 +315,7 @@ resource webApp 'Microsoft.App/containerApps@2024-03-01' = {
 //
 // DESDE A FASE 3 ELE TAMBÉM ESCREVE, e isso trouxe DUAS coisas que ele não tinha:
 //
-//   1. UM SEGREDO — `MCP_REQUEST_STATE_KEY`, a chave que assina o `requestState` entre a
+//   1. MAIS UM SEGREDO — `MCP_REQUEST_STATE_KEY`, a chave que assina o `requestState` entre a
 //      pergunta ao aprovador e a resposta dele. Declarado exatamente como o `entra-api-secret`
 //      do backend (só quando existe, senão a Azure recusa o container app INTEIRO com
 //      `ContainerAppSecretInvalid`), e vazio continua sendo modo suportado: o servidor sobe e a
@@ -334,11 +362,19 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
       registries: [
         { server: '${registryName}.azurecr.io', identity: appIdentityId }
       ]
-      // Mesma regra do backend: segredo sem valor derruba o container app inteiro, então ele só
-      // é declarado quando existe — e o `secretRef` abaixo aparece e some junto com ele.
-      secrets: empty(mcpRequestStateKey) ? [] : [
-        { name: 'mcp-request-state-key', value: mcpRequestStateKey }
-      ]
+      // Mesma regra do backend: segredo sem valor derruba o container app inteiro, então cada um
+      // só é declarado quando existe — e o `secretRef` correspondente aparece e some junto com
+      // ele. São DOIS, e independentes: `entra-api-secret` é o que permite o OBO da leitura,
+      // `mcp-request-state-key` é o que sela a decisão humana da escrita. Um deployment sem
+      // sign-in não tem o primeiro; um sem escrita não tem o segundo; os dois modos sobem.
+      secrets: concat(
+        empty(mcpRequestStateKey) ? [] : [
+          { name: 'mcp-request-state-key', value: mcpRequestStateKey }
+        ],
+        empty(entraApiClientSecret) ? [] : [
+          { name: 'entra-api-secret', value: entraApiClientSecret }
+        ]
+      )
     }
     template: {
       containers: [
@@ -368,6 +404,12 @@ resource mcpApp 'Microsoft.App/containerApps@2024-03-01' = {
             { name: 'AZURE_STORAGE_RESOURCE_ID', value: storageResourceId }
           ], empty(mcpRequestStateKey) ? [] : [
             { name: 'MCP_REQUEST_STATE_KEY', secretRef: 'mcp-request-state-key' }
+          ], empty(entraApiClientSecret) ? [] : [
+            // A CREDENCIAL DO OBO. `ENTRA_TENANT_ID` e `ENTRA_API_CLIENT_ID` já estavam aqui;
+            // sem esta terceira, `knowledge.retrieve` levanta ao construir a credencial e
+            // `search_docs`, `document://` e a completion de nome morrem no primeiro uso
+            // autenticado. Ver o comentário grande acima do recurso.
+            { name: 'ENTRA_API_CLIENT_SECRET', secretRef: 'entra-api-secret' }
           ])
           volumeMounts: [
             // O MESMO share do backend, em CAMINHO DIFERENTE — porque a raiz do backend nesta

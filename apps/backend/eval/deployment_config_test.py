@@ -60,10 +60,28 @@ def contradicoes(env: dict[str, str]) -> list[str]:
         )
 
     com_acl = [d.id for d in specs if getattr(d, "document_access", "acl") == "acl"]
-    if com_acl and not (env.get("ENTRA_TENANT_ID") and env.get("ENTRA_API_CLIENT_ID")):
+    auth_ligada = bool(env.get("ENTRA_TENANT_ID") and env.get("ENTRA_API_CLIENT_ID"))
+    if com_acl and not auth_ligada:
         achados.append(
             f"auth desligada (ENTRA_TENANT_ID/ENTRA_API_CLIENT_ID vazios), mas [{', '.join(com_acl)}] "
             f"declaram document_access='acl' — sem identidade o trim devolve ZERO para todos"
+        )
+
+    # A METADE QUE FALTAVA DA MESMA CONDIÇÃO. Ter identidade não basta: o trim por ACL passa pelo
+    # OBO (`knowledge/internal/retrieval.py:_user_search_token`), que é fluxo de cliente
+    # confidencial — sem credencial, `OnBehalfOfCredential` nem constrói:
+    #
+    #     TypeError: Either "client_certificate", "client_secret", or "client_assertion_func"
+    #     must be provided
+    #
+    # O container app `mcp` nasceu assim: com `ENTRA_TENANT_ID` e `ENTRA_API_CLIENT_ID` e SEM o
+    # segredo. A tool principal dele estourava no primeiro uso autenticado, e o
+    # `mask_error_details=True` do MCP devolvia isso como erro interno genérico.
+    if com_acl and auth_ligada and not env.get("ENTRA_API_CLIENT_SECRET"):
+        achados.append(
+            f"auth ligada e [{', '.join(com_acl)}] declaram document_access='acl', mas "
+            f"ENTRA_API_CLIENT_SECRET está vazia — o OBO não tem credencial de cliente e a "
+            f"busca levanta na primeira chamada autenticada"
         )
 
     if not env.get("AZURE_SEARCH_ENDPOINT") and any(getattr(d, "search_index", "") for d in specs):

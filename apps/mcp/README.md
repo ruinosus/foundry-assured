@@ -61,7 +61,28 @@ superfície MCP a mudar o mundo em vez de descrevê-lo — e a única atrás do 
   trilha; ela não ganha `citations` (esta tool não fundamenta nada — um `[]` mentiria dizendo
   que tentou citar). A rodada da *pergunta* não é carimbada: não é uma resposta.
 
-### O segredo novo: `MCP_REQUEST_STATE_KEY`
+### Os dois segredos que este app recebe
+
+Nenhum deles mora no repositório (ADR-005): os dois chegam como Container App secret, declarados
+em `infra/containerapps.bicep` só quando existem, e os gates geram o seu na hora.
+
+- **`ENTRA_API_CLIENT_SECRET`** — a credencial da app registration da API, que a **leitura** usa.
+  `search_docs`, `document://` e a completion chamam o `knowledge.retrieve` do backend, que troca
+  o token do chamador por um de busca via **OBO** — fluxo de cliente confidencial. Sem ela,
+  `OnBehalfOfCredential` nem constrói (`TypeError: Either "client_certificate", "client_secret",
+  or "client_assertion_func" must be provided`) e a tool principal nasce morta no primeiro deploy
+  autenticado. Enquanto o `/mcp` morava no monolito o segredo vinha de graça; separado o app, ele
+  precisou ser declarado — `tests/obo_credential_test.py` é o gate.
+- **`MCP_REQUEST_STATE_KEY`** — a chave que sela a decisão humana da **escrita**, detalhada
+  abaixo.
+
+A alternativa sem segredo (`client_assertion_func` sobre a managed identity, via federated
+identity credential) é aceita pelo `azure-identity` instalado e **fica pendente de configuração
+no Entra**: a FIC precisa confiar numa identidade gerenciada que só existe depois do
+`azd provision`, enquanto `scripts/setup-entra.sh` roda antes dele. O comentário do recurso
+`mcpApp` no bicep registra a medição e o custo.
+
+### `MCP_REQUEST_STATE_KEY`
 
 A chave (>= 32 bytes) que assina o estado entre as rodadas, **igual em todas as réplicas**. Vem
 do ambiente, e no ambiente publicado vem do cofre para a variável — **nunca do repositório**
@@ -199,6 +220,7 @@ uv run python -m tests.assurance_seal_test         # o selo é negociado, não i
 uv run python -m tests.write_decision_test         # as quatro decisões atravessam; sem papel nada escreve
 uv run python -m tests.decision_replay_test        # uma decisão humana, uma escrita — o estado não se repete
 uv run python -m tests.cache_hints_test            # nenhum hint de cache sai daqui (a recusa da Fase 5)
+uv run python -m tests.obo_credential_test         # o container recebe a credencial que o OBO exige
 ```
 
 Mais um que **só roda dentro da imagem**, e por isso mora no job `mcp-image` (precisa de
