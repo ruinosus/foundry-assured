@@ -50,6 +50,34 @@ desfecho certo, e não um teste verde sobre um atributo órfão.
    filtrada de um chamador a outro. A biblioteca aceita `public` sem erro e sem aviso (só recusa
    escopo SEM ttl), então o freio é este módulo mais o gate.
 
+═══ E O RENDERIZADOR, QUE PAGA 6,3 MiB POR LEITURA — MEDIDO E MANTIDO ═══
+
+A revisão levantou uma saída elegante: `ReadResourceResult` tem campos `ttl_ms`/`cache_scope`
+**próprios**, e o runner (`mcp/server/runner.py`, no `_serialize`) só consulta o mapa por método
+quando há hint para aquele método — com `resources/read` de fora, o que o HANDLER tiver setado
+passa direto para o fio. Daria um TTL só para o renderizador (artefato estático, byte-idêntico
+para todo mundo, sem trilha a gravar) sem tocar na exclusão do método, que é a decisão de cima.
+
+**Medido: o FastMCP não expõe esse seam.** Na versão instalada:
+
+    ReadResourceResult.model_fields          tem `ttl_ms` e `cache_scope`   ✔
+    ResourceResult (o tipo do FastMCP)       NÃO tem nenhum dos dois
+    Resource.model_fields                    nenhum campo de cache/ttl
+    fastmcp.resources.resource(...)          nenhum parâmetro de cache/ttl
+    ResourceResult.to_mcp_result()           constrói `ReadResourceResult(contents=…, _meta=…)`
+    _on_read_resource                        termina em `return result.to_mcp_result(uri)`
+    Middleware.on_read_resource              devolve `ResourceResult` — ANTES da conversão
+
+Ou seja: TODO caminho que o FastMCP oferece a um resource (a função, o `Resource`, o middleware
+de `resources/read`) trabalha do lado de cá da conversão, e a conversão não repassa os dois
+campos. Não há onde setá-los sem substituir o handler `resources/read` do FastMCP ou remendar o
+dicionário do fio numa middleware do SDK — encanamento nosso em volta de uma biblioteca que
+deliberadamente não abre isso, que é o que a MÁXIMA MAIOR recusa.
+
+**Fica como está**, e o custo fica escrito: 6.604.799 bytes (6,3 MiB) por leitura do
+renderizador, medidos em `app_evidencias_test`. O dia em que o FastMCP expuser cache por
+recurso, esta seção é o lugar de reabrir a conta.
+
 3. **TTL de 60s, e por que uma listagem obsoleta não é uma autorização.** O pior caso do TTL é
    uma pessoa cujo papel foi revogado continuar VENDO `search_docs` na lista por até um minuto.
    Ela não consegue CHAMAR: `tools/call` não é método cacheável nesta versão do protocolo (os
