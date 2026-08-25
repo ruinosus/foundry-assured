@@ -141,10 +141,28 @@ aplicada.
 anexa, a cada resposta: citações resolvíveis, groundedness, e o id do evento na trilha (ADR-023).
 
 ```
-identifier = "rededor.com/assurance"     # sem default na classe: obrigatório
+identifier = "br.com.rededor.foundry/assurance"   # sem default na classe: obrigatório
 settings()               → o que oferecemos, anunciado por capacidade
 intercept_tool_call(...) → anexa o selo
 ```
+
+O identificador do rascunho desta spec (`rededor.com/assurance`) estava **errado por dois
+motivos**, corrigidos na execução: era forward-DNS onde a SEP-2133 exige reverso (e a validação
+da biblioteca cobra), e `rededor.com` não é o domínio da organização — reivindicar namespace
+alheio num identificador que viaja no fio. O segmento `foundry` existe porque um segundo servidor
+MCP da organização colidiria, e **colisão de extensão não dá erro**: dá dois selos com
+significados diferentes sob a mesma chave.
+
+**O caminho de volta do id do evento não existia, e a forma óbvia não funciona.** Medido: um
+`ContextVar` setado dentro do corpo da tool **não é visto** pelo interceptador — o FastMCP roda o
+corpo com o contexto copiado. O que funciona é uma **caixa mutável posta antes do `call_next()`**:
+o valor desce, as anexações sobem. Daí `audit.public.receipts()`, que recolhe o que `record()` já
+devolvia e todo chamador descartava.
+
+**Onde o selo NÃO chega.** `intercept_tool_call` é o único gancho de resposta que a
+`ServerExtension` oferece no 4.0.0b3 — envolve `tools/call` e mais nada. O resource
+`document://` e a completion ficam sem selo porque **o protocolo não tem o gancho equivalente**,
+não porque não mereçam. Se uma versão futura acrescentar, é aqui que entra.
 
 Duas regras que mudam o desenho, e vêm da documentação da própria peça:
 
