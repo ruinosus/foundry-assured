@@ -1,0 +1,47 @@
+[project]
+name = "foundry-assured-mcp"
+version = "0.1.0"
+description = "Servidor MCP do Foundry Assured, sobre FastMCP 4"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "foundry-helpdesk-backend",
+    "fastmcp==4.0.0b3",
+    "uvicorn[standard]>=0.52.1",
+]
+
+[tool.uv.sources]
+foundry-helpdesk-backend = { path = "../backend", editable = true }
+
+[tool.uv]
+prerelease = "allow"
+
+[dependency-groups]
+dev = [
+    # MESMA versão fixada em `apps/backend/pyproject.toml`. Duas versões de ruff produziriam
+    # dois rulesets sobre o mesmo repositório, e a divergência apareceria como "passa aqui,
+    # falha lá" sem ninguém entender por quê.
+    #
+    # Este grupo NÃO arrasta o extra `agents`: o grupo `dev` do backend (que é onde aquele extra
+    # pega carona) não é transitivo para quem depende do backend por path. Verificado
+    # instalando — `agent-framework`, `langchain`, `langgraph` e `deepagents` continuam ausentes.
+    "ruff==0.16.3",
+]
+
+# O RULESET NÃO É COPIADO, É HERDADO. `extend` lê o `[tool.ruff]` do backend inteiro — select,
+# ignore e as exceções documentadas uma a uma. Copiá-lo aqui criaria a segunda lista de sempre:
+# divergiria na primeira regra nova, e a divergência não daria erro — só faria os dois apps
+# serem julgados por réguas diferentes.
+[tool.ruff]
+extend = "../backend/pyproject.toml"
+
+[tool.ruff.lint.isort]
+# `mcp_app` é deste app e `app` é o backend; sem isto o isort trata os dois como terceiros e
+# pede a ordenação errada. É a única coisa que este app precisa dizer por conta própria.
+known-first-party = ["mcp_app", "app", "tests"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["mcp_app"]

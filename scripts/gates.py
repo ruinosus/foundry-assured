@@ -39,8 +39,15 @@ WORKFLOW = REPO / ".github" / "workflows" / "ci.yml"
 #: O dev local já tem o ambiente; rodá-los aqui gastaria minutos sem verificar nada.
 SETUP_PREFIXES = ("uv sync", "npm ci", "npm install", "curl", "chmod", "sudo")
 
-#: Sem `--all` roda só este job: é o único inteiramente offline e determinístico.
-DEFAULT_JOBS = ("backend",)
+#: Sem `--all` rodam só estes jobs: são os inteiramente offline e determinísticos.
+#:
+#: `mcp-app` entrou junto com `apps/mcp` (ADR-027) porque satisfaz o mesmo critério — nenhum
+#: passo dele toca a rede. Deixá-lo fora faria o comando padrão passar enquanto o CI barrava,
+#: que é exatamente a divergência entre duas listas que este script existe para não ter.
+#:
+#: Ele roda no venv de `apps/mcp` (o `working-directory` do job), que precisa estar sincronizado:
+#: `cd apps/mcp && uv sync`. Sem isso os passos saem como SKIP alto no resumo, não como verde.
+DEFAULT_JOBS = ("backend", "mcp-app")
 
 
 def gates(only_jobs: tuple[str, ...] | None, pattern: str | None) -> list[tuple[str, str, str]]:

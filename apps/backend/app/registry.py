@@ -22,9 +22,35 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Literal
 
-from agent_framework_ag_ui import add_agent_framework_fastapi_endpoint
 from fastapi import Depends, FastAPI, Request
 from fastapi.responses import StreamingResponse
+
+# O ADAPTER AG-UI É OPCIONAL NO IMPORT, OBRIGATÓRIO NA CHAMADA — e as duas metades importam.
+#
+# `agent_framework_ag_ui` vive no extra `agents` (ADR-027). `apps/mcp` instala a base SEM esse
+# extra e precisa de `domain_spec`/`DOMAIN_KINDS` daqui — é a MESMA lista de domínios que a tool
+# `search_docs` anuncia, e escrever uma segunda lista lá divergiria no primeiro domínio novo (a
+# ADR-027 rejeita duplicar por nome). Com o import duro no topo, `import app.registry` era
+# impossível sem o extra.
+#
+# POR QUE ISTO E NÃO UM IMPORT DENTRO DE CADA FUNÇÃO DE MOUNT, que foi a primeira tentativa: o
+# nome precisa existir como ATRIBUTO DO MÓDULO. `tests/smoke/_capture_routes.py` e
+# `tests/registry/domain_registry_test.py` neutralizam o adapter trocando
+# `app.registry.add_agent_framework_fastapi_endpoint` — com o import lá dentro esse ponto de
+# troca some, e os dois gates quebram (medido: 7 gates vermelhos).
+#
+# O substituto FALHA ALTO ao ser chamado, e é isso que impede a versão silenciosa desta troca:
+# um backend instalado sem o extra sobe, mas o primeiro domínio que ele tentar montar diz
+# exatamente o que fazer. Nada de endpoint que existe e não responde.
+try:
+    from agent_framework_ag_ui import add_agent_framework_fastapi_endpoint
+except ModuleNotFoundError:  # instalação sem o extra `agents` — só o app do MCP faz isso
+
+    def add_agent_framework_fastapi_endpoint(*_args, **_kwargs):  # type: ignore[misc]
+        raise RuntimeError(
+            "montar domínio exige o extra `agents` do backend "
+            "(`uv sync --extra agents`); esta instalação é a base sem ele"
+        )
 
 from app.modules.conversations.public import bind_dependency
 from app.modules.tenancy.public import domain_deps as _tenancy_domain_deps

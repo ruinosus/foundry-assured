@@ -31,8 +31,21 @@ import app as _app
 BACKEND = pathlib.Path(_app.__file__).resolve().parent.parent
 REPO = BACKEND.parents[1]
 
-# Where each top-level package lives, relative to apps/backend.
-ROOTS = {"app": "app", "eval": "eval", "cli": "cli", "tests": "tests"}
+# Top-level packages this gate owns. A dotted name whose head is not here belongs to someone
+# else (`python -m pip`) and is not this gate's business.
+ROOTS = ("app", "eval", "cli", "tests")
+
+# Every app a workflow step may run FROM. The gate used to assume one — apps/backend — because
+# there was only one; `apps/mcp` (ADR-027) made that assumption wrong, and the symptom was this
+# gate calling five real modules non-existent because it looked for `tests/auth_test.py` under
+# the wrong app.
+#
+# Resolution is against ANY of them, not against the step's actual `working-directory`. That is
+# deliberately looser than the truth: reading the job's workdir would mean parsing the YAML
+# structure, and the cost is a false NEGATIVE only in one narrow case — a backend-only module
+# that happens to share a name with one in apps/mcp. The failure this gate exists to catch (a
+# module that moved and now exists NOWHERE) is caught either way.
+APPS = (BACKEND, REPO / "apps" / "mcp")
 
 # Files that actually invoke things. Docs are excluded on purpose: a stale command in a
 # historical plan is wrong but harmless, while a stale one here fails a real run.
@@ -46,13 +59,16 @@ INVOCATION = re.compile(r"python\s+-m\s+([a-zA-Z_]\w*(?:\.[a-zA-Z_]\w*)*)")
 
 
 def resolves(dotted: str) -> bool:
-    """True when `dotted` maps to a real module file or package under apps/backend."""
+    """True when `dotted` maps to a real module file or package under any app in `APPS`."""
     head, *rest = dotted.split(".")
     if head not in ROOTS:
         return True  # not ours (e.g. `python -m pip`) — not this gate's business
-    base = BACKEND / ROOTS[head]
-    target = base.joinpath(*rest) if rest else base
-    return target.with_suffix(".py").is_file() or (target / "__init__.py").is_file()
+    for app_root in APPS:
+        base = app_root / head
+        target = base.joinpath(*rest) if rest else base
+        if target.with_suffix(".py").is_file() or (target / "__init__.py").is_file():
+            return True
+    return False
 
 
 def main() -> int:

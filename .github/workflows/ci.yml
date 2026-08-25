@@ -349,6 +349,66 @@ jobs:
       - name: MCP — no modo shared resolve tenant e cobra entitlement (ADR-010)
         run: uv run python -m tests.mcpserver.shared_tenancy_test
 
+  # ---------------------------------------------------------------------------
+  # O app do MCP sobre FastMCP 4 (ADR-027). Este job é DOIS gates no mesmo lugar, e o primeiro
+  # é o que a ADR chama de indispensável: **a instalabilidade**.
+  #
+  # `uv sync` aqui instala a base do backend SEM o extra `agents` mais `fastmcp==4.0.0b3`. Essa
+  # resolução só existe porque o teto `mcp<2` mora no extra `all` do `agent-framework-core`,
+  # arrastado só pelo meta-pacote `agent-framework`. Um `from agent_framework import …`
+  # acrescentado amanhã a `knowledge`/`audit`/`tenancy`/`shared` NÃO quebraria o backend nem o
+  # `import-linter` — quebraria a instalação deste app, e é este job que fica vermelho.
+  #
+  # O `import-linter` prova o grafo de import; só a instalação prova a instalabilidade. Por isso
+  # o passo que importa `app.modules.knowledge.public` é separado e explícito: ele é a asserção,
+  # não um efeito colateral de rodar os testes.
+  mcp-app:
+    name: MCP app · instalabilidade + paridade
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mcp
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      # SEM `--extra agents` de propósito — ver o comentário acima. O grupo `dev` DESTE app
+      # entra (só o ruff fixado); o grupo `dev` do BACKEND, que é onde o extra `agents` pega
+      # carona, não é transitivo para quem depende dele por path — verificado instalando.
+      - name: Instala a base do backend SEM o extra `agents`, com FastMCP 4
+        run: uv sync --frozen
+      # Mesmo ruff, mesma versão, MESMO ruleset do backend (`[tool.ruff] extend`). Sem este
+      # passo o app novo seria o único canto do repositório sem lint, e o gate do backend
+      # continuaria verde sem ver nada disto.
+      - name: Lint (ruff)
+        run: uv run --no-sync ruff check .
+      - name: O núcleo é importável sem framework de agente
+        run: |
+          uv run --no-sync python -c "
+          import importlib.metadata as md, sys
+          import app.modules.knowledge.public
+          assert md.version('fastmcp').startswith('4.'), md.version('fastmcp')
+          assert md.version('mcp').startswith('2.'), md.version('mcp')
+          for pesado in ('agent_framework_ag_ui', 'langchain', 'langgraph', 'deepagents'):
+              assert pesado not in sys.modules, pesado
+          print('fastmcp', md.version('fastmcp'), '| mcp', md.version('mcp'))
+          "
+      # Paridade com o `/mcp` do monolito. Os cinco espelham `tests/mcpserver/` lá; o de
+      # identidade é o que impede a falha mais cara desta camada — a tool responder bonito
+      # buscando como a identidade da APLICAÇÃO, e o usuário receber documento que não pode ver,
+      # sem erro, sem log, sem sintoma.
+      - name: MCP — Resource Server (issuer, escopo, provider desligado sem auth)
+        run: uv run --no-sync python -m tests.auth_test
+      - name: MCP — papel do Entra decide as tools visíveis (any-of, não all-of)
+        run: uv run --no-sync python -m tests.authz_test
+      - name: MCP — sem token não responde (401 + WWW-Authenticate que leva a 200)
+        run: uv run --no-sync python -m tests.unauthenticated_test
+      - name: MCP — o token do chamador atravessa até o retrieve (identity passthrough)
+        run: uv run --no-sync python -m tests.identity_passthrough_test
+      - name: MCP — erro não conta a infraestrutura para o chamador
+        run: uv run --no-sync python -m tests.error_masking_test
+
   frontend:
     name: Frontend · typecheck + build
     runs-on: ubuntu-latest
@@ -449,12 +509,13 @@ jobs:
   ci-ok:
     name: CI passed
     runs-on: ubuntu-latest
-    needs: [backend, frontend, infra]
+    needs: [backend, mcp-app, frontend, infra]
     if: always()
     steps:
       - name: Verify all jobs passed
         run: |
           [ "${{ needs.backend.result }}" = "success" ] \
+          && [ "${{ needs.mcp-app.result }}" = "success" ] \
           && [ "${{ needs.frontend.result }}" = "success" ] \
           && [ "${{ needs.infra.result }}" = "success" ] \
           || { echo "One or more CI jobs failed"; exit 1; }

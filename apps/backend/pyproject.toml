@@ -43,11 +43,6 @@ dependencies = [
     # The definition documents are YAML, read here rather than through a loader
     # that would also want a chat client.
     "pyyaml>=6.0,<7.0",
-    # Servidor MCP (spec 2026-08-24). PIN EXATO e é 3.x de propósito: o 4.0.0bN exige
-    # `mcp>=2,<3` e `agent-framework-core` trava em `mcp>=1.24.0,<2` — os dois não coexistem
-    # no mesmo venv. Medido no PyPI em 2026-08-24. Subir para 4.x só depois que o
-    # agent-framework levantar esse teto; o caminho está na spec.
-    "fastmcp==3.4.7",
 ]
 
 # ---------------------------------------------------------------------------
@@ -79,6 +74,17 @@ agents = [
     "ag-ui-langgraph>=0.0.43.dev1786716392",
     "langchain-openai>=1.5.1",
     "deepagents>=0.7,<0.8",
+    # O FastMCP 3.x veio para cá na Fase 0b, e o motivo é o mesmo que criou este extra:
+    # `fastmcp==3.4.7` exige `mcp>=1,<2` e `fastmcp==4.0.0b3` exige `mcp>=2,<3`. Enquanto o
+    # 3.4.7 estivesse na BASE, `apps/mcp` (que instala esta base por path e soma o FastMCP 4)
+    # não resolveria — conflito direto de `mcp`, não do framework de agente. Aqui ele convive
+    # com o teto `mcp<2` que o `agent-framework[all]` já impõe a este mesmo extra, então nada
+    # de novo é perdido: quem instala `agents` já estava preso ao `mcp` 1.x.
+    #
+    # SAI DE VEZ NA FASE 0c, junto com `app/modules/mcpserver/` — o monolito serve `/mcp` até
+    # lá de propósito (duas superfícies ao mesmo tempo, temporário), e `apps/mcp` assume
+    # sozinho depois. Um `fastmcp` sobrando neste extra depois da 0c é código morto.
+    "fastmcp==3.4.7",
 ]
 
 [tool.uv]
