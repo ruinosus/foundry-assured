@@ -15,11 +15,17 @@ on:
       services:
         description: Services to deploy
         type: choice
-        default: backend web
+        # `mcp` ENTROU NA LISTA E NO DEFAULT. O `azure.yaml` declara o serviço desde a ADR-027 e
+        # o `azd up` cria o `ca-mcp-*` com o `placeholderImage` — mas este workflow não tinha
+        # como escolhê-lo, então o release nunca empurrava a imagem real. O container existia,
+        # respondia, e servia o placeholder: um MCP publicado que não é o nosso MCP.
+        default: backend web mcp
         options:
+          - backend web mcp
           - backend web
           - backend
           - web
+          - mcp
 
 permissions:
   contents: read
@@ -100,6 +106,11 @@ jobs:
           azd env set ENTRA_TENANT_ID                 "${{ vars.ENTRA_TENANT_ID }}"
           azd env set ENTRA_API_CLIENT_ID             "${{ vars.ENTRA_API_CLIENT_ID }}"
           azd env set ENTRA_API_CLIENT_SECRET         "${{ secrets.ENTRA_API_CLIENT_SECRET }}"
+          # A chave que sela a decisão humana da escrita por MCP (`mcpRequestStateKey`). Vazia é
+          # modo SUPORTADO — o servidor sobe e só `open_ticket` se declara indisponível —, então
+          # a ausência do secret no repositório não trava o deploy. Sem esta linha, porém, ela
+          # nunca chegaria ao bicep nem quando existe.
+          azd env set MCP_REQUEST_STATE_KEY           "${{ secrets.MCP_REQUEST_STATE_KEY }}"
       - name: Provision (idempotent)
         run: azd provision --no-prompt
       - name: Confere se o CI recebeu as roles de dado
@@ -118,7 +129,7 @@ jobs:
           fi
       - name: Deploy selected services
         run: |
-          for svc in ${{ inputs.services || 'backend web' }}; do
+          for svc in ${{ inputs.services || 'backend web mcp' }}; do
             azd deploy "$svc" --no-prompt
           done
       # O deploy termina "verde" mesmo quando o app nasce mudo: em 2026-08 ele subiu com
@@ -126,15 +137,28 @@ jobs:
       # o helpdesk, e ao mesmo tempo dava 403 em toda citação e 404 em toda conversa — sem um
       # único erro no log. Este passo compara a config que CHEGOU ao container com o que o
       # registry declara e falha quando uma contradiz a outra.
+      # DOIS APPS, e o segundo é onde o gate teria pago por si. O `ca-mcp-*` nasceu com
+      # `ENTRA_TENANT_ID` + `ENTRA_API_CLIENT_ID` e SEM `ENTRA_API_CLIENT_SECRET`: a tool
+      # principal dele levantava na primeira busca autenticada, e nada aqui olhava para ele —
+      # o loop inspecionava só `ca-backend*`. Um gate que olha um app de dois é meio gate.
       - name: Config do ambiente sustenta o registry (pós-deploy)
         working-directory: apps/backend
         env:
-          AZURE_TARGET_APP: ca-backend-${{ env.AZURE_RESOURCE_TOKEN }}
           AZURE_TARGET_RG: ${{ env.AZURE_RESOURCE_GROUP }}
         run: |
-          APP="$(az containerapp list -g "$AZURE_TARGET_RG" \
-                 --query "[?starts_with(name,'ca-backend')].name | [0]" -o tsv)"
-          AZURE_TARGET_APP="$APP" uv run python -m eval.deployment_config_test
+          set -euo pipefail
+          falhou=0
+          for prefixo in ca-backend ca-mcp; do
+            APP="$(az containerapp list -g "$AZURE_TARGET_RG" \
+                   --query "[?starts_with(name,'$prefixo')].name | [0]" -o tsv)"
+            if [ -z "$APP" ]; then
+              echo "::error::nenhum container app com prefixo '$prefixo' em $AZURE_TARGET_RG"
+              falhou=1; continue
+            fi
+            echo "▸ $APP"
+            AZURE_TARGET_APP="$APP" uv run python -m eval.deployment_config_test || falhou=1
+          done
+          exit "$falhou"
 
       - name: Web URL
         if: always()
