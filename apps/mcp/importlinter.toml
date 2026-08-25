@@ -1,0 +1,51 @@
+# Gate de fronteira do SEGUNDO consumidor da ADR-017.
+#
+#     uv run lint-imports --config importlinter.toml
+#
+# `apps/backend/importlinter.toml` prova as fronteiras DENTRO do backend, e o `root_packages`
+# dele é `["app"]` — então ele nunca viu este app. Que é o outro consumidor das mesmas
+# fronteiras: `mcp_app` importa `knowledge`, `tenancy`, `audit`, `agentdefs`, `domains` e o
+# shared kernel. Nada impedia um `from app.modules.knowledge.internal import …` de aparecer
+# aqui amanhã, e o `import-linter` do vizinho continuaria verde.
+#
+# O contrato é UM só e diz uma coisa: **a entrada no backend é pelo `public`**. É a regra 8 do
+# `CLAUDE.md` aplicada de fora para dentro. `app` entra como root package (e não como externo)
+# porque `include_external_packages` colapsa uma dependência externa no nome de topo — `app` —,
+# e o que precisa ser distinguido são os SUBMÓDULOS (`…public` sim, `…internal` não).
+#
+# `allow_indirect_imports = true` é indispensável, pelo mesmo motivo documentado no arquivo do
+# backend: `mcp_app → knowledge.public → knowledge.internal.*` é a cadeia LEGÍTIMA, e sem a
+# opção o `forbidden` a segue e reprova tudo. A regra que se quer é "nenhum import DIRETO do
+# internal alheio".
+
+[tool.importlinter]
+root_packages = ["mcp_app", "tests", "app"]
+
+[[tool.importlinter.contracts]]
+name = "apps/mcp entra no backend só pelo `public` (ADR-017, regra 8)"
+type = "forbidden"
+source_modules = ["mcp_app", "tests"]
+forbidden_modules = ["app.modules.*.internal"]
+allow_indirect_imports = true
+# AS QUATRO EXCEÇÕES SÃO DE TESTE, E CADA UMA TEM O MESMO MOTIVO: o `public` do módulo expõe o
+# COMPORTAMENTO, e o que estes gates precisam é do ENDEREÇO — o caminho privado onde a escrita
+# cai, e o corpo da função que constrói a credencial. Não há como pedir isso pelo `public` sem
+# publicar como dado interno aquilo que o `public` existe para esconder.
+#
+#   write_decision_test / decision_replay_test  redirecionam `_STORE` para um diretório
+#                                               temporário; sem isso o gate escreveria chamados
+#                                               de verdade no `data/` do repositório.
+#   image_data_path_test                        o endereço de `_STORE` É o objeto do gate.
+#   obo_credential_test                         deriva as env vars do OBO da FONTE de
+#                                               `_user_search_token`, para não manter a segunda
+#                                               lista que divergiria em silêncio.
+#
+# Nenhuma delas é `mcp_app`: o código de produção deste app não toca `internal` de ninguém, e é
+# isso que o contrato trava. Um teste novo que precise de outra exceção tem que escrevê-la aqui —
+# que é o ponto de a exceção ser declarada e não presumida.
+ignore_imports = [
+    "tests.write_decision_test -> app.modules.tickets.internal.tickets",
+    "tests.decision_replay_test -> app.modules.tickets.internal.tickets",
+    "tests.image_data_path_test -> app.modules.tickets.internal.tickets",
+    "tests.obo_credential_test -> app.modules.knowledge.internal.retrieval",
+]

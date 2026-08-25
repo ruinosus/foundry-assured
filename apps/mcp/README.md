@@ -221,6 +221,7 @@ uv run python -m tests.write_decision_test         # as quatro decisões atraves
 uv run python -m tests.decision_replay_test        # uma decisão humana, uma escrita — o estado não se repete
 uv run python -m tests.cache_hints_test            # nenhum hint de cache sai daqui (a recusa da Fase 5)
 uv run python -m tests.obo_credential_test         # o container recebe a credencial que o OBO exige
+uv run lint-imports --config importlinter.toml     # a entrada no backend é pelo `public` (ADR-017)
 ```
 
 Mais um que **só roda dentro da imagem**, e por isso mora no job `mcp-image` (precisa de

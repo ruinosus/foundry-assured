@@ -25,6 +25,10 @@ dev = [
     # pega carona) não é transitivo para quem depende do backend por path. Verificado
     # instalando — `agent-framework`, `langchain`, `langgraph` e `deepagents` continuam ausentes.
     "ruff==0.16.3",
+    # O gate de fronteira DESTE app (`importlinter.toml` ao lado). O do backend tem
+    # `root_packages = ["app"]` e por isso nunca viu `mcp_app` — o segundo consumidor das
+    # fronteiras da ADR-017 era o único não vigiado. Mesma faixa de versão do backend.
+    "import-linter>=2.13",
 ]
 
 # O RULESET NÃO É COPIADO, É HERDADO. `extend` lê o `[tool.ruff]` do backend inteiro — select,
