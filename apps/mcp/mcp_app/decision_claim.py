@@ -166,8 +166,25 @@ def consumir(nonce: str) -> bool:
     # O CONTEÚDO NÃO IMPORTA — quem responde "esta decisão já foi usada?" é a EXISTÊNCIA do
     # arquivo, e ela já foi decidida acima. O carimbo de tempo entra só para a varredura poder
     # distinguir reserva viva de reserva vencida sem depender do `mtime` do sistema de arquivos.
-    with os.fdopen(fd, "w", encoding="utf-8") as fh:
-        fh.write(json.dumps({"at": datetime.now(UTC).isoformat(timespec="seconds")}))
+    #
+    # MAS O `write` PRECISA DO MESMO TRATAMENTO DO `open`, e por um motivo que não é o conteúdo:
+    # o `O_EXCL` já criou o arquivo. Um `OSError` aqui (disco cheio, share fora do ar no meio da
+    # operação) escapava para fora — `tools_tickets` só captura `ConsumoIndisponivel` — e deixava
+    # a reserva de pé. A próxima tentativa do MESMO estado batia no `FileExistsError` e recebia
+    # `MOTIVO_REPLAY`: o chamador era acusado de repetir uma decisão por causa de um disco cheio,
+    # e as duas recusas pedem coisas OPOSTAS (uma manda parar, a outra é problema do operador).
+    #
+    # Apagar antes de levantar é seguro e é o único desfecho honesto: nenhum chamado foi aberto
+    # para este nonce, então a reserva não protege nada — mantê-la só transformaria a falha de
+    # infraestrutura numa acusação permanente. O `unlink` é best-effort pelo mesmo motivo que a
+    # varredura é: falhar a limpeza não pode piorar a mensagem que já vai sair.
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as fh:
+            fh.write(json.dumps({"at": datetime.now(UTC).isoformat(timespec="seconds")}))
+    except OSError as exc:
+        with contextlib.suppress(OSError):
+            caminho.unlink()
+        raise ConsumoIndisponivel(str(exc)) from exc
     _varrer()
     return True
 
