@@ -43,11 +43,11 @@ import uuid
 
 from azure.identity import DefaultAzureCredential
 
+from app.modules.domains.public import domain_spec
 from app.modules.knowledge.internal import document
 from app.modules.knowledge.internal.acl_setup import _component
 from app.modules.knowledge.internal.secure_search import authorized_components
 from app.modules.tenancy.internal.tenant import tenant_config
-from app.registry import domain_spec
 from app.shared.settings import settings
 
 _SEARCH_SCOPE = "https://search.azure.com/.default"

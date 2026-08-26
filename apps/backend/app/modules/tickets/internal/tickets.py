@@ -1,23 +1,19 @@
 """A real (persisted) ticket tool — replaces the simulated ticket id.
 
 `create_ticket` is a genuine action: it persists a ticket to data/tickets.jsonl
-and returns it. It's also exposed as an agent-framework `@tool` (FunctionTool) so a
-model can call it autonomously (the hosted agent does this); in the live workflow
-it's gated behind human approval and invoked by the EscalationExecutor. Tickets are
-viewable via the backend `GET /tickets` and the frontend `/tickets` page.
-
-Tool API verified against agent-framework 1.9.0 (`agent_framework.tool`).
+and returns it. In the live workflow it's gated behind human approval and invoked
+by the EscalationExecutor. Tickets are viewable via the backend `GET /tickets` and
+the frontend `/tickets` page.
 """
 
 from __future__ import annotations
 
 import contextlib
+import hashlib
 import json
 import uuid
 from datetime import UTC, datetime
 from pathlib import Path
-
-from agent_framework import tool
 
 import app as _app
 
@@ -66,9 +62,29 @@ def create_ticket(summary: str, severity: str = "medium", *, domain: str = "") -
         # pelo texto) daria um número que parece preciso e não é.
         "domain": domain,
     }
+    linha = json.dumps(ticket) + "\n"
     _STORE.parent.mkdir(parents=True, exist_ok=True)
     with _STORE.open("a", encoding="utf-8") as fh:
-        fh.write(json.dumps(ticket) + "\n")
+        # ── DOIS PROCESSOS, UM ARQUIVO ───────────────────────────────────────────────────────
+        #
+        # Desde que o servidor MCP passou a abrir chamado, o backend e ele fazem append no MESMO
+        # `tickets.jsonl`, no MESMO share SMB (`infra/containerapps.bicep` monta o volume `data`
+        # nos dois — em `/app/data` aqui e em `/srv/backend/data` lá, porque a raiz do backend
+        # difere entre as duas imagens). `O_APPEND` é atômico em disco local; sobre CIFS o cliente
+        # não promete isso, e duas escritas simultâneas podem entrelaçar e produzir uma linha
+        # ilegível — que `list_tickets` derrubaria com `JSONDecodeError`.
+        #
+        # `flock` é o conserto barato: o cliente CIFS do Linux o traduz para lock de faixa de
+        # bytes do SMB (Azure Files suporta), e o lock some sozinho quando o descritor fecha ou o
+        # processo morre — nada de lock órfão travando a escrita depois de um scale-to-zero.
+        # `suppress(OSError)` cobre o sistema de arquivos que não implementa `flock` (e o
+        # Windows, que não tem `fcntl`): ali o comportamento volta a ser exatamente o de antes
+        # desta linha, nunca pior.
+        with contextlib.suppress(ImportError, OSError, AttributeError):
+            import fcntl
+
+            fcntl.flock(fh.fileno(), fcntl.LOCK_EX)
+        fh.write(linha)
 
     # ── A ESCRITA VIRA EVENTO (ADR-023) ──────────────────────────────────────────────────────
     #
@@ -85,6 +101,13 @@ def create_ticket(summary: str, severity: str = "medium", *, domain: str = "") -
     #
     # O RESUMO NÃO ENTRA: ele é texto do modelo e pode conter o que o usuário colou. Entram o id,
     # a severidade e o domínio — o suficiente para achar o chamado e nada além disso.
+    #
+    # E O DIGESTO DA LINHA, que fecha um buraco de não-repúdio: `hitl` grava QUAIS campos o
+    # aprovador corrigiu, nunca os valores, e o texto final só existe em `tickets.jsonl` — que
+    # não é encadeado por hash e mora num share gravável. Quem auditasse depois não tinha como
+    # saber se o resumo do chamado ainda era o que foi aprovado. `content_sha256` é o sha256 da
+    # LINHA exata que acabou de ser anexada: quem audita recalcula sobre a linha do arquivo e
+    # compara com o valor que está na trilha imutável. Prova o conteúdo sem guardar o conteúdo.
     with contextlib.suppress(Exception):
         from app.modules.audit.public import actor, actor_detail, record
 
@@ -94,7 +117,12 @@ def create_ticket(summary: str, severity: str = "medium", *, domain: str = "") -
             kind="write",
             summary=f"chamado {ticket['id']} aberto",
             ref=ticket["id"],
-            detail={"severity": ticket["severity"], "domain": domain, **actor_detail()},
+            detail={
+                "severity": ticket["severity"],
+                "domain": domain,
+                "content_sha256": hashlib.sha256(linha.encode("utf-8")).hexdigest(),
+                **actor_detail(),
+            },
         )
     return ticket
 
@@ -117,12 +145,3 @@ def list_tickets(limit: int = 50, domain: str = "") -> list[dict]:
         rows = [r for r in rows if r.get("domain") == domain]
     rows.reverse()
     return rows[:limit]
-
-
-# The same action as a model-callable tool (used by the hosted agent).
-create_ticket_tool = tool(
-    create_ticket,
-    name="create_ticket",
-    description="Open a support ticket when the developer needs an action the runbooks "
-    "can't resolve (replace hardware, reset access, escalate to a team). Returns the ticket id.",
-)

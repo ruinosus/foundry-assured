@@ -13,6 +13,7 @@ really public surface instead of leaving an underscore that lies.
 from app.modules.knowledge.internal.document import (
     NomeDocumentoInvalido,
     authorized_document,
+    record_document_access,
 )
 from app.modules.knowledge.internal.retrieval import _decode_dockey as decode_dockey
 from app.modules.knowledge.internal.retrieval import retrieve
@@ -30,6 +31,7 @@ __all__ = [
     "authorized_document",
     "chunk_component",
     "decode_dockey",
+    "record_document_access",
     "retrieve",
     "trim_agentic_content",
 ]

@@ -5,8 +5,6 @@ description = "Foundry Helpdesk backend — multi-agent workflow over AG-UI"
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "agent-framework>=1.13.0",
-    "agent-framework-ag-ui>=1.0.1",
     "azure-ai-projects>=2.4.0",
     "azure-identity>=1.25.3",
     "azure-search-documents>=11.7.0b2",
@@ -45,16 +43,43 @@ dependencies = [
     # The definition documents are YAML, read here rather than through a loader
     # that would also want a chat client.
     "pyyaml>=6.0,<7.0",
-    # Servidor MCP (spec 2026-08-24). PIN EXATO e é 3.x de propósito: o 4.0.0bN exige
-    # `mcp>=2,<3` e `agent-framework-core` trava em `mcp>=1.24.0,<2` — os dois não coexistem
-    # no mesmo venv. Medido no PyPI em 2026-08-24. Subir para 4.x só depois que o
-    # agent-framework levantar esse teto; o caminho está na spec.
-    "fastmcp==3.4.7",
+]
+
+# ---------------------------------------------------------------------------
+# extra `agents` — separa o framework de agente do teto do `mcp`
+#
+# Medido de verdade (instalando, não lendo changelog): o teto que impede
+# `fastmcp==4.x` (que exige `mcp>=2,<3`) de conviver neste venv NÃO vem do
+# `agent-framework` em si — vem do extra `[all]` que o pacote meta puxa.
+# `agent-framework-core` sem extras não depende de `mcp` nenhum; é
+# `agent-framework-core[all]` (arrastado pelo meta-pacote `agent-framework`)
+# quem fixa `mcp>=1.24.0,<2`. Um app novo que precise de FastMCP 4 só pode
+# conviver com esta base se o meta-pacote `agent-framework` — e tudo que só
+# existe para orquestrar agente sobre ele (LangChain/LangGraph) — sair da
+# instalação base.
+#
+# Por isso a linha de corte é cirúrgica, não por família de pacote:
+# `agent-framework-declarative` FICA na base (não entra aqui) porque ele só
+# precisa do `agent-framework-core` SEM extras — é o que faz os prompts
+# (AgentSchema) atravessarem para o app novo sem arrastar o `[all]`. Mover o
+# `declarative` para este extra quebraria exatamente o que o app novo
+# precisa herdar: ler os documentos de prompt sem instalar o framework de
+# execução inteiro.
+[project.optional-dependencies]
+agents = [
+    "agent-framework>=1.13.0",
+    "agent-framework-ag-ui>=1.0.1",
     "langchain>=1.3.15",
     "langgraph>=1.2.11",
     "ag-ui-langgraph>=0.0.43.dev1786716392",
     "langchain-openai>=1.5.1",
     "deepagents>=0.7,<0.8",
+    # NADA DE `fastmcp` AQUI. Ele passou pela Fase 0b só para o monolito continuar servindo
+    # `/mcp` enquanto `apps/mcp` provava paridade; com `app/modules/mcpserver/` deletado (Fase
+    # 0c) nenhum código deste pacote importa `fastmcp`. O servidor MCP vive em `apps/mcp`, que
+    # instala ESTA BASE sem este extra mais `fastmcp==4.0.0b3` — e é exatamente a separação que
+    # torna isso resolvível: o teto `mcp<2` mora no `agent-framework[all]` deste extra, e o
+    # FastMCP 4 exige `mcp>=2,<3`. Trazer um `fastmcp` de volta para cá reabriria o conflito.
 ]
 
 [tool.uv]
@@ -206,6 +231,30 @@ dev = [
     # isso, `uvx ruff` puxa a última disponível e um upgrade pode reabrir o gate sozinho
     # com regras novas que ninguém selecionou (ver comentário em `[tool.ruff]` acima).
     "ruff==0.16.3",
+    # `uv` (0.9.5, verificado antes de escrever isto) não tem `[tool.uv] default-extras` —
+    # só existe `default-groups`, e o pedido equivalente pra extras
+    # (github.com/astral-sh/uv/issues/8607) segue aberto. Sem isso, `uv sync` sozinho
+    # deixaria o app quebrado no import, a menos que todo dev lembrasse de `--extra agents`
+    # pra sempre.
+    #
+    # Grupo `dev` já é instalado por padrão pelo `uv sync` (é o default-group nativo do
+    # uv), então uma dependência auto-referente ao próprio pacote com o extra —
+    # `foundry-helpdesk-backend[agents]` — puxa o extra `agents` só por estar aqui, sem
+    # flag nova.
+    #
+    # O QUE `--no-dev` DEIXA DE FORA, com precisão. NÃO é o módulo `agent_framework`: ele
+    # vem do `agent-framework-core`, que entra transitivamente pelo
+    # `agent-framework-declarative` da base — `import agent_framework` continua funcionando.
+    # O que falta é o resto da família (`agent-framework-azure-ai-search`, `-ag-ui`,
+    # langchain/langgraph/deepagents), e é por isso que `import app.main` quebra em
+    # `agent_framework.azure.AzureAISearchContextProvider`. Medido com traceback real; a
+    # versão anterior deste comentário afirmava a coisa errada porque testou
+    # `import agent_framework` em vez de `import app.main`.
+    #
+    # E é essa a assimetria que o app novo (FastMCP 4) usa: `--no-dev` dá a base, que
+    # convive com `mcp` 2.x porque o teto `mcp<2` mora no extra `all` do core, arrastado só
+    # pelo meta-pacote `agent-framework`.
+    "foundry-helpdesk-backend[agents]",
 ]
 
 [tool.hatch.build.targets.wheel]

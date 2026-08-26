@@ -39,8 +39,8 @@ def build_helpdesk_workflow(
     """Per-request factory: builds the workflow with the current user's identity.
 
     `domain_spec_provider` é injetado por fechamento por quem monta o domínio
-    (`_mount_helpdesk` em `app/registry.py`), nunca importado daqui: `domain_spec()` vive na
-    composition root (`app.registry`), e a ADR-017 proíbe um módulo importar dela. Também não
+    (`_mount_helpdesk` em `app/registry.py`), nunca importado daqui: quem monta o domínio é a
+    composição, e é ela que sabe QUAL domínio este workflow serve. Também não
     dava para resolver o spec e capturá-lo pronto no fechamento — `domain_spec()` lê
     `tenant_config()`, que no modo `shared` só existe DENTRO de uma requisição; resolvido no
     mount (boot) ele quebraria o boot exatamente do jeito que o comentário de `_domains()` em

@@ -19,7 +19,13 @@ subir sem Entra.
 O gate de vazamento de verdade (`eval/access_control_test`) precisa de nuvem e de identidades
 de teste; ele roda em `security-gates.yml`. Este aqui é o que dá para exigir em todo push.
 
-    uv run python -m tests.mcpserver.identity_passthrough_test
+PORTADO DO MONOLITO SEM UMA ÚNICA MUDANÇA DE ASSERÇÃO — só o caminho do módulo mudou
+(`app.modules.mcpserver.internal.tools_knowledge` → `mcp_app.tools_knowledge`). É de propósito:
+esta fase tem paridade como critério, e o teste que prova paridade de comportamento não deve
+ser reescrito junto com o código que ele guarda. Se alguma asserção precisasse mudar, isso
+seria a notícia — e não há nenhuma.
+
+    uv run python -m tests.identity_passthrough_test
 """
 
 from __future__ import annotations
@@ -29,9 +35,9 @@ import sys
 
 from fastmcp.exceptions import ToolError
 
-from app.modules.mcpserver.internal import tools_knowledge
 from app.shared import auth as shared_auth
 from app.shared.settings import settings
+from mcp_app import tools_knowledge
 
 
 class _Token:

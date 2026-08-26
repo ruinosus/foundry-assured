@@ -20,7 +20,7 @@ O QUE ESTE TESTE PROVA, e como, sem tocar o Azure:
      divergiu do que o SDK oficial (RULE #1: não inventar formato) realmente gera.
 
   2. WIRING do container: para os três domínios com blob real (helpdesk/techdocs/selfwiki), o
-     campo `tenant_config().<attr>` que `app/registry.py` atribui a `corpus_container=` é
+     campo `tenant_config().<attr>` que o catálogo de domínios atribui a `corpus_container=` é
      comparado, POR TEXTO-FONTE (o mesmo estilo de `tests/architecture/filesystem_anchors_test.py`
      — inspecionar a fonte real, não adivinhar comportamento), com o `tenant_config().<attr>` que
      `ingest.py`/`ingest_docbundles.py` usa para resolver o container em que o `upload`/
@@ -52,7 +52,8 @@ from app.modules.tenancy.public import TenantConfig
 BACKEND = pathlib.Path(_app.__file__).resolve().parent.parent
 _INGEST = BACKEND / "app" / "modules" / "knowledge" / "internal" / "ingest.py"
 _INGEST_DOCBUNDLES = BACKEND / "app" / "modules" / "knowledge" / "internal" / "ingest_docbundles.py"
-_REGISTRY = BACKEND / "app" / "registry.py"
+#: O CATÁLOGO, que saiu de `app/registry.py` na Fase 0c — é dele que sai `corpus_container=`.
+_CATALOGO = BACKEND / "app" / "modules" / "domains" / "internal" / "catalog.py"
 
 
 def main() -> int:
@@ -91,19 +92,19 @@ def main() -> int:
     url_sdk = svc.get_container_client(container).get_blob_client(nome).url
     check("_blob_url bate byte a byte com a URL que o SDK real do Azure Blob produz", url_nossa == url_sdk)
 
-    # ── 2. WIRING: o mesmo campo de config em registry.py e no lado da ingestão ──────────────
-    registry_src = _REGISTRY.read_text()
+    # ── 2. WIRING: o mesmo campo de config no catálogo e no lado da ingestão ────────────────
+    catalogo_src = _CATALOGO.read_text()
     ingest_src = _INGEST.read_text()
     docbundles_src = _INGEST_DOCBUNDLES.read_text()
 
     def _campo_registry(domain_id_regex: str) -> str | None:
-        """O atributo em `corpus_container=cfg.<attr>` da entrada de `_domains()` cujo bloco
+        """O atributo em `corpus_container=cfg.<attr>` da entrada de `domain_specs()` cujo bloco
         começa com `id="<domain_id_regex>"` — procurado dentro da fatia do source a partir da
         primeira ocorrência do id até a próxima `DomainSpec(` (ou fim do arquivo)."""
-        m_id = re.search(rf'id="{domain_id_regex}"', registry_src)
+        m_id = re.search(rf'id="{domain_id_regex}"', catalogo_src)
         if not m_id:
             return None
-        resto = registry_src[m_id.start():]
+        resto = catalogo_src[m_id.start():]
         prox = resto.find("DomainSpec(", 1)
         bloco = resto[:prox] if prox != -1 else resto
         m_campo = re.search(r"corpus_container=cfg\.(\w+)", bloco)

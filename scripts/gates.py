@@ -39,8 +39,15 @@ WORKFLOW = REPO / ".github" / "workflows" / "ci.yml"
 #: O dev local já tem o ambiente; rodá-los aqui gastaria minutos sem verificar nada.
 SETUP_PREFIXES = ("uv sync", "npm ci", "npm install", "curl", "chmod", "sudo")
 
-#: Sem `--all` roda só este job: é o único inteiramente offline e determinístico.
-DEFAULT_JOBS = ("backend",)
+#: Sem `--all` rodam só estes jobs: são os inteiramente offline e determinísticos.
+#:
+#: `mcp-app` entrou junto com `apps/mcp` (ADR-027) porque satisfaz o mesmo critério — nenhum
+#: passo dele toca a rede. Deixá-lo fora faria o comando padrão passar enquanto o CI barrava,
+#: que é exatamente a divergência entre duas listas que este script existe para não ter.
+#:
+#: Ele roda no venv de `apps/mcp` (o `working-directory` do job), que precisa estar sincronizado:
+#: `cd apps/mcp && uv sync`. Sem isso os passos saem como SKIP alto no resumo, não como verde.
+DEFAULT_JOBS = ("backend", "mcp-app")
 
 
 def gates(only_jobs: tuple[str, ...] | None, pattern: str | None) -> list[tuple[str, str, str]]:
@@ -50,8 +57,15 @@ def gates(only_jobs: tuple[str, ...] | None, pattern: str | None) -> list[tuple[
     for job_name, job in workflow.get("jobs", {}).items():
         if only_jobs and job_name not in only_jobs:
             continue
-        workdir = job.get("defaults", {}).get("run", {}).get("working-directory", ".")
+        padrao = job.get("defaults", {}).get("run", {}).get("working-directory", ".")
         for step in job.get("steps", []):
+            # O `working-directory` de STEP vence o do job, e é relativo à raiz do repo — é o que
+            # o GitHub Actions faz. Ler só o `defaults.run` do job produzia FALSO VERMELHO: o gate
+            # `check-renderer-single-copy` declara `working-directory: .` para rodar da raiz, e a
+            # bateria o rodava de `apps/frontend`, onde o caminho não resolve. Um agente leu esse
+            # vermelho como "a main está quebrada" e quase mandou consertar um gate saudável —
+            # falso vermelho custa a mesma confiança que falso verde.
+            workdir = step.get("working-directory", padrao)
             command = step.get("run")
             if not command or "\n" in command.strip():
                 continue  # sem `run:` (uma action), ou script multi-linha de setup

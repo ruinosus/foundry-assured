@@ -14,7 +14,11 @@ segunda metade do teste trava. Sem ela, "mascarar" viraria "emudecer" no primeir
 Roda offline e sem auth: com `ENTRA_*` em branco não há provider, e o cliente em memória do
 próprio fastmcp fala com o servidor sem rede.
 
-    uv run python -m tests.mcpserver.error_masking_test
+PORTADO DO MONOLITO com uma mudança e uma só: `build_mcp` vive em `mcp_app/main.py` e não
+registra a tool — quem registra é `main.build_app`, então o teste chama `register` ele mesmo.
+Nenhuma asserção mudou.
+
+    uv run python -m tests.error_masking_test
 """
 
 from __future__ import annotations
@@ -24,9 +28,10 @@ import sys
 
 from fastmcp import Client
 
-from app.modules.mcpserver.internal import tools_knowledge
-from app.modules.mcpserver.internal.server import MOUNT_PATH, build_mcp
 from app.shared.settings import settings
+from mcp_app import tools_knowledge
+from mcp_app.auth import MCP_PATH
+from mcp_app.main import build_mcp
 
 #: Uma mensagem de erro com a cara da que o Azure Search devolve — os três dados que não podem
 #: vazar estão dentro dela.
@@ -68,7 +73,10 @@ def main() -> int:
         tools_knowledge.set_domain_registry(
             lambda domain_id: f"spec:{domain_id}", ("techdocs", "selfwiki")
         )
+        # `build_mcp` monta o servidor; registrar a tool é passo separado neste app
+        # (`main.build_app` faz os dois). Aqui só a tool importa — nada de HTTP.
         mcp = build_mcp(auth=None)
+        tools_knowledge.register(mcp)
 
         texto = asyncio.run(_chamar(mcp, domain="techdocs", query="qualquer"))
         print(f"     erro devolvido: {texto}")
@@ -89,7 +97,7 @@ def main() -> int:
         tools_knowledge._grounded_domains = original_grounded
         settings.entra_tenant_id, settings.entra_api_client_id = original_entra
 
-    print(f"\n  (superfície sob teste: {MOUNT_PATH})")
+    print(f"\n  (superfície sob teste: {MCP_PATH})")
     if falhas:
         print(f"\n❌ {len(falhas)} verificação(ões) falharam.")
         return 1

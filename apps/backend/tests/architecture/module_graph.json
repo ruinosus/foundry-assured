@@ -3,9 +3,6 @@
     "admin": [
       "registry.py"
     ],
-    "agentdefs": [
-      "registry.py"
-    ],
     "audit": [
       "registry.py"
     ],
@@ -17,6 +14,9 @@
       "registry.py"
     ],
     "deepcall": [
+      "registry.py"
+    ],
+    "domains": [
       "registry.py"
     ],
     "evaluation": [
@@ -37,10 +37,6 @@
       "registry.py"
     ],
     "knowledge": [
-      "registry.py"
-    ],
-    "mcpserver": [
-      "main.py",
       "registry.py"
     ],
     "oncall": [
@@ -140,6 +136,14 @@
     ],
     "tickets": [
       "modules/deepcall/internal/graph.py"
+    ]
+  },
+  "domains": {
+    "agentdefs": [
+      "modules/domains/internal/catalog.py"
+    ],
+    "tenancy": [
+      "modules/domains/internal/catalog.py"
     ]
   },
   "evaluation": {
@@ -284,19 +288,6 @@
       "modules/knowledge/internal/ingest_docbundles.py",
       "modules/knowledge/internal/secure_search.py",
       "modules/knowledge/internal/wiki_builder.py"
-    ]
-  },
-  "mcpserver": {
-    "knowledge": [
-      "modules/mcpserver/internal/tools_knowledge.py"
-    ],
-    "shared": [
-      "modules/mcpserver/internal/auth.py",
-      "modules/mcpserver/internal/authz.py",
-      "modules/mcpserver/internal/tools_knowledge.py"
-    ],
-    "tenancy": [
-      "modules/mcpserver/internal/tools_knowledge.py"
     ]
   },
   "oncall": {

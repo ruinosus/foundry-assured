@@ -30,10 +30,10 @@ O domínio é **swappable**: a arquitetura "pergunte → fundamente → resolva 
 Três camadas. O frontend Next.js conversa com o backend Python via **AG-UI sobre SSE**; o backend roda um **workflow multi-agente** que usa o Foundry na nuvem.
 
 - **Frontend** → o "Assurance Console". A rota genérica `/d/[domain]` (ex.: `/d/helpdesk`, `/d/d/techdocs`, `/d/selfwiki`, `/d/platform`; as antigas `/chat` e `/d/techdocs` redirecionam) é dirigida por **um registry**: `apps/frontend/lib/domains.ts` define o agent map (4 domínios; `kind: workflow | grounded | tool`), a nav, a rota genérica e os prompts sugeridos. No modo `shared`, os domínios montam globalmente mas são gated por tenant via **DomainAssignment** (ADR-010). `app/api/copilotkit/route.ts` registra um `CopilotRuntime` com um `HttpAgent` por domínio. A página usa `useCoAgentStateRender` para mostrar os passos intermediários, `useCopilotAction` (`renderAndWaitForResponse`) para o approval card, e um `EvidencePanel` para as fontes citadas + badges de assurance.
-- **Backend** → `apps/backend/app/main.py` é fino: cria o FastAPI (rodado como `app.main:app`), aplica CORS, chama `setup_telemetry()`, `include_routers(app)` e `mount_domains(app)`. O registry do backend é `app/registry.py` — **um `DomainSpec` por domínio e um único loop que despacha por `kind`** (`workflow` → AG-UI do helpdesk; `grounded` → techdocs/selfwiki; `tool` → platform). A organização é um **monolito modular por domínio** (ADR-017): `app/modules/<domínio>/` com `public.py` (única superfície importável) e `internal/` (privado), sobre um shared kernel `app/shared/` (settings, auth, telemetria) que não importa nenhum módulo. As fronteiras são verificadas em CI por `import-linter` (as regras de camada mais um contrato de privacidade por módulo — a cobertura é derivada de `app/modules/` por `tests.architecture.importlinter_coverage_test`, porque uma lista mantida à mão já ficou verde sem vigiar 10 módulos). A resolução de tenant (modo `shared`) + brokering de credenciais ficam em `app/modules/tenancy/`. O endpoint `/mcp` é servido por `app/modules/mcpserver/` — **superfície de acesso, não capacidade**: ele traduz para o vocabulário MCP (tools, auth como Resource Server do Entra), mas quem implementa continua sendo o módulo dono (hoje, `search_docs` chama `knowledge`).
+- **Backend** → `apps/backend/app/main.py` é fino: cria o FastAPI (rodado como `app.main:app`), aplica CORS, chama `setup_telemetry()`, `include_routers(app)` e `mount_domains(app)`. O catálogo de domínios é `app/modules/domains/` — **um `DomainSpec` por domínio**, dado de negócio, consumido pelos DOIS composition roots (o monolito e `apps/mcp`); `app/registry.py` guarda **o único loop que despacha por `kind`** (`workflow` → AG-UI do helpdesk; `grounded` → techdocs/selfwiki; `tool` → platform). A organização é um **monolito modular por domínio** (ADR-017): `app/modules/<domínio>/` com `public.py` (única superfície importável) e `internal/` (privado), sobre um shared kernel `app/shared/` (settings, auth, telemetria) que não importa nenhum módulo. As fronteiras são verificadas em CI por `import-linter` (as regras de camada mais um contrato de privacidade por módulo — a cobertura é derivada de `app/modules/` por `tests.architecture.importlinter_coverage_test`, porque uma lista mantida à mão já ficou verde sem vigiar 10 módulos). A resolução de tenant (modo `shared`) + brokering de credenciais ficam em `app/modules/tenancy/`. O endpoint `/mcp` **não é servido por este app**: ele é `apps/mcp`, unidade de deploy própria sobre FastMCP 4 (ADR-027) — **superfície de acesso, não capacidade**: traduz para o vocabulário MCP (tools, auth como Resource Server do Entra), mas quem implementa continua sendo o módulo dono (hoje, `search_docs` chama `knowledge.public`).
 - **Foundry** → o retriever consulta a **Foundry IQ KB** e trima por entitlement (`app/modules/knowledge/internal/secure_search.py`, `app/modules/knowledge/internal/acl_setup.py`); triage/resolver leem/escrevem **memória**; eval e traces vão para o Foundry Control Plane.
 
-**Adicionar um domínio = 3 coisas:** uma linha no registry do frontend (`apps/frontend/lib/domains.ts`), um `DomainSpec` no registry do backend (`apps/backend/app/registry.py`) e o agente/KB correspondente. Os dois registries são espelhos — `eval/domain_registry_test.py` guarda esse contrato.
+**Adicionar um domínio = 3 coisas:** uma linha no registry do frontend (`apps/frontend/lib/domains.ts`), um `DomainSpec` no catálogo do backend (`apps/backend/app/modules/domains/internal/catalog.py`) e o agente/KB correspondente. Os dois registries são espelhos — `tests/registry/domain_registry_test.py` guarda esse contrato.
 
 ### Layout do repositório
 
@@ -43,19 +43,20 @@ Monolito modular por domínio (ADR-017) — a pergunta que organiza não é "que
 ```
 apps/backend/
   app/main.py            composition root: setup_telemetry → tenancy.install → routers → domínios
-  app/registry.py        DomainSpec + mount_domains (despacha por `kind`) + include_routers
+  app/registry.py        mount_domains (despacha por `kind`) + include_routers — só wiring
   app/api_health.py      transversal
   app/shared/            SHARED KERNEL — settings, auth, telemetry/. NÃO importa módulo algum
   app/modules/<m>/       módulos de negócio: public.py (única superfície) + internal/
                          tenancy · admin · knowledge · helpdesk · grounded · platform_ops
                          tickets · hosted · evaluation · agentdefs · hitl · oncall · deepcall
                          usecases · foundry · conversations · proposer · builder · audit
-                         pricing · mcpserver
+                         pricing · domains (o CATÁLOGO: DomainSpec + DOMAIN_KINDS)
   agents/assured/       documentos AgentSchema (prompts) — NÃO se move (contrato de deploy)
   eval/                  harness de assurance = PRODUTO (8 gates que os workflows invocam)
   tests/<módulo>/        testes, espelhando os módulos; + smoke/ e architecture/
   importlinter.toml      contratos de fronteira (um por módulo + camadas)
   cli/                   provision_*
+apps/mcp/                o SERVIDOR MCP, unidade de deploy própria (FastMCP 4, ADR-027)
 apps/frontend/           Next.js App Router: app/, components/<área>/, lib/ (registry + auth)
 apps/hosted-*/           containers dos hosted agents (helpdesk, techdocs, selfwiki, platform)
 knowledge/               CONTEÚDO que vira base de conhecimento (nunca código) — ver README lá

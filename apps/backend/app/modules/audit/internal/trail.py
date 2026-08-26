@@ -43,6 +43,12 @@ KINDS = (
     # desfecho de uma ajuda. Separado porque a pergunta que ele responde é outra: não "quem
     # autorizou", mas "esse assistente ajuda de verdade?".
     "assist",
+    # Uma decisão humana REAPRESENTADA — o mesmo estado de aprovação chegando uma segunda vez, e
+    # recusado. Não é `approval` (não houve decisão nova: houve a repetição de uma antiga) nem
+    # `write` (nada foi gravado). Gravá-lo como um dos dois faria a trilha contar exatamente a
+    # história que ela existe para desmentir — duas aprovações onde houve uma. Ver
+    # `apps/mcp/mcp_app/decision_claim.py`.
+    "replay",
 )
 
 _SEGMENTO = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")

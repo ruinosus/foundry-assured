@@ -68,7 +68,7 @@ async def retrieve(query: str, user, domain, *, top: int = 8) -> list[dict]:
     try:
         primary = (await app_cred.get_token(_SEARCH_SCOPE)).token  # app MI (service credential)
         # A decisão de anexar o header de identidade é DECLARADA em `domain.document_access`
-        # (`DomainSpec`, registry.py), nunca DERIVADA da truthiness de `acl_group_map` — o mesmo
+        # (`DomainSpec`, modules/domains), nunca DERIVADA da truthiness de `acl_group_map` — o mesmo
         # argumento de `document.py:authorized_document` vale idêntico aqui, e por desenho: as
         # duas decisões agora vêm da MESMA fonte. `acl_group_map` é valor de CONFIGURAÇÃO (no modo
         # shared, vem do tenant store); decidir por ele rebaixaria em silêncio um domínio que

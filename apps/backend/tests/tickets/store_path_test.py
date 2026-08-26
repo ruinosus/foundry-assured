@@ -37,6 +37,12 @@ _BICEP = _REPO / "infra" / "containerapps.bicep"
 #: O volume que guarda os chamados, como o bicep o nomeia.
 _VOLUME = "data"
 
+#: E o RECURSO em que procurá-lo. O mesmo volume é montado em DOIS containers com caminhos
+#: diferentes — `/app/data` aqui e `/srv/backend/data` no `mcpApp`, porque a raiz do backend
+#: difere entre as duas imagens. Sem este recorte, um `re.search` no arquivo inteiro devolvia o
+#: primeiro que aparecesse: hoje é o certo por ordem de escrita, o que é acidente, não garantia.
+_RECURSO = "backendApp"
+
 
 def main() -> int:
     falhas: list[str] = []
@@ -52,10 +58,15 @@ def main() -> int:
         return 1
 
     texto = _BICEP.read_text(encoding="utf-8")
-    m = re.search(rf"volumeName:\s*'{_VOLUME}'\s*,\s*mountPath:\s*'([^']+)'", texto)
-    check(f"o bicep declara o mount do volume '{_VOLUME}'", m is not None)
+    # Recorta o recurso do backend antes de procurar — ver `_RECURSO`. Do `resource backendApp`
+    # até o próximo `resource ` de primeiro nível.
+    inicio = texto.find(f"resource {_RECURSO} ")
+    fim = texto.find("\nresource ", inicio + 1) if inicio >= 0 else -1
+    bloco = texto[inicio : fim if fim > 0 else len(texto)] if inicio >= 0 else ""
+    m = re.search(rf"volumeName:\s*'{_VOLUME}'\s*,\s*mountPath:\s*'([^']+)'", bloco)
+    check(f"o bicep declara o mount do volume '{_VOLUME}' em `{_RECURSO}`", m is not None)
     if not m:
-        print("\n❌ mount não encontrado — o nome do volume mudou no bicep?")
+        print(f"\n❌ mount não encontrado dentro de `resource {_RECURSO}` — mudou de nome?")
         return 1
 
     mount = m.group(1)

@@ -14,8 +14,9 @@ import re
 import sys
 
 import app as _app
-import app.registry as domains_mod
-from app.registry import DomainSpec, _domains, domain_deps, mount_domains
+import app.registry as registry_mod
+from app.modules.domains.public import DOMAIN_KINDS, DomainSpec, domain_specs
+from app.registry import domain_deps, mount_domains
 
 
 class _FakeApp:
@@ -122,14 +123,14 @@ def main() -> int:
             failures.append(name)
 
     # --- Registry shape ---
-    specs = _domains()
+    specs = domain_specs()
     by_id = {d.id: d for d in specs}
     check("four domains", len(specs) == 4 and set(by_id) == {"helpdesk", "techdocs", "selfwiki", "platform"})
     # DOMAIN_KINDS (todos os domínios montáveis) contra o registry do FRONTEND, lido do disco.
-    # `_domains()` é o subconjunto que carrega config por request; comparar só ele deixava
+    # `domain_specs()` é o subconjunto que carrega config por request; comparar só ele deixava
     # `builder`, `oncall` e `deepcall` fora de qualquer verificação de espelho.
     frontend = kinds_do_frontend()
-    backend = dict(domains_mod.DOMAIN_KINDS)
+    backend = dict(DOMAIN_KINDS)
     so_no_backend = sorted(set(backend) - set(frontend))
     so_no_frontend = sorted(set(frontend) - set(backend))
     divergentes = sorted(k for k in set(backend) & set(frontend) if backend[k] != frontend[k])
@@ -249,7 +250,7 @@ def main() -> int:
 
     sf_mod = graph_mod
 
-    saved["adapter"] = domains_mod.add_agent_framework_fastapi_endpoint
+    saved["adapter"] = registry_mod.add_agent_framework_fastapi_endpoint
     saved["kc"] = concierge_mod.knowledge_configured
     saved["bca"] = concierge_mod.build_concierge_agent
     saved["pc"] = platform_mod.platform_configured
@@ -258,7 +259,7 @@ def main() -> int:
     saved["ord"] = sf_mod.OrderedAgentFrameworkWorkflow
 
     try:
-        domains_mod.add_agent_framework_fastapi_endpoint = fake_adapter
+        registry_mod.add_agent_framework_fastapi_endpoint = fake_adapter
         concierge_mod.knowledge_configured = lambda: True
         concierge_mod.build_concierge_agent = lambda: object()
         platform_mod.platform_configured = lambda: True
@@ -285,7 +286,7 @@ def main() -> int:
         )
         check("workflow/tool adapter calls carry deps", all(c["dependencies"] is not None for c in adapter_calls))
     finally:
-        domains_mod.add_agent_framework_fastapi_endpoint = saved["adapter"]
+        registry_mod.add_agent_framework_fastapi_endpoint = saved["adapter"]
         concierge_mod.knowledge_configured = saved["kc"]
         concierge_mod.build_concierge_agent = saved["bca"]
         platform_mod.platform_configured = saved["pc"]

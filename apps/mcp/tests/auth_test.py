@@ -4,20 +4,31 @@ A escolha é de segurança, não de estilo: o OAuth proxy do FastMCP exigiria `c
 faria o servidor emitir tokens — uma segunda malha de identidade convivendo com a do Entra que
 já vale para o resto do backend. O verifier só CONFERE o token que o cliente já trouxe.
 
-Este teste trava as três coisas que, se mudarem em silêncio, quebram essa escolha:
-o provider some quando a auth está desligada, o issuer é o do NOSSO tenant, e o escopo exigido
-é o mesmo `access_as_user` que o `fastapi-azure-auth` já cobra.
+Este teste trava as coisas que, se mudarem em silêncio, quebram essa escolha: o provider some
+quando a auth está desligada, o issuer é o do NOSSO tenant, e o escopo exigido é o mesmo
+`access_as_user` que o `fastapi-azure-auth` já cobra.
 
-    uv run python -m tests.mcpserver.auth_test
+O QUE MUDOU EM RELAÇÃO AO TESTE DO MONOLITO, e por quê. Lá a última verificação era
+`provider.resource_base_url == BASE + "/mcp"`: no monolito o MCP servia em `"/"` dentro de um
+sub-app montado em `/mcp`, então o provider via `mcp_path="/"` e derivava o recurso como a RAIZ
+do host — `resource_base_url` existia só para corrigir isso. Aqui não há mount: o caminho viaja
+em `http_app(path="/mcp/")` e o provider já deriva `base_url + "/mcp/"` sozinho. Definir
+`resource_base_url` agora produziria `https://host/mcp/mcp/`.
+
+Então a verificação equivalente mudou de forma, não de conteúdo: em vez de conferir o campo que
+corrigia o recurso, ela confere o RESULTADO — o caminho da rota de metadata que o provider
+gera, que é onde o recurso aparece escopado ao endpoint. O fim-a-fim (o 401 anunciando uma URL
+que responde 200) é `unauthenticated_test`.
+
+    uv run python -m tests.auth_test
 """
 
 from __future__ import annotations
 
 import sys
 
-from app.modules.mcpserver.internal.auth import build_auth
-from app.modules.mcpserver.internal.server import MOUNT_PATH
 from app.shared.settings import settings
+from mcp_app.auth import MCP_PATH, build_auth
 
 BASE = "https://exemplo.invalid"
 
@@ -34,11 +45,11 @@ def main() -> int:
     try:
         settings.entra_tenant_id = ""
         settings.entra_api_client_id = ""
-        check("auth desligada → sem provider", build_auth(BASE, MOUNT_PATH) is None)
+        check("auth desligada → sem provider", build_auth(BASE) is None)
 
         settings.entra_tenant_id = "11111111-1111-1111-1111-111111111111"
         settings.entra_api_client_id = "22222222-2222-2222-2222-222222222222"
-        provider = build_auth(BASE, MOUNT_PATH)
+        provider = build_auth(BASE)
         check("auth ligada → provider construído", provider is not None)
 
         servers = [str(u) for u in provider.authorization_servers]
@@ -60,11 +71,18 @@ def main() -> int:
             provider.token_verifier.audience
             == ["22222222-2222-2222-2222-222222222222", "api://22222222-2222-2222-2222-222222222222"],
         )
+
         # O recurso anunciado é o ENDPOINT, não a raiz do backend: é o que o cliente compara com
-        # o servidor que está chamando, e é de onde sai a URL da metadata no desafio 401.
+        # o servidor que está chamando. Sem mount, quem carrega essa verdade é o `mcp_path`.
+        caminhos = [r.path for r in provider.get_well_known_routes(mcp_path=MCP_PATH)]
+        print(f"     rotas .well-known: {caminhos}")
         check(
-            "o recurso protegido é o endpoint montado, não a raiz",
-            str(provider.resource_base_url).rstrip("/") == f"{BASE}{MOUNT_PATH}",
+            "a metadata é escopada ao endpoint MCP, não à raiz",
+            caminhos == [f"/.well-known/oauth-protected-resource{MCP_PATH}"],
+        )
+        check(
+            "e o provider não redefine o recurso por conta própria (sem mount, não há o que corrigir)",
+            provider.resource_base_url is None,
         )
     finally:
         settings.entra_tenant_id, settings.entra_api_client_id = original

@@ -34,9 +34,9 @@ from typing import Self
 from agent_framework import EvalItem, EvalNotPassedError, LocalEvaluator, Message
 
 import app as _app
+from app.modules.domains.public import domain_specs
 from app.modules.grounded.internal.concierge import build_concierge_agent
 from app.modules.tenancy.internal.tenant import tenant_config
-from app.registry import _domains
 from eval.assertions import (
     _TITLE_PREFIX,
     check_cites_a_source,
@@ -132,7 +132,8 @@ class _RetrieveAgent:
 
 def _eval_spec(domain_id: str):
     """The DomainSpec the headless golden eval retrieves against — picked by id from the
-    production registry (`app.registry._domains()`), then adapted for headless retrieval.
+    production catalog (`app.modules.domains.public.domain_specs()`), then adapted for headless
+    retrieval.
 
     For techdocs we drop `kb_name` (and `ks_name`) so `retrieve()` takes the direct-search
     FALLBACK over `search_index` instead of the native+ACL path — the fallback's elevated-read
@@ -142,7 +143,7 @@ def _eval_spec(domain_id: str):
     through unchanged."""
     import dataclasses
 
-    spec = next(d for d in _domains() if d.id == domain_id)
+    spec = next(d for d in domain_specs() if d.id == domain_id)
     if getattr(spec, "kb_name", None) and getattr(spec, "search_index", None):
         # ACL/native domain with a fallback index available → route the eval to the fallback so
         # elevated-read yields docs headless (production native path stays fail-closed — untouched).

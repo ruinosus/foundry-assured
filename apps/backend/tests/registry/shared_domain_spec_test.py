@@ -23,8 +23,8 @@ from __future__ import annotations
 import dataclasses
 import sys
 
+from app.modules.domains.public import DOMAIN_KINDS, domain_spec
 from app.modules.tenancy.public import TenantConfig, set_current_tenant, set_provider
-from app.registry import DOMAIN_KINDS, domain_spec
 from app.shared.settings import settings
 
 
@@ -56,9 +56,10 @@ def _tenant(name: str) -> TenantConfig:
     return dataclasses.replace(
         base,
         hosted_agent_name=f"{name}-agent",
-        # `corpus_container` de cada domínio (helpdesk/techdocs/selfwiki) — `_domains()` lê os
-        # três em `app/registry.py`. Derivado do nome do tenant, como os campos vizinhos, para
-        # que a asserção de isolamento entre tenants continue significando algo.
+        # `corpus_container` de cada domínio (helpdesk/techdocs/selfwiki) — `domain_specs()`
+        # lê os três no catálogo (`app.modules.domains`). Derivado do nome do tenant, como os
+        # campos vizinhos, para que a asserção de isolamento entre tenants continue significando
+        # algo.
         azure_storage_container=f"{name}-corpus",
         techdocs_storage_container=f"{name}-techdocs-corpus",
         selfwiki_storage_container=f"{name}-selfwiki-corpus",

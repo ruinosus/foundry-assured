@@ -206,9 +206,8 @@ def list_use_cases() -> list[dict]:
                 "has_flow": fluxo is not None,
                 # Quem executa. `declarative` quando há fluxo YAML; senão, o que o agente
                 # publicado declarou em `metadata.runtime` (preenchido abaixo). Lido do AGENTE e
-                # não do registry de propósito: importar `app.registry` daqui seria um módulo
-                # dependendo da composição, que a ADR-017 proíbe — e a informação já viaja no
-                # metadata, que é onde a SEGUNDA MÁXIMA a colocou.
+                # não do catálogo de propósito: a informação já viaja no metadata, que é
+                # onde a SEGUNDA MÁXIMA a colocou.
                 "runtime": "declarative" if fluxo else "—",
             }
         return casos[case_id]

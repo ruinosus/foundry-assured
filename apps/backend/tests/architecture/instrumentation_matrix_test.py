@@ -130,22 +130,11 @@ MATRIZ: dict[str, dict[str, object]] = {
         "trilha": True,
         "caso_de_uso": "depende da conversa",
     },
-    # ── runtime E · MCP · o agente é do OUTRO lado ──────────────────────────────────────────
-    "/mcp": {
-        # Aqui não há agente NOSSO: o servidor MCP expõe `search_docs` para o agente de quem
-        # chama (Copilot, Claude, o que for). Por isso quase toda coluna é "n/a" com o mesmo
-        # motivo de fundo — não existe turno, nem modelo chamado, deste lado da fronteira.
-        "conversa": "n/a: chamada de tool avulsa, sem thread — a conversa é do cliente MCP",
-        "tokens": "n/a: a tool busca e devolve; nenhum modelo é chamado deste lado",
-        # As fontes saem como dado estruturado no retorno da tool (`sources`), que é a regra 4
-        # em forma de formato — ver tools_knowledge.search_docs.
-        "referencias": True,
-        "chamado": "n/a: a única tool é de leitura",
-        # ADR-023: o `retrieve` grava o evento de `access`, e desde o conserto do ator ele entra
-        # com a identidade de quem perguntou (`human:<e-mail>`), não com `process:app`.
-        "trilha": True,
-        "caso_de_uso": "n/a: sem conversa, não há caso de uso a que atribuir",
-    },
+    # A LINHA `/mcp` SAIU NA FASE 0c, e a ausência é a mudança. O servidor MCP deixou de ser
+    # servido por este app: ele é `apps/mcp`, unidade de deploy própria sobre FastMCP 4
+    # (ADR-027). Esta matriz cobre as superfícies de agente DESTE app; a de lá é coberta pelos
+    # gates de `apps/mcp/tests/`. Manter a linha aqui faria o gate cobrar uma rota que o perfil
+    # não monta mais — declaração órfã, que é exatamente o que ele verifica no item 2.
     "/foundry-agent/{name}": {
         # A superfície do agente que o USUÁRIO cria. A amarração vem do `{name}` do caminho, não de
         # um nome fixo — senão a conversa de todo agente criado cairia sob a mesma chave.
@@ -212,21 +201,15 @@ def _superficies() -> dict[str, list[str]]:
     if r.returncode != 0:
         raise RuntimeError(f"captura de rotas falhou:\n{r.stderr[-2000:]}")
 
-    from app.modules.mcpserver.public import MOUNT_PATH as MCP
-    from app.registry import DOMAIN_KINDS
+    from app.modules.domains.public import DOMAIN_KINDS
 
     achadas: dict[str, list[str]] = {}
     for caminho, deps in json.loads(r.stdout):
         if any(caminho.startswith(prefixo) for prefixo in NAO_SAO_AGENTE):
             continue
         primeiro = caminho.lstrip("/").split("/")[0]
-        # `MCP` entra por nome, e não por `DOMAIN_KINDS`: ele não é um domínio, é uma
-        # superfície que serve TODOS os domínios com base a um agente de fora. Ficou invisível
-        # aqui enquanto a captura não descia em `Mount` — e, como o filtro é por lista, apagar a
-        # rota da captura e esquecer desta linha esconderia a superfície duas vezes.
         if (
             primeiro in DOMAIN_KINDS
-            or caminho == MCP
             or "hosted" in caminho
             or "foundry-agent" in caminho
         ):

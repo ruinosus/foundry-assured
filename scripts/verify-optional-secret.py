@@ -18,6 +18,13 @@ Duas coisas têm que andar JUNTAS, e é isso que este gate trava:
 
 Quebrar o par nos dois sentidos falha igual: secret sem quem use é inofensivo, mas `secretRef`
 apontando para segredo não declarado é o mesmo erro de deployment que o item 1 evita.
+
+DOIS APPS DECLARAM SEGREDO OPCIONAL DESDE A FASE 3 (T3), e por isso este gate deixou de olhar
+um só. O container app `mcp` ganhou `MCP_REQUEST_STATE_KEY` — a chave que assina a decisão
+humana da escrita —, que é opcional pelo mesmo desenho: sem ela o servidor sobe e só a tool de
+escrita se declara indisponível. Vigiar apenas o backend deixaria a MESMA falha nascer no
+vizinho, e ela é exatamente do tipo que não se parece com o problema: o `mcp` simplesmente não
+existiria no resource group.
 """
 
 import json
@@ -26,7 +33,18 @@ import sys
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-TESTE = "empty(parameters('entraApiClientSecret'))"
+
+#: Um por container app que declara segredo OPCIONAL: (rótulo, tag do azd, parâmetro, nome do
+#: secret). A lista é a fonte; acrescentar um app aqui é o passo que faz o gate enxergá-lo.
+OPCIONAIS = (
+    ("backend", "backend", "entraApiClientSecret", "entra-api-secret"),
+    ("mcp/estado", "mcp", "mcpRequestStateKey", "mcp-request-state-key"),
+    # O `mcp` tem DOIS segredos opcionais desde o conserto do OBO: além da chave que sela a
+    # decisão da escrita, a credencial da app registration que o `knowledge.retrieve` usa para
+    # trocar o token do chamador por um de busca. São independentes — um deployment sem sign-in
+    # não tem o segundo, um sem escrita não tem o primeiro, e os dois modos precisam subir.
+    ("mcp/obo", "mcp", "entraApiClientSecret", "entra-api-secret"),
+)
 
 
 def main() -> int:
@@ -48,40 +66,51 @@ def main() -> int:
         print(f"✖ bicep build falhou:\n{arm.stderr}", file=sys.stderr)
         return 1
 
-    apps = [
+    recursos = [
         r for r in json.loads(arm.stdout).get("resources", [])
         if r.get("type") == "Microsoft.App/containerApps"
-        and "backend" in json.dumps(r.get("tags", {}))
     ]
-    if len(apps) != 1:
-        print(f"✖ esperava exatamente 1 container app do backend, achei {len(apps)}", file=sys.stderr)
-        return 1
-
-    props = apps[0]["properties"]
-    secrets = json.dumps(props["configuration"].get("secrets"))
-    env = json.dumps(props["template"]["containers"][0]["env"])
 
     falhas = []
-    if TESTE not in secrets:
-        falhas.append(
-            "o `secrets` declara `entra-api-secret` SEM condição — provision sem sign-in "
-            "morre com ContainerAppSecretInvalid e o backend não é criado"
-        )
-    if "entra-api-secret" in env and TESTE not in env:
-        falhas.append(
-            "a env var usa `secretRef: entra-api-secret` sem a MESMA condição do `secrets` — "
-            "referência a segredo não declarado falha o deployment igual"
-        )
+    for rotulo, tag, parametro, segredo in OPCIONAIS:
+        apps = [r for r in recursos if tag in json.dumps(r.get("tags", {}))]
+        if len(apps) != 1:
+            falhas.append(f"esperava exatamente 1 container app `{rotulo}`, achei {len(apps)}")
+            continue
+
+        teste = f"empty(parameters('{parametro}'))"
+        props = apps[0]["properties"]
+        secrets = json.dumps(props["configuration"].get("secrets"))
+        env = json.dumps(props["template"]["containers"][0]["env"])
+
+        if teste not in secrets:
+            falhas.append(
+                f"{rotulo}: o `secrets` declara `{segredo}` SEM condição — provision sem o "
+                f"valor morre com ContainerAppSecretInvalid e o app não é criado"
+            )
+        elif segredo not in env:
+            # O ARM compilado guarda o env como EXPRESSÃO (`concat(createArray(...), if(...))`),
+            # então o que se procura é o nome do segredo dentro dela — não a sintaxe `secretRef:`
+            # do bicep, que não sobrevive à compilação.
+            falhas.append(
+                f"{rotulo}: `{segredo}` é declarado e ninguém o consome — um segredo que não "
+                "chega ao container é configuração que parece feita e não está"
+            )
+        elif teste not in env:
+            falhas.append(
+                f"{rotulo}: a env var usa `secretRef: {segredo}` sem a MESMA condição do "
+                "`secrets` — referência a segredo não declarado falha o deployment igual"
+            )
+        if not [f for f in falhas if f.startswith(f"{rotulo}:")]:
+            print(f"  ✓ {rotulo}: `{segredo}` só é declarado quando existe, e a env var o segue")
 
     for f in falhas:
         print(f"  ✗ {f}")
     if falhas:
-        print("\n✖ um clone novo sem `--with-auth` não conseguiria subir o backend.", file=sys.stderr)
+        print("\n✖ um provision sem os segredos opcionais não subiria todos os apps.", file=sys.stderr)
         return 1
 
-    print("  ✓ o segredo do Entra só é declarado quando existe")
-    print("  ✓ a env var que o referencia obedece à mesma condição")
-    print("\n✅ provision sem sign-in cria o backend — clone novo sobe.")
+    print("\n✅ provision sem os segredos opcionais cria os dois apps — clone novo sobe.")
     return 0
 
 

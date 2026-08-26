@@ -15,7 +15,7 @@ linha só de um lado passa no seu teste local e quebra o gate.
 | Onde | O quê |
 |---|---|
 | `apps/frontend/lib/domains.ts` | uma entrada: `id`, `kind`, `endpoint`, `framework`, `icon`, `surface` |
-| `apps/backend/app/registry.py` | `DOMAIN_KINDS` + um `DomainSpec` em `_domains()` |
+| `apps/backend/app/modules/domains/internal/catalog.py` | `DOMAIN_KINDS` + um `DomainSpec` em `domain_specs()` |
 | `apps/frontend/messages/{en,pt-BR}.json` | **todo o texto**, sob `domains.<id>` |
 | o agente | documento AgentSchema em `apps/backend/agents/assured/<id>.yaml` + KB, se `grounded` |
 
@@ -34,7 +34,7 @@ linha só de um lado passa no seu teste local e quebra o gate.
 
 ## Ordem
 
-1. Leia `domains.ts` e `registry.py` inteiros; escolha o domínio existente mais parecido.
+1. Leia `domains.ts` e `catalog.py` inteiros; escolha o domínio existente mais parecido.
 2. Frontend: entrada no registry + as duas chaves de tradução.
 3. Backend: `DOMAIN_KINDS` + `DomainSpec`.
 4. Agente: o `.yaml` (a skill `prompt-change` cobre o resto) e, se `grounded`, a KB.

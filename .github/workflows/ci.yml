@@ -116,6 +116,16 @@ jobs:
       - name: Filesystem anchors (no parents[N] path counting)
         run: uv run python -m tests.architecture.filesystem_anchors_test
 
+      # Núcleo limpo: tickets/hitl/knowledge/audit/tenancy/shared.auth não devem puxar
+      # framework de agente (agent_framework/langchain/langgraph/deepagents) — consequência
+      # não planejada das fronteiras da ADR-017, que abre caminho para um app separado
+      # (ADR-027). O contrato `forbidden` do import-linter prova o grafo estático para a
+      # maioria; este teste importa cada módulo num subprocesso e prova o grafo REAL — inclui
+      # `hitl`, que o contrato estático não cobre porque mantém de propósito um import
+      # preguiçoso que só alcança LangChain quando `oncall`/`deepcall` chamam a função.
+      - name: Núcleo limpo (sem framework de agente nos módulos que só leem/decidem/registram)
+        run: uv run python -m tests.architecture.nucleo_limpo_test
+
       # Imutabilidade declarada em infra/resources.bicep (ADR-023) precisa ser SATISFAZÍVEL.
       # `azd provision` falhou com `RequiredFeatureDisabled: Required feature Versioning is
       # disabled` porque os containers `audit`/`conversations` declaravam
@@ -320,24 +330,306 @@ jobs:
       - name: Shared mode resolves domain config per tenant
         run: uv run python -m tests.registry.shared_domain_spec_test
 
-      # MCP server: Resource Server (não authorization server), papel decide as tools visíveis,
-      # sem token não responde (com WWW-Authenticate apontando onde autenticar), e o token do
-      # CHAMADOR — não da aplicação — chega ao retrieve. O último é o que impede a falha mais cara
-      # desta camada: a tool responder bonito buscando como a identidade da aplicação, e o usuário
-      # receber documento que não pode ver — sem erro, sem log, sem sintoma. Offline; o gate de
-      # vazamento de verdade (com nuvem e identidades de teste) roda em security-gates.yml.
+      # OS SEIS GATES DE MCP QUE MORAVAM AQUI SAÍRAM NA FASE 0c, junto com
+      # `app/modules/mcpserver/`. Eles não foram removidos: foram MOVIDOS — os equivalentes
+      # rodam no job `mcp-app` abaixo, contra `apps/mcp`, que é agora a única superfície MCP.
+      # A garantia mudou de endereço, não de existência.
+
+  # ---------------------------------------------------------------------------
+  # O app do MCP sobre FastMCP 4 (ADR-027). Este job é DOIS gates no mesmo lugar, e o primeiro
+  # é o que a ADR chama de indispensável: **a instalabilidade**.
+  #
+  # `uv sync` aqui instala a base do backend SEM o extra `agents` mais `fastmcp==4.0.0b3`. Essa
+  # resolução só existe porque o teto `mcp<2` mora no extra `all` do `agent-framework-core`,
+  # arrastado só pelo meta-pacote `agent-framework`. Um `from agent_framework import …`
+  # acrescentado amanhã a `knowledge`/`audit`/`tenancy`/`shared` NÃO quebraria o backend nem o
+  # `import-linter` — quebraria a instalação deste app, e é este job que fica vermelho.
+  #
+  # O `import-linter` prova o grafo de import; só a instalação prova a instalabilidade. Por isso
+  # o passo que importa `app.modules.knowledge.public` é separado e explícito: ele é a asserção,
+  # não um efeito colateral de rodar os testes.
+  mcp-app:
+    name: MCP app · instalabilidade + paridade
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mcp
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      # SEM `--extra agents` de propósito — ver o comentário acima. O grupo `dev` DESTE app
+      # entra (só o ruff fixado); o grupo `dev` do BACKEND, que é onde o extra `agents` pega
+      # carona, não é transitivo para quem depende dele por path — verificado instalando.
+      - name: Instala a base do backend SEM o extra `agents`, com FastMCP 4
+        run: uv sync --frozen
+      # Mesmo ruff, mesma versão, MESMO ruleset do backend (`[tool.ruff] extend`). Sem este
+      # passo o app novo seria o único canto do repositório sem lint, e o gate do backend
+      # continuaria verde sem ver nada disto.
+      - name: Lint (ruff)
+        run: uv run --no-sync ruff check .
+      # O SEGUNDO CONSUMIDOR DAS FRONTEIRAS DA ADR-017, e até aqui o único não vigiado. O
+      # `importlinter.toml` do backend tem `root_packages = ["app"]`, então ele nunca enxergou
+      # `mcp_app` — nada impedia um `from app.modules.knowledge.internal import …` de nascer
+      # aqui, com o gate do vizinho verde. O contrato ao lado (`apps/mcp/importlinter.toml`)
+      # cobra a mesma regra 8 de fora para dentro: a entrada no backend é pelo `public`.
+      - name: Fronteiras — apps/mcp entra no backend só pelo `public` (ADR-017)
+        run: uv run --no-sync lint-imports --config importlinter.toml
+      - name: O núcleo é importável sem framework de agente
+        run: |
+          uv run --no-sync python -c "
+          import importlib.metadata as md, sys
+          import app.modules.knowledge.public
+          assert md.version('fastmcp').startswith('4.'), md.version('fastmcp')
+          assert md.version('mcp').startswith('2.'), md.version('mcp')
+          for pesado in ('agent_framework_ag_ui', 'langchain', 'langgraph', 'deepagents'):
+              assert pesado not in sys.modules, pesado
+          print('fastmcp', md.version('fastmcp'), '| mcp', md.version('mcp'))
+          "
+      # A GARANTIA DO MCP MORA AQUI, e só aqui, desde a Fase 0c. Os seis primeiros nasceram como
+      # paridade com o `/mcp` do monolito (`tests/mcpserver/`, deletado com ele); agora são o
+      # único lugar onde as propriedades são verificadas. O de identidade é o que impede a falha
+      # mais cara desta camada — a tool responder bonito buscando como a identidade da
+      # APLICAÇÃO, e o usuário receber documento que não pode ver, sem erro, sem log, sem
+      # sintoma. O sétimo (matriz) é o vigia de superfície NOVA que a matriz do monolito perdeu
+      # quando `/mcp` saiu de lá na Fase 0c — sem ele, uma superfície nova podia nascer sem
+      # `auth=` ou sem declarar o que grava, e nada aqui reprovaria. Os seguintes guardam o que
+      # a Fase 1 acrescentou (prompts, resource, completion, e o cliente real que atravessa a
+      # pilha), e o último guarda a Fase 2 — o selo de assurance.
       - name: MCP — Resource Server (issuer, escopo, provider desligado sem auth)
-        run: uv run python -m tests.mcpserver.auth_test
-      - name: MCP — papel do Entra decide as tools visíveis
-        run: uv run python -m tests.mcpserver.authz_test
-      - name: MCP — sem token não responde (401 + WWW-Authenticate)
-        run: uv run python -m tests.mcpserver.unauthenticated_test
+        run: uv run --no-sync python -m tests.auth_test
+      - name: MCP — papel do Entra decide as tools visíveis (any-of, não all-of)
+        run: uv run --no-sync python -m tests.authz_test
+      - name: MCP — sem token não responde (401 + WWW-Authenticate que leva a 200)
+        run: uv run --no-sync python -m tests.unauthenticated_test
       - name: MCP — o token do chamador atravessa até o retrieve (identity passthrough)
-        run: uv run python -m tests.mcpserver.identity_passthrough_test
+        run: uv run --no-sync python -m tests.identity_passthrough_test
       - name: MCP — erro não conta a infraestrutura para o chamador
-        run: uv run python -m tests.mcpserver.error_masking_test
-      - name: MCP — no modo shared resolve tenant e cobra entitlement (ADR-010)
-        run: uv run python -m tests.mcpserver.shared_tenancy_test
+        run: uv run --no-sync python -m tests.error_masking_test
+      - name: MCP — modo shared resolve tenant E cobra entitlement (ADR-010)
+        run: uv run --no-sync python -m tests.shared_tenancy_test
+      # E A CREDENCIAL QUE A LEITURA EXIGE, que é da camada de DEPLOY e por isso nenhum gate
+      # daqui via. `search_docs`, `document://` e a completion chamam o `knowledge.retrieve` do
+      # backend, que faz OBO — fluxo de cliente confidencial. O `env` do container do MCP
+      # carregava `ENTRA_TENANT_ID` e `ENTRA_API_CLIENT_ID` e NÃO o segredo, e
+      # `OnBehalfOfCredential` nem constrói assim (medido). Na `main` isso não existia: o `/mcp`
+      # morava no backend, que tem o segredo. Este gate compara o que o CÓDIGO lê (derivado da
+      # fonte de `_user_search_token`) com o que o BICEP declara.
+      - name: MCP — o container recebe a credencial que o OBO exige
+        run: uv run --no-sync python -m tests.obo_credential_test
+      - name: MCP — toda superfície exige papel do Entra e declara o que grava (matriz)
+        run: uv run --no-sync python -m tests.instrumentation_matrix_test
+      # A FASE 1 acrescentou DUAS famílias de superfície — prompts e um resource template — e os
+      # três gates abaixo são o que impede cada uma de nascer torta. O espelho é o mais
+      # importante: um prompt escrito à mão dentro de `apps/mcp` seria uma segunda verdade ao
+      # lado dos documentos AgentSchema, e a divergência não daria erro — só faria o cliente MCP
+      # ver um conjunto de agentes diferente do que o produto roda.
+      #
+      # Nenhum deles toca rede ou daemon: agentdefs lê os documentos do repositório, o ACL e o
+      # `retrieve` são substituídos, e o screening de caminho é do próprio FastMCP. É o que
+      # `scripts/gates.py` promete de `DEFAULT_JOBS` (offline e determinístico), e o motivo de o
+      # `docker build` morar no job `mcp-image` e não aqui.
+      - name: MCP — os prompts publicados são exatamente os agentes compostos (espelho)
+        run: uv run --no-sync python -m tests.prompts_mirror_test
+      - name: MCP — o documento integral usa o ACL do backend, e nome não vira caminho
+        run: uv run --no-sync python -m tests.resource_document_test
+      - name: MCP — a completion só sugere o que existe e o que o chamador pode abrir
+        run: uv run --no-sync python -m tests.completion_test
+      # O SEGUNDO CRITÉRIO DE PRONTO DA FASE 1 ("um cliente lista prompts e lê um resource com
+      # ACL aplicada") não era exercitado por gate nenhum: `authz_test` prova a função de
+      # decisão, a matriz prova que o `auth=` existe — nenhum dos dois prova que o FastMCP
+      # FILTRA. Este sobe a aplicação que `build_app()` monta e fala com ela por um `Client` de
+      # verdade, com dois tokens que diferem só no claim `roles`.
+      #
+      # Continua offline e sem daemon: o transporte é `httpx2.ASGITransport` (a pilha HTTP
+      # inteira, em processo, sem socket), e o verificador de token é estático — o
+      # `AzureJWTVerifier` buscaria o JWKS do Entra pela rede, que é o que tiraria este passo de
+      # `DEFAULT_JOBS` em `scripts/gates.py`.
+      - name: MCP — um cliente real lista prompts, lê o resource, e sem papel não vê nada
+        run: uv run --no-sync python -m tests.client_surface_test
+      # A FASE 2 — o SELO, que é a camada que motivou separar o MCP num app próprio (ADR-027).
+      # Este gate guarda as três propriedades que decidem se o selo vale alguma coisa, e todas
+      # as três falham em SILÊNCIO se ninguém as vigiar:
+      #
+      #   negociado    quem não anuncia a extensão tem que receber a resposta IDÊNTICA à de
+      #                antes desta fase. O teste compara contra um servidor montado SEM a
+      #                extensão — não contra uma expectativa escrita à mão, que envelheceria.
+      #   não inventa  cada campo do selo é copiado de uma fonte que já existia. Provado por
+      #                MUTAÇÃO: muda-se a fonte e mostra-se o selo mudando junto.
+      #   não vaza     com um chamador sem acesso, o evento que a trilha grava NOMEIA o
+      #                documento negado, e o selo carrega o id do evento sem carregar o nome.
+      #
+      # Offline como os outros: `httpx2.ASGITransport`, verificador de token estático,
+      # `retrieve` substituído. A TRILHA é a real — sem `AZURE_STORAGE_ACCOUNT` ela cai no
+      # `InMemoryTrail`, que encadeia por hash igual à de produção.
+      - name: MCP — o selo é negociado, não inventa e não vaza (extensão de protocolo)
+        run: uv run --no-sync python -m tests.assurance_seal_test
+      # A FASE 3 — a primeira ESCRITA por MCP, e por isso o gate mais caro de faltar. Ele guarda
+      # a regra 5 do projeto (`create_ticket` só dispara após aprovação humana explícita, com o
+      # papel Approver ou Admin) em cinco frentes, e nenhuma delas se prova sozinha:
+      #
+      #   as quatro    aprovar · EDITAR · rejeitar · responder atravessam inteiras. O `edit` é a
+      #                razão da ADR-019 e é o que um booleano não expressa; aqui ele grava o
+      #                texto do APROVADOR, não o que chegou na chamada.
+      #   inalcançável não há caminho até a escrita sem a decisão — nem chamando a tool direto,
+      #                nem mandando respostas sem o `requestState`, nem forjando um.
+      #   o papel      duas linhas, e a de baixo só se prova por MUTAÇÃO: com o `auth=` removido,
+      #                `hitl.decide` continua recusando quem não é aprovador.
+      #   a trilha     dois eventos por escrita (a decisão e a escrita), com o ator certo.
+      #   o segredo    sem `MCP_REQUEST_STATE_KEY` a escrita se declara indisponível e a LEITURA
+      #                continua de pé; com uma chave curta demais, o app não sobe.
+      #
+      # Offline como os demais: `httpx2.ASGITransport`, verificador de token estático, chamados
+      # num diretório temporário, e a chave do `requestState` GERADA na hora — nunca lida do
+      # repositório, que é a ADR-005 aplicada ao próprio teste.
+      #   o estado é de UM  o `requestState` de um principal não serve para outro — nem para um
+      #                     segundo aprovador, mesmo papel, `sub` diferente. Também por MUTAÇÃO.
+      - name: MCP — a escrita só atravessa com decisão humana e papel (as quatro decisões)
+        run: uv run --no-sync python -m tests.write_decision_test
+      # E O INVARIANTE QUE FALTAVA: uma decisão humana, UMA escrita. O envelope do SDK é
+      # verificável mas não é de uso único — sem uma reserva por rodada, o cliente repetia
+      # `tools/call` com o mesmo `requestState` e abria o segundo e o terceiro chamado, inclusive
+      # de sessão nova, com a trilha gravando duas aprovações onde houve uma. Este gate carrega
+      # as DUAS metades da prova: roda o ataque com a reserva neutralizada (3 chamados) e com ela
+      # valendo (1), então ele fica vermelho no dia em que a reserva virar no-op.
+      #
+      # Offline e sem daemon como os vizinhos. O subprocesso que prova "não é memória de
+      # processo" é o MESMO interpretador, sem rede — é o modelo do `minReplicas: 0` (a réplica
+      # morre entre a pergunta e a resposta) e da segunda réplica.
+      - name: MCP — um `requestState`, uma escrita (o estado não é replayável)
+        run: uv run --no-sync python -m tests.decision_replay_test
+      # A FASE 5 (T7) — o hint de cache (SEP-2549), ligado para as LISTAGENS e para mais nada.
+      #
+      # O atalho `cache_ttl=` do construtor é UNIFORME (`dict.fromkeys(get_args(CacheableMethod))`)
+      # e alcançaria `resources/read`, que aqui é o documento controlado por ACL cuja leitura a
+      # trilha (ADR-023) registra uma a uma — inclusive as negadas. Um TTL ali autoriza o cliente
+      # a servir a leitura do armazenamento dele: a leitura deixa de chegar aqui, deixa de virar
+      # evento, e o produto continua afirmando que registra toda leitura. O mapa POR MÉTODO do SDK
+      # debaixo do FastMCP resolve isso, e é o que `mcp_app/cache_hints.py` instala.
+      #
+      # O gate mede o FIO, não o atributo: um teste que lesse `mcp._mcp_server.cache_hints`
+      # ficaria verde para sempre se o seam fosse renomeado — o hint sumiria das respostas e o
+      # dicionário continuaria lá. Três provas por mutação ao lado, porque `ttlMs=0` em
+      # `resources/read` seria indistinguível de "nenhum hint funciona".
+      - name: MCP — o cache cobre as listagens e nunca `resources/read` (medido no fio)
+        run: uv run --no-sync python -m tests.cache_hints_test
+      # AS BACKGROUND TASKS (SEP-2663). A metade OFFLINE do item: o critério de quem vira task em
+      # forma executável (`search_docs` sim, `open_ticket` não — quem demora nela é o humano, e o
+      # humano já tem a suspensão do SEP-2322), as duas variáveis que as ligam, e duas provas por
+      # mutação. A segunda variável é a que ninguém adivinharia: sem chave de cifra, o snapshot
+      # com o access token do chamador vai ao Redis em claro E uma falha ao restaurá-lo faz a
+      # task rodar SEM identidade — com o ACL e a trilha errados. O gate mede isso no CODEC, não
+      # na variável de ambiente, porque é o codec que decide na hora de gravar.
+      #
+      # Offline e sem daemon: `memory://` não precisa de nada, e é justamente ele que serve de
+      # prova negativa — um subprocesso não acha a task que este processo aceitou.
+      - name: MCP — só a busca vira task, e só com backend durável e cifra
+        run: uv run --no-sync python -m tests.tasks_backend_test
+      # A TABELA DE EVIDÊNCIAS (MCP App) e o ESTADO POR USUÁRIO que a alimenta — as duas metades
+      # da mesma feature, num gate só, porque separadas cada uma passa sozinha sem provar o que
+      # importa: as citações que UM chamador recebeu chegam à tabela DELE e não à de outro.
+      #
+      # Ele também guarda a armadilha que quase deixou uma superfície sem gate nascer: pelo
+      # caminho padrão de MCP Apps o FastMCP SINTETIZA um renderizador `auth=None` que
+      # `Provider.list_resources` não enxerga. Aqui a síntese tem que vir VAZIA — o app aponta
+      # para uma URI própria e registra o recurso com o mesmo `require_any_role` do resto.
+      # E o renderizador vem do wheel (6,3 MiB), não de `cdn.jsdelivr.net`: o custo dos dois
+      # lados é medido no gate para não virar folclore.
+      - name: MCP — a evidência chega a quem buscou, e o renderizador tem dono
+        run: uv run --no-sync python -m tests.app_evidencias_test
+      # O REDIS CONFIGURADO E FORA DO AR — o cenário que o `Basic C0` torna rotina, porque o SKU
+      # não tem réplica e a manutenção dele é uma queda. Medido antes deste gate existir: as
+      # CINCO superfícies de leitura devolviam `MCPError: Internal server error`, inclusive a
+      # busca síncrona, que não usa Redis para nada. E a causa não era a extensão de tasks (o
+      # Docket reconecta em laço): era a LOJA DE SESSÃO — o FastMCP lê o `session_state_store` em
+      # toda requisição, por dentro (`transforms/visibility.py:316`).
+      #
+      # O gate prova as duas metades do conserto: a leitura de pé (a loja cai para memória de
+      # processo, que é o modo sem Redis já declarado) e a CAPACIDADE fora (o gate de boot passou
+      # a fazer `PING`, então a extensão nem sobe e quem pede task recebe erro que diz isso, em
+      # vez do mascarado). Prova por mutação junto: com a loja crua, a mesma leitura morre.
+      #
+      # Offline e sem daemon: uma porta fechada em `127.0.0.1` recusa a conexão na hora.
+      - name: MCP — Redis fora do ar derruba a capacidade, nunca as leituras
+        run: uv run --no-sync python -m tests.redis_outage_test
+
+  # JOB SEPARADO DE PROPÓSITO, e a razão está em `scripts/gates.py:42`: o que entra em
+  # `DEFAULT_JOBS` é prometido como "inteiramente offline e determinístico", e a bateria local
+  # deriva daí. Um `docker build` não é nenhum dos três — puxa imagem base, resolve pacote da
+  # rede e leva minutos. Colocado dentro de `mcp-app`, ele transformou `scripts/gates.py` de
+  # 2 minutos em mais de 10, exigindo daemon do Docker para rodar o que era offline. Medido.
+  #
+  # Aqui ele continua BARRANDO O MERGE (está em `needs` do `ci-ok`), que é o que importa —
+  # só deixa de ser arrastado para a bateria local.
+  # O CENÁRIO DO `minReplicas: 0`, com um Redis de verdade. Job próprio pelo mesmo motivo do
+  # `mcp-image`: precisa de daemon, e `scripts/gates.py` promete `DEFAULT_JOBS` inteiramente
+  # offline. Continua BARRANDO O MERGE (está em `needs` do `ci-ok`) — ele prova a propriedade
+  # que decidiu comprar o recurso, então não pode ser opcional.
+  #
+  # O gate offline vizinho (`tasks_backend_test`) prova a metade NEGATIVA: com `memory://`, um
+  # processo novo não acha a task. A metade positiva não cabe offline — só um backend
+  # compartilhado de verdade mostra a task sobrevivendo à réplica que a aceitou.
+  #
+  #   task     P1 aceita e MORRE ABRUPTAMENTE dentro da sessão (um desligamento gracioso deixa
+  #            o worker CANCELAR a execução, e o gate ficaria verde sobre o cenário errado).
+  #            P2 — interpretador novo, servidor novo — acha o id e a vê TERMINAR.
+  #   sessão   P1 grava sob um principal e morre; P2 lê o mesmo valor, e não lê o de outro
+  #            principal. Durabilidade e isolamento na mesma medição.
+  mcp-durable:
+    name: MCP app · task e sessão sobrevivem à réplica (Redis)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/mcp
+    services:
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Instala a base do backend SEM o extra `agents`, com FastMCP 4
+        run: uv sync --frozen
+      - name: MCP — a task e a sessão sobrevivem à morte da réplica
+        env:
+          MCP_REDIS_URL: redis://localhost:6379/0
+        run: uv run --no-sync python -m tests.durability_test
+
+  mcp-image:
+    name: MCP app · a imagem builda
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      # O contexto é a RAIZ do repo, não `apps/mcp` — é o que o próprio `Dockerfile` documenta
+      # no cabeçalho, porque `apps/mcp` depende de `apps/backend` por path e os dois precisam
+      # estar no contexto de build. Nada provava que esse arranjo funciona até este gate.
+      - name: Build da imagem (Dockerfile)
+        run: docker build -f apps/mcp/Dockerfile -t foundry-assured-mcp:ci .
+      # E O QUE A IMAGEM RESOLVE COMO CAMINHO DE DADOS, comparado com o `mountPath` que o bicep
+      # declara PARA ELA. Mora aqui e não em `mcp-app` porque só existe resposta dentro da
+      # imagem: a raiz do backend é propriedade do Dockerfile (`/srv/backend` aqui, `/app` na
+      # imagem do backend), não da árvore de trabalho.
+      #
+      # Medido antes deste gate: o bicep montava `/app/data` no container do MCP, e `/app` NEM
+      # EXISTE nesta imagem. O chamado aberto por MCP ia para disco efêmero — e junto com ele a
+      # reserva de nonce, o que devolvia o replay que a Fase 3 tinha acabado de fechar. O gate
+      # vizinho (`decision_replay_test`) não pegava: ele prova que os dois caminhos são IRMÃOS,
+      # o que é verdade também no disco errado.
+      - name: MCP — o caminho de dados da IMAGEM é o mount que o bicep declara
+        run: |
+          docker run --rm \
+            -v "$PWD/infra:/infra:ro" \
+            -v "$PWD/apps/mcp/tests/image_data_path_test.py:/gate/image_data_path_test.py:ro" \
+            -e MCP_BICEP=/infra/containerapps.bicep -e PYTHONPATH=/gate \
+            foundry-assured-mcp:ci python -m image_data_path_test
 
   frontend:
     name: Frontend · typecheck + build
@@ -425,7 +717,11 @@ jobs:
       # Container App secret vazio e derruba o container app inteiro — o backend simplesmente
       # não é criado, enquanto o `web` sobe normal. Um clone novo rodando o caminho padrão
       # (`up-all.sh` sem `--with-auth`) caía exatamente aí.
-      - name: Clone novo sem sign-in consegue subir o backend
+      #
+      # DESDE A FASE 3 (T3) ele olha DOIS apps: o `mcp` ganhou `MCP_REQUEST_STATE_KEY`, a chave
+      # que assina a decisão humana da escrita, opcional pelo mesmo desenho. Vigiar só o backend
+      # deixaria a mesma falha nascer no vizinho.
+      - name: Clone novo sem os segredos opcionais consegue subir backend e mcp
         run: python3 scripts/verify-optional-secret.py
 
       # O Pages serve `main:/docs` e o deploy dele SEMPRE passa — copia bytes, não valida
@@ -439,12 +735,15 @@ jobs:
   ci-ok:
     name: CI passed
     runs-on: ubuntu-latest
-    needs: [backend, frontend, infra]
+    needs: [backend, mcp-app, mcp-durable, mcp-image, frontend, infra]
     if: always()
     steps:
       - name: Verify all jobs passed
         run: |
           [ "${{ needs.backend.result }}" = "success" ] \
+          && [ "${{ needs.mcp-app.result }}" = "success" ] \
+          && [ "${{ needs.mcp-durable.result }}" = "success" ] \
+          && [ "${{ needs.mcp-image.result }}" = "success" ] \
           && [ "${{ needs.frontend.result }}" = "success" ] \
           && [ "${{ needs.infra.result }}" = "success" ] \
           || { echo "One or more CI jobs failed"; exit 1; }
