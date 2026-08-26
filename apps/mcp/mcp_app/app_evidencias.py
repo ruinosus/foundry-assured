@@ -95,7 +95,7 @@ from __future__ import annotations
 from typing import Any
 
 from fastmcp import FastMCP
-from fastmcp.apps import PrefabAppConfig
+from fastmcp.apps import AppConfig, ResourceCSP
 from fastmcp.exceptions import ToolError
 from fastmcp.resources import resource as declarar_resource
 from fastmcp.server.dependencies import get_access_token
@@ -198,7 +198,7 @@ def register(mcp: FastMCP) -> None:
     anunciando um renderizador que ninguém pode buscar. Por isso `prefab-ui` é dependência
     PINADA e obrigatória deste app, e não um extra opcional: não há falha alta para confiar.
     """
-    from prefab_ui.renderer import get_renderer_html
+    from prefab_ui.renderer import get_renderer_csp, get_renderer_html
 
     mcp.tool(
         show_evidence,
@@ -211,7 +211,22 @@ def register(mcp: FastMCP) -> None:
         auth=_GATE_DE_LEITURA,
         # A URI NOSSA. É esta linha que impede o renderizador sem gate de nascer — ver a
         # armadilha 1 no docstring do módulo.
-        app=PrefabAppConfig(resource_uri=URI_RENDERIZADOR),
+        # A CSP VAI JUNTO, e não é detalhe. O default do `PrefabAppConfig` é a do modo `cdn`
+        # (`resource_domains: ['https://cdn.jsdelivr.net']`), e ela chegava ao fio mesmo com o
+        # renderizador servido embutido — medido com cliente real. Declaração de política é
+        # PERMISSÃO: anunciar um domínio que o artefato não usa concede ao renderizador buscar
+        # de um CDN de terceiro à toa. Aqui ela passa a descrever o artefato que de fato é
+        # servido (`resource_domains: []`).
+        # `AppConfig`, NÃO `PrefabAppConfig`, e a diferença é medida: o `model_post_init` do
+        # segundo chama `get_renderer_csp()` SEM modo — resolve para o default `cdn` — e MESCLA
+        # o resultado na CSP que a gente passa. O merge sempre vence, então ele é
+        # estruturalmente incapaz de declarar "sem CDN" enquanto o default for `cdn`. O único
+        # outro botão é a env var `PREFAB_BUNDLED_RENDERER`, que põe no deploy uma decisão que
+        # pertence ao código. `AppConfig` não mescla nada e diz exatamente o que servimos.
+        app=AppConfig(
+            resource_uri=URI_RENDERIZADOR,
+            csp=ResourceCSP(**get_renderer_csp(mode=MODO_RENDERIZADOR)),
+        ),
     )
 
     # O RENDERIZADOR, COM O MESMO GATE. Lido sob demanda (função, não `TextResource` com o texto
@@ -230,5 +245,13 @@ def register(mcp: FastMCP) -> None:
             mime_type="text/html",
             tags={"ui"},
             auth=_GATE_DE_LEITURA,
+            # O RECURSO TAMBÉM DECLARA A SUA. O cliente lê a CSP de quem ele vai renderizar; sem
+            # esta linha o recurso ia ao fio sem política nenhuma, e a única declaração que
+            # existia era a da tool — com o domínio errado (ver o comentário acima).
+            meta={
+                "ui": AppConfig(
+                    csp=ResourceCSP(**get_renderer_csp(mode=MODO_RENDERIZADOR))
+                ).model_dump(by_alias=True, exclude_none=True)
+            },
         )(renderizador)
     )
