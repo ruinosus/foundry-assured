@@ -230,7 +230,7 @@ dev = [
     # Fixado para o CI e o `uv run ruff check .` local usarem sempre a mesma versão — sem
     # isso, `uvx ruff` puxa a última disponível e um upgrade pode reabrir o gate sozinho
     # com regras novas que ninguém selecionou (ver comentário em `[tool.ruff]` acima).
-    "ruff==0.16.3",
+    "ruff==0.16.4",
     # `uv` (0.9.5, verificado antes de escrever isto) não tem `[tool.uv] default-extras` —
     # só existe `default-groups`, e o pedido equivalente pra extras
     # (github.com/astral-sh/uv/issues/8607) segue aberto. Sem isso, `uv sync` sozinho
