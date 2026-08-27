@@ -59,7 +59,21 @@ from app.modules.tenancy.public import tenant_config
 # CONTENT, not code: it was inside the Python package only by accident of history, which is why
 # nobody could find it. Nothing at runtime reads it — this module is a provisioning CLI.
 CORPUS_DIR = Path(_app.__file__).resolve().parents[3] / "knowledge" / "corpus"
-KNOWLEDGE_SOURCE_NAME = "helpdesk-runbooks-ks"
+
+
+def _ks_name() -> str:
+    """O nome do knowledge source do corpus — DA CONFIG, nunca de uma constante daqui.
+
+    Era `KNOWLEDGE_SOURCE_NAME = "helpdesk-runbooks-ks"` neste módulo. Virou config porque o
+    catálogo de domínios precisa do MESMO nome para rotear a recuperação, e `domains` não pode
+    importar `knowledge.internal` (ADR-017). Duas constantes com o mesmo valor divergiriam no
+    primeiro rename — e a divergência não daria erro: o ingest criaria um KS e o catálogo
+    apontaria para outro, o que aparece como "o helpdesk não acha nada".
+
+    Função e não constante de módulo porque no modo `shared` `tenant_config()` só existe DENTRO
+    de uma requisição; lido no import, quebraria o boot."""
+    return tenant_config().helpdesk_knowledge_source
+
 
 # Per-call wall-clock budget. The create/update REST calls should return in
 # seconds; if they hang, fail fast with the HTTP log instead of blocking forever.
@@ -210,7 +224,7 @@ def create_knowledge_source(index_client: SearchIndexClient) -> None:
 
     # ResourceId=<...>; tells Search to read blobs via its managed identity (keyless).
     knowledge_source = AzureBlobKnowledgeSource(
-        name=KNOWLEDGE_SOURCE_NAME,
+        name=_ks_name(),
         description="Internal engineering runbooks and policies (helpdesk corpus).",
         azure_blob_parameters=AzureBlobKnowledgeSourceParameters(
             connection_string=f"ResourceId={storage_id};",
@@ -228,10 +242,10 @@ def create_knowledge_source(index_client: SearchIndexClient) -> None:
         ),
     )
     _with_timeout(
-        f"create knowledge source '{KNOWLEDGE_SOURCE_NAME}'",
+        f"create knowledge source '{_ks_name()}'",
         lambda: index_client.create_or_update_knowledge_source(knowledge_source),
     )
-    print(f"Knowledge source '{KNOWLEDGE_SOURCE_NAME}' created/updated.")
+    print(f"Knowledge source '{_ks_name()}' created/updated.")
 
 
 def create_knowledge_base(index_client: SearchIndexClient) -> None:
@@ -241,7 +255,7 @@ def create_knowledge_base(index_client: SearchIndexClient) -> None:
     knowledge_base = KnowledgeBase(
         name=kb_name,
         description="Helpdesk runbooks and policies for internal engineering support.",
-        knowledge_sources=[KnowledgeSourceReference(name=KNOWLEDGE_SOURCE_NAME)],
+        knowledge_sources=[KnowledgeSourceReference(name=_ks_name())],
         models=[
             KnowledgeBaseAzureOpenAIModel(
                 azure_open_ai_parameters=AzureOpenAIVectorizerParameters(
@@ -268,9 +282,10 @@ def create_knowledge_base(index_client: SearchIndexClient) -> None:
 def wait_for_ingestion(
     index_client: SearchIndexClient,
     timeout_s: int = 600,
-    ks_name: str = KNOWLEDGE_SOURCE_NAME,
+    ks_name: str | None = None,  # None → _ks_name(); default de função lê config no import
 ) -> None:
     """Poll the knowledge source status until indexing settles (best-effort)."""
+    ks_name = ks_name or _ks_name()  # resolvido AQUI: default de função leria config no import
     print("Waiting for indexing to complete (this can take a few minutes)...")
     deadline = time.monotonic() + timeout_s
     while time.monotonic() < deadline:
@@ -325,7 +340,7 @@ def aplicar_acesso_declarado(acesso: dict[str, list[str]]) -> bool:
 
     from app.modules.knowledge.internal.acl_setup import setup_acl
 
-    setup_acl(acesso, index=f"{KNOWLEDGE_SOURCE_NAME}-index", default_groups=padrao)
+    setup_acl(acesso, index=cfg.helpdesk_search_index, default_groups=padrao)
     return True
 
 

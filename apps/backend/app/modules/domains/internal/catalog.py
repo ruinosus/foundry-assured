@@ -149,8 +149,26 @@ def domain_specs() -> list[DomainSpec]:
             # sessão qualquer pode ler isto pelo nome?" — se a resposta for não, este não é o
             # container certo.
             corpus_container=cfg.azure_storage_container,
-            # Sem ACL de documento: helpdesk não declara grupo em documento nenhum (não é fonte
-            # com controle por documento) e não seta `search_index` — sessão válida é a regra.
+            # ROTEAMENTO DA RECUPERAÇÃO — e este bloco existe porque ele estava FALTANDO.
+            #
+            # O helpdesk monta a recuperação com o nosso `GroundedRetrieval` sempre que há usuário
+            # (`helpdesk/internal/graph.py:74`), e ele chama `retrieve()` com ESTE spec.
+            # `retrieval.py:87` ramifica por `kb_name`: sem ele, cai no fallback e monta a URL com
+            # `search_endpoint` vazio e `search_index` nulo — `/indexes/None/docs/search`. A
+            # chamada falhava, o `except` do `before_run` engolia, e o agente seguia SEM CONTEXTO;
+            # com a policy de citação (Regra #4), a resposta virava recusa. Só aparecia com auth
+            # ligada: sem usuário, o `AzureAISearchContextProvider` de reserva assume e funciona.
+            #
+            # O KB e o KS são os MESMOS que `knowledge/internal/ingest.py` cria — vindos da config,
+            # que é o único lugar que este catálogo e aquele ingest enxergam juntos.
+            kb_name=cfg.azure_search_knowledge_base,  # helpdesk-kb (native agentic retrieve)
+            ks_name=cfg.helpdesk_knowledge_source,  # helpdesk-runbooks-ks (≠ nome do KB)
+            search_index=cfg.helpdesk_search_index,  # alvo do fallback, e do carimbo de ACL
+            search_endpoint=cfg.azure_search_endpoint,
+            # `document_access` SEGUE `"session"`, de propósito. Declarar o índice acima não muda
+            # quem pode ler: hoje nenhum runbook declara grupo, e ligar o trim sobre documentos
+            # sem grupo esconderia todos (fail-closed). Vira `"acl"` quando as fontes declararem
+            # — o caminho para isso é `ingest.aplicar_acesso_declarado` (ADR-031).
             document_access="session",
         ),
         DomainSpec(
