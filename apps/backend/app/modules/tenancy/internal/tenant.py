@@ -36,6 +36,13 @@ class TenantConfig:
     # --- Phase 1: Foundry IQ knowledge base (Azure AI Search) ---
     azure_search_endpoint: str = ""
     azure_search_knowledge_base: str = "helpdesk-kb"
+    # O knowledge source do corpus e o índice que ele preenche. Ficam AQUI, e não como constante
+    # em `knowledge/internal/ingest.py`, porque o catálogo de domínios também precisa deles para
+    # rotear a recuperação — e `domains` não pode importar `knowledge.internal` (ADR-017). Config
+    # é o único lugar que os dois enxergam. O índice segue a convenção `<ks>-index`, a mesma que
+    # `ingest_docbundles` usa nos dois sentidos; `tests.knowledge.helpdesk_retrieval_test` cobra.
+    helpdesk_knowledge_source: str = "helpdesk-runbooks-ks"
+    helpdesk_search_index: str = "helpdesk-runbooks-ks-index"
 
     # Storage holding the corpus (blob knowledge source).
     azure_storage_account: str = ""
@@ -131,6 +138,13 @@ class _TenantEnv(BaseSettings):
     foundry_embedding_model: str = "text-embedding-3-small"
     azure_search_endpoint: str = ""
     azure_search_knowledge_base: str = "helpdesk-kb"
+    # O knowledge source do corpus e o índice que ele preenche. Ficam AQUI, e não como constante
+    # em `knowledge/internal/ingest.py`, porque o catálogo de domínios também precisa deles para
+    # rotear a recuperação — e `domains` não pode importar `knowledge.internal` (ADR-017). Config
+    # é o único lugar que os dois enxergam. O índice segue a convenção `<ks>-index`, a mesma que
+    # `ingest_docbundles` usa nos dois sentidos; `tests.knowledge.helpdesk_retrieval_test` cobra.
+    helpdesk_knowledge_source: str = "helpdesk-runbooks-ks"
+    helpdesk_search_index: str = "helpdesk-runbooks-ks-index"
     azure_storage_account: str = ""
     azure_storage_resource_id: str = ""
     azure_storage_container: str = "corpus"

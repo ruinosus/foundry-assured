@@ -62,6 +62,21 @@ jobs:
       - name: Container `session` não recebe conteúdo que declare acesso (ADR-031)
         run: uv run python -m tests.knowledge.session_container_test
 
+      # ADR-031, a outra metade: o gate acima IMPEDE declarar acesso onde ele não é aplicado;
+      # este prova que, onde ele É aplicado, a declaração da fonte chega ao carimbo — e que o
+      # frontmatter sai do corpo, senão o YAML vira corpus de retrieval. As duas metades são um
+      # par: cada uma sozinha é um defeito.
+      - name: A fonte carrega o próprio acesso (frontmatter sai do corpo, `groups` chega ao índice)
+        run: uv run python -m tests.knowledge.corpus_access_declarado_test
+
+      # O helpdesk montava `/indexes/None/docs/search` — sem host, sem índice — sempre que havia
+      # usuário autenticado: o `GroundedRetrieval` chama `retrieve()` com o DomainSpec, e o spec
+      # não tinha `kb_name` nem `search_index`. A chamada falhava, o `except` engolia, e o agente
+      # respondia sem contexto. Com auth desligada funcionava (o provider de reserva assume), que
+      # é por que nenhum gate via.
+      - name: Todo domínio que recupera sabe para onde (helpdesk não monta `indexes/None`)
+        run: uv run python -m tests.knowledge.helpdesk_retrieval_test
+
       # The fidelity gate runs at GENERATION (wiki-regen.yml), on one bundle, once. The ingest
       # then walks knowledge/wiki-bundle/** and uploads whatever is committed — so a bundle stays in
       # the knowledge base long after the code it describes has moved. Two did: they scored
