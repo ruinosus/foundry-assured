@@ -32,6 +32,7 @@ import sys
 from pathlib import Path
 
 from app.modules.domains.public import domain_specs
+from app.modules.knowledge.internal import frontmatter
 from app.modules.knowledge.internal.ingest import CORPUS_DIR
 from app.modules.tenancy.public import tenant_config
 
@@ -58,14 +59,17 @@ def _fontes_do_repo() -> dict[Path, str]:
 
 
 def _chaves_declaradas(texto: str) -> set[str]:
-    """Chaves de topo do frontmatter YAML. Sem parser: só o bloco `---` … `---` inicial."""
-    linhas = texto.splitlines()
-    if not linhas or linhas[0].strip() != "---":
+    """Chaves de topo do frontmatter do documento.
+
+    Usa `frontmatter.split` + YAML do módulo compartilhado, e não um parser próprio: esta função
+    já foi a terceira cópia da mesma leitura no repositório. Bloco quebrado conta como DECLARAÇÃO
+    (o conjunto de chaves cruas), porque para este gate "tentou declarar e errou o YAML" é tão
+    perigoso quanto declarar certo — nos dois casos alguém acredita ter restringido."""
+    cru, _ = frontmatter.split(texto)
+    if not cru.strip():
         return set()
     chaves: set[str] = set()
-    for linha in linhas[1:]:
-        if linha.strip() == "---":
-            break
+    for linha in cru.splitlines():
         if not linha.strip() or linha[:1].isspace() or linha.lstrip().startswith("#"):
             continue  # valor aninhado ou comentário — só chave de topo conta
         if ":" in linha:

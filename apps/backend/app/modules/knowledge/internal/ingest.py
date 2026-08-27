@@ -45,6 +45,8 @@ from azure.search.documents.indexes.models import (
 from azure.storage.blob import BlobServiceClient
 
 import app as _app
+from app.modules.knowledge.internal import frontmatter
+from app.modules.knowledge.internal.acl_setup import _component
 from app.modules.tenancy.public import tenant_config
 
 # Anchored on the `app` package, NOT on this file (RULE #9). `Path(__file__).parent / "corpus"`
@@ -116,7 +118,53 @@ def _require(name: str, value: str) -> str:
     return value
 
 
-def upload_corpus(credential: TokenCredential) -> int:
+def preparar_corpus(files: list[Path]) -> tuple[list[tuple[str, bytes]], dict[str, list[str]]]:
+    """(blobs a subir, acesso declarado por documento) — puro, sem rede. Testável.
+
+    DUAS COISAS ACONTECEM AQUI, e elas são o par que faz a fonte carregar o próprio acesso
+    (ADR-031):
+
+    1. O frontmatter é TIRADO DO CORPO. Ele é metadado de transporte; indexado, viraria YAML no
+       corpus de retrieval, e o modelo passaria a citar `groups:` como se fosse conteúdo. Mesmo
+       motivo pelo qual `adapt_openwiki` já o tira do bundle.
+    2. O `groups` que ele declara é RECOLHIDO. Tirar do corpo nunca foi motivo para jogar fora —
+       é justamente o que fazia o acesso de uma fonte não-código não ter onde morar, sobrando só
+       o mapa externo `ACL_CLASSIFICATION`, que vive fora do versionamento e casa por convenção
+       de chave. Aqui o acesso viaja COM o documento, versionado junto, como o padrão de mercado
+       faz (Graph connectors, Kendra: a ACL é propriedade do item).
+
+    A chave é `acl_setup._component(nome)`, a MESMA que o `setup_acl` usará para procurar — se
+    fossem duas normalizações, o carimbo cairia num documento e a busca perguntaria por outro.
+    Colisão de chave é ERRO: `_canonical` corta versão no fim (`github-2fa-recovery` → `github`),
+    então dois arquivos podem colidir, e aí um acesso declarado sobrescreveria o outro em
+    silêncio — que é a falha mais cara possível neste caminho.
+    """
+    blobs: list[tuple[str, bytes]] = []
+    acesso: dict[str, list[str]] = {}
+    origem: dict[str, str] = {}  # chave → arquivo que a produziu, só para a mensagem de colisão
+    for path in files:
+        texto = path.read_text(encoding="utf-8")
+        try:
+            meta, corpo = frontmatter.parse(texto)
+        except frontmatter.FrontmatterInvalido as exc:
+            sys.exit(f"{path.name}: {exc}")  # alto, nunca silencioso — pode ser acesso torto
+        blobs.append((path.name, corpo.lstrip("\n").encode("utf-8")))
+
+        grupos = frontmatter.declared_groups(meta)
+        if grupos is None:
+            continue  # não declara acesso — decide quem consome (None ≠ [])
+        chave = _component(path.name)
+        if chave in acesso and acesso[chave] != grupos:
+            sys.exit(
+                f"colisão de chave de acesso: '{origem[chave]}' e '{path.name}' viram ambos "
+                f"'{chave}' e declaram grupos diferentes ({acesso[chave]} vs {grupos}). "
+                f"Renomeie um dos dois — um sobrescreveria o outro sem erro."
+            )
+        acesso[chave], origem[chave] = grupos, path.name
+    return blobs, acesso
+
+
+def upload_corpus(credential: TokenCredential) -> tuple[int, dict[str, list[str]]]:
     account = _require("AZURE_STORAGE_ACCOUNT", tenant_config().azure_storage_account)
     container = tenant_config().azure_storage_container
     blob_service = BlobServiceClient(
@@ -129,12 +177,13 @@ def upload_corpus(credential: TokenCredential) -> int:
     if not files:
         sys.exit(f"No markdown found in {CORPUS_DIR}")
 
-    for path in files:
-        with path.open("rb") as fh:
-            container_client.upload_blob(name=path.name, data=fh, overwrite=True)
-        print(f"  uploaded {path.name}")
-    print(f"Uploaded {len(files)} documents to {account}/{container}.")
-    return len(files)
+    blobs, acesso = preparar_corpus(files)
+    for nome, dados in blobs:
+        container_client.upload_blob(name=nome, data=dados, overwrite=True)
+        print(f"  uploaded {nome}")
+    declarados = f", {len(acesso)} com acesso declarado" if acesso else ", nenhum declara acesso"
+    print(f"Uploaded {len(blobs)} documents to {account}/{container}{declarados}.")
+    return len(blobs), acesso
 
 
 def _validate_storage_resource_id(rid: str) -> None:
@@ -242,6 +291,44 @@ def wait_for_ingestion(
     print("Timed out waiting; check the knowledge source status in the portal.")
 
 
+def aplicar_acesso_declarado(acesso: dict[str, list[str]]) -> bool:
+    """Carimba no índice o acesso que as FONTES declararam — e só se alguma declarou.
+
+    O `if not acesso: return False` é a parte importante, e é o que torna esta mudança segura de
+    mergear. Ligar o `permissionFilterOption` num índice cujos documentos não têm grupo nenhum
+    faz o trim esconder TUDO (fail-closed, que é o comportamento certo e seria o desastre errado
+    aqui): hoje nenhum runbook declara acesso, e o helpdesk é audiência única por decisão
+    (`catalog.py:154`, ADR-031). Sem declaração, este passo é um no-op e o corpus segue como
+    está — byte a byte.
+
+    Quando a PRIMEIRA fonte declarar, o caminho existe e ela é carimbada. As que continuarem sem
+    declarar caem em `acl_default_groups`; se ele estiver vazio, ficam invisíveis — fail-closed,
+    correto, e avisado em voz alta abaixo, porque "o corpus sumiu" sem explicação seria pior que
+    o próprio erro.
+
+    O nome do índice é DERIVADO do knowledge source (`<ks>-index`), a mesma convenção que
+    `ingest_docbundles` usa nos dois sentidos (linha 643, `removesuffix("-index")`) — uma segunda
+    variável de configuração aqui seria a lista paralela que diverge no primeiro rename."""
+    if not acesso:
+        print("  · nenhuma fonte declara acesso — índice não é carimbado (corpus inalterado)")
+        return False
+
+    cfg = tenant_config()
+    padrao = [g for g in cfg.acl_default_groups.split(",") if g.strip()]
+    sem_declaracao = len(sorted(CORPUS_DIR.glob("*.md"))) - len(acesso)
+    if sem_declaracao and not padrao:
+        print(
+            f"  ⚠️  {len(acesso)} fonte(s) declaram acesso e {sem_declaracao} não declaram, e "
+            f"ACL_DEFAULT_GROUPS está vazio: as que não declaram ficarão INVISÍVEIS (fail-closed). "
+            f"Declare o acesso nelas, ou defina ACL_DEFAULT_GROUPS."
+        )
+
+    from app.modules.knowledge.internal.acl_setup import setup_acl
+
+    setup_acl(acesso, index=f"{KNOWLEDGE_SOURCE_NAME}-index", default_groups=padrao)
+    return True
+
+
 def main() -> None:
     _setup_logging()
     _require("AZURE_SEARCH_ENDPOINT", tenant_config().azure_search_endpoint)
@@ -271,14 +358,16 @@ def main() -> None:
         timeout_s=30,
     )
 
-    print("== Step 1/3: upload corpus ==")
-    upload_corpus(credential)
-    print("== Step 2/3: create knowledge source ==")
+    print("== Step 1/4: upload corpus ==")
+    _, acesso = upload_corpus(credential)
+    print("== Step 2/4: create knowledge source ==")
     create_knowledge_source(index_client)
-    print("== Step 3/3: create knowledge base ==")
+    print("== Step 3/4: create knowledge base ==")
     create_knowledge_base(index_client)
 
     wait_for_ingestion(index_client)
+    print("== Step 4/4: carimbar acesso declarado pelas fontes ==")
+    aplicar_acesso_declarado(acesso)
     print("\nDone. The knowledge base is ready for agentic retrieval.")
 
 

@@ -41,6 +41,7 @@ import re
 from datetime import UTC, datetime
 from pathlib import Path
 
+from app.modules.knowledge.internal import frontmatter
 from app.modules.knowledge.internal.docbundle_schema import validate_manifest
 
 # Navigation and scaffold files OpenWiki emits that are not content pages.
@@ -51,7 +52,6 @@ _SKIP_NAMES = {"index.md", "_skeleton.md", "_plan.md", "instructions.md", "log.m
 _SKIP_DIRS = {".git", "node_modules"}
 _LINK_RE = re.compile(r"\[[^\]]*\]\(([^)]+\.md)[^)]*\)")  # markdown link to a .md file
 _LINK_SUB_RE = re.compile(r"\[([^\]]*)\]\(([^)]+\.md)[^)]*\)")  # same, with the text captured
-_FRONT_MATTER_RE = re.compile(r"\A---\r?\n.*?\r?\n---\r?\n", re.DOTALL)
 _FM_TITLE_RE = re.compile(r"^title:\s*(.+?)\s*$", re.MULTILINE)
 
 
@@ -72,11 +72,15 @@ def _resolve_wiki_dir(repo: Path, wiki_dir: str | None) -> Path:
 
 
 def _split_front_matter(md_text: str) -> tuple[str, str]:
-    """Return (front_matter, body). Front matter is OKF metadata, not page content."""
-    m = _FRONT_MATTER_RE.match(md_text)
-    if not m:
-        return "", md_text
-    return m.group(0), md_text[m.end() :]
+    """Return (front_matter, body). Front matter is OKF metadata, not page content.
+
+    Delegates to `frontmatter.split` so this repo has ONE parser for the format: the same
+    separation lived here, in the corpus ingest, and in a gate, and three copies of a parser
+    diverge on the first new shape — silently, because each one simply stops seeing what the
+    others see. `split` (not `parse`) on purpose: this path only lifts a title, so a malformed
+    block must not stop the page from being adapted."""
+    cru, corpo = frontmatter.split(md_text)
+    return (f"---\n{cru}\n---\n" if cru else ""), corpo
 
 
 def _title_of(front_matter: str, body: str, fallback: str) -> str:
