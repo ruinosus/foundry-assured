@@ -46,6 +46,23 @@ updates:
       # property" e nunca menciona duplicata, que é o que realmente aconteceu — medido em #185.
       - dependency-name: "@ag-ui/*"
 
+      # `streamdown` é o MESMO caso do `@ag-ui/*` logo acima, e já cobrou o preço duas vezes.
+      # `MessageEvidence.tsx` importa `defaultRehypePlugins` de "streamdown" e entrega a lista ao
+      # renderer do CopilotKit — o que só funciona enquanto os dois resolvem a MESMA cópia. O
+      # CopilotKit pede `^1.3.0` (medido em 1.68.1 e 1.69.3, as duas pedem o mesmo), então subir
+      # a nossa raiz para 2.x não move a dele: o npm aninha uma segunda cópia, o app monta os
+      # plugins numa versão e o renderer recebe na outra.
+      #
+      # Em 2026-08-20 isso passou pelo build e pelo typecheck sem um aviso, e o Mermaid parou de
+      # renderizar (#200). Em 2026-08-27 o dependabot propôs o MESMO bump (#205) e desta vez o
+      # `scripts/check-renderer-single-copy.mjs` barrou. O gate pega; esta entrada evita que a
+      # proposta volte toda semana até alguém mergear no automático.
+      #
+      # Destravar quando algum `@copilotkit/react-core` pedir `streamdown@^2`; aí o major é
+      # nosso para escolher de novo.
+      - dependency-name: streamdown
+        update-types: ["version-update:semver-major"]
+
       # jsdom 30 exige Node >= 22.22 e o CI roda Node 20; `engines` do npm é AVISO, não trava,
       # então a incompatibilidade não aparece no install — aparece no gate que usa jsdom, longe
       # da causa. Junto vinham `@asamuzakjp/*`, `whatwg-url` e `undici`, todos da subárvore dele.
