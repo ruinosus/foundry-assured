@@ -64,7 +64,21 @@ jobs:
       - name: Install OpenWiki
         # Pinned: this is a generator whose output we gate on, so an unannounced upgrade is a
         # silent change to the wiki. Bump deliberately, like any other vendored tool.
-        run: npm install --global openwiki@0.3.3
+        #
+        # 0.3.3 -> 0.4.3 (2026-08-27, measured — .superpowers/sdd/openwiki-claims-medicao.md):
+        # OKF goes to v0.2 and 0.4.0 adds "Grounded Claims" — per-claim evidence sidecars
+        # written to `openwiki/.claims/**.json` (schemaVersion 1, evidence resolved by
+        # content hash). Confirmed NOT to break any of our gates: docbundle_contract_test
+        # never touches OKF front matter or `openwiki/`; wiki_shelf_test A/B'd with/without
+        # the 19 real sidecars on this repo — delta score 0.0, zero basename collisions;
+        # adapt_openwiki.py digests real v0.2 front matter (generated{by,at}/verified/sources)
+        # cleanly, no YAML leaks into the page body. `openwiki/.claims/` is left OUT of
+        # .gitignore on purpose: it is generator output that lives beside the wiki pages it
+        # verifies (same tree as `openwiki/*.md`, which is already committed), and it is the
+        # state Claims' own incremental re-verification reads back on the next `--update` —
+        # ignoring it would make every run re-derive evidence from nothing, the opposite of
+        # "self-correcting". `add-paths: openwiki` below already picks it up.
+        run: npm install --global openwiki@0.4.3
 
       - name: Regenerate the wiki
         working-directory: .

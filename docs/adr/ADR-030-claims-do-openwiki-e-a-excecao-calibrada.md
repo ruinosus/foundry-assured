@@ -92,10 +92,18 @@ manda adotar — a exceção deixa de ter fundamento e esta ADR é superseded, n
 
 ## Um defeito nosso que a comparação revelou
 
-**17 citações do nosso wiki apontam para outras páginas do próprio wiki**, e nós as contamos como
+**Citações do nosso wiki que apontam para outras páginas do próprio wiki** eram contadas como
 resolvidas — inflando o score. O OpenWiki recusa esse tipo de evidência por política
 (`resource.js:79-85`): evidência de código não pode ser documentação. **Eles estão certos.**
-Consertado em commit próprio; o número honesto é menor que o que exibíamos.
+
+O número: **8 de 775** citações no `openwiki/` inteiro e **5 de 671** no bundle `v0.20260819`,
+medidos com o regex do próprio gate (`_fidelity_report`). A primeira redação desta ADR dizia 17,
+que é o que o script de comparação conta com um casamento de caminho mais frouxo — o número que
+vale é o que o gate imprime. Corrigido junto com o conserto.
+
+Efeito no score: 96,9% antes e 96,9% depois no `openwiki/`; 97,5% no bundle, piso 80%. O defeito
+era real e pequeno, e é isso que a medição serve para dizer — a alternativa era continuar
+exibindo um número que ninguém tinha checado.
 
 Vale registrar o mecanismo: a nossa medição estava certa no que afirmava (o caminho resolve) e
 errada no que sugeria (a afirmação tem lastro em código).
