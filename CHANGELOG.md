@@ -1,5 +1,71 @@
 # Changelog
 
+## [0.10.0](https://github.com/ruinosus/foundry-assured/compare/v0.9.0...v0.10.0) (2026-08-27)
+
+
+### Features
+
+* **backend:** a recuperação com ACL vira ContextProvider — e o helpdesk ganha ACL que não tinha ([#167](https://github.com/ruinosus/foundry-assured/issues/167)) ([f3fb460](https://github.com/ruinosus/foundry-assured/commit/f3fb4601fef2bc5e5b40f202c160b34dd0a14536))
+* **backend:** MCP server T0–T2 — endpoint autenticado, papel do Entra e busca com ACL do chamador ([#203](https://github.com/ruinosus/foundry-assured/issues/203)) ([525d61c](https://github.com/ruinosus/foundry-assured/commit/525d61c275916e3539bbad5604f2a82e4daff703))
+* **backend:** o preço vem da Azure, o modelo de valor vira documento, e FOCUS espera volume (ADR-024) ([#164](https://github.com/ruinosus/foundry-assured/issues/164)) ([ec4ef03](https://github.com/ruinosus/foundry-assured/commit/ec4ef0369eb96b09a3eb16b39a40692130f1f968))
+* **backend:** um ponto de entrada por runtime, a mesma contabilidade (passos 1–3) ([#166](https://github.com/ruinosus/foundry-assured/issues/166)) ([5284a92](https://github.com/ruinosus/foundry-assured/commit/5284a926554919508b9de3ec7ccc08da56f5bc33))
+* **docs:** as oito páginas anteriores adotam o sistema visual novo ([#196](https://github.com/ruinosus/foundry-assured/issues/196)) ([cad8613](https://github.com/ruinosus/foundry-assured/commit/cad86130ea243dd7c44cc043c4d7f68de65d14a0))
+* **frontend:** conversa na URL e compartilhamento por link ([#183](https://github.com/ruinosus/foundry-assured/issues/183)) ([55804f4](https://github.com/ruinosus/foundry-assured/commit/55804f4fdb74dc4f4cca8cf4e7d9d4917c386567))
+* **grounded:** o domínio pode responder como AGENTE PUBLICADO — atrás de uma chave ([#172](https://github.com/ruinosus/foundry-assured/issues/172)) ([8e5fef8](https://github.com/ruinosus/foundry-assured/commit/8e5fef809b476602ff31f4821f13e5bb18b64830))
+* **helpdesk:** o painel de evidências passa a funcionar — por API pública, sem monkeypatch ([#171](https://github.com/ruinosus/foundry-assured/issues/171)) ([cf7d63b](https://github.com/ruinosus/foundry-assured/commit/cf7d63b947ae32171d334c4845811e316d602281))
+* **knowledge:** a fonte carrega o próprio acesso — e o helpdesk volta a recuperar (ADR-031) ([#208](https://github.com/ruinosus/foundry-assured/issues/208)) ([a95d73c](https://github.com/ruinosus/foundry-assured/commit/a95d73cd70e8e8d16b0860bf98ae33dca14d0899))
+* **knowledge:** a fonte carrega o próprio acesso — e o helpdesk volta a recuperar (ADR-031) ([#208](https://github.com/ruinosus/foundry-assured/issues/208)) ([18d28f0](https://github.com/ruinosus/foundry-assured/commit/18d28f020802f7aa4de1d2054c0c7d987ffc5a37))
+* **mcp:** release T3–T7 — o MCP vira app próprio sobre FastMCP 4, com selo, prompts e escrita governada ([#204](https://github.com/ruinosus/foundry-assured/issues/204)) ([96fe57f](https://github.com/ruinosus/foundry-assured/commit/96fe57fc96068d9fada4f4fa5413bfd8425f7720))
+* monolito modular, camada de evidência e a medição de uso fechada (ADR-017..023) ([#163](https://github.com/ruinosus/foundry-assured/issues/163)) ([bc8816b](https://github.com/ruinosus/foundry-assured/commit/bc8816b25bdda0fb43f2e078c3eb1b23444cd5e3))
+* **techdocs:** o domínio ganha corpus próprio, recortado do selfwiki em três níveis ([#194](https://github.com/ruinosus/foundry-assured/issues/194)) ([b6174cd](https://github.com/ruinosus/foundry-assured/commit/b6174cd7ea58caca1ae32dd88d50a7e84afa05fd))
+* **tooling:** a camada de aceleradores encontra três listas duplicadas, e o import-linter volta a vigiar ([#197](https://github.com/ruinosus/foundry-assured/issues/197)) ([bc65336](https://github.com/ruinosus/foundry-assured/commit/bc653367a4c710244d54e05a678ad6a6480a3b3c))
+* **wiki:** OpenWiki 0.4.3, acesso por fonte (ADR-031) e o gate que tira a promessa do container session ([#207](https://github.com/ruinosus/foundry-assured/issues/207)) ([0f4e68d](https://github.com/ruinosus/foundry-assured/commit/0f4e68d0650924c516abb84beb82f71767b4c6c9))
+
+
+### Bug Fixes
+
+* **backend:** /oncall e /deepcall serviam sem autenticação — e o gate que impede a volta ([#165](https://github.com/ruinosus/foundry-assured/issues/165)) ([d40d6ad](https://github.com/ruinosus/foundry-assured/commit/d40d6ad5e9562691072a2138f97ae86c3a3a870e))
+* **backend:** shared mode could not boot with auth on, and would have leaked config between tenants ([#156](https://github.com/ruinosus/foundry-assured/issues/156)) ([4259539](https://github.com/ruinosus/foundry-assured/commit/4259539e711b8d2524f8d77964c588a33110d390))
+* **ci:** o header de identidade do Search leva o token cru, não `Bearer` ([#191](https://github.com/ruinosus/foundry-assured/issues/191)) ([c65d800](https://github.com/ruinosus/foundry-assured/commit/c65d80089f10ebc67ef84152658ebf563f1dca67))
+* **ci:** o verificador do selfwiki prova o trim com duas identidades reais ([#193](https://github.com/ruinosus/foundry-assured/issues/193)) ([cbb63a6](https://github.com/ruinosus/foundry-assured/commit/cbb63a6e8b3977f99005dcaf338600b7a3afe950))
+* **ci:** repair the module paths ADR-017 broke in workflows and scripts ([#155](https://github.com/ruinosus/foundry-assured/issues/155)) ([08e078d](https://github.com/ruinosus/foundry-assured/commit/08e078d7f2b6febbc5135f0b7928b5a204c667e3))
+* **ci:** trocar leitura elevada por identidade real no verificador do ingest-selfwiki ([#177](https://github.com/ruinosus/foundry-assured/issues/177)) ([73c8b7b](https://github.com/ruinosus/foundry-assured/commit/73c8b7b9cc13870246a48e3ed84f32f87ca581e7))
+* **docs:** a landing do Pages apontava para dois lugares que não existem ([#190](https://github.com/ruinosus/foundry-assured/issues/190)) ([c7c1050](https://github.com/ruinosus/foundry-assured/commit/c7c1050057cbb235a3b07c15d2a2b9f5fe82535b))
+* **docs:** as páginas publicadas voltam a descrever o que o projeto é hoje ([#195](https://github.com/ruinosus/foundry-assured/issues/195)) ([8606990](https://github.com/ruinosus/foundry-assured/commit/860699050140a1213b12802f6bdb271f8dc23a75))
+* **eval:** o gate de atualidade da wiki não opina sem histórico ([#174](https://github.com/ruinosus/foundry-assured/issues/174)) ([d7b87a1](https://github.com/ruinosus/foundry-assured/commit/d7b87a1ede04931e16ab568ba4f0defd40573d77))
+* **eval:** the wiki-freshness gate could never be satisfied ([#159](https://github.com/ruinosus/foundry-assured/issues/159)) ([7a052ca](https://github.com/ruinosus/foundry-assured/commit/7a052ca4cffd2e68bde66f4b0461276af951622c))
+* **frontend:** a evidência fica legível e para de ocupar a tela ([#180](https://github.com/ruinosus/foundry-assured/issues/180)) ([8f56ded](https://github.com/ruinosus/foundry-assured/commit/8f56dedb2d294099b7891a2374518953c60cc084))
+* **frontend:** mesclar cabeçalhos sem duplicar a caixa da chave ([#182](https://github.com/ruinosus/foundry-assured/issues/182)) ([9fc7c41](https://github.com/ruinosus/foundry-assured/commit/9fc7c412ddff9b75a5ad427fadcb30c69533b8b7))
+* **frontend:** o rótulo Fontes usa a cor do texto ([#181](https://github.com/ruinosus/foundry-assured/issues/181)) ([c6edfbf](https://github.com/ruinosus/foundry-assured/commit/c6edfbf78e0333a106322d8a5f8f8a4669e6bf2c))
+* **infra:** a identidade do app ganha a role de storage que nunca teve ([#201](https://github.com/ruinosus/foundry-assured/issues/201)) ([f6ae4c8](https://github.com/ruinosus/foundry-assured/commit/f6ae4c8edb3dd932f168c136de38496d124c8bf8))
+* **infra:** as variáveis que o backend precisa nunca chegavam ao container publicado ([#199](https://github.com/ruinosus/foundry-assured/issues/199)) ([007f399](https://github.com/ruinosus/foundry-assured/commit/007f39938a276f93b11dd61f7189176c51d8bd52))
+* **infra:** ligar isVersioningEnabled no blobService para viabilizar imutabilidade da ADR-023 ([#179](https://github.com/ruinosus/foundry-assured/issues/179)) ([1a2f185](https://github.com/ruinosus/foundry-assured/commit/1a2f1856e91803fad6aeb3208c74ae34df3eb817))
+* **infra:** resolve AZURE_CI_PRINCIPAL_ID no CI e falha o deploy se as roles de dado sumirem ([#178](https://github.com/ruinosus/foundry-assured/issues/178)) ([ac813b0](https://github.com/ruinosus/foundry-assured/commit/ac813b094366f1dae67d5ba734da78aecf0a4dd8))
+* **infra:** um clone novo consegue subir o backend ([#189](https://github.com/ruinosus/foundry-assured/issues/189)) ([8304fe9](https://github.com/ruinosus/foundry-assured/commit/8304fe9c0c9aae147e5fa1b840bea522faa75b3a))
+* **knowledge:** o carimbo de ACL parava de valer sozinho, por uma agenda que ninguém pediu ([#198](https://github.com/ruinosus/foundry-assured/issues/198)) ([7990dc6](https://github.com/ruinosus/foundry-assured/commit/7990dc629e2ecfc148ad4ea51153f8d6a47f3cd7))
+* o Mermaid volta a renderizar — duas causas, uma de versão e uma de prompt ([#200](https://github.com/ruinosus/foundry-assured/issues/200)) ([01f3deb](https://github.com/ruinosus/foundry-assured/commit/01f3debc2c6feaa07b242ac02893406cb0571b06))
+* **registry:** o gate de espelho passa a ler o domains.ts que o nome dele promete ([#202](https://github.com/ruinosus/foundry-assured/issues/202)) ([395b42b](https://github.com/ruinosus/foundry-assured/commit/395b42b1c720b756f8ba383f16315991e7b63b79))
+* **wiki:** a regeneração poda a geração anterior ([#176](https://github.com/ruinosus/foundry-assured/issues/176)) ([3ca1472](https://github.com/ruinosus/foundry-assured/commit/3ca147202ceeb5ed0618b8b5eddeb67a6a2d6b07))
+* **wiki:** the citation contract still asked for per-area scope ([#151](https://github.com/ruinosus/foundry-assured/issues/151)) ([4b749e7](https://github.com/ruinosus/foundry-assured/commit/4b749e7bac56789f0b1097cd4a8212b5c5c65d05))
+
+
+### Refactors
+
+* as citações passam a falar o vocabulário do framework ([#169](https://github.com/ruinosus/foundry-assured/issues/169)) ([e21bad1](https://github.com/ruinosus/foundry-assured/commit/e21bad1be450de50b12679b652395ad14b9d63f0))
+* **backend:** modular monolith by domain, with the boundaries checked in CI (ADR-017/018) ([#154](https://github.com/ruinosus/foundry-assured/issues/154)) ([3f9968f](https://github.com/ruinosus/foundry-assured/commit/3f9968f43ee9a292f4b70707cac3736679387356))
+* rename the cockpit domain to techdocs, and drop the internal references ([#161](https://github.com/ruinosus/foundry-assured/issues/161)) ([44ae19f](https://github.com/ruinosus/foundry-assured/commit/44ae19f38b6a4fd19dadfe77aea9fb52c3b4c21c))
+* tirar `cockpit` de tudo que é superfície viva ([#192](https://github.com/ruinosus/foundry-assured/issues/192)) ([f15e927](https://github.com/ruinosus/foundry-assured/commit/f15e927aef620dc0b9b90c40832043e443a801da))
+
+
+### Documentation
+
+* **adr:** ADR-025 — o vocabulário de citação é do framework; o transporte fica nosso ([#170](https://github.com/ruinosus/foundry-assured/issues/170)) ([84506cb](https://github.com/ruinosus/foundry-assured/commit/84506cbd5aae7eabddfe764825500c64a7e6d011))
+* **backend:** OBSERVABILITY.md, and a boot comment that stopped being true ([#157](https://github.com/ruinosus/foundry-assured/issues/157)) ([77636f0](https://github.com/ruinosus/foundry-assured/commit/77636f0d86ce2f09d10b4d600d5fbabb9b20c41b))
+* rewrite the README opening around what the app does ([#160](https://github.com/ruinosus/foundry-assured/issues/160)) ([73b9cc1](https://github.com/ruinosus/foundry-assured/commit/73b9cc17ce3b629939f55ceb2bd6d2c7070a0637))
+* **wiki:** regenerate the wiki ([#153](https://github.com/ruinosus/foundry-assured/issues/153)) ([bec71a0](https://github.com/ruinosus/foundry-assured/commit/bec71a0c3db14aaee12205da27fea6603690e186))
+* **wiki:** regenerate the wiki ([#158](https://github.com/ruinosus/foundry-assured/issues/158)) ([b1c0758](https://github.com/ruinosus/foundry-assured/commit/b1c0758914248fd8ea0eb6eaa1d6a2f2f352d1b4))
+* **wiki:** regenerate the wiki ([#173](https://github.com/ruinosus/foundry-assured/issues/173)) ([398618a](https://github.com/ruinosus/foundry-assured/commit/398618a8062af384a6a92f72f1541ad23678eaae))
+
 ## [0.9.0](https://github.com/ruinosus/foundry-assured/compare/v0.8.0...v0.9.0) (2026-08-15)
 
 
