@@ -121,13 +121,32 @@ def _fidelity_report(pages: list[dict], files: dict[str, str]) -> dict:
     for k in keys:
         basenames[k.rsplit("/", 1)[-1]] = basenames.get(k.rsplit("/", 1)[-1], 0) + 1
 
-    total = resolved = line_ranged = worktree = 0
+    total = resolved = line_ranged = worktree = self_doc = 0
     distinct: set[str] = set()
     for page in pages:
         text = _BLOB_URL_RE.sub("", page.get("content", ""))  # GitHub blob URL → repo-relative path
         text = _URL_RE.sub("", text)  # drop remaining external URLs (not file citations)
         for m in _CITE_RE.finditer(text):
             cited = m.group(1).lstrip("./")
+            # A citation into openwiki/ itself is documentation citing documentation, not
+            # code evidence — OpenWiki's own Claims mechanism refuses this exact case as
+            # evidence by policy ("evidence cannot reference generated OpenWiki output",
+            # openwiki dist/claims/evidence/repository/resource.js:79-85). Bare mentions
+            # of another wiki page's path in prose resolve here because the page happens
+            # to be a real file, and every one of them counted as a resolved citation.
+            #
+            # Medido com ESTE regex, não com o do relatório: 8 de 775 citações no
+            # `openwiki/` inteiro (27 páginas) e 5 de 671 no bundle v0.20260819. O
+            # relatório de comparação (docs/superpowers/specs/2026-08-27-openwiki-claims-medicao.md §3.3)
+            # conta 17 porque casa caminho em prosa de forma mais frouxa — o número que
+            # vale aqui é o que este gate imprime.
+            #
+            # Excluded from `total` — not counted as a failed citation either, because it
+            # was never a code citation to begin with (same treatment as the external-URL
+            # strip above), just tracked separately for visibility.
+            if cited == "openwiki" or cited.startswith("openwiki/"):
+                self_doc += 1
+                continue
             total += 1
             if ":" in m.group(0):
                 line_ranged += 1
@@ -145,7 +164,7 @@ def _fidelity_report(pages: list[dict], files: dict[str, str]) -> dict:
     score = (resolved / total) if total else 0.0
     return {
         "total": total, "resolved": resolved, "line_ranged": line_ranged,
-        "worktree": worktree, "distinct": len(distinct), "score": score,
+        "worktree": worktree, "self_doc": self_doc, "distinct": len(distinct), "score": score,
     }
 
 
@@ -418,7 +437,7 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
     print(
         f"\nFidelity: {fid['score']:.0%} — {fid['resolved']}/{fid['total']} citações resolvem para "
         f"arquivo real | {fid['distinct']} arquivos distintos, {fid['line_ranged']} com linha, "
-        f"{fid['worktree']} em worktree",
+        f"{fid['worktree']} em worktree, {fid['self_doc']} para openwiki/ (excluídas, doc≠código)",
         flush=True,
     )
     floor = _fidelity_floor()

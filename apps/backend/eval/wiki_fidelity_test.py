@@ -88,7 +88,8 @@ def main() -> int:
     print(f"Bundle : {bundle.relative_to(REPO_ROOT)}  ({len(pages)} páginas)")
     print(
         f"Fidelity: {fid['score']:.1%} — {fid['resolved']}/{fid['total']} citações resolvem para "
-        f"arquivo real | {fid['distinct']} arquivos distintos, {fid['worktree']} em worktree"
+        f"arquivo real | {fid['distinct']} arquivos distintos, {fid['worktree']} em worktree, "
+        f"{fid['self_doc']} para openwiki/ (excluídas, doc≠código)"
     )
     print(f"Floor  : {floor:.0%}")
 

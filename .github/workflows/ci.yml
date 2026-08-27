@@ -54,6 +54,14 @@ jobs:
       - name: Documento integral — contagem autorizada (trim por blob_url, header de identidade)
         run: uv run python -m tests.knowledge.document_contar_autorizado_test
 
+      # ADR-031: `document_access="session"` entrega o documento integral a QUALQUER sessão
+      # autenticada, pelo nome. O catálogo diz que isso é seguro "porque o container só recebe os
+      # runbooks da ingestão" — condição que morre no primeiro PDF restrito que alguém subir. Este
+      # gate cobra COERÊNCIA (o que a fonte declara × o que o domínio aplica), nunca classifica
+      # conteúdo — classificar seria a Regra #6 ao contrário.
+      - name: Container `session` não recebe conteúdo que declare acesso (ADR-031)
+        run: uv run python -m tests.knowledge.session_container_test
+
       # The fidelity gate runs at GENERATION (wiki-regen.yml), on one bundle, once. The ingest
       # then walks knowledge/wiki-bundle/** and uploads whatever is committed — so a bundle stays in
       # the knowledge base long after the code it describes has moved. Two did: they scored
