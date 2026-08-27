@@ -137,7 +137,7 @@ def _fidelity_report(pages: list[dict], files: dict[str, str]) -> dict:
             #
             # Medido com ESTE regex, não com o do relatório: 8 de 775 citações no
             # `openwiki/` inteiro (27 páginas) e 5 de 671 no bundle v0.20260819. O
-            # relatório de comparação (.superpowers/sdd/openwiki-claims-medicao.md §3.3)
+            # relatório de comparação (docs/superpowers/specs/2026-08-27-openwiki-claims-medicao.md §3.3)
             # conta 17 porque casa caminho em prosa de forma mais frouxa — o número que
             # vale aqui é o que este gate imprime.
             #

@@ -65,7 +65,7 @@ jobs:
         # Pinned: this is a generator whose output we gate on, so an unannounced upgrade is a
         # silent change to the wiki. Bump deliberately, like any other vendored tool.
         #
-        # 0.3.3 -> 0.4.3 (2026-08-27, measured — .superpowers/sdd/openwiki-claims-medicao.md):
+        # 0.3.3 -> 0.4.3 (2026-08-27, measured — docs/superpowers/specs/2026-08-27-openwiki-claims-medicao.md):
         # OKF goes to v0.2 and 0.4.0 adds "Grounded Claims" — per-claim evidence sidecars
         # written to `openwiki/.claims/**.json` (schemaVersion 1, evidence resolved by
         # content hash). Confirmed NOT to break any of our gates: docbundle_contract_test

@@ -23,7 +23,7 @@ Esta ADR existe porque aquela frase do `CLAUDE.md` pode ter deixado de ser verda
 
 Não em release notes: no código da `0.4.3` instalada, e contra o corpus **deste** repositório,
 com a mesma deriva de 31 commits. Relatório completo em
-`.superpowers/sdd/openwiki-claims-medicao.md`.
+`docs/superpowers/specs/2026-08-27-openwiki-claims-medicao.md`.
 
 | | `_fidelity_report` (nosso) | Grounded Claims (OpenWiki 0.4.3) |
 |---|---|---|
