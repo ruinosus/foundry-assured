@@ -61,7 +61,19 @@ def main() -> int:
     h = domain_spec("helpdesk")
     url = f"{h.search_endpoint.rstrip('/')}/indexes/{h.search_index}/docs/search"
     checar("não contém 'None'", "None" not in url, url)
-    checar("tem host (não começa com '/')", not url.startswith("/"), url)
+    # O HOST NÃO É ASSERÇÃO DESTE GATE, e a primeira versão dizia que era: cobrava
+    # `not url.startswith("/")`, que depende de `AZURE_SEARCH_ENDPOINT` estar no ambiente. Passava
+    # na minha máquina (com `.env`) e reprovava no CI, que roda sem credencial de propósito — um
+    # gate que muda de veredito com o ambiente não é determinístico, e este job promete ser.
+    #
+    # O que É invariante do CATÁLOGO: o spec LIGA o endpoint à config. Vazio porque ninguém
+    # configurou é ambiente; vazio porque o spec não declarou o campo é o defeito — e antes desta
+    # mudança era o segundo caso.
+    checar("search_endpoint vem da config", h.search_endpoint == cfg.azure_search_endpoint,
+           f"{h.search_endpoint!r} vs {cfg.azure_search_endpoint!r}")
+    if not cfg.azure_search_endpoint:
+        print("     (AZURE_SEARCH_ENDPOINT vazio neste ambiente — o host não é verificável aqui,"
+              " e é o `kb_name` do check 1 que garante o roteamento)")
 
     print("\n3. a convenção `<ks>-index` amarra ingest e catálogo")
     checar(
