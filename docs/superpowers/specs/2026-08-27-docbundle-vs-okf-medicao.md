@@ -57,29 +57,39 @@ identidade byte a byte com o produtor está **afirmada em prosa e nunca verifica
 reporta como *skipped* (não passa em silêncio, o que está certo), mas na prática ninguém sabe se
 já divergimos. Isso não autoriza quebrar o contrato — significa que não sabemos o estado dele.
 
-### 2.2 OKF não tem manifest — e essa é a diferença estrutural
+### 2.2 OKF não especifica manifest — e isso NÃO é bloqueio
 
-OKF é "um diretório de markdown com frontmatter YAML". **Não existe documento de metadados de
-bundle.** Todo metadado é por conceito, no frontmatter de cada `.md`. O `index.md` é listagem
-para *progressive disclosure*, explicitamente sem frontmatter — com uma única exceção, `okf_version`
-na raiz, que declara a versão **do formato**, não do conteúdo.
+**Correção de uma afirmação anterior desta medição.** A primeira redação tratou "OKF não tem
+manifest" como impedimento. Está errado: não especificar ≠ proibir.
 
-Nosso `manifest.json` existe para carregar identidade, versão e ACL **do bundle inteiro**.
-Traduzir isso para OKF tem duas saídas, ambas ruins:
+§11 (Conformance) constrange **apenas arquivos `.md`**: "Every non-reserved `.md` file in the
+tree contains a parseable YAML frontmatter block". Busca por `json|non-markdown|other files|
+sidecar` nas 1006 linhas da spec devolve **zero ocorrências**. Um `manifest.json` ao lado das
+páginas é invisível para o OKF e não quebra conformidade.
 
-- replicar `component`/`componentVersion`/`groups` no frontmatter de **cada página** — 19 cópias
-  do mesmo dado, que é a divergência silenciosa que este projeto mais teme; ou
-- inventar uma extensão de bundle — que é o formato nosso de volta, com outro nome.
+O que resta é custo real, e é pequeno: nossas páginas hoje **não têm frontmatter nenhum** (o
+bundle é `pages/page-N.md` com markdown puro). Conformidade exige um bloco com `type` não-vazio
+por página.
 
-### 2.3 OKF recusa controle de acesso por desenho
+### 2.3 OKF não recusa controle de acesso — eu li um aviso como proibição
 
-Literal, §5.3: *"Trust tiers are advisory signals, **not access control**."* Grep por
-`access control|permission|acl|authoriz|entitle|visibility|audience` nas 1006 linhas devolve
-**essa única ocorrência, que é a negação**.
+**Correção da afirmação mais errada desta medição.** §5.3 diz "trust tiers are advisory signals,
+not access control". Isso é um aviso contra **usar trust tier como ACL** — não uma proibição de
+carregar metadado de acesso.
 
-Nosso `groups` é a Regra #6 — controle de acesso é DADO, herdado da fonte, fail-closed, com
-`null ≠ []`. É o campo mais importante do manifest e **continua sendo extensão nossa em qualquer
-cenário de adoção**.
+O oposto é o que a spec diz. §4.1: "Producers MAY include **any** additional keys." §11:
+consumidores "MUST NOT reject a bundle because of… unknown additional frontmatter keys". Extensão
+é comportamento **abençoado**, não tolerado.
+
+Ou seja: `groups` (Regra #6) cabe no OKF como chave de produtor, e o consumidor conformante é
+obrigado a preservá-la. O bloqueio que eu descrevi não existe.
+
+---
+
+## 2.4 O que sobra de bloqueio: um só
+
+Apenas §2.1 — o contrato cross-repo com o projeto produtor. E ele não é "nunca": é "precisa de
+acordo com o produtor", que é o caminho certo de qualquer forma.
 
 ---
 
@@ -101,20 +111,26 @@ Independente de adotar o formato, três campos descrevem coisas que nós hoje **
 
 ## 4. Veredito
 
-**A MÁXIMA MAIOR não se aplica aqui, e o motivo é preciso:** OKF não é capacidade da Microsoft
-nem infraestrutura que substitua código nosso — é um **formato de intercâmbio** do Google Cloud,
-sem runtime, sem SDK, sem serviço. A máxima manda não reimplementar capacidade de plataforma;
-ela não manda trocar um contrato de dados vigente por outro equivalente.
+**A MÁXIMA MAIOR se aplica, sim — e mais forte do que eu supus.** OKF é **formato**, não runtime:
+sem SDK, sem serviço, sem pin de versão. Se o OKF morrer amanhã, sobra markdown com frontmatter
+YAML — o custo de errar é perto de zero. É justamente onde o ônus da prova para escrever formato
+próprio deveria ser **maior**, não menor, do que para capacidade de plataforma.
 
-**Tamanho da lacuna:** 5 de 13 campos mapeiam; 8 viram extensão; o manifest inteiro não tem
-lugar na spec; e o campo que mais importa (`groups`) é explicitamente fora de escopo do OKF.
-**Não é um "ser OKF" — é reescrever o formato e quebrar um contrato cross-repo para ganhar
-compatibilidade com um ecossistema que hoje não nos consome.**
+**Tamanho real da lacuna, revisado:** os três "bloqueios" viram um. Adotar OKF como formato de
+página e manter o `manifest.json` ao lado é **legal pela spec** e custa: frontmatter por página
+(que o OpenWiki já escreve — 19 de 20 páginas em `openwiki/` já têm) mais acordo com o produtor
+para campos novos no manifest.
 
-**Recomendação — não adotar o formato; roubar três campos.** `stale_after`, `verified` e
-`status` resolvem lacunas reais nossas, cabem como campos novos e opcionais no docbundle
-(compatíveis para trás: ausência tem significado), e **exigem acordo com o projeto produtor** —
-que é o caminho certo de qualquer forma, e é onde a conversa deveria começar.
+**O achado que muda a conta:** `adapt_openwiki.py:22` **descarta** o frontmatter OKF que já chega
+("Front matter is stripped"), levantando só o `title`. A justificativa está meio certa — YAML não
+pode entrar no corpus de retrieval — mas tirar do **corpo** não obriga a **jogar fora**: dá para
+levantar para o manifest, exatamente como o `title` já é. Os campos que esta medição recomendava
+"roubar do OKF" **já chegam no nosso pipeline e são descartados**.
+
+**Recomendação revisada:** OKF como formato das páginas + `manifest.json` por cima para o que o
+OKF não tem lugar (`groups`, `component`, `componentVersion`, ordenação). Primeiro passo, e ele
+não toca o contrato do docbundle: **parar de descartar** `generated`/`verified`/`sources`/`tags`
+e levantá-los para o manifest.
 
 **Antes de qualquer coisa:** definir `DOCBUNDLE_SCHEMA_REF` no CI, ou assumir por escrito que a
 cópia não é verificada. Discutir mudar um contrato cujo estado atual ninguém mede é discutir no
