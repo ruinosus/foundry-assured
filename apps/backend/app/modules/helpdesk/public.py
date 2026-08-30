@@ -6,6 +6,7 @@ human approval AND an Approver/Admin role check (RULE #5). That role check is de
 code, not declaration — ADR-018.
 """
 
+from app.modules.helpdesk.internal.declarative import build_declarative_workflow
 from app.modules.helpdesk.internal.escalation import EscalationExecutor
 from app.modules.helpdesk.internal.graph import build_helpdesk_workflow
 from app.modules.helpdesk.internal.memory import build_memory_provider
@@ -14,6 +15,7 @@ from app.modules.helpdesk.internal.stream_fix import OrderedAgentFrameworkWorkfl
 __all__ = [
     "EscalationExecutor",
     "OrderedAgentFrameworkWorkflow",
+    "build_declarative_workflow",
     "build_helpdesk_workflow",
     "build_memory_provider",
 ]
