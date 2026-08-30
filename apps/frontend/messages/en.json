@@ -108,15 +108,47 @@
     "mcpLabelPlaceholder": "label",
     "mcpHelp": "For an MCP server outside Foundry. Write actions start out requiring approval — but the agent runtime enforces that, not the server.",
     "reviewHelp": "This is the document that will be sent. Publishing creates the agent and its first version.",
-    "back": "Back",
-    "next": "Next",
     "publish": "Create and publish version",
     "publishing": "Publishing…",
     "tool_image_generation": "Image generation",
     "resourceAgent": "agent",
     "faltaInstrucoes": "Write what the agent should do before continuing.",
     "faltaModelo": "Choose a model before continuing.",
-    "catalogoIndisponivel": "Could not list {what}. What appears below is not the full catalog — this is a read failure, not an empty catalog."
+    "catalogoIndisponivel": "Could not list {what}. What appears below is not the full catalog — this is a read failure, not an empty catalog.",
+    "descriptionLabel": "Version description",
+    "progresso": "Progress",
+    "progressoContagem": "{done} of {total} ready",
+    "procedencia": "Provenance",
+    "procedenciaVazia": "No field written by the agent yet.",
+    "opcionalNuncaTrava": "optional — never blocks",
+    "nomeOk": "{count} characters · valid name",
+    "contagem": "{count} characters",
+    "minimoAtendido": "minimum met",
+    "escritoPorVoce": "written by you",
+    "escritoPeloAgente": "written by the agent",
+    "resumoSemNome": "no identifier",
+    "resumoInstrucoes": "answers with {model}",
+    "resumoSemInstrucoes": "no instructions",
+    "resumoBase": "base {name}",
+    "resumoToolbox": "toolbox {name}",
+    "resumoTools": "{count} tool(s)",
+    "resumoMcp": "MCP {label}",
+    "resumoSemCapacidades": "model only, no source",
+    "resumoRevisao": "nothing is sent before here",
+    "revisaoVaiCriar": "Will create",
+    "revisaoVaiCriarTexto": "the agent {name} and its first version",
+    "revisaoVaiResponder": "Will answer",
+    "revisaoComBase": "with {model}, searching {kb} and citing the source",
+    "revisaoSemBase": "with {model} — no base, so no answer will have a source",
+    "revisaoVaiPoder": "Will be able to",
+    "revisaoNaoVaiPoder": "Will not be able to",
+    "revisaoNaoVaiPoderTexto": "open a ticket or write without approval from the Approver role",
+    "alcanceLista": "{list} — writes behind human approval",
+    "alcanceNada": "nothing beyond answering",
+    "alcanceBase": "search {name}",
+    "alcanceToolbox": "use the toolbox {name}",
+    "alcanceMcp": "call {label}",
+    "verDocumento": "See the document that will be sent"
   },
   "agents": {
     "title": "Agents",
@@ -146,7 +178,8 @@
     "actionsFor": "AI actions for {field}",
     "generatePrompt": "Write the \"{label}\" field (identifier: {field}) for a {resource} I am creating. Call propose_field with field=\"{field}\".",
     "revisePrompt": "Improve the \"{label}\" field (identifier: {field}) of this {resource}. Current text:\n\n{value}\n\nCall propose_field with field=\"{field}\".",
-    "customPrompt": "For the \"{label}\" field (identifier: {field}) of this {resource}: {instruction}. Call propose_field with field=\"{field}\"."
+    "customPrompt": "For the \"{label}\" field (identifier: {field}) of this {resource}: {instruction}. Call propose_field with field=\"{field}\".",
+    "inFocus": "in focus in the chat →"
   },
   "approval": {
     "waiting": "Awaiting approval",
@@ -160,7 +193,14 @@
     "cancel": "Cancel",
     "saveApprove": "Save & approve",
     "reason": "Why escalate",
-    "modelSaid": "per the agent"
+    "modelSaid": "per the agent",
+    "yourRole": "your role: {role} ✓",
+    "roleUnchecked": "no role check in this environment",
+    "cannotApprove": "You cannot approve: requires {roles}. Rejecting is still allowed.",
+    "rejectReasonLabel": "Reason for rejecting — required",
+    "rejectReasonPlaceholder": "What needs to change for this to be approved?",
+    "rejectNeedsReason": "Write the reason to reject.",
+    "confirmReject": "Reject with reason"
   },
   "assist": {
     "generate": "✨ Write",
@@ -408,9 +448,14 @@
     "discard": "Discard",
     "applied": "Proposal for {field} resolved.",
     "modelSaid": "per the agent",
-    "sources": "Sources: {list}",
     "noSources": "No source declared — written by the model.",
-    "unknownField": "The agent proposed for the field \"{field}\", which does not exist in this form."
+    "unknownField": "The agent proposed for the field \"{field}\", which does not exist in this form.",
+    "beforeAfter": "Before → after",
+    "noPrevious": "Empty field — there is no previous text to compare.",
+    "diffTooLong": "Too long to compare word by word. The full proposal is below.",
+    "diffSummary": "+{added} · −{removed} words · {from} → {to} characters",
+    "invalid": "Cannot use as written: {reason}",
+    "sourcesLabel": "Provenance"
   },
   "frameworks": {
     "agent-framework": {
@@ -711,5 +756,13 @@
     "resolveLabel": "Resolve",
     "running": "Running…",
     "done": "Done"
+  },
+  "decisionLog": {
+    "title": "Decisions this session",
+    "outcome_accepted": "used",
+    "outcome_edited": "used with an edit",
+    "outcome_discarded": "discarded",
+    "outcome_approved": "approved",
+    "outcome_rejected": "rejected"
   }
 }

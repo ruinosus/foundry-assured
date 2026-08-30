@@ -338,6 +338,13 @@ jobs:
         run: uv run python -m tests.hitl.decision_test
       - name: Edit round-trips end to end
         run: uv run python -m tests.hitl.edit_roundtrip_test
+      # O payload da decisão é onde um gesto humano vira decisão do sistema. O gate guarda as
+      # duas propriedades desse ponto: a recusa leva o motivo até o backend, e NENHUM payload
+      # malformado vira aprovação (fail-closed, RULE #5) — inclusive `1`, que é `int` e cujo
+      # `isinstance(True, int)` já basta para transformar uma reordenação inocente num chamado
+      # aberto sem ninguém aprovar.
+      - name: Payload da decisão (recusa com motivo, e nada torto aprova)
+        run: uv run python -m tests.helpdesk.reject_reason_test
 
       # ADR-020: two runtimes in one backend. The route snapshot's third profile is what proves
       # the LangGraph domain actually mounts (/oncall), and the registry test that the two
@@ -695,6 +702,12 @@ jobs:
         run: npm run verify:thread-citations
       - name: Cabeçalhos mesclados sem duplicar a caixa
         run: npm run verify:headers
+      # O card de proposta compara o texto do campo com o que o agente propôs. Um diff que perde
+      # ou inventa um pedaço MOSTRA um texto que não é o que será gravado — a pior falha possível
+      # numa tela onde alguém aprova texto que vai ser publicado. O gate reconstrói os dois lados
+      # a partir do resultado e falha se não baterem byte a byte.
+      - name: Diff da proposta de campo
+        run: npm run verify:text-diff
 
       # O app importa `defaultRehypePlugins` de "streamdown" e entrega a lista ao renderer do
       # CopilotKit — o que só funciona enquanto os dois resolvem a MESMA cópia. Em 2026-08-20 o

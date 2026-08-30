@@ -20,13 +20,16 @@
 import { useAgent, useCopilotKit } from "@copilotkit/react-core/v2";
 import { useChatDock } from "@/lib/chat-dock";
 
-export function useSendToDock(agentId: string): (prompt: string) => void {
+export function useSendToDock(agentId: string): (prompt: string, field?: string) => void {
   const { copilotkit } = useCopilotKit();
   const { agent } = useAgent({ agentId });
-  const { show, setAgentId } = useChatDock();
+  const { show, setAgentId, setFocusedField } = useChatDock();
 
-  return (prompt: string) => {
+  return (prompt: string, field?: string) => {
     setAgentId(agentId);
+    // Marca QUAL campo pediu, para o dock poder dizer para onde vai escrever. `undefined` limpa:
+    // um pedido sem campo não deve herdar o foco do anterior.
+    setFocusedField(field ?? null);
     show();
     agent.addMessage({
       id:

@@ -94,6 +94,27 @@ def main() -> int:
         )
         check("…and allowed when the request permits it",
               decide(limited, "respond", message="handled offline").type == "respond")
+
+        # --- O MOTIVO DA RECUSA: a trilha prova QUE houve, e não guarda O QUE foi -----------
+        # "Recusar exige motivo" é regra da tela. Sem estes dois campos ela seria uma promessa
+        # que a trilha não tem como confirmar — e quem audita não saberia distinguir a recusa
+        # justificada da recusa em branco. O TEXTO fica fora pela mesma razão que `edited_fields`
+        # guarda as chaves e não os valores: conteúdo não entra na trilha.
+        motivo = "o runbook exige verificação de dispositivo"
+        recusada = decide(request, "reject", message=motivo)
+        check("a recusa carrega o motivo para quem pediu", recusada.message == motivo)
+        check("…a trilha registra QUE houve motivo", recusada.audit["detail"]["has_reason"] is True)
+        check(
+            "…e o TAMANHO, nunca o texto",
+            recusada.audit["detail"]["reason_chars"] == len(motivo)
+            and motivo not in str(recusada.audit),
+        )
+        sem_motivo = decide(request, "reject")
+        check(
+            "recusa sem motivo não inventa os campos",
+            "has_reason" not in sem_motivo.audit["detail"]
+            and "reason_chars" not in sem_motivo.audit["detail"],
+        )
     finally:
         auth._current_user.set(None)
         if original_auth is not None:

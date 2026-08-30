@@ -30,6 +30,13 @@ interface ChatDock {
    *  agente que não pode propor produziria uma conversa educada e inútil. */
   agentId: string;
   setAgentId: (id: string) => void;
+  /** O campo do formulário que pediu a última proposta.
+   *
+   *  Vive aqui, e não no campo, porque a pergunta que ele responde é do DOCK: "para qual campo eu
+   *  vou escrever?". Pedir "melhore" em dois campos seguidos produzia duas propostas e nenhuma
+   *  pista de qual veio de onde — e o card de proposta aparece no chat, longe do campo. */
+  focusedField: string | null;
+  setFocusedField: (field: string | null) => void;
 }
 
 const Ctx = createContext<ChatDock | null>(null);
@@ -42,12 +49,13 @@ const AGENTE_PADRAO = "builder";
 export function ChatDockProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [agentId, setAgentId] = useState(AGENTE_PADRAO);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
   const show = useCallback(() => setOpen(true), []);
   const hide = useCallback(() => setOpen(false), []);
   const toggle = useCallback(() => setOpen((v) => !v), []);
   const value = useMemo(
-    () => ({ open, show, hide, toggle, agentId, setAgentId }),
-    [open, show, hide, toggle, agentId],
+    () => ({ open, show, hide, toggle, agentId, setAgentId, focusedField, setFocusedField }),
+    [open, show, hide, toggle, agentId, focusedField],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -60,6 +68,8 @@ const NOOP: ChatDock = {
   toggle: () => {},
   agentId: AGENTE_PADRAO,
   setAgentId: () => {},
+  focusedField: null,
+  setFocusedField: () => {},
 };
 
 export function useChatDock(): ChatDock {

@@ -20,6 +20,7 @@ import { ChatDock } from "@/components/shell/ChatDock";
 import { DockProvider } from "@/components/shell/DockProvider";
 import { useApiToken } from "@/lib/auth/useApiToken";
 import { ChatDockProvider, useChatDock } from "@/lib/chat-dock";
+import { DecisionLogProvider } from "@/lib/decision-log";
 
 // The domain agents are config-driven from the registry → /d/<id>. Workspace pages are
 // static. Two sections so the sidebar reads as "tools" + "agents".
@@ -285,7 +286,12 @@ function Shell({
 export function AppShell(props: { children: React.ReactNode; flush?: boolean }) {
   return (
     <ChatDockProvider>
-      <Shell {...props} />
+      {/* O log de decisões acompanha o dock: quem decide são os cards que aparecem lá dentro
+          (proposta de campo, aprovação de ação), e quem lê é a mesma pessoa, na mesma sessão.
+          É efêmero e NÃO substitui a trilha — ver lib/decision-log.tsx. */}
+      <DecisionLogProvider>
+        <Shell {...props} />
+      </DecisionLogProvider>
     </ChatDockProvider>
   );
 }

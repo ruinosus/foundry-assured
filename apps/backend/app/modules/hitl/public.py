@@ -158,6 +158,14 @@ def _registrar(request: ApprovalRequest, decisao: ApprovalDecision) -> dict:
     if decisao.type == "edit":
         # Só as CHAVES corrigidas. O valor corrigido é conteúdo, e conteúdo não entra na trilha.
         detalhe["edited_fields"] = sorted(decisao.args)
+    if decisao.message:
+        # QUE HOUVE motivo e o TAMANHO — nunca o texto. Mesma regra do `edited_fields` acima e da
+        # trilha de propostas: o desfecho e a medida entram, o conteúdo não. Quem audita precisa
+        # saber se a recusa foi justificada; ler a justificativa é outra conversa, com outra
+        # autorização. Sem este par, "recusar exige motivo" seria uma regra da tela que a trilha
+        # não teria como confirmar.
+        detalhe["has_reason"] = True
+        detalhe["reason_chars"] = len(decisao.message)
 
     try:
         return record(

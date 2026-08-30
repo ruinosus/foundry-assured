@@ -108,15 +108,47 @@
     "mcpLabelPlaceholder": "rótulo",
     "mcpHelp": "Para um servidor MCP fora do Foundry. Ações de escrita nascem exigindo aprovação — mas quem aplica isso é o runtime do agente, não o servidor.",
     "reviewHelp": "Este é o documento que será enviado. Publicar cria o agente e a primeira versão.",
-    "back": "Voltar",
-    "next": "Avançar",
     "publish": "Criar e publicar versão",
     "publishing": "Publicando…",
     "tool_image_generation": "Geração de imagem",
     "resourceAgent": "agente",
     "faltaInstrucoes": "Escreva o que o agente deve fazer para continuar.",
     "faltaModelo": "Escolha um modelo para continuar.",
-    "catalogoIndisponivel": "Não consegui listar {what}. O que aparece abaixo não é o catálogo completo — isto é falha de leitura, não catálogo vazio."
+    "catalogoIndisponivel": "Não consegui listar {what}. O que aparece abaixo não é o catálogo completo — isto é falha de leitura, não catálogo vazio.",
+    "descriptionLabel": "Descrição da versão",
+    "progresso": "Progresso",
+    "progressoContagem": "{done} de {total} prontas",
+    "procedencia": "Procedência",
+    "procedenciaVazia": "Nenhum campo escrito pelo agente ainda.",
+    "opcionalNuncaTrava": "opcional — nunca trava",
+    "nomeOk": "{count} caracteres · nome válido",
+    "contagem": "{count} caracteres",
+    "minimoAtendido": "mínimo atendido",
+    "escritoPorVoce": "escrito por você",
+    "escritoPeloAgente": "escrito pelo agente",
+    "resumoSemNome": "sem identificador",
+    "resumoInstrucoes": "responde com {model}",
+    "resumoSemInstrucoes": "sem instruções",
+    "resumoBase": "base {name}",
+    "resumoToolbox": "toolbox {name}",
+    "resumoTools": "{count} ferramenta(s)",
+    "resumoMcp": "MCP {label}",
+    "resumoSemCapacidades": "só o modelo, sem fonte",
+    "resumoRevisao": "nada é enviado antes daqui",
+    "revisaoVaiCriar": "Vai criar",
+    "revisaoVaiCriarTexto": "o agente {name} e a sua primeira versão",
+    "revisaoVaiResponder": "Vai responder",
+    "revisaoComBase": "com {model}, buscando em {kb} e citando a fonte",
+    "revisaoSemBase": "com {model} — sem base, então nenhuma resposta terá fonte",
+    "revisaoVaiPoder": "Vai poder",
+    "revisaoNaoVaiPoder": "Não vai poder",
+    "revisaoNaoVaiPoderTexto": "abrir chamado nem escrever sem aprovação do papel Approver",
+    "alcanceLista": "{list} — escrita atrás de aprovação humana",
+    "alcanceNada": "nada além de responder",
+    "alcanceBase": "buscar em {name}",
+    "alcanceToolbox": "usar o toolbox {name}",
+    "alcanceMcp": "chamar {label}",
+    "verDocumento": "Ver o documento que será enviado"
   },
   "agents": {
     "title": "Agentes",
@@ -146,7 +178,8 @@
     "actionsFor": "Ações de IA para {field}",
     "generatePrompt": "Escreva o campo \"{label}\" (identificador: {field}) para um {resource} que estou criando. Chame propose_field com field=\"{field}\".",
     "revisePrompt": "Melhore o campo \"{label}\" (identificador: {field}) deste {resource}. Texto atual:\n\n{value}\n\nChame propose_field com field=\"{field}\".",
-    "customPrompt": "No campo \"{label}\" (identificador: {field}) deste {resource}: {instruction}. Chame propose_field com field=\"{field}\"."
+    "customPrompt": "No campo \"{label}\" (identificador: {field}) deste {resource}: {instruction}. Chame propose_field com field=\"{field}\".",
+    "inFocus": "em foco no chat →"
   },
   "approval": {
     "waiting": "Aguardando aprovação",
@@ -160,7 +193,14 @@
     "cancel": "Cancelar",
     "saveApprove": "Salvar e aprovar",
     "reason": "Por que escalar",
-    "modelSaid": "segundo o agente"
+    "modelSaid": "segundo o agente",
+    "yourRole": "seu papel: {role} ✓",
+    "roleUnchecked": "sem verificação de papel neste ambiente",
+    "cannotApprove": "Você não pode aprovar: exige {roles}. Recusar continua permitido.",
+    "rejectReasonLabel": "Motivo da recusa — obrigatório",
+    "rejectReasonPlaceholder": "O que precisa mudar para isto ser aprovado?",
+    "rejectNeedsReason": "Escreva o motivo para recusar.",
+    "confirmReject": "Recusar com motivo"
   },
   "assist": {
     "generate": "✨ Escrever",
@@ -408,9 +448,14 @@
     "discard": "Descartar",
     "applied": "Proposta para {field} resolvida.",
     "modelSaid": "segundo o agente",
-    "sources": "Fontes: {list}",
     "noSources": "Sem fonte declarada — escrito pelo modelo.",
-    "unknownField": "O agente propôs para o campo \"{field}\", que não existe neste formulário."
+    "unknownField": "O agente propôs para o campo \"{field}\", que não existe neste formulário.",
+    "beforeAfter": "Antes → depois",
+    "noPrevious": "Campo vazio — não há texto anterior para comparar.",
+    "diffTooLong": "Texto longo demais para comparar palavra a palavra. Abaixo, a proposta inteira.",
+    "diffSummary": "+{added} · −{removed} palavras · {from} → {to} caracteres",
+    "invalid": "Não dá para usar como está: {reason}",
+    "sourcesLabel": "Procedência"
   },
   "frameworks": {
     "agent-framework": {
@@ -711,5 +756,13 @@
     "resolveLabel": "Resposta",
     "running": "Executando…",
     "done": "Concluído"
+  },
+  "decisionLog": {
+    "title": "Decisões desta sessão",
+    "outcome_accepted": "usada",
+    "outcome_edited": "usada com correção",
+    "outcome_discarded": "descartada",
+    "outcome_approved": "aprovada",
+    "outcome_rejected": "recusada"
   }
 }

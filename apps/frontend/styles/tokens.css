@@ -237,10 +237,16 @@
   --fa-muted: var(--muted);
   --fa-faint: var(--faint);
   --fa-surface: var(--surface);
-  --fa-sunken: var(--sunken);
+  /* `--sunk`, não `--sunken`: o alias apontava para um token que nunca existiu, e
+     `var(--fa-sunken)` resolvia para nada — o fundo afundado do card de proposta ficava
+     transparente em vez de afundado. Achado ao usar o mesmo alias nas fichas de fonte. */
+  --fa-sunken: var(--sunk);
   --fa-line: var(--line);
   --fa-accent: var(--accent);
   --fa-wait: var(--wait);
   --fa-pass: var(--pass);
   --fa-block: var(--block);
+  /* Os washes seguem a mesma regra: o diff da proposta pinta fundo dentro do chat. */
+  --fa-pass-wash: var(--pass-wash);
+  --fa-block-wash: var(--block-wash);
 }

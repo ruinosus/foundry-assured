@@ -1116,6 +1116,49 @@ table.evals tr:last-child td {
 
 .approval-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); }
 
+/* QUEM DECIDE, dito onde se decide. O card mostrava a ação e os botões e nada sobre a autoridade
+   de quem estava olhando — então quem não tinha o papel clicava em Aprovar e recebia a recusa do
+   servidor como se fosse erro. Verde quando pode; âmbar (espera, não bloqueio) quando não: a ação
+   não está barrada, está esperando outra pessoa. */
+.approval-role {
+  margin: 0; font-size: var(--text-2xs);
+  display: flex; align-items: center; gap: var(--space-1);
+}
+.approval-role.ok { color: var(--fa-pass); }
+.approval-role.no { color: var(--fa-wait); }
+
+/* ── O log de decisões da sessão ───────────────────────────────────────────────────────────
+   Rodapé do dock, colapsado por padrão. Ele responde "o que eu já decidi agora?" — a pergunta
+   que antes só se respondia rolando o chat para trás. NÃO é a trilha de auditoria: ver
+   lib/decision-log.tsx. */
+.decision-log { border-top: 1px solid var(--line); background: var(--sunk); flex: none; }
+.decision-log-head {
+  cursor: pointer; padding: var(--space-2) var(--space-3);
+  font-size: var(--text-2xs); color: var(--muted);
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.decision-log-head:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.decision-log-count {
+  font-variant-numeric: tabular-nums; padding: 0 var(--space-1);
+  border-radius: var(--radius-pill); border: 1px solid var(--line-strong); background: var(--surface);
+}
+.decision-log-list {
+  list-style: none; margin: 0; padding: 0 var(--space-3) var(--space-2);
+  display: flex; flex-direction: column; gap: 2px;
+  max-height: 8rem; overflow-y: auto;
+}
+.decision-log-item {
+  display: flex; align-items: baseline; gap: var(--space-2);
+  font-size: var(--text-2xs); color: var(--muted); min-width: 0;
+}
+/* O ponto carrega o desfecho: passou ou parou. É a mesma leitura do resto do produto. */
+.decision-log-dot { width: 6px; height: 6px; border-radius: 50%; flex: none; align-self: center; }
+.decision-log-dot.pass { background: var(--pass); }
+.decision-log-dot.block { background: var(--block); }
+.decision-log-subject { color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.decision-log-outcome { flex: 1 1 auto; min-width: 0; }
+.decision-log-at { font-variant-numeric: tabular-nums; color: var(--faint); flex: none; }
+
 /* As três decisões têm peso visual diferente porque têm consequências diferentes: aprovar e
    corrigir EXECUTAM a ação; recusar apenas para. */
 .btn-approve { --btn-bg: var(--pass); --btn-ink: var(--surface); --btn-line: var(--pass); }
@@ -1397,6 +1440,83 @@ table.evals tr:last-child td { border-bottom: none; }
 .step.on { color: var(--text); font-weight: 600; }
 .step.on .step-num { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 .step.done .step-num { border-color: var(--pass); color: var(--pass); }
+
+/* ── O wizard em PÁGINA ÚNICA, com rail ────────────────────────────────────────────────────
+ *
+ * O stepper acima continua servindo ao wizard de skill. O de agente passou a mostrar as quatro
+ * seções ao mesmo tempo, e a razão é o que o stepper não conseguia fazer: ele era um INDICADOR
+ * (diz em qual etapa você está) e não uma NAVEGAÇÃO — quem chegava na revisão e queria corrigir o
+ * nome tinha que percorrer o caminho de volta, um "Voltar" por vez. Com as seções coexistindo, o
+ * rail diz o estado real de cada uma e leva direto a qualquer uma.
+ */
+.wizard { display: flex; flex-direction: column; gap: var(--space-3); }
+.wizard-head { align-items: flex-start; gap: var(--space-3); flex-wrap: wrap; }
+.wizard-blocked { margin: 0; }
+
+.wizard-body { display: grid; grid-template-columns: minmax(200px, 15rem) minmax(0, 1fr); gap: var(--space-4); align-items: start; }
+@media (max-width: 900px) { .wizard-body { grid-template-columns: 1fr; } }
+
+/* O rail acompanha a rolagem: seu trabalho é dizer o que falta, e ele não faz isso rolado para
+   fora da tela. Em telas estreitas ele volta a ser um bloco normal no topo (o grid acima já
+   empilha), e `position: sticky` sem `top` não gruda — por isso o media query desliga. */
+.wizard-rail {
+  position: sticky; top: var(--space-3);
+  display: flex; flex-direction: column; gap: var(--space-3);
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--sunk); padding: var(--space-3);
+}
+@media (max-width: 900px) { .wizard-rail { position: static; } }
+
+.wizard-rail-head { display: flex; flex-direction: column; gap: 2px; margin: 0; }
+.wizard-rail-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+
+.wizard-rail-item {
+  display: flex; gap: var(--space-2); align-items: flex-start;
+  padding: var(--space-2); border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  color: var(--ink); text-decoration: none;
+}
+.wizard-rail-item:hover { background: var(--surface); border-color: var(--line); text-decoration: none; }
+.wizard-rail-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+/* A marca carrega o estado, e a COR só aparece quando significa: verde quando a seção está
+   pronta, âmbar quando falta algo, neutra quando é opcional. */
+.wizard-rail-mark {
+  display: grid; place-items: center; flex: none;
+  width: 1.25rem; height: 1.25rem; border-radius: 999px;
+  border: 1px solid var(--line-strong); background: var(--surface);
+  font-size: var(--text-2xs); font-variant-numeric: tabular-nums; color: var(--muted);
+}
+.wizard-rail-item.done .wizard-rail-mark { border-color: var(--pass); color: var(--pass); }
+.wizard-rail-item.pending .wizard-rail-mark { border-color: var(--wait); color: var(--wait); background: var(--wait-wash); }
+
+.wizard-rail-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.wizard-rail-title { font-size: var(--text-sm); font-weight: 600; }
+.wizard-rail-note { font-size: var(--text-2xs); color: var(--muted); line-height: 1.4; }
+.wizard-rail-item.pending .wizard-rail-note { color: var(--wait); }
+
+/* A procedência fica no RAIL e não escondida na revisão: é ela que viaja para o metadata da
+   versão publicada, e quem publica precisa vê-la ANTES de publicar. */
+.wizard-prov { display: flex; flex-direction: column; gap: var(--space-1); border-top: 1px solid var(--line); padding-top: var(--space-2); }
+.wizard-prov-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-1); }
+.wizard-prov-list li { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+.wizard-prov-list span { overflow: hidden; text-overflow: ellipsis; }
+
+.wizard-form { display: flex; flex-direction: column; gap: var(--space-4); min-width: 0; }
+.wizard-section {
+  display: flex; flex-direction: column; gap: var(--space-2);
+  /* Âncora do rail: sem isto o cabeçalho da seção encosta no topo da janela ao pular. */
+  scroll-margin-top: var(--space-3);
+}
+.wizard-section-title {
+  margin: 0; font-size: var(--text-base); font-weight: 600;
+  display: flex; align-items: baseline; gap: var(--space-2); flex-wrap: wrap;
+  border-bottom: 1px solid var(--line); padding-bottom: var(--space-1);
+}
+/* O documento cru continua na tela — mas depois da revisão em prosa, não no lugar dela. */
+.wizard-doc summary { cursor: pointer; color: var(--muted); }
+.wizard-doc summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.wizard-doc .doc-preview { margin-top: var(--space-2); max-height: 40vh; overflow: auto; }
 
 .file-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-2); }
 .file-list li { display: flex; align-items: center; justify-content: space-between; gap: var(--space-2); }
@@ -1962,31 +2082,45 @@ table.evals tr:last-child td { border-bottom: none; }
    As ações ficam DISCRETAS e abaixo do campo: elas são atalho, não a forma principal de
    preencher. Um botão de IA com peso visual de ação primária empurra a pessoa a usá-lo antes de
    pensar — e o valor do wizard é a pessoa saber o que está criando. */
-/* As ações só aparecem no campo em que a pessoa está. Um formulário com um botão de IA fixo ao
-   lado de cada campo vira uma tela de botões de IA — e a pessoa passa a escolher entre eles em
-   vez de preencher. */
+/* AS AÇÕES SÃO SEMPRE VISÍVEIS — e discretas.
+ *
+ * Elas ficavam em `opacity: 0` até o hover, com um argumento correto: um formulário com um botão
+ * de IA de peso ao lado de cada campo vira uma tela de botões de IA, e a pessoa escolhe entre
+ * eles em vez de preencher. O problema é que a solução resolvia o peso ESCONDENDO a função —
+ * quem não passa o mouse nunca descobre que ela existe, e num touchscreen não há hover para
+ * passar. Uma ajuda que só quem já sabe encontra não ajuda ninguém novo.
+ *
+ * O peso é resolvido onde o problema realmente estava: no PESO. Em repouso as ações são texto
+ * auxiliar sobre a linha neutra; no campo em que a pessoa está (hover ou foco), ganham o accent.
+ * Visível o tempo todo, insistente em nenhum. */
 .ai-field { display: flex; flex-direction: column; gap: 2px; position: relative; }
 .ai-field-actions {
-  display: flex; gap: var(--space-1); justify-content: flex-end;
-  opacity: 0;
-  /* `pointer-events: none` junto com opacity 0: invisível e clicável seria uma armadilha para o
-     mouse. O teclado não depende disso — `:focus-within` revela ao tabular. */
-  pointer-events: none;
-  transition: opacity 140ms ease-out;
+  display: flex; gap: var(--space-1); justify-content: flex-end; align-items: center;
+  transition: none;
 }
-.ai-field:hover .ai-field-actions,
-.ai-field:focus-within .ai-field-actions { opacity: 1; pointer-events: auto; }
-@media (prefers-reduced-motion: reduce) { .ai-field-actions { transition: none; } }
 
 .ai-chip {
   display: inline-flex; align-items: center; gap: 4px;
   padding: 1px var(--space-2); border-radius: var(--radius-sm);
-  border: 1px solid var(--accent); background: var(--surface); color: var(--accent);
+  border: 1px solid var(--line); background: var(--surface); color: var(--muted);
   font: inherit; font-size: var(--text-2xs); cursor: pointer; line-height: 1.6;
+  transition: color 120ms ease-out, border-color 120ms ease-out;
 }
-.ai-chip:hover { background: var(--accent-wash); }
+/* No campo em foco as ações sobem para o accent: o realce segue a atenção, em vez de aparecer. */
+.ai-field:hover .ai-chip,
+.ai-field:focus-within .ai-chip { border-color: var(--accent); color: var(--accent); }
+.ai-chip:hover { background: var(--accent-wash); border-color: var(--accent); color: var(--accent); }
 .ai-chip:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
-.ai-chip-icon { border-color: var(--line); color: var(--muted); padding: 1px var(--space-1); }
+.ai-chip-icon { padding: 1px var(--space-1); }
+@media (prefers-reduced-motion: reduce) { .ai-chip { transition: none; } }
+
+/* "em foco no chat" — o dock diz em qual campo ele vai escrever, e o campo diz que é ele. Sem
+   isto, pedir "melhore" em dois campos seguidos produz duas propostas e nenhuma pista de qual
+   veio de onde. */
+.ai-field-focus {
+  font-size: var(--text-2xs); color: var(--accent); white-space: nowrap;
+  margin-right: auto; font-variant-numeric: tabular-nums;
+}
 
 /* O card da proposta, dentro do chat. Borda de espera (não de sucesso): nada foi aplicado ainda,
    e a cor precisa dizer isso antes do texto. */
@@ -2020,6 +2154,49 @@ table.evals tr:last-child td { border-bottom: none; }
 /* O motivo é secundário, mas precisa passar no contraste de corpo de texto — `--muted` sozinho
    sobre superfície já é limítrofe em bloco pequeno. */
 .proposal-reason-text { color: var(--fa-muted); }
+
+/* ── O diff da proposta ────────────────────────────────────────────────────────────────────
+   O SINAL PRIMÁRIO É A FORMA, NÃO A COR: sublinhado para o que entra, riscado para o que sai.
+   A cor reforça, e sozinha não decide — um diff que só se lê em verde/vermelho é ilegível para
+   quem não distingue os dois, e este card é onde alguém aprova texto que vai ser publicado.
+
+   O wash é de fundo e o texto continua em `--fa-ink`: pintar a letra de verde sobre o afundado
+   derrubaria o contraste justamente no trecho que a pessoa precisa ler com mais atenção. */
+.proposal-diff { display: flex; flex-direction: column; gap: var(--space-1); }
+.proposal-diff-body { line-height: 1.75; }
+.proposal-diff-empty { font-style: italic; }
+
+.diff-add {
+  background: var(--fa-pass-wash);
+  box-shadow: inset 0 -1px 0 0 var(--fa-pass);
+  border-radius: 2px;
+}
+.diff-del {
+  background: var(--fa-block-wash);
+  text-decoration: line-through;
+  text-decoration-color: var(--fa-block);
+  border-radius: 2px;
+}
+
+/* ── As fichas de procedência ──────────────────────────────────────────────────────────────
+   Fichas, e não uma lista separada por vírgula numa linha cinza: a procedência é o que sustenta
+   o campo, e com peso de rodapé ela era lida como rodapé. NÃO são links — o agente do formulário
+   não consulta documento (ver builder.py), então não há o que abrir. */
+.proposal-sources { display: flex; flex-direction: column; gap: var(--space-1); }
+.source-chips { display: flex; flex-wrap: wrap; gap: var(--space-1); list-style: none; margin: 0; padding: 0; }
+.source-chip {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  padding: 1px var(--space-2);
+  border-radius: 999px;
+  border: 1px solid var(--fa-line);
+  background: var(--fa-sunken);
+  color: var(--fa-muted);
+  max-width: 28ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* Cartões de escopo da auditoria: são botões, e precisam parecer clicáveis sem virar botão
    grande demais — a informação é o número, não a ação. */

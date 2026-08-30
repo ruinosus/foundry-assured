@@ -115,13 +115,14 @@ class EscalationExecutor(Executor):
 
             True / False                      the original boolean (what today's UI sends)
             {"type": "...", "args": {...}}    a decision, where `edit` carries the correction
+                                              and `reject` carries `message` — the reason
 
         Authorization is NOT decided here — `hitl.decide()` owns it, and it refuses `edit`
         from a caller without the Approver role just as it refuses `approve`. Editing runs the
         action, so it needs the same authority; treating it as "just a tweak" is exactly how
         the RULE #5 gate would quietly grow a hole.
         """
-        decision_type, args = _read_answer(answer)
+        decision_type, args, message = _read_answer(answer)
 
         approval = ApprovalRequest(
             action="create_ticket",
@@ -131,7 +132,7 @@ class EscalationExecutor(Executor):
         )
 
         try:
-            decision = decide(approval, decision_type, args=args)
+            decision = decide(approval, decision_type, args=args, message=message)
         except NotAuthorized as refusal:
             # The refusal text is deliberately about the ROLE, not the person: the approver's
             # identity belongs in the audit log, not in a chat message (I-10).
@@ -141,8 +142,13 @@ class EscalationExecutor(Executor):
             return
 
         if decision.type == "reject":
+            # O MOTIVO VOLTA PARA A CONVERSA. Uma recusa sem motivo obriga quem pediu a adivinhar
+            # o que corrigir — e obriga o modelo a tentar de novo igual. O texto é do aprovador,
+            # dito por ele; a TRILHA guarda só que houve motivo e o tamanho (ver `hitl.public`),
+            # porque conteúdo não entra na trilha.
+            motivo = f' Motivo: "{decision.message}"' if decision.message else ""
             await ctx.yield_output(
-                "No ticket opened. Tell me if you'd like to try something else."
+                f"No ticket opened.{motivo} Tell me if you'd like to try something else."
             )
             return
 
@@ -157,17 +163,28 @@ class EscalationExecutor(Executor):
         )
 
 
-def _read_answer(answer: object) -> tuple[str, dict]:
-    """Normalize the two accepted answer shapes into (decision_type, args).
+#: Teto do motivo da recusa. Ele atravessa para a conversa e o tamanho vai para a trilha; sem
+#: teto, um payload de megabytes entraria no output do workflow. Truncar é melhor que recusar a
+#: recusa — parar uma ação nunca pode falhar por causa do formulário.
+MAX_MOTIVO = 500
+
+
+def _read_answer(answer: object) -> tuple[str, dict, str]:
+    """Normalize the accepted answer shapes into (decision_type, args, message).
 
     Anything unrecognized becomes a REJECT rather than an approval — a malformed payload must
     never be the reason a ticket gets opened (fail-closed, RULE #5).
+
+    `message` só é lido para `reject`: um motivo anexado a um `approve` seria um campo que
+    ninguém lê depois, e num `edit` a correção JÁ é a mensagem.
     """
     if isinstance(answer, bool):
-        return ("approve" if answer else "reject", {})
+        return ("approve" if answer else "reject", {}, "")
     if isinstance(answer, dict):
         decision_type = str(answer.get("type", "")).lower()
         if decision_type in ("approve", "edit", "reject"):
             args = answer.get("args") or {}
-            return decision_type, dict(args) if isinstance(args, dict) else {}
-    return "reject", {}
+            bruto = answer.get("message")
+            message = str(bruto)[:MAX_MOTIVO].strip() if decision_type == "reject" and bruto else ""
+            return decision_type, dict(args) if isinstance(args, dict) else {}, message
+    return "reject", {}, ""

@@ -23,6 +23,14 @@
 import { useAgent } from "@copilotkit/react-core/v2";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { useMyRoles } from "@/lib/auth/roles";
+import { useDecisionLog } from "@/lib/decision-log";
+import { authConfigured } from "@/lib/auth/msal";
+
+/** Os papéis que podem fazer a ação RODAR. Espelha `ApprovalRequest.required_role` do backend
+ *  (hitl/public.py) — e é só isso: um espelho para a tela poder DIZER quem decide. A fronteira
+ *  continua sendo o servidor, que recusa `approve` e `edit` de quem não tem o papel. */
+const PAPEIS_QUE_APROVAM = ["Approver", "Admin"];
 
 // Two shapes of interrupt arrive over the SAME request_info/CUSTOM-event tap:
 //   - "ticket": the helpdesk workflow's create_ticket HITL -> { data: { summary } }
@@ -45,8 +53,14 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
   // domain's page the card subscribed to the wrong agent and never saw the interrupt — the
   // approval simply never appeared. Found by running it, not by reading it.
   const { agent } = useAgent({ agentId });
+  const meusPapeis = useMyRoles();
+  const { record } = useDecisionLog();
   const [pending, setPending] = useState<Pending | null>(null);
   const [busy, setBusy] = useState(false);
+  // O MOTIVO DA RECUSA. Vazio e fechado por padrão: o caminho de aprovar continua em um clique,
+  // e o formulário só aparece quando alguém escolhe recusar.
+  const [recusando, setRecusando] = useState(false);
+  const [motivo, setMotivo] = useState("");
   // The approver's corrected summary. Empty means "not editing" — the card only shows the
   // input once Edit is pressed, so the default path (approve / reject) stays two clicks.
   const [editing, setEditing] = useState(false);
@@ -93,12 +107,21 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
   // The payload is either the legacy boolean or a decision object. The backend accepts both
   // and treats anything unrecognized as a REJECT, so a malformed payload can never be the
   // reason a ticket opens (ADR-019).
-  const respond = async (payload: boolean | { type: string; args?: Record<string, string> }) => {
+  const respond = async (
+    payload: boolean | { type: string; args?: Record<string, string>; message?: string },
+  ) => {
     if (!agent || busy) return;
     setBusy(true);
     const id = pending.id;
+    // O DESFECHO entra no log da sessão antes do resume: se a retomada falhar, a pessoa precisa
+    // ver o que ela decidiu — e não decidir de novo achando que não clicou.
+    const alvo = pending.kind === "tool" ? pending.toolName : "create_ticket";
+    const negou = payload === false || (typeof payload === "object" && payload.type === "reject");
+    record(alvo, negou ? "rejected" : "approved");
     setPending(null);
     setEditing(false);
+    setRecusando(false);
+    setMotivo("");
     try {
       // Send the AG-UI array form (the CopilotKit runtime validates this); the
       // runtime route rewrites it to the backend's dict form before forwarding.
@@ -110,15 +133,23 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
     }
   };
 
+  // QUEM DECIDE, dito na hora de decidir. O card mostrava a ação e os botões, e nada sobre a
+  // autoridade de quem estava olhando — então uma pessoa sem o papel clicava em Aprovar e recebia
+  // a recusa do servidor como se fosse um erro. Sem auth configurada (dev local) o backend não
+  // checa papel nenhum, e a tela diz isso em vez de fingir um papel que não existe.
+  const podeAprovar = !authConfigured || (meusPapeis ?? []).some((p) => PAPEIS_QUE_APROVAM.includes(p));
+  const meuPapel = (meusPapeis ?? []).filter((p) => PAPEIS_QUE_APROVAM.includes(p)).join(" · ");
+
   return (
     <div className="approval">
       {pending.kind === "tool" ? (
         <>
           <div className="approval-head">
             <span className="approval-eyebrow">{t("waiting")}</span>
-            <h3 className="approval-title">
-              Executar <code>{pending.toolName}</code>?
-            </h3>
+            {/* `approval.run` já existia no dicionário — o título estava em inglês, escrito à
+                mão, ao lado da chave que o traduzia. Mesma coisa com Approve/Edit/Reject/Cancel
+                abaixo. */}
+            <h3 className="approval-title">{t("run", { tool: pending.toolName })}</h3>
           </div>
           <dl className="approval-body">
             <dt>{t("arguments")}</dt>
@@ -140,7 +171,7 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
           {editing ? (
             <div className="approval-edit">
               <label htmlFor="ticket-summary" className="approval-eyebrow">
-                Resumo
+                {t("summary")}
               </label>
               <textarea
                 id="ticket-summary"
@@ -170,8 +201,46 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
           )}
         </>
       )}
+      <p className={`approval-role ${podeAprovar ? "ok" : "no"}`}>
+        {podeAprovar
+          ? t("yourRole", { role: meuPapel || t("roleUnchecked") })
+          : t("cannotApprove", { roles: PAPEIS_QUE_APROVAM.join(" ou ") })}
+      </p>
+
+      {/* RECUSAR EXIGE MOTIVO. Uma recusa em branco obriga quem pediu a adivinhar o que corrigir
+          — e o modelo, a tentar de novo igual. O motivo volta na conversa; a trilha registra que
+          houve motivo e o tamanho, nunca o texto (ver hitl/public.py). */}
+      {recusando && (
+        <div className="approval-edit">
+          <label htmlFor="reject-reason" className="approval-eyebrow">
+            {t("rejectReasonLabel")}
+          </label>
+          <textarea
+            id="reject-reason"
+            value={motivo}
+            onChange={(e) => setMotivo(e.target.value)}
+            rows={2}
+            placeholder={t("rejectReasonPlaceholder")}
+          />
+        </div>
+      )}
+
       <div className="approval-actions">
-        {editing ? (
+        {recusando ? (
+          <>
+            <button
+              className="btn btn-reject"
+              disabled={busy || !motivo.trim()}
+              title={motivo.trim() ? undefined : t("rejectNeedsReason")}
+              onClick={() => respond({ type: "reject", message: motivo.trim() })}
+            >
+              {t("confirmReject")}
+            </button>
+            <button className="btn" disabled={busy} onClick={() => setRecusando(false)}>
+              {t("cancel")}
+            </button>
+          </>
+        ) : editing ? (
           <>
             {/* An edit that changes nothing is an approval — the backend refuses an empty
                 edit, so send the plain approval rather than a no-op correction. */}
@@ -189,30 +258,38 @@ export function TicketApproval({ agentId = "helpdesk" }: { agentId?: string } = 
               {t("saveApprove")}
             </button>
             <button className="btn" disabled={busy} onClick={() => setEditing(false)}>
-              Cancel
+              {t("cancel")}
             </button>
           </>
         ) : (
           <>
-            <button className="btn btn-approve" disabled={busy} onClick={() => respond(true)}>
-              Approve
+            <button
+              className="btn btn-approve"
+              disabled={busy || !podeAprovar}
+              title={podeAprovar ? undefined : t("cannotApprove", { roles: PAPEIS_QUE_APROVAM.join(" ou ") })}
+              onClick={() => respond(true)}
+            >
+              {t("approve")}
             </button>
             {pending.kind === "ticket" && (
               // Editing is only offered where the backend can apply it. The platform agent's
               // native tool approval is still accept/refuse (ADR-019).
               <button
                 className="btn"
-                disabled={busy}
+                disabled={busy || !podeAprovar}
+                title={podeAprovar ? undefined : t("cannotApprove", { roles: PAPEIS_QUE_APROVAM.join(" ou ") })}
                 onClick={() => {
                   setDraft(pending.summary);
                   setEditing(true);
                 }}
               >
-                Edit
+                {t("edit")}
               </button>
             )}
-            <button className="btn btn-reject" disabled={busy} onClick={() => respond(false)}>
-              Reject
+            {/* Recusar não depende de papel: parar uma ação é sempre permitido (hitl/public.py).
+                O que mudou é que ela abre o formulário do motivo em vez de responder direto. */}
+            <button className="btn btn-reject" disabled={busy} onClick={() => setRecusando(true)}>
+              {t("reject")}
             </button>
           </>
         )}

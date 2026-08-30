@@ -61,18 +61,39 @@ export function SkillWizard({
   const [origens, setOrigens] = useState<Record<string, string[]>>({});
   const [erro, setErro] = useState<string | null>(null);
 
+  /** A regra do NOME, aplicada a qualquer valor. Separada do bloqueio do passo porque ela também
+   *  precisa valer sobre o que o AGENTE propõe, e uma segunda cópia divergiria. */
+  const problemaNomeDe = useCallback(
+    (valor: string): string | null => {
+      const n = valor.trim();
+      if (!n) return t("erroNomeVazio");
+      if (!NOME_RECURSO.test(n)) return t("erroNomeFormato");
+      if (n.length > 63) return t("erroNomeLongo");
+      if (existentes.includes(n)) return t("erroNomeExiste", { name: n });
+      return null;
+    },
+    [existentes, t],
+  );
+
   /** O que impede de avançar, dito na hora — não no fim. */
   const problemaNome = useCallback((): string | null => {
-    const n = nome.trim();
-    if (!n) return t("erroNomeVazio");
-    if (!NOME_RECURSO.test(n)) return t("erroNomeFormato");
-    if (n.length > 63) return t("erroNomeLongo");
-    if (existentes.includes(n)) return t("erroNomeExiste", { name: n });
+    const doNome = problemaNomeDe(nome);
+    if (doNome) return doNome;
     // O serviço exige descrição (o SDK a declara opcional, mas o Foundry recusa sem ela). Pedir
     // no passo 1 evita descobrir na publicação, depois de escrever instruções e anexar arquivos.
     if (!descricao.trim()) return t("erroDescricaoVazia");
     return null;
-  }, [nome, descricao, existentes, t]);
+  }, [problemaNomeDe, nome, descricao, t]);
+
+  /** A regra de cada campo que o agente pode propor — a mesma do formulário, não uma cópia. */
+  const regraDoCampo = useCallback(
+    (campo: string, valor: string): string | null => {
+      if (campo === "name") return problemaNomeDe(valor);
+      if (campo === "description" && !valor.trim()) return t("erroDescricaoVazia");
+      return null;
+    },
+    [problemaNomeDe, t],
+  );
 
   const addArquivos = (grupo: Grupo, lista: FileList | null) => {
     if (!lista?.length) return;
@@ -190,7 +211,13 @@ export function SkillWizard({
     <section className="card stack-sm">
       {/* A tool vive enquanto o formulário está aberto — fechado, ela some, e o agente deixa de
           poder propor para um formulário que ninguém está vendo. */}
-      <FieldProposalTool onAccept={aplicar} resource="skill" fields={["name", "description", "instructions"]} />
+      <FieldProposalTool
+        onAccept={aplicar}
+        resource="skill"
+        fields={["name", "description", "instructions"]}
+        current={{ name: nome, description: descricao, instructions: instrucoes }}
+        validate={regraDoCampo}
+      />
       <header className="between">
         <h3 className="section-title">{t("title")}</h3>
         <button type="button" className="btn" disabled={busy} onClick={onCancelar}>

@@ -17,6 +17,7 @@
 import { CopilotChat } from "@copilotkit/react-core/v2";
 import { useTranslations } from "next-intl";
 import { useChatDock } from "@/lib/chat-dock";
+import { DecisionLog } from "@/components/shell/DecisionLog";
 import { DOMAINS } from "@/lib/domains";
 
 export function ChatDock() {
@@ -75,6 +76,10 @@ export function ChatDock() {
       <div className="chat-dock-body copilotkit-chat-host">
         <CopilotChat agentId={agentId} />
       </div>
+
+      {/* O que já foi decidido nesta sessão. Colapsado, e ausente quando não há nada: o chat é o
+          que a pessoa veio usar, e um painel vazio só rouba altura. */}
+      <DecisionLog />
     </aside>
   );
 }

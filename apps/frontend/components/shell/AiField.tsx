@@ -22,6 +22,7 @@
 import { useTranslations } from "next-intl";
 import { useState, type ReactNode } from "react";
 import { useSendToDock } from "@/lib/send-to-dock";
+import { useChatDock } from "@/lib/chat-dock";
 
 /** O agente que atende o wizard. Fixo aqui e não escolhido pela pessoa: só ele sabe preencher
  *  formulário E consegue chamar a tool de proposta (os domínios grounded não recebem tools do
@@ -47,26 +48,32 @@ export function AiField({
 }) {
   const t = useTranslations("aiField");
   const enviar = useSendToDock(AGENTE);
+  const { focusedField } = useChatDock();
   const [instrucao, setInstrucao] = useState<string | null>(null);
 
   const preenchido = value.trim().length > 0;
+  // O card de proposta aparece NO CHAT, longe do campo. Sem esta marca, pedir "melhore" em dois
+  // campos seguidos produz duas propostas e nenhuma pista de qual veio de onde.
+  const emFoco = focusedField === field;
 
   const pedir = (texto: string) => {
-    enviar(texto);
+    enviar(texto, field);
     setInstrucao(null);
   };
 
   return (
     <div className="ai-field">
-      {/* As ações ficam ESCONDIDAS até o hover ou o foco, como no um projeto anterior. O motivo não é
-          estético: um formulário com um botão de IA ao lado de cada campo vira uma tela de
-          botões de IA, e a pessoa passa a escolher entre eles em vez de preencher. Aparecendo no
-          campo em que ela já está, a ajuda chega no momento certo e some no resto do tempo.
-
-          `opacity` + `pointer-events`, nunca `display: none`: escondido por display sai da ordem
-          de tabulação, e a ajuda deixaria de existir para quem navega por teclado. Com
-          `:focus-within`, tabular até o botão o revela. */}
+      {/* As ações são SEMPRE VISÍVEIS, e discretas. Elas ficavam em `opacity: 0` até o hover, com
+          um argumento correto — um botão de IA de peso ao lado de cada campo vira uma tela de
+          botões de IA —, mas a solução escondia a função: quem não passa o mouse nunca descobre
+          que ela existe, e num touchscreen não há hover. O peso passou a ser resolvido no peso
+          (ver `.ai-chip` em globals.css): texto auxiliar em repouso, accent no campo em foco. */}
       <div className="ai-field-actions" aria-label={t("actionsFor", { field: label })}>
+        {emFoco && (
+          <span className="ai-field-focus" role="status">
+            {t("inFocus")}
+          </span>
+        )}
         {preenchido ? (
           <button
             type="button"
