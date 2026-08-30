@@ -106,6 +106,7 @@ function AgentForm({
   manifest: FormFlowManifest;
 }) {
   const t = useTranslations("agentWizard");
+  const tf = useTranslations("formflow");
   const tc = useTranslations("common");
   const router = useRouter();
 
@@ -224,11 +225,11 @@ function AgentForm({
       <div className="wizard-body">
         {/* O rail: navegação, não indicador. Mostra o estado REAL de cada seção e leva a qualquer
             uma — inclusive de volta, que era o caminho que o stepper de quatro passos não tinha. */}
-        <nav className="wizard-rail" aria-label={t("stepsLabel")}>
+        <nav className="wizard-rail" aria-label={tf("stepsLabel")}>
           <p className="wizard-rail-head">
-            <span className="t-2xs muted-line">{t("progresso")}</span>
+            <span className="t-2xs muted-line">{tf("progresso")}</span>
             <span className="t-sm strong">
-              {t("progressoContagem", {
+              {tf("progressoContagem", {
                 done: obrigatorias.filter((s) => !s.pendencia).length,
                 total: obrigatorias.length,
               })}
@@ -257,8 +258,8 @@ function AgentForm({
                   ·
                 </span>
                 <span className="wizard-rail-text">
-                  <span className="wizard-rail-title">{t("step4")}</span>
-                  <span className="wizard-rail-note">{t("resumoRevisao")}</span>
+                  <span className="wizard-rail-title">{tf("step4")}</span>
+                  <span className="wizard-rail-note">{tf("resumoRevisao")}</span>
                 </span>
               </a>
             </li>
@@ -267,7 +268,7 @@ function AgentForm({
           {/* A PROCEDÊNCIA no rail, não escondida na revisão: é ela que viaja para o metadata da
               versão publicada (OKF v0.2), e quem publica precisa vê-la ANTES de publicar. */}
           <div className="wizard-prov">
-            <p className="t-2xs muted-line">{t("procedencia")}</p>
+            <p className="t-2xs muted-line">{tf("procedencia")}</p>
             {Object.keys(estado.origens).length ? (
               <ul className="wizard-prov-list">
                 {Object.entries(estado.origens).map(([campo, origem]) => (
@@ -276,13 +277,13 @@ function AgentForm({
                     {/* Sem fonte é DITO, não omitido: "o agente escreveu do próprio conhecimento"
                         é uma afirmação diferente de "ninguém escreveu isto". */}
                     <span className="t-2xs muted-line">
-                      {origem.sources.length ? origem.sources.join(", ") : t("semFonte")}
+                      {origem.sources.length ? origem.sources.join(", ") : tf("semFonte")}
                     </span>
                   </li>
                 ))}
               </ul>
             ) : (
-              <p className="t-2xs muted-line">{t("procedenciaVazia")}</p>
+              <p className="t-2xs muted-line">{tf("procedenciaVazia")}</p>
             )}
           </div>
         </nav>
@@ -299,8 +300,8 @@ function AgentForm({
           />
 
           <section id="w-review" className="wizard-section">
-            <h4 className="wizard-section-title">{t("step4")}</h4>
-            <p className="muted t-sm">{t("reviewHelp")}</p>
+            <h4 className="wizard-section-title">{tf("step4")}</h4>
+            <p className="muted t-sm">{tf("reviewHelp")}</p>
 
             {/* A REVISÃO EM PROSA, derivada do bloco `review:` do manifesto. O documento cru
                 continua na tela, numa aba — mudou qual dos dois vem primeiro. */}
@@ -314,7 +315,7 @@ function AgentForm({
             </dl>
 
             <details className="wizard-doc">
-              <summary className="t-xs">{t("verDocumento")}</summary>
+              <summary className="t-xs">{tf("verDocumento")}</summary>
               <pre className="doc-preview">{JSON.stringify(documento(), null, 2)}</pre>
               {texto("toolbox") && (
                 <p className="muted t-xs">{t("toolboxResolved", { name: texto("toolbox") })}</p>

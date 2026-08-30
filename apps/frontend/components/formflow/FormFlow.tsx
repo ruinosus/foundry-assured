@@ -46,8 +46,21 @@ interface Catalogo {
   falhou: boolean;
 }
 
+/** Um arquivo anexado — nome E conteúdo.
+ *
+ *  O conteúdo vive FORA de `Valores` porque `Valores` é texto de formulário, e um arquivo de
+ *  200 kB dentro do mesmo objeto que alimenta o diff e a revisão faria o motor carregar bytes que
+ *  ele nunca usa. O que entra em `Valores[id]` é a lista de NOMES, que é o que a tela mostra e a
+ *  revisão conta; o conteúdo sai daqui, na hora de publicar. */
+export interface Anexo {
+  nome: string;
+  conteudo: string;
+}
+
 export interface FormFlowState {
   valores: Valores;
+  /** Por campo `files`: os anexos com conteúdo, na ordem em que entraram. */
+  anexos: Record<string, Anexo[]>;
   origens: Record<string, FieldOrigin>;
   /** O que impede de publicar, ou null. O MOTIVO, nunca um booleano: um botão desabilitado sem
    *  explicação é um beco. */
@@ -77,6 +90,7 @@ export function useFormFlow(
     manifest ? { ...valoresIniciais(manifest), ...(opts.inicial ?? {}) } : {},
   );
   const [origens, setOrigens] = useState<Record<string, FieldOrigin>>({});
+  const [anexos, setAnexos] = useState<Record<string, Anexo[]>>({});
   const [catalogos, setCatalogos] = useState<Record<string, Catalogo>>({});
 
   // Os catálogos que o manifesto declara. Um `fetch` por fonte distinta, em paralelo.
@@ -128,6 +142,30 @@ export function useFormFlow(
     setValores((atual) => ({ ...atual, [id]: v }));
   }, []);
 
+  /** Anexa arquivos a um campo `files`. Guarda o conteúdo e espelha os NOMES em `valores`, para
+   *  que a revisão, o rail e a validação continuem enxergando um campo preenchido sem precisar
+   *  saber que existe conteúdo em outro lugar. */
+  const anexar = useCallback((id: string, novos: Anexo[]) => {
+    setAnexos((atual) => {
+      const antes = atual[id] ?? [];
+      // Mesmo nome duas vezes é SUBSTITUIÇÃO, não duplicata: o serviço trata o caminho como
+      // chave, e mandar dois `rollback.sh` deixaria o segundo vencer sem ninguém decidir isso.
+      const mapa = new Map(antes.map((a) => [a.nome, a]));
+      for (const n of novos) mapa.set(n.nome, n);
+      const lista = [...mapa.values()];
+      setValores((v) => ({ ...v, [id]: lista.map((a) => a.nome) }));
+      return { ...atual, [id]: lista };
+    });
+  }, []);
+
+  const desanexar = useCallback((id: string, nome: string) => {
+    setAnexos((atual) => {
+      const lista = (atual[id] ?? []).filter((a) => a.nome !== nome);
+      setValores((v) => ({ ...v, [id]: lista.map((a) => a.nome) }));
+      return { ...atual, [id]: lista };
+    });
+  }, []);
+
   const aplicarProposta = useCallback(
     (p: FieldProposal) => {
       set(p.field, p.value);
@@ -143,7 +181,7 @@ export function useFormFlow(
 
   const estado: FormFlowState = useMemo(() => {
     if (!manifest) {
-      return { valores, origens, bloqueio: null, secoes: [], revisao: [] };
+      return { valores, origens, anexos, bloqueio: null, secoes: [], revisao: [] };
     }
     const secoes = manifest.sections.map((s) => {
       // OPCIONAL NUNCA TRAVA — a regra está no manifesto (`optional: true`), não aqui.
@@ -169,6 +207,7 @@ export function useFormFlow(
     return {
       valores,
       origens,
+      anexos,
       bloqueio: secoes.map((s) => s.pendencia).find((x) => x) ?? null,
       secoes,
       revisao: revisao(manifest, valores, {
@@ -177,9 +216,9 @@ export function useFormFlow(
         comCapacidades: (lista) => t("comCapacidades", { list: lista }),
       }),
     };
-  }, [manifest, valores, origens, opts.taken, traduzir, t]);
+  }, [manifest, valores, origens, anexos, opts.taken, traduzir, t]);
 
-  return { estado, set, setValores, regraDoCampo, aplicarProposta, catalogos };
+  return { estado, set, setValores, regraDoCampo, aplicarProposta, anexar, desanexar, catalogos };
 }
 
 /** O formulário renderizado a partir do manifesto. */
@@ -192,6 +231,9 @@ export function FormFlowFields({
   busy,
   origens,
   travadas,
+  onAnexar,
+  onDesanexar,
+  onRecusar,
 }: {
   manifest: FormFlowManifest;
   valores: Valores;
@@ -202,6 +244,9 @@ export function FormFlowFields({
   origens: Record<string, FieldOrigin>;
   /** Operações que ainda NÃO rodaram — uma seção com `lockedUntil` numa delas fica travada. */
   travadas?: string[];
+  onAnexar?: (id: string, arquivos: Anexo[]) => void;
+  onDesanexar?: (id: string, nome: string) => void;
+  onRecusar?: (mensagem: string) => void;
 }) {
   const t = useTranslations("formflow");
   return (
@@ -229,6 +274,12 @@ export function FormFlowFields({
                     catalogo={c.catalog ? catalogos[c.catalog.source] : undefined}
                     busy={busy}
                     escritoPeloAgente={!!origens[c.id]}
+                    onAnexar={onAnexar}
+                    onDesanexar={onDesanexar}
+                    onRecusar={onRecusar}
+                    // A regra do NOME do arquivo é a do campo (`safeFilename`), aplicada na hora
+                    // de anexar — não na publicação, quando já não dá para escolher outro.
+                    onValidarNome={(nome) => regraDoCampo(c.id, nome)}
                   />
                 ))}
               </div>
@@ -250,6 +301,10 @@ function CampoRender({
   catalogo,
   busy,
   escritoPeloAgente,
+  onAnexar,
+  onDesanexar,
+  onValidarNome,
+  onRecusar,
 }: {
   campo: Campo;
   valor: string | string[] | undefined;
@@ -258,6 +313,10 @@ function CampoRender({
   catalogo?: { itens: string[]; falhou: boolean };
   busy?: boolean;
   escritoPeloAgente: boolean;
+  onAnexar?: (id: string, arquivos: Anexo[]) => void;
+  onDesanexar?: (id: string, nome: string) => void;
+  onValidarNome?: (nome: string) => string | null;
+  onRecusar?: (mensagem: string) => void;
 }) {
   const t = useTranslations("formflow");
   const texto = typeof valor === "string" ? valor : "";
@@ -375,8 +434,36 @@ function CampoRender({
             disabled={busy}
             aria-label={rotulo}
             onChange={(e) => {
-              const nomes = Array.from(e.target.files ?? []).map((f) => f.name.split("/").pop() ?? f.name);
-              set(campo.id, [...lista, ...nomes.filter((n) => !lista.includes(n))]);
+              // O CONTEÚDO é lido aqui, não na publicação: o `File` do input vive enquanto o
+              // elemento vive, e um formulário que só guardasse o nome descobriria isso no
+              // momento de enviar — longe de onde dá para pedir o arquivo de novo.
+              //
+              // Nome de arquivo RECUSADO é dito, não descartado em silêncio: quem escolheu cinco
+              // e viu quatro precisa saber qual ficou de fora e por quê. A regra é a do campo
+              // (`safeFilename`), a mesma do backend.
+              const escolhidos = Array.from(e.target.files ?? []);
+              void Promise.all(
+                escolhidos.map(
+                  (f) =>
+                    new Promise<{ nome: string; conteudo: string } | string>((resolve) => {
+                      const nome = f.name.split("/").pop() ?? f.name;
+                      const ruim = onValidarNome?.(nome);
+                      if (ruim) return resolve(ruim);
+                      const reader = new FileReader();
+                      reader.onload = () => resolve({ nome, conteudo: String(reader.result ?? "") });
+                      reader.onerror = () => resolve(`${nome}: ?`);
+                      reader.readAsText(f);
+                    }),
+                ),
+              ).then((rs) => {
+                const bons = rs.filter((r): r is { nome: string; conteudo: string } => typeof r !== "string");
+                const ruins = rs.filter((r): r is string => typeof r === "string");
+                if (bons.length) onAnexar?.(campo.id, bons);
+                if (ruins.length) onRecusar?.(ruins.join(" "));
+              });
+              // O input é limpo para que escolher o MESMO arquivo de novo dispare `change` — sem
+              // isto, corrigir um arquivo e reanexá-lo não faz nada e parece que a tela travou.
+              e.target.value = "";
             }}
           />
           {lista.length > 0 && (
@@ -388,7 +475,7 @@ function CampoRender({
                     type="button"
                     className="acct-btn t-xs"
                     disabled={busy}
-                    onClick={() => set(campo.id, lista.filter((x) => x !== n))}
+                    onClick={() => onDesanexar?.(campo.id, n)}
                   >
                     {t("remover")}
                   </button>

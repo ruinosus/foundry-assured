@@ -1,250 +1,244 @@
 "use client";
 
-// Criar base de conhecimento: nomear, e então alimentar por arquivos OU por repositório.
+// Criar base de conhecimento — sobre o motor de FormFlow e o executor de plano.
 //
-// A ordem da interface reflete a ordem do recurso, e não é arbitrária: a base precisa existir
-// antes de receber conteúdo, porque o container onde os arquivos vão é derivado do nome dela.
-// Um formulário único que fizesse as duas coisas de uma vez esconderia que são duas operações —
-// e quando a segunda falhasse, a pessoa não saberia que a primeira funcionou.
+// ESTA É A TELA QUE MOTIVOU `lockedUntil`. A ordem não é preferência de interface: a base precisa
+// EXISTIR antes de receber conteúdo, porque o container onde os arquivos vão é derivado do nome
+// dela. O manifesto declara `lockedUntil: create_base` na seção de alimentação, e a seção fica
+// travada até aquela operação rodar — antes disto, a regra existia como um `disabled={!created}`
+// repetido em seis controles, e bastava esquecer um para o produto oferecer um caminho que falha.
 //
-// O passo 2 tem dois caminhos, e o segundo é a única parte deste produto que não é Microsoft:
-// não existe knowledge source de GitHub em primeira parte, então lemos os arquivos e escrevemos
-// no blob. Do blob em diante o pipeline oficial retoma.
+// E ELA DECLARA `provenance: null`. O contrato de criação da base não tem `metadata`, então a
+// procedência do que o agente escreveu NÃO viaja com o recurso. O manifesto diz isso, e a tela
+// mostra — em vez de fingir que viaja, que é o que acontecia quando a ausência era silêncio.
+//
+// O caminho de repositório é o único não-Microsoft do produto: ele lê os arquivos e escreve no
+// blob; do blob em diante o pipeline oficial retoma.
 
 import { useTranslations } from "next-intl";
 import { useState } from "react";
-import { AiField } from "@/components/shell/AiField";
-import { FieldProposalTool, type FieldProposal } from "@/components/shell/FieldProposal";
 import { authedFetch } from "@/lib/auth/api";
-
-type Result = { kind: "ok" | "bad"; text: string } | null;
+import { FormFlowFields, FormFlowProposalTool, useFormFlow } from "@/components/formflow/FormFlow";
+import { PlanoRail } from "@/components/skills/SkillWizard";
+import { useManifest } from "@/lib/formflow/load";
+import { executarPlano, pendentes, resolverPath, type ResultadoPlano } from "@/lib/formflow/plan";
+import type { FormFlowManifest, Operacao } from "@/lib/formflow/types";
 
 export function CreateKnowledge({ onCreated }: { onCreated: () => void }) {
   const t = useTranslations("knowledgeCreate");
-  const tc = useTranslations("common");
+  const tf = useTranslations("formflow");
+  const m = useManifest("knowledge");
 
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [created, setCreated] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<Result>(null);
-
-  const [files, setFiles] = useState<FileList | null>(null);
-  const [repo, setRepo] = useState("");
-  const [token, setToken] = useState("");
-  const [ref, setRef] = useState("");
-  const [subdir, setSubdir] = useState("");
-
-  const call = async (init: RequestInit, path = "") => {
-    setBusy(true);
-    setResult(null);
-    try {
-      const target = created ?? name;
-      const url = path
-        ? `/api/foundry/knowledge/${encodeURIComponent(target)}`
-        : "/api/foundry/knowledge";
-      const r = await authedFetch(url, init);
-      const body = await r.json().catch(() => ({}));
-      if (!r.ok) {
-        setResult({ kind: "bad", text: body?.error ?? `HTTP ${r.status}` });
-        return null;
-      }
-      return body;
-    } catch {
-      setResult({ kind: "bad", text: tc("backendUnreachable") });
-      return null;
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const create = async () => {
-    const body = await call({
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, description }),
-    });
-    if (!body) return;
-    setCreated(body.name);
-    setResult({ kind: "ok", text: t("created", { name: body.name }) });
-    onCreated();
-  };
-
-  const sendFiles = async () => {
-    if (!files?.length) return;
-    const form = new FormData();
-    for (const f of Array.from(files)) form.append("files", f);
-    // Sem Content-Type manual: o browser precisa gerar o boundary do multipart.
-    const body = await call({ method: "POST", body: form }, "files");
-    if (!body) return;
-    setResult({ kind: "ok", text: t("uploaded", { count: body.files?.length ?? 0 }) });
-    onCreated();
-  };
-
-  const importRepo = async () => {
-    const body = await call(
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ repo, token, ref, subdir }),
-      },
-      "github",
-    );
-    if (!body) return;
-    // O token sai do estado assim que a chamada termina: não há razão para ele continuar em
-    // memória do browser depois de usado.
-    setToken("");
-    // O que ficou de fora entra na mensagem. Uma base que importou 40 de 400 arquivos e não diz
-    // isso responde com confiança sobre um corpus que ela não tem.
-    const parts = [t("imported", { count: body.ingested, repo: body.repo })];
-    if (body.skipped_count > 0) parts.push(t("skipped", { count: body.skipped_count }));
-    if (body.tree_truncated_by_github) parts.push(t("treeTruncated"));
-    setResult({ kind: "ok", text: parts.join(" ") });
-    onCreated();
-  };
-
-  const aplicar = (p: FieldProposal) => {
-    if (p.field === "description") setDescription(p.value);
-    else if (p.field === "name") setName(p.value);
-    // A base de conhecimento não tem `metadata` no contrato de criação (o backend monta o
-    // recurso a partir de nome e descrição), então a procedência ainda não viaja daqui. Dizer
-    // isso é melhor que fingir que viaja: ver a nota no commit.
-  };
+  if (m.estado === "ok") return <KnowledgeForm onCreated={onCreated} manifest={m.manifest} />;
 
   return (
     <section className="card stack-sm">
-      <FieldProposalTool
-        onAccept={aplicar}
-        resource="knowledge"
-        fields={["name", "description"]}
-        current={{ name, description }}
-      />
       <h3 className="section-title">{t("title")}</h3>
-
-      {result && (
-        <div className={`notice ${result.kind === "bad" ? "notice-block" : ""}`}>
-          <p className="notice-body">{result.text}</p>
+      {m.estado === "carregando" ? (
+        <p className="muted t-sm">{tf("carregando")}</p>
+      ) : (
+        <div className="notice notice-block">
+          <p className="notice-body">{tf(`erro_${m.motivo}`, { detail: m.detalhe })}</p>
         </div>
       )}
+    </section>
+  );
+}
 
-      {/* Passo 1 — a base precisa existir antes de receber conteúdo. */}
-      <div className="stack-sm">
-        <p className="t-sm strong">{t("step1")}</p>
-        <div className="row-tight">
-          <input
-            className="acct-btn grow"
-            placeholder={t("namePlaceholder")}
-            value={name}
-            disabled={busy || created !== null}
-            onChange={(e) => setName(e.target.value)}
-          />
-          <button
-            type="button"
-            className="btn btn-solid"
-            disabled={busy || !name.trim() || created !== null}
-            onClick={() => void create()}
-          >
-            {t("createBtn")}
-          </button>
-        </div>
-        {/* A descrição da base é o que o AGENTE lê para decidir se consulta esta base — não é
-            rótulo de vitrine. Escrevê-la bem muda a recuperação, e é por isso que ela ganha as
-            ações de IA junto com as demais. */}
-        <AiField
-          field="description"
-          label={t("descriptionPlaceholder")}
-          value={description}
-          resource={t("resourceKnowledge")}
+function KnowledgeForm({
+  onCreated,
+  manifest,
+}: {
+  onCreated: () => void;
+  manifest: FormFlowManifest;
+}) {
+  const t = useTranslations("knowledgeCreate");
+  const tf = useTranslations("formflow");
+  const tc = useTranslations("common");
+
+  const { estado, set, regraDoCampo, aplicarProposta, anexar, desanexar, catalogos } =
+    useFormFlow(manifest);
+
+  const [busy, setBusy] = useState(false);
+  const [resultado, setResultado] = useState<{ tipo: "ok" | "bad"; texto: string } | null>(null);
+  const [plano, setPlano] = useState<ResultadoPlano | null>(null);
+
+  const texto = (id: string) => String(estado.valores[id] ?? "").trim();
+  const feitas = plano?.feitas ?? [];
+  /** O que a seção travada consulta: enquanto `create_base` estiver aqui, `feed` fica fechada. */
+  const travadas = pendentes(manifest.plan ?? [], feitas);
+
+  /** Qual caminho de alimentação a pessoa escolheu. O manifesto DECLARA os dois (`upload_files` e
+   *  `import_repo`); declarar não é executar — ela usa um. */
+  const caminho = (): string[] => {
+    const ops = ["create_base"];
+    if ((estado.anexos.files ?? []).length) ops.push("upload_files");
+    else if (texto("repo")) ops.push("import_repo");
+    return ops;
+  };
+
+  const executar = async (op: Operacao): Promise<string | null> => {
+    const alvo = resolverPath(op, estado.valores) || "/api/foundry/knowledge";
+    try {
+      if (op.id === "create_base") {
+        const r = await authedFetch("/api/foundry/knowledge", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: texto("name"), description: texto("description") }),
+        });
+        const b = await r.json().catch(() => ({}));
+        if (!r.ok) return b?.error ?? `HTTP ${r.status}`;
+        setResultado({ tipo: "ok", texto: t("created", { name: b.name ?? texto("name") }) });
+        return null;
+      }
+      if (op.id === "upload_files") {
+        const form = new FormData();
+        for (const a of estado.anexos.files ?? []) {
+          form.append("files", new Blob([a.conteudo]), a.nome);
+        }
+        const r = await authedFetch(alvo, { method: "POST", body: form });
+        const b = await r.json().catch(() => ({}));
+        return r.ok ? null : (b?.error ?? `HTTP ${r.status}`);
+      }
+      // import_repo
+      const r = await authedFetch(alvo, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          repo: texto("repo"),
+          token: texto("token"),
+          ref: texto("ref"),
+          subdir: texto("subdir"),
+        }),
+      });
+      const b = await r.json().catch(() => ({}));
+      // O TOKEN SAI DO ESTADO assim que a chamada termina — `retain: false` no manifesto. Não há
+      // razão para ele continuar em memória depois de usado, e há razão para não continuar.
+      set("token", "");
+      if (!r.ok) return b?.error ?? `HTTP ${r.status}`;
+      const partes = [t("imported", { count: b.ingested, repo: b.repo })];
+      if (b.skipped_count > 0) partes.push(t("skipped", { count: b.skipped_count }));
+      if (b.tree_truncated_by_github) partes.push(t("treeTruncated"));
+      setResultado({ tipo: "ok", texto: partes.join(" ") });
+      return null;
+    } catch {
+      return tc("backendUnreachable");
+    }
+  };
+
+  const publicar = async () => {
+    setBusy(true);
+    setResultado(null);
+    const r = await executarPlano(manifest.plan ?? [], estado.valores, executar, {
+      selecionadas: caminho(),
+      feitas,
+    });
+    setPlano(r);
+    setBusy(false);
+
+    const falhou = r.operacoes.find((o) => o.status === "falhou");
+    if (!falhou) return onCreated();
+    setResultado({
+      tipo: "bad",
+      texto: r.parcial
+        ? t("erroParcial", { feitas: r.feitas.join(", "), motivo: falhou.erro ?? "" })
+        : (falhou.erro ?? ""),
+    });
+    if (r.parcial) onCreated();
+  };
+
+  const bloqueio = estado.bloqueio;
+
+  return (
+    <section className="card wizard">
+      <FormFlowProposalTool
+        manifest={manifest}
+        valores={estado.valores}
+        regraDoCampo={regraDoCampo}
+        onAccept={aplicarProposta}
+      />
+
+      <header className="between wizard-head">
+        <h3 className="section-title">{t("title")}</h3>
+        <button
+          type="button"
+          className="btn btn-solid"
+          disabled={busy || bloqueio !== null}
+          title={bloqueio ?? undefined}
+          onClick={() => void publicar()}
         >
-          <input
-            className="acct-btn"
-            placeholder={t("descriptionPlaceholder")}
-            value={description}
-            disabled={busy || created !== null}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-        </AiField>
-        <p className="muted t-xs">{t("nameHelp")}</p>
-      </div>
+          {busy ? tc("loading") : feitas.length ? tf("plano_continuar") : t("createBtn")}
+        </button>
+      </header>
 
-      {/* Passo 2 — só depois que a base existe, porque o container vem do nome dela. */}
-      <div className="stack-sm">
-        <p className="t-sm strong">{t("step2")}</p>
-        {!created && <p className="muted t-xs">{t("step2Locked")}</p>}
+      {resultado && (
+        <div className={`notice ${resultado.tipo === "bad" ? "notice-block" : ""}`}>
+          <p className="notice-body">{resultado.texto}</p>
+        </div>
+      )}
+      {bloqueio && !busy && <p className="t-xs muted-line wizard-blocked">{bloqueio}</p>}
 
-        <div className="grid g2">
-          <div className="stack-sm">
-            <p className="t-xs strong">{t("byFiles")}</p>
-            <input
-              type="file"
-              multiple
-              className="acct-btn"
-              disabled={busy || !created}
-              onChange={(e) => setFiles(e.target.files)}
-            />
-            <p className="muted t-xs">{t("filesHelp")}</p>
-            <button
-              type="button"
-              className="btn"
-              disabled={busy || !created || !files?.length}
-              onClick={() => void sendFiles()}
-            >
-              {t("uploadBtn")}
-            </button>
-          </div>
+      <div className="wizard-body">
+        <nav className="wizard-rail" aria-label={tf("stepsLabel")}>
+          <ol className="wizard-rail-list">
+            {estado.secoes.map((sec, i) => (
+              <li key={sec.id}>
+                <a
+                  href={`#w-${sec.id}`}
+                  className={`wizard-rail-item ${sec.pendencia ? "pending" : sec.opcional ? "optional" : "done"}`}
+                >
+                  <span className="wizard-rail-mark" aria-hidden>
+                    {sec.pendencia ? String(i + 1) : sec.opcional ? "·" : "✓"}
+                  </span>
+                  <span className="wizard-rail-text">
+                    <span className="wizard-rail-title">{sec.titulo}</span>
+                    <span className="wizard-rail-note">{sec.pendencia ?? sec.resumo}</span>
+                  </span>
+                </a>
+              </li>
+            ))}
+          </ol>
 
-          <div className="stack-sm">
-            <p className="t-xs strong">{t("byRepo")}</p>
-            <input
-              className="acct-btn"
-              placeholder="organizacao/repositorio"
-              value={repo}
-              disabled={busy || !created}
-              onChange={(e) => setRepo(e.target.value)}
-            />
-            {/* type=password + autoComplete off: token de terceiro não vai para o gerenciador de
-                senhas do browser nem fica visível na tela. */}
-            <input
-              className="acct-btn"
-              type="password"
-              autoComplete="off"
-              placeholder={t("tokenPlaceholder")}
-              value={token}
-              disabled={busy || !created}
-              onChange={(e) => setToken(e.target.value)}
-            />
-            <div className="row-tight">
-              <input
-                className="acct-btn grow"
-                placeholder={t("refPlaceholder")}
-                value={ref}
-                disabled={busy || !created}
-                onChange={(e) => setRef(e.target.value)}
-              />
-              <input
-                className="acct-btn grow"
-                placeholder={t("subdirPlaceholder")}
-                value={subdir}
-                disabled={busy || !created}
-                onChange={(e) => setSubdir(e.target.value)}
-              />
+          {/* A PROCEDÊNCIA NÃO VIAJA, e o manifesto diz por quê. Antes, a ausência era silêncio —
+              e silêncio, num campo de auditoria, é indistinguível de "viajou". */}
+          {manifest.provenance === null && manifest.provenanceNote && (
+            <div className="wizard-prov">
+              <p className="t-2xs muted-line">{tf("procedencia")}</p>
+              <p className="t-2xs muted-line">{manifest.provenanceNote}</p>
             </div>
-            <p className="muted t-xs">{t("tokenHelp")}</p>
-            <button
-              type="button"
-              className="btn"
-              disabled={busy || !created || !repo.trim() || !token}
-              onClick={() => void importRepo()}
-            >
-              {t("importBtn")}
-            </button>
-          </div>
+          )}
+
+          <PlanoRail manifest={manifest} plano={plano} />
+        </nav>
+
+        <div className="wizard-form">
+          <FormFlowFields
+            manifest={manifest}
+            valores={estado.valores}
+            set={set}
+            regraDoCampo={regraDoCampo}
+            catalogos={catalogos}
+            busy={busy}
+            origens={estado.origens}
+            travadas={travadas}
+            onAnexar={anexar}
+            onDesanexar={desanexar}
+            onRecusar={(msg) => setResultado({ tipo: "bad", texto: msg })}
+          />
+
+          <section id="w-review" className="wizard-section">
+            <h4 className="wizard-section-title">{tf("revisao")}</h4>
+            <dl className="review">
+              {estado.revisao.map((l) => (
+                <div key={l.label}>
+                  <dt>{l.label}</dt>
+                  <dd>{l.texto}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
         </div>
       </div>
-
-      {created && (
-        <p className="muted t-xs">{t("indexingNote")}</p>
-      )}
     </section>
   );
 }

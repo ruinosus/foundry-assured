@@ -76,19 +76,9 @@
   },
   "agentWizard": {
     "title": "Novo agente",
-    "stepsLabel": "Etapas da criação",
-    "step4": "Revisão",
     "toolboxResolved": "O endereço do toolbox {name} será montado pelo servidor, apontando para a versão em uso.",
-    "reviewHelp": "Este é o documento que será enviado. Publicar cria o agente e a primeira versão.",
     "publish": "Criar e publicar versão",
-    "publishing": "Publicando…",
-    "progresso": "Progresso",
-    "progressoContagem": "{done} de {total} prontas",
-    "procedencia": "Procedência",
-    "procedenciaVazia": "Nenhum campo escrito pelo agente ainda.",
-    "resumoRevisao": "nada é enviado antes daqui",
-    "verDocumento": "Ver o documento que será enviado",
-    "semFonte": "sem fonte — do conhecimento do modelo"
+    "publishing": "Publicando…"
   },
   "agents": {
     "title": "Agentes",
@@ -453,7 +443,8 @@
     "skipped": "{count} ficaram de fora (extensão ou tamanho).",
     "treeTruncated": "Atenção: o GitHub truncou a listagem — o repositório é grande e pode haver arquivos não vistos.",
     "indexingNote": "A indexação roda no serviço e leva alguns minutos. Atualize a lista para ver o status de sincronização.",
-    "resourceKnowledge": "base de conhecimento"
+    "resourceKnowledge": "base de conhecimento",
+    "erroParcial": "A base foi criada ({feitas}) e a alimentação falhou: {motivo}. NÃO crie de novo — use Continuar."
   },
   "language": {
     "label": "Idioma",
@@ -581,7 +572,9 @@
     "publishing": "Publicando…",
     "erroDescricaoVazia": "Escreva uma descrição — o serviço exige uma frase dizendo para que a skill serve.",
     "resourceSkill": "skill",
-    "faltaInstrucoes": "Escreva o que a skill deve fazer para continuar."
+    "faltaInstrucoes": "Escreva o que a skill deve fazer para continuar.",
+    "retomar": "Retomar de onde parou",
+    "erroParcial": "Parte foi publicada ({feitas}) e o resto falhou: {motivo}. NÃO crie de novo — use Retomar, que continua de onde parou."
   },
   "skills": {
     "title": "Skills",
@@ -730,6 +723,24 @@
     "carregando": "Carregando o formulário…",
     "erro_ausente": "Não existe um formulário publicado com este nome. ({detail})",
     "erro_invalido": "O formulário existe e o documento está inválido — corrija o manifesto. ({detail})",
-    "erro_indisponivel": "Não consegui carregar o formulário. ({detail})"
+    "erro_indisponivel": "Não consegui carregar o formulário. ({detail})",
+    "revisao": "Revisão",
+    "verDocumento": "Ver o documento que será enviado",
+    "plano": "Plano de publicação",
+    "plan_pendente": "aguarda",
+    "plan_rodando": "rodando",
+    "plan_feita": "feita",
+    "plan_falhou": "falhou",
+    "plan_pulada": "não rodou — a anterior falhou",
+    "progresso": "Progresso",
+    "progressoContagem": "{done} de {total} prontas",
+    "procedencia": "Procedência",
+    "procedenciaVazia": "Nenhum campo escrito pelo agente ainda.",
+    "semFonte": "sem fonte — do conhecimento do modelo",
+    "resumoRevisao": "nada é enviado antes daqui",
+    "reviewHelp": "Este é o documento que será enviado. Publicar cria o agente e a primeira versão.",
+    "stepsLabel": "Etapas da criação",
+    "step4": "Revisão",
+    "plano_continuar": "Continuar"
   }
 }

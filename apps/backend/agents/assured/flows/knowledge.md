@@ -61,6 +61,16 @@ sections:
         type: text
         placeholder: organizacao/repositorio
         help: Único caminho não-Microsoft deste produto.
+      - id: ref
+        label: Branch ou tag
+        type: text
+        placeholder: main
+        help: Vazio usa o branch padrão do repositório.
+      - id: subdir
+        label: Subdiretório
+        type: text
+        placeholder: docs/
+        help: Vazio importa o repositório inteiro.
       - id: token
         label: Token
         type: secret

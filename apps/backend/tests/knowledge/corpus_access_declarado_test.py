@@ -98,32 +98,20 @@ def main() -> int:
     _, acesso_real = preparar_corpus(reais)
     checar("nenhum runbook declara acesso hoje", acesso_real == {}, f"declararam: {sorted(acesso_real)}")
 
-    print("\n7. o corpus é um bundle OKF conformante (§11) — e o frontmatter continua fora do índice")
-    # `type` é o ÚNICO campo que a spec do OKF exige de todo documento não-reservado. Sem ele,
-    # `knowledge/corpus/` é markdown solto e não um bundle — e este produto declara OKF em
-    # `openwiki/index.md`, então os dois lados precisam falar a mesma coisa.
+    print("\n7. o frontmatter do corpus real não vaza para o índice")
+    # A CONFORMIDADE §11 do corpus (todo documento com `type`) é checada por
+    # `tests.knowledge.okf_conformance_test`, com o verificador da própria spec — ela é regra do
+    # FORMATO, e um segundo checador nosso divergiria dela no primeiro caso de borda.
     #
-    # O segundo check é o que impede a conformidade de custar caro: o frontmatter que acabou de
-    # ser acrescentado NÃO pode aparecer no corpo indexado. Se aparecer, o corpus de retrieval
-    # ganha YAML e o modelo passa a citar `type:` como se fosse conteúdo — a mesma falha que o
-    # passo 1 guarda para os arquivos sintéticos, aqui sobre os arquivos de verdade.
-    from app.modules.knowledge.internal import frontmatter as fm
-
-    sem_tipo: list[str] = []
-    for arq in reais:
-        try:
-            meta, _ = fm.parse(arq.read_text(encoding="utf-8"))
-        except fm.FrontmatterInvalido:
-            sem_tipo.append(f"{arq.name} (frontmatter inválido)")
-            continue
-        if not str((meta or {}).get("type", "")).strip():
-            sem_tipo.append(arq.name)
-    checar("todo documento declara `type` (o único campo obrigatório do OKF)", not sem_tipo,
-           f"sem type: {sem_tipo}")
-
+    # O que sobra aqui é o que é NOSSO: o frontmatter que existe para ser conformante NÃO pode
+    # aparecer no corpo indexado. Se aparecer, o corpus de retrieval ganha YAML e o modelo passa
+    # a citar `type:` como se fosse conteúdo — a mesma falha que o passo 1 guarda para os
+    # arquivos sintéticos, aqui sobre os arquivos de verdade.
     blobs_reais, _ = preparar_corpus(reais)
     vazou = [n for n, d in blobs_reais if d.decode("utf-8").lstrip().startswith("---")]
     checar("nenhum frontmatter vaza para o corpo indexado", not vazou, f"vazaram: {vazou}")
+    tem_yaml = [n for n, d in blobs_reais if "type: runbook" in d.decode("utf-8")[:200]]
+    checar("nem no começo do corpo", not tem_yaml, f"com YAML: {tem_yaml}")
 
     print(f"\n{len(_ok)} ok, {len(_falhas)} falha(s)")
     if _falhas:

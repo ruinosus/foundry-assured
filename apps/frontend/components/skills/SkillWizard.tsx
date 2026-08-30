@@ -1,385 +1,297 @@
 "use client";
 
-// Wizard de skill — quatro passos, no molde do um projeto anterior.
+// Wizard de skill — sobre o motor de FormFlow e o executor de plano.
 //
-// O que ele substitui: um campo de texto pedindo JSON cru. Quem sabe escrever aquele JSON não
-// precisa deste produto; quem precisa dele não sabe escrevê-lo. A sequência ensina enquanto
-// preenche, e o documento sai pronto no fim.
+// O QUE SAIU DAQUI. Campos, rótulos, regras, revisão e a ORDEM das operações eram código neste
+// arquivo. Viraram `apps/backend/agents/assured/flows/skill.md`. O que ficou é o que o manifesto
+// declara mas não sabe executar: o CORPO de cada requisição.
 //
-// O PASSO 3 É O PONTO. Skill de verdade não é uma string de instruções: tem scripts que ela
-// executa e referências que ela consulta. `create_from_files` do Foundry aceita isso (zip ou
-// vários arquivos), e o agrupamento por função — em vez de uma pilha plana — é o que torna a
-// skill legível para quem for mantê-la depois.
+// A SKILL É O CASO QUE MOTIVOU O EXECUTOR. Publicar são DUAS chamadas — criar a skill com as
+// instruções inline, depois subir o bundle de arquivos — e a ordem não é preferência: os arquivos
+// são uma versão da skill, então a skill precisa existir. Quando a segunda falha, a skill EXISTE.
+// Uma tela que dissesse só "erro" faria a pessoa tentar de novo, e a segunda tentativa falharia na
+// PRIMEIRA operação, agora por nome duplicado, com uma mensagem sem relação com o problema.
+//
+// `requires: [create_skill]` e `onFailure: partialSucceeded` estão no manifesto; quem os honra é
+// `lib/formflow/plan.ts`, e o resultado parcial é dito na tela — com o plano guardado, para que a
+// retentativa comece de onde parou.
 //
 // Duas validações vivem aqui E no backend, de propósito: nome de recurso e nome de arquivo. O
 // backend é a fronteira real (a interface não é fronteira de segurança); a tela existe para que
 // erro de digitação tenha resposta imediata, em vez de uma viagem até o Azure.
 
 import { useTranslations } from "next-intl";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
-import { AiField, AGENTE_DO_FORMULARIO } from "@/components/shell/AiField";
-import { serializeProvenance, type FieldOrigin } from "@/lib/okf";
-import { FieldProposalTool, type FieldProposal } from "@/components/shell/FieldProposal";
+import { FormFlowFields, FormFlowProposalTool, useFormFlow } from "@/components/formflow/FormFlow";
+import { useManifest } from "@/lib/formflow/load";
+import { executarPlano, resolverPath, type ResultadoPlano } from "@/lib/formflow/plan";
+import { serializeProvenance } from "@/lib/okf";
+import type { FormFlowManifest, Operacao } from "@/lib/formflow/types";
 
-/** Os arquivos são agrupados por função — o serviço preserva o caminho, então o grupo vira pasta. */
-const GRUPOS = ["scripts", "references"] as const;
-type Grupo = (typeof GRUPOS)[number];
-
-type Arquivo = { grupo: Grupo; nome: string; conteudo: string };
-
-// Mesmas regras do backend (`names.py` e `_safe_blob_name`), aplicadas antes da viagem.
-const NOME_RECURSO = /^[a-z0-9]+(-[a-z0-9]+)*$/;
-const NOME_ARQUIVO = /^[a-zA-Z0-9._-]+$/;
-
-/** Recusa travessia de diretório: o serviço trata `/` como hierarquia. */
-function nomeArquivoValido(nome: string): boolean {
-  if (!nome || nome.includes("/") || nome.includes("..") || nome === "." || nome.startsWith("."))
-    return false;
-  return NOME_ARQUIVO.test(nome);
-}
-
-export function SkillWizard({
-  existentes,
-  onConcluido,
-  onCancelar,
-}: {
-  /** Nomes já usados — a checagem de duplicidade acontece ANTES de sair do passo 1. */
+export function SkillWizard(props: {
+  /** Nomes já usados — a checagem de duplicidade acontece no campo, não na publicação. */
   existentes: string[];
   onConcluido: () => void;
   onCancelar: () => void;
 }) {
   const t = useTranslations("skillWizard");
+  const tf = useTranslations("formflow");
+  const tc = useTranslations("common");
+  const m = useManifest("skill");
+
+  if (m.estado === "ok") return <SkillForm {...props} manifest={m.manifest} />;
+
+  return (
+    <section className="card stack-sm">
+      <header className="between">
+        <h3 className="section-title">{t("title")}</h3>
+        <button type="button" className="btn" onClick={props.onCancelar}>
+          {tc("cancel")}
+        </button>
+      </header>
+      {m.estado === "carregando" ? (
+        <p className="muted t-sm">{tf("carregando")}</p>
+      ) : (
+        <div className="notice notice-block">
+          <p className="notice-body">{tf(`erro_${m.motivo}`, { detail: m.detalhe })}</p>
+        </div>
+      )}
+    </section>
+  );
+}
+
+function SkillForm({
+  existentes,
+  onConcluido,
+  onCancelar,
+  manifest,
+}: {
+  existentes: string[];
+  onConcluido: () => void;
+  onCancelar: () => void;
+  manifest: FormFlowManifest;
+}) {
+  const t = useTranslations("skillWizard");
+  const tf = useTranslations("formflow");
   const tc = useTranslations("common");
 
-  const [passo, setPasso] = useState<1 | 2 | 3 | 4>(1);
-  const [nome, setNome] = useState("");
-  const [descricao, setDescricao] = useState("");
-  const [instrucoes, setInstrucoes] = useState("");
-  const [arquivos, setArquivos] = useState<Arquivo[]>([]);
+  const { estado, set, regraDoCampo, aplicarProposta, anexar, desanexar, catalogos } = useFormFlow(
+    manifest,
+    { taken: existentes },
+  );
+
   const [busy, setBusy] = useState(false);
-  // A procedência por campo (ADR-023): de onde veio o texto que o agente escreveu.
-  const [origens, setOrigens] = useState<Record<string, FieldOrigin>>({});
   const [erro, setErro] = useState<string | null>(null);
+  /** O resultado do plano. Guardado para que a RETENTATIVA não repita o que já deu certo — sem
+   *  isto, a segunda tentativa recria a skill e recebe "já existe". */
+  const [plano, setPlano] = useState<ResultadoPlano | null>(null);
 
-  /** A regra do NOME, aplicada a qualquer valor. Separada do bloqueio do passo porque ela também
-   *  precisa valer sobre o que o AGENTE propõe, e uma segunda cópia divergiria. */
-  const problemaNomeDe = useCallback(
-    (valor: string): string | null => {
-      const n = valor.trim();
-      if (!n) return t("erroNomeVazio");
-      if (!NOME_RECURSO.test(n)) return t("erroNomeFormato");
-      if (n.length > 63) return t("erroNomeLongo");
-      if (existentes.includes(n)) return t("erroNomeExiste", { name: n });
-      return null;
-    },
-    [existentes, t],
-  );
+  const texto = (id: string) => String(estado.valores[id] ?? "").trim();
 
-  /** O que impede de avançar, dito na hora — não no fim. */
-  const problemaNome = useCallback((): string | null => {
-    const doNome = problemaNomeDe(nome);
-    if (doNome) return doNome;
-    // O serviço exige descrição (o SDK a declara opcional, mas o Foundry recusa sem ela). Pedir
-    // no passo 1 evita descobrir na publicação, depois de escrever instruções e anexar arquivos.
-    if (!descricao.trim()) return t("erroDescricaoVazia");
-    return null;
-  }, [problemaNomeDe, nome, descricao, t]);
-
-  /** A regra de cada campo que o agente pode propor — a mesma do formulário, não uma cópia. */
-  const regraDoCampo = useCallback(
-    (campo: string, valor: string): string | null => {
-      if (campo === "name") return problemaNomeDe(valor);
-      if (campo === "description" && !valor.trim()) return t("erroDescricaoVazia");
-      return null;
-    },
-    [problemaNomeDe, t],
-  );
-
-  const addArquivos = (grupo: Grupo, lista: FileList | null) => {
-    if (!lista?.length) return;
-    setErro(null);
-    void Promise.all(
-      Array.from(lista).map(
-        (f) =>
-          new Promise<Arquivo | string>((resolve) => {
-            const base = f.name.split("/").pop() ?? f.name;
-            if (!nomeArquivoValido(base)) return resolve(t("erroArquivoNome", { name: f.name }));
-            const reader = new FileReader();
-            reader.onload = () =>
-              resolve({ grupo, nome: base, conteudo: String(reader.result ?? "") });
-            reader.onerror = () => resolve(t("erroArquivoLeitura", { name: base }));
-            reader.readAsText(f);
-          }),
-      ),
-    ).then((resultados) => {
-      const bons = resultados.filter((r): r is Arquivo => typeof r !== "string");
-      const ruins = resultados.filter((r): r is string => typeof r === "string");
-      // Arquivo recusado é DITO, não descartado em silêncio: quem enviou 5 e viu 4 precisa saber
-      // qual ficou de fora e por quê.
-      if (ruins.length) setErro(ruins.join(" "));
-      setArquivos((atual) => {
-        const chave = (a: Arquivo) => `${a.grupo}/${a.nome}`;
-        const mapa = new Map(atual.map((a) => [chave(a), a]));
-        for (const a of bons) mapa.set(chave(a), a);
-        return [...mapa.values()];
-      });
-    });
-  };
-
-  const remover = (grupo: Grupo, nomeArq: string) =>
-    setArquivos((a) => a.filter((x) => !(x.grupo === grupo && x.nome === nomeArq)));
-
-  /** O documento que vai ser enviado — mostrado no passo 4 antes de qualquer chamada. */
-  const documento = (() => {
+  /** O documento da skill — instruções inline mais a procedência. */
+  const documento = () => {
     const doc: Record<string, unknown> = {
-      instructions: instrucoes.trim(),
-      description: descricao.trim(),
+      instructions: texto("instructions"),
+      description: texto("description"),
     };
-    // A procedência viaja com o recurso publicado (ADR-023): "de onde veio esta instrução" passa
-    // a ter resposta no Foundry, não só na memória de quem estava na tela. No vocabulário do
-    // OKF v0.2 (lib/okf.ts), e serializada — o Foundry exige metadata em STRING (ver AgentWizard).
-    const provenance = serializeProvenance(origens);
+    // A procedência viaja com o recurso publicado (ADR-023), no vocabulário do OKF v0.2 e
+    // SERIALIZADA — o Foundry exige metadata em string.
+    const provenance = serializeProvenance(estado.origens);
     if (provenance) doc.metadata = { provenance };
     return doc;
-  })();
+  };
+
+  /** Executa UMA operação do plano. É aqui que mora o que é específico da skill. */
+  const executar = async (op: Operacao): Promise<string | null> => {
+    const alvo = resolverPath(op, estado.valores);
+    try {
+      if (op.encoding === "multipart") {
+        const form = new FormData();
+        // O GRUPO VIRA PASTA: o serviço aceita upload de diretório e preserva o caminho, e é por
+        // isso que `scripts` e `references` são campos separados no manifesto em vez de uma pilha
+        // plana — a skill fica legível para quem for mantê-la depois.
+        for (const grupo of ["scripts", "references"]) {
+          for (const a of estado.anexos[grupo] ?? []) {
+            form.append("files", new Blob([a.conteudo]), `${grupo}/${a.nome}`);
+          }
+        }
+        // Nada anexado: a operação não tem o que fazer, e chamar o serviço com um form vazio seria
+        // pedir a ele que decidisse o que isso significa.
+        if (!form.has("files")) return null;
+        const r = await authedFetch(alvo, { method: "POST", body: form });
+        const b = await r.json().catch(() => ({}));
+        return r.ok ? null : (b?.error ?? `HTTP ${r.status}`);
+      }
+      const r = await authedFetch(alvo, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: documento(), default: true }),
+      });
+      const b = await r.json().catch(() => ({}));
+      return r.ok ? null : (b?.error ?? `HTTP ${r.status}`);
+    } catch {
+      return tc("backendUnreachable");
+    }
+  };
 
   const publicar = async () => {
     setBusy(true);
     setErro(null);
-    try {
-      const alvo = `/api/foundry/skills/${encodeURIComponent(nome.trim())}`;
+    const r = await executarPlano(manifest.plan ?? [], estado.valores, executar, {
+      feitas: plano?.feitas ?? [],
+    });
+    setPlano(r);
+    setBusy(false);
 
-      // Primeiro a skill (inline), depois o bundle. A ordem importa: os arquivos são uma VERSÃO
-      // da skill, então a skill precisa existir. Enviar o bundle primeiro criaria a skill sem as
-      // instruções, que é o campo obrigatório.
-      const r = await authedFetch(alvo, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content: documento, default: true }),
-      });
-      const body = await r.json().catch(() => ({}));
-      if (!r.ok) {
-        setErro(body?.error ?? `HTTP ${r.status}`);
-        return;
-      }
+    const falhou = r.operacoes.find((o) => o.status === "falhou");
+    if (!falhou) return onConcluido();
 
-      if (arquivos.length) {
-        const form = new FormData();
-        for (const a of arquivos) {
-          // O grupo vira pasta: o serviço aceita upload de diretório e preserva o caminho.
-          form.append("files", new Blob([a.conteudo]), `${a.grupo}/${a.nome}`);
-        }
-        const rf = await authedFetch(alvo, { method: "POST", body: form });
-        const bf = await rf.json().catch(() => ({}));
-        if (!rf.ok) {
-          // A skill FOI criada; só o bundle falhou. Dizer as duas coisas evita que a pessoa
-          // tente criar de novo e receba "já existe".
-          setErro(t("erroBundle", { motivo: bf?.error ?? `HTTP ${rf.status}` }));
-          onConcluido();
-          return;
-        }
-      }
-      onConcluido();
-    } catch {
-      setErro(tc("backendUnreachable"));
-    } finally {
-      setBusy(false);
-    }
+    // FALHA PARCIAL: as duas coisas são ditas. "A skill foi criada E o bundle falhou" evita que a
+    // pessoa tente criar de novo — e o `plano` guardado faz a retentativa começar de onde parou.
+    setErro(
+      r.parcial
+        ? t("erroParcial", { feitas: r.feitas.join(", "), motivo: falhou.erro ?? "" })
+        : (falhou.erro ?? ""),
+    );
+    if (r.parcial) onConcluido();
   };
 
-  /** O que FALTA para avançar, ou null. Motivo em vez de booleano: um botão desabilitado sem
-   *  explicação é um beco. A regra é "opcional nunca trava" — logo, o que trava é obrigatório e
-   *  precisa se identificar. A etapa 3 (arquivos) é opcional e nunca bloqueia. */
-  const faltaPara = (): string | null => {
-    if (passo === 1) return problemaNome();
-    if (passo === 2 && !instrucoes.trim()) return t("faltaInstrucoes");
-    return null;
-  };
-  const bloqueio = faltaPara();
-  const podeAvancar = bloqueio === null;
-
-  /** Aplica a proposta aceita: valor no campo, fonte na procedência. Sempre os dois. */
-  const aplicar = (p: FieldProposal) => {
-    if (p.field === "instructions") setInstrucoes(p.value);
-    else if (p.field === "description") setDescricao(p.value);
-    else if (p.field === "name") setNome(p.value);
-    // A ORIGEM INTEIRA, não só as fontes: quem escreveu e quando entram junto, senão um campo
-    // escrito pelo agente sem fonte ficaria indistinguível de um campo digitado à mão (lib/okf.ts).
-    setOrigens((o) => ({
-      ...o,
-      [p.field]: {
-        by: AGENTE_DO_FORMULARIO,
-        at: new Date().toISOString(),
-        sources: p.sources,
-      },
-    }));
-  };
+  const bloqueio = estado.bloqueio;
+  const obrigatorias = estado.secoes.filter((s) => !s.opcional);
 
   return (
-    <section className="card stack-sm">
-      {/* A tool vive enquanto o formulário está aberto — fechado, ela some, e o agente deixa de
-          poder propor para um formulário que ninguém está vendo. */}
-      <FieldProposalTool
-        onAccept={aplicar}
-        resource="skill"
-        fields={["name", "description", "instructions"]}
-        current={{ name: nome, description: descricao, instructions: instrucoes }}
-        validate={regraDoCampo}
+    <section className="card wizard">
+      <FormFlowProposalTool
+        manifest={manifest}
+        valores={estado.valores}
+        regraDoCampo={regraDoCampo}
+        onAccept={aplicarProposta}
       />
-      <header className="between">
-        <h3 className="section-title">{t("title")}</h3>
-        <button type="button" className="btn" disabled={busy} onClick={onCancelar}>
-          {tc("cancel")}
-        </button>
-      </header>
 
-      {/* Os quatro passos com nome: a pessoa vê onde está e quanto falta. */}
-      <ol className="steps" aria-label={t("stepsLabel")}>
-        {([1, 2, 3, 4] as const).map((p) => (
-          <li key={p} className={`step ${passo === p ? "on" : passo > p ? "done" : ""}`}>
-            <span className="step-num">{p}</span>
-            <span className="step-label">{t(`step${p}`)}</span>
-          </li>
-        ))}
-      </ol>
+      <header className="between wizard-head">
+        <h3 className="section-title">{t("title")}</h3>
+        <div className="row-tight">
+          <button type="button" className="btn" disabled={busy} onClick={onCancelar}>
+            {tc("cancel")}
+          </button>
+          <button
+            type="button"
+            className="btn btn-solid"
+            disabled={busy || bloqueio !== null}
+            title={bloqueio ?? undefined}
+            onClick={() => void publicar()}
+          >
+            {busy ? t("publishing") : plano?.parcial ? t("retomar") : t("publish")}
+          </button>
+        </div>
+      </header>
 
       {erro && (
         <div className="notice notice-block">
           <p className="notice-body">{erro}</p>
         </div>
       )}
+      {bloqueio && !busy && <p className="t-xs muted-line wizard-blocked">{bloqueio}</p>}
 
-      {passo === 1 && (
-        <div className="stack-sm">
-          <input
-            className="acct-btn"
-            placeholder={t("namePlaceholder")}
-            value={nome}
-            disabled={busy}
-            onChange={(e) => setNome(e.target.value)}
-          />
-          {/* O problema aparece enquanto digita, não ao tentar avançar. */}
-          {nome.trim() && problemaNome() && <p className="t-xs bad-line">{problemaNome()}</p>}
-          <p className="muted t-xs">{t("nameHelp")}</p>
-          <input
-            className="acct-btn"
-            placeholder={t("descriptionPlaceholder")}
-            value={descricao}
-            disabled={busy}
-            onChange={(e) => setDescricao(e.target.value)}
-          />
-        </div>
-      )}
-
-      {passo === 2 && (
-        <div className="stack-sm">
-          <p className="muted t-sm">{t("instructionsHelp")}</p>
-          <AiField
-            field="instructions"
-            label={t("step2")}
-            value={instrucoes}
-            resource={t("resourceSkill")}
-          >
-            <textarea
-              className="acct-btn"
-              rows={10}
-              placeholder={t("instructionsPlaceholder")}
-              value={instrucoes}
-              disabled={busy}
-              onChange={(e) => setInstrucoes(e.target.value)}
-            />
-          </AiField>
-        </div>
-      )}
-
-      {passo === 3 && (
-        <div className="stack-sm">
-          <p className="muted t-sm">{t("filesHelp")}</p>
-          <div className="grid g2">
-            {GRUPOS.map((g) => (
-              <div key={g} className="stack-sm">
-                <p className="t-xs strong">{t(`grupo_${g}`)}</p>
-                <p className="muted t-xs">{t(`grupo_${g}_help`)}</p>
-                <input
-                  type="file"
-                  multiple
-                  className="acct-btn"
-                  disabled={busy}
-                  onChange={(e) => addArquivos(g, e.target.files)}
-                />
-                <ul className="file-list">
-                  {arquivos
-                    .filter((a) => a.grupo === g)
-                    .map((a) => (
-                      <li key={a.nome}>
-                        <span className="t-mono t-xs">{a.nome}</span>
-                        <button
-                          type="button"
-                          className="acct-btn"
-                          disabled={busy}
-                          onClick={() => remover(g, a.nome)}
-                        >
-                          {tc("delete")}
-                        </button>
-                      </li>
-                    ))}
-                </ul>
-              </div>
+      <div className="wizard-body">
+        <nav className="wizard-rail" aria-label={t("stepsLabel")}>
+          <p className="wizard-rail-head">
+            <span className="t-2xs muted-line">{tf("progresso")}</span>
+            <span className="t-sm strong">
+              {tf("progressoContagem", {
+                done: obrigatorias.filter((s) => !s.pendencia).length,
+                total: obrigatorias.length,
+              })}
+            </span>
+          </p>
+          <ol className="wizard-rail-list">
+            {estado.secoes.map((sec, i) => (
+              <li key={sec.id}>
+                <a
+                  href={`#w-${sec.id}`}
+                  className={`wizard-rail-item ${sec.pendencia ? "pending" : sec.opcional ? "optional" : "done"}`}
+                >
+                  <span className="wizard-rail-mark" aria-hidden>
+                    {sec.pendencia ? String(i + 1) : sec.opcional ? "·" : "✓"}
+                  </span>
+                  <span className="wizard-rail-text">
+                    <span className="wizard-rail-title">{sec.titulo}</span>
+                    <span className="wizard-rail-note">{sec.pendencia ?? sec.resumo}</span>
+                  </span>
+                </a>
+              </li>
             ))}
-          </div>
-          <p className="muted t-xs">{t("filesOptional")}</p>
-        </div>
-      )}
+          </ol>
 
-      {passo === 4 && (
-        <div className="stack-sm">
-          <p className="muted t-sm">{t("reviewHelp")}</p>
-          <dl className="review">
-            <dt>{t("reviewName")}</dt>
-            <dd className="t-mono">{nome.trim()}</dd>
-            <dt>{t("reviewFiles")}</dt>
-            <dd>
-              {arquivos.length
-                ? GRUPOS.filter((g) => arquivos.some((a) => a.grupo === g))
-                    .map((g) => `${t(`grupo_${g}`)}: ${arquivos.filter((a) => a.grupo === g).length}`)
-                    .join(" · ")
-                : t("reviewNoFiles")}
-            </dd>
-          </dl>
-          {/* O documento exato que vai ser enviado — nada acontece sem a pessoa ver antes. */}
-          <pre className="doc-preview">{JSON.stringify(documento, null, 2)}</pre>
-        </div>
-      )}
+          {/* O PLANO, visível ANTES de publicar. Ele diz que são duas operações e que a segunda
+              depende da primeira — que é a informação de que a pessoa precisa se a segunda
+              falhar. Depois de rodar, cada linha carrega o desfecho. */}
+          <PlanoRail manifest={manifest} plano={plano} />
+        </nav>
 
-      <div className="row">
-        {passo > 1 && (
-          <button
-            type="button"
-            className="btn"
-            disabled={busy}
-            onClick={() => setPasso((p) => (p - 1) as 1 | 2 | 3)}
-          >
-            {t("back")}
-          </button>
-        )}
-        <div className="grow" />
-        {passo < 4 ? (
-          <button
-            type="button"
-            className="btn btn-solid"
-            disabled={busy || !podeAvancar}
-            title={bloqueio ?? undefined}
-            onClick={() => setPasso((p) => (p + 1) as 2 | 3 | 4)}
-          >
-            {t("next")}
-          </button>
-        ) : (
-          <button type="button" className="btn btn-solid" disabled={busy} onClick={() => void publicar()}>
-            {busy ? t("publishing") : t("publish")}
-          </button>
-        )}
+        <div className="wizard-form">
+          <FormFlowFields
+            manifest={manifest}
+            valores={estado.valores}
+            set={set}
+            regraDoCampo={regraDoCampo}
+            catalogos={catalogos}
+            busy={busy}
+            origens={estado.origens}
+            onAnexar={anexar}
+            onDesanexar={desanexar}
+            onRecusar={setErro}
+          />
+
+          <section id="w-review" className="wizard-section">
+            <h4 className="wizard-section-title">{tf("revisao")}</h4>
+            <dl className="review">
+              {estado.revisao.map((l) => (
+                <div key={l.label}>
+                  <dt>{l.label}</dt>
+                  <dd>{l.texto}</dd>
+                </div>
+              ))}
+            </dl>
+            <details className="wizard-doc">
+              <summary className="t-xs">{tf("verDocumento")}</summary>
+              <pre className="doc-preview">{JSON.stringify(documento(), null, 2)}</pre>
+            </details>
+          </section>
+        </div>
       </div>
     </section>
+  );
+}
+
+/** O plano de publicação no rail: quantas operações, e o desfecho de cada uma depois de rodar. */
+export function PlanoRail({
+  manifest,
+  plano,
+}: {
+  manifest: FormFlowManifest;
+  plano: ResultadoPlano | null;
+}) {
+  const tf = useTranslations("formflow");
+  const ops = manifest.plan ?? [];
+  if (!ops.length) return null;
+  const statusDe = (id: string) => plano?.operacoes.find((o) => o.id === id)?.status ?? "pendente";
+  return (
+    <div className="wizard-prov">
+      <p className="t-2xs muted-line">{tf("plano")}</p>
+      <ol className="plan-list">
+        {ops.map((op) => {
+          const s = statusDe(op.id);
+          return (
+            <li key={op.id} className={`plan-item plan-${s}`}>
+              <span className="plan-dot" aria-hidden />
+              <span className="t-2xs plan-title">{op.title ?? op.id}</span>
+              <span className="t-2xs muted-line">{tf(`plan_${s}`)}</span>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }

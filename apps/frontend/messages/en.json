@@ -76,19 +76,9 @@
   },
   "agentWizard": {
     "title": "New agent",
-    "stepsLabel": "Creation steps",
-    "step4": "Review",
     "toolboxResolved": "The address for toolbox {name} will be built by the server, pointing at the version in use.",
-    "reviewHelp": "This is the document that will be sent. Publishing creates the agent and its first version.",
     "publish": "Create and publish version",
-    "publishing": "Publishing…",
-    "progresso": "Progress",
-    "progressoContagem": "{done} of {total} ready",
-    "procedencia": "Provenance",
-    "procedenciaVazia": "No field written by the agent yet.",
-    "resumoRevisao": "nothing is sent before here",
-    "verDocumento": "See the document that will be sent",
-    "semFonte": "no source — from the model's own knowledge"
+    "publishing": "Publishing…"
   },
   "agents": {
     "title": "Agents",
@@ -453,7 +443,8 @@
     "skipped": "{count} were left out (extension or size).",
     "treeTruncated": "Heads up: GitHub truncated the listing — the repository is large and some files may be unseen.",
     "indexingNote": "Indexing runs on the service and takes a few minutes. Refresh the list to see the synchronization status.",
-    "resourceKnowledge": "knowledge base"
+    "resourceKnowledge": "knowledge base",
+    "erroParcial": "The base was created ({feitas}) and feeding it failed: {motivo}. Do NOT create it again — use Continue."
   },
   "language": {
     "label": "Language",
@@ -581,7 +572,9 @@
     "publishing": "Publishing…",
     "erroDescricaoVazia": "Write a description — the service requires a sentence saying what the skill is for.",
     "resourceSkill": "skill",
-    "faltaInstrucoes": "Write what the skill should do before continuing."
+    "faltaInstrucoes": "Write what the skill should do before continuing.",
+    "retomar": "Resume where it stopped",
+    "erroParcial": "Part was published ({feitas}) and the rest failed: {motivo}. Do NOT create it again — use Resume, which continues where it stopped."
   },
   "skills": {
     "title": "Skills",
@@ -730,6 +723,24 @@
     "carregando": "Loading the form…",
     "erro_ausente": "There is no published form with this name. ({detail})",
     "erro_invalido": "The form exists and its document is invalid — fix the manifest. ({detail})",
-    "erro_indisponivel": "Could not load the form. ({detail})"
+    "erro_indisponivel": "Could not load the form. ({detail})",
+    "revisao": "Review",
+    "verDocumento": "See the document that will be sent",
+    "plano": "Publication plan",
+    "plan_pendente": "waiting",
+    "plan_rodando": "running",
+    "plan_feita": "done",
+    "plan_falhou": "failed",
+    "plan_pulada": "did not run — the previous one failed",
+    "progresso": "Progress",
+    "progressoContagem": "{done} of {total} ready",
+    "procedencia": "Provenance",
+    "procedenciaVazia": "No field written by the agent yet.",
+    "semFonte": "no source — from the model's own knowledge",
+    "resumoRevisao": "nothing is sent before here",
+    "reviewHelp": "This is the document that will be sent. Publishing creates the agent and its first version.",
+    "stepsLabel": "Creation steps",
+    "step4": "Review",
+    "plano_continuar": "Continue"
   }
 }

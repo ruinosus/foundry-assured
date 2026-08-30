@@ -1,3 +1,9 @@
+---
+type: instructions
+title: "Escopo e prioridades da wiki"
+description: "A entrada autoral do bundle: o que a wiki cobre, e o contrato de citação que toda afirmação precisa cumprir."
+---
+
 # Escopo e prioridades da wiki
 
 OpenWiki lê este arquivo antes de cada run (`code --init` / `code --update`). Ele é a entrada

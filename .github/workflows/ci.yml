@@ -358,6 +358,12 @@ jobs:
       # que o agente não sabe escrever, e documento que não é OKF.
       - name: FormFlow — os manifestos são válidos e conformantes
         run: uv run python -m tests.formflow.manifest_test
+      # A conformidade §11 é da SPEC, não nossa, e quem a verifica é o verificador da spec
+      # (vendor/okf_validate.py — ver vendor/README.md para por que copiado e não instalado).
+      # Ele implementa a regra que mais se erra: cross-link quebrado NÃO é erro, porque o §6.1
+      # obriga o consumidor a tolerá-lo. Um validador nosso teria isso errado no primeiro dia.
+      - name: Bundles OKF v0.2 conformantes (§11)
+        run: uv run python -m tests.knowledge.okf_conformance_test
 
       # ADR-020: two runtimes in one backend. The route snapshot's third profile is what proves
       # the LangGraph domain actually mounts (/oncall), and the registry test that the two
@@ -734,6 +740,12 @@ jobs:
       # também prova que o vocabulário de regras é o mesmo dos dois lados.
       - name: FormFlow — o motor não conhece campo nenhum
         run: npm run verify:formflow
+      # A falha PARCIAL é o que o executor existe para acertar: publicar uma skill são duas
+      # chamadas, e quando a segunda falha a skill EXISTE. Sem isso a tela diz "erro", a pessoa
+      # tenta de novo, e a segunda tentativa falha na PRIMEIRA operação — agora por nome
+      # duplicado, com uma mensagem sem relação com o problema.
+      - name: Plano de publicação (dependência, falha parcial, retentativa)
+        run: npm run verify:plan
 
       # O app importa `defaultRehypePlugins` de "streamdown" e entrega a lista ao renderer do
       # CopilotKit — o que só funciona enquanto os dois resolvem a MESMA cópia. Em 2026-08-20 o

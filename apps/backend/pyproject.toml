@@ -118,6 +118,12 @@ prerelease = "allow"
 [tool.ruff]
 target-version = "py312"  # bate com requires-python; evita o ruff advinhar a sintaxe-alvo do pyupgrade (UP)
 
+# `vendor/` é código de TERCEIRO copiado, não escrito aqui (ver vendor/README.md). Ele tem de
+# ficar idêntico byte a byte à origem — é isso que faz o diff de uma atualização ser legível por
+# uma pessoa. Formatá-lo ao nosso gosto transformaria a próxima atualização num conflito inteiro,
+# e a revisão que justifica copiar em vez de depender deixaria de acontecer.
+exclude = ["vendor"]
+
 [tool.ruff.lint]
 select = [
     # -- núcleo de correção: sempre queremos (bugs reais, não estilo) --
