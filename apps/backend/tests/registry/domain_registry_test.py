@@ -280,9 +280,14 @@ def main() -> int:
         # que é o único caminho que repassa as tools do cliente ao agente (`propose_field`). Uma
         # regressão que o mandasse pelo caminho grounded o deixaria sem enxergar a ferramenta que
         # ele é instruído a chamar — e o sintoma seria um agente educado que nunca propõe nada.
+        # `/flow` NÃO é um domínio: é o runtime que roda qualquer `kind: Workflow` publicado em
+        # `agents/assured/workflows/`, e qual fluxo rodar vem do cliente em `forwarded_props`. Ele
+        # entra por `_mount_declarative_flows`, fora do loop do catálogo — está aqui porque passa
+        # pelo MESMO adapter, e uma regressão que o tirasse do adapter tiraria o passo humano
+        # (`request_info` → o card de aprovação) junto.
         check(
-            "workflow + tool branches hit the adapter (/helpdesk, /platform, /builder)",
-            adapter_paths == {"/helpdesk", "/platform", "/builder"},
+            "workflow + tool branches hit the adapter (/helpdesk, /platform, /builder) + /flow",
+            adapter_paths == {"/helpdesk", "/platform", "/builder", "/flow"},
         )
         check("workflow/tool adapter calls carry deps", all(c["dependencies"] is not None for c in adapter_calls))
     finally:

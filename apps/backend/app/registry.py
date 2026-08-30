@@ -134,6 +134,37 @@ def _mount_helpdesk(app: FastAPI, domain_id: str) -> None:
         )
 
 
+def _mount_declarative_flows(app: FastAPI) -> None:
+    """UM endpoint AG-UI que serve QUALQUER fluxo declarado publicado.
+
+    Não é um domínio do catálogo: os domínios são assistentes (um prompt, uma base, uma
+    audiência), e isto é um RUNTIME — o mesmo endpoint roda qualquer `kind: Workflow` que alguém
+    publique em `agents/assured/workflows/`. Qual fluxo rodar vem do cliente, em
+    `forwarded_props: {flow: <nome>}`, e é conferido contra a lista de publicados antes de virar
+    caminho (o nome vem de fora; concatenar direto seria leitura de arquivo arbitrária).
+
+    Um endpoint POR fluxo faria a superfície de rotas depender do conteúdo de um diretório: o
+    snapshot mudaria a cada fluxo novo, e um fluxo publicado sem redeploy (ADR-014) não teria
+    rota nenhuma até o deploy seguinte.
+
+    As dependências são as do helpdesk — auth e, no modo shared, o entitlement por tenant: os
+    agentes que um fluxo pode citar são os do helpdesk, então quem alcança um alcança o outro.
+    """
+    from app.modules.helpdesk.public import (
+        build_declarative_agent,
+        capturar_fluxo_da_requisicao,
+    )
+
+    add_agent_framework_fastapi_endpoint(
+        app,
+        agent=build_declarative_agent(),
+        path="/flow",
+        # A dependência que lê `forwarded_props.flow` roda ANTES do handler, na mesma task —
+        # que é o escopo da contextvar que a fábrica consulta.
+        dependencies=[*domain_deps("helpdesk"), Depends(capturar_fluxo_da_requisicao)],
+    )
+
+
 def _mount_builder(app: FastAPI, domain_id: str) -> None:
     """O assistente do wizard. Mesmo arquétipo do platform — adapter oficial, agente por
     requisição — mas sem tools de servidor: tudo que ele faz é propor, e propor é tool do
@@ -234,6 +265,9 @@ def mount_domains(app: FastAPI) -> None:
             (_mount_builder if domain_id == "builder" else _mount_platform)(app, domain_id)
         elif kind == "graph":
             _mount_graph(app, domain_id)
+
+    # Fora do loop: não é um domínio, é o runtime que roda os fluxos declarados (ver a docstring).
+    _mount_declarative_flows(app)
 
 
 def include_routers(app) -> None:

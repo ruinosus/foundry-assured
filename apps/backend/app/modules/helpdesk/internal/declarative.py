@@ -32,7 +32,15 @@ instrução nenhuma.
 
 from __future__ import annotations
 
+import os
+from contextvars import ContextVar
+from pathlib import Path
 from typing import TYPE_CHECKING
+
+import app as _app
+
+#: Ancorado no pacote `app`, nunca em `parents[N]` a partir deste arquivo (regra 9).
+BACKEND_ROOT = Path(_app.__file__).resolve().parent.parent
 
 if TYPE_CHECKING:
     from agent_framework import Workflow
@@ -123,3 +131,107 @@ def build_declarative_workflow(yaml_text: str, credential=None) -> Workflow:
     _conferir_agentes(yaml_text)
     factory = WorkflowFactory(agents=_agentes(credential) if credential is not None else None)
     return factory.create_workflow_from_yaml(yaml_text)
+
+
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+# O ENDPOINT: como um fluxo declarado é servido por AG-UI
+# ─────────────────────────────────────────────────────────────────────────────────────────────
+
+#: Qual fluxo esta requisição está rodando. CONTEXTVAR porque o `workflow_factory` do adapter
+#: recebe SÓ o `thread_id` — medido em `AgentFrameworkWorkflow.__init__` — e o nome do fluxo chega
+#: em `forwarded_props`, que só o `run` enxerga. Mesmo padrão de `credential_for_request`: o que
+#: é da requisição viaja pela requisição.
+_FLUXO_ATUAL: ContextVar[str | None] = ContextVar("fluxo_declarado_atual", default=None)
+
+
+def flows_dir() -> Path:
+    """Onde os fluxos publicados moram. `AGENTS_DIR` os move junto com os prompts (ADR-014)."""
+    externo = os.getenv("AGENTS_DIR", "").strip()
+    base = Path(externo) if externo else BACKEND_ROOT / "agents" / "assured"
+    return base / "workflows"
+
+
+def list_declarative_flows() -> list[str]:
+    """Os fluxos publicados, em ordem."""
+    d = flows_dir()
+    return sorted(p.stem for p in d.glob("*.yaml")) if d.is_dir() else []
+
+
+def load_flow_yaml(nome: str) -> str:
+    """O YAML de um fluxo publicado.
+
+    O NOME VEM DO CLIENTE (`forwarded_props`), então ele é conferido contra a lista de fluxos
+    PUBLICADOS antes de virar caminho — nunca concatenado direto. Um `../../.env` que virasse
+    `Path` seria leitura arbitrária de arquivo com o token de qualquer usuário autenticado.
+    """
+    if nome not in list_declarative_flows():
+        raise FluxoDesconhecido(
+            f"não existe fluxo publicado '{nome}'. Publicados: {', '.join(list_declarative_flows()) or '(nenhum)'}"
+        )
+    return (flows_dir() / f"{nome}.yaml").read_text(encoding="utf-8")
+
+
+class FluxoDesconhecido(ValueError):
+    """O cliente pediu um fluxo que não está publicado."""
+
+
+async def capturar_fluxo_da_requisicao(request) -> None:
+    """Dependência do FastAPI que lê o fluxo pedido e o deixa na contextvar.
+
+    POR QUE UMA DEPENDÊNCIA, e não uma subclasse de `AgentFrameworkWorkflow` que sobrescreve
+    `run`. Foi a primeira tentativa, e ela quebra o gate de superfície de rotas: o capture
+    substitui `OrderedAgentFrameworkWorkflow` por uma `lambda` para montar o app sem agente vivo,
+    e uma classe que HERDA daquele nome no import-time passa a herdar de uma função —
+    `TypeError: function() argument 'code' must be code, not str`, na definição da classe. Um
+    teste que precisa neutralizar a classe-base é um bom motivo para não depender de herdá-la.
+
+    A dependência roda ANTES do handler do adapter, na mesma task — que é exatamente o escopo de
+    uma contextvar. `request.json()` é seguro aqui: o Starlette cacheia o corpo em
+    `request._body`, então o handler ainda o lê inteiro depois.
+
+    NÃO VALIDA o nome: quem valida é `load_flow_yaml`, contra a lista de publicados, no momento
+    de virar caminho. Recusar aqui devolveria 4xx antes do stream AG-UI abrir, e a tela receberia
+    um erro de transporte em vez de uma mensagem na conversa.
+    """
+    import contextlib
+
+    nome = None
+    with contextlib.suppress(Exception):
+        corpo = await request.json()
+        props = corpo.get("forwarded_props") or corpo.get("forwardedProps") or {}
+        if isinstance(props, dict):
+            nome = props.get("flow")
+    # `set` sem `reset`: a contextvar é da REQUISIÇÃO. O Starlette roda cada requisição no seu
+    # próprio contexto copiado, então o valor não atravessa para a seguinte — e não há ponto
+    # depois do stream onde um `reset` pudesse rodar de forma confiável.
+    _FLUXO_ATUAL.set(str(nome) if nome else None)
+
+
+def _workflow_para_requisicao(thread_id: str | None):
+    """A fábrica que o adapter chama, por requisição. Lê o fluxo da contextvar."""
+    from app.shared.auth import credential_for_request
+
+    nome = _FLUXO_ATUAL.get()
+    if not nome:
+        # Sem fluxo escolhido não há o que rodar. Levantar aqui produz um erro de execução que
+        # diz o que fazer; devolver um workflow vazio produziria uma conversa que não responde.
+        raise FluxoDesconhecido(
+            "nenhum fluxo informado — mande `forwarded_props: {flow: <nome>}` na requisição"
+        )
+    return build_declarative_workflow(load_flow_yaml(nome), credential_for_request())
+
+
+def build_declarative_agent():
+    """UM endpoint, N fluxos — e não um endpoint por fluxo.
+
+    Os fluxos são dado (documento publicável sem rebuild, ADR-014), e montar rota por fluxo no
+    boot faria a lista de rotas depender do conteúdo de um diretório: o snapshot de superfície
+    mudaria a cada fluxo novo, e um fluxo publicado em runtime não teria rota nenhuma até o
+    próximo deploy.
+
+    Reusa `OrderedAgentFrameworkWorkflow` por COMPOSIÇÃO (importado aqui dentro, na hora de
+    montar) em vez de herança — ver `capturar_fluxo_da_requisicao` para o que a herança quebrava.
+    """
+    from app.modules.helpdesk.internal.stream_fix import OrderedAgentFrameworkWorkflow
+
+    return OrderedAgentFrameworkWorkflow(workflow_factory=_workflow_para_requisicao)

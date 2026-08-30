@@ -242,6 +242,10 @@
     ],
     [
       "POST",
+      "/flow"
+    ],
+    [
+      "POST",
       "/foundry-agent/{name}"
     ],
     [
@@ -585,6 +589,10 @@
     [
       "POST",
       "/deepcall"
+    ],
+    [
+      "POST",
+      "/flow"
     ],
     [
       "POST",
@@ -939,6 +947,10 @@
     [
       "POST",
       "/conversations/{agent}/{conversation_id}/share"
+    ],
+    [
+      "POST",
+      "/flow"
     ],
     [
       "POST",
