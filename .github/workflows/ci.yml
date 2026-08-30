@@ -351,6 +351,13 @@ jobs:
       # o `verified` (de onde sai o trust tier) vem de `actor()`, nunca do documento.
       - name: Procedência em OKF v0.2 (e o formato antigo sobrevive)
         run: uv run python -m tests.foundry.provenance_okf_test
+      # O manifesto virou a fonte do formulário, o que troca erro de compilação por documento que
+      # carrega bem e produz um formulário sutilmente errado. O gate fecha os quatro modos
+      # silenciosos: regra com nome que a tela não conhece (carrega e não é aplicada), dependência
+      # para uma operação que não existe (trava a publicação para sempre), `ai: true` num campo
+      # que o agente não sabe escrever, e documento que não é OKF.
+      - name: FormFlow — os manifestos são válidos e conformantes
+        run: uv run python -m tests.formflow.manifest_test
 
       # ADR-020: two runtimes in one backend. The route snapshot's third profile is what proves
       # the LangGraph domain actually mounts (/oncall), and the registry test that the two
@@ -720,6 +727,13 @@ jobs:
       # sumir e virar indistinguível de um campo digitado à mão.
       - name: Procedência em OKF v0.2
         run: npm run verify:okf
+      # O GATE QUE DEFINE A CAMADA FORMFLOW: o motor não decide nada por QUAL campo é. Uma linha
+      # `if (campo.id === "instructions")` significa que estamos de volta a três wizards escritos
+      # à mão com um invólucro comum. Os ids vêm dos manifestos reais, não de uma lista aqui — um
+      # campo novo no documento passa a ser vigiado sem ninguém lembrar de acrescentá-lo. O gate
+      # também prova que o vocabulário de regras é o mesmo dos dois lados.
+      - name: FormFlow — o motor não conhece campo nenhum
+        run: npm run verify:formflow
 
       # O app importa `defaultRehypePlugins` de "streamdown" e entrega a lista ao renderer do
       # CopilotKit — o que só funciona enquanto os dois resolvem a MESMA cópia. Em 2026-08-20 o

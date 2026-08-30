@@ -98,6 +98,14 @@
     ],
     [
       "GET",
+      "/flows"
+    ],
+    [
+      "GET",
+      "/flows/{name}"
+    ],
+    [
+      "GET",
       "/foundry/agents"
     ],
     [
@@ -425,6 +433,14 @@
     [
       "GET",
       "/eval/runs"
+    ],
+    [
+      "GET",
+      "/flows"
+    ],
+    [
+      "GET",
+      "/flows/{name}"
     ],
     [
       "GET",
@@ -767,6 +783,14 @@
     [
       "GET",
       "/eval/runs"
+    ],
+    [
+      "GET",
+      "/flows"
+    ],
+    [
+      "GET",
+      "/flows/{name}"
     ],
     [
       "GET",

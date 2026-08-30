@@ -22,6 +22,9 @@
     "evaluation": [
       "registry.py"
     ],
+    "formflow": [
+      "registry.py"
+    ],
     "foundry": [
       "main.py",
       "registry.py"
@@ -154,6 +157,11 @@
       "modules/evaluation/internal/foundry_evals.py"
     ]
   },
+  "formflow": {
+    "shared": [
+      "modules/formflow/api.py"
+    ]
+  },
   "foundry": {
     "audit": [
       "modules/foundry/internal/audited.py"
@@ -268,7 +276,7 @@
   },
   "knowledge": {
     "audit": [
-      "modules/knowledge/api.py",
+      "modules/knowledge/internal/document.py",
       "modules/knowledge/internal/retrieval.py"
     ],
     "foundry": [

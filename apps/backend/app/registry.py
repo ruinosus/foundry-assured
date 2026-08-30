@@ -248,6 +248,7 @@ def include_routers(app) -> None:
     from app.modules.builder import api as builder_assist
     from app.modules.conversations import api as conversations
     from app.modules.evaluation import api as evals
+    from app.modules.formflow import api as formflow
     from app.modules.foundry import api as foundry
     from app.modules.hosted import api as chat
     from app.modules.knowledge import api as knowledge
@@ -270,6 +271,7 @@ def include_routers(app) -> None:
         chat,
         api_admin,
         api_me,
+        formflow,
         foundry,
         usecases,
         conversations,

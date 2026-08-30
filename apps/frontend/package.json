@@ -15,7 +15,8 @@
     "verify:thread-citations": "node scripts/verify-thread-citations.mjs",
     "verify:headers": "node scripts/verify-merged-headers.mjs",
     "verify:text-diff": "node scripts/verify-text-diff.mjs",
-    "verify:okf": "node scripts/verify-okf.mjs"
+    "verify:okf": "node scripts/verify-okf.mjs",
+    "verify:formflow": "node scripts/verify-formflow.mjs"
   },
   "dependencies": {
     "@ag-ui/client": "^0.0.57",

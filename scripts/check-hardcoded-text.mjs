@@ -41,6 +41,7 @@ const NOT_TEXT = [
   /^\d|px |#[0-9a-f]{3,8}\b|\b(solid|rgba?|var|calc|flex|grid)\b/i,
   /\|\s*\w+$/, // união de tipos: void | Promise
   /^\(|prefers-color-scheme|^:scope|ease-out|ease-in|\b\d*\.?\d+m?s\b/, // media query, seletor, transição
+  /^(case|default|return|export|import|type|const|let|var|await|yield)\b/, // sintaxe, não frase
 ];
 
 const isTechnical = (s) =>
@@ -97,7 +98,11 @@ for (const file of [...DIRS].flatMap((d) => [...walk(join(ROOT, d))])) {
       inBlock = true;
       return;
     }
-    const code = line.replace(/\{?\/\*.*?\*\/\}?/g, "").replace(/^\s*(\/\/|\*).*$/, "");
+    const code = line
+      .replace(/\{?\/\*.*?\*\/\}?/g, "")
+      .replace(/^\s*(\/\/|\*).*$/, "")
+      // Comentário no FIM da linha também não é interface. `(?<!:)` preserva `https://`.
+      .replace(/(?<!:)\/\/.*$/, "");
     if (!code.trim()) return;
     // Uma linha que já consulta o dicionário está resolvida.
     if (/\bt\w*\(["'`]/.test(code)) return;

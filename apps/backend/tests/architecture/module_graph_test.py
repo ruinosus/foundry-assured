@@ -55,6 +55,10 @@ MODULES = (
     # Recursos do Foundry (agentes, e depois bases e skills) expostos ao usuário final. Fino
     # por construção: a gestão é do SDK, aqui mora projeção e autorização.
     "foundry",
+    # Os FORMULÁRIOS do produto como documento (`type: formflow` num bundle OKF), em vez de três
+    # componentes React com os mesmos campos escritos à mão. O módulo só CARREGA e valida a forma;
+    # quem aplica as regras é a tela, no campo, e o backend na fronteira.
+    "formflow",
     "hitl",  # ADR-019: approve/edit/reject/respond + the role gate neither framework has
     # Onde uma conversa fica depois que a aba fecha. O store (blobs de apêndice) e o
     # HistoryProvider do agent-framework; o caminho do blob começa no object-id do usuário, que é
