@@ -82,6 +82,14 @@
     ],
     [
       "GET",
+      "/copilots"
+    ],
+    [
+      "GET",
+      "/copilots/{name}"
+    ],
+    [
+      "GET",
       "/docs"
     ],
     [
@@ -417,6 +425,14 @@
     [
       "GET",
       "/conversations/{agent}/{conversation_id}/share"
+    ],
+    [
+      "GET",
+      "/copilots"
+    ],
+    [
+      "GET",
+      "/copilots/{name}"
     ],
     [
       "GET",
@@ -775,6 +791,14 @@
     [
       "GET",
       "/conversations/{agent}/{conversation_id}/share"
+    ],
+    [
+      "GET",
+      "/copilots"
+    ],
+    [
+      "GET",
+      "/copilots/{name}"
     ],
     [
       "GET",

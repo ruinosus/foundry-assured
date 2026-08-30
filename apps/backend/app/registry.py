@@ -316,6 +316,11 @@ def include_routers(app) -> None:
     ):
         app.include_router(module.router)
 
+    # `formflow` publica DOIS routers: os formulários e os copilotos. Ambos são documento
+    # declarativo que a tela consome, e um módulo com dois prefixos é mais honesto que dois
+    # módulos com o mesmo loader.
+    app.include_router(formflow.copilots)
+
     if settings.deployment_mode == "shared":
         from app.modules.tenancy import api as tenant
 

@@ -8,9 +8,23 @@ from __future__ import annotations
 from app.modules.formflow.internal.loader import (
     FlowInvalid,
     FlowNotFound,
+    copilots_dir,
     flows_dir,
+    list_copilots,
     list_flows,
+    load_copilot,
     load_flow,
+    verificar_alvos,
 )
 
-__all__ = ["FlowInvalid", "FlowNotFound", "flows_dir", "list_flows", "load_flow"]
+__all__ = [
+    "FlowInvalid",
+    "FlowNotFound",
+    "copilots_dir",
+    "flows_dir",
+    "list_copilots",
+    "list_flows",
+    "load_copilot",
+    "load_flow",
+    "verificar_alvos",
+]

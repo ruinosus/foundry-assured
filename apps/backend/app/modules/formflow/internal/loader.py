@@ -45,12 +45,26 @@ class FlowInvalid(Exception):
     campos que ele deveria ter, e ninguém percebe até alguém publicar sem preencher."""
 
 
-def flows_dir() -> Path:
-    """Onde os manifestos moram. `AGENTS_DIR` os move junto com os prompts (ADR-014): os dois
+def _base_dir() -> Path:
+    """A raiz dos documentos declarativos. `AGENTS_DIR` a move junto com os prompts (ADR-014):
     são a mesma classe de artefato — definição publicável sem rebuild."""
     externo = os.getenv("AGENTS_DIR", "").strip()
-    base = Path(externo) if externo else BACKEND_ROOT / "agents" / "assured"
-    return base / "flows"
+    return Path(externo) if externo else BACKEND_ROOT / "agents" / "assured"
+
+
+def flows_dir() -> Path:
+    """Onde os manifestos de formulário moram."""
+    return _base_dir() / "flows"
+
+
+def copilots_dir() -> Path:
+    """Onde os copilotos e as políticas moram.
+
+    MESMO MECANISMO, outro diretório: um copiloto é um documento OKF com um bloco `spec` em YAML,
+    exatamente como um formflow. O que muda é o que o `spec` significa — e é por isso que o
+    loader é genérico e a VALIDAÇÃO é por tipo.
+    """
+    return _base_dir() / "copilots"
 
 
 def _extrair_spec(texto: str, nome: str) -> dict[str, Any]:
@@ -102,6 +116,17 @@ def _validar(spec: dict, nome: str) -> None:
 
 
 @lru_cache(maxsize=32)
+def load_copilot(nome: str) -> dict[str, Any]:
+    """Um copiloto declarado: onde ele monta, sobre qual agente roda, em que campos escreve.
+
+    NÃO valida os alvos contra os formulários — isso é `verificar_alvos`, chamado por quem tem os
+    dois em mãos. Um loader que fosse buscar o outro documento acoplaria os dois carregamentos, e
+    um copiloto com alvo torto deixaria de carregar em vez de carregar e reprovar.
+    """
+    return _carregar(copilots_dir(), nome)
+
+
+@lru_cache(maxsize=32)
 def load_flow(nome: str) -> dict[str, Any]:
     """O manifesto de um formulário, pronto para a tela.
 
@@ -109,14 +134,21 @@ def load_flow(nome: str) -> dict[str, Any]:
     por publicação no mount do Azure Files — o mesmo raciocínio dos prompts. `AGENTS_DIR` entra na
     resolução, não na chave: trocar o diretório em runtime não é um caso que exista.
     """
+    return _carregar(flows_dir(), nome, validar=_validar)
+
+
+def _carregar(diretorio: Path, nome: str, validar=None) -> dict[str, Any]:
+    """Um documento declarativo: frontmatter OKF + `spec` no bloco YAML do corpo."""
+    # O nome vira CAMINHO, então ele é conferido antes: um `../../.env` que virasse `Path` seria
+    # leitura arbitrária de arquivo.
     if not nome.replace("-", "").replace("_", "").isalnum():
-        raise FlowNotFound(f"nome de formulário inválido: {nome!r}")
-    caminho = flows_dir() / f"{nome}.md"
+        raise FlowNotFound(f"nome de documento inválido: {nome!r}")
+    caminho = diretorio / f"{nome}.md"
     if not caminho.is_file():
-        raise FlowNotFound(f"nenhum formulário '{nome}' em {flows_dir()}")
-    texto = caminho.read_text(encoding="utf-8")
-    spec = _extrair_spec(texto, nome)
-    _validar(spec, nome)
+        raise FlowNotFound(f"nenhum documento '{nome}' em {diretorio}")
+    spec = _extrair_spec(caminho.read_text(encoding="utf-8"), nome)
+    if validar:
+        validar(spec, nome)
     return {"name": nome, **spec}
 
 
@@ -125,3 +157,46 @@ def list_flows() -> list[str]:
     distingue "não há" de "não consegui ler" pelo erro da rota, não por uma lista vazia."""
     d = flows_dir()
     return sorted(p.stem for p in d.glob("*.md")) if d.is_dir() else []
+
+
+def list_copilots() -> list[str]:
+    """Os copilotos e políticas publicados, em ordem."""
+    d = copilots_dir()
+    return sorted(p.stem for p in d.glob("*.md")) if d.is_dir() else []
+
+
+def verificar_alvos(copiloto: dict[str, Any]) -> list[str]:
+    """Os problemas dos alvos de um copiloto. Lista vazia = tudo confere.
+
+    ESTA É A CHECAGEM QUE FAZ O `type: copilot` VALER A PENA. Um copiloto declara em que campos
+    pode escrever; sem conferir, ele declara o que quiser — e o erro aparece quando alguém usa a
+    tela, na forma de uma proposta para um campo que não existe. São três coisas:
+
+    1. o formulário citado em `flow:` existe;
+    2. todo campo em `writes:` existe NAQUELE formulário;
+    3. todo campo em `writes:` é `ai: true` — propor para um campo que não aceita proposta é uma
+       proposta que a pessoa não tem como aceitar.
+
+    Devolve a lista em vez de levantar na primeira: quem edita um copiloto quer ver os três
+    problemas de uma vez, não descobrir o segundo depois de corrigir o primeiro.
+    """
+    problemas: list[str] = []
+    for alvo in copiloto.get("targets") or []:
+        nome = alvo.get("flow")
+        if not nome:
+            problemas.append("um alvo sem `flow`")
+            continue
+        try:
+            flow = load_flow(str(nome))
+        except (FlowNotFound, FlowInvalid) as exc:
+            problemas.append(f"alvo '{nome}': {exc}")
+            continue
+        campos = {c["id"]: c for s in flow["sections"] for c in s["fields"]}
+        for campo in alvo.get("writes") or []:
+            if campo not in campos:
+                problemas.append(f"alvo '{nome}': o campo '{campo}' não existe nesse formulário")
+            elif not campos[campo].get("ai"):
+                problemas.append(
+                    f"alvo '{nome}': o campo '{campo}' não é `ai: true` — o agente não pode propor nele"
+                )
+    return problemas

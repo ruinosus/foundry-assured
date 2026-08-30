@@ -11,7 +11,15 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
-from app.modules.formflow.public import FlowInvalid, FlowNotFound, list_flows, load_flow
+from app.modules.formflow.public import (
+    FlowInvalid,
+    FlowNotFound,
+    list_copilots,
+    list_flows,
+    load_copilot,
+    load_flow,
+    verificar_alvos,
+)
 from app.shared.auth import auth_dependencies
 
 router = APIRouter(prefix="/flows", tags=["formflow"], dependencies=auth_dependencies())
@@ -38,3 +46,35 @@ def flow(name: str) -> dict:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     except FlowInvalid as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+# ── Copilotos ────────────────────────────────────────────────────────────────────────────────
+#
+# Mesmo router, porque é a mesma classe de recurso: documento declarativo que a tela consome. Um
+# router separado significaria um prefixo separado, e `/copilots` vs `/flows` são dois nomes para
+# "o que este produto declara".
+
+copilots = APIRouter(prefix="/copilots", tags=["formflow"], dependencies=auth_dependencies())
+
+
+@copilots.get("")
+def listar_copilotos() -> dict:
+    """Os copilotos publicados. `hitl` é política, não copiloto — sai da lista."""
+    return {"copilots": [c for c in list_copilots() if c != "hitl"]}
+
+
+@copilots.get("/{name}")
+def copiloto(name: str) -> dict:
+    """Um copiloto, com os problemas dos alvos JUNTO.
+
+    Os problemas viajam com o documento em vez de virarem um 422: um copiloto com alvo torto
+    ainda é legível — quem está editando quer ver o documento E o que está errado nele, não uma
+    tela vazia com uma mensagem de erro. Quem decide o que fazer com `target_problems` é a tela.
+    """
+    try:
+        doc = load_copilot(name)
+    except FlowNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except FlowInvalid as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    return {**doc, "target_problems": verificar_alvos(doc)}

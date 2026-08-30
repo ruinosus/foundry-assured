@@ -358,6 +358,13 @@ jobs:
       # que o agente não sabe escrever, e documento que não é OKF.
       - name: FormFlow — os manifestos são válidos e conformantes
         run: uv run python -m tests.formflow.manifest_test
+      # Um copiloto declara em que campos escreve. Sem conferir contra o formulário real, ele
+      # declara o que quiser — e o erro aparece quando alguém usa a tela, na forma de uma
+      # proposta para um campo que não existe. O gate prova a checagem POR MUTAÇÃO: alvo
+      # inexistente, campo inexistente e campo que não aceita proposta têm de dar exatamente três
+      # problemas, senão o verificador não se distingue de um `return []`.
+      - name: Copiloto — o que ele declara escrever existe de verdade
+        run: uv run python -m tests.formflow.copilot_test
       # O canvas de casos de uso desenhava um fluxo que ninguém executava: `write_flow` monta o
       # YAML para VALIDAR e joga o objeto fora. Este gate prova, offline e sem modelo, que o
       # fluxo declarado RODA e que um passo humano declarado pausa em `request_info` — o mesmo

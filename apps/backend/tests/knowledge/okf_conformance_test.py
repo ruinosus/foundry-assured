@@ -45,6 +45,8 @@ BUNDLES = {
     "knowledge/corpus": REPO / "knowledge" / "corpus",
     # Os manifestos de formulário — `type: formflow`.
     "agents/assured/flows": BACKEND / "agents" / "assured" / "flows",
+    # Os copilotos e a política herdada — `type: copilot` e `type: policy`.
+    "agents/assured/copilots": BACKEND / "agents" / "assured" / "copilots",
 }
 
 
