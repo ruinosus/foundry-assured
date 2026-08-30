@@ -8,6 +8,8 @@ from __future__ import annotations
 from app.modules.formflow.internal.loader import (
     FlowInvalid,
     FlowNotFound,
+    alvos_de,
+    campos_propostaveis,
     copilots_dir,
     flows_dir,
     list_copilots,
@@ -20,6 +22,8 @@ from app.modules.formflow.internal.loader import (
 __all__ = [
     "FlowInvalid",
     "FlowNotFound",
+    "alvos_de",
+    "campos_propostaveis",
     "copilots_dir",
     "flows_dir",
     "list_copilots",

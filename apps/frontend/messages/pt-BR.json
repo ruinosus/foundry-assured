@@ -800,6 +800,16 @@
     "recurso_medicao_nao": "Sem medição declarada.",
     "recurso_runtime_declarado": "Runtime declarado",
     "recurso_runtime_usa": "Executa em {runtime}, e a tela diz isso.",
-    "recurso_runtime_nao": "Não diz onde executa."
+    "recurso_runtime_nao": "Não diz onde executa.",
+    "novo": "Novo copiloto",
+    "novoTitulo": "Novo copiloto",
+    "novoSubtitulo": "O formulário que cria um copiloto é ele mesmo um documento, renderizado pelo mesmo motor que ele vai usar.",
+    "voltarCatalogo": "Voltar ao catálogo",
+    "saidaTitulo": "A saída",
+    "saidaExplicacao": "Não há botão de publicar, e isso é o desenho: um copiloto é um documento do bundle, e o bundle vive no repositório. Em produção o disco do container é efêmero — um arquivo gravado daqui sumiria no próximo restart, sem erro nenhum.",
+    "documentoTitulo": "O documento",
+    "documentoCaminho": "Salve como",
+    "copiar": "Copiar o documento",
+    "copiado": "Copiado ✓"
   }
 }

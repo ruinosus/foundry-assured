@@ -800,6 +800,16 @@
     "recurso_medicao_nao": "No measurement declared.",
     "recurso_runtime_declarado": "Declared runtime",
     "recurso_runtime_usa": "Runs on {runtime}, and the screen says so.",
-    "recurso_runtime_nao": "Does not say where it runs."
+    "recurso_runtime_nao": "Does not say where it runs.",
+    "novo": "New copilot",
+    "novoTitulo": "New copilot",
+    "novoSubtitulo": "The form that creates a copilot is itself a document, rendered by the same engine it will use.",
+    "voltarCatalogo": "Back to the catalog",
+    "saidaTitulo": "The output",
+    "saidaExplicacao": "There is no publish button, and that is the design: a copilot is a bundle document, and the bundle lives in the repository. In production the container disk is ephemeral — a file written from here would vanish on the next restart, with no error.",
+    "documentoTitulo": "The document",
+    "documentoCaminho": "Save as",
+    "copiar": "Copy the document",
+    "copiado": "Copied ✓"
   }
 }

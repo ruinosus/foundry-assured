@@ -110,6 +110,10 @@
     ],
     [
       "GET",
+      "/flows/-/writable-fields"
+    ],
+    [
+      "GET",
       "/flows/{name}"
     ],
     [
@@ -457,6 +461,10 @@
     [
       "GET",
       "/flows"
+    ],
+    [
+      "GET",
+      "/flows/-/writable-fields"
     ],
     [
       "GET",
@@ -819,6 +827,10 @@
     [
       "GET",
       "/flows"
+    ],
+    [
+      "GET",
+      "/flows/-/writable-fields"
     ],
     [
       "GET",

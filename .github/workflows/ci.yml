@@ -765,6 +765,15 @@ jobs:
       # dívida, e a reação de quem lê é declarar recursos que o domínio não pede.
       - name: Matriz do copiloto (dois lados, nenhuma nota)
         run: npm run verify:copilot-matrix
+      # O ÚNICO gate que fecha o ciclo: a tela monta o YAML no browser, o loader do backend o lê e
+      # `verificar_alvos` o julga. Dois lados, dois idiomas, e nada garante que produzam a mesma
+      # coisa — um título com dois-pontos sem aspas, um `targets:` vazio que vira nulo, e o
+      # copiloto criado pela tela é um copiloto que o produto recusa. O gate escreve o documento
+      # num diretório temporário e roda o loader DE VERDADE por cima (via AGENTS_DIR), em vez de
+      # comparar strings: comparar strings provaria que o gerador não mudou; isto prova que ele
+      # produz algo que o consumidor aceita.
+      - name: O copiloto criado pela tela carrega no backend
+        run: npm run verify:copilot-doc
 
       # O app importa `defaultRehypePlugins` de "streamdown" e entrega a lista ao renderer do
       # CopilotKit — o que só funciona enquanto os dois resolvem a MESMA cópia. Em 2026-08-20 o

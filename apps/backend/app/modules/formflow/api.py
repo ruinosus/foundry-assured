@@ -14,6 +14,7 @@ from fastapi import APIRouter, HTTPException
 from app.modules.formflow.public import (
     FlowInvalid,
     FlowNotFound,
+    campos_propostaveis,
     list_copilots,
     list_flows,
     load_copilot,
@@ -29,6 +30,20 @@ router = APIRouter(prefix="/flows", tags=["formflow"], dependencies=auth_depende
 def flows() -> dict:
     """Os formulários publicados."""
     return {"flows": list_flows()}
+
+
+@router.get("/-/writable-fields")
+def writable_fields() -> dict:
+    """Todo campo que um copiloto pode declarar como alvo, no formato `formulario.campo`.
+
+    O PREFIXO `-/` não é enfeite: sem ele esta rota colidiria com `/flows/{name}`, e um
+    formulário chamado `writable-fields` roubaria o endpoint. Um segmento que nenhum nome de
+    documento pode ter (o loader recusa `-` sozinho) resolve sem inventar um prefixo novo.
+
+    É esta lista que faz a tela de criação não conseguir declarar um alvo inválido: a opção não
+    está lá.
+    """
+    return {"fields": campos_propostaveis()}
 
 
 @router.get("/{name}")

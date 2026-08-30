@@ -60,9 +60,14 @@ export function CopilotCatalog() {
 
   return (
     <section className="card stack-sm">
-      <header className="stack-sm">
-        <h3 className="section-title">{t("titulo")}</h3>
-        <p className="muted t-sm">{t("subtitulo")}</p>
+      <header className="between">
+        <div className="stack-sm">
+          <h3 className="section-title">{t("titulo")}</h3>
+          <p className="muted t-sm">{t("subtitulo")}</p>
+        </div>
+        <Link className="btn btn-solid" href="/copilots/novo">
+          {t("novo")}
+        </Link>
       </header>
 
       {itens.length === 0 ? (

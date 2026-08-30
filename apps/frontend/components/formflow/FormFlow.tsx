@@ -383,10 +383,22 @@ function CampoRender({
       }
       break;
     }
-    case "multi":
+    case "multi": {
+      // O `multi` aceita CATÁLOGO além de lista fixa, e é o que permite ao formulário do copiloto
+      // oferecer os alvos derivados dos formulários reais em vez de uma lista escrita à mão.
+      // Mesmos três estados do `choice`: não carregou · carregou vazio · tem itens.
+      const opcoes = campo.catalog ? (catalogo?.itens ?? []) : (campo.options ?? []);
+      if (campo.catalog && catalogo?.falhou) {
+        controle = <p className="t-xs bad-line">{t("catalogoFalhou", { source: campo.catalog.source })}</p>;
+        break;
+      }
+      if (!opcoes.length) {
+        controle = <p className="muted t-xs">{campo.emptyHelp ?? t("catalogoVazio")}</p>;
+        break;
+      }
       controle = (
         <div className="row-tight">
-          {(campo.options ?? []).map((o) => (
+          {opcoes.map((o) => (
             <label key={o} className="row-tight t-sm">
               <input
                 type="checkbox"
@@ -402,6 +414,7 @@ function CampoRender({
         </div>
       );
       break;
+    }
     case "pair": {
       // Os dois pedaços só valem juntos (um MCP com rótulo e sem URL não é alcançável), então o
       // valor é UM: `rótulo\turl`. Meio preenchido é meio de nada.

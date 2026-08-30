@@ -165,6 +165,55 @@ def list_copilots() -> list[str]:
     return sorted(p.stem for p in d.glob("*.md")) if d.is_dir() else []
 
 
+def campos_propostaveis() -> list[str]:
+    """Todo campo que um copiloto PODE declarar como alvo, no formato `formulario.campo`.
+
+    POR QUE ISTO EXISTE, e é a peça que torna a tela de criação segura. Um formulário que pedisse
+    os alvos como TEXTO deixaria a pessoa digitar `agent.instrucoes` (que não existe) ou
+    `agent.model` (que existe e não aceita proposta) — e o erro só apareceria depois, quando
+    alguém usasse o copiloto. Derivando a lista dos formulários reais, declarar um alvo inválido
+    deixa de ser possível: a opção não está lá.
+
+    É a mesma regra que já vale para base de conhecimento e toolbox no wizard de agente — a lista
+    vem do SERVIÇO, não de uma lista escrita na tela (SEGUNDA MÁXIMA). Aqui o "serviço" são os
+    outros documentos do bundle.
+
+    Só campos `ai: true`: propor num campo que não aceita proposta produz um card que a pessoa não
+    tem como aceitar.
+    """
+    saida: list[str] = []
+    for nome in list_flows():
+        try:
+            flow = load_flow(nome)
+        except (FlowNotFound, FlowInvalid):
+            # Um formulário torto não derruba a lista dos outros: quem edita o copiloto ainda
+            # precisa dos alvos que funcionam. O formulário quebrado aparece no gate dele.
+            continue
+        for secao in flow["sections"]:
+            for campo in secao["fields"]:
+                if campo.get("ai"):
+                    saida.append(f"{nome}.{campo['id']}")
+    return sorted(saida)
+
+
+def alvos_de(selecionados: list[str]) -> list[dict[str, Any]]:
+    """Agrupa `formulario.campo` no bloco `targets:` do manifesto.
+
+    A tela trabalha com uma lista plana (é o que um seletor múltiplo produz); o documento pede um
+    alvo por formulário, com os campos dentro. A conversão é aqui e não na tela porque é a FORMA
+    do manifesto, e o manifesto é do backend.
+    """
+    por_flow: dict[str, list[str]] = {}
+    for item in selecionados:
+        flow, _, campo = str(item).partition(".")
+        if flow and campo:
+            por_flow.setdefault(flow, []).append(campo)
+    return [
+        {"flow": f, "writes": sorted(cs), "validateAgainst": "field.rules"}
+        for f, cs in sorted(por_flow.items())
+    ]
+
+
 def verificar_alvos(copiloto: dict[str, Any]) -> list[str]:
     """Os problemas dos alvos de um copiloto. Lista vazia = tudo confere.
 
