@@ -2223,3 +2223,46 @@ table.evals tr:last-child td { border-bottom: none; }
 .plan-rodando .plan-dot { background: var(--wait); box-shadow: 0 0 0 3px var(--wait-wash); }
 /* `pulada` fica neutra E riscada: ela não falhou, não rodou — e a forma diz isso sem cor. */
 .plan-pulada .plan-title { text-decoration: line-through; color: var(--muted); }
+
+/* ── O copiloto como recurso ───────────────────────────────────────────────────────────────
+   A definição vive numa ABA, não é a tela. Editar o manifesto é uma operação sobre a definição —
+   uma tela que fosse só o editor faria a definição parecer o produto, e quem precisa saber "onde
+   este copiloto atua e o que ele escreve" abriria um editor de YAML. */
+.tabs { display: flex; gap: var(--space-1); border-bottom: 1px solid var(--line); }
+.tab {
+  border: 0; border-bottom: 2px solid transparent; background: none;
+  padding: var(--space-2) var(--space-3); cursor: pointer;
+  font: inherit; font-size: var(--text-sm); color: var(--muted);
+}
+.tab:hover { color: var(--ink); }
+.tab.on { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.tab:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.scroll-x { overflow-x: auto; }
+.copilot-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(260px, 22rem); gap: var(--space-4); align-items: start; }
+@media (max-width: 900px) { .copilot-grid { grid-template-columns: 1fr; } }
+
+/* ── A matriz de recursos do motor ─────────────────────────────────────────────────────────
+   DOIS LADOS, NENHUMA NOTA. "Não precisa" não é "não cumpre": um copiloto de RH não fica pior por
+   não ter trilha encadeada — ele não tem peça probatória a sustentar. Uma fração ("4 de 8")
+   transformaria ausência legítima em dívida, e a primeira reação de quem lê seria declarar
+   recursos que o domínio não pede.
+
+   Por isso o lado "usa" é `--pass` e o lado "não precisa" é NEUTRO — nunca `--block`. Barrado é
+   outra coisa, e o vocabulário de cor do produto não comporta os dois sentidos no mesmo tom. */
+.engine-matrix {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  background: var(--sunk); padding: var(--space-3);
+  display: flex; flex-direction: column; gap: var(--space-2);
+}
+.engine-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: var(--space-2); }
+.engine-item { display: flex; gap: var(--space-2); align-items: baseline; }
+.engine-mark {
+  flex: none; width: 1rem; text-align: center;
+  color: var(--faint); font-size: var(--text-xs);
+}
+.engine-item.usa .engine-mark { color: var(--pass); }
+.engine-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.engine-item:not(.usa) .engine-text b { color: var(--muted); font-weight: 500; }
+.engine-sep { border-top: 1px solid var(--line); padding-top: var(--space-2); margin: 0; }
+.engine-note { font-style: italic; margin: 0; }

@@ -36,6 +36,9 @@ const WORKSPACE_NAV = [
   // redesenho teria escondido o produto.
   { href: `/d/${CHAT_DOMAINS[0].id}`, key: "assistants", icon: "💬" },
   { href: "/agents", key: "agents", icon: "◆" },
+  // Copilotos entram ao lado dos agentes, e não em Administração: um copiloto é um RECURSO do
+  // produto (onde ele atua, o que escreve), não uma configuração de quem opera a plataforma.
+  { href: "/copilots", key: "copilots", icon: "◇" },
   { href: "/knowledge", key: "knowledge", icon: "▤" },
   { href: "/skills", key: "skills", icon: "✦" },
   { href: "/tickets", key: "tickets", icon: "🎫" },

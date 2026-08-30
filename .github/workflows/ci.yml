@@ -759,6 +759,12 @@ jobs:
       # duplicado, com uma mensagem sem relação com o problema.
       - name: Plano de publicação (dependência, falha parcial, retentativa)
         run: npm run verify:plan
+      # A matriz de recursos do motor carrega uma regra de design: "não precisa" NÃO é "não
+      # cumpre". Um copiloto de RH não fica pior por não ter trilha encadeada — ele não tem peça
+      # probatória a sustentar. Se alguém acrescentar pontuação ou fração, ausência legítima vira
+      # dívida, e a reação de quem lê é declarar recursos que o domínio não pede.
+      - name: Matriz do copiloto (dois lados, nenhuma nota)
+        run: npm run verify:copilot-matrix
 
       # O app importa `defaultRehypePlugins` de "streamdown" e entrega a lista ao renderer do
       # CopilotKit — o que só funciona enquanto os dois resolvem a MESMA cópia. Em 2026-08-20 o
