@@ -1,3 +1,8 @@
+---
+type: runbook
+title: "Runbook: Rotate production database credentials"
+description: "Applies to: PostgreSQL production clusters managed in Azure Key Vault"
+---
 # Runbook: Rotate production database credentials
 
 **Applies to:** PostgreSQL production clusters managed in Azure Key Vault.

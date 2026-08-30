@@ -1,3 +1,8 @@
+---
+type: runbook
+title: "Reference: Incident severity levels"
+description: "Applies to: Production incident classification and response"
+---
 # Reference: Incident severity levels
 
 **Applies to:** Production incident classification and response.

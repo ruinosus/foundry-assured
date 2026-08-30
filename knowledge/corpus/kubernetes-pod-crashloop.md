@@ -1,3 +1,8 @@
+---
+type: runbook
+title: "Runbook: Kubernetes pod in CrashLoopBackOff"
+description: "Applies to: Services running on the shared AKS clusters"
+---
 # Runbook: Kubernetes pod in CrashLoopBackOff
 
 **Applies to:** Services running on the shared AKS clusters.

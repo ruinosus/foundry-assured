@@ -1,3 +1,8 @@
+---
+type: runbook
+title: "Runbook: Local development environment setup"
+description: "Applies to: Setting up a backend service for local development"
+---
 # Runbook: Local development environment setup
 
 **Applies to:** Setting up a backend service for local development.

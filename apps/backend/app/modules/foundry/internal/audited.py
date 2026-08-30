@@ -40,6 +40,16 @@ def _procedencia(doc: object) -> dict:
 
     — então a procedência viaja serializada. Medido publicando uma skill com o objeto cru, que o
     serviço recusou com 400. Aqui ela é desserializada de volta para o evento ficar consultável.
+
+    DOIS FORMATOS, e o antigo não é legado por descuido:
+
+        {"okf_version": "0.2", "fields": {...}}   OKF v0.2 — o que a tela grava hoje
+        {"campo": ["fonte", ...]}                 o mapa que a tela gravava antes
+
+    Recursos publicados ANTES desta mudança carregam o formato antigo no metadata, para sempre —
+    documento publicado não é reescrito (ADR-023). Uma leitura que só entendesse o formato novo
+    faria a procedência desses recursos desaparecer da trilha no dia em que alguém os
+    republicasse, sem erro nenhum. O normalizador converte, e o evento sai num formato só.
     """
     import json
 
@@ -54,7 +64,54 @@ def _procedencia(doc: object) -> dict:
             prov = json.loads(prov)
         except Exception:  # noqa: BLE001 — string ilegível não vira evento sem procedência
             return {}
-    return {"provenance": prov} if isinstance(prov, dict) and prov else {}
+    if not isinstance(prov, dict) or not prov:
+        return {}
+    return {"provenance": _verificada(_normalizar(prov))}
+
+
+def _normalizar(prov: dict) -> dict:
+    """Traz o formato antigo para o vocabulário do OKF v0.2, e deixa o novo passar intacto.
+
+    O antigo não sabia QUEM escreveu nem QUANDO — então a conversão não inventa: sai um
+    `generated` sem `by` e sem `at`, marcado com a origem do dado. Preencher com o agente de hoje
+    e a hora de agora produziria um registro que parece medido e é chute, num campo de auditoria.
+    """
+    if prov.get("okf_version"):
+        return prov
+    campos = {
+        campo: {
+            "generated": {"legacy": True},
+            **({"sources": [{"id": str(f), "resource": str(f)} for f in fontes]} if fontes else {}),
+        }
+        for campo, fontes in prov.items()
+        if isinstance(fontes, list)
+    }
+    return {"okf_version": "0.2", "fields": campos} if campos else prov
+
+
+def _verificada(prov: dict) -> dict:
+    """Carimba `verified` — o campo do OKF v0.2 de que o consumidor deriva o trust tier.
+
+    POR QUE AQUI, E NÃO NA TELA. `verified.by` é a identidade de quem revisou, e a spec deriva o
+    tier do prefixo do ator (`human:` → human-reviewed). A tela não pode gravá-lo: o documento que
+    ela monta é publicado no Foundry, e um recurso compartilhado não é lugar de identidade — é a
+    mesma regra que mantém o nome do aprovador fora da mensagem do chat (I-10). Aqui o destino é
+    a TRILHA, onde a identidade já mora e é o que a auditoria pergunta primeiro.
+
+    `actor()` já devolve `human:<e-mail>` — exatamente a convenção de ator do OKF (§7), que este
+    repositório adotou antes de saber que era ela.
+
+    Escrita sem usuário resolvido (job, script) sai como `process:app`, o mesmo `actor()` de
+    sempre: o tier vira machine-confirmed, que é a verdade.
+    """
+    from datetime import UTC, datetime
+
+    from app.modules.audit.public import actor
+
+    return {
+        **prov,
+        "verified": [{"by": actor(), "at": datetime.now(UTC).isoformat(timespec="seconds")}],
+    }
 
 
 def audited(resource: str, action: str = "create"):

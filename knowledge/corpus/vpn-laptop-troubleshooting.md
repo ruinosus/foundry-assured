@@ -1,3 +1,8 @@
+---
+type: runbook
+title: "Runbook: VPN drops on new laptops"
+description: "Applies to: Corp VPN (GlobalProtect) on freshly imaged laptops"
+---
 # Runbook: VPN drops on new laptops
 
 **Applies to:** Corp VPN (GlobalProtect) on freshly imaged laptops.

@@ -1,3 +1,8 @@
+---
+type: runbook
+title: "Runbook: Dealing with flaky CI tests"
+description: "Applies to: The shared CI pipeline (GitHub Actions) for backend services"
+---
 # Runbook: Dealing with flaky CI tests
 
 **Applies to:** The shared CI pipeline (GitHub Actions) for backend services.

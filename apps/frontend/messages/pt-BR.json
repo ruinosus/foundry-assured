@@ -148,7 +148,8 @@
     "alcanceBase": "buscar em {name}",
     "alcanceToolbox": "usar o toolbox {name}",
     "alcanceMcp": "chamar {label}",
-    "verDocumento": "Ver o documento que será enviado"
+    "verDocumento": "Ver o documento que será enviado",
+    "semFonte": "sem fonte — do conhecimento do modelo"
   },
   "agents": {
     "title": "Agentes",

@@ -53,6 +53,11 @@ _READERS: dict[Path, dict[str, str]] = {
 _WRITERS: dict[Path, str] = {
     _KNOWLEDGE / "wiki_builder.py": "manifest",
     _KNOWLEDGE / "adapt_deepwiki.py": "manifest",
+    # `adapt_openwiki.py` escreve manifest desde que existe e NÃO estava aqui — o gate que
+    # impede um gerador local de inventar um dialeto não vigiava o caminho OpenWiki, que hoje é
+    # o gerador ativo (ADR-016). Achado ao medir a subida para OpenWiki 0.4.3
+    # (docs/superpowers/specs/2026-08-27-openwiki-claims-medicao.md §5.1).
+    _KNOWLEDGE / "adapt_openwiki.py": "manifest",
 }
 
 # Fields whose loss would be invisible in the read-set derivation (a rename, a refactor to

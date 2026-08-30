@@ -1,3 +1,8 @@
+---
+type: runbook
+title: "Runbook: On-call handoff"
+description: "Applies to: Engineers rotating on and off the primary on-call shift"
+---
 # Runbook: On-call handoff
 
 **Applies to:** Engineers rotating on and off the primary on-call shift.

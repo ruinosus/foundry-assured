@@ -18,7 +18,8 @@
 import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
-import { AiField } from "@/components/shell/AiField";
+import { AiField, AGENTE_DO_FORMULARIO } from "@/components/shell/AiField";
+import { serializeProvenance, type FieldOrigin } from "@/lib/okf";
 import { FieldProposalTool, type FieldProposal } from "@/components/shell/FieldProposal";
 
 /** Os arquivos são agrupados por função — o serviço preserva o caminho, então o grupo vira pasta. */
@@ -58,7 +59,7 @@ export function SkillWizard({
   const [arquivos, setArquivos] = useState<Arquivo[]>([]);
   const [busy, setBusy] = useState(false);
   // A procedência por campo (ADR-023): de onde veio o texto que o agente escreveu.
-  const [origens, setOrigens] = useState<Record<string, string[]>>({});
+  const [origens, setOrigens] = useState<Record<string, FieldOrigin>>({});
   const [erro, setErro] = useState<string | null>(null);
 
   /** A regra do NOME, aplicada a qualquer valor. Separada do bloqueio do passo porque ela também
@@ -136,11 +137,10 @@ export function SkillWizard({
       description: descricao.trim(),
     };
     // A procedência viaja com o recurso publicado (ADR-023): "de onde veio esta instrução" passa
-    // a ter resposta no Foundry, não só na memória de quem estava na tela.
-    const comOrigem = Object.entries(origens).filter(([, f]) => f.length);
-    // Serializada: o Foundry exige valor de metadata em STRING (ver AgentWizard).
-    if (comOrigem.length)
-      doc.metadata = { provenance: JSON.stringify(Object.fromEntries(comOrigem)) };
+    // a ter resposta no Foundry, não só na memória de quem estava na tela. No vocabulário do
+    // OKF v0.2 (lib/okf.ts), e serializada — o Foundry exige metadata em STRING (ver AgentWizard).
+    const provenance = serializeProvenance(origens);
+    if (provenance) doc.metadata = { provenance };
     return doc;
   })();
 
@@ -204,7 +204,16 @@ export function SkillWizard({
     if (p.field === "instructions") setInstrucoes(p.value);
     else if (p.field === "description") setDescricao(p.value);
     else if (p.field === "name") setNome(p.value);
-    setOrigens((o) => ({ ...o, [p.field]: p.sources }));
+    // A ORIGEM INTEIRA, não só as fontes: quem escreveu e quando entram junto, senão um campo
+    // escrito pelo agente sem fonte ficaria indistinguível de um campo digitado à mão (lib/okf.ts).
+    setOrigens((o) => ({
+      ...o,
+      [p.field]: {
+        by: AGENTE_DO_FORMULARIO,
+        at: new Date().toISOString(),
+        sources: p.sources,
+      },
+    }));
   };
 
   return (

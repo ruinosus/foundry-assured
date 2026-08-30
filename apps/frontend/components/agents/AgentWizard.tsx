@@ -20,7 +20,8 @@ import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { authedFetch } from "@/lib/auth/api";
-import { AiField } from "@/components/shell/AiField";
+import { AiField, AGENTE_DO_FORMULARIO } from "@/components/shell/AiField";
+import { serializeProvenance, type FieldOrigin } from "@/lib/okf";
 import { FieldProposalTool, type FieldProposal } from "@/components/shell/FieldProposal";
 
 const NOME_RECURSO = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -78,7 +79,7 @@ export function AgentWizard({
   // A PROCEDÊNCIA de cada campo escrito pelo agente (ADR-023). Ela viaja para o `metadata` da
   // versão publicada: a partir daí, "de onde veio esta instrução" tem resposta no Foundry, com
   // versão e histórico — e não só na memória de quem estava na tela naquele dia.
-  const [origens, setOrigens] = useState<Record<string, string[]>>({});
+  const [origens, setOrigens] = useState<Record<string, FieldOrigin>>({});
   const [erro, setErro] = useState<string | null>(null);
   //: O que NÃO pôde ser listado — distingue "não há" de "não consegui ler".
   const [catalogoErro, setCatalogoErro] = useState<string | null>(null);
@@ -167,17 +168,15 @@ export function AgentWizard({
       instructions: instrucoes.trim(),
     };
     if (kb) doc.knowledge_base = kb;
-    // A procedência entra no METADATA da versão. Só os campos que o agente escreveu aparecem —
-    // o que a pessoa digitou sozinha não tem origem a declarar, e inventar uma seria pior que
-    // não ter.
-    const comOrigem = Object.entries(origens).filter(([, fontes]) => fontes.length);
-    if (comOrigem.length) {
-      // SERIALIZADA. O Foundry exige que valores de `metadata` sejam STRING — um objeto aqui é
-      // recusado com "The JSON value could not be converted to System.String", medido publicando.
-      doc.metadata = {
-        ...(doc.metadata as Record<string, unknown> | undefined),
-        provenance: JSON.stringify(Object.fromEntries(comOrigem)),
-      };
+    // A procedência entra no METADATA da versão, no vocabulário do OKF v0.2 (lib/okf.ts). Só os
+    // campos que o agente escreveu aparecem — o que a pessoa digitou sozinha não tem origem a
+    // declarar, e inventar uma seria pior que não ter.
+    //
+    // SERIALIZADA. O Foundry exige que valores de `metadata` sejam STRING — um objeto aqui é
+    // recusado com "The JSON value could not be converted to System.String", medido publicando.
+    const provenance = serializeProvenance(origens);
+    if (provenance) {
+      doc.metadata = { ...(doc.metadata as Record<string, unknown> | undefined), provenance };
     }
     // Atalhos: o backend expande os dois para o tool completo, porque montar a URL do toolbox
     // exigiria conhecer o endpoint do project — informação de quem opera, não de quem usa.
@@ -292,7 +291,16 @@ export function AgentWizard({
     if (p.field === "instructions") setInstrucoes(p.value);
     else if (p.field === "description") setDescricao(p.value);
     else if (p.field === "name") setNome(p.value);
-    setOrigens((o) => ({ ...o, [p.field]: p.sources }));
+    // A ORIGEM INTEIRA, não só as fontes: quem escreveu e quando entram junto, senão um campo
+    // escrito pelo agente sem fonte ficaria indistinguível de um campo digitado à mão (lib/okf.ts).
+    setOrigens((o) => ({
+      ...o,
+      [p.field]: {
+        by: AGENTE_DO_FORMULARIO,
+        at: new Date().toISOString(),
+        sources: p.sources,
+      },
+    }));
   };
 
   return (
@@ -373,16 +381,18 @@ export function AgentWizard({
               publicar, não depois. */}
           <div className="wizard-prov">
             <p className="t-2xs muted-line">{t("procedencia")}</p>
-            {Object.entries(origens).filter(([, f]) => f.length).length ? (
+            {Object.keys(origens).length ? (
               <ul className="wizard-prov-list">
-                {Object.entries(origens)
-                  .filter(([, f]) => f.length)
-                  .map(([campo, fontes]) => (
-                    <li key={campo}>
-                      <code className="t-2xs">{campo}</code>
-                      <span className="t-2xs muted-line">{fontes.join(", ")}</span>
-                    </li>
-                  ))}
+                {Object.entries(origens).map(([campo, origem]) => (
+                  <li key={campo}>
+                    <code className="t-2xs">{campo}</code>
+                    {/* Sem fonte é DITO, não omitido: "o agente escreveu do próprio
+                        conhecimento" é uma afirmação diferente de "ninguém escreveu isto". */}
+                    <span className="t-2xs muted-line">
+                      {origem.sources.length ? origem.sources.join(", ") : t("semFonte")}
+                    </span>
+                  </li>
+                ))}
               </ul>
             ) : (
               <p className="t-2xs muted-line">{t("procedenciaVazia")}</p>
@@ -457,7 +467,7 @@ export function AgentWizard({
               <p className="t-xs muted-line">
                 {t("contagem", { count: instrucoes.length })}
                 {instrucoes.trim() ? ` · ${t("minimoAtendido")}` : ""}
-                {origens.instructions?.length ? ` · ${t("escritoPeloAgente")}` : ` · ${t("escritoPorVoce")}`}
+                {origens.instructions ? ` · ${t("escritoPeloAgente")}` : ` · ${t("escritoPorVoce")}`}
               </p>
               <label className="muted t-xs" htmlFor="w-model">
                 {t("modelLabel")}

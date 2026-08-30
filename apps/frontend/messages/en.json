@@ -148,7 +148,8 @@
     "alcanceBase": "search {name}",
     "alcanceToolbox": "use the toolbox {name}",
     "alcanceMcp": "call {label}",
-    "verDocumento": "See the document that will be sent"
+    "verDocumento": "See the document that will be sent",
+    "semFonte": "no source — from the model's own knowledge"
   },
   "agents": {
     "title": "Agents",

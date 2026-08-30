@@ -6,7 +6,7 @@ seam rather than a second format:
 
     npm install -g openwiki
     cd <repo>
-    openwiki code --update --print          # writes openwiki/**/*.md (OKF v0.1)
+    openwiki code --update --print          # writes openwiki/**/*.md (OKF v0.2 desde 0.4.0)
 
 OpenWiki writes Markdown with YAML front matter under `openwiki/`, plus navigation
 (`index.md` per directory), scaffold files (`_skeleton.md`, `_plan.md`) and a run
@@ -22,6 +22,20 @@ three paths stay distinguishable in the KB.
 Front matter is stripped: it is OKF transport metadata (`okf_version`, `tags`,
 `type`), not content, and indexing it would put YAML in the retrieval corpus. The
 `title` is lifted out of it first.
+
+E O QUE A v0.2 TROUXE JUNTO — `generated {by,at}`, `verified [{by,at}]` e `sources
+[{id,resource}]`, por página — **é descartado aqui, deliberadamente**, e não por
+falta de valor: são exatamente os sinais de confiança que este produto quer. O
+motivo é o destino. `manifest.json` segue um contrato **vendorizado**, que o
+próprio schema manda manter "idêntico byte a byte" com o projeto de origem
+(`docbundle.schema.json`), então não há campo onde recebê-los sem divergir de um
+contrato que não é nosso.
+
+O caminho, quando isso for feito: um arquivo AO LADO do manifest (não dentro
+dele), lido pelo ingest se existir. Medido e registrado em
+`docs/superpowers/specs/2026-08-27-openwiki-claims-medicao.md` §5.4 — que também
+prova que o front matter v0.2 real atravessa `_split_front_matter` sem vazar YAML
+para o corpo.
 
 Output structure (per ingest_docbundles.collect_pages):
     <out>/<component>/<version>/{manifest.json, pages/page-N.md, llms.txt}

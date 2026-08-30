@@ -1,3 +1,8 @@
+---
+type: runbook
+title: "Runbook: Deploy rollback procedure"
+description: "Applies to: Services deployed through the standard GitOps pipeline"
+---
 # Runbook: Deploy rollback procedure
 
 **Applies to:** Services deployed through the standard GitOps pipeline.

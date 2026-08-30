@@ -1,3 +1,8 @@
+---
+type: runbook
+title: "Policy: Secrets management"
+description: "Applies to: All engineers handling credentials, tokens, and keys"
+---
 # Policy: Secrets management
 
 **Applies to:** All engineers handling credentials, tokens, and keys.

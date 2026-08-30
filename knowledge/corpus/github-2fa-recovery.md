@@ -1,3 +1,8 @@
+---
+type: runbook
+title: "Runbook: GitHub 2FA recovery"
+description: "Applies to: Engineers locked out of GitHub due to a lost 2FA device"
+---
 # Runbook: GitHub 2FA recovery
 
 **Applies to:** Engineers locked out of GitHub due to a lost 2FA device.

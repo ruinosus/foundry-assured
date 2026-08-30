@@ -1,3 +1,8 @@
+---
+type: runbook
+title: "Runbook: Onboarding a new engineer"
+description: "Applies to: First-day setup for engineers joining a product team"
+---
 # Runbook: Onboarding a new engineer
 
 **Applies to:** First-day setup for engineers joining a product team.

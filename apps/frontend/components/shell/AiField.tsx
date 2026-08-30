@@ -26,8 +26,14 @@ import { useChatDock } from "@/lib/chat-dock";
 
 /** O agente que atende o wizard. Fixo aqui e não escolhido pela pessoa: só ele sabe preencher
  *  formulário E consegue chamar a tool de proposta (os domínios grounded não recebem tools do
- *  cliente — medido). Deixar a escolha aberta produziria uma conversa educada e inútil. */
-const AGENTE = "builder";
+ *  cliente — medido). Deixar a escolha aberta produziria uma conversa educada e inútil.
+ *
+ *  EXPORTADO porque a procedência OKF precisa dele: `generated.by` é quem escreveu o texto, e
+ *  quem escreve é este agente. Uma segunda constante com o mesmo valor divergiria no dia em que
+ *  o agente do formulário mudasse de nome — e divergiria em silêncio, num campo de metadata que
+ *  ninguém lê até a auditoria. */
+export const AGENTE_DO_FORMULARIO = "builder";
+const AGENTE = AGENTE_DO_FORMULARIO;
 
 export function AiField({
   field,

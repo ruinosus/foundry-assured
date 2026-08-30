@@ -345,6 +345,12 @@ jobs:
       # aberto sem ninguém aprovar.
       - name: Payload da decisão (recusa com motivo, e nada torto aprova)
         run: uv run python -m tests.helpdesk.reject_reason_test
+      # A troca de vocabulário da procedência (mapa nosso → OKF v0.2) tem uma falha silenciosa:
+      # recursos publicados ANTES carregam o formato antigo para sempre, e uma leitura que só
+      # entendesse o novo os apagaria da trilha sem erro nenhum. O gate lê os dois — e prova que
+      # o `verified` (de onde sai o trust tier) vem de `actor()`, nunca do documento.
+      - name: Procedência em OKF v0.2 (e o formato antigo sobrevive)
+        run: uv run python -m tests.foundry.provenance_okf_test
 
       # ADR-020: two runtimes in one backend. The route snapshot's third profile is what proves
       # the LangGraph domain actually mounts (/oncall), and the registry test that the two
@@ -708,6 +714,12 @@ jobs:
       # a partir do resultado e falha se não baterem byte a byte.
       - name: Diff da proposta de campo
         run: npm run verify:text-diff
+      # A procedência que viaja no `metadata` da versão publicada fala OKF v0.2 (a spec do Google
+      # Cloud que este repositório já produz em `openwiki/`). O gate guarda a distinção que
+      # motivou a troca: um campo escrito pelo agente SEM fonte continua aparecendo, em vez de
+      # sumir e virar indistinguível de um campo digitado à mão.
+      - name: Procedência em OKF v0.2
+        run: npm run verify:okf
 
       # O app importa `defaultRehypePlugins` de "streamdown" e entrega a lista ao renderer do
       # CopilotKit — o que só funciona enquanto os dois resolvem a MESMA cópia. Em 2026-08-20 o
