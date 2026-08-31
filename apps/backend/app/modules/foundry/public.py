@@ -22,6 +22,10 @@ from app.modules.foundry.internal.agent_write import (
 from app.modules.foundry.internal.agents import get_agent, list_agents
 from app.modules.foundry.internal.assist import suggest
 from app.modules.foundry.internal.chat import chat_client, set_chat_middleware
+from app.modules.foundry.internal.connection_credentials import (
+    ConnectionCredentialUnavailable,
+    resolve_connection_bearer,
+)
 from app.modules.foundry.internal.flow_store import load_flow, save_flow
 from app.modules.foundry.internal.github_source import ingest_repo
 from app.modules.foundry.internal.knowledge_catalog import get_knowledge, list_knowledge
@@ -57,6 +61,7 @@ from app.modules.foundry.internal.toolboxes import (
 
 __all__ = [
     "KNOWN_CATALOGS",
+    "ConnectionCredentialUnavailable",
     "chat_client",
     "create_agent_version",
     "create_knowledge",
@@ -83,6 +88,7 @@ __all__ = [
     "mcp_url",
     "preview_skill",
     "qualify_agent_name",
+    "resolve_connection_bearer",
     "resolve_toolbox_default_version",
     "resolve_toolbox_version",
     "save_flow",

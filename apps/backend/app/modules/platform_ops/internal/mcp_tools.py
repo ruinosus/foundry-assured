@@ -54,18 +54,9 @@ def _foundry_connection_header_provider(connection_id: str):
     """Broker a non-OBO credential from the tenant's Foundry connection at call time — Foundry is
     the store; we never persist the secret. (Internal path; the hosted path uses get_mcp_tool.)"""
     def provider(_existing: dict) -> dict:
-        from azure.ai.projects import AIProjectClient
+        from app.modules.foundry.public import resolve_connection_bearer
 
-        from app.modules.tenancy.public import tenant_config
-        from app.shared.auth import credential_for_request
-        client = AIProjectClient(
-            endpoint=tenant_config().foundry_project_endpoint, credential=credential_for_request())
-        conn = client.connections.get(connection_id, include_credentials=True)
-        key = getattr(conn.credentials, "api_key", None)  # ApiKeyCredentials.api_key (read-only)
-        if not key:  # non-ApiKey Foundry connection (e.g. SAS/Entra) → clear error, not an opaque AttributeError
-            raise RuntimeError(
-                f"Foundry connection {connection_id!r} has no api_key credential "
-                "(only ApiKey connections are supported on the internal path)")
+        key = resolve_connection_bearer(connection_id)
         return {"Authorization": f"Bearer {key}"}
     return provider
 

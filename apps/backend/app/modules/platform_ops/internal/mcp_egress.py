@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ipaddress
+import re
 import socket
 import threading
 import time
@@ -22,6 +23,10 @@ from app.modules.platform_ops.internal.mcp_endpoints import (
 )
 from app.modules.platform_ops.internal.mcp_endpoints import (
     validate_mcp_origin as validate_origin_structure,
+)
+from app.modules.platform_ops.internal.mcp_registry import (
+    enabled_servers,
+    server_for_kind,
 )
 from app.modules.tenancy.public import current_tenant_id
 
@@ -191,6 +196,79 @@ def validate_mcp_origin(
     return origin
 
 
+def _matches_registered_origin(template: str, origin: str) -> bool:
+    if "{org}" not in template:
+        return template == origin
+    pattern = re.escape(template).replace(re.escape("{org}"), r"[^/?#]+")
+    return re.fullmatch(pattern, origin) is not None
+
+
+def _cached_bearer_provider(resolver: Callable[[], str]):
+    from azure.core.exceptions import AzureError
+
+    from app.modules.foundry.public import ConnectionCredentialUnavailable
+
+    bearer: str | None = None
+
+    def provider(_headers: dict[str, Any]) -> dict[str, str]:
+        nonlocal bearer
+        if bearer is None:
+            try:
+                bearer = resolver()
+            except (AzureError, ConnectionCredentialUnavailable):
+                raise EgressDenied("MCP_AUTH_NOT_AVAILABLE") from None
+            if not isinstance(bearer, str) or not bearer:
+                raise EgressDenied("MCP_AUTH_NOT_AVAILABLE")
+        return {"Authorization": f"Bearer {bearer}"}
+
+    return provider
+
+
+def _endpoint_header_provider(
+    endpoint,
+    *,
+    connection_lookup,
+    connection_credential_resolver,
+    request_credential,
+):
+    if endpoint.auth_mode == "public":
+        return None
+    if endpoint.auth_mode == "connection":
+        connection = connection_lookup(endpoint.connection_ref)
+        server = server_for_kind(connection.kind) if connection is not None else None
+        if (
+            connection is None
+            or not connection.enabled
+            or not connection.foundry_connection_id
+            or server is None
+            or server.auth not in {"github_pat", "oauth_passthrough"}
+            or not _matches_registered_origin(server.url, endpoint.origin)
+        ):
+            raise EgressDenied("MCP_AUTH_NOT_AVAILABLE")
+        return _cached_bearer_provider(
+            lambda: connection_credential_resolver(
+                connection.foundry_connection_id, endpoint.origin
+            )
+        )
+    if endpoint.auth_mode == "obo":
+        server = next(
+            (
+                candidate
+                for candidate in enabled_servers()
+                if candidate.auth == "obo"
+                and candidate.obo_scope
+                and _matches_registered_origin(candidate.url, endpoint.origin)
+            ),
+            None,
+        )
+        if server is None:
+            raise EgressDenied("MCP_AUTH_NOT_AVAILABLE")
+        return _cached_bearer_provider(
+            lambda: request_credential().get_token(server.obo_scope).token
+        )
+    raise EgressDenied("MCP_AUTH_NOT_AVAILABLE")
+
+
 async def discover_endpoint(
     endpoint_id: str,
     *,
@@ -199,6 +277,9 @@ async def discover_endpoint(
     resolver: Callable[[str, int], list[str]] = _resolve,
     discovery: Callable[..., Any] = discover_endpoint_source,
     evidence_store=None,
+    connection_lookup=None,
+    connection_credential_resolver=None,
+    request_credential=None,
 ) -> dict:
     target_store = endpoint_store or get_endpoint_store()
     endpoint = get_endpoint_record(endpoint_id, store=target_store)
@@ -206,8 +287,25 @@ async def discover_endpoint(
         raise EgressDenied("MCP_SOURCE_NOT_FOUND")
     if endpoint.status != "approved":
         raise EgressDenied("MCP_ENDPOINT_NOT_APPROVED")
-    if endpoint.auth_mode != "public":
-        raise EgressDenied("MCP_AUTH_NOT_AVAILABLE")
+
+    if connection_lookup is None:
+        from app.modules.tenancy.public import current_connection
+
+        connection_lookup = current_connection
+    if connection_credential_resolver is None:
+        from app.modules.foundry.public import resolve_connection_bearer
+
+        connection_credential_resolver = resolve_connection_bearer
+    if request_credential is None:
+        from app.shared.auth import credential_for_request
+
+        request_credential = credential_for_request
+    header_provider = _endpoint_header_provider(
+        endpoint,
+        connection_lookup=connection_lookup,
+        connection_credential_resolver=connection_credential_resolver,
+        request_credential=request_credential,
+    )
 
     tenant_key = _tenant_key()
     target_leases = lease_store or discovery_lease_store()
@@ -217,7 +315,7 @@ async def discover_endpoint(
         return await discovery(
             {"kind": "endpoint", "id": endpoint.id, "url": origin},
             follow_redirects=False,
-            header_provider=None,
+            header_provider=header_provider,
             evidence_store=evidence_store,
         )
     finally:

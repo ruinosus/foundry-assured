@@ -49,6 +49,7 @@ __all__ = [
     "TableStorageTenantStore",
     "TenantConfig",
     "TenantRecord",
+    "current_connection",
     "current_tenant_id",
     "domain_deps",
     "domain_enabled",
@@ -65,6 +66,20 @@ __all__ = [
     "tenant_store",
     "validate_kind",
 ]
+
+
+def current_connection(connection_id: str) -> Connection | None:
+    """Resolve uma referência somente dentro do tenant da request atual."""
+    store = tenant_store()
+    if store is None:
+        return None
+    record = store.get(current_tenant_id())
+    if record is None:
+        return None
+    return next(
+        (connection for connection in record.connections if connection.id == connection_id),
+        None,
+    )
 
 
 def domain_deps(domain_id: str) -> list:

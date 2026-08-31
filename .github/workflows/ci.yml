@@ -95,6 +95,24 @@ jobs:
       - name: Prompt contract suite (composed AgentSchema definitions)
         run: uv run python -m eval.prompt_contract_test
 
+      # F01/ADR-032: documentos autoráveis falham alto antes de qualquer publicação. Os três
+      # gates separam sintaxe/identidade, resolução tenant-safe e autorização declarativa para
+      # que uma regressão diga qual contrato foi quebrado, em vez de virar um único teste opaco.
+      - name: OKF authoring profile — envelope, identity, publication state
+        run: uv run python -m tests.okf.envelope_test
+      - name: OKF authoring profile — references, tenancy, immutable revisions
+        run: uv run python -m tests.okf.catalog_test
+      - name: OKF authoring profile — writes and cannotWrite
+        run: uv run python -m tests.okf.authoring_test
+      - name: OKF authoring profile — schemas and ticket fixture
+        run: uv run python -m tests.okf.schema_test
+      - name: OKF authoring profile — legacy compatibility and migration
+        run: uv run python -m tests.okf.migration_test
+      - name: OKF ChangeSet — multi-document proposal and review
+        run: uv run python -m tests.okf.changeset_test
+      - name: Proposer remains read-only
+        run: uv run python -m tests.architecture.proposer_read_only_test
+
       # Telemetry landed BEFORE the module refactor (spec Phase 5.5a) so the moves are not
       # made blind — a route snapshot cannot see a latency or cost regression. The risk of
       # adding it is that it stops being free, so both defaults are asserted: no exporter
@@ -180,6 +198,15 @@ jobs:
 
       - name: MCP endpoint direto — egress público e lease de discovery
         run: uv run python -m tests.platform_ops.mcp_egress_test
+
+      - name: MCP discovery — autenticação lazy e fail-closed
+        run: uv run python -m tests.platform_ops.mcp_discovery_auth_test
+
+      - name: MCP discovery — canário de segredo fora de response e evidência
+        run: uv run python -m tests.platform_ops.mcp_secret_canary_test
+
+      - name: MCP discovery — Connection isolada por tenant
+        run: uv run python -m tests.tenancy.isolation_test
 
       # HITL decisions (ADR-019). `edit` lets the approver CORRECT an action before it runs,
       # which the Agent Framework cannot express — its approval is a boolean. Editing runs the
