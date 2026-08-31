@@ -63,11 +63,17 @@ def _snapshot_reasons(
         or str(observed.get("resolvedVersion") or "")
         != str(source.get("resolvedVersion") or "")
     )
-    reasons = ["MCP_SNAPSHOT_STALE"] if source_changed else []
+    reasons = (
+        ["MCP_SNAPSHOT_STALE"]
+        if source_changed or snapshot.get("status") == "stale"
+        else []
+    )
     if snapshot.get("hash") != binding.snapshot_hash and not reasons:
         reasons.append("MCP_SNAPSHOT_STALE")
     if binding.use_default:
         reasons.append("MCP_DEFAULT_VERSION_REQUIRES_PIN")
+    if (snapshot.get("drift") or {}).get("blocking"):
+        reasons.append("MCP_DRIFT_BLOCKING")
     return reasons
 
 

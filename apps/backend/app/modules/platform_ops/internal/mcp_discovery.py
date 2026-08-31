@@ -11,7 +11,7 @@ from uuid import uuid4
 
 import rfc8785
 
-from app.modules.audit.public import read_evidence, write_evidence
+from app.modules.audit.public import read_evidence, record, write_evidence
 from app.modules.foundry.public import resolve_toolbox_version
 from app.modules.tenancy.public import current_tenant_id
 
@@ -60,38 +60,37 @@ def _plain(value: Any) -> Any:
     raise DiscoveryRejected("Metadata MCP contém tipo não suportado.")
 
 
+def _schema_property_count(node: Any, depth: int = 1) -> int:
+    if depth > _MAX_SCHEMA_DEPTH:
+        raise DiscoveryRejected("Schema MCP excede a profundidade permitida.")
+    if isinstance(node, list):
+        return sum(_schema_property_count(child, depth + 1) for child in node)
+    if not isinstance(node, dict):
+        return 0
+    properties = node.get("properties")
+    own_count = len(properties) if isinstance(properties, dict) else 0
+    total = own_count + sum(
+        _schema_property_count(child, depth + 1) for child in node.values()
+    )
+    if total > _MAX_SCHEMA_PROPERTIES:
+        raise DiscoveryRejected("Schema MCP excede o limite de propriedades.")
+    return total
+
+
 def _schema(value: Any) -> dict | None:
     if value is None:
         return None
     schema = _plain(value)
     if not isinstance(schema, dict):
         raise DiscoveryRejected("Schema MCP deve ser um objeto JSON.")
-    property_count = 0
-
-    def visit(node: Any, depth: int) -> None:
-        nonlocal property_count
-        if depth > _MAX_SCHEMA_DEPTH:
-            raise DiscoveryRejected("Schema MCP excede a profundidade permitida.")
-        if isinstance(node, dict):
-            properties = node.get("properties")
-            if isinstance(properties, dict):
-                property_count += len(properties)
-                if property_count > _MAX_SCHEMA_PROPERTIES:
-                    raise DiscoveryRejected("Schema MCP excede o limite de propriedades.")
-            for child in node.values():
-                visit(child, depth + 1)
-        elif isinstance(node, list):
-            for child in node:
-                visit(child, depth + 1)
-
-    visit(schema, 1)
+    _schema_property_count(schema)
     if len(rfc8785.dumps(schema)) > _MAX_SCHEMA_BYTES:
         raise DiscoveryRejected("Schema MCP excede o limite permitido.")
     return schema
 
 
-def _annotations(tool: Any) -> dict:
-    raw = _plain(getattr(tool, "annotations", None)) if getattr(tool, "annotations", None) else {}
+def _annotations(value: Any) -> dict:
+    raw = _plain(value) if value else {}
     if not isinstance(raw, dict):
         return {}
     return {key: raw[key] for key in _ANNOTATIONS if key in raw}
@@ -101,9 +100,15 @@ def _hash(value: dict) -> str:
     return hashlib.sha256(rfc8785.dumps(value)).hexdigest()
 
 
+def _field(tool: Any, name: str, default: Any = None) -> Any:
+    if isinstance(tool, dict):
+        return tool.get(name, default)
+    return getattr(tool, name, default)
+
+
 def _sanitize(tool: Any) -> dict:
-    name = str(getattr(tool, "name", "") or "")
-    description = str(getattr(tool, "description", "") or "")
+    name = str(_field(tool, "name", "") or "")
+    description = str(_field(tool, "description", "") or "")
     if not name or len(name) > 128:
         raise DiscoveryRejected("Nome de tool MCP inválido.")
     if len(description) > 2048:
@@ -111,11 +116,16 @@ def _sanitize(tool: Any) -> dict:
     contract = {
         "name": name,
         "description": description,
-        "inputSchema": _schema(getattr(tool, "inputSchema", None)) or {},
-        "outputSchema": _schema(getattr(tool, "outputSchema", None)),
-        "annotations": _annotations(tool),
+        "inputSchema": _schema(_field(tool, "inputSchema")) or {},
+        "outputSchema": _schema(_field(tool, "outputSchema")),
+        "annotations": _annotations(_field(tool, "annotations")),
     }
     return {**contract, "contractHash": _hash(contract)}
+
+
+def canonical_tool_hash(tool: Any) -> str:
+    """Calcula SHA-256/JCS somente sobre o contrato MCP permitido."""
+    return str(_sanitize(tool)["contractHash"])
 
 
 def _protocol_version(tool: Any) -> str:
@@ -144,24 +154,33 @@ async def discover_toolbox(
     toolbox_resolver=resolve_toolbox_version,
     mcp_factory=_default_mcp_factory,
     evidence_store=None,
+    source_store=None,
+    audit_recorder=record,
     http_client_factory=None,
 ) -> dict:
     """Executa initialize + tools/list e grava somente o snapshot sanitizado."""
     source = toolbox_resolver(name, version)
-    return await _discover_source(
-        {
-            "kind": "toolbox",
-            "id": source["id"],
-            "name": source["name"],
-            "resolvedVersion": source["version"],
-            "url": source["url"],
-        },
-        header_provider=_auth_header_provider,
-        follow_redirects=False,
-        mcp_factory=mcp_factory,
-        evidence_store=evidence_store,
-        http_client_factory=http_client_factory,
-    )
+    normalized_source = {
+        "kind": "toolbox",
+        "id": source["id"],
+        "name": source["name"],
+        "resolvedVersion": source["version"],
+        "url": source["url"],
+    }
+    try:
+        return await _discover_source(
+            normalized_source,
+            header_provider=_auth_header_provider,
+            follow_redirects=False,
+            mcp_factory=mcp_factory,
+            evidence_store=evidence_store,
+            source_store=source_store,
+            audit_recorder=audit_recorder,
+            http_client_factory=http_client_factory,
+        )
+    except Exception as exc:
+        _mark_failed_discovery(normalized_source, exc, source_store)
+        raise
 
 
 async def discover_endpoint_source(
@@ -170,20 +189,39 @@ async def discover_endpoint_source(
     follow_redirects: bool,
     header_provider,
     evidence_store=None,
+    source_store=None,
+    audit_recorder=record,
     mcp_factory=_default_mcp_factory,
     http_client_factory=None,
 ) -> dict:
     """Descobre uma origem direta já aprovada e validada pela política de egress."""
     if follow_redirects:
         raise DiscoveryRejected("Redirect MCP não é permitido.")
-    return await _discover_source(
-        source,
-        header_provider=header_provider,
-        follow_redirects=False,
-        mcp_factory=mcp_factory,
-        evidence_store=evidence_store,
-        http_client_factory=http_client_factory,
-    )
+    try:
+        return await _discover_source(
+            source,
+            header_provider=header_provider,
+            follow_redirects=False,
+            mcp_factory=mcp_factory,
+            evidence_store=evidence_store,
+            source_store=source_store,
+            audit_recorder=audit_recorder,
+            http_client_factory=http_client_factory,
+        )
+    except Exception as exc:
+        _mark_failed_discovery(source, exc, source_store)
+        raise
+
+
+def _mark_failed_discovery(source: dict[str, Any], exc: Exception, source_store) -> None:
+    from app.modules.platform_ops.internal.mcp_drift import mark_mcp_source_stale
+
+    error_code = "MCP_SOURCE_UNAVAILABLE"
+    if isinstance(exc, TimeoutError):
+        error_code = "MCP_DISCOVERY_TIMEOUT"
+    elif isinstance(exc, DiscoveryRejected):
+        error_code = "MCP_PROTOCOL_INVALID"
+    mark_mcp_source_stale(source, error_code=error_code, store=source_store)
 
 
 async def _discover_source(
@@ -193,6 +231,8 @@ async def _discover_source(
     follow_redirects: bool,
     mcp_factory,
     evidence_store,
+    source_store,
+    audit_recorder,
     http_client_factory,
 ) -> dict:
     tenant_key = _tenant_key()
@@ -281,6 +321,30 @@ async def _discover_source(
         ],
         "drift": None,
     }
+    from app.modules.platform_ops.internal.mcp_drift import observe_mcp_snapshot
+
+    state = observe_mcp_snapshot(
+        snapshot,
+        store=source_store,
+        snapshot_reader=lambda identifier: read_evidence(
+            identifier, scope=tenant_key, store=evidence_store
+        ),
+    )
+    projection["status"] = state["status"]
+    projection["drift"] = state["drift"]
+    audit_recorder(
+        scope=tenant_key,
+        actor="system:mcp-discovery",
+        kind="write",
+        summary="Snapshot MCP observado",
+        ref=snapshot_id,
+        detail={
+            "sourceId": snapshot["source"]["id"],
+            "snapshotHash": snapshot["snapshotHash"],
+            "toolCount": len(tools),
+            "driftCount": len((state.get("drift") or {}).get("tools", ())),
+        },
+    )
     _PROJECTIONS[(tenant_key, snapshot_id)] = projection
     return projection
 
@@ -292,4 +356,9 @@ def get_snapshot(snapshot_id: str, *, evidence_store=None) -> dict | None:
     snapshot = read_evidence(snapshot_id, scope=_tenant_key(), store=evidence_store)
     if snapshot is None or snapshot.get("tenantKey") != _tenant_key():
         return None
-    return projection
+    from app.modules.platform_ops.internal.mcp_drift import get_mcp_source
+
+    state = get_mcp_source(str((projection.get("source") or {}).get("id") or ""))
+    if state is None:
+        return projection
+    return {**projection, "status": state["status"], "drift": state["drift"]}

@@ -70,6 +70,10 @@
     ],
     [
       "GET",
+      "/authoring/mcp-sources/{source_id}"
+    ],
+    [
+      "GET",
       "/authoring/toolboxes"
     ],
     [
@@ -270,6 +274,10 @@
     ],
     [
       "POST",
+      "/authoring/mcp-snapshots/{snapshot_id}/review"
+    ],
+    [
+      "POST",
       "/builder"
     ],
     [
@@ -449,6 +457,10 @@
     [
       "GET",
       "/authoring/mcp-snapshots/{snapshot_id}"
+    ],
+    [
+      "GET",
+      "/authoring/mcp-sources/{source_id}"
     ],
     [
       "GET",
@@ -660,6 +672,10 @@
     ],
     [
       "POST",
+      "/authoring/mcp-snapshots/{snapshot_id}/review"
+    ],
+    [
+      "POST",
       "/builder"
     ],
     [
@@ -851,6 +867,10 @@
     [
       "GET",
       "/authoring/mcp-snapshots/{snapshot_id}"
+    ],
+    [
+      "GET",
+      "/authoring/mcp-sources/{source_id}"
     ],
     [
       "GET",
@@ -1063,6 +1083,10 @@
     [
       "POST",
       "/authoring/mcp-endpoints/{endpoint_id}/approval"
+    ],
+    [
+      "POST",
+      "/authoring/mcp-snapshots/{snapshot_id}/review"
     ],
     [
       "POST",

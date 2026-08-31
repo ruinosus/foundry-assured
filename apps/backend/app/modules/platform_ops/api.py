@@ -19,20 +19,26 @@ from app.modules.platform_ops.public import (
     EgressDenied,
     EndpointConflict,
     EndpointInvalid,
+    SnapshotReviewConflict,
+    SnapshotReviewInvalid,
+    SnapshotReviewNotFound,
     approve_mcp_endpoint,
     classify_mcp_tool,
     create_mcp_endpoint,
     discover_endpoint,
     discover_toolbox,
     evaluate_mcp_binding,
+    get_mcp_source,
     get_snapshot,
     list_mcp_endpoints,
     project_snapshot_classifications,
+    review_mcp_snapshot,
 )
 from app.shared.auth import auth_dependencies, require_role
 
 router = APIRouter(prefix="/authoring", tags=["authoring"], dependencies=auth_dependencies())
 _admin = [Depends(require_role("Admin"))]
+_SNAPSHOT_NOT_FOUND = "Snapshot não encontrado."
 
 
 class ToolboxSource(BaseModel):
@@ -84,6 +90,13 @@ class ClassificationBody(BaseModel):
     effect: Literal["read", "write"]
     reason: str = Field(min_length=1, max_length=500)
     expected_revision: int = Field(alias="expectedRevision", ge=0)
+
+
+class SnapshotReviewBody(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    reason: str = Field(min_length=1, max_length=500)
+    expected_revision: int = Field(alias="expectedRevision", ge=1)
 
 
 @router.post("/mcp-endpoints", status_code=201, responses={422: {}})
@@ -162,11 +175,39 @@ async def discover(body: DiscoveryBody) -> dict:
 def snapshot(snapshot_id: str) -> dict:
     result = get_snapshot(snapshot_id)
     if result is None:
-        raise HTTPException(404, "Snapshot não encontrado.")
+        raise HTTPException(404, _SNAPSHOT_NOT_FOUND)
     try:
         return project_snapshot_classifications(snapshot_id, result)
     except ClassificationNotFound as exc:
-        raise HTTPException(404, "Snapshot não encontrado.") from exc
+        raise HTTPException(404, _SNAPSHOT_NOT_FOUND) from exc
+
+
+@router.get("/mcp-sources/{source_id}", responses={404: {}})
+def source(source_id: str) -> dict:
+    result = get_mcp_source(source_id)
+    if result is None:
+        raise HTTPException(404, "Fonte MCP não encontrada.")
+    return result
+
+
+@router.post(
+    "/mcp-snapshots/{snapshot_id}/review",
+    dependencies=_admin,
+    responses={404: {}, 409: {}, 422: {}},
+)
+def review_snapshot(snapshot_id: str, body: SnapshotReviewBody) -> dict:
+    try:
+        return review_mcp_snapshot(
+            snapshot_id,
+            reason=body.reason,
+            expected_revision=body.expected_revision,
+        )
+    except SnapshotReviewNotFound as exc:
+        raise HTTPException(404, _SNAPSHOT_NOT_FOUND) from exc
+    except SnapshotReviewConflict as exc:
+        raise HTTPException(409, str(exc)) from exc
+    except SnapshotReviewInvalid as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @router.put(

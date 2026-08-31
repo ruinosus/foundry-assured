@@ -240,7 +240,7 @@ def derive_runtime_config(
     *,
     store: ClassificationStore | None = None,
     permitted: Callable[[str], bool] = lambda _name: True,
-    current: bool = True,
+    current: bool | Callable[[str, str | None], bool] = True,
 ) -> dict[str, Any]:
     """Deriva allowlist e aprovação; policy só pode remover tools."""
     source_id = str((snapshot.get("source") or {}).get("id") or "")
@@ -257,11 +257,15 @@ def derive_runtime_config(
         decision = target_store.get(
             _tenant_key(), source_id, tool_name, contract_hash
         )
+        decision_effect = decision.effect if decision else None
+        is_current = current
+        if callable(current):
+            is_current = current(tool_name, decision_effect)
         state = effective_tool_state(
             decision,
             tool.get("annotations") or {},
             permitted=permitted(tool_name),
-            current=current,
+            current=is_current,
         )
         selected.append({"name": tool_name, **state})
 
@@ -332,12 +336,25 @@ def derive_snapshot_runtime(
     snapshot = snapshot_reader(snapshot_id)
     if snapshot is None or snapshot.get("tenantKey") != _tenant_key():
         raise ClassificationNotFound("MCP_SOURCE_NOT_FOUND")
+    from app.modules.platform_ops.internal.mcp_drift import source_tool_current_state
+
+    source_id = str((snapshot.get("source") or {}).get("id") or "")
+
+    def tracked_current(tool_name: str, effect: str | None) -> bool:
+        state = source_tool_current_state(
+            snapshot_id,
+            tool_name,
+            source_id=source_id,
+            classification_effect=effect,
+        )
+        return current if state is None else current and state
+
     return derive_runtime_config(
         snapshot,
         tool_names,
         store=store,
         permitted=permitted,
-        current=current,
+        current=tracked_current,
     )
 
 

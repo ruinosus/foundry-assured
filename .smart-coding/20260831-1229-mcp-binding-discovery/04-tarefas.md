@@ -16,7 +16,7 @@
 - [x] F03 [AFK] Endpoint direto aprovado e egress fail-closed — deps: F01 — US: US-002, US-005, US-006 — sec: auth, input-validation, rate-limit, logs → F03.md
 - [x] F04 [AFK] Autenticação sem transporte de segredo — deps: F03 — US: US-003, US-005, US-006, US-009 — sec: auth, criptografia, logs, dados-sensiveis → F04.md
 - [x] F05 [AFK] Classificação Admin e enforcement runtime — deps: F02, F04 — US: US-004, US-010 — sec: auth, input-validation, logs → F05.md
-- [ ] F06 [AFK] Drift por tool, review e stale — deps: F05 — US: US-007, US-008, US-010 — sec: auth, input-validation, logs → F06.md
+- [x] F06 [AFK] Drift por tool, review e stale — deps: F05 — US: US-007, US-008, US-010 — sec: auth, input-validation, logs → F06.md
 - [ ] F07 [AFK] Discovery adversarial limitada e observável — deps: F03, F06 — US: US-003, US-006, US-009 — sec: input-validation, rate-limit, logs, dados-sensiveis → F07.md
 - [ ] F08 [HITL] Validação implantada de segurança e evidência — deps: F04, F06, F07 — US: US-002, US-006, US-009, US-010 — sec: auth, rate-limit, criptografia, logs, dados-sensiveis → F08.md
 
