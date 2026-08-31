@@ -62,6 +62,14 @@
     ],
     [
       "GET",
+      "/authoring/mcp-snapshots/{snapshot_id}"
+    ],
+    [
+      "GET",
+      "/authoring/toolboxes"
+    ],
+    [
+      "GET",
       "/builder-assist/stats"
     ],
     [
@@ -242,6 +250,10 @@
     ],
     [
       "POST",
+      "/authoring/mcp-discoveries"
+    ],
+    [
+      "POST",
       "/builder"
     ],
     [
@@ -409,6 +421,14 @@
     [
       "GET",
       "/audit/trail/{scope}/conversation/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/authoring/mcp-snapshots/{snapshot_id}"
+    ],
+    [
+      "GET",
+      "/authoring/toolboxes"
     ],
     [
       "GET",
@@ -600,6 +620,10 @@
     ],
     [
       "POST",
+      "/authoring/mcp-discoveries"
+    ],
+    [
+      "POST",
       "/builder"
     ],
     [
@@ -779,6 +803,14 @@
     [
       "GET",
       "/audit/trail/{scope}/conversation/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/authoring/mcp-snapshots/{snapshot_id}"
+    ],
+    [
+      "GET",
+      "/authoring/toolboxes"
     ],
     [
       "GET",
@@ -971,6 +1003,10 @@
     [
       "POST",
       "/audit/anchors/{scope}"
+    ],
+    [
+      "POST",
+      "/authoring/mcp-discoveries"
     ],
     [
       "POST",

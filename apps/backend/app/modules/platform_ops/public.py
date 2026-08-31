@@ -9,6 +9,11 @@ Write tools sit behind the framework's native tool approval; per-tool role gates
 the AgentSchema documents is Phase 3.5's job (ADR-018).
 """
 
+from app.modules.platform_ops.internal.mcp_discovery import (
+    DiscoveryRejected,
+    discover_toolbox,
+    get_snapshot,
+)
 from app.modules.platform_ops.internal.mcp_registry import (
     SERVERS,
     get_server,
@@ -28,11 +33,14 @@ from app.modules.platform_ops.internal.platform import (
 
 __all__ = [
     "SERVERS",
+    "DiscoveryRejected",
     "build_from_connections",
     "build_hosted_from_connections",
     "build_mcp_tools",
     "build_platform_agent",
+    "discover_toolbox",
     "get_server",
+    "get_snapshot",
     "platform_agent_proxy",
     "platform_configured",
     "server_for_kind",

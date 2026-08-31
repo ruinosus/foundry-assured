@@ -18,6 +18,13 @@ from app.modules.audit.internal.anchor import (
     close_day,
     list_anchors,
 )
+from app.modules.audit.internal.evidence import (
+    EvidenceExists,
+    InMemoryEvidenceStore,
+    InvalidEvidence,
+    read_evidence,
+    write_evidence,
+)
 from app.modules.audit.internal.export import (
     build_package,
     build_report,
@@ -118,7 +125,10 @@ __all__ = [
     "KINDS",
     "AnchorExists",
     "Event",
+    "EvidenceExists",
+    "InMemoryEvidenceStore",
     "InvalidEvent",
+    "InvalidEvidence",
     "actor",
     "actor_detail",
     "build_anchor",
@@ -130,8 +140,10 @@ __all__ = [
     "close_day",
     "list_anchors",
     "read",
+    "read_evidence",
     "receipts",
     "record",
     "redact",
     "verify",
+    "write_evidence",
 ]

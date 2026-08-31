@@ -286,6 +286,7 @@ def include_routers(app) -> None:
     from app.modules.foundry import api as foundry
     from app.modules.hosted import api as chat
     from app.modules.knowledge import api as knowledge
+    from app.modules.platform_ops import api as platform_ops
     from app.modules.proposer import api as proposer
     from app.modules.tickets import api as tickets
     from app.modules.usecases import api as usecases
@@ -313,6 +314,7 @@ def include_routers(app) -> None:
         audit,
         builder_assist,
         knowledge,
+        platform_ops,
     ):
         app.include_router(module.router)
 

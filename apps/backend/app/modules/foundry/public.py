@@ -48,8 +48,10 @@ from app.modules.foundry.internal.toolboxes import (
     create_toolbox_version,
     delete_toolbox,
     get_toolbox,
+    list_toolbox_projection,
     list_toolboxes,
     mcp_url,
+    resolve_toolbox_version,
 )
 
 __all__ = [
@@ -74,11 +76,13 @@ __all__ = [
     "list_catalog",
     "list_knowledge",
     "list_skills",
+    "list_toolbox_projection",
     "list_toolboxes",
     "load_flow",
     "mcp_url",
     "preview_skill",
     "qualify_agent_name",
+    "resolve_toolbox_version",
     "save_flow",
     "set_agent_enabled",
     "set_chat_middleware",

@@ -27,6 +27,7 @@ dependencies = [
     # (app/knowledge/docbundle.schema.json). Official validator — the format is a
     # cross-repo contract, so a hand-rolled check would only encode our reading of it.
     "jsonschema>=4.26.0",
+    "rfc8785>=0.1.4,<0.2",
     # Declarative agent definitions (ADR-013, ADR-015). The documents in
     # apps/backend/agents/ are Microsoft AgentSchema files and this is
     # Microsoft's own reader for that schema — its `_models.py` IS the schema.

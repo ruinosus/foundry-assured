@@ -135,6 +135,91 @@ def list_toolboxes(limit: int = 50) -> list[dict]:
             client.close()
 
 
+def list_toolbox_projection(
+    limit: int = 50,
+    cursor: str | None = None,
+    *,
+    client_factory=None,
+) -> dict:
+    """Projeta uma página oficial de Toolboxes e suas versões, sem persistir catálogo."""
+    if not isinstance(limit, int) or isinstance(limit, bool) or not 1 <= limit <= 100:
+        raise InvalidToolbox("`limit` deve estar entre 1 e 100.")
+    if cursor is not None and (not isinstance(cursor, str) or not cursor.strip()):
+        raise InvalidToolbox("`cursor` deve ser texto não vazio.")
+
+    client = (client_factory or _client)()
+    try:
+        pages = client.toolboxes.list(limit=limit).by_page(continuation_token=cursor)
+        page = next(iter(pages), ())
+        items = []
+        endpoint = str(getattr(client, "endpoint", "") or "").rstrip("/")
+        for item in page:
+            projected = _project(item)
+            name = projected["name"]
+            detail = client.toolboxes.get(name)
+            raw_versions = list(client.toolboxes.list_versions(name))
+            versions = [
+                {
+                    "version": version["version"],
+                    "createdAt": version["created_at"],
+                }
+                for version in (
+                    _project_version(value)
+                    for value in raw_versions
+                )
+            ]
+            default_version = _project(detail)["default_version"]
+            default_detail = next(
+                (value for value in raw_versions
+                 if str(getattr(value, "version", "")) == str(default_version)),
+                None,
+            )
+            items.append(
+                {
+                    "name": name,
+                    "description": getattr(default_detail, "description", None),
+                    "defaultVersion": default_version,
+                    "versions": versions,
+                    "mcpUrl": f"{endpoint}/toolboxes/{name}/mcp?api-version=v1",
+                }
+            )
+        return {
+            "items": items,
+            "nextCursor": getattr(pages, "continuation_token", None),
+        }
+    finally:
+        with contextlib.suppress(Exception):
+            client.close()
+
+
+def resolve_toolbox_version(name: str, version: str, *, client_factory=None) -> dict:
+    """Resolve uma versão existente e devolve a URL developer fixa do Toolbox."""
+    requested_version = str(version or "").strip()
+    if not requested_version:
+        raise InvalidToolbox("`version` é obrigatória para discovery.")
+
+    qualified = qualify(name)
+    client = (client_factory or _client)()
+    try:
+        toolbox = client.toolboxes.get(qualified)
+        versions = list(client.toolboxes.list_versions(qualified))
+        if not any(str(getattr(value, "version", "")) == requested_version for value in versions):
+            raise InvalidToolbox("A versão solicitada da Toolbox não existe.")
+        endpoint = str(getattr(client, "endpoint", "") or "").rstrip("/")
+        return {
+            "name": qualified,
+            "id": getattr(toolbox, "id", None) or qualified,
+            "version": requested_version,
+            "url": (
+                f"{endpoint}/toolboxes/{qualified}/versions/{requested_version}/mcp"
+                "?api-version=v1"
+            ),
+        }
+    finally:
+        with contextlib.suppress(Exception):
+            client.close()
+
+
 def get_toolbox(name: str) -> dict:
     """Um toolbox com o conteúdo da versão default — tools e skills que ele entrega."""
     client = _client()
