@@ -12,3 +12,5 @@
   dod: `mcp_classification_test` 20/20 · `mcp_conformity_test` 19/19 · approval parity/RBAC ok · Ruff/rotas/import-linter ok · 90/90 gates verdes · `/healthz` 200 e classificação ausente 404
 - 2026-08-31T20:05:04Z F06 [~]→[x] jefferson.barnabe commit=f79a2a0
   dod: `mcp_canonical_hash_test` 6/6 · `mcp_drift_test` 12/12 · `mcp_stale_test` 17/17 · Ruff/Pylance/rotas/import-linter ok · 93/93 gates verdes
+- 2026-08-31T20:38:02Z F07 [~]→[x] jefferson.barnabe commit=pendente
+  dod: `mcp_discovery_limits_test` ok · `mcp_discovery_errors_test` ok · `mcp_observability_test` ok · Ruff/Pylance/regressões MCP ok · 96/96 gates verdes

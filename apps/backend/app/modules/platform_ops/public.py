@@ -26,6 +26,7 @@ from app.modules.platform_ops.internal.mcp_conformity import (
     evaluate_mcp_binding,
 )
 from app.modules.platform_ops.internal.mcp_discovery import (
+    DiscoveryLimitExceeded,
     DiscoveryRejected,
     canonical_tool_hash,
     discover_toolbox,
@@ -86,6 +87,7 @@ __all__ = [
     "ClassificationNotFound",
     "ConformityNotFound",
     "DiscoveryBusy",
+    "DiscoveryLimitExceeded",
     "DiscoveryRejected",
     "EgressDenied",
     "EndpointConflict",

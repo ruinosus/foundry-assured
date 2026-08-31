@@ -220,6 +220,16 @@ jobs:
       - name: MCP discovery — canário de segredo fora de response e evidência
         run: uv run python -m tests.platform_ops.mcp_secret_canary_test
 
+      # Threat model: .smart-coding/_threat-models/2026-08-31-mcp-binding-discovery.md
+      - name: MCP discovery — limites adversariais sem snapshot parcial
+        run: uv run python -m tests.platform_ops.mcp_discovery_limits_test
+
+      - name: MCP discovery — erros estáveis e content-free
+        run: uv run python -m tests.platform_ops.mcp_discovery_errors_test
+
+      - name: MCP discovery — logs, spans e métricas agregados
+        run: uv run python -m tests.platform_ops.mcp_observability_test
+
       - name: MCP discovery — Connection isolada por tenant
         run: uv run python -m tests.tenancy.isolation_test
 
