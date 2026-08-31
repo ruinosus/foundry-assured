@@ -18,7 +18,7 @@
 - [x] F05 [AFK] Classificação Admin e enforcement runtime — deps: F02, F04 — US: US-004, US-010 — sec: auth, input-validation, logs → F05.md
 - [x] F06 [AFK] Drift por tool, review e stale — deps: F05 — US: US-007, US-008, US-010 — sec: auth, input-validation, logs → F06.md
 - [x] F07 [AFK] Discovery adversarial limitada e observável — deps: F03, F06 — US: US-003, US-006, US-009 — sec: input-validation, rate-limit, logs, dados-sensiveis → F07.md
-- [ ] F08 [HITL] Validação implantada de segurança e evidência — deps: F04, F06, F07 — US: US-002, US-006, US-009, US-010 — sec: auth, rate-limit, criptografia, logs, dados-sensiveis → F08.md
+- [!] F08 [HITL] Validação implantada de segurança e evidência — deps: F04, F06, F07 — US: US-002, US-006, US-009, US-010 — sec: auth, rate-limit, criptografia, logs, dados-sensiveis → F08.md — bloqueio: egress não implantado; credenciais de dois tenants e revisão humana pendentes
 
 ## Histórico
 

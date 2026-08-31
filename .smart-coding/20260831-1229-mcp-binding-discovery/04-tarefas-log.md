@@ -14,3 +14,5 @@
   dod: `mcp_canonical_hash_test` 6/6 · `mcp_drift_test` 12/12 · `mcp_stale_test` 17/17 · Ruff/Pylance/rotas/import-linter ok · 93/93 gates verdes
 - 2026-08-31T20:38:02Z F07 [~]→[x] jefferson.barnabe commit=17a7601
   dod: `mcp_discovery_limits_test` ok · `mcp_discovery_errors_test` ok · `mcp_observability_test` ok · Ruff/Pylance/regressões MCP ok · 96/96 gates verdes
+- 2026-08-31T21:03:12Z F08 [~]→[!] jefferson.barnabe razão="egress não implantado; credenciais de dois tenants e revisão humana pendentes"
+  dod: gate Azure provou TLS/SSE/WORM/create-once/overwrite-delete negados · falhou por NSG de discovery ausente · 34/34 gates MCP verdes · brokering e access-control fizeram skip sem configuração
