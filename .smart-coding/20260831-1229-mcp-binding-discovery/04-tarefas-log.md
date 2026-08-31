@@ -10,5 +10,5 @@
   dod: `mcp_discovery_auth_test` 12/12 · `mcp_secret_canary_test` 4/4 · `tenancy.isolation_test` 3/3 · import-linter 28/28 contratos · 88/88 gates verdes
 - 2026-08-31T21:05:00Z F05 [~]→[x] jefferson.barnabe commit=eae35d6
   dod: `mcp_classification_test` 20/20 · `mcp_conformity_test` 19/19 · approval parity/RBAC ok · Ruff/rotas/import-linter ok · 90/90 gates verdes · `/healthz` 200 e classificação ausente 404
-- 2026-08-31T20:05:04Z F06 [~]→[x] jefferson.barnabe commit=pendente
+- 2026-08-31T20:05:04Z F06 [~]→[x] jefferson.barnabe commit=f79a2a0
   dod: `mcp_canonical_hash_test` 6/6 · `mcp_drift_test` 12/12 · `mcp_stale_test` 17/17 · Ruff/Pylance/rotas/import-linter ok · 93/93 gates verdes
