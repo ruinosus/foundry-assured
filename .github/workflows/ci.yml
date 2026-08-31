@@ -199,6 +199,12 @@ jobs:
       - name: MCP endpoint direto — egress público e lease de discovery
         run: uv run python -m tests.platform_ops.mcp_egress_test
 
+      - name: MCP binding — classificação Admin e enforcement runtime
+        run: uv run python -m tests.platform_ops.mcp_classification_test
+
+      - name: MCP binding — conformidade fail-closed
+        run: uv run python -m tests.platform_ops.mcp_conformity_test
+
       - name: MCP discovery — autenticação lazy e fail-closed
         run: uv run python -m tests.platform_ops.mcp_discovery_auth_test
 

@@ -8,3 +8,5 @@
   dod: endpoint approval 13/13 · egress 22/22 · infra 6/6 · 84/84 gates verdes antes da revisão final · regressão final Ruff/import-linter/grafo/rotas ok · `/healthz` 200 e POST inseguro 422 · Bicep compilado
 - 2026-08-31T19:12:51Z F04 [~]→[x] jefferson.barnabe commit=ed8b4e9
   dod: `mcp_discovery_auth_test` 12/12 · `mcp_secret_canary_test` 4/4 · `tenancy.isolation_test` 3/3 · import-linter 28/28 contratos · 88/88 gates verdes
+- 2026-08-31T21:05:00Z F05 [~]→[x] jefferson.barnabe commit=pending
+  dod: `mcp_classification_test` 20/20 · `mcp_conformity_test` 19/19 · approval parity/RBAC ok · Ruff/rotas/import-linter ok · 90/90 gates verdes · `/healthz` 200 e classificação ausente 404

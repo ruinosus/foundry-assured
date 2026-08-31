@@ -370,6 +370,10 @@
     ],
     [
       "PUT",
+      "/authoring/mcp-snapshots/{snapshot_id}/tools/{tool_name}/classification"
+    ],
+    [
+      "PUT",
       "/usecases/{case_id}"
     ],
     [
@@ -761,6 +765,10 @@
     [
       "POST",
       "/usecases/{case_id}/outcomes"
+    ],
+    [
+      "PUT",
+      "/authoring/mcp-snapshots/{snapshot_id}/tools/{tool_name}/classification"
     ],
     [
       "PUT",
@@ -1163,6 +1171,10 @@
     [
       "POST",
       "/usecases/{case_id}/outcomes"
+    ],
+    [
+      "PUT",
+      "/authoring/mcp-snapshots/{snapshot_id}/tools/{tool_name}/classification"
     ],
     [
       "PUT",

@@ -78,6 +78,21 @@ def _default(name: str) -> dict:
     return _resolve(name, "3")
 
 
+def _runtime(_snapshot_id: str, tool_names: list[str], *, current: bool) -> dict:
+    effect = "read" if current else "quarantined"
+    return {
+        "allowedTools": list(tool_names) if current else [],
+        "approvalMode": {
+            "always_require_approval": [],
+            "never_require_approval": list(tool_names) if current else [],
+        },
+        "tools": [
+            {"name": name, "effect": effect, "allowed": current}
+            for name in tool_names
+        ],
+    }
+
+
 def main() -> int:
     failures: list[str] = []
 
@@ -100,12 +115,24 @@ def main() -> int:
             toolbox_resolver=_resolve,
             toolbox_default_resolver=_default,
             snapshot_reader=lambda _snapshot_id: _snapshot(),
+            runtime_resolver=_runtime,
         )
         check("fixed reviewed binding passes", passed["status"] == "pass")
         check("pass has stable empty reasons", passed["reasons"] == [])
         check("resolved source is returned", passed["source"]["resolvedVersion"] == "3")
         check("reviewed snapshot is returned", passed["snapshot"] == {"id": "msnap_reviewed", "hash": "a" * 64})
-        check("selected tools are conformant", passed["tools"] == [{"name": "search_resources", "status": "pass"}])
+        check(
+            "selected tools are conformant",
+            passed["tools"]
+            == [
+                {
+                    "name": "search_resources",
+                    "status": "pass",
+                    "effectiveEffect": "read",
+                }
+            ],
+        )
+        check("runtime allowlist is derived", passed["runtime"]["allowedTools"] == ["search_resources"])
 
         defaulted = evaluate_mcp_binding(
             {
@@ -115,6 +142,7 @@ def main() -> int:
             toolbox_resolver=_resolve,
             toolbox_default_resolver=_default,
             snapshot_reader=lambda _snapshot_id: _snapshot(),
+            runtime_resolver=_runtime,
         )
         check("default resolves observed version", defaulted["source"]["resolvedVersion"] == "3")
         check("default blocks until fixed materialization", defaulted["status"] == "block")
@@ -128,6 +156,7 @@ def main() -> int:
             toolbox_resolver=_resolve,
             toolbox_default_resolver=_default,
             snapshot_reader=lambda _snapshot_id: _snapshot(),
+            runtime_resolver=_runtime,
         )
         check("snapshot hash mismatch blocks", stale_hash["status"] == "block")
         check("snapshot mismatch reason is stable", stale_hash["reasons"] == ["MCP_SNAPSHOT_STALE"])
@@ -137,6 +166,7 @@ def main() -> int:
             toolbox_resolver=_resolve,
             toolbox_default_resolver=_default,
             snapshot_reader=lambda _snapshot_id: _snapshot(),
+            runtime_resolver=_runtime,
         )
         check("tool outside snapshot blocks", missing_tool["status"] == "block")
         check("missing tool reason is stable", missing_tool["reasons"] == ["MCP_TOOL_NOT_FOUND"])
@@ -146,6 +176,7 @@ def main() -> int:
             toolbox_resolver=_resolve,
             toolbox_default_resolver=_default,
             snapshot_reader=lambda _snapshot_id: _snapshot(version="2"),
+            runtime_resolver=_runtime,
         )
         check("snapshot from another source version blocks", wrong_source["status"] == "block")
         check("source mismatch reason is stable", wrong_source["reasons"] == ["MCP_SNAPSHOT_STALE"])
@@ -159,6 +190,7 @@ def main() -> int:
                 toolbox_resolver=_resolve,
                 toolbox_default_resolver=_default,
                 snapshot_reader=lambda _snapshot_id: _snapshot(),
+                runtime_resolver=_runtime,
             )
         except ConformityNotFound:
             check("endpoint is fail-closed until F03", True)
@@ -172,6 +204,7 @@ def main() -> int:
                 toolbox_resolver=_resolve,
                 toolbox_default_resolver=_default,
                 snapshot_reader=lambda _snapshot_id: None,
+                runtime_resolver=_runtime,
             )
         except ConformityNotFound as exc:
             check("cross-tenant snapshot looks absent", str(exc) == "MCP_SOURCE_NOT_FOUND")

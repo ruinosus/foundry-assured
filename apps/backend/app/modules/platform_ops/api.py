@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -10,6 +10,9 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 from app.modules.foundry.public import list_toolbox_projection
 from app.modules.okf.public import AuthoringInvalid
 from app.modules.platform_ops.public import (
+    ClassificationConflict,
+    ClassificationInvalid,
+    ClassificationNotFound,
     ConformityNotFound,
     DiscoveryBusy,
     DiscoveryRejected,
@@ -17,12 +20,14 @@ from app.modules.platform_ops.public import (
     EndpointConflict,
     EndpointInvalid,
     approve_mcp_endpoint,
+    classify_mcp_tool,
     create_mcp_endpoint,
     discover_endpoint,
     discover_toolbox,
     evaluate_mcp_binding,
     get_snapshot,
     list_mcp_endpoints,
+    project_snapshot_classifications,
 )
 from app.shared.auth import auth_dependencies, require_role
 
@@ -71,6 +76,14 @@ class ApprovalBody(BaseModel):
 
     decision: str
     reason: str = Field(min_length=1, max_length=500)
+
+
+class ClassificationBody(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    effect: Literal["read", "write"]
+    reason: str = Field(min_length=1, max_length=500)
+    expected_revision: int = Field(alias="expectedRevision", ge=0)
 
 
 @router.post("/mcp-endpoints", status_code=201, responses={422: {}})
@@ -150,7 +163,34 @@ def snapshot(snapshot_id: str) -> dict:
     result = get_snapshot(snapshot_id)
     if result is None:
         raise HTTPException(404, "Snapshot não encontrado.")
-    return result
+    try:
+        return project_snapshot_classifications(snapshot_id, result)
+    except ClassificationNotFound as exc:
+        raise HTTPException(404, "Snapshot não encontrado.") from exc
+
+
+@router.put(
+    "/mcp-snapshots/{snapshot_id}/tools/{tool_name}/classification",
+    dependencies=_admin,
+    responses={404: {}, 409: {}, 422: {}},
+)
+def classify_tool(
+    snapshot_id: str, tool_name: str, body: ClassificationBody
+) -> dict:
+    try:
+        return classify_mcp_tool(
+            snapshot_id,
+            tool_name,
+            effect=body.effect,
+            reason=body.reason,
+            expected_revision=body.expected_revision,
+        )
+    except ClassificationNotFound as exc:
+        raise HTTPException(404, "Snapshot ou tool não encontrado.") from exc
+    except ClassificationConflict as exc:
+        raise HTTPException(409, str(exc)) from exc
+    except ClassificationInvalid as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @router.post(
