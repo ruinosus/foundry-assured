@@ -62,6 +62,10 @@
     ],
     [
       "GET",
+      "/authoring/mcp-endpoints"
+    ],
+    [
+      "GET",
       "/authoring/mcp-snapshots/{snapshot_id}"
     ],
     [
@@ -258,6 +262,14 @@
     ],
     [
       "POST",
+      "/authoring/mcp-endpoints"
+    ],
+    [
+      "POST",
+      "/authoring/mcp-endpoints/{endpoint_id}/approval"
+    ],
+    [
+      "POST",
       "/builder"
     ],
     [
@@ -425,6 +437,10 @@
     [
       "GET",
       "/audit/trail/{scope}/conversation/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/authoring/mcp-endpoints"
     ],
     [
       "GET",
@@ -632,6 +648,14 @@
     ],
     [
       "POST",
+      "/authoring/mcp-endpoints"
+    ],
+    [
+      "POST",
+      "/authoring/mcp-endpoints/{endpoint_id}/approval"
+    ],
+    [
+      "POST",
       "/builder"
     ],
     [
@@ -811,6 +835,10 @@
     [
       "GET",
       "/audit/trail/{scope}/conversation/{conversation_id}"
+    ],
+    [
+      "GET",
+      "/authoring/mcp-endpoints"
     ],
     [
       "GET",
@@ -1019,6 +1047,14 @@
     [
       "POST",
       "/authoring/mcp-discoveries"
+    ],
+    [
+      "POST",
+      "/authoring/mcp-endpoints"
+    ],
+    [
+      "POST",
+      "/authoring/mcp-endpoints/{endpoint_id}/approval"
     ],
     [
       "POST",

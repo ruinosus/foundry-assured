@@ -5,16 +5,24 @@ from __future__ import annotations
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.modules.foundry.public import list_toolbox_projection
 from app.modules.okf.public import AuthoringInvalid
 from app.modules.platform_ops.public import (
     ConformityNotFound,
+    DiscoveryBusy,
     DiscoveryRejected,
+    EgressDenied,
+    EndpointConflict,
+    EndpointInvalid,
+    approve_mcp_endpoint,
+    create_mcp_endpoint,
+    discover_endpoint,
     discover_toolbox,
     evaluate_mcp_binding,
     get_snapshot,
+    list_mcp_endpoints,
 )
 from app.shared.auth import auth_dependencies, require_role
 
@@ -30,9 +38,72 @@ class ToolboxSource(BaseModel):
 
 
 class DiscoveryBody(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    toolbox: ToolboxSource | None = None
+    endpoint_id: str | None = Field(
+        default=None, alias="endpointId", pattern=r"^mep_[a-f0-9]{32}$"
+    )
+
+    @model_validator(mode="after")
+    def one_source(self):
+        if (self.toolbox is None) == (self.endpoint_id is None):
+            raise ValueError("Informe exatamente uma origem MCP.")
+        return self
+
+
+class EndpointAuth(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    mode: str
+    connection_ref: str | None = Field(default=None, alias="connectionRef")
+
+
+class EndpointBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    toolbox: ToolboxSource
+    url: str = Field(min_length=1, max_length=2048)
+    auth: EndpointAuth
+
+
+class ApprovalBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    decision: str
+    reason: str = Field(min_length=1, max_length=500)
+
+
+@router.post("/mcp-endpoints", status_code=201, responses={422: {}})
+def create_endpoint(body: EndpointBody) -> dict:
+    try:
+        return create_mcp_endpoint(body.model_dump(by_alias=True, exclude_none=True))
+    except EndpointInvalid as exc:
+        raise HTTPException(422, str(exc)) from exc
+
+
+@router.get("/mcp-endpoints")
+def endpoints() -> dict:
+    return {"items": list_mcp_endpoints()}
+
+
+@router.post(
+    "/mcp-endpoints/{endpoint_id}/approval",
+    dependencies=_admin,
+    responses={404: {}, 409: {}, 422: {}},
+)
+def approve_endpoint(endpoint_id: str, body: ApprovalBody) -> dict:
+    try:
+        return approve_mcp_endpoint(
+            endpoint_id,
+            decision=body.decision,
+            reason=body.reason,
+        )
+    except LookupError as exc:
+        raise HTTPException(404, "Endpoint MCP não encontrado.") from exc
+    except EndpointConflict as exc:
+        raise HTTPException(409, str(exc)) from exc
+    except EndpointInvalid as exc:
+        raise HTTPException(422, str(exc)) from exc
 
 
 @router.get("/toolboxes", responses={400: {}, 502: {}})
@@ -52,11 +123,20 @@ def toolboxes(
     "/mcp-discoveries",
     status_code=201,
     dependencies=_admin,
-    responses={400: {}, 422: {}, 502: {}},
+    responses={400: {}, 422: {}, 429: {}, 502: {}},
 )
 async def discover(body: DiscoveryBody) -> dict:
     try:
-        return await discover_toolbox(body.toolbox.name, body.toolbox.version)
+        if body.endpoint_id is not None:
+            return await discover_endpoint(body.endpoint_id)
+        toolbox = body.toolbox
+        if toolbox is None:
+            raise HTTPException(422, "Informe exatamente uma origem MCP.")
+        return await discover_toolbox(toolbox.name, toolbox.version)
+    except DiscoveryBusy as exc:
+        raise HTTPException(429, str(exc)) from exc
+    except EgressDenied as exc:
+        raise HTTPException(422, str(exc)) from exc
     except DiscoveryRejected as exc:
         raise HTTPException(422, str(exc)) from exc
     except ValueError as exc:

@@ -138,6 +138,102 @@ resource logAnalytics 'Microsoft.OperationalInsights/workspaces@2023-09-01' = {
   }
 }
 
+resource discoveryNsg 'Microsoft.Network/networkSecurityGroups@2024-05-01' = {
+  name: 'nsg-discovery-${resourceToken}'
+  location: location
+  tags: tags
+  properties: {
+    securityRules: [
+      {
+        name: 'deny-non-public-egress'
+        properties: {
+          description: 'Defense in depth for direct MCP discovery: deny internal, metadata, multicast and reserved destinations.'
+          access: 'Deny'
+          direction: 'Outbound'
+          priority: 100
+          protocol: '*'
+          sourceAddressPrefix: '*'
+          sourcePortRange: '*'
+          destinationAddressPrefixes: [
+            '0.0.0.0/8'
+            '10.0.0.0/8'
+            '100.64.0.0/10'
+            '127.0.0.0/8'
+            '169.254.0.0/16'
+            '172.16.0.0/12'
+            '192.0.0.0/24'
+            '192.0.2.0/24'
+            '192.168.0.0/16'
+            '198.18.0.0/15'
+            '198.51.100.0/24'
+            '203.0.113.0/24'
+            '224.0.0.0/4'
+            '240.0.0.0/4'
+            '::/128'
+            '::1/128'
+            'fc00::/7'
+            'fe80::/10'
+            'ff00::/8'
+            '2001:db8::/32'
+          ]
+          destinationPortRange: '*'
+        }
+      }
+    ]
+  }
+}
+
+resource discoveryVnet 'Microsoft.Network/virtualNetworks@2024-05-01' = {
+  name: 'vnet-discovery-${resourceToken}'
+  location: location
+  tags: tags
+  properties: {
+    addressSpace: {
+      addressPrefixes: [
+        '10.240.0.0/16'
+      ]
+    }
+    subnets: [
+      {
+        name: 'container-apps'
+        properties: {
+          addressPrefix: '10.240.0.0/23'
+          delegations: [
+            {
+              name: 'Microsoft.App.environments'
+              properties: {
+                serviceName: 'Microsoft.App/environments'
+              }
+            }
+          ]
+          networkSecurityGroup: {
+            id: discoveryNsg.id
+          }
+        }
+      }
+    ]
+  }
+}
+
+resource backendEnv 'Microsoft.App/managedEnvironments@2024-03-01' = {
+  name: 'cae-backend-${resourceToken}'
+  location: location
+  tags: tags
+  properties: {
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: logAnalytics.properties.customerId
+        sharedKey: logAnalytics.listKeys().primarySharedKey
+      }
+    }
+    vnetConfiguration: {
+      infrastructureSubnetId: discoveryVnet.properties.subnets[0].id
+      internal: false
+    }
+  }
+}
+
 resource env 'Microsoft.App/managedEnvironments@2024-03-01' = {
   name: 'cae-assured-${resourceToken}'
   location: location
@@ -172,11 +268,24 @@ resource envDataStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' 
   }
 }
 
+resource backendDataStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
+  parent: backendEnv
+  name: 'data'
+  properties: {
+    azureFile: {
+      accountName: storageAccountName
+      accountKey: storageAcct.listKeys().keys[0].value
+      shareName: fileShareName
+      accessMode: 'ReadWrite'
+    }
+  }
+}
+
 // Runtime agent definitions (ADR-014, production leg). Read-only: the runtime
 // only READS prompts; publishing goes through scripts/push-prompts.sh (upload
 // to the share + revision restart), never through the app.
 resource envPromptsStorage 'Microsoft.App/managedEnvironments/storages@2024-03-01' = {
-  parent: env
+  parent: backendEnv
   name: 'prompts'
   properties: {
     azureFile: {
@@ -190,7 +299,7 @@ resource envPromptsStorage 'Microsoft.App/managedEnvironments/storages@2024-03-0
 
 // Predictable external FQDNs from the env's default domain — breaks the
 // backend⇄web circular reference (both derive from `env`, created first).
-var backendFqdn = '${backendAppName}.${env.properties.defaultDomain}'
+var backendFqdn = '${backendAppName}.${backendEnv.properties.defaultDomain}'
 var webFqdn = '${webAppName}.${env.properties.defaultDomain}'
 var mcpFqdn = '${mcpAppName}.${env.properties.defaultDomain}'
 
@@ -203,7 +312,7 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
     userAssignedIdentities: { '${appIdentityId}': {} }
   }
   properties: {
-    managedEnvironmentId: env.id
+    managedEnvironmentId: backendEnv.id
     configuration: {
       activeRevisionsMode: 'Single'
       ingress: {
@@ -283,7 +392,7 @@ resource backendApp 'Microsoft.App/containerApps@2024-03-01' = {
         }
       ]
       volumes: [
-        { name: 'data', storageType: 'AzureFile', storageName: envDataStorage.name }
+        { name: 'data', storageType: 'AzureFile', storageName: backendDataStorage.name }
         { name: 'prompts', storageType: 'AzureFile', storageName: envPromptsStorage.name }
       ]
       // Single replica: the persisted jsonl is append-based, so >1 writer could

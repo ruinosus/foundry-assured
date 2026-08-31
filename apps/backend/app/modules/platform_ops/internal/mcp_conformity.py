@@ -11,6 +11,7 @@ from app.modules.foundry.public import (
 )
 from app.modules.okf.public import McpBinding, parse_mcp_binding
 from app.modules.platform_ops.internal.mcp_discovery import get_snapshot
+from app.modules.platform_ops.internal.mcp_endpoints import resolve_approved_endpoint
 
 
 class ConformityNotFound(LookupError):
@@ -54,7 +55,7 @@ def evaluate_mcp_binding(
     toolbox_resolver=resolve_toolbox_version,
     toolbox_default_resolver=resolve_toolbox_default_version,
     snapshot_reader=get_snapshot,
-    endpoint_resolver=None,
+    endpoint_resolver=resolve_approved_endpoint,
 ) -> dict[str, Any]:
     """Valida referências no tenant atual e devolve uma decisão estável, sem persistir."""
     binding = parse_mcp_binding(spec)

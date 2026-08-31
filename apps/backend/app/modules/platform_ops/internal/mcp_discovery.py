@@ -148,6 +148,53 @@ async def discover_toolbox(
 ) -> dict:
     """Executa initialize + tools/list e grava somente o snapshot sanitizado."""
     source = toolbox_resolver(name, version)
+    return await _discover_source(
+        {
+            "kind": "toolbox",
+            "id": source["id"],
+            "name": source["name"],
+            "resolvedVersion": source["version"],
+            "url": source["url"],
+        },
+        header_provider=_auth_header_provider,
+        follow_redirects=False,
+        mcp_factory=mcp_factory,
+        evidence_store=evidence_store,
+        http_client_factory=http_client_factory,
+    )
+
+
+async def discover_endpoint_source(
+    source: dict[str, Any],
+    *,
+    follow_redirects: bool,
+    header_provider,
+    evidence_store=None,
+    mcp_factory=_default_mcp_factory,
+    http_client_factory=None,
+) -> dict:
+    """Descobre uma origem direta já aprovada e validada pela política de egress."""
+    if follow_redirects:
+        raise DiscoveryRejected("Redirect MCP não é permitido.")
+    return await _discover_source(
+        source,
+        header_provider=header_provider,
+        follow_redirects=False,
+        mcp_factory=mcp_factory,
+        evidence_store=evidence_store,
+        http_client_factory=http_client_factory,
+    )
+
+
+async def _discover_source(
+    source: dict[str, Any],
+    *,
+    header_provider,
+    follow_redirects: bool,
+    mcp_factory,
+    evidence_store,
+    http_client_factory,
+) -> dict:
     tenant_key = _tenant_key()
     snapshot_id = f"msnap_{uuid4().hex}"
 
@@ -159,7 +206,7 @@ async def discover_toolbox(
             http_client = await stack.enter_async_context(
                 httpx.AsyncClient(
                     timeout=httpx.Timeout(10, connect=5),
-                    follow_redirects=False,
+                    follow_redirects=follow_redirects,
                 )
             )
         elif http_client_factory is not None:
@@ -171,7 +218,7 @@ async def discover_toolbox(
             "load_tools": False,
             "load_prompts": False,
             "request_timeout": 10,
-            "header_provider": _auth_header_provider,
+            "header_provider": header_provider,
         }
         if http_client is not None:
             kwargs["http_client"] = http_client
@@ -196,10 +243,14 @@ async def discover_toolbox(
             "snapshotId": snapshot_id,
             "tenantKey": tenant_key,
             "source": {
-                "kind": "toolbox",
+                "kind": source["kind"],
                 "id": source["id"],
-                "name": source["name"],
-                "resolvedVersion": source["version"],
+                **({"name": source["name"]} if source.get("name") else {}),
+                **(
+                    {"resolvedVersion": source["resolvedVersion"]}
+                    if source.get("resolvedVersion") is not None
+                    else {}
+                ),
             },
             "observedAt": observed_at,
             "protocolVersion": _protocol_version(tool),
@@ -219,7 +270,7 @@ async def discover_toolbox(
     projection = {
         "snapshotId": snapshot_id,
         "source": snapshot["source"],
-        "resolvedVersion": source["version"],
+        "resolvedVersion": source.get("resolvedVersion"),
         "observedAt": snapshot["observedAt"],
         "protocolVersion": snapshot["protocolVersion"],
         "status": "current",

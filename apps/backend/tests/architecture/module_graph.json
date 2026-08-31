@@ -237,6 +237,7 @@
       "modules/helpdesk/internal/escalation.py"
     ],
     "shared": [
+      "modules/helpdesk/internal/declarative.py",
       "modules/helpdesk/internal/graph.py"
     ],
     "tenancy": [
@@ -321,19 +322,34 @@
       "modules/platform_ops/internal/platform.py"
     ],
     "audit": [
+      "modules/platform_ops/internal/mcp_discovery.py",
+      "modules/platform_ops/internal/mcp_endpoints.py",
       "modules/platform_ops/internal/platform.py"
     ],
     "foundry": [
+      "modules/platform_ops/api.py",
+      "modules/platform_ops/internal/mcp_conformity.py",
+      "modules/platform_ops/internal/mcp_discovery.py",
       "modules/platform_ops/internal/platform.py"
     ],
     "grounded": [
       "modules/platform_ops/internal/platform.py"
     ],
+    "okf": [
+      "modules/platform_ops/api.py",
+      "modules/platform_ops/internal/mcp_conformity.py"
+    ],
     "shared": [
+      "modules/platform_ops/api.py",
+      "modules/platform_ops/internal/mcp_discovery.py",
+      "modules/platform_ops/internal/mcp_endpoints.py",
       "modules/platform_ops/internal/mcp_tools.py",
       "modules/platform_ops/internal/platform.py"
     ],
     "tenancy": [
+      "modules/platform_ops/internal/mcp_discovery.py",
+      "modules/platform_ops/internal/mcp_egress.py",
+      "modules/platform_ops/internal/mcp_endpoints.py",
       "modules/platform_ops/internal/mcp_tools.py",
       "modules/platform_ops/internal/platform.py"
     ]

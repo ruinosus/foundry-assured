@@ -159,6 +159,9 @@ jobs:
       - name: Imutabilidade do blob storage é satisfazível (versioning + policy declarados juntos)
         run: uv run python -m tests.architecture.blob_immutability_test
 
+      - name: MCP discovery — backend isolado por egress de infraestrutura
+        run: uv run python -m tests.architecture.mcp_egress_infra_test
+
       # Module invocations in YAML and shell. The other architecture gates all read Python,
       # so none of them saw that ADR-017 broke four `python -m app.knowledge.*` calls in
       # workflows and scripts. wiki-regen is workflow_dispatch, so the break only surfaced
@@ -171,6 +174,12 @@ jobs:
       # filtering still runs before any rule could, and that no write tool reaches a Reader.
       - name: Approval parity (no tool silently un-gated)
         run: uv run python -m tests.platform_ops.approval_parity_test
+
+      - name: MCP endpoint direto — proposta inerte e aprovação tenant-safe
+        run: uv run python -m tests.platform_ops.mcp_endpoint_approval_test
+
+      - name: MCP endpoint direto — egress público e lease de discovery
+        run: uv run python -m tests.platform_ops.mcp_egress_test
 
       # HITL decisions (ADR-019). `edit` lets the approver CORRECT an action before it runs,
       # which the Agent Framework cannot express — its approval is a boolean. Editing runs the
