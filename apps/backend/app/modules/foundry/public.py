@@ -51,6 +51,7 @@ from app.modules.foundry.internal.toolboxes import (
     list_toolbox_projection,
     list_toolboxes,
     mcp_url,
+    resolve_toolbox_default_version,
     resolve_toolbox_version,
 )
 
@@ -82,6 +83,7 @@ __all__ = [
     "mcp_url",
     "preview_skill",
     "qualify_agent_name",
+    "resolve_toolbox_default_version",
     "resolve_toolbox_version",
     "save_flow",
     "set_agent_enabled",

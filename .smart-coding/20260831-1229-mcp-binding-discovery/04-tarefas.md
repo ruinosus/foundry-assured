@@ -12,7 +12,7 @@
 ## Fila
 
 - [x] F01 [AFK] Discovery de Toolbox com versão fixa — deps: — — US: US-001, US-003, US-006, US-009 — sec: auth, input-validation, criptografia, logs, dados-sensiveis → F01.md
-- [ ] F02 [AFK] Binding estrito e conformidade — deps: F01 — US: US-001, US-006, US-010 — sec: auth, input-validation, dados-sensiveis → F02.md
+- [x] F02 [AFK] Binding estrito e conformidade — deps: F01 — US: US-001, US-006, US-010 — sec: auth, input-validation, dados-sensiveis → F02.md
 - [ ] F03 [AFK] Endpoint direto aprovado e egress fail-closed — deps: F01 — US: US-002, US-005, US-006 — sec: auth, input-validation, rate-limit, logs → F03.md
 - [ ] F04 [AFK] Autenticação sem transporte de segredo — deps: F03 — US: US-003, US-005, US-006, US-009 — sec: auth, criptografia, logs, dados-sensiveis → F04.md
 - [ ] F05 [AFK] Classificação Admin e enforcement runtime — deps: F02, F04 — US: US-004, US-010 — sec: auth, input-validation, logs → F05.md

@@ -250,6 +250,10 @@
     ],
     [
       "POST",
+      "/authoring/mcp-bindings/conformity"
+    ],
+    [
+      "POST",
       "/authoring/mcp-discoveries"
     ],
     [
@@ -617,6 +621,10 @@
     [
       "POST",
       "/audit/anchors/{scope}"
+    ],
+    [
+      "POST",
+      "/authoring/mcp-bindings/conformity"
     ],
     [
       "POST",
@@ -1003,6 +1011,10 @@
     [
       "POST",
       "/audit/anchors/{scope}"
+    ],
+    [
+      "POST",
+      "/authoring/mcp-bindings/conformity"
     ],
     [
       "POST",

@@ -220,6 +220,36 @@ def resolve_toolbox_version(name: str, version: str, *, client_factory=None) -> 
             client.close()
 
 
+def resolve_toolbox_default_version(name: str, *, client_factory=None) -> dict:
+    """Resolve a default version observada no serviço para uma fonte fixa."""
+    qualified = qualify(name)
+    client = (client_factory or _client)()
+    try:
+        toolbox = client.toolboxes.get(qualified)
+        default_version = _project(toolbox)["default_version"]
+        if not default_version:
+            raise InvalidToolbox("A Toolbox não possui uma versão default.")
+        versions = list(client.toolboxes.list_versions(qualified))
+        if not any(
+            str(getattr(value, "version", "")) == str(default_version)
+            for value in versions
+        ):
+            raise InvalidToolbox("A versão default da Toolbox não existe.")
+        endpoint = str(getattr(client, "endpoint", "") or "").rstrip("/")
+        return {
+            "name": qualified,
+            "id": getattr(toolbox, "id", None) or qualified,
+            "version": str(default_version),
+            "url": (
+                f"{endpoint}/toolboxes/{qualified}/versions/{default_version}/mcp"
+                "?api-version=v1"
+            ),
+        }
+    finally:
+        with contextlib.suppress(Exception):
+            client.close()
+
+
 def get_toolbox(name: str) -> dict:
     """Um toolbox com o conteúdo da versão default — tools e skills que ele entrega."""
     client = _client()

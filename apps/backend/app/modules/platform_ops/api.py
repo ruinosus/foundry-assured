@@ -8,9 +8,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.modules.foundry.public import list_toolbox_projection
+from app.modules.okf.public import AuthoringInvalid
 from app.modules.platform_ops.public import (
+    ConformityNotFound,
     DiscoveryRejected,
     discover_toolbox,
+    evaluate_mcp_binding,
     get_snapshot,
 )
 from app.shared.auth import auth_dependencies, require_role
@@ -68,3 +71,20 @@ def snapshot(snapshot_id: str) -> dict:
     if result is None:
         raise HTTPException(404, "Snapshot não encontrado.")
     return result
+
+
+@router.post(
+    "/mcp-bindings/conformity",
+    responses={404: {}, 422: {}, 502: {}},
+)
+def conformity(body: dict) -> dict:
+    try:
+        return evaluate_mcp_binding(body)
+    except AuthoringInvalid as exc:
+        raise HTTPException(422, str(exc)) from exc
+    except ConformityNotFound as exc:
+        raise HTTPException(404, "Fonte MCP não encontrada.") from exc
+    except ValueError as exc:
+        raise HTTPException(422, str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(502, "Conformidade MCP não pôde ser avaliada.") from exc
