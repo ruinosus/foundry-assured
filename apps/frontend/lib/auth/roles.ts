@@ -54,6 +54,9 @@ export function useMyRoles(): string[] | null {
 
 export const isAdmin = (roles: string[] | null): boolean => !!roles?.includes("Admin");
 
+export const canAuthor = (roles: string[] | null): boolean =>
+  !authConfigured || !!roles?.some((role) => role === "Author" || role === "Admin");
+
 /** Pode ver e usar a interface de administração?
  *
  * `isAdmin` sozinho não bastava, e o efeito era invisível: em desenvolvimento local o Entra não

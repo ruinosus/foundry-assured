@@ -20,6 +20,12 @@ _SNAPSHOT_ID = re.compile(r"^msnap_[A-Za-z0-9._-]{1,121}$", re.ASCII)
 _SHA256 = re.compile(r"^[0-9a-f]{64}$", re.ASCII)
 _MAX_TOOLS = 200
 _MAX_TOOL_NAME = 128
+_AUTHORING_ROUTES = frozenset({"prompt", "workflow", "container"})
+_EXTERNAL_REFERENCE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/@:+-]{0,511}$", re.ASCII)
+_YAML_REFERENCE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]*\.ya?ml$", re.ASCII)
+_CONTAINER_REFERENCE = re.compile(
+    r"^[A-Za-z0-9][A-Za-z0-9._/:-]*@sha256:[0-9a-f]{64}$", re.ASCII
+)
 
 
 @dataclass(frozen=True)
@@ -193,8 +199,13 @@ def validate_binding(doc_type: str, spec: dict[str, Any], *, where: str) -> None
     _without_secrets(spec, where=where)
 
     if doc_type == "agent-binding":
-        _only(spec, {"agent", "requires"}, where=where)
+        _only(spec, {"agent", "authoringRoute", "requires"}, where=where)
         _versioned_reference(spec.get("agent"), where=f"{where}.agent")
+        route = spec.get("authoringRoute")
+        if route is not None and route not in _AUTHORING_ROUTES:
+            raise AuthoringInvalid(
+                f"{where}.authoringRoute: use `prompt`, `workflow` ou `container`"
+            )
         binding_references(doc_type, spec, where=where)
         return
 
@@ -214,3 +225,33 @@ def validate_binding(doc_type: str, spec: dict[str, Any], *, where: str) -> None
         binding_references(doc_type, spec, where=where)
         if "configuration" in spec:
             _mapping(spec["configuration"], where=f"{where}.configuration")
+
+
+def validate_binding_resource(
+    doc_type: str,
+    spec: Mapping[str, Any],
+    resource: str | None,
+    *,
+    where: str,
+) -> None:
+    if doc_type != "agent-binding" or "authoringRoute" not in spec:
+        return
+    if resource is None:
+        return
+    route = str(spec["authoringRoute"])
+    prefix = f"{route}:"
+    reference = resource[len(prefix):] if resource and resource.startswith(prefix) else ""
+    valid_format = (
+        _CONTAINER_REFERENCE.fullmatch(reference)
+        if route == "container"
+        else _YAML_REFERENCE.fullmatch(reference)
+    )
+    if (
+        not reference
+        or not _EXTERNAL_REFERENCE.fullmatch(reference)
+        or not valid_format
+        or ".." in reference
+    ):
+        raise AuthoringInvalid(
+            f"{where}: deve usar `{prefix}` seguido de uma referência externa segura"
+        )

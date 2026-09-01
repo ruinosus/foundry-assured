@@ -5,6 +5,7 @@ from __future__ import annotations
 import sqlite3
 import sys
 import tempfile
+from dataclasses import replace
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -21,6 +22,7 @@ from app.modules.okf.public import (
     ChangeOperation,
     OkfChangeSet,
     parse_authoring_document,
+    serialize_authoring_document,
 )
 
 
@@ -69,6 +71,7 @@ def _document(
     revision: str = "1",
     publication_state: str = "proposed",
     supersedes: dict[str, str] | None = None,
+    area: str = "support",
 ):
     actual_spec = (
         {"writes": writes, "cannotWrite": [{"type": "policy"}]}
@@ -81,7 +84,7 @@ def _document(
         "revision": revision,
         "publication_state": publication_state,
         "tenant": "tenant-a",
-        "area": "support",
+        "area": area,
         "spec": actual_spec,
     }
     if supersedes is not None:
@@ -573,6 +576,94 @@ def main() -> int:
             "operations": [{"id": "create-agent", "operation": "create"}],
             "credentials": {"access_token": "must-not-persist"},
         }
+        route_document = _document(
+            "agent-binding",
+            "route-agent",
+            {
+                "agent": {"name": "route-agent", "version": "1"},
+                "authoringRoute": "workflow",
+            },
+            area="area-a",
+        )
+        embedded_document = serialize_authoring_document(
+            replace(route_document, resource="workflow:workflows/route-agent.yaml")
+        )
+        embedded, _ = service.create(
+            scope,
+            source="manual",
+            base_snapshot_id="snapshot-42",
+            content={"operations": [{
+                "id": "create-route-agent",
+                "operation": "create",
+                "document_type": "agent-binding",
+                "document": embedded_document,
+            }]},
+            idempotency_key="request-embedded-document",
+        )
+        check(f"{label}: valid embedded OKF document is persisted", embedded.revision == 1)
+        for route in ("prompt", "workflow", "container"):
+            route_reference = (
+                f"registry.example/{route}-agent@sha256:{'a' * 64}"
+                if route == "container"
+                else f"definitions/{route}-agent.yaml"
+            )
+            routed_document = serialize_authoring_document(
+                replace(
+                    route_document,
+                    id=f"{route}-agent",
+                    resource=f"{route}:{route_reference}",
+                    spec={"agent": {"name": f"{route}-agent", "version": "1"}, "authoringRoute": route},
+                )
+            )
+            routed, _ = service.create(
+                scope,
+                source="manual",
+                base_snapshot_id="snapshot-42",
+                content={"operations": [{
+                    "id": f"create-{route}-agent",
+                    "operation": "create",
+                    "document_type": "agent-binding",
+                    "document": routed_document,
+                }]},
+                idempotency_key=f"request-{label}-{route}-route",
+            )
+            reopened_route = service.get(scope, routed.id)
+            check(
+                f"{label}: {route} route round-trips",
+                reopened_route.content["operations"][0]["document"] == routed_document,
+            )
+        check(
+            f"{label}: embedded document cannot cross area scope",
+            lambda: service.create(
+                other_area,
+                source="manual",
+                base_snapshot_id="snapshot-42",
+                content={"operations": [{
+                    "id": "create-route-agent",
+                    "operation": "create",
+                    "document_type": "agent-binding",
+                    "document": embedded_document,
+                }]},
+                idempotency_key="request-cross-scope-document",
+            ),
+            fails=True,
+        )
+        check(
+            f"{label}: malformed embedded document is rejected",
+            lambda: service.create(
+                scope,
+                source="manual",
+                base_snapshot_id="snapshot-42",
+                content={"operations": [{
+                    "id": "create-invalid-agent",
+                    "operation": "create",
+                    "document_type": "agent-binding",
+                    "document": "not an OKF document",
+                }]},
+                idempotency_key="request-invalid-document",
+            ),
+            fails=True,
+        )
         check(
             f"{label}: operation requires an id",
             lambda: service.create(

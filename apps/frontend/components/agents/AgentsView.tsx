@@ -12,9 +12,10 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useCallback, useEffect, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
-import { useMyRoles, canAdmin } from "@/lib/auth/roles";
+import { useMyRoles, canAdmin, canAuthor } from "@/lib/auth/roles";
 import { AgentProposer } from "@/components/agents/AgentProposer";
 import { AgentWizard, type AgentSeed } from "@/components/agents/AgentWizard";
+import { AgentRouteWizard } from "@/components/agents/AgentRouteWizard";
 
 type AgentVersion = {
   version: string | null;
@@ -61,7 +62,9 @@ export function AgentsView() {
   const [loading, setLoading] = useState(true);
   const roles = useMyRoles();
   const admin = canAdmin(roles);
+  const author = canAuthor(roles);
   const [criando, setCriando] = useState(false);
+  const [authoring, setAuthoring] = useState(false);
   const [propondo, setPropondo] = useState(false);
   const [seed, setSeed] = useState<AgentSeed | undefined>(undefined);
 
@@ -104,8 +107,9 @@ export function AgentsView() {
 
       {/* Criar vem antes da lista: numa tela sem agente nenhum, a lista não é o conteúdo — o
           próximo passo é. */}
-      {admin &&
-        (criando ? (
+      {authoring ? (
+        <AgentRouteWizard onCancel={() => setAuthoring(false)} />
+      ) : admin && criando ? (
           <AgentWizard
             existentes={(agents ?? []).map((a) => a.name)}
             onCancelar={() => {
@@ -114,7 +118,7 @@ export function AgentsView() {
             }}
             inicial={seed}
           />
-        ) : propondo ? (
+        ) : admin && propondo ? (
           // O rascunho NÃO publica: ao usar, ele abre o wizard preenchido, e é o wizard que
           // publica — com Admin, como sempre foi. É a ADR-022 na interface.
           <AgentProposer
@@ -125,18 +129,14 @@ export function AgentsView() {
               setCriando(true);
             }}
           />
-        ) : (
+        ) : author ? (
           <div className="row-tight">
-            <button type="button" className="btn btn-solid" onClick={() => setCriando(true)}>
-              {t("newBtn")}
+            <button type="button" className="btn btn-solid" onClick={() => setAuthoring(true)}>
+              {t("newProposalBtn")}
             </button>
-            {/* Propor vem ao lado de criar, não escondido: para quem não sabe por onde começar,
-                descrever a necessidade é mais fácil que preencher um formulário em branco. */}
-            <button type="button" className="btn" onClick={() => setPropondo(true)}>
-              {t("proposeBtn")}
-            </button>
+            {admin && <><button type="button" className="btn" onClick={() => setCriando(true)}>{t("newBtn")}</button><button type="button" className="btn" onClick={() => setPropondo(true)}>{t("proposeBtn")}</button></>}
           </div>
-        ))}
+        ) : null}
 
       {/* Esqueleto, não spinner no meio do conteúdo: o register pede que o carregamento
           preserve a forma do que vem, para a página não saltar quando os dados chegam. */}

@@ -58,7 +58,10 @@ SPECS: dict[str, dict[str, Any]] = {
         "enforcement": "external",
         "sources": ["entra-app-roles", "foundry-tool-approval"],
     },
-    "agent-binding": {"agent": {"name": "ticket-agent", "version": "1"}},
+    "agent-binding": {
+        "agent": {"name": "ticket-agent", "version": "1"},
+        "authoringRoute": "prompt",
+    },
     "mcp-binding": {
         "toolbox": {"name": "ticket-tools", "version": "1"},
         "tools": ["create-ticket"],
@@ -135,6 +138,34 @@ def main() -> int:
         {"sections": [{"id": "identity", "executable": True, "fields": [{}]}], "review": [], "plan": []},
     )
     refuses("MCP classification is not document authority", "mcp-binding", {**SPECS["mcp-binding"], "classification": []})
+    refuses(
+        "agent binding rejects unknown authoring route",
+        "agent-binding",
+        {**SPECS["agent-binding"], "authoringRoute": "custom-runtime"},
+    )
+    for route in ("prompt", "workflow", "container"):
+        reference = (
+            f"registry.example/{route}-agent@sha256:{'a' * 64}"
+            if route == "container"
+            else "definitions/agent.yaml"
+        )
+        routed = _document(
+            "agent-binding",
+            f"{route}-agent",
+            {**SPECS["agent-binding"], "authoringRoute": route},
+        ).replace("type: agent-binding", f"type: agent-binding\nresource: {route}:{reference}")
+        check(f"agent binding accepts {route} resource", lambda routed=routed: parse_authoring_document(routed))
+    refuses_document = _document(
+        "agent-binding",
+        "wrong-route",
+        {**SPECS["agent-binding"], "authoringRoute": "prompt"},
+    ).replace("type: agent-binding", "type: agent-binding\nresource: container:definitions/agent.yaml")
+    try:
+        parse_authoring_document(refuses_document)
+    except AuthoringInvalid:
+        check("agent binding rejects resource from another route", True)
+    else:
+        check("agent binding rejects resource from another route", False)
     refuses("adapter stores connection reference only", "adapter-binding", {**SPECS["adapter-binding"], "client_secret": "plain"})
     refuses("bundle reference type must exist", "bundle", {"includes": [{"type": "agent", "id": "invented", "revision": "1"}]})
 

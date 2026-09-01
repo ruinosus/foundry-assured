@@ -111,12 +111,18 @@ def _validate_formflow_field(value: Any, *, where: str) -> None:
         {
             "id", "label", "type", "required", "ai", "placeholder", "help", "rules",
             "rows", "initial", "catalog", "emptyHelp", "options", "parts", "retain",
+            "visibleWhen",
         },
         where=where,
     )
     _text(field.get("id"), where=f"{where}.id")
     if field.get("type") not in _FIELD_TYPES:
         raise AuthoringInvalid(f"{where}.type: tipo de campo desconhecido")
+    if "visibleWhen" in field:
+        condition = _mapping(field["visibleWhen"], where=f"{where}.visibleWhen")
+        _only(condition, {"field", "equals"}, where=f"{where}.visibleWhen")
+        _text(condition.get("field"), where=f"{where}.visibleWhen.field")
+        _text(condition.get("equals"), where=f"{where}.visibleWhen.equals")
     _validate_optional_texts(field, ("label", "placeholder", "help", "emptyHelp"), where=where)
     _validate_optional_booleans(field, ("required", "ai", "retain"), where=where)
     if "rows" in field and (

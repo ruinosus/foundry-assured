@@ -31,6 +31,8 @@ export type Rule = (value: string, ctx: RuleContext) => RuleFailure | null;
 const NOME_RECURSO = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 // Mesma regra do backend (`_safe_blob_name`): sem barra, sem `..`, sem ponto inicial.
 const NOME_ARQUIVO = /^[a-zA-Z0-9._-]+$/;
+const DOCUMENTO_YAML = /^[A-Za-z0-9][A-Za-z0-9._/-]*\.ya?ml$/;
+const IMAGEM_IMUTAVEL = /^[A-Za-z0-9][A-Za-z0-9._/:-]*@sha256:[0-9a-f]{64}$/;
 
 export const REGRAS: Record<string, Rule> = {
   /** Nome de recurso do Foundry: minúsculas, números e hífens no meio. */
@@ -55,6 +57,23 @@ export const REGRAS: Record<string, Rule> = {
       !!n && !n.includes("/") && !n.includes("..") && !n.startsWith(".") && NOME_ARQUIVO.test(n);
     return seguro ? null : { key: "rule_safeFilename", values: { name: n } };
   },
+
+  agentSchemaReference: (v) => {
+    const reference = v.trim();
+    return DOCUMENTO_YAML.test(reference) && !reference.includes("..")
+      ? null
+      : { key: "rule_agentSchemaReference" };
+  },
+
+  workflowReference: (v) => {
+    const reference = v.trim();
+    return DOCUMENTO_YAML.test(reference) && !reference.includes("..")
+      ? null
+      : { key: "rule_workflowReference" };
+  },
+
+  containerImageReference: (v) =>
+    IMAGEM_IMUTAVEL.test(v.trim()) ? null : { key: "rule_containerImageReference" },
 };
 
 /** Aplica as regras de um campo, na ordem declarada, e para na primeira falha.

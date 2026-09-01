@@ -146,6 +146,14 @@ check("a primeira regra da lista é a que fala",
 check("travessia de diretório → safeFilename",
       validarCampo("../etc/passwd", { rules: ["safeFilename"] }, {})?.key === "rule_safeFilename");
 check("arquivo comum passa", validarCampo("rollback.sh", { rules: ["safeFilename"] }, {}) === null);
+check("AgentSchema exige documento YAML seguro",
+  validarCampo("../agent.yaml", { rules: ["agentSchemaReference"] }, {})?.key === "rule_agentSchemaReference");
+check("workflow aceita documento YAML",
+  validarCampo("workflows/review.yml", { rules: ["workflowReference"] }, {}) === null);
+check("container exige digest SHA-256 completo",
+  validarCampo("registry/app:latest", { rules: ["containerImageReference"] }, {})?.key === "rule_containerImageReference");
+check("container aceita referência imutável",
+  validarCampo(`registry/app@sha256:${"a".repeat(64)}`, { rules: ["containerImageReference"] }, {}) === null);
 // Uma regra que o motor não conhece FALA, em vez de ser ignorada — é o modo de falha que o
 // espelho acima existe para impedir, e este é o comportamento quando ele falhar mesmo assim.
 check("regra desconhecida não passa calada",

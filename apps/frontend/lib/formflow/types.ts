@@ -50,6 +50,9 @@ export interface Campo {
   parts?: { id: string; placeholder?: string }[];
   /** `false` = o valor não sobrevive à chamada (o token de leitura de repositório). */
   retain?: boolean;
+  /** Condição de apresentação declarada pelo manifesto. Campos ocultos não renderizam nem
+   * bloqueiam o formulário. */
+  visibleWhen?: { field: string; equals: string };
 }
 
 export interface Secao {
@@ -119,6 +122,11 @@ export type Valores = Record<string, string | string[]>;
 /** Todos os campos, achatados, na ordem em que aparecem. */
 export function camposDe(m: FormFlowManifest): Campo[] {
   return m.sections.flatMap((s) => s.fields);
+}
+
+export function campoVisivel(campo: Campo, valores: Valores): boolean {
+  if (!campo.visibleWhen) return true;
+  return String(valores[campo.visibleWhen.field] ?? "") === campo.visibleWhen.equals;
 }
 
 /** Os valores iniciais que o manifesto declara em `initial:`. */

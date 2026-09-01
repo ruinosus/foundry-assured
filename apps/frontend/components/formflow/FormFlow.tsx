@@ -28,6 +28,7 @@ import { FieldProposalTool, type FieldProposal } from "@/components/shell/FieldP
 import { validarCampo, type RuleFailure } from "@/lib/formflow/rules";
 import { revisao } from "@/lib/formflow/review";
 import {
+  campoVisivel,
   camposDe,
   valoresIniciais,
   type Campo,
@@ -184,13 +185,14 @@ export function useFormFlow(
       return { valores, origens, anexos, bloqueio: null, secoes: [], revisao: [] };
     }
     const secoes = manifest.sections.map((s) => {
+      const camposVisiveis = s.fields.filter((c) => campoVisivel(c, valores));
       // OPCIONAL NUNCA TRAVA — a regra está no manifesto (`optional: true`), não aqui.
       const pendencia = s.optional
         ? null
-        : s.fields
+        : camposVisiveis
             .map((c) => traduzir(validarCampo(String(valores[c.id] ?? ""), c, { taken: opts.taken })))
             .find((x) => x) ?? null;
-      const preenchidos = s.fields
+      const preenchidos = camposVisiveis
         .filter((c) => {
           const v = valores[c.id];
           return Array.isArray(v) ? v.length > 0 : !!String(v ?? "").trim();
@@ -264,7 +266,7 @@ export function FormFlowFields({
               <p className="t-xs muted-line">{s.lockedHelp ?? t("travada")}</p>
             ) : (
               <div className="stack-sm">
-                {s.fields.map((c) => (
+                {s.fields.filter((c) => campoVisivel(c, valores)).map((c) => (
                   <CampoRender
                     key={c.id}
                     campo={c}

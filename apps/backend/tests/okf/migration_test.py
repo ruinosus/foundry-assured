@@ -38,14 +38,17 @@ def main() -> int:
     flows = {name: load_flow(name) for name in list_flows()}
     copilots = {name: load_copilot(name) for name in list_copilots()}
     original_legacy = deepcopy((flows, copilots))
-    check("legacy formflows remain readable", set(flows) == {"agent", "copilot", "knowledge", "skill"})
+    check(
+        "legacy formflows remain readable",
+        set(flows) == {"agent", "agent-route", "copilot", "knowledge", "skill"},
+    )
     check("legacy copilots and policies remain readable", set(copilots) == {"builder", "hitl"})
 
     migrated_flows = [
         migrate_legacy_manifest(flow, doc_type="formflow", identifier=name, **_MIGRATION)
         for name, flow in flows.items()
     ]
-    check("all legacy formflows migrate deterministically", len(migrated_flows) == 4)
+    check("all legacy formflows migrate deterministically", len(migrated_flows) == 5)
     check("migration creates drafts", all(doc.publication_state == "draft" for doc in migrated_flows))
 
     builder = migrate_legacy_manifest(

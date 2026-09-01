@@ -96,6 +96,7 @@ def _validar(spec: dict, nome: str) -> None:
     if not isinstance(secoes, list) or not secoes:
         raise FlowInvalid(f"{nome}: sem `sections` — não há formulário a renderizar")
     vistos: set[str] = set()
+    conditions: list[tuple[str, dict[str, Any]]] = []
     for i, sec in enumerate(secoes):
         if not isinstance(sec, dict) or not sec.get("id"):
             raise FlowInvalid(f"{nome}: seção {i} sem `id`")
@@ -113,6 +114,18 @@ def _validar(spec: dict, nome: str) -> None:
             vistos.add(cid)
             if not campo.get("type"):
                 raise FlowInvalid(f"{nome}: campo '{cid}' sem `type`")
+            if "visibleWhen" in campo:
+                condition = campo["visibleWhen"]
+                if not isinstance(condition, dict) or set(condition) != {"field", "equals"}:
+                    raise FlowInvalid(f"{nome}: campo '{cid}' tem `visibleWhen` inválido")
+                conditions.append((cid, condition))
+    for cid, condition in conditions:
+        if condition.get("field") not in vistos:
+            raise FlowInvalid(
+                f"{nome}: campo '{cid}' depende de campo inexistente em `visibleWhen`"
+            )
+        if not isinstance(condition.get("equals"), str) or not condition["equals"]:
+            raise FlowInvalid(f"{nome}: campo '{cid}' tem `visibleWhen.equals` inválido")
 
 
 @lru_cache(maxsize=32)

@@ -17,7 +17,7 @@ from uuid import uuid4
 import rfc8785
 
 import app
-from app.modules.okf.public import AuthoringInvalid
+from app.modules.okf.public import AuthoringInvalid, parse_authoring_document
 
 _SOURCES = frozenset({"manual", "builder", "import", "migration"})
 _IDENTIFIER = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$", re.ASCII)
@@ -426,6 +426,30 @@ class ChangeSetService:
         return redacted, sha256(canonical).hexdigest()
 
     @staticmethod
+    def _validate_documents(scope: ChangeSetScope, content: Mapping[str, Any]) -> None:
+        for index, operation in enumerate(content["operations"]):
+            raw_document = operation.get("document")
+            if raw_document is None:
+                continue
+            if not isinstance(raw_document, str) or not raw_document.strip():
+                raise AuthoringInvalid(
+                    f"changeset.content.operations[{index}].document: deve ser texto OKF"
+                )
+            document = parse_authoring_document(
+                raw_document,
+                where=f"changeset.content.operations[{index}].document",
+            )
+            declared_type = operation.get("document_type")
+            if declared_type is not None and declared_type != document.type:
+                raise AuthoringInvalid(
+                    f"changeset.content.operations[{index}].document_type: diverge do documento"
+                )
+            if document.tenant != scope.tenant_id or document.area != scope.area_id:
+                raise AuthoringInvalid(
+                    f"changeset.content.operations[{index}].document: escopo divergente"
+                )
+
+    @staticmethod
     def _identifier(value: str, *, field: str) -> str:
         if not isinstance(value, str) or not _IDENTIFIER.fullmatch(value):
             raise AuthoringInvalid(f"changeset.{field}: identificador inválido")
@@ -446,6 +470,7 @@ class ChangeSetService:
         if not isinstance(idempotency_key, str) or not 8 <= len(idempotency_key) <= 128:
             raise AuthoringInvalid("changeset.idempotency_key: tamanho inválido")
         normalized, content_hash = self._content(content)
+        self._validate_documents(scope, normalized)
         request_hash = sha256(
             _canonical({"source": source, "base_snapshot_id": snapshot, "content": normalized})
         ).hexdigest()
@@ -488,6 +513,7 @@ class ChangeSetService:
         if expected_etag != current.etag:
             raise ChangeSetPreconditionFailed("CHANGESET_REVISION_STALE")
         normalized, content_hash = self._content(content)
+        self._validate_documents(scope, normalized)
         snapshot = (
             self._identifier(base_snapshot_id, field="base_snapshot_id")
             if base_snapshot_id is not None

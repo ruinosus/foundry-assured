@@ -258,9 +258,11 @@ def parse_authoring_document(text: str, *, where: str = "document") -> Authoring
     if resource is not None and (not isinstance(resource, str) or not resource.strip()):
         raise AuthoringInvalid(f"{where}: `resource` OKF deve ser texto não vazio quando presente")
 
+    from .bindings import validate_binding_resource
     from .schemas import validate_spec
 
     validate_spec(doc_type, spec, where=f"{where}.{PROFILE_KEY}.spec")
+    validate_binding_resource(doc_type, spec, resource, where=f"{where}.resource")
     document = AuthoringDocument(
         type=doc_type,
         id=_slug(profile.get("id"), "id", f"{where}.{PROFILE_KEY}"),

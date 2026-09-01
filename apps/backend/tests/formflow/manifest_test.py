@@ -30,7 +30,10 @@ from app.modules.formflow.public import FlowInvalid, flows_dir, list_flows, load
 #: O vocabulário de regras que a tela sabe aplicar. FECHADO de propósito — ver o modo 1 acima.
 #: Espelha `REGRAS` em `apps/frontend/lib/formflow/rules.ts`; o gate de espelho abaixo é o que
 #: impede os dois de divergirem.
-REGRAS = {"resourceName", "max63", "unique", "safeFilename"}
+REGRAS = {
+    "resourceName", "max63", "unique", "safeFilename", "agentSchemaReference",
+    "workflowReference", "containerImageReference",
+}
 
 #: Os tipos de campo que o renderizador conhece. Um tipo novo é CÓDIGO (um controle novo), não
 #: dado — é a linha que impede o manifesto de virar linguagem de programação pela porta dos fundos.
@@ -92,6 +95,16 @@ def main() -> int:
         # a revisão fala de campos que existem — uma linha citando `{modelo}` num fluxo cujo campo
         # é `model` renderiza o placeholder cru para quem vai publicar.
         ids_campos = {c["id"] for _, c in campos}
+        condicoes_quebradas = {
+            c["id"]
+            for _, c in campos
+            if c.get("visibleWhen") and c["visibleWhen"].get("field") not in ids_campos
+        }
+        check(
+            "visibilidade só depende de campo existente",
+            not condicoes_quebradas,
+            f"fora: {condicoes_quebradas}",
+        )
         import re
 
         refs = {
@@ -124,6 +137,12 @@ def main() -> int:
             {"id": "s1", "fields": [{"id": "a", "type": "text"}]},
             {"id": "s2", "fields": [{"id": "a", "type": "text"}]},
         ]}),
+    )
+    check(
+        "visibleWhen não aponta para campo inexistente",
+        recusa({"sections": [{"id": "s", "fields": [
+            {"id": "a", "type": "text", "visibleWhen": {"field": "ausente", "equals": "x"}}
+        ]}]}),
     )
 
     print(f"\n{'❌' if falhas else '✅'} {len(falhas)} falha(s)")
