@@ -16,6 +16,7 @@ from .catalog import ResourceNotFound, SourceUnavailable, resource_detail
 if TYPE_CHECKING:
     from .catalog import CatalogSource
     from .changesets import ChangeSetScope, ChangeSetService, StoredChangeSet
+    from .validations import ValidationService
 
 
 class BundleNotFound(AuthoringInvalid):
@@ -30,6 +31,7 @@ class BundleBlocked(AuthoringInvalid):
 class BundleService:
     changesets: ChangeSetService
     sources: tuple[CatalogSource, ...]
+    validations: ValidationService
 
     @staticmethod
     def _documents(record: StoredChangeSet) -> list[dict[str, Any]]:
@@ -47,7 +49,6 @@ class BundleService:
                     "revision": document.revision,
                     "operation": operation["operation"],
                     "text": raw,
-                    "spec": dict(document.spec),
                     "references": [
                         {
                             "type": reference.type,
@@ -179,6 +180,9 @@ class BundleService:
         projection = self.get(scope, changeset_id)
         if not projection["canSubmit"]:
             raise BundleBlocked("BUNDLE_SUBMISSION_BLOCKED")
+        self.validations.assert_transition(
+            scope, changeset_id, phase="submission"
+        )
         return self._project(
             self.changesets.submit(scope, changeset_id, expected_etag=expected_etag)
         )

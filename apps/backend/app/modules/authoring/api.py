@@ -19,12 +19,16 @@ from app.modules.authoring.public import (
     ChangeSetPreconditionFailed,
     ChangeSetScope,
     ChangeSetService,
+    DecisionConflict,
+    DecisionNotFound,
+    DecisionService,
     ResourceNotFound,
     SnapshotStale,
     ValidationReportNotFound,
     ValidationService,
     catalog_page,
     default_changeset_service,
+    default_decision_service,
     default_sources,
     default_validation_service,
     resource_activity,
@@ -89,6 +93,15 @@ class RunValidationBody(BaseModel):
     phase: Literal["editing", "submission", "approval", "materialization"]
 
 
+class DecisionBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    revision: int = Field(ge=1)
+    content_hash: str = Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
+    decision: Literal["approve", "reject"]
+    reason: str = Field(min_length=1, max_length=1000)
+
+
 def _scope() -> ChangeSetScope:
     area = current_area()
     if area is None:
@@ -110,6 +123,8 @@ def _error(exc: Exception):
         raise HTTPException(404, "CHANGESET_NOT_FOUND") from exc
     if isinstance(exc, ValidationReportNotFound):
         raise HTTPException(404, "VALIDATION_REPORT_NOT_FOUND") from exc
+    if isinstance(exc, DecisionNotFound):
+        raise HTTPException(404, "DECISION_NOT_FOUND") from exc
     if isinstance(exc, BundleNotFound):
         raise HTTPException(404, "BUNDLE_NOT_FOUND") from exc
     if isinstance(exc, BundleBlocked):
@@ -121,6 +136,11 @@ def _error(exc: Exception):
         return JSONResponse(status_code=412, content={"error": {"code": "CHANGESET_REVISION_STALE"}})
     if isinstance(exc, ChangeSetConflict):
         return JSONResponse(status_code=409, content={"error": {"code": "IDEMPOTENCY_KEY_REUSED"}})
+    if isinstance(exc, DecisionConflict):
+        return JSONResponse(
+            status_code=409,
+            content={"error": {"code": str(exc)}},
+        )
     if isinstance(exc, AuthoringInvalid):
         raise HTTPException(422, str(exc)) from exc
     correlation_id = uuid4().hex
@@ -137,8 +157,13 @@ def _error(exc: Exception):
 
 def _bundle_service(
     changesets: Annotated[ChangeSetService, Depends(default_changeset_service)],
+    validations: Annotated[ValidationService, Depends(default_validation_service)],
 ) -> BundleService:
-    return BundleService(changesets=changesets, sources=default_sources())
+    return BundleService(
+        changesets=changesets,
+        sources=default_sources(),
+        validations=validations,
+    )
 
 
 @router.get("/bundles", response_model=None)
@@ -363,6 +388,57 @@ def run_validation(
 def _validation_role_allowed(phase: str, roles: set[str]) -> bool:
     required = "Approver" if phase in {"approval", "materialization"} else "Author"
     return required in roles
+
+
+def _decision_roles() -> set[str]:
+    return current_roles() if settings.auth_enabled else {"Approver"}
+
+
+@router.post(
+    "/changesets/{changeset_id}/decisions",
+    response_model=None,
+    dependencies=[Depends(require_role("Approver"))],
+)
+def decide_changeset(
+    changeset_id: ChangeSetId,
+    body: DecisionBody,
+    scope: Annotated[ChangeSetScope, Depends(_scope)],
+    service: Annotated[DecisionService, Depends(default_decision_service)],
+) -> JSONResponse:
+    try:
+        decision = service.decide(
+            scope,
+            changeset_id,
+            revision=body.revision,
+            content_hash=body.content_hash,
+            decision=body.decision,
+            reason=body.reason,
+            roles=_decision_roles(),
+        )
+        return JSONResponse(
+            status_code=201,
+            content=decision.to_dict(),
+            headers={"Cache-Control": "no-store"},
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
+
+
+@router.get("/changesets/{changeset_id}/decisions", response_model=None)
+def list_decisions(
+    changeset_id: ChangeSetId,
+    scope: Annotated[ChangeSetScope, Depends(_scope)],
+    service: Annotated[DecisionService, Depends(default_decision_service)],
+) -> dict[str, Any] | JSONResponse:
+    try:
+        return {
+            "items": [
+                decision.to_dict()
+                for decision in service.list(scope, changeset_id)
+            ]
+        }
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
 
 
 @router.get("/changesets/{changeset_id}/validations", response_model=None)

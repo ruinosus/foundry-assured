@@ -690,8 +690,12 @@ def main() -> int:
         ChangeSetPreconditionFailed,
         ChangeSetScope,
         ChangeSetService,
+        DecisionService,
         PostgresChangeSetRepository,
         SQLiteChangeSetRepository,
+        SQLiteDecisionRepository,
+        SQLiteValidationReportRepository,
+        ValidationService,
     )
 
     def repository_contract(label: str, repository_factory) -> None:
@@ -954,7 +958,13 @@ def main() -> int:
             },
             idempotency_key="bundle-create-001",
         )
-        bundles = BundleService(bundle_changesets, ())
+        bundle_database = Path(directory) / "bundles.sqlite3"
+        validations = ValidationService(
+            bundle_changesets,
+            SQLiteValidationReportRepository(bundle_database),
+            sources=(),
+        )
+        bundles = BundleService(bundle_changesets, (), validations)
         projected = bundles.get(bundle_scope, bundle_record.id)
         check(
             "bundle resolves references from the same revision",
@@ -978,23 +988,260 @@ def main() -> int:
             ),
             fails=True,
         )
+        check(
+            "bundle submission requires immutable validation evidence",
+            lambda: bundles.submit(
+                bundle_scope, bundle_record.id, expected_etag=bundle_record.etag
+            ),
+            fails=True,
+        )
+        validations.run(
+            bundle_scope,
+            bundle_record.id,
+            revision=bundle_record.revision,
+            phase="submission",
+        )
         submitted_bundle = bundles.submit(
             bundle_scope, bundle_record.id, expected_etag=bundle_record.etag
         )
+        validations.run(
+            bundle_scope,
+            bundle_record.id,
+            revision=submitted_bundle["revision"],
+            phase="approval",
+        )
+        decisions = DecisionService(
+            bundle_changesets,
+            validations,
+            SQLiteDecisionRepository(bundle_database),
+            audit_recorder=lambda **_event: {
+                "hash": "audit-decision-001",
+                "seq": 1,
+            },
+        )
+        approved = decisions.decide(
+            bundle_scope,
+            bundle_record.id,
+            revision=submitted_bundle["revision"],
+            content_hash=submitted_bundle["content_hash"],
+            decision="approve",
+            reason="Revisão e impacto confirmados.",
+            roles={"Approver"},
+        )
+        reopened_decision = DecisionService(
+            bundle_changesets,
+            validations,
+            SQLiteDecisionRepository(bundle_database),
+            audit_recorder=lambda **_event: {},
+        ).get(bundle_scope, approved.id)
+        check(
+            "Approver decision persists exact immutable evidence",
+            reopened_decision.content_hash == submitted_bundle["content_hash"]
+            and reopened_decision.reason == "Revisão e impacto confirmados."
+            and reopened_decision.audit_ref == "audit-decision-001"
+            and reopened_decision.correlation_id,
+        )
+        for denied_role in ("Reader", "Author", "Admin"):
+            check(
+                f"{denied_role} has no implicit Approver authority",
+                lambda denied_role=denied_role: decisions.decide(
+                    bundle_scope,
+                    bundle_record.id,
+                    revision=submitted_bundle["revision"],
+                    content_hash=submitted_bundle["content_hash"],
+                    decision="approve",
+                    reason="Tentativa indevida.",
+                    roles={denied_role},
+                ),
+                fails=True,
+            )
+        check(
+            "decision cannot target a divergent content hash",
+            lambda: decisions.decide(
+                bundle_scope,
+                bundle_record.id,
+                revision=submitted_bundle["revision"],
+                content_hash="0" * 64,
+                decision="reject",
+                reason="Hash divergente.",
+                roles={"Approver"},
+            ),
+            fails=True,
+        )
+        check(
+            "decision is fail-closed across areas",
+            lambda: decisions.get(
+                ChangeSetScope("tenant-a", "area-b", "approver-b"), approved.id
+            ),
+            fails=True,
+        )
+        check(
+            "approved bundle cannot be revised",
+            lambda: bundles.revise(
+                bundle_scope,
+                bundle_record.id,
+                expected_etag=submitted_bundle["etag"],
+            ),
+            fails=True,
+        )
+        revisable_record, _ = bundle_changesets.create(
+            bundle_scope,
+            source="manual",
+            base_snapshot_id="snapshot-42",
+            content=bundle_record.to_dict()["content"],
+            idempotency_key="bundle-revisable-001",
+        )
+        validations.run(
+            bundle_scope,
+            revisable_record.id,
+            revision=revisable_record.revision,
+            phase="submission",
+        )
+        revisable_bundle = bundles.submit(
+            bundle_scope,
+            revisable_record.id,
+            expected_etag=revisable_record.etag,
+        )
         revised_bundle = bundles.revise(
-            bundle_scope, bundle_record.id, expected_etag=submitted_bundle["etag"]
+            bundle_scope,
+            revisable_record.id,
+            expected_etag=revisable_bundle["etag"],
         )
         check(
             "bundle detail pins one immutable revision",
             revised_bundle["revision"] == 2
-            and bundles.get(bundle_scope, bundle_record.id, revision=1)["state"]
+            and bundles.get(bundle_scope, revisable_record.id, revision=1)["state"]
             == "submitted",
+        )
+
+        api_decision_record, _ = bundle_changesets.create(
+            bundle_scope,
+            source="manual",
+            base_snapshot_id="snapshot-42",
+            content=bundle_record.to_dict()["content"],
+            idempotency_key="bundle-api-decision-001",
+        )
+        validations.run(
+            bundle_scope,
+            api_decision_record.id,
+            revision=1,
+            phase="submission",
+        )
+        api_decision_bundle = bundles.submit(
+            bundle_scope,
+            api_decision_record.id,
+            expected_etag=api_decision_record.etag,
+        )
+        validations.run(
+            bundle_scope,
+            api_decision_record.id,
+            revision=1,
+            phase="approval",
+        )
+        api_decisions = DecisionService(
+            bundle_changesets,
+            validations,
+            SQLiteDecisionRepository(bundle_database),
+            audit_recorder=lambda **_event: {"hash": "audit-api-decision"},
+        )
+        audit_failure = DecisionService(
+            bundle_changesets,
+            validations,
+            SQLiteDecisionRepository(bundle_database),
+            audit_recorder=lambda **_event: (_ for _ in ()).throw(
+                RuntimeError("audit unavailable")
+            ),
+        )
+        check(
+            "audit failure blocks the human decision",
+            lambda: audit_failure.decide(
+                bundle_scope,
+                api_decision_record.id,
+                revision=1,
+                content_hash=api_decision_bundle["content_hash"],
+                decision="approve",
+                reason="Não pode avançar sem auditoria.",
+                roles={"Approver"},
+            ),
+            fails=True,
+        )
+        check(
+            "audit failure leaves the ChangeSet submitted",
+            bundle_changesets.get(bundle_scope, api_decision_record.id).state
+            == "submitted",
+        )
+
+        from app.modules.authoring import api as authoring_api
+        from app.shared import auth
+
+        decision_application = FastAPI()
+        decision_application.include_router(authoring_api.router)
+        decision_application.dependency_overrides[authoring_api.require_area] = (
+            lambda: None
+        )
+        decision_application.dependency_overrides[authoring_api._scope] = (
+            lambda: bundle_scope
+        )
+        decision_application.dependency_overrides[
+            authoring_api.default_decision_service
+        ] = lambda: api_decisions
+        decision_application.dependency_overrides[authoring_api._bundle_service] = (
+            lambda: bundles
+        )
+        decision_user = SimpleNamespace(
+            oid="approver-preview",
+            roles=["Approver"],
+        )
+        decision_application.dependency_overrides[auth.require_user] = (
+            lambda: decision_user
+        )
+        if auth.azure_scheme is not None:
+            decision_application.dependency_overrides[auth.azure_scheme] = (
+                lambda: decision_user
+            )
+        authoring_api.current_roles = lambda: {"Approver"}
+        decision_client = TestClient(decision_application)
+        bundle_detail_response = decision_client.get(
+            f"/authoring/bundles/{api_decision_record.id}?revision=1"
+        )
+        check(
+            "bundle API serializes the immutable review projection",
+            bundle_detail_response.status_code == 200
+            and bundle_detail_response.json()["content_hash"]
+            == api_decision_bundle["content_hash"],
+        )
+        decided_response = decision_client.post(
+            f"/authoring/changesets/{api_decision_record.id}/decisions",
+            json={
+                "revision": 1,
+                "content_hash": api_decision_bundle["content_hash"],
+                "decision": "reject",
+                "reason": "A compensação precisa ser detalhada.",
+            },
+        )
+        listed_decisions = decision_client.get(
+            f"/authoring/changesets/{api_decision_record.id}/decisions"
+        )
+        check(
+            "decision API creates and lists exact immutable evidence",
+            decided_response.status_code == 201
+            and listed_decisions.status_code == 200
+            and listed_decisions.json()["items"][0]["id"]
+            == decided_response.json()["id"],
+        )
+        decision_application.dependency_overrides[authoring_api._scope] = lambda: (
+            ChangeSetScope("tenant-a", "area-b", "approver-b")
+        )
+        cross_area_decisions = decision_client.get(
+            f"/authoring/changesets/{api_decision_record.id}/decisions"
+        )
+        check(
+            "decision API is fail-closed across areas",
+            cross_area_decisions.status_code == 404,
         )
 
         raw = sqlite_path.read_bytes()
         check("database contains no delegated credential", b"must-not-persist" not in raw)
-
-        from app.modules.authoring import api as authoring_api
 
         api_service = ChangeSetService(SQLiteChangeSetRepository(Path(directory) / "api.sqlite3"))
         api_scope = ChangeSetScope("tenant-a", "area-a", "author-a")
@@ -1003,8 +1250,6 @@ def main() -> int:
         application.dependency_overrides[authoring_api.require_area] = lambda: None
         application.dependency_overrides[authoring_api._scope] = lambda: api_scope
         application.dependency_overrides[authoring_api.default_changeset_service] = lambda: api_service
-        from app.shared import auth
-
         api_user = SimpleNamespace(oid="author-a", roles=["Author"])
         application.dependency_overrides[auth.require_user] = lambda: api_user
         if auth.azure_scheme is not None:

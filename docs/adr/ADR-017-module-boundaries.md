@@ -236,6 +236,13 @@ MCP: quando uma revisão contém `mcp-binding`, ele chama `evaluate_mcp_binding`
 `platform_ops`, e persiste apenas a decisão sanitizada no relatório imutável. Sem binding, o import é
 lazy e a capacidade não é inicializada. A direção inversa continua inexistente.
 
+A decisão humana acrescenta `authoring → audit`, somente por `audit.public`. `authoring` continua
+dono do agregado, da revisão e do armazenamento da decisão; `audit` continua dono da trilha
+append-only. A gravação do evento ocorre antes da transição e sua falha bloqueia aprovação ou
+rejeição, pois uma decisão sem recibo deixaria o estado publicado sem prova de ator e correlação. O
+evento contém decisão, revisão, hash e metadados mínimos da razão, nunca o documento ou a razão
+integral. A dependência inversa não existe e o HITL de tools permanece um mecanismo distinto.
+
 ## Recorded edges: five modules depend on `conversations` so that measuring is uniform
 
 A second batch of intended edges — `hosted`, `oncall` and `deepcall` now import `conversations`,

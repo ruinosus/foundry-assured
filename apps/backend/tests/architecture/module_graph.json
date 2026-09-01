@@ -96,6 +96,9 @@
     ]
   },
   "authoring": {
+    "audit": [
+      "modules/authoring/internal/decisions.py"
+    ],
     "formflow": [
       "modules/authoring/internal/sources.py"
     ],
@@ -107,6 +110,7 @@
       "modules/authoring/internal/bundles.py",
       "modules/authoring/internal/catalog.py",
       "modules/authoring/internal/changesets.py",
+      "modules/authoring/internal/decisions.py",
       "modules/authoring/internal/validations.py"
     ],
     "platform_ops": [

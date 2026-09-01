@@ -27,6 +27,14 @@ from app.modules.authoring.internal.changesets import (
     StoredChangeSet,
     default_changeset_service,
 )
+from app.modules.authoring.internal.decisions import (
+    DecisionConflict,
+    DecisionNotFound,
+    DecisionService,
+    SQLiteDecisionRepository,
+    StoredDecision,
+    default_decision_service,
+)
 from app.modules.authoring.internal.sources import default_sources
 from app.modules.authoring.internal.validations import (
     SQLiteValidationReportRepository,
@@ -49,13 +57,18 @@ __all__ = [
     "ChangeSetRepository",
     "ChangeSetScope",
     "ChangeSetService",
+    "DecisionConflict",
+    "DecisionNotFound",
+    "DecisionService",
     "PostgresChangeSetRepository",
     "ResourceNotFound",
     "SQLiteChangeSetRepository",
+    "SQLiteDecisionRepository",
     "SQLiteValidationReportRepository",
     "SnapshotStale",
     "SourceUnavailable",
     "StoredChangeSet",
+    "StoredDecision",
     "StoredValidationReport",
     "ValidationCheck",
     "ValidationReportNotFound",
@@ -63,6 +76,7 @@ __all__ = [
     "ValidationTransitionBlocked",
     "catalog_page",
     "default_changeset_service",
+    "default_decision_service",
     "default_sources",
     "default_validation_service",
     "resource_activity",

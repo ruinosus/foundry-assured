@@ -78,6 +78,10 @@
     ],
     [
       "GET",
+      "/authoring/changesets/{changeset_id}/decisions"
+    ],
+    [
+      "GET",
       "/authoring/changesets/{changeset_id}/validations"
     ],
     [
@@ -314,6 +318,10 @@
     ],
     [
       "POST",
+      "/authoring/changesets/{changeset_id}/decisions"
+    ],
+    [
+      "POST",
       "/authoring/changesets/{changeset_id}/validations"
     ],
     [
@@ -541,6 +549,10 @@
     [
       "GET",
       "/authoring/changesets/{changeset_id}"
+    ],
+    [
+      "GET",
+      "/authoring/changesets/{changeset_id}/decisions"
     ],
     [
       "GET",
@@ -788,6 +800,10 @@
     ],
     [
       "POST",
+      "/authoring/changesets/{changeset_id}/decisions"
+    ],
+    [
+      "POST",
       "/authoring/changesets/{changeset_id}/validations"
     ],
     [
@@ -1027,6 +1043,10 @@
     [
       "GET",
       "/authoring/changesets/{changeset_id}"
+    ],
+    [
+      "GET",
+      "/authoring/changesets/{changeset_id}/decisions"
     ],
     [
       "GET",
@@ -1283,6 +1303,10 @@
     [
       "POST",
       "/authoring/changesets"
+    ],
+    [
+      "POST",
+      "/authoring/changesets/{changeset_id}/decisions"
     ],
     [
       "POST",
