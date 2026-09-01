@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { AREA_SELECTION_EVENT, selectedAreaId } from "@/lib/area-selection";
 import { authedFetch } from "@/lib/auth/api";
 import { useMyIdentity } from "@/lib/auth/roles";
+import { ChangeSetTracer } from "./ChangeSetTracer";
 
 type CatalogItem = {
   kind: string;
@@ -217,6 +218,7 @@ export function CatalogView() {
 
         {selected && <aside className="catalog-detail" aria-label={t("detailTitle")}><header><div><span>{t(`kinds.${selected.kind}`)}</span><h3>{selected.name}</h3><code>{selected.id}</code></div><button type="button" className="btn" onClick={() => setSelected(null)}>{t("close")}</button></header>{detailLoading && <div className="catalog-detail-loading"><span /><span /><span /></div>}{detailError && <div className="catalog-detail-error"><strong>{t("detailError")}</strong><p>{detailError}</p></div>}{detail && !detailLoading && <div className="catalog-detail-body"><section><h4>{t("facts")}</h4><dl className="catalog-facts"><div><dt>{t("lifecycle")}</dt><dd>{String(detail.lifecycle.value)}</dd><small>{detail.lifecycle.source}</small></div><div><dt>{t("cost")}</dt><dd>{t(`factStates.${detail.cost.state}`)}</dd><small>{t("costUnavailable")}</small></div></dl></section><section><h4>{t("permissions")}</h4><div className="catalog-permissions">{Object.entries(detail.permissions.value).map(([permission, allowed]) => <span key={permission} className={allowed ? "allowed" : "denied"}>{t(`permissionNames.${permission}`)} · {allowed ? t("allowed") : t("denied")}</span>)}</div><small>{detail.permissions.source}</small></section><section><h4>{t("versions")}</h4><p>{versions?.state === "measured" ? t("versionCount", { count: versions.items.length }) : t("unavailable")}</p><small>{versions?.source ?? detail.source}</small></section><section><h4>{t("activity")}</h4><p>{activity?.state === "measured" ? t("activityCount", { count: activity.items.length }) : t("unavailable")}</p><small>{activity ? t(`coverage.${activity.coverage}`) : detail.source}</small></section><details><summary>{t("definition")}</summary><pre>{JSON.stringify(detail.definition, null, 2)}</pre></details></div>}</aside>}
       </div>
+      <ChangeSetTracer areaId={effectiveArea} snapshotId={snapshot?.id ?? null} />
     </section>
   );
 }

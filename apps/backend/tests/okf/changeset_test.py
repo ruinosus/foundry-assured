@@ -2,10 +2,16 @@
 
 from __future__ import annotations
 
+import sqlite3
 import sys
+import tempfile
+from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import yaml
+from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 from app.modules.okf.public import (
     AuthoringInvalid,
@@ -16,6 +22,42 @@ from app.modules.okf.public import (
     OkfChangeSet,
     parse_authoring_document,
 )
+
+
+class _PostgresCursor:
+    def __init__(self, cursor) -> None:
+        self._cursor = cursor
+
+    @property
+    def rowcount(self) -> int:
+        return self._cursor.rowcount
+
+    def execute(self, statement: str, parameters=()):
+        self._cursor.execute(statement.replace("%s", "?"), parameters)
+        return self
+
+    def fetchone(self):
+        return self._cursor.fetchone()
+
+
+class _PostgresConnection:
+    """DB-API PostgreSQL fake: exercises that adapter's SQL contract over SQLite."""
+
+    def __init__(self, path: Path) -> None:
+        self._connection = sqlite3.connect(path)
+        self._connection.row_factory = sqlite3.Row
+
+    def cursor(self) -> _PostgresCursor:
+        return _PostgresCursor(self._connection.cursor())
+
+    def commit(self) -> None:
+        self._connection.commit()
+
+    def rollback(self) -> None:
+        self._connection.rollback()
+
+    def close(self) -> None:
+        self._connection.close()
 
 
 def _document(
@@ -511,6 +553,177 @@ def main() -> int:
         "invented name is representable as a gap",
         lambda: gap_only.validate(current_version=current_version),
     )
+
+    from app.modules.authoring.public import (
+        ChangeSetConflict,
+        ChangeSetPreconditionFailed,
+        ChangeSetScope,
+        ChangeSetService,
+        PostgresChangeSetRepository,
+        SQLiteChangeSetRepository,
+    )
+
+    def repository_contract(label: str, repository_factory) -> None:
+        scope = ChangeSetScope("tenant-a", "area-a", "author-a")
+        other_tenant = ChangeSetScope("tenant-b", "area-a", "author-a")
+        other_area = ChangeSetScope("tenant-a", "area-b", "author-a")
+        service = ChangeSetService(repository_factory())
+        content = {
+            "justification": "Criar composição",
+            "operations": [{"id": "create-agent", "operation": "create"}],
+            "credentials": {"access_token": "must-not-persist"},
+        }
+        check(
+            f"{label}: operation requires an id",
+            lambda: service.create(
+                scope,
+                source="manual",
+                base_snapshot_id="snapshot-42",
+                content={"operations": [{"operation": "create"}]},
+                idempotency_key="request-missing-id",
+            ),
+            fails=True,
+        )
+        check(
+            f"{label}: operation uses the OKF verb vocabulary",
+            lambda: service.create(
+                scope,
+                source="manual",
+                base_snapshot_id="snapshot-42",
+                content={"operations": [{"id": "create-agent", "operation": "publish"}]},
+                idempotency_key="request-invalid-verb",
+            ),
+            fails=True,
+        )
+        created, replay = service.create(
+            scope,
+            source="manual",
+            base_snapshot_id="snapshot-42",
+            content=content,
+            idempotency_key="request-create-001",
+        )
+        check(f"{label}: first create is not replay", replay is False)
+        check(f"{label}: first revision is immutable revision 1", created.revision == 1)
+        check(
+            f"{label}: sensitive values are redacted before persistence",
+            "must-not-persist" not in repr(created.to_dict()),
+        )
+        replayed, replay = service.create(
+            scope,
+            source="manual",
+            base_snapshot_id="snapshot-42",
+            content=content,
+            idempotency_key="request-create-001",
+        )
+        check(f"{label}: idempotent replay returns the aggregate", replay and replayed.id == created.id)
+        check(
+            f"{label}: idempotency key cannot identify another request",
+            lambda: service.create(
+                scope,
+                source="manual",
+                base_snapshot_id="snapshot-42",
+                content={"operations": [{"id": "different", "operation": "create"}]},
+                idempotency_key="request-create-001",
+            ),
+            fails=True,
+        )
+        check(f"{label}: tenant isolation is fail-closed", lambda: service.get(other_tenant, created.id), fails=True)
+        check(f"{label}: area isolation is fail-closed", lambda: service.get(other_area, created.id), fails=True)
+        updated = service.update(
+            scope,
+            created.id,
+            expected_etag=created.etag,
+            content={"justification": "Revisado", "operations": content["operations"]},
+        )
+        check(f"{label}: edit appends revision 2", updated.revision == 2 and updated.etag != created.etag)
+        check(
+            f"{label}: stale If-Match cannot overwrite",
+            lambda: service.update(
+                scope,
+                created.id,
+                expected_etag=created.etag,
+                content={"operations": content["operations"]},
+            ),
+            fails=True,
+        )
+        reopened = ChangeSetService(repository_factory()).get(scope, created.id)
+        check(f"{label}: current revision survives repository restart", reopened.revision == 2)
+        check(
+            f"{label}: stale write left the current revision unchanged",
+            reopened.content["justification"] == "Revisado",
+        )
+
+    with tempfile.TemporaryDirectory() as directory:
+        sqlite_path = Path(directory) / "changesets.sqlite3"
+        repository_contract("sqlite", lambda: SQLiteChangeSetRepository(sqlite_path))
+        postgres_path = Path(directory) / "postgres-contract.sqlite3"
+        repository_contract(
+            "postgres",
+            lambda: PostgresChangeSetRepository(lambda: _PostgresConnection(postgres_path)),
+        )
+
+        raw = sqlite_path.read_bytes()
+        check("database contains no delegated credential", b"must-not-persist" not in raw)
+
+        from app.modules.authoring import api as authoring_api
+
+        api_service = ChangeSetService(SQLiteChangeSetRepository(Path(directory) / "api.sqlite3"))
+        api_scope = ChangeSetScope("tenant-a", "area-a", "author-a")
+        application = FastAPI()
+        application.include_router(authoring_api.router)
+        application.dependency_overrides[authoring_api.require_area] = lambda: None
+        application.dependency_overrides[authoring_api._scope] = lambda: api_scope
+        application.dependency_overrides[authoring_api.default_changeset_service] = lambda: api_service
+        from app.shared import auth
+
+        api_user = SimpleNamespace(oid="author-a", roles=["Author"])
+        application.dependency_overrides[auth.require_user] = lambda: api_user
+        if auth.azure_scheme is not None:
+            application.dependency_overrides[auth.azure_scheme] = lambda: api_user
+        client = TestClient(application)
+        payload = {
+            "source": "manual",
+            "base_snapshot_id": "snapshot-42",
+            "content": {
+                "operations": [{"id": "create-agent", "operation": "create"}],
+                "access_token": "api-secret",
+            },
+        }
+        created_response = client.post(
+            "/authoring/changesets",
+            json=payload,
+            headers={"Idempotency-Key": "api-create-001"},
+        )
+        changeset_id = created_response.json().get("id", "")
+        etag = created_response.headers.get("etag", "")
+        check("api: POST creates revision with ETag", created_response.status_code == 201 and bool(etag))
+        check("api: response does not expose credential", "api-secret" not in created_response.text)
+        replay_response = client.post(
+            "/authoring/changesets",
+            json=payload,
+            headers={"Idempotency-Key": "api-create-001"},
+        )
+        check("api: POST replay returns 200", replay_response.status_code == 200)
+        read_response = client.get(f"/authoring/changesets/{changeset_id}")
+        check("api: GET returns current revision", read_response.status_code == 200 and read_response.json()["revision"] == 1)
+        updated_response = client.patch(
+            f"/authoring/changesets/{changeset_id}",
+            json={"content": {"operations": payload["content"]["operations"], "justification": "updated"}},
+            headers={"If-Match": etag},
+        )
+        check("api: PATCH appends revision", updated_response.status_code == 200 and updated_response.json()["revision"] == 2)
+        stale_response = client.patch(
+            f"/authoring/changesets/{changeset_id}",
+            json={"content": {"operations": payload["content"]["operations"]}},
+            headers={"If-Match": etag},
+        )
+        check("api: stale If-Match returns 412", stale_response.status_code == 412)
+        application.dependency_overrides[authoring_api._scope] = lambda: ChangeSetScope("tenant-a", "area-b", "author-a")
+        cross_area = client.get(f"/authoring/changesets/{changeset_id}")
+        check("api: cross-area read is indistinguishable from absent", cross_area.status_code == 404)
+
+    check("domain exposes conflict type", issubclass(ChangeSetConflict, AuthoringInvalid))
+    check("domain exposes precondition type", issubclass(ChangeSetPreconditionFailed, AuthoringInvalid))
 
     print(f"\n{'❌' if failures else '✅'} {len(failures)} failure(s)")
     return 1 if failures else 0

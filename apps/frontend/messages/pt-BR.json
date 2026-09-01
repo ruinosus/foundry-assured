@@ -106,6 +106,24 @@
     "permissionNames": { "read": "Leitura", "author": "Autoria", "approve": "Aprovação", "admin": "Administração" },
     "coverage": { "recent_sessions": "Sessões recentes informadas pelo Foundry", "source_synchronizations": "Sincronizações informadas pelo Azure AI Search", "official_versions": "Versões informadas pela fonte dona", "none": "A fonte não oferece atividade para este recurso" }
   },
+  "changeset": {
+    "title": "Rascunho de mudança",
+    "subtitle": "Registre uma proposta sobre a fotografia observada sem publicar recursos.",
+    "id": "ID do ChangeSet",
+    "idPlaceholder": "Cole um ID para continuar uma proposta",
+    "load": "Buscar",
+    "justification": "Justificativa",
+    "operationId": "ID da operação",
+    "operation": "Ação",
+    "operations": { "create": "Criar", "revise": "Revisar", "deprecate": "Descontinuar" },
+    "create": "Criar rascunho",
+    "save": "Salvar revisão",
+    "revision": "Revisão {revision}",
+    "created": "Rascunho criado.",
+    "loaded": "Rascunho carregado.",
+    "saved": "Nova revisão salva.",
+    "failed": "A operação falhou com o código {code}."
+  },
   "agentChat": {
     "subtitle": "Este agente é um recurso do seu projeto no Foundry — não um exemplo embutido no produto.",
     "signInFirst": "Entre para conversar com este agente."

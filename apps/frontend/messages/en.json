@@ -106,6 +106,24 @@
     "permissionNames": { "read": "Read", "author": "Author", "approve": "Approve", "admin": "Administration" },
     "coverage": { "recent_sessions": "Recent sessions reported by Foundry", "source_synchronizations": "Synchronizations reported by Azure AI Search", "official_versions": "Versions reported by the owning source", "none": "The source provides no activity for this resource" }
   },
+  "changeset": {
+    "title": "Change draft",
+    "subtitle": "Record a proposal against the observed snapshot without publishing resources.",
+    "id": "ChangeSet ID",
+    "idPlaceholder": "Paste an ID to continue a proposal",
+    "load": "Load",
+    "justification": "Justification",
+    "operationId": "Operation ID",
+    "operation": "Action",
+    "operations": { "create": "Create", "revise": "Revise", "deprecate": "Deprecate" },
+    "create": "Create draft",
+    "save": "Save revision",
+    "revision": "Revision {revision}",
+    "created": "Draft created.",
+    "loaded": "Draft loaded.",
+    "saved": "New revision saved.",
+    "failed": "The operation failed with code {code}."
+  },
   "agentChat": {
     "subtitle": "This agent is a resource in your Foundry project — not an example bundled with the product.",
     "signInFirst": "Sign in to chat with this agent."
