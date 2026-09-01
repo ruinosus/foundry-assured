@@ -104,8 +104,13 @@
     ],
     "okf": [
       "modules/authoring/api.py",
+      "modules/authoring/internal/bundles.py",
       "modules/authoring/internal/catalog.py",
-      "modules/authoring/internal/changesets.py"
+      "modules/authoring/internal/changesets.py",
+      "modules/authoring/internal/validations.py"
+    ],
+    "platform_ops": [
+      "modules/authoring/internal/validations.py"
     ],
     "shared": [
       "modules/authoring/api.py",

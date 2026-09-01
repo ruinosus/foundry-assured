@@ -28,6 +28,15 @@ from app.modules.authoring.internal.changesets import (
     default_changeset_service,
 )
 from app.modules.authoring.internal.sources import default_sources
+from app.modules.authoring.internal.validations import (
+    SQLiteValidationReportRepository,
+    StoredValidationReport,
+    ValidationCheck,
+    ValidationReportNotFound,
+    ValidationService,
+    ValidationTransitionBlocked,
+    default_validation_service,
+)
 
 __all__ = [
     "BundleBlocked",
@@ -43,12 +52,19 @@ __all__ = [
     "PostgresChangeSetRepository",
     "ResourceNotFound",
     "SQLiteChangeSetRepository",
+    "SQLiteValidationReportRepository",
     "SnapshotStale",
     "SourceUnavailable",
     "StoredChangeSet",
+    "StoredValidationReport",
+    "ValidationCheck",
+    "ValidationReportNotFound",
+    "ValidationService",
+    "ValidationTransitionBlocked",
     "catalog_page",
     "default_changeset_service",
     "default_sources",
+    "default_validation_service",
     "resource_activity",
     "resource_detail",
     "resource_versions",

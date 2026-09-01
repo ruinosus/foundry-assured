@@ -34,6 +34,7 @@ import { frontendMode, isLocalDataMode, type FrontendMode } from "@/lib/frontend
 const WORKSPACE_NAV = [
   { href: "/catalog", key: "catalog", icon: "▥" },
   { href: "/bundles", key: "bundles", icon: "▧" },
+  { href: "/compliance", key: "compliance", icon: "◫" },
   { href: "/usecases", key: "usecases", icon: "◎" },
   // UM item para os assistentes, não seis. Os seis viraram o seletor no topo do console — mas
   // sem esta linha não haveria caminho até uma conversa a partir das telas de gestão, e o
@@ -66,6 +67,7 @@ const TITLE_KEYS: Record<string, string> = {
   "/": "overview",
   "/catalog": "catalog",
   "/bundles": "bundles",
+  "/compliance": "compliance",
   "/usecases": "usecases",
   "/agents": "agents",
   "/knowledge": "knowledge",

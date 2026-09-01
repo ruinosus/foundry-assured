@@ -230,6 +230,12 @@ metadata; connections remain tenancy references. `authoring` materializes and so
 snapshot, hashes it, paginates it and reports unavailable sources as gaps. It has no resource store,
 SDK client or resource declaration of its own, and no reverse edge points back to it.
 
+Conformidade por fase acrescenta uma quinta dependência, `authoring → platform_ops`, também somente
+por `platform_ops.public`. O módulo de autoria não reimplementa descoberta, drift ou classificação
+MCP: quando uma revisão contém `mcp-binding`, ele chama `evaluate_mcp_binding`, cujo domínio dono é
+`platform_ops`, e persiste apenas a decisão sanitizada no relatório imutável. Sem binding, o import é
+lazy e a capacidade não é inicializada. A direção inversa continua inexistente.
+
 ## Recorded edges: five modules depend on `conversations` so that measuring is uniform
 
 A second batch of intended edges — `hosted`, `oncall` and `deepcall` now import `conversations`,

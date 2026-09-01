@@ -21,16 +21,20 @@ from app.modules.authoring.public import (
     ChangeSetService,
     ResourceNotFound,
     SnapshotStale,
+    ValidationReportNotFound,
+    ValidationService,
     catalog_page,
     default_changeset_service,
     default_sources,
+    default_validation_service,
     resource_activity,
     resource_detail,
     resource_versions,
 )
 from app.modules.okf.public import AuthoringInvalid
 from app.modules.tenancy.public import current_area, current_tenant_id, require_area
-from app.shared.auth import auth_dependencies, current_user, require_role
+from app.shared.auth import auth_dependencies, current_roles, current_user, require_role
+from app.shared.settings import settings
 
 logger = logging.getLogger(__name__)
 
@@ -78,6 +82,13 @@ class UpdateChangeSetBody(BaseModel):
     base_snapshot_id: str | None = Field(default=None, min_length=1, max_length=128, pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]*$")
 
 
+class RunValidationBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    revision: int = Field(ge=1)
+    phase: Literal["editing", "submission", "approval", "materialization"]
+
+
 def _scope() -> ChangeSetScope:
     area = current_area()
     if area is None:
@@ -97,6 +108,8 @@ def _error(exc: Exception):
         raise HTTPException(404, "RESOURCE_NOT_FOUND") from exc
     if isinstance(exc, ChangeSetNotFound):
         raise HTTPException(404, "CHANGESET_NOT_FOUND") from exc
+    if isinstance(exc, ValidationReportNotFound):
+        raise HTTPException(404, "VALIDATION_REPORT_NOT_FOUND") from exc
     if isinstance(exc, BundleNotFound):
         raise HTTPException(404, "BUNDLE_NOT_FOUND") from exc
     if isinstance(exc, BundleBlocked):
@@ -306,6 +319,69 @@ def update_changeset(
             content=record.to_dict(),
             headers={"ETag": record.etag, "Cache-Control": "no-store"},
         )
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
+
+
+@router.post(
+    "/changesets/{changeset_id}/validations",
+    response_model=None,
+    dependencies=[Depends(require_role("Author", "Approver"))],
+)
+def run_validation(
+    changeset_id: ChangeSetId,
+    body: RunValidationBody,
+    scope: Annotated[ChangeSetScope, Depends(_scope)],
+    service: Annotated[ValidationService, Depends(default_validation_service)],
+) -> JSONResponse:
+    if settings.auth_enabled and not _validation_role_allowed(
+        body.phase, current_roles()
+    ):
+        required = "Approver" if body.phase in {"approval", "materialization"} else "Author"
+        raise HTTPException(403, f"requires role: {required}")
+    try:
+        report = service.run(
+            scope, changeset_id, revision=body.revision, phase=body.phase
+        )
+        logger.info(
+            "authoring validation completed changeset_id=%s revision=%s phase=%s report_id=%s overall=%s",
+            changeset_id,
+            body.revision,
+            body.phase,
+            report.id,
+            report.overall,
+        )
+        return JSONResponse(
+            status_code=201,
+            content=report.to_dict(),
+            headers={"Cache-Control": "no-store"},
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
+
+
+def _validation_role_allowed(phase: str, roles: set[str]) -> bool:
+    required = "Approver" if phase in {"approval", "materialization"} else "Author"
+    return required in roles
+
+
+@router.get("/changesets/{changeset_id}/validations", response_model=None)
+def list_validations(
+    changeset_id: ChangeSetId,
+    scope: Annotated[ChangeSetScope, Depends(_scope)],
+    service: Annotated[ValidationService, Depends(default_validation_service)],
+    revision: Annotated[int | None, Query(ge=1)] = None,
+    phase: Literal["editing", "submission", "approval", "materialization"] | None = None,
+) -> dict[str, Any] | JSONResponse:
+    try:
+        return {
+            "items": [
+                report.to_dict()
+                for report in service.list(
+                    scope, changeset_id, revision=revision, phase=phase
+                )
+            ]
+        }
     except Exception as exc:  # noqa: BLE001
         return _error(exc)
 

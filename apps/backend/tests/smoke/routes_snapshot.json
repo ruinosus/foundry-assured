@@ -78,6 +78,10 @@
     ],
     [
       "GET",
+      "/authoring/changesets/{changeset_id}/validations"
+    ],
+    [
+      "GET",
       "/authoring/mcp-endpoints"
     ],
     [
@@ -310,6 +314,10 @@
     ],
     [
       "POST",
+      "/authoring/changesets/{changeset_id}/validations"
+    ],
+    [
+      "POST",
       "/authoring/mcp-bindings/conformity"
     ],
     [
@@ -533,6 +541,10 @@
     [
       "GET",
       "/authoring/changesets/{changeset_id}"
+    ],
+    [
+      "GET",
+      "/authoring/changesets/{changeset_id}/validations"
     ],
     [
       "GET",
@@ -776,6 +788,10 @@
     ],
     [
       "POST",
+      "/authoring/changesets/{changeset_id}/validations"
+    ],
+    [
+      "POST",
       "/authoring/mcp-bindings/conformity"
     ],
     [
@@ -1011,6 +1027,10 @@
     [
       "GET",
       "/authoring/changesets/{changeset_id}"
+    ],
+    [
+      "GET",
+      "/authoring/changesets/{changeset_id}/validations"
     ],
     [
       "GET",
@@ -1263,6 +1283,10 @@
     [
       "POST",
       "/authoring/changesets"
+    ],
+    [
+      "POST",
+      "/authoring/changesets/{changeset_id}/validations"
     ],
     [
       "POST",
