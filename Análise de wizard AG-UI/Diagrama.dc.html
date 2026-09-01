@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, input, textarea, button { box-sizing:border-box; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+</style>
+</helmet>
+
+<div style="padding:36px;display:flex;flex-direction:column;gap:28px;width:1680px">
+
+  <!-- ─────────────── QUADRO 1 ─────────────── -->
+  <section style="background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:8px;padding:32px;display:flex;flex-direction:column;gap:22px">
+    <header style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Quadro 1</span>
+      <h2 style="margin:0;font-size:26px;font-weight:640;letter-spacing:-0.015em">Uma coisa no meio: o bundle</h2>
+      <p style="margin:0;font-size:14px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:62ch;text-wrap:pretty">Superfície em cima, armazenamento embaixo, e no meio um diretório de markdown. Nada fala direto com nada.</p>
+    </header>
+
+    <!-- camada 1 -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Superfícies</span>
+        <span style="font-size:13px;color:oklch(0.487 0.018 260)">onde a pessoa encontra o copiloto</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+        <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:5px">
+          <b style="font-size:15px;font-weight:650">Dock lateral</b>
+          <span style="font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260)">divide a tela de gestão; age no campo em foco</span>
+        </div>
+        <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:5px">
+          <b style="font-size:15px;font-weight:650">Console</b>
+          <span style="font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260)">a conversa é a tela inteira</span>
+        </div>
+        <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:5px">
+          <b style="font-size:15px;font-weight:650">Ancorado no campo</b>
+          <span style="font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260)">abre junto do campo que está sendo preenchido</span>
+        </div>
+        <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:5px">
+          <b style="font-size:15px;font-weight:650">Página própria</b>
+          <span style="font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260)">para quem só quer conversar</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- banda: parsers -->
+    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));align-items:center;gap:12px;padding:2px 0">
+      <div style="grid-column:1 / span 2;display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px;line-height:1;color:oklch(0.452 0.152 262)">↑</span>
+        <span style="font-size:13px;line-height:1.4;color:oklch(0.235 0.017 262)"><b>parser</b> monta a superfície a partir do <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">type</span></span>
+      </div>
+      <div style="grid-column:3;height:1px;background:oklch(0.836 0.008 258)"></div>
+      <div style="grid-column:4 / span 2;display:flex;align-items:center;justify-content:flex-end;gap:10px">
+        <span style="font-size:13px;line-height:1.4;color:oklch(0.235 0.017 262)">a pessoa decide, e a decisão volta como <b>texto no campo</b></span>
+        <span style="font-size:22px;line-height:1;color:oklch(0.545 0.126 68)">↓</span>
+      </div>
+    </div>
+
+    <!-- camada 2 -->
+    <div style="border:2px solid oklch(0.235 0.017 262);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px;background:#fff">
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+        <b style="font-size:18px;font-weight:650;letter-spacing:-0.015em">Bundle OKF</b>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12.5px;color:oklch(0.487 0.018 260)">diretório de markdown + frontmatter YAML · o caminho do arquivo é a identidade</span>
+        <span style="margin-left:auto;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:3px 10px;border-radius:999px;background:oklch(0.955 0.024 262);color:oklch(0.452 0.152 262)">padrão de mercado · Google Cloud</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+        <div style="border:1px solid oklch(0.452 0.152 262);border-radius:6px;overflow:hidden">
+          <div style="padding:7px 11px;background:oklch(0.955 0.024 262);border-bottom:1px solid oklch(0.452 0.152 262);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700;color:oklch(0.452 0.152 262)">type: copilot</div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:5px">
+            <b style="font-size:13.5px;font-weight:600">Quem ele é</b>
+            <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">superfície, motor, alvos, tools, tom. Sem prompt solto.</span>
+          </div>
+        </div>
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:6px;overflow:hidden">
+          <div style="padding:7px 11px;background:oklch(0.955 0.005 258);border-bottom:1px solid oklch(0.902 0.006 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700">type: usecase</div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:5px">
+            <b style="font-size:13.5px;font-weight:600">A que ele serve</b>
+            <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">o fluxo que o negócio lê, e onde ele para num humano.</span>
+          </div>
+        </div>
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:6px;overflow:hidden">
+          <div style="padding:7px 11px;background:oklch(0.955 0.005 258);border-bottom:1px solid oklch(0.902 0.006 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700">type: formflow</div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:5px">
+            <b style="font-size:13.5px;font-weight:600">Onde ele escreve</b>
+            <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">campos, regras, revisão legível, plano de publicação.</span>
+          </div>
+        </div>
+        <div style="border:1px solid oklch(0.545 0.126 68);border-radius:6px;overflow:hidden">
+          <div style="padding:7px 11px;background:oklch(0.960 0.038 68);border-bottom:1px solid oklch(0.545 0.126 68);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700;color:oklch(0.545 0.126 68)">type: policy</div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:5px">
+            <b style="font-size:13.5px;font-weight:600">O que exige gente</b>
+            <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">quatro gates, um bloco só, herdado por todos.</span>
+          </div>
+        </div>
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:6px;overflow:hidden">
+          <div style="padding:7px 11px;background:oklch(0.955 0.005 258);border-bottom:1px solid oklch(0.902 0.006 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700">type: agent</div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:5px">
+            <b style="font-size:13.5px;font-weight:600">Quem executa</b>
+            <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">hosted agent, container próprio ou endpoint. <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">index: true</span>.</span>
+          </div>
+        </div>
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:6px;overflow:hidden">
+          <div style="padding:7px 11px;background:oklch(0.955 0.005 258);border-bottom:1px solid oklch(0.902 0.006 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700">type: middleware</div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:5px">
+            <b style="font-size:13.5px;font-weight:600">O que transforma</b>
+            <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">aceita, emite, papel, teto de custo e áreas onde vale.</span>
+          </div>
+        </div>
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:6px;overflow:hidden">
+          <div style="padding:7px 11px;background:oklch(0.955 0.005 258);border-bottom:1px solid oklch(0.902 0.006 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700">type: adapter</div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:5px">
+            <b style="font-size:13.5px;font-weight:600">O que liga fora</b>
+            <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">identidade, região, cobrança. Middleware sem ele não instala.</span>
+          </div>
+        </div>
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:6px;overflow:hidden">
+          <div style="padding:7px 11px;background:oklch(0.955 0.005 258);border-bottom:1px solid oklch(0.902 0.006 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700">type: log</div>
+          <div style="padding:12px;display:flex;flex-direction:column;gap:5px">
+            <b style="font-size:13.5px;font-weight:600">O que mudou</b>
+            <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">append-only, ISO 8601, nome reservado.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- banda: middlewares -->
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <span style="font-size:22px;line-height:1;color:oklch(0.452 0.152 262)">↕</span>
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Middlewares e adaptadores</span>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid oklch(0.505 0.176 26);color:oklch(0.505 0.176 26)">okf-validate ↓</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid oklch(0.902 0.006 258)">okf-to-git</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid oklch(0.902 0.006 258)">okf-to-dataset</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid oklch(0.902 0.006 258)">okf-to-search</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid oklch(0.902 0.006 258)">okf-to-mcp</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid oklch(0.505 0.176 26);color:oklch(0.505 0.176 26)">okf-from-vendor ↑</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid oklch(0.545 0.126 68);color:oklch(0.545 0.126 68)">adapter: azure-speech</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid oklch(0.545 0.126 68);color:oklch(0.545 0.126 68)">adapter: foundry-models</span>
+      </div>
+    </div>
+
+    <!-- camada 3 -->
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Destinos</span>
+        <span style="font-size:13px;color:oklch(0.487 0.018 260)">quatro papéis diferentes — nenhum é "o banco"</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+        <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:baseline;gap:8px"><b style="font-size:15px;font-weight:650">Repositório</b><span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.492 0.126 158)">canônico</span></div>
+          <span style="font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260)">git + PR. Histórico por commit, aprovação por review.</span>
+        </div>
+        <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:baseline;gap:8px"><b style="font-size:15px;font-weight:650">Dataset do Foundry</b><span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">runtime</span></div>
+          <span style="font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260)">o que a tela grava. Versão nova a cada gravação, nunca sobrescreve.</span>
+        </div>
+        <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:baseline;gap:8px"><b style="font-size:15px;font-weight:650">Blob</b><span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">distribuição</span></div>
+          <span style="font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260)">tarball write-once, para outro agente consumir.</span>
+        </div>
+        <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:5px">
+          <div style="display:flex;align-items:baseline;gap:8px"><b style="font-size:15px;font-weight:650">Base + Search</b><span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">consulta</span></div>
+          <span style="font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260)">indexado para ser lido, com ACL por documento. Não é onde se edita.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:12px 16px;background:#fff;border:1px solid oklch(0.545 0.126 68);border-radius:6px">
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.545 0.126 68)">Atravessa as três camadas</span>
+      <span style="font-size:13px;line-height:1.45"><b>Área e custo.</b> Cada execução carrega a área que a pediu; o teto é aplicado <b>antes</b> da chamada, não no relatório do mês seguinte. Área decide o que está habilitado; teto decide até onde vai.</span>
+    </div>
+
+    <sc-if value="{{ notes }}" hint-placeholder-val="{{ true }}">
+      <p style="margin:0;padding-top:6px;border-top:1px solid oklch(0.902 0.006 258);font-size:13px;line-height:1.55;color:oklch(0.487 0.018 260);max-width:110ch;text-wrap:pretty"><b style="color:oklch(0.235 0.017 262)">A frase do quadro:</b> a superfície não conhece o formulário, o formulário não conhece o armazenamento. Todos conhecem o bundle. Copiloto novo é documento novo — não componente novo.</p>
+    </sc-if>
+  </section>
+
+  <!-- ─────────────── QUADRO 2 ─────────────── -->
+  <section style="background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:8px;padding:32px;display:flex;flex-direction:column;gap:22px">
+    <header style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Quadro 2</span>
+      <h2 style="margin:0;font-size:26px;font-weight:640;letter-spacing:-0.015em">O copiloto entra pelo caso de uso</h2>
+      <p style="margin:0;font-size:14px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:62ch;text-wrap:pretty">Três níveis. Ele entra pelo topo e só alcança o que o nível de baixo declara — o alcance é dado, não permissão implícita.</p>
+    </header>
+
+    <div style="display:grid;grid-template-columns:260px 88px minmax(0,1fr);gap:0;align-items:center">
+      <div style="background:#fff;border:2px solid oklch(0.452 0.152 262);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:9px">
+          <span style="width:26px;height:26px;flex:none;border-radius:5px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);display:grid;place-items:center;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700">c</span>
+          <b style="font-size:16px;font-weight:650">Copiloto</b>
+        </div>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">copilots/atendimento-rh/</span>
+        <span style="font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260)">Declara o que pode tocar antes de tocar. Uma linha do manifesto do caso de uso o vincula.</span>
+      </div>
+
+      <div style="align-self:stretch;position:relative;display:flex;flex-direction:column;justify-content:center;gap:26px">
+        <div style="display:flex;align-items:center">
+          <div style="flex:1;height:2px;background:oklch(0.452 0.152 262)"></div>
+          <span style="font-size:20px;line-height:1;color:oklch(0.452 0.152 262);margin-left:-2px">▶</span>
+        </div>
+        <div style="display:flex;align-items:center;opacity:0.75">
+          <div style="flex:1;height:1px;background:oklch(0.452 0.152 262)"></div>
+          <span style="font-size:14px;line-height:1;color:oklch(0.452 0.152 262);margin-left:-1px">▶</span>
+        </div>
+        <span style="position:absolute;top:calc(50% - 46px);left:0;right:0;text-align:center;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">vincula</span>
+        <span style="position:absolute;top:calc(50% + 30px);left:0;right:0;text-align:center;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">escreve</span>
+      </div>
+
+      <div style="border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:18px;background:#fff;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:3px 9px;border-radius:4px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);font-weight:700">usecase</span>
+          <b style="font-size:16px;font-weight:640">Atendimento de RH</b>
+          <span style="font-size:13px;color:oklch(0.487 0.018 260)">o fluxo que o negócio lê · triagem → buscar → redigir → <span style="color:oklch(0.545 0.126 68);font-weight:600">aprovar (humano)</span> → registrar</span>
+        </div>
+
+        <div style="margin-left:26px;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:16px;background:oklch(0.977 0.003 258);display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+            <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:3px 9px;border-radius:4px;background:#fff;border:1px solid oklch(0.902 0.006 258);font-weight:700">formflow</span>
+            <b style="font-size:15px;font-weight:640">O formulário do passo</b>
+            <span style="font-size:13px;color:oklch(0.487 0.018 260)">campos, regras, plano de publicação</span>
+          </div>
+
+          <div style="margin-left:26px;display:flex;flex-direction:column;gap:10px">
+            <div style="border:1px solid oklch(0.452 0.152 262);border-radius:6px;padding:14px;background:oklch(0.955 0.024 262);display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:3px 9px;border-radius:4px;background:#fff;border:1px solid oklch(0.452 0.152 262);font-weight:700;color:oklch(0.452 0.152 262)">field</span>
+                <b style="font-size:15px;font-weight:640">O campo — a unidade que ele escreve</b>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid oklch(0.902 0.006 258)">ai: true</span>
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid oklch(0.902 0.006 258)">rules: [resourceName]</span>
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid oklch(0.902 0.006 258)">sources: [...]</span>
+              </div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid oklch(0.545 0.126 68);border-radius:6px;background:oklch(0.960 0.038 68)">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68);flex:none">gate</span>
+              <span style="font-size:13.5px;line-height:1.45"><b>Usar · Corrigir · Descartar.</b> O texto só entra no campo por gesto humano — e o desfecho é medido.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <sc-if value="{{ notes }}" hint-placeholder-val="{{ true }}">
+      <p style="margin:0;padding-top:6px;border-top:1px solid oklch(0.902 0.006 258);font-size:13px;line-height:1.55;color:oklch(0.487 0.018 260);max-width:110ch;text-wrap:pretty"><b style="color:oklch(0.235 0.017 262)">A frase do quadro:</b> o copiloto não "existe na tela" — ele serve a um caso de uso. E onde o fluxo para num humano, ele também para: prepara e exibe, não atravessa.</p>
+    </sc-if>
+  </section>
+
+  <!-- ─────────────── QUADRO 3 ─────────────── -->
+  <section style="background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:8px;padding:32px;display:flex;flex-direction:column;gap:22px">
+    <header style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Quadro 3</span>
+      <h2 style="margin:0;font-size:26px;font-weight:640;letter-spacing:-0.015em">Da proposta ao serviço, sem atalho</h2>
+      <p style="margin:0;font-size:14px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:62ch;text-wrap:pretty">Seis passos. Dois deles exigem uma pessoa, e é por isso que a coisa pode ser explicada a um auditor.</p>
+    </header>
+
+    <div style="display:flex;align-items:stretch;gap:6px">
+      <div style="flex:1;min-width:0;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:6px">
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">1 · propor</span>
+        <b style="font-size:14px;font-weight:640">O copiloto escreve</b>
+        <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">documento OKF, com fonte declarada por campo</span>
+      </div>
+      <span style="flex:none;display:grid;place-items:center;font-size:16px;color:oklch(0.612 0.014 258)">▶</span>
+      <div style="flex:1;min-width:0;background:oklch(0.960 0.038 68);border:1px solid oklch(0.545 0.126 68);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:6px">
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">2 · decidir</span>
+        <b style="font-size:14px;font-weight:640">A pessoa decide</b>
+        <span style="font-size:12px;line-height:1.45;color:oklch(0.235 0.017 262)">usar, corrigir ou descartar — um campo por vez</span>
+      </div>
+      <span style="flex:none;display:grid;place-items:center;font-size:16px;color:oklch(0.612 0.014 258)">▶</span>
+      <div style="flex:1;min-width:0;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:6px">
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">3 · validar</span>
+        <b style="font-size:14px;font-weight:640">Schema e citações</b>
+        <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">citação que não resolve derruba o bundle · piso 80%</span>
+      </div>
+      <span style="flex:none;display:grid;place-items:center;font-size:16px;color:oklch(0.612 0.014 258)">▶</span>
+      <div style="flex:1;min-width:0;background:oklch(0.960 0.038 68);border:1px solid oklch(0.545 0.126 68);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:6px">
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">4 · aprovar</span>
+        <b style="font-size:14px;font-weight:640">Papel exigido</b>
+        <span style="font-size:12px;line-height:1.45;color:oklch(0.235 0.017 262)">payload à vista; recusar exige motivo</span>
+      </div>
+      <span style="flex:none;display:grid;place-items:center;font-size:16px;color:oklch(0.612 0.014 258)">▶</span>
+      <div style="flex:1;min-width:0;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:6px">
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">5 · publicar</span>
+        <b style="font-size:14px;font-weight:640">Versão nova</b>
+        <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">nunca sobrescreve: v+1, com histórico</span>
+      </div>
+      <span style="flex:none;display:grid;place-items:center;font-size:16px;color:oklch(0.612 0.014 258)">▶</span>
+      <div style="flex:1;min-width:0;background:oklch(0.958 0.028 158);border:1px solid oklch(0.492 0.126 158);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:6px">
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.492 0.126 158)">6 · servir</span>
+        <b style="font-size:14px;font-weight:640">O parser monta</b>
+        <span style="font-size:12px;line-height:1.45;color:oklch(0.235 0.017 262)">type → superfície, formulário ou gate</span>
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px 16px;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Legenda</span>
+      <span style="display:flex;align-items:center;gap:7px;font-size:12.5px"><span style="width:12px;height:12px;border-radius:3px;background:oklch(0.452 0.152 262)"></span>ação e seleção</span>
+      <span style="display:flex;align-items:center;gap:7px;font-size:12.5px"><span style="width:12px;height:12px;border-radius:3px;background:oklch(0.545 0.126 68)"></span>parado esperando uma pessoa</span>
+      <span style="display:flex;align-items:center;gap:7px;font-size:12.5px"><span style="width:12px;height:12px;border-radius:3px;background:oklch(0.492 0.126 158)"></span>validado, em uso</span>
+      <span style="display:flex;align-items:center;gap:7px;font-size:12.5px"><span style="width:12px;height:12px;border-radius:3px;background:oklch(0.505 0.176 26)"></span>barrado</span>
+      <span style="margin-left:auto;font-size:12.5px;color:oklch(0.487 0.018 260)">as mesmas quatro cores do produto — cor só aparece quando significa</span>
+    </div>
+
+    <sc-if value="{{ notes }}" hint-placeholder-val="{{ true }}">
+      <p style="margin:0;padding-top:6px;border-top:1px solid oklch(0.902 0.006 258);font-size:13px;line-height:1.55;color:oklch(0.487 0.018 260);max-width:110ch;text-wrap:pretty"><b style="color:oklch(0.235 0.017 262)">A frase do quadro:</b> nada é escrito no serviço sem gesto humano, e nada é servido sem passar pela validação — inclusive bundle de terceiro, que entra pelo mesmo caminho e para no mesmo piso.</p>
+    </sc-if>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showNotes&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Apresentação&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { notes: this.props.showNotes ?? true };
+  }
+}
+</script>
+</body>
+</html>

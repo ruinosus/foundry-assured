@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, input, button { box-sizing:border-box; }
+  input, button { font-family:inherit; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  button:focus-visible, input:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">Registrar uma peça — as cinco telas</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:90ch;text-wrap:pretty">Agente, middleware, adaptador, servidor MCP e bundle. Todos entram do mesmo jeito: formulário → contrato declarado → validação → <b>sombra</b>. O que muda entre eles é só o contrato — e é isso que cada tela mostra.</p>
+  </div>
+
+  <div style="width:2276px;height:1340px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+        <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+        <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+      </div>
+      <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Área · tenant</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">contoso · compras</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="15">
+          <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;background:{{ n.bg }};color:{{ n.ink }};font-weight:{{ n.weight }}">
+            <span style="width:18px;text-align:center">{{ n.icon }}</span>{{ n.label }}
+          </span>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px">
+          <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">R</span>
+          <div style="min-width:0"><div style="font-size:13px;font-weight:600">Rafael Duarte</div><div style="font-size:11px;color:oklch(0.487 0.018 260)">Owner · Admin · Approver</div></div>
+        </div>
+        <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="height:56px;flex:0 0 56px;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;padding:0 20px;gap:10px">
+        <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Copilotos</span><span>/</span><span>{{ crumbMid }}</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">Novo registro</b></nav>
+        <span style="margin-left:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ crumbType }}</span>
+      </header>
+      <div style="flex:1;min-height:0;display:flex">
+
+    <nav style="width:262px;flex:0 0 262px;background:oklch(0.955 0.005 258);border-right:1px solid oklch(0.902 0.006 258);padding:18px 14px;display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto">
+      <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">O que você vai registrar</span>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="5">
+          <button type="button" onClick="{{ t.pick }}" style="text-align:left;display:flex;flex-direction:column;gap:3px;padding:11px;border:1px solid {{ t.line }};background:{{ t.bg }};border-radius:6px;cursor:pointer">
+            <span style="display:flex;align-items:center;gap:8px">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ t.ink }}">{{ t.type }}</span>
+            </span>
+            <b style="font-size:13.5px;font-weight:650">{{ t.label }}</b>
+            <span style="font-size:11.5px;line-height:1.4;color:oklch(0.487 0.018 260)">{{ t.note }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:7px;padding:11px;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">A regra comum</span>
+        <p style="margin:0;font-size:11.5px;line-height:1.5;color:oklch(0.487 0.018 260)">Vale para as peças que <b>executam</b> — agente, middleware, adaptador e MCP: a primeira instalação é <b>sombra</b> (roda, registra o que faria, não escreve, e já conta contra o teto). Bundle é <b>dado</b>: não roda, então entra registrado e só é servido depois do okf-validate.</p>
+      </div>
+    </nav>
+
+    <main style="flex:1;min-width:0;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+        <div style="min-width:0">
+          <h2 style="margin:0;font-size:21px;font-weight:640;letter-spacing:-0.015em">{{ title }}</h2>
+          <p style="margin:4px 0 0;font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:88ch;text-wrap:pretty">{{ blurb }}</p>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:9px;align-items:center">
+          <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:{{ vBg }};color:{{ vInk }}">{{ vState }}</span>
+          <button type="button" onClick="{{ commit }}" disabled="{{ commitOff }}" style="padding:10px 15px;border:1px solid {{ cLine }};border-radius:8px;background:{{ cBg }};color:{{ cInk }};font-size:13.5px;font-weight:600;cursor:pointer">{{ commitLabel }}</button>
+        </div>
+      </div>
+
+      <sc-if value="{{ done }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid oklch(0.492 0.126 158);background:oklch(0.958 0.028 158);border-radius:8px;padding:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.492 0.126 158)">registrado em sombra</span>
+          <span style="font-size:13px;line-height:1.45;flex:1;min-width:280px">{{ doneMsg }}</span>
+          <a href="Cadastro - registries e bundles.dc.html" style="padding:8px 13px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:#fff;color:oklch(0.452 0.152 262);font-size:12.5px;font-weight:600;text-decoration:none">Ver no cadastro do copiloto</a>
+        </div>
+      </sc-if>
+
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+        <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:11px">
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+            <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">{{ g.key }}</span>
+            <b style="font-size:15px;font-weight:650">{{ g.title }}</b>
+            <span style="margin-left:auto;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ g.badge }}</span>
+          </div>
+          <p style="margin:0;font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:88ch;text-wrap:pretty">{{ g.help }}</p>
+
+          <sc-for list="{{ g.fields }}" as="f" hint-placeholder-count="3">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ f.label }}</span>
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.612 0.014 258)">{{ f.key }}</span>
+                <sc-if value="{{ f.fixed }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.492 0.126 158);border:1px solid oklch(0.492 0.126 158);border-radius:3px;padding:0 5px">fixo pela política</span></sc-if>
+              </div>
+              <sc-if value="{{ f.isText }}" hint-placeholder-val="{{ true }}">
+                <input type="text" value="{{ f.value }}" onChange="{{ f.set }}" placeholder="{{ f.ph }}" style="width:100%;padding:9px 11px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:13px;font-family:{{ f.font }}" />
+              </sc-if>
+              <sc-if value="{{ f.isChoice }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ o.pick }}" style="padding:7px 11px;border:1px solid {{ o.line }};background:{{ o.bg }};color:{{ o.ink }};border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{ f.isToggle }}" hint-placeholder-val="{{ false }}">
+                <button type="button" onClick="{{ f.toggle }}" style="align-self:flex-start;padding:7px 12px;border:1px solid {{ f.line }};background:{{ f.bg }};color:{{ f.ink }};border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer">{{ f.state }}</button>
+              </sc-if>
+              <sc-if value="{{ f.isRows }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <sc-for list="{{ f.rows }}" as="r" hint-placeholder-count="2">
+                    <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:9px 11px;background:oklch(0.955 0.005 258);border-radius:4px">
+                      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:600">{{ r.name }}</span>
+                      <span style="font-size:11.5px;color:oklch(0.487 0.018 260);flex:1;min-width:150px">{{ r.what }}</span>
+                      <span style="flex:none;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:{{ r.tagBg }};color:{{ r.tagInk }}">{{ r.tag }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ f.help }}</span>
+            </div>
+          </sc-for>
+        </section>
+      </sc-for>
+    </main>
+
+    <aside style="width:520px;flex:0 0 520px;display:flex;flex-direction:column;min-height:0;background:#fff;border-left:1px solid oklch(0.902 0.006 258)">
+      <div style="flex:none;padding:12px 14px;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ file }}</span>
+        <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">{{ bytes }}</span>
+      </div>
+      <pre style="flex:1;min-height:0;overflow:auto;margin:0;padding:14px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.6;white-space:pre">{{ yaml }}</pre>
+      <div style="flex:none;border-top:1px solid oklch(0.902 0.006 258);padding:13px 14px;display:flex;flex-direction:column;gap:9px;max-height:420px;overflow:auto">
+        <div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Validação do registro</span>
+          <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">{{ checkNote }}</span>
+        </div>
+        <sc-for list="{{ checks }}" as="c" hint-placeholder-count="5">
+          <div style="display:flex;gap:9px;align-items:flex-start">
+            <span style="flex:none;width:17px;height:17px;border-radius:50%;background:{{ c.line }};color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ c.mark }}</span>
+            <span style="min-width:0"><b style="display:block;font-size:12px;font-weight:600">{{ c.t }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ c.d }}</span></span>
+          </div>
+        </sc-for>
+      </div>
+    </aside>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2090,&quot;height&quot;:1420}}">
+const RE_ID = /^[a-z0-9]+([-/][a-z0-9]+)*$/;
+
+class Component extends DCLogic {
+  state = {
+    tab: "agent",
+    // agente
+    ag: { id: "compras/meu-agente", title: "Agente de requisição", hosting: "container próprio", ref: "acr.io/compras/agente:0.1", fw: "agent-framework", auth: "identidade gerenciada", adapters: ["foundry-models"], writes: false, costModel: "por 1k tokens", cap: "100", area: "compras", health: "/healthz" },
+    // middleware
+    mw: { id: "limite-alcada", title: "Limite de alçada", accepts: "proposal", emits: "warning", stage: "inline", role: "—", adapters: [], costModel: "por conferência", cap: "60", area: "compras", never: "aprovar em nome de alguém" },
+    // adaptador
+    ad: { id: "erp-gateway", vendor: "Terceiro · ERP", auth: "connection do projeto", region: "brazilsouth", billing: "por chamada", unit: "0.004", cap: "120", area: "compras", rotates: "Owner", over: "parar" },
+    // mcp
+    mc: { id: "catalogo-fornecedores", url: "https://mcp.fornecedor.com/mcp/", disco: "RFC 9728 · bearer", cap: "80", area: "compras" },
+    // bundle
+    bd: { id: "knowledge/politicas-compras", origin: "repositório (git)", kinds: "doc", home: false, index: true, floor: "0.80", retention: "5 anos" },
+    done: null,
+  };
+
+  set(g, k, v) { this.setState((s) => ({ [g]: { ...s[g], [k]: v }, done: null })); }
+  toggleIn(g, k, v) { const cur = (this.state[g][k] || []).slice(); this.set(g, k, cur.indexOf(v) > -1 ? cur.filter((x) => x !== v) : cur.concat([v])); }
+
+  renderVals() {
+    const s = this.state;
+    const chip = (on) => ({ line: on ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)", bg: on ? "oklch(0.955 0.024 262)" : "#fff", ink: on ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)" });
+    const MONO = 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace';
+    const SANS = "inherit";
+    const txt = (g, k, key, label, help, ph, mono) => ({ key, label, help: help || "", ph: ph || "", isText: true, value: s[g][k], font: mono ? MONO : SANS, set: (e) => this.set(g, k, e.target.value) });
+    const choice = (g, k, key, label, opts, help, fixed) => ({
+      key, label, help: help || "", isChoice: true, fixed: !!fixed,
+      options: opts.map((o) => { const cur = s[g][k]; const on = Array.isArray(cur) ? cur.indexOf(o) > -1 : cur === o; return { label: (Array.isArray(cur) && on ? "✓ " : "") + o, ...chip(on), pick: () => (Array.isArray(cur) ? this.toggleIn(g, k, o) : this.set(g, k, o)) }; }),
+    });
+    const toggle = (g, k, key, label, help, fixed) => {
+      const on = !!s[g][k];
+      return { key, label, help: help || "", isToggle: true, fixed: !!fixed, state: on ? "sim" : "não", toggle: () => this.set(g, k, !on),
+        line: on ? "oklch(0.492 0.126 158)" : "oklch(0.902 0.006 258)", bg: on ? "oklch(0.958 0.028 158)" : "#fff", ink: on ? "oklch(0.492 0.126 158)" : "oklch(0.487 0.018 260)" };
+    };
+    const rows = (key, label, list, help) => ({ key, label, help: help || "", isRows: true, rows: list });
+    const tagTone = (t) => ({
+      leitura: ["oklch(0.958 0.028 158)", "oklch(0.492 0.126 158)"],
+      escrita: ["oklch(0.960 0.038 68)", "oklch(0.545 0.126 68)"],
+      block: ["oklch(0.958 0.030 26)", "oklch(0.505 0.176 26)"],
+    }[t] || ["oklch(0.955 0.005 258)", "oklch(0.487 0.018 260)"]);
+
+    const TABS = [
+      { id: "agent", type: "type: agent", label: "Agente hospedado", note: "quem executa: hosted agent, container ou endpoint" },
+      { id: "mw", type: "type: middleware", label: "Middleware", note: "transforma documento e evento; pode bloquear" },
+      { id: "ad", type: "type: adapter", label: "Adaptador", note: "liga a sistema de fora e fatura" },
+      { id: "mc", type: "type: mcp", label: "Servidor MCP", note: "traz tools de terceiro, com gate na escrita" },
+      { id: "bd", type: "type: bundle", label: "Bundle", note: "o dado: onde mora, quem lê, o que ele contém" },
+    ];
+
+    let title = "", blurb = "", groups = [], yaml = "", checks = [], file = "";
+
+    if (s.tab === "agent") {
+      const a = s.ag;
+      title = "Registrar agente hospedado";
+      blurb = "Como o hosted agent da Microsoft, mas declarado: a plataforma consome um documento, não uma integração. Um copiloto se monta sobre ele sem código nosso.";
+      file = "agents/" + (a.id.split("/").pop() || "novo") + "/index.md";
+      groups = [
+        { key: "identity", title: "Identidade", badge: a.id, help: "O id é o caminho do documento no bundle de agentes.", fields: [
+          txt("ag", "id", "resource", "identificador", "Minúsculas, números, hífens e barra.", "compras/meu-agente", true),
+          txt("ag", "title", "title", "título", "O que aparece nas listas."),
+        ] },
+        { key: "runtime", title: "Onde ele roda", badge: a.hosting, help: "A hospedagem muda o que precisa ser informado: definição no Foundry, imagem no container, URL no endereço externo.", fields: [
+          choice("ag", "hosting", "hosting", "hospedagem", ["Foundry hosted agent", "container próprio", "endpoint externo"]),
+          txt("ag", "ref", "ref", a.hosting === "Foundry hosted agent" ? "definição / versão" : a.hosting === "container próprio" ? "imagem" : "URL do endpoint", "", "acr.io/…:0.1", true),
+          choice("ag", "fw", "framework", "framework", ["agent-framework", "langgraph", "custom"], "Muda o idioma de interrupção — não normalizamos os dois."),
+          txt("ag", "health", "health", "health check", "Sem health, o registry não sabe distinguir “fora do ar” de “sem uso”.", "/healthz", true),
+        ] },
+        { key: "access", title: "Identidade e alcance", badge: a.auth, help: "Sem chave em variável de ambiente: identidade gerenciada, app registration ou connection do projeto.", fields: [
+          choice("ag", "auth", "auth", "autenticação", ["identidade gerenciada", "app registration", "bearer de terceiro"]),
+          choice("ag", "adapters", "requires.adapters", "adaptadores exigidos", ["foundry-models", "azure-speech", "mcp-gateway"], "Ele não sobe se um deles não estiver habilitado na área."),
+          toggle("ag", "writes", "declaresWrite", "declara tool de escrita", "Se declara, entra em quarentena até revisão: escrita é o que exige gate e papel."),
+        ] },
+        { key: "cost", title: "Custo e área", badge: "US$ " + a.cap, help: "Agente sem teto não sobe. O teto é por área, porque a fatura também é.", fields: [
+          choice("ag", "costModel", "cost.model", "modelo de cobrança", ["por 1k tokens", "por minuto", "por execução"]),
+          txt("ag", "cap", "cost.cap", "teto (USD/mês)", "Aplicado antes da chamada."),
+          choice("ag", "area", "areas", "área", ["compras", "rh", "plantao"]),
+        ] },
+      ];
+      yaml = ["---", "type: agent", "title: " + a.title, "resource: " + a.id, 'okf_version: "0.2"', "provenance: team/" + a.area, "lifecycle: shadow", "index: true            # entra na base de conhecimento", "---", "", "## Runtime", "", "```yaml",
+        "hosting: " + JSON.stringify(a.hosting), "ref: " + a.ref, "framework: " + a.fw, "protocol: AG-UI", "auth: " + JSON.stringify(a.auth), "health: " + a.health,
+        "requires: {adapters: [" + a.adapters.join(", ") + "]}", "declaresWrite: " + a.writes, "cost: {model: " + JSON.stringify(a.costModel) + ", cap: {" + a.area + ": " + a.cap + "}}", "areas: [" + a.area + "]", "```"].join("\n");
+      checks = [
+        { ok: RE_ID.test(a.id), t: "Identificador válido", d: "Minúsculas, números, hífens e barra." },
+        { ok: !!a.ref.trim(), t: "Referência informada", d: a.hosting === "container próprio" ? "Imagem do container." : a.hosting === "endpoint externo" ? "URL do endpoint." : "Definição publicada no Foundry." },
+        { ok: a.auth !== "bearer de terceiro", t: "Sem segredo do nosso lado", d: a.auth === "bearer de terceiro" ? "Bearer de terceiro exige dono da rotação declarado — cai em revisão." : "Identidade gerenciada ou app registration." },
+        { ok: !!a.cap.trim(), t: "Teto declarado", d: "US$ " + a.cap + "/mês em " + a.area + "." },
+        { ok: !a.writes, t: "Escrita", d: a.writes ? "Declara tool de escrita: vai para quarentena até revisão do Owner." : "Nenhuma tool de escrita — sobe direto para sombra." },
+      ];
+    } else if (s.tab === "mw") {
+      const m = s.mw;
+      const isGate = m.emits === "approval";
+      const isBlock = m.emits === "block";
+      title = "Registrar middleware";
+      blurb = "O contrato é a peça inteira: o que ele aceita, o que emite, em que estágio roda e o que ele nunca pode fazer. Sem contrato, não instala.";
+      file = "middlewares/" + m.id + "/index.md";
+      groups = [
+        { key: "identity", title: "Identidade", badge: m.id, help: "", fields: [
+          txt("mw", "id", "resource", "identificador", "", "limite-alcada", true),
+          txt("mw", "title", "title", "título", ""),
+        ] },
+        { key: "contract", title: "Contrato", badge: m.accepts + " → " + m.emits, help: "É aqui que se decide o quanto ele é perigoso. Emitir aprovação significa assinar em nome de uma pessoa; bloquear significa poder impedir gravação.", fields: [
+          choice("mw", "accepts", "accepts", "aceita", ["document", "event", "proposal", "transcript"]),
+          choice("mw", "emits", "emits", "emite", ["warning", "proposal", "approval", "block"]),
+          choice("mw", "stage", "stage", "estágio", ["inline", "pre-persist", "gate", "post"], "pre-persist roda antes de gravar; gate substitui uma decisão humana por um caminho declarado."),
+          choice("mw", "role", "role", "papel exigido", ["—", "Approver", "Admin", "Owner"], isGate ? "Emitindo aprovação, o papel é obrigatório." : "Só faz sentido para quem emite aprovação."),
+          txt("mw", "never", "never", "o que ele nunca pode", "Vai para o manifesto como lista — é o que a revisão lê primeiro."),
+        ] },
+        { key: "cost", title: "Custo e área", badge: "US$ " + m.cap, help: "", fields: [
+          choice("mw", "adapters", "requires.adapters", "adaptadores exigidos", ["foundry-models", "azure-speech", "erp-gateway"]),
+          txt("mw", "cap", "cost.cap", "teto (USD/mês)", ""),
+          choice("mw", "area", "areas", "área", ["compras", "rh", "plantao"]),
+        ] },
+      ];
+      yaml = ["---", "type: middleware", "title: " + m.title, "resource: " + m.id, 'okf_version: "0.2"', "lifecycle: shadow", "---", "", "## Contract", "", "```yaml",
+        "accepts: " + m.accepts, "emits: " + m.emits, "stage: " + m.stage, "role: " + m.role,
+        isBlock ? "singleWritePath: true      # exigido para quem bloqueia" : "singleWritePath: false",
+        isBlock ? "test: source-scan          # o teste falha se outro caminho gravar" : "test: none",
+        "requires: {adapters: [" + m.adapters.join(", ") + "]}",
+        "cost: {model: " + JSON.stringify(m.costModel) + ", cap: {" + m.area + ": " + m.cap + "}}", "areas: [" + m.area + "]",
+        "never:", "  - " + (m.never || "(nada declarado)"), "```"].join("\n");
+      checks = [
+        { ok: RE_ID.test(m.id), t: "Identificador válido", d: "" },
+        { ok: !isGate || m.role !== "—", t: "Papel para quem aprova", d: isGate ? (m.role === "—" ? "Emite approval sem papel: recusado." : "Papel " + m.role + " declarado.") : "Não emite aprovação." },
+        { ok: !isGate, t: "Revisão de segurança", d: isGate ? "Emite approval: entra em quarentena até revisão do Owner." : "Não assina em nome de ninguém." },
+        { ok: !isBlock || m.stage === "pre-persist", t: "Bloqueio no estágio certo", d: isBlock ? (m.stage === "pre-persist" ? "block em pre-persist: correto — impede a gravação." : "block fora de pre-persist não impede nada: só avisa depois.") : "Não bloqueia." },
+        { ok: !!m.never.trim(), t: "Lista do que ele não pode", d: m.never.trim() ? "Declarada." : "Vazia: a revisão não tem o que ler." },
+      ];
+    } else if (s.tab === "ad") {
+      const a = s.ad;
+      const key = a.auth === "chave rotacionada";
+      title = "Registrar adaptador";
+      blurb = "Adaptador não transforma nada — ele liga a um sistema de fora e cobra por isso. Identidade, região, cobrança e teto são a configuração inteira.";
+      file = "adapters/" + a.id + "/index.md";
+      groups = [
+        { key: "identity", title: "Identidade e fornecedor", badge: a.vendor, help: "", fields: [
+          txt("ad", "id", "resource", "identificador", "", "erp-gateway", true),
+          txt("ad", "vendor", "vendor", "fornecedor", "Aparece em toda execução: procedência externa é dita, não inferida."),
+        ] },
+        { key: "access", title: "Identidade e residência", badge: a.region, help: "Nenhum segredo aparece na tela: a credencial é referência. Onde só existe chave, a tela mostra que existe e quem a rotaciona.", fields: [
+          choice("ad", "auth", "auth", "autenticação", ["identidade gerenciada", "connection do projeto", "chave rotacionada"]),
+          choice("ad", "rotates", "rotatesBy", "quem rotaciona", ["Owner", "Admin", "—"], key ? "Obrigatório para chave." : "Só se aplica a chave."),
+          choice("ad", "region", "region", "região", ["brazilsouth", "eastus2", "global"], "Região diferente da do projeto muda residência do dado."),
+        ] },
+        { key: "billing", title: "Cobrança e teto", badge: "US$ " + a.cap, help: "O teto é aplicado antes da chamada e por área — não no relatório do mês seguinte.", fields: [
+          choice("ad", "billing", "billing", "cobrança", ["por chamada", "por minuto", "por 1k tokens", "sem custo por uso"]),
+          txt("ad", "unit", "unitPrice", "preço unitário (USD)", ""),
+          txt("ad", "cap", "cost.cap", "teto (USD/mês)", ""),
+          choice("ad", "over", "onExceed", "ao estourar", ["degradar", "parar", "só avisar"]),
+          choice("ad", "area", "areas", "área", ["compras", "rh", "plantao"]),
+        ] },
+      ];
+      yaml = ["---", "type: adapter", "resource: " + a.id, "vendor: " + a.vendor, 'okf_version: "0.2"', "lifecycle: shadow", "---", "", "## Access", "", "```yaml",
+        "auth: " + JSON.stringify(a.auth), key ? "credential: {ref: keyvault://" + a.id + "/key, rotatesBy: " + a.rotates + "}" : "credential: none      # identidade, sem segredo nosso",
+        "region: " + a.region, "```", "", "## Billing", "", "```yaml",
+        "billing: {model: " + JSON.stringify(a.billing) + ", unit: " + a.unit + " USD}",
+        "cost: {cap: {" + a.area + ": " + a.cap + "}, onExceed: " + (a.over === "só avisar" ? "warn" : a.over === "parar" ? "stop" : "degrade") + "}",
+        "areas: [" + a.area + "]", "```"].join("\n");
+      checks = [
+        { ok: RE_ID.test(a.id), t: "Identificador válido", d: "" },
+        { ok: !key || a.rotates !== "—", t: "Dono da rotação", d: key ? (a.rotates === "—" ? "Chave sem dono da rotação: recusado." : a.rotates + " rotaciona.") : "Sem chave — identidade gerenciada ou connection." },
+        { ok: a.region !== "global" || a.billing === "sem custo por uso", t: "Residência do dado", d: a.region === "global" ? "Região global: declare o que trafega — a revisão vai perguntar." : "Mesma região do projeto." },
+        { ok: !!a.cap.trim(), t: "Teto por área", d: "US$ " + a.cap + " em " + a.area + " · ao estourar: " + a.over + "." },
+      ];
+    } else if (s.tab === "mc") {
+      const m = s.mc;
+      const slash = /\/$/.test(m.url);
+      title = "Registrar servidor MCP";
+      blurb = "O servidor é de terceiro; as tools vêm dele por descoberta. Quem exige aprovação na escrita é o nosso runtime — não ele.";
+      file = "mcp/" + m.id + "/index.md";
+      groups = [
+        { key: "identity", title: "Servidor", badge: m.id, help: "", fields: [
+          txt("mc", "id", "resource", "identificador", "", "catalogo-fornecedores", true),
+          txt("mc", "url", "url", "endpoint", "Com a barra final: é o que a metadata anuncia como recurso protegido.", "https://…/mcp/", true),
+          choice("mc", "disco", "discovery", "descoberta", ["RFC 9728 · bearer", "manual"], "Com RFC 9728, o 401 traz o resource_metadata e não há configuração a copiar."),
+        ] },
+        { key: "tools", title: "Tools descobertas", badge: "3 tools", help: "A lista vem do servidor. O que nós declaramos é o gate: escrita nasce com require_approval: always e papel.", fields: [
+          rows("tools", "tools", [
+            { name: "buscar_item", what: "consulta o catálogo por descrição ou SKU", tag: "leitura", ...(() => { const t = tagTone("leitura"); return { tagBg: t[0], tagInk: t[1] }; })() },
+            { name: "cotar", what: "preço para a quantidade pedida", tag: "leitura", ...(() => { const t = tagTone("leitura"); return { tagBg: t[0], tagInk: t[1] }; })() },
+            { name: "reservar_item", what: "reserva quantidade no fornecedor", tag: "escrita", ...(() => { const t = tagTone("escrita"); return { tagBg: t[0], tagInk: t[1] }; })() },
+          ], "Nenhuma tool de escrita pode ser marcada como automática: o campo não existe."),
+        ] },
+        { key: "cost", title: "Custo e área", badge: "US$ " + m.cap, help: "Exige o adaptador mcp-gateway habilitado na área — sem ele a tool existe e não é alcançável.", fields: [
+          txt("mc", "cap", "cost.cap", "teto (USD/mês)", ""),
+          choice("mc", "area", "areas", "área", ["compras", "rh", "plantao"]),
+        ] },
+      ];
+      yaml = ["---", "type: mcp", "resource: " + m.id, 'okf_version: "0.2"', "provenance: vendor", "lifecycle: shadow", "---", "", "## Server", "", "```yaml",
+        "url: " + m.url, "discovery: " + JSON.stringify(m.disco), "requires: {adapters: [mcp-gateway]}", "```", "", "## Tools", "", "```yaml", "tools:",
+        "  - {name: buscar_item, write: false}", "  - {name: cotar, write: false}",
+        "  - {name: reservar_item, write: true, require_approval: always, role: Approver}", "```", "", "## Cost", "", "```yaml",
+        "cost: {cap: {" + m.area + ": " + m.cap + "}}", "areas: [" + m.area + "]", "```"].join("\n");
+      checks = [
+        { ok: RE_ID.test(m.id), t: "Identificador válido", d: "" },
+        { ok: slash, t: "Barra final no endpoint", d: slash ? "Correto: é o endpoint que a metadata anuncia." : "Sem a barra final, a descoberta aponta para outro recurso." },
+        { ok: m.disco !== "manual", t: "Descoberta padrão", d: m.disco === "manual" ? "Manual: alguém vai copiar configuração à mão e ela vai divergir." : "RFC 9728: o 401 traz o resource_metadata." },
+        { ok: true, t: "Escrita atrás de gate", d: "reservar_item entra com require_approval: always e papel Approver." },
+        { ok: !!m.cap.trim(), t: "Teto declarado", d: "US$ " + m.cap + " em " + m.area + "." },
+      ];
+    } else {
+      const b = s.bd;
+      title = "Registrar bundle";
+      blurb = "O bundle é o dado. Registrar é dizer de onde ele vem, o que contém, se é a casa de algum manifesto e se entra na base consultável.";
+      file = b.id + "/index.md";
+      groups = [
+        { key: "identity", title: "Caminho e origem", badge: b.origin, help: "O caminho é a identidade — é o que os manifestos citam.", fields: [
+          txt("bd", "id", "resource", "caminho", "", "knowledge/politicas-compras", true),
+          choice("bd", "origin", "origin", "origem", ["repositório (git)", "dataset do Foundry", "blob (tarball)", "importado de fornecedor"], "Repositório é a fonte canônica; dataset é o override editável em runtime."),
+          txt("bd", "kinds", "kinds", "tipos que ele contém", "copilot, formflow, policy, doc, log…", "doc", true),
+        ] },
+        { key: "role", title: "Papel dele", badge: b.home ? "casa de manifesto" : "só dado", help: "Casa é onde um manifesto mora — uma só por manifesto. Indexar é o que faz a plataforma poder responder sobre ele, com citação.", fields: [
+          toggle("bd", "home", "isHome", "é casa de manifesto", "Se sim, o copiloto correspondente aponta para cá em bundles.home."),
+          toggle("bd", "index", "index", "indexar para consulta", "ACL por documento é aplicado antes do modelo ver o conteúdo."),
+          txt("bd", "floor", "citation.floor", "piso de citação", "Abaixo disso o bundle não é servido — cai em quarentena."),
+          txt("bd", "retention", "retention", "retenção", "Onde a norma é silenciosa, a escolha é da instituição — e fica declarada."),
+        ] },
+      ];
+      yaml = ["---", "type: bundle", "resource: " + b.id, 'okf_version: "0.2"', "lifecycle: registered      # dado não roda: não existe sombra aqui", "---", "", "## Source", "", "```yaml",
+        "origin: " + JSON.stringify(b.origin), "contains: [" + b.kinds + "]", "isHome: " + b.home, "```", "", "## Serving", "", "```yaml",
+        "index: " + b.index + "                 # só é servido depois do okf-validate passar", "acl: perDocument", "citation: {floor: " + b.floor + ", kinds: [blob, dispositivo]}", "retention: " + JSON.stringify(b.retention), "```"].join("\n");
+      checks = [
+        { ok: /^[a-z0-9]+\/[a-z0-9-]+$/.test(b.id), t: "Caminho válido", d: "Duas partes: área/nome." },
+        { ok: b.origin !== "importado de fornecedor", t: "Procedência", d: b.origin === "importado de fornecedor" ? "Importado: passa por okf-validate e cai em quarentena se as citações não resolverem." : "Origem interna." },
+        { ok: parseFloat(b.floor) >= 0.8, t: "Piso de citação", d: parseFloat(b.floor) >= 0.8 ? "0,80 ou mais — o piso do projeto." : "Abaixo de 0,80: o gate do projeto recusa." },
+        { ok: b.index, t: "Entra na base", d: b.index ? "Indexado: a plataforma responde sobre ele, com citação." : "Não indexado: existe e não é consultável." },
+        { ok: !!b.retention.trim(), t: "Retenção declarada", d: b.retention.trim() ? b.retention : "Vazio: alguém vai decidir isso na pressa depois." },
+      ];
+    }
+
+    const bad = checks.filter((c) => !c.ok).length;
+    const isData = s.tab === "bd";
+    const verb = isData ? "Registrar bundle" : "Registrar em sombra";
+    const doneMap = { agent: "agents/", mw: "middlewares/", ad: "adapters/", mc: "mcp/", bd: "" };
+
+    return {
+      tabs: TABS.map((t) => {
+        const on = s.tab === t.id;
+        return { type: t.type, label: t.label, note: t.note, pick: () => this.setState({ tab: t.id, done: null }), line: on ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)", bg: on ? "#fff" : "transparent", ink: on ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)" };
+      }),
+      title, blurb, groups, yaml, file, bytes: new Blob([yaml]).size + " bytes",
+      checks: checks.map((c) => ({ t: c.t, d: c.d, mark: c.ok ? "✓" : "✕", line: c.ok ? "oklch(0.492 0.126 158)" : "oklch(0.505 0.176 26)" })),
+      checkNote: bad ? bad + (bad === 1 ? " impedimento" : " impedimentos") : "sem impedimento",
+      vState: bad ? "não registra ainda" : isData ? "pronto para registrar" : "pronto para sombra",
+      vBg: bad ? "oklch(0.958 0.030 26)" : "oklch(0.958 0.028 158)",
+      vInk: bad ? "oklch(0.505 0.176 26)" : "oklch(0.492 0.126 158)",
+      commitOff: bad > 0 || !!s.done,
+      commitLabel: s.done ? "Registrado" : bad ? "Corrija " + bad + (bad === 1 ? " item" : " itens") : verb,
+      cLine: bad ? "oklch(0.836 0.008 258)" : "oklch(0.452 0.152 262)",
+      cBg: bad || s.done ? "#fff" : "oklch(0.452 0.152 262)",
+      cInk: bad || s.done ? "oklch(0.487 0.018 260)" : "#fff",
+      commit: () => { if (!bad && !s.done) this.setState({ done: s.tab }); },
+      done: !!s.done,
+      doneMsg: isData
+        ? "Registrado. Bundle é dado: ele não roda — fica disponível para ser citado como casa, leitura ou escrita, e só vira base consultável depois do okf-validate passar."
+        : "Entrou no registry em sombra: roda, registra o que faria e não escreve. Já aparece na lista do cadastro de copiloto, marcado como sombra.",
+      nav: [
+        { icon: "◎", label: "Casos de uso" }, { icon: "💬", label: "Assistentes" },
+        { icon: "◇", label: "Copilotos", on: true }, { icon: "⚖", label: "Conformidade" },
+        { icon: "◆", label: "Agentes hospedados" }, { icon: "⇌", label: "Middlewares" },
+        { icon: "🔌", label: "Adaptadores" }, { icon: "◈", label: "Meus agentes" },
+        { icon: "▤", label: "Conhecimento" }, { icon: "✦", label: "Skills" }, { icon: "🎫", label: "Chamados" },
+        { icon: "✓", label: "Avaliações" }, { icon: "▦", label: "Visão geral" }, { icon: "🔗", label: "Auditoria" },
+        { icon: "🛡️", label: "Administração" },
+      ].map((n) => ({ icon: n.icon, label: n.label, bg: n.on ? "oklch(0.955 0.024 262)" : "transparent", ink: n.on ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)", weight: n.on ? "600" : "400" })),
+      crumbMid: { agent: "Agentes hospedados", mw: "Middlewares", ad: "Adaptadores", mc: "Servidores MCP", bd: "Bundles" }[s.tab],
+      crumbType: { agent: "okf · type: agent", mw: "okf · type: middleware", ad: "okf · type: adapter", mc: "okf · type: mcp", bd: "okf · type: bundle" }[s.tab],
+    };
+  }
+}
+</script>
+</body>
+</html>

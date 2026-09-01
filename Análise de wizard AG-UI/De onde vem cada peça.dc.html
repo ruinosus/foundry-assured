@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, input, button { box-sizing:border-box; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  button:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">De onde vem cada peça — quem cria, onde e como</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:92ch;text-wrap:pretty">Registrar é só apontar. A pergunta que faltava responder é a de antes: <b>quem produz a peça</b>. Das cinco, duas exigem desenvolvimento, uma é conexão, uma normalmente já existe pronta do outro lado, e uma é escrita aqui dentro — sem código nenhum.</p>
+  </div>
+
+  <div style="width:2276px;height:1300px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+        <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+        <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+      </div>
+      <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Área · tenant</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">contoso · compras</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="15">
+          <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;background:{{ n.bg }};color:{{ n.ink }};font-weight:{{ n.weight }}">
+            <span style="width:18px;text-align:center">{{ n.icon }}</span>{{ n.label }}
+          </span>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px">
+          <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">R</span>
+          <div style="min-width:0"><div style="font-size:13px;font-weight:600">Rafael Duarte</div><div style="font-size:11px;color:oklch(0.487 0.018 260)">Owner · Admin · Approver</div></div>
+        </div>
+        <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="height:56px;flex:0 0 56px;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;padding:0 20px;gap:10px">
+        <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Copilotos</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">De onde vem cada peça</b></nav>
+        <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">1 exige dev · 1 tem rota com dev · 1 é conexão · 1 vem pronta · 1 é escrita aqui</span>
+      </header>
+
+      <div style="flex:1;min-height:0;display:flex">
+        <main style="flex:1;min-width:0;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:grid;grid-template-columns:minmax(0,1.15fr) 120px minmax(0,1fr) minmax(0,1.1fr);gap:12px;padding:0 14px">
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">peça</span>
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">natureza</span>
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">quem cria, e onde</span>
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">o que o registro guarda</span>
+          </div>
+
+          <sc-for list="{{ rows }}" as="r" hint-placeholder-count="5">
+            <button type="button" onClick="{{ r.pick }}" style="text-align:left;display:grid;grid-template-columns:minmax(0,1.15fr) 120px minmax(0,1fr) minmax(0,1.1fr);gap:12px;align-items:start;padding:14px;border:1px solid {{ r.line }};border-left:4px solid {{ r.accent }};background:{{ r.bg }};border-radius:6px;cursor:pointer">
+              <span style="min-width:0">
+                <span style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <b style="font-size:14px;font-weight:650">{{ r.title }}</b>
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px;background:oklch(0.955 0.005 258);color:oklch(0.487 0.018 260)">{{ r.type }}</span>
+                </span>
+                <span style="display:block;margin-top:4px;font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ r.what }}</span>
+              </span>
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:{{ r.natBg }};color:{{ r.natInk }};justify-self:start;white-space:nowrap">{{ r.nature }}</span>
+              <span style="min-width:0;font-size:12.5px;line-height:1.5">{{ r.who }}</span>
+              <span style="min-width:0;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.5;color:oklch(0.487 0.018 260)">{{ r.keeps }}</span>
+            </button>
+          </sc-for>
+
+          <section style="margin-top:4px;background:#fff;border:1px solid oklch(0.452 0.152 262);border-radius:8px;padding:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <b style="font-size:13.5px;font-weight:650">A regra que organiza tudo</b>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">O produto guarda <b>referência + contrato</b>, nunca o código da peça. Por isso trocar a implementação de um middleware não é mexer no copiloto: ele cita um nome, e o nome resolve no registry.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <b style="font-size:13.5px;font-weight:650">Onde não há desenvolvimento</b>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Bundle é texto: nasce no editor daqui ou num PR. Adaptador é conexão: identidade, região, cota. MCP de fornecedor já existe — você registra a URL. Esses três não pedem uma linha de código.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <b style="font-size:13.5px;font-weight:650">Onde há, e é pouco</b>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Middleware é uma função com contrato. Agente próprio é um serviço que fala AG-UI. MCP interno é um servidor com tools. Nos três, o scaffold já vem com o manifesto e o teste — o trabalho é a lógica, não a integração.</p>
+            </div>
+          </section>
+        </main>
+
+        <aside style="width:640px;flex:0 0 640px;background:#fff;border-left:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;min-height:0">
+          <div style="flex:none;padding:14px 16px;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">{{ sel.type }}</span>
+              <b style="font-size:16px;font-weight:650">{{ sel.title }}</b>
+              <span style="margin-left:auto;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:3px 9px;border-radius:999px;background:{{ sel.natBg }};color:{{ sel.natInk }}">{{ sel.nature }}</span>
+            </div>
+            <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">{{ sel.lead }}</p>
+          </div>
+
+          <div style="flex:1;min-height:0;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">O caminho, do zero ao habilitado</span>
+              <sc-for list="{{ sel.steps }}" as="p" hint-placeholder-count="5">
+                <div style="display:flex;gap:11px;align-items:flex-start;padding:11px;border:1px solid oklch(0.902 0.006 258);border-radius:5px;background:{{ p.bg }}">
+                  <span style="flex:none;width:20px;height:20px;border-radius:999px;background:{{ p.dot }};color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ p.n }}</span>
+                  <span style="min-width:0">
+                    <b style="display:block;font-size:12.5px;font-weight:600">{{ p.t }}</b>
+                    <span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ p.d }}</span>
+                    <span style="display:block;margin-top:3px;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ p.whoInk }}">{{ p.who }}</span>
+                  </span>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ sel.hasCode }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ sel.codeLabel }}</span>
+                <pre style="margin:0;padding:13px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);border-radius:6px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.6;overflow:auto;white-space:pre">{{ sel.code }}</pre>
+                <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ sel.codeNote }}</span>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{ sel.noCode }}" hint-placeholder-val="{{ false }}">
+              <div style="border:1px solid oklch(0.492 0.126 158);background:oklch(0.958 0.028 158);border-radius:6px;padding:13px;display:flex;flex-direction:column;gap:6px">
+                <b style="font-size:13px;font-weight:650">Zero desenvolvimento</b>
+                <span style="font-size:12.5px;line-height:1.5">{{ sel.noCodeMsg }}</span>
+              </div>
+            </sc-if>
+
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">O que dá errado quando se pula etapa</span>
+              <sc-for list="{{ sel.risks }}" as="r" hint-placeholder-count="2">
+                <div style="display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.45"><span style="flex:none;color:oklch(0.505 0.176 26)">·</span><span style="min-width:0">{{ r.t }}</span></div>
+              </sc-for>
+            </div>
+
+            <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center;padding-top:2px">
+              <a href="{{ sel.ctaHref }}" style="padding:10px 15px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:#fff;font-size:13.5px;font-weight:600;text-decoration:none">{{ sel.cta }}</a>
+              <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:52ch">{{ sel.ctaNote }}</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2340,&quot;height&quot;:1380}}">
+const PIECES = [
+  {
+    id: "bundle", type: "type: bundle", title: "Bundle", nature: "dado", tone: "ok",
+    what: "Markdown com frontmatter. É o conteúdo: manifestos, formulários, políticas, documentos, log.",
+    who: "Qualquer pessoa da área, no editor daqui — ou um dev, por PR no repositório.",
+    keeps: "caminho + origem + tipos + índice",
+    lead: "Bundle não roda. É texto versionado, e o produto tem editor para ele — inclusive o copiloto escreve dentro dele, por proposta.",
+    steps: [
+      { t: "Criar o arquivo", d: "No editor de bundle (aqui dentro) ou num PR no repositório. Uma pasta com index.md e frontmatter — o único campo obrigatório é type.", who: "área ou dev", tone: "acc" },
+      { t: "Validar", d: "okf-validate roda em cima: schema, piso de citação, alvos que existem. Reprovado cai em quarentena.", who: "automático", tone: "acc" },
+      { t: "Registrar", d: "Diz de onde vem, o que contém, se é casa de manifesto e se entra na base consultável.", who: "admin", tone: "acc" },
+      { t: "Habilitar por área", d: "Quem lê e quem pode propor mudança é declarado no copiloto, não aqui.", who: "admin", tone: "acc" },
+    ],
+    hasCode: true, codeLabel: "o arquivo mínimo — é isto, e nada mais",
+    code: "knowledge/politicas-compras/\n├── index.md\n└── log.md\n\n# index.md\n---\ntype: doc\ntitle: Limites de alçada\n---\n\nCompras acima de US$ 5.000 exigem aprovação do gestor da área.",
+    codeNote: "Nenhuma dependência, nenhum build, nenhum deploy. Se você sabe escrever markdown, você produz bundle.",
+    noCode: true, noCodeMsg: "Este é o caso em que ninguém desenvolve nada: o editor do produto cria, valida e registra. O copiloto também escreve aqui — sempre por proposta, com decisão humana.",
+    risks: [
+      { t: "Citação sem SHA e sem range: passa no gate por sufixo e não resolve quando renderizada." },
+      { t: "Sem log.md: o bundle existe e ninguém sabe o que mudou nem quando." },
+      { t: "Indexar antes de validar: a base passa a responder com fonte que não resolve." },
+    ],
+    cta: "Abrir o editor de bundle", ctaHref: "Bundle Editor.dc.html",
+    ctaNote: "É a tela onde ele nasce e é corrigido, com diff e PR como saída.",
+  },
+  {
+    id: "adapter", type: "type: adapter", title: "Adaptador", nature: "conexão", tone: "acc",
+    what: "A ligação com um sistema que já existe: modelo, fala, ERP, DevOps, CRM.",
+    who: "Plataforma/TI configura. Só há desenvolvimento se o sistema de fora não fala nada padrão.",
+    keeps: "identidade + região + cobrança + teto",
+    lead: "Adaptador quase nunca é escrito: é conectado. O trabalho é de identidade, região, cota e fatura — não de lógica.",
+    steps: [
+      { t: "Ter o recurso do outro lado", d: "O deployment de modelo, a conta de fala, o projeto de DevOps. Isso já existe antes da nossa tela.", who: "plataforma", tone: "acc" },
+      { t: "Conceder identidade", d: "Identidade gerenciada ou connection do projeto. Só onde não existe outro caminho se usa chave — e aí o dono da rotação é declarado.", who: "plataforma", tone: "acc" },
+      { t: "Registrar", d: "Região, modelo de cobrança, preço unitário, teto por área e o que fazer ao estourar.", who: "admin", tone: "acc" },
+      { t: "Habilitar por área", d: "Middleware que depende dele não instala em área onde ele não está habilitado.", who: "admin", tone: "acc" },
+    ],
+    hasCode: false, codeLabel: "", code: "", codeNote: "",
+    noCode: true, noCodeMsg: "Configuração, não código: o adaptador só amarra credencial, região e cota a um nome que os manifestos citam. Um adaptador novo para um sistema padrão é meia hora de plataforma.",
+    risks: [
+      { t: "Chave sem dono de rotação declarado: um dia ela expira e ninguém sabe de quem é." },
+      { t: "Região diferente da do projeto: muda residência do dado sem ninguém decidir isso." },
+      { t: "Sem teto: o estouro aparece na fatura, não antes da chamada." },
+    ],
+    cta: "Registrar adaptador", ctaHref: "Registros.dc.html",
+    ctaNote: "Se o sistema de fora não tiver API utilizável, o caminho é um servidor MCP — o item abaixo.",
+  },
+  {
+    id: "mcp", type: "type: mcp", title: "Servidor MCP", nature: "vem pronta", tone: "acc",
+    what: "Um servidor que expõe tools. O do fornecedor já existe; o interno é um serviço nosso.",
+    who: "Fornecedor publica, e você só registra a URL. Se for interno: dev, com FastMCP.",
+    keeps: "URL + descoberta + tools + gate",
+    lead: "Na maioria dos casos você não cria nada: o fornecedor já tem MCP, e o cadastro é a URL. O caso interno é o único que pede desenvolvimento — e é pequeno.",
+    steps: [
+      { t: "O servidor existe", d: "Do fornecedor: pegue a URL e o modo de autenticação. Interno: um serviço com as tools, autenticando como resource server.", who: "fornecedor ou dev", tone: "wait" },
+      { t: "Descobrir as tools", d: "O registro lê as tools do servidor; você não digita a lista. As de escrita entram marcadas.", who: "automático", tone: "acc" },
+      { t: "Declarar o gate", d: "Toda tool de escrita nasce com require_approval: always e papel — quem aplica é o nosso runtime, não o servidor.", who: "admin", tone: "acc" },
+      { t: "Habilitar", d: "Exige o adaptador mcp-gateway na área; sem ele a tool existe e não é alcançável.", who: "admin", tone: "acc" },
+    ],
+    hasCode: true, codeLabel: "se for interno — o servidor mínimo",
+    code: "# apps/mcp/server.py\nfrom fastmcp import FastMCP\n\nmcp = FastMCP(\"catalogo\")\n\n@mcp.tool()\ndef buscar_item(q: str) -> list[dict]:\n    \"\"\"Consulta o catálogo por descrição ou SKU.\"\"\"\n    return catalogo.search(q, acl=caller_acl())\n\n@mcp.tool(write=True)          # escrita: o registro exige aprovação\ndef reservar_item(sku: str, qtd: int) -> dict:\n    return catalogo.reserve(sku, qtd)",
+    codeNote: "O ACL do chamador entra na consulta: a tool devolve só o que aquela pessoa pode ver. Isso é do servidor, não da tela.",
+    noCode: false, noCodeMsg: "",
+    risks: [
+      { t: "URL sem a barra final: a descoberta aponta para outro recurso e o cliente falha na primeira chamada." },
+      { t: "Tool de escrita registrada como leitura: o gate não é acionado, e a escrita acontece sem aprovação." },
+      { t: "Servidor de terceiro sem cota: a fatura é do fornecedor e a surpresa é sua." },
+    ],
+    cta: "Registrar servidor MCP", ctaHref: "Registros.dc.html",
+    ctaNote: "O caso do fornecedor é só a URL: dois campos e as tools chegam por descoberta.",
+  },
+  {
+    id: "mw", type: "type: middleware", title: "Middleware", nature: "exige dev", tone: "wait",
+    what: "Uma função com contrato: recebe documento ou evento, devolve aviso, proposta, aprovação ou bloqueio.",
+    who: "Desenvolvedor, a partir do scaffold. O manifesto e o teste já vêm no template.",
+    keeps: "pacote + contrato + estágio + teto",
+    lead: "Aqui há desenvolvimento de verdade — e é pouco: uma função e um contrato. O scaffold gera o manifesto, o teste de contrato e o esqueleto; o trabalho é a lógica.",
+    steps: [
+      { t: "Gerar o scaffold", d: "Um comando cria a pasta com index.md (o contrato), o handler e o teste que valida o contrato.", who: "dev", tone: "wait" },
+      { t: "Escrever a lógica", d: "Uma função. O contrato define a assinatura: o que entra, o que sai, em que estágio.", who: "dev", tone: "wait" },
+      { t: "Rodar o teste de contrato", d: "Falha se o handler emitir algo que o manifesto não declara — inclusive se tentar gravar num estágio que não permite.", who: "dev", tone: "wait" },
+      { t: "Registrar em sombra", d: "Roda em produção, registra o que faria, não escreve. Emitir aprovação ou bloqueio exige revisão do Owner.", who: "admin", tone: "acc" },
+      { t: "Promover", d: "Depois de uma semana em sombra, com o log mostrando o que ele teria feito.", who: "owner", tone: "acc" },
+    ],
+    hasCode: true, codeLabel: "o scaffold e o handler",
+    code: "$ okf init middleware limite-alcada\n  ✓ middlewares/limite-alcada/index.md   (contrato)\n  ✓ middlewares/limite-alcada/handler.py\n  ✓ middlewares/limite-alcada/test_contract.py\n\n# handler.py\ndef handle(proposal, ctx):\n    limite = ctx.bundle(\"knowledge/politicas-compras\").get(\"limite_alcada\")\n    if proposal.value.total > limite:\n        return warn(f\"acima da alçada de {limite}\", cite=ctx.cite(\"politicas-compras#L12-L18\"))\n    return ok()",
+    codeNote: "Ele lê bundle, cita fonte e devolve aviso. Não grava — o estágio declarado no manifesto é inline, e o teste falha se ele tentar.",
+    noCode: false, noCodeMsg: "",
+    risks: [
+      { t: "Emitir aprovação sem papel declarado: o middleware assina em nome de alguém, e a revisão não tem o que ler." },
+      { t: "Bloquear fora do estágio pre-persist: o dado já foi gravado, e o bloqueio virou aviso tardio." },
+      { t: "Pular a sombra: o primeiro erro acontece em produção, no caminho de escrita." },
+    ],
+    cta: "Registrar middleware", ctaHref: "Registros.dc.html",
+    ctaNote: "O registro aponta para o pacote publicado — o produto não guarda o código dele.",
+  },
+  {
+    id: "agent", type: "type: agent", title: "Agente", nature: "duas rotas · 1 com dev", tone: "wait",
+    what: "Quem executa a conversa. Pode ser um prompt agent do Foundry (sem código) ou um serviço seu.",
+    who: "Sem código: qualquer admin, no wizard do Foundry. Com código: dev, num container que fala AG-UI.",
+    keeps: "referência + protocolo + identidade + teto",
+    lead: "Duas rotas honestas: se o comportamento cabe em instruções e ferramentas prontas, é zero código no Foundry. Se precisa de orquestração própria, é um serviço seu — e o requisito é falar AG-UI.",
+    steps: [
+      { t: "Escolher a rota", d: "Prompt agent no Foundry (instruções + base + tools de primeira parte) ou container próprio (orquestração, langgraph, estado).", who: "admin ou dev", tone: "wait" },
+      { t: "Rota sem código", d: "O wizard de agente publica a versão no Foundry. Ele já fala AG-UI pelo adaptador — nada a implementar.", who: "admin", tone: "acc" },
+      { t: "Rota com código", d: "Um serviço com endpoint AG-UI e health check, autenticando por identidade gerenciada. O scaffold traz o adaptador de eventos pronto.", who: "dev", tone: "wait" },
+      { t: "Registrar em sombra", d: "Responde e é medido; nada que ele proponha é aplicado sem gesto humano. Declarar tool de escrita manda para revisão.", who: "admin", tone: "acc" },
+    ],
+    hasCode: true, codeLabel: "rota com código — o mínimo que o registro exige",
+    code: "$ okf init agent compras-req --framework agent-framework\n  ✓ agents/compras-req/index.md      (manifesto)\n  ✓ agents/compras-req/main.py       (endpoint AG-UI + health)\n  ✓ Dockerfile\n\n# main.py\nagent = Workflow(steps=[triagem, buscar, redigir])\napp = agui_app(agent)            # eventos de stream e interrupção\n\n@app.get(\"/healthz\")\ndef health(): return {\"ok\": True}",
+    codeNote: "A interrupção do workflow é o que a nossa política transforma em gate: o agente pausa, a tela mostra o payload, e a decisão volta pelo mesmo canal.",
+    noCode: false, noCodeMsg: "",
+    risks: [
+      { t: "Não falar AG-UI: os passos não aparecem na tela e a interrupção não vira gate — a pessoa vê um spinner." },
+      { t: "Sem health check: o registry não distingue “fora do ar” de “sem uso”." },
+      { t: "Chave em variável de ambiente: some da revisão e reaparece no incidente." },
+    ],
+    cta: "Registrar agente", ctaHref: "Registros.dc.html",
+    ctaNote: "A rota sem código passa pelo wizard de agente; o registro aqui é o mesmo documento nos dois casos.",
+  },
+];
+
+const NAV = [
+  { icon: "◎", label: "Casos de uso" }, { icon: "💬", label: "Assistentes" },
+  { icon: "◇", label: "Copilotos", on: true }, { icon: "⚖", label: "Conformidade" },
+  { icon: "◆", label: "Agentes hospedados" }, { icon: "⇌", label: "Middlewares" },
+  { icon: "🔌", label: "Adaptadores" }, { icon: "◈", label: "Meus agentes" },
+  { icon: "▤", label: "Conhecimento" }, { icon: "✦", label: "Skills" }, { icon: "🎫", label: "Chamados" },
+  { icon: "✓", label: "Avaliações" }, { icon: "▦", label: "Visão geral" }, { icon: "🔗", label: "Auditoria" },
+  { icon: "🛡️", label: "Administração" },
+];
+
+class Component extends DCLogic {
+  state = { sel: "bundle" };
+
+  renderVals() {
+    const s = this.state;
+    const natTone = (t) => ({
+      ok: ["oklch(0.958 0.028 158)", "oklch(0.492 0.126 158)", "oklch(0.492 0.126 158)"],
+      acc: ["oklch(0.955 0.024 262)", "oklch(0.452 0.152 262)", "oklch(0.452 0.152 262)"],
+      wait: ["oklch(0.960 0.038 68)", "oklch(0.545 0.126 68)", "oklch(0.545 0.126 68)"],
+    }[t]);
+    const sel = PIECES.find((p) => p.id === s.sel) || PIECES[0];
+    const st = natTone(sel.tone);
+
+    return {
+      nav: NAV.map((n) => ({ icon: n.icon, label: n.label, bg: n.on ? "oklch(0.955 0.024 262)" : "transparent", ink: n.on ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)", weight: n.on ? "600" : "400" })),
+      rows: PIECES.map((p) => {
+        const t = natTone(p.tone);
+        const on = s.sel === p.id;
+        return {
+          title: p.title, type: p.type, what: p.what, who: p.who, keeps: p.keeps, nature: p.nature,
+          natBg: t[0], natInk: t[1], accent: t[2],
+          line: on ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)",
+          bg: on ? "oklch(0.955 0.024 262)" : "#fff",
+          pick: () => this.setState({ sel: p.id }),
+        };
+      }),
+      sel: {
+        type: sel.type, title: sel.title, nature: sel.nature, lead: sel.lead,
+        natBg: st[0], natInk: st[1],
+        steps: sel.steps.map((x, i) => {
+          const t = natTone(x.tone);
+          return { n: String(i + 1), t: x.t, d: x.d, who: x.who, whoInk: t[1], dot: t[2], bg: i === 0 ? "oklch(0.977 0.003 258)" : "#fff" };
+        }),
+        hasCode: sel.hasCode, codeLabel: sel.codeLabel, code: sel.code, codeNote: sel.codeNote,
+        noCode: !!sel.noCode, noCodeMsg: sel.noCodeMsg || "",
+        risks: sel.risks.map((r) => ({ t: r.t })),
+        cta: sel.cta, ctaHref: sel.ctaHref, ctaNote: sel.ctaNote,
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, input, textarea, button { box-sizing:border-box; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+</style>
+<script>window.OM_SCENES = '[{"name":"Vazio","dur":4,"desc":"O catálogo de copilotos está vazio e o RH pede ajuda"},{"name":"Builder","dur":7,"desc":"Os campos do copiloto são preenchidos: id, título, superfície e os alvos"},{"name":"Bundle","dur":5,"desc":"O bundle OKF aparece à direita, linha por linha, a partir das respostas"},{"name":"Validar","dur":6,"desc":"As checagens passam e a publicação pede aprovação com papel e payload"},{"name":"EmUso","dur":9,"desc":"Dentro do caso de uso, ele propõe com diff e fonte; o passo humano decide"},{"name":"Medicao","dur":6,"desc":"Aproveitamento e correção sobem juntos, e as decisões entram na trilha"},{"name":"Atualizacao","dur":8,"desc":"Um campo novo vira PR, merge e versão v2, com log.md append-only"},{"name":"Fecho","dur":5,"desc":"A frase final: o copiloto é documento, a tela é parser"}]';</script>
+<script>window.OM_PLAYBACK = '{"mode":"loop"}';</script>
+</helmet>
+
+<x-import component-from-global-scope="ExemploCopiloto" from="./animations-v3.jsx ./exemplo-copiloto.jsx" hint-size="1600px,980px"></x-import>
+</x-dc>
+</body>
+</html>

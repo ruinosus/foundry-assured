@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, input, button { box-sizing:border-box; }
+  input, button { font-family:inherit; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  button:focus-visible, input:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">Bundles na prática — RH quer um copiloto que mexe em reembolso</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:94ch;text-wrap:pretty">Reembolso é assunto do <b>Financeiro</b>. O caso responde as três dúvidas: bundle não é uma coisa só (cada tipo de documento tem um papel diferente), só um deles define campos, e a maior parte do que o copiloto novo precisa <b>já existe</b> — o que ele faz é apontar, não copiar.</p>
+  </div>
+
+  <div style="width:2524px;height:1340px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+        <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+        <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+      </div>
+      <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Área · tenant</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">contoso · rh</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="15">
+          <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;background:{{ n.bg }};color:{{ n.ink }};font-weight:{{ n.weight }}">
+            <span style="width:18px;text-align:center">{{ n.icon }}</span>{{ n.label }}
+          </span>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px">
+          <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">R</span>
+          <div style="min-width:0"><div style="font-size:13px;font-weight:600">Rafael Duarte</div><div style="font-size:11px;color:oklch(0.487 0.018 260)">Owner · Admin · Approver</div></div>
+        </div>
+        <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="height:56px;flex:0 0 56px;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;padding:0 20px;gap:10px">
+        <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Conhecimento</span><span>/</span><span>Bundles</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">RH → reembolso</b></nav>
+        <span style="margin-left:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">okf · plano de dados</span>
+      </header>
+      <div style="flex:1;min-height:0;display:flex">
+
+    <!-- inventário -->
+    <nav style="width:340px;flex:0 0 340px;background:oklch(0.955 0.005 258);border-right:1px solid oklch(0.902 0.006 258);padding:18px 14px;display:flex;flex-direction:column;gap:14px;min-height:0;overflow:auto">
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">O que já existe no projeto</span>
+        <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">Bundle mora na área <b>dona do assunto</b>. Quem é dono publica; os outros pedem leitura.</span>
+      </div>
+      <sc-for list="{{ inv }}" as="a" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;align-items:baseline;gap:8px;padding-bottom:6px;border-bottom:2px solid {{ a.accent }}">
+            <b style="font-size:13px;font-weight:650">{{ a.area }}</b>
+            <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">{{ a.count }}</span>
+          </div>
+          <sc-for list="{{ a.items }}" as="b" hint-placeholder-count="2">
+            <div style="display:flex;flex-direction:column;gap:4px;padding:10px;background:#fff;border:1px solid {{ b.line }};border-radius:5px">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;font-weight:600;overflow-wrap:anywhere">{{ b.id }}</span>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                <sc-for list="{{ b.kinds }}" as="k" hint-placeholder-count="2">
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10px;padding:1px 6px;border-radius:999px;background:{{ k.bg }};color:{{ k.ink }}">{{ k.t }}</span>
+                </sc-for>
+              </div>
+              <span style="font-size:11px;line-height:1.4;color:oklch(0.487 0.018 260)">{{ b.what }}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </nav>
+
+    <main style="flex:1;min-width:0;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:13px">
+      <section style="background:#fff;border:1px solid oklch(0.452 0.152 262);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:11px">
+        <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+          <b style="font-size:15px;font-weight:650">O pedido do RH, em quatro necessidades</b>
+          <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">{{ progress }}</span>
+        </div>
+        <p style="margin:0;font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:90ch;text-wrap:pretty">Cada necessidade vira <b>uma linha do bloco bundles</b> do manifesto. Resolva uma por uma — e note que três das quatro se resolvem apontando para o que já existe.</p>
+
+        <sc-for list="{{ needs }}" as="n" hint-placeholder-count="4">
+          <div style="border:1px solid {{ n.line }};border-left:4px solid {{ n.line }};border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:10px;background:{{ n.bg }}">
+            <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <span style="flex:none;width:22px;height:22px;border-radius:999px;background:{{ n.line }};color:#fff;font-size:11.5px;font-weight:700;display:grid;place-items:center">{{ n.i }}</span>
+              <b style="font-size:14px;font-weight:650">{{ n.title }}</b>
+              <span style="font-size:11.5px;color:oklch(0.487 0.018 260)">{{ n.kindNote }}</span>
+              <span style="margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 9px;border-radius:999px;background:{{ n.stBg }};color:{{ n.stInk }}">{{ n.state }}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:11px;flex-wrap:wrap;padding:10px 12px;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:5px">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:600">{{ n.target }}</span>
+              <span style="font-size:11.5px;color:oklch(0.487 0.018 260);flex:1;min-width:200px">{{ n.targetNote }}</span>
+              <span style="flex:none;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">dono: {{ n.owner }}</span>
+            </div>
+            <sc-if value="{{ n.showForm }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:oklch(0.955 0.024 262);border:1px solid oklch(0.452 0.152 262);border-radius:5px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">criar bundle novo — nasce na área dona do assunto</span>
+                <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center">
+                  <input type="text" value="{{ newPath }}" onChange="{{ setNewPath }}" style="flex:1;min-width:240px;padding:9px 11px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:12.5px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" />
+                  <span style="font-size:11.5px;color:oklch(0.487 0.018 260)">tipo: <b>doc</b> · dono: <b>RH</b></span>
+                </div>
+                <span style="font-size:11.5px;line-height:1.45;color:oklch(0.235 0.017 262)">Regra de curso é assunto de RH — então o bundle é do RH, e o Financeiro é que passará a poder <b>ler</b> se precisar. O contrário do que a intuição sugere: não se cria uma cópia no Financeiro.</span>
+              </div>
+            </sc-if>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+              <sc-for list="{{ n.actions }}" as="a" hint-placeholder-count="2">
+                <button type="button" onClick="{{ a.act }}" disabled="{{ a.off }}" style="padding:8px 13px;border:1px solid {{ a.line }};border-radius:6px;background:{{ a.bg }};color:{{ a.ink }};font-size:12.5px;font-weight:600;cursor:pointer">{{ a.label }}</button>
+              </sc-for>
+              <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:64ch">{{ n.hint }}</span>
+            </div>
+          </div>
+        </sc-for>
+      </section>
+
+      <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <b style="font-size:13.5px;font-weight:650">Quem é dono, publica</b>
+          <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">A política de reembolso é do Financeiro. O RH não copia nem edita: ele <b>pede leitura</b>. Se a política mudar, muda uma vez — e todo copiloto que a lê já responde certo no dia seguinte.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <b style="font-size:13.5px;font-weight:650">Ler é pedido, não cópia</b>
+          <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Duplicar conhecimento é como as respostas começam a divergir. O pedido de acesso é aprovado pelo dono, aparece na trilha, e o ACL por documento continua valendo por pessoa — não por copiloto.</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <b style="font-size:13.5px;font-weight:650">Escrever exige convite</b>
+          <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Propor num formulário do Financeiro só acontece se o dono do <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">formflow</span> declarar quais campos aceitam proposta de fora. Leitura e escrita são autorizações separadas.</p>
+        </div>
+      </section>
+    </main>
+
+    <aside style="width:620px;flex:0 0 620px;background:#fff;border-left:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;min-height:0">
+      <div style="flex:none;padding:14px;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;gap:9px">
+        <b style="font-size:14px;font-weight:650">Anatomia de um bundle — cada tipo faz uma coisa</b>
+        <span style="font-size:12px;line-height:1.5;color:oklch(0.487 0.018 260)">É aqui que a sua dúvida se resolve: <b>só o formflow define campos</b>. Os outros definem conhecimento, comportamento, regra e histórico.</span>
+        <div style="display:flex;flex-direction:column;gap:5px">
+          <sc-for list="{{ anatomy }}" as="a" hint-placeholder-count="5">
+            <div style="display:flex;gap:10px;align-items:flex-start;padding:9px 11px;background:{{ a.bg }};border-radius:5px">
+              <span style="flex:none;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;color:{{ a.ink }};min-width:78px">{{ a.file }}</span>
+              <span style="min-width:0"><b style="display:block;font-size:12px;font-weight:600">{{ a.t }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ a.d }}</span></span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      <pre style="flex:1;min-height:0;overflow:auto;margin:0;padding:14px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.6;white-space:pre">{{ yaml }}</pre>
+      <div style="flex:none;border-top:1px solid oklch(0.902 0.006 258);padding:13px 14px;display:flex;flex-direction:column;gap:9px;max-height:300px;overflow:auto">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Pendências deste pedido</span>
+        <sc-if value="{{ noPend }}" hint-placeholder-val="{{ true }}">
+          <span style="font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260)">Resolva as quatro necessidades para ver o que ainda depende de outra área.</span>
+        </sc-if>
+        <sc-for list="{{ pend }}" as="p" hint-placeholder-count="0">
+          <div style="display:flex;gap:9px;align-items:flex-start">
+            <span style="flex:none;width:17px;height:17px;border-radius:50%;background:{{ p.line }};color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ p.mark }}</span>
+            <span style="min-width:0"><b style="display:block;font-size:12px;font-weight:600">{{ p.t }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ p.d }}</span></span>
+          </div>
+        </sc-for>
+      </div>
+    </aside>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2340,&quot;height&quot;:1420}}">
+const KIND_TONE = {
+  doc: ["oklch(0.958 0.028 158)", "oklch(0.492 0.126 158)"],
+  formflow: ["oklch(0.955 0.024 262)", "oklch(0.452 0.152 262)"],
+  copilot: ["oklch(0.955 0.024 262)", "oklch(0.452 0.152 262)"],
+  policy: ["oklch(0.960 0.038 68)", "oklch(0.545 0.126 68)"],
+  log: ["oklch(0.955 0.005 258)", "oklch(0.487 0.018 260)"],
+};
+
+const INV = [
+  { area: "Financeiro — dono do assunto reembolso", accent: "oklch(0.492 0.126 158)", items: [
+    { id: "financeiro/politica-reembolso", kinds: ["doc", "log"], what: "Limites por categoria, prazo, o que não é reembolsável." },
+    { id: "financeiro/flows/reembolso", kinds: ["formflow"], what: "O formulário de solicitação: campos, regras, plano de publicação." },
+    { id: "financeiro/tabela-alcada", kinds: ["doc"], what: "Quem aprova até quanto." },
+  ] },
+  { area: "RH", accent: "oklch(0.452 0.152 262)", items: [
+    { id: "rh/politicas", kinds: ["doc", "log"], what: "Férias, conduta, benefícios." },
+    { id: "copilots/atendimento-rh", kinds: ["copilot", "log"], what: "O copiloto que já existe — esta é a casa dele." },
+  ] },
+  { area: "Compartilhado", accent: "oklch(0.545 0.126 68)", items: [
+    { id: "policy/hitl", kinds: ["policy"], what: "Os quatro gates, herdados por todo mundo." },
+  ] },
+];
+
+const ANATOMY = [
+  { file: "index.md", t: "type: doc — conhecimento", d: "O que é verdade sobre o assunto. O copiloto LÊ e CITA. Não define campo nenhum.", kind: "doc" },
+  { file: "flows/*.md", t: "type: formflow — os campos", d: "É este, e só este, que define os campos em que o copiloto pode escrever: id, regras, se aceita lacuna, que fonte exige.", kind: "formflow" },
+  { file: "index.md", t: "type: copilot — a definição", d: "Onde monta, sobre qual agente roda, o que referencia. A casa dele é um bundle.", kind: "copilot" },
+  { file: "hitl.md", t: "type: policy — os gates", d: "Onde o fluxo para e qual papel decide. Herdado, não copiado.", kind: "policy" },
+  { file: "log.md", t: "type: log — o histórico", d: "Append-only: o que mudou, quando, por quem. Com hash e âncora quando é peça probatória.", kind: "log" },
+];
+
+const NEEDS = [
+  {
+    i: "1", title: "Saber a política de reembolso", kindNote: "conhecimento · type: doc",
+    target: "financeiro/politica-reembolso", targetNote: "existe, e é do Financeiro", owner: "Financeiro",
+    resolve: "read", hint: "Ler é autorização, não cópia: o pedido vai ao dono e aparece na trilha.",
+    label: "Pedir leitura", done: "leitura pedida",
+  },
+  {
+    i: "2", title: "Preencher a solicitação", kindNote: "campos · type: formflow",
+    target: "financeiro/flows/reembolso", targetNote: "existe — é ele que define os campos", owner: "Financeiro",
+    resolve: "write", hint: "Propor em campo de outra área exige que o dono do formflow declare quais campos aceitam proposta de fora.",
+    label: "Pedir permissão de proposta", done: "proposta pedida",
+  },
+  {
+    i: "3", title: "Regra de reembolso de curso", kindNote: "conhecimento novo · type: doc",
+    target: "rh/politica-cursos", targetNote: "não existe — assunto de RH, então nasce no RH", owner: "RH",
+    resolve: "create", hint: "É o único item em que alguém escreve algo novo — e é markdown, no editor daqui.",
+    label: "Criar bundle", done: "criado · rascunho",
+  },
+  {
+    i: "4", title: "Onde o fluxo para num humano", kindNote: "gates · type: policy",
+    target: "policy/hitl", targetNote: "existe e é compartilhado", owner: "Compartilhado",
+    resolve: "inherit", hint: "Herdar é o caminho normal: gates próprios exigem revisão de segurança.",
+    label: "Herdar", done: "herdado",
+  },
+];
+
+class Component extends DCLogic {
+  state = { resolved: {}, newPath: "rh/politica-cursos" };
+
+  renderVals() {
+    const s = this.state;
+    const done = (k) => !!s.resolved[k];
+    const resolvedCount = NEEDS.filter((n) => done(n.i)).length;
+
+    const needs = NEEDS.map((n) => {
+      const ok = done(n.i);
+      const line = ok ? "oklch(0.492 0.126 158)" : n.resolve === "create" ? "oklch(0.452 0.152 262)" : "oklch(0.545 0.126 68)";
+      return {
+        i: n.i, title: n.title, kindNote: n.kindNote, target: n.resolve === "create" ? s.newPath : n.target,
+        targetNote: n.targetNote, owner: n.owner, hint: n.hint, line,
+        bg: ok ? "oklch(0.977 0.003 258)" : "#fff",
+        state: ok ? n.done : n.resolve === "create" ? "criar" : n.resolve === "inherit" ? "herdar" : "pedir",
+        stBg: ok ? "oklch(0.958 0.028 158)" : n.resolve === "create" ? "oklch(0.955 0.024 262)" : "oklch(0.960 0.038 68)",
+        stInk: ok ? "oklch(0.492 0.126 158)" : n.resolve === "create" ? "oklch(0.452 0.152 262)" : "oklch(0.545 0.126 68)",
+        showForm: n.resolve === "create" && !ok,
+        actions: [{
+          label: ok ? "✓ " + n.done : n.label, off: ok,
+          line: ok ? "oklch(0.836 0.008 258)" : "oklch(0.452 0.152 262)",
+          bg: ok ? "#fff" : "oklch(0.452 0.152 262)",
+          ink: ok ? "oklch(0.487 0.018 260)" : "#fff",
+          act: () => this.setState((st) => ({ resolved: { ...st.resolved, [n.i]: true } })),
+        }],
+      };
+    });
+
+    const reads = ["financeiro/politica-reembolso"].filter(() => done("1")).concat(done("3") ? [s.newPath] : []);
+    const writes = done("2") ? ["financeiro/flows/reembolso"] : [];
+    const yaml = [
+      "---", "type: copilot", "resource: rh-reembolso", "lifecycle: draft", 'okf_version: "0.2"', "index: true", "---",
+      "", "## Bundles — o plano de dados deste copiloto", "", "```yaml", "bundles:",
+      "  home: copilots/rh-reembolso        # a casa dele: sempre a própria área",
+      "  reads:",
+      reads.length ? reads.map((r) => "    - " + r).join("\n") : "    []                             # sem leitura, toda resposta sai sem fonte",
+      "  proposes:",
+      writes.length ? writes.map((w) => "    - {bundle: " + w + ", fields: [descricao, justificativa], via: propose_field}") .join("\n") : "    []                             # ele conversa e não escreve",
+      "  inherits:", done("4") ? "    - policy/hitl" : "    []                             # sem política: não publica",
+      "  acl: perDocument                   # por pessoa, não por copiloto", "```",
+    ].join("\n");
+
+    const pend = [];
+    if (done("1")) pend.push({ t: "Leitura de financeiro/politica-reembolso", d: "Aguardando o dono (Financeiro) aprovar. Até então, o copiloto responde sem essa fonte — e recusa, porque exige citação.", mark: "!", line: "oklch(0.545 0.126 68)" });
+    if (done("2")) pend.push({ t: "Proposta em financeiro/flows/reembolso", d: "O dono precisa declarar quais campos aceitam proposta de fora. Sem isso, ele lê o formulário e não escreve nele.", mark: "!", line: "oklch(0.545 0.126 68)" });
+    if (done("3")) pend.push({ t: s.newPath + " criado em rascunho", d: "Precisa passar por okf-validate e ser publicado pelo RH. Rascunho não é servido.", mark: "!", line: "oklch(0.545 0.126 68)" });
+    if (done("4")) pend.push({ t: "policy/hitl herdada", d: "Nada a fazer: os quatro gates valem para este copiloto desde o primeiro dia.", mark: "✓", line: "oklch(0.492 0.126 158)" });
+
+    return {
+      nav: [
+        { icon: "◎", label: "Casos de uso" }, { icon: "💬", label: "Assistentes" },
+        { icon: "◇", label: "Copilotos" }, { icon: "⚖", label: "Conformidade" },
+        { icon: "◆", label: "Agentes hospedados" }, { icon: "⇌", label: "Middlewares" },
+        { icon: "🔌", label: "Adaptadores" }, { icon: "◈", label: "Meus agentes" },
+        { icon: "▤", label: "Conhecimento", on: true }, { icon: "✦", label: "Skills" },
+        { icon: "🎫", label: "Chamados" }, { icon: "✓", label: "Avaliações" },
+        { icon: "▦", label: "Visão geral" }, { icon: "🔗", label: "Auditoria" },
+        { icon: "🛡️", label: "Administração" },
+      ].map((n) => ({ icon: n.icon, label: n.label, bg: n.on ? "oklch(0.955 0.024 262)" : "transparent", ink: n.on ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)", weight: n.on ? "600" : "400" })),
+      inv: INV.map((a) => ({
+        area: a.area, accent: a.accent, count: a.items.length + (a.items.length === 1 ? " bundle" : " bundles"),
+        items: a.items.map((b) => ({
+          id: b.id, what: b.what, line: "oklch(0.902 0.006 258)",
+          kinds: b.kinds.map((k) => ({ t: k, bg: KIND_TONE[k][0], ink: KIND_TONE[k][1] })),
+        })),
+      })),
+      needs, progress: resolvedCount + " de 4 resolvidas",
+      newPath: s.newPath, setNewPath: (e) => this.setState({ newPath: e.target.value }),
+      anatomy: ANATOMY.map((a) => ({ file: a.file, t: a.t, d: a.d, bg: KIND_TONE[a.kind][0], ink: KIND_TONE[a.kind][1] })),
+      yaml,
+      pend, noPend: !pend.length,
+    };
+  }
+}
+</script>
+</body>
+</html>

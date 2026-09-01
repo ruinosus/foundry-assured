@@ -106,6 +106,9 @@ review:
     from: "como {mount}, nas telas {screens}"
   - label: Vai poder escrever
     fromCapabilities: true
+    # DECLARADO: sem esta linha a revisão varreria todo campo de escolha e diria "vai poder
+    # escrever: dock lateral, backend" — que são a superfície e o runtime, não alvos.
+    fields: [writes]
   - label: Não vai poder
     const: "escrever sem gesto humano, nem tocar campo fora dos alvos declarados"
 

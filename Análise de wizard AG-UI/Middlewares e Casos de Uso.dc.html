@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, input, button { box-sizing:border-box; }
+  input, button { font-family:inherit; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  button:focus-visible, input:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">Extensões, agentes hospedados e casos de uso difíceis</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:86ch;text-wrap:pretty">Quatro telas na navegação. Middleware transforma documento e evento; adaptador liga a um sistema de fora; agente hospedado é o seu próprio agente declarado em OKF. Todos com teto de custo e habilitação por área.</p>
+  </div>
+
+  <div style="width:2028px;height:1360px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+        <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+        <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+      </div>
+      <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Área · tenant</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">{{ areaRef }}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="10">
+          <button type="button" onClick="{{ n.pick }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:8px;font-size:14px;text-align:left;cursor:pointer;background:{{ n.bg }};color:{{ n.ink }};font-weight:{{ n.weight }}">
+            <span style="width:18px;text-align:center">{{ n.icon }}</span>{{ n.label }}
+            <sc-if value="{{ n.isNew }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:oklch(0.958 0.028 158);color:oklch(0.492 0.126 158)">novo</span></sc-if>
+          </button>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px">
+          <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">R</span>
+          <div style="min-width:0"><div style="font-size:13px;font-weight:600">Rafael Duarte</div><div style="font-size:11px;color:oklch(0.487 0.018 260)">Owner · Admin · Approver</div></div>
+        </div>
+        <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="height:62px;flex:0 0 62px;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;padding:0 20px;gap:14px">
+        <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Visão geral</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">{{ crumb }}</b></nav>
+        <div style="display:flex;align-items:center;gap:8px;margin-left:6px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Área</span>
+          <div style="display:flex;gap:2px;padding:2px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+            <sc-for list="{{ areas }}" as="a" hint-placeholder-count="3">
+              <button type="button" onClick="{{ a.pick }}" style="border:0;padding:6px 12px;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;background:{{ a.bg }};color:{{ a.ink }}">{{ a.label }}</button>
+            </sc-for>
+          </div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:14px">
+          <div style="display:flex;flex-direction:column;gap:3px;min-width:250px">
+            <div style="display:flex;align-items:baseline;gap:8px;font-size:12px"><span style="font-weight:600;font-variant-numeric:tabular-nums">{{ spend }}</span><span style="color:oklch(0.487 0.018 260)">de {{ cap }} no mês · {{ areaName }}</span><span style="margin-left:auto;color:{{ spendInk }};font-weight:600">{{ spendPct }}</span></div>
+            <div style="height:5px;border-radius:999px;background:oklch(0.902 0.006 258);overflow:hidden"><div style="height:100%;background:{{ spendInk }};width:{{ spendPct }}"></div></div>
+          </div>
+        </div>
+      </header>
+
+      <main style="flex:1;min-height:0;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+
+        <sc-if value="{{ over }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid oklch(0.505 0.176 26);background:oklch(0.958 0.030 26);border-radius:8px;padding:14px 16px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">Teto da área excedido</span>
+            <b style="font-size:15px;font-weight:640">{{ areaName }} passou de {{ cap }} neste mês</b>
+          </div>
+          <p style="margin:0;font-size:13px;line-height:1.5;max-width:106ch;text-wrap:pretty">O teto é aplicado <b>antes</b> da chamada, não no relatório do mês seguinte: escrita para, leitura segue degradada (sem realtime), e publicar passa a exigir Owner. Cada execução carrega a área que a pediu — é assim que a fatura fecha por área.</p>
+        </div>
+        </sc-if>
+
+        <!-- ══════════ MIDDLEWARES ══════════ -->
+        <sc-if value="{{ isMw }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap">
+            <div>
+              <h2 style="margin:0;font-size:22px;font-weight:640;letter-spacing:-0.015em">Middlewares</h2>
+              <p style="margin:4px 0 0;font-size:13px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:82ch;text-wrap:pretty">Documento <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">type: middleware</span>: declara o que aceita, o que emite, o papel exigido, o adaptador de que depende, o teto de custo e as áreas onde vale. O runtime não instala o que não declara.</p>
+            </div>
+            <button type="button" onClick="{{ toggleUpload }}" style="padding:11px 15px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-size:14px;font-weight:600;cursor:pointer">{{ uploadLabel }}</button>
+          </div>
+
+          <sc-if value="{{ uploading }}" hint-placeholder-val="{{ false }}">
+          <section style="background:#fff;border:1px solid oklch(0.452 0.152 262);border-radius:8px;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">Subir middleware</span>
+              <div style="border:1px dashed oklch(0.836 0.008 258);border-radius:6px;padding:18px;display:flex;flex-direction:column;gap:6px;align-items:center;text-align:center">
+                <b style="font-size:14px;font-weight:650">Arraste o diretório, ou aponte um repositório</b>
+                <span style="font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:48ch">Entra pelo mesmo <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">okf-validate</span> de qualquer bundle: sem contrato declarado, não instala.</span>
+              </div>
+              <pre style="margin:0;padding:12px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);border-radius:6px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.6;overflow:auto;max-height:320px;white-space:pre">{{ uploadYaml }}</pre>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">O que a instalação exige</span>
+              <sc-for list="{{ installChecks }}" as="c" hint-placeholder-count="6">
+                <div style="display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border-radius:5px;background:{{ c.bg }}">
+                  <span style="flex:none;width:18px;height:18px;border-radius:50%;background:{{ c.line }};color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ c.mark }}</span>
+                  <span style="min-width:0"><b style="display:block;font-size:12.5px;font-weight:600">{{ c.title }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ c.detail }}</span></span>
+                </div>
+              </sc-for>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px">
+                <button type="button" onClick="{{ toggleUpload }}" style="padding:9px 13px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:#fff;font-size:13px;font-weight:600;cursor:pointer">Instalar em modo sombra</button>
+                <button type="button" onClick="{{ toggleUpload }}" style="padding:9px 13px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer">Cancelar</button>
+              </div>
+              <p style="margin:0;font-size:12px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Modo sombra: roda, registra o que faria, não escreve nada — e conta contra o teto, porque consumir já é custo.</p>
+            </div>
+          </section>
+          </sc-if>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start">
+            <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;overflow:hidden">
+              <table style="width:100%;border-collapse:collapse;font-size:13px">
+                <thead><tr>
+                  <sc-for list="{{ mwCols }}" as="c" hint-placeholder-count="6">
+                    <th style="text-align:left;padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);background:oklch(0.955 0.005 258);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);white-space:nowrap">{{ c.t }}</th>
+                  </sc-for>
+                </tr></thead>
+                <tbody>
+                  <sc-for list="{{ mwRows }}" as="m" hint-placeholder-count="6">
+                    <tr onClick="{{ m.pick }}" style="cursor:pointer;background:{{ m.rowBg }}">
+                      <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                          <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12.5px;font-weight:600">{{ m.id }}</span>
+                          <sc-if value="{{ m.isNew }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:oklch(0.955 0.024 262);color:oklch(0.452 0.152 262)">novo</span></sc-if>
+                        </div>
+                        <div style="margin-top:3px;font-size:11.5px;color:oklch(0.487 0.018 260);line-height:1.35">{{ m.what }}</div>
+                      </td>
+                      <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">{{ m.io }}</td>
+                      <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;white-space:nowrap">{{ m.role }}</td>
+                      <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;white-space:nowrap"><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:{{ m.stBg }};color:{{ m.stInk }}">{{ m.state }}</span></td>
+                      <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap">{{ m.cost }}<div style="font-size:11px;color:oklch(0.487 0.018 260)">teto {{ m.capLabel }}</div></td>
+                      <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top">
+                        <div style="display:flex;gap:4px;flex-wrap:wrap">
+                          <sc-for list="{{ m.areaChips }}" as="a" hint-placeholder-count="2">
+                            <span style="font-size:11px;padding:1px 7px;border-radius:999px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258)">{{ a.t }}</span>
+                          </sc-for>
+                        </div>
+                      </td>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+            </div>
+
+            <section style="background:#fff;border:1px solid oklch(0.452 0.152 262);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:14px;font-weight:700">{{ sel.id }}</span>
+                <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:{{ sel.stBg }};color:{{ sel.stInk }}">{{ sel.state }}</span>
+                <span style="margin-left:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260)">{{ sel.version }}</span>
+              </div>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;text-wrap:pretty">{{ sel.what }}</p>
+
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Contrato declarado</span>
+                <sc-for list="{{ sel.contract }}" as="c" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:baseline;gap:8px;padding:7px 10px;background:oklch(0.955 0.005 258);border-radius:4px;font-size:12px">
+                    <span style="flex:none;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260);min-width:74px">{{ c.k }}</span>
+                    <span style="min-width:0;line-height:1.4">{{ c.v }}</span>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid oklch(0.545 0.126 68);border-radius:6px;background:oklch(0.960 0.038 68)">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">Custo</span>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);min-width:100px">modelo</span>
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">{{ sel.costModel }}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);min-width:100px">teto por área</span>
+                  <input type="text" value="{{ sel.capValue }}" onChange="{{ sel.setCap }}" style="width:104px;padding:7px 9px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:12.5px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" />
+                  <span style="font-size:12px;color:oklch(0.487 0.018 260)">USD / mês</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);min-width:100px">ao estourar</span>
+                  <sc-for list="{{ sel.onOver }}" as="o" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ o.pick }}" style="padding:5px 11px;border:1px solid {{ o.line }};background:{{ o.bg }};color:{{ o.ink }};border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">{{ o.label }}</button>
+                  </sc-for>
+                </div>
+                <p style="margin:0;font-size:11.5px;line-height:1.45">{{ sel.overNote }}</p>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Áreas habilitadas</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <sc-for list="{{ sel.areaToggles }}" as="a" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ a.toggle }}" style="padding:5px 12px;border:1px solid {{ a.line }};background:{{ a.bg }};color:{{ a.ink }};border-radius:999px;font-size:12px;font-weight:600;cursor:pointer">{{ a.label }}</button>
+                  </sc-for>
+                </div>
+                <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">Mesmo mecanismo do <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">enabled_domains</span> do tenant: cada área tem o seu conjunto, e o custo é contado por área.</span>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">O que ele não pode</span>
+                <sc-for list="{{ sel.never }}" as="n" hint-placeholder-count="2">
+                  <div style="display:flex;gap:7px;font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)"><span style="color:oklch(0.505 0.176 26)">·</span>{{ n.t }}</div>
+                </sc-for>
+              </div>
+            </section>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ══════════ ADAPTADORES ══════════ -->
+        <sc-if value="{{ isAd }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div>
+            <h2 style="margin:0;font-size:22px;font-weight:640;letter-spacing:-0.015em">Adaptadores</h2>
+            <p style="margin:4px 0 0;font-size:13px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:86ch;text-wrap:pretty">Adaptador não transforma documento — ele <b>liga a um sistema de fora</b> e cobra por isso. Identidade, região, modelo de cobrança e teto são a configuração inteira. Middleware que depende de adaptador não instala sem ele.</p>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+            <sc-for list="{{ adapters }}" as="a" hint-placeholder-count="6">
+              <section style="background:#fff;border:1px solid {{ a.line }};border-radius:8px;padding:15px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:13px;font-weight:700">{{ a.id }}</span>
+                  <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:{{ a.stBg }};color:{{ a.stInk }}">{{ a.state }}</span>
+                </div>
+                <span style="font-size:11.5px;color:oklch(0.487 0.018 260)">{{ a.vendor }}</span>
+                <p style="margin:0;font-size:12.5px;line-height:1.45">{{ a.what }}</p>
+                <div style="display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 10px;font-size:12px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">identidade</span><span>{{ a.auth }}</span>
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">região</span><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">{{ a.region }}</span>
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">cobrança</span><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">{{ a.billing }}</span>
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">usado por</span><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">{{ a.usedBy }}</span>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <div style="display:flex;align-items:baseline;gap:8px;font-size:12px"><span style="font-weight:600;font-variant-numeric:tabular-nums">{{ a.spend }}</span><span style="color:oklch(0.487 0.018 260)">de {{ a.cap }}</span><span style="margin-left:auto;font-weight:600;color:{{ a.spendInk }}">{{ a.pct }}</span></div>
+                  <div style="height:5px;border-radius:999px;background:oklch(0.902 0.006 258);overflow:hidden"><div style="height:100%;background:{{ a.spendInk }};width:{{ a.pct }}"></div></div>
+                </div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <sc-for list="{{ a.areaToggles }}" as="t" hint-placeholder-count="3">
+                    <button type="button" onClick="{{ t.toggle }}" style="padding:4px 11px;border:1px solid {{ t.line }};background:{{ t.bg }};color:{{ t.ink }};border-radius:999px;font-size:11.5px;font-weight:600;cursor:pointer">{{ t.label }}</button>
+                  </sc-for>
+                </div>
+              </section>
+            </sc-for>
+          </div>
+          <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <b style="font-size:13.5px;font-weight:650">Middleware ≠ adaptador</b>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Middleware é lógica sobre documento e evento, versionada com o bundle. Adaptador é ligação com o mundo: identidade, região, cota, fatura. Misturar faz um upgrade de lógica exigir revisão de contrato de nuvem.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <b style="font-size:13.5px;font-weight:650">Segredo nenhum na tela</b>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Autenticação por identidade gerenciada e connection do projeto. Onde só existe chave (MCP de terceiro), a tela mostra <b>que</b> há credencial e quem a rotaciona — nunca o valor.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <b style="font-size:13.5px;font-weight:650">Custo é da área</b>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Cada execução carrega a área que a pediu; o teto é aplicado antes da chamada. Um piloto de voz numa área não consome a cota de outra.</p>
+            </div>
+          </section>
+        </div>
+        </sc-if>
+
+        <!-- ══════════ AGENTES HOSPEDADOS ══════════ -->
+        <sc-if value="{{ isAg }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap">
+            <div>
+              <h2 style="margin:0;font-size:22px;font-weight:640;letter-spacing:-0.015em">Agentes hospedados — traga o seu</h2>
+              <p style="margin:4px 0 0;font-size:13px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:84ch;text-wrap:pretty">Como o hosted agent da Microsoft, mas declarado: o time sobe o próprio agente — imagem, endpoint ou definição no Foundry — e o que a plataforma consome é um documento <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">type: agent</span>. Um copiloto pode ser montado sobre ele sem código nosso.</p>
+            </div>
+            <button type="button" onClick="{{ toggleAgent }}" style="padding:11px 15px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-size:14px;font-weight:600;cursor:pointer">{{ agentLabel }}</button>
+          </div>
+
+          <section style="border:1px solid oklch(0.492 0.126 158);background:oklch(0.958 0.028 158);border-radius:8px;padding:16px;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.492 0.126 158)">A premissa</span>
+              <b style="font-size:19px;font-weight:650;letter-spacing:-0.015em">Tudo é bundle. Logo, tudo é base de conhecimento.</b>
+              <p style="margin:0;font-size:13px;line-height:1.55;text-wrap:pretty">Copiloto, caso de uso, formulário, política, middleware, adaptador, agente e log são documentos do mesmo formato. O <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">okf-to-search</span> indexa todos, com ACL por documento — então a própria plataforma passa a ser consultável, com citação que resolve.</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:7px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Perguntas que passam a ter resposta citável</span>
+              <sc-for list="{{ premiseQs }}" as="q" hint-placeholder-count="4">
+                <div style="display:flex;gap:9px;align-items:flex-start;padding:9px 11px;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:5px">
+                  <span style="flex:none;color:oklch(0.492 0.126 158);font-weight:700">›</span>
+                  <span style="min-width:0"><b style="display:block;font-size:12.5px;font-weight:600">{{ q.q }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ q.a }}</span></span>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+
+          <sc-if value="{{ registering }}" hint-placeholder-val="{{ false }}">
+          <section style="background:#fff;border:1px solid oklch(0.452 0.152 262);border-radius:8px;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">Registrar agente hospedado</span>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ agentForm }}" as="f" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                    <span style="flex:none;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);min-width:112px">{{ f.label }}</span>
+                    <sc-if value="{{ f.isText }}" hint-placeholder-val="{{ true }}">
+                      <input type="text" value="{{ f.value }}" onChange="{{ f.set }}" style="flex:1;min-width:180px;padding:8px 10px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:12.5px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" />
+                    </sc-if>
+                    <sc-if value="{{ f.isChoice }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;gap:6px;flex-wrap:wrap">
+                        <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="3">
+                          <button type="button" onClick="{{ o.pick }}" style="padding:6px 11px;border:1px solid {{ o.line }};background:{{ o.bg }};color:{{ o.ink }};border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">{{ o.label }}</button>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+              <pre style="margin:0;padding:12px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);border-radius:6px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.6;overflow:auto;max-height:300px;white-space:pre">{{ agentYaml }}</pre>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:9px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Conformidade do agente</span>
+              <sc-for list="{{ agentChecks }}" as="c" hint-placeholder-count="6">
+                <div style="display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border-radius:5px;background:{{ c.bg }}">
+                  <span style="flex:none;width:18px;height:18px;border-radius:50%;background:{{ c.line }};color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ c.mark }}</span>
+                  <span style="min-width:0"><b style="display:block;font-size:12.5px;font-weight:600">{{ c.title }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ c.detail }}</span></span>
+                </div>
+              </sc-for>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:2px">
+                <button type="button" onClick="{{ toggleAgent }}" style="padding:9px 13px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:#fff;font-size:13px;font-weight:600;cursor:pointer">Registrar em modo sombra</button>
+                <button type="button" onClick="{{ toggleAgent }}" style="padding:9px 13px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer">Cancelar</button>
+              </div>
+            </div>
+          </section>
+          </sc-if>
+
+          <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;overflow:hidden">
+            <table style="width:100%;border-collapse:collapse;font-size:13px">
+              <thead><tr>
+                <sc-for list="{{ agCols }}" as="c" hint-placeholder-count="7">
+                  <th style="text-align:left;padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);background:oklch(0.955 0.005 258);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);white-space:nowrap">{{ c.t }}</th>
+                </sc-for>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ agents }}" as="a" hint-placeholder-count="4">
+                  <tr>
+                    <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top">
+                      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                        <b style="font-weight:600">{{ a.title }}</b>
+                        <sc-if value="{{ a.isNew }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:oklch(0.955 0.024 262);color:oklch(0.452 0.152 262)">novo</span></sc-if>
+                      </div>
+                      <div style="margin-top:3px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ a.path }}</div>
+                    </td>
+                    <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top">{{ a.hosting }}<div style="font-size:11.5px;color:oklch(0.487 0.018 260);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">{{ a.where }}</div></td>
+                    <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">{{ a.proto }}</td>
+                    <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top">{{ a.copilot }}</td>
+                    <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;white-space:nowrap"><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:{{ a.idxBg }};color:{{ a.idxInk }}">{{ a.indexed }}</span></td>
+                    <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;font-variant-numeric:tabular-nums;white-space:nowrap">{{ a.cost }}<div style="font-size:11px;color:oklch(0.487 0.018 260)">teto {{ a.cap }}</div></td>
+                    <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;white-space:nowrap"><span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:{{ a.stBg }};color:{{ a.stInk }}">{{ a.state }}</span></td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ══════════ CASOS DE USO ══════════ -->
+        <sc-if value="{{ isUc }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div>
+            <h2 style="margin:0;font-size:22px;font-weight:640;letter-spacing:-0.015em">Casos de uso que dão trabalho</h2>
+            <p style="margin:4px 0 0;font-size:13px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:86ch;text-wrap:pretty">Escolhidos por <b>quebrar</b> algo do que temos: decisão sem tela, fonte que é um trecho de áudio, seis pessoas falando junto, custo por minuto. A última coluna é a honesta.</p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ cases }}" as="c" hint-placeholder-count="6">
+              <section style="background:#fff;border:1px solid {{ c.line }};border-left:4px solid {{ c.line }};border-radius:8px;padding:15px;display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr) minmax(0,1fr);gap:18px">
+                <div style="display:flex;flex-direction:column;gap:8px">
+                  <div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">
+                    <b style="font-size:16px;font-weight:650">{{ c.title }}</b>
+                    <span style="font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:{{ c.tagBg }};color:{{ c.tagInk }}">{{ c.surface }}</span>
+                  </div>
+                  <p style="margin:0;font-size:12.5px;line-height:1.5;text-wrap:pretty">{{ c.scene }}</p>
+                  <div style="display:flex;gap:5px;flex-wrap:wrap">
+                    <sc-for list="{{ c.needs }}" as="n" hint-placeholder-count="3">
+                      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;padding:2px 8px;border-radius:999px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258)">{{ n.t }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">O desafio</span>
+                  <p style="margin:0;font-size:12.5px;line-height:1.5;text-wrap:pretty">{{ c.challenge }}</p>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">O que ainda não resolvemos</span>
+                  <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">{{ c.gap }}</p>
+                </div>
+              </section>
+            </sc-for>
+          </div>
+
+          <section style="background:#fff;border:1px solid oklch(0.545 0.126 68);border-radius:8px;padding:18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">Aprofundando o mais difícil</span>
+                <b style="font-size:17px;font-weight:650">O gate humano por voz</b>
+              </div>
+              <p style="margin:0;font-size:13px;line-height:1.5;text-wrap:pretty">Às 3h, sem tela: o copiloto precisa parar e esperar uma pessoa, e a pessoa só tem a voz. O gate continua sendo o mesmo <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">type: policy</span> — o que muda é o parser.</p>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <sc-for list="{{ voice }}" as="v" hint-placeholder-count="6">
+                  <div style="display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border-radius:5px;background:{{ v.bg }};border-left:3px solid {{ v.line }}">
+                    <span style="flex:none;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ v.line }};min-width:74px;margin-top:2px">{{ v.who }}</span>
+                    <span style="min-width:0;font-size:13px;line-height:1.5">{{ v.text }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">O que entra na trilha</span>
+                <pre style="margin:0;padding:12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:5px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.6;overflow:auto;white-space:pre">{{ voiceTrail }}</pre>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">As quatro regras que isto obriga</span>
+                <sc-for list="{{ voiceRules }}" as="r" hint-placeholder-count="4">
+                  <div style="display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border:1px solid oklch(0.902 0.006 258);border-radius:5px">
+                    <span style="flex:none;width:18px;height:18px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ r.n }}</span>
+                    <span style="min-width:0"><b style="display:block;font-size:12.5px;font-weight:600">{{ r.t }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ r.d }}</span></span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </section>
+        </div>
+        </sc-if>
+      </main>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2090,&quot;height&quot;:1480}}">
+const AREAS = [
+  { id: "rh", label: "RH", cap: 400, spend: 118 },
+  { id: "plantao", label: "Plantão", cap: 900, spend: 1042 },
+  { id: "campo", label: "Campo", cap: 250, spend: 61 },
+];
+
+const MWS = [
+  { id: "okf-validate", what: "Schema, piso de citação e coerência dos alvos. Recusa cai em quarentena.", io: "* → veredito", role: "automático", state: "ativo", cost: "US$ 0 / mês", cap: 0, capLabel: "n/a", areas: ["rh", "plantao", "campo"], version: "v4 · interno",
+    costModel: "sem custo externo", needs: "—",
+    contract: [{ k: "accepts", v: "qualquer documento do bundle" }, { k: "emits", v: "veredito (passa · quarentena)" }, { k: "runsOn", v: "backend" }, { k: "needs", v: "nada além do bundle" }],
+    never: [{ t: "Publicar: só devolve veredito." }, { t: "Ser desligado — sem ele, nada é servido." }] },
+  { id: "stt-realtime", what: "Transcrição em tempo real, com confiança por trecho e âncora de tempo.", io: "áudio → transcript", role: "automático", state: "ativo", cost: "US$ 612 / mês", cap: 700, capLabel: "US$ 700", areas: ["plantao", "campo"], version: "v1", isNew: true,
+    costModel: "US$ 0,34 por minuto de áudio", needs: "adapter: azure-speech",
+    contract: [{ k: "accepts", v: "stream PCM 16k" }, { k: "emits", v: "transcript com t= e confiança" }, { k: "runsOn", v: "backend (stream)" }, { k: "needs", v: "adapter azure-speech · connection do projeto" }],
+    never: [{ t: "Escrever campo — transcrever não é propor." }, { t: "Guardar áudio fora da região do projeto." }] },
+  { id: "diarize", what: "Separa quem falou o quê. É o que permite procedência por pessoa.", io: "transcript → + falantes", role: "automático", state: "ativo", cost: "US$ 88 / mês", cap: 150, capLabel: "US$ 150", areas: ["plantao"], version: "v1",
+    costModel: "US$ 0,05 por minuto", needs: "adapter: azure-speech",
+    contract: [{ k: "accepts", v: "transcript" }, { k: "emits", v: "transcript com speaker" }, { k: "runsOn", v: "backend" }, { k: "needs", v: "adapter azure-speech" }],
+    never: [{ t: "Nomear alguém sem correspondência no diretório." }] },
+  { id: "okf-from-transcript", what: "Lê a transcrição e propõe valores de campo com a fonte sendo o trecho falado.", io: "transcript → propostas", role: "automático", state: "sombra", cost: "US$ 141 / mês", cap: 200, capLabel: "US$ 200", areas: ["plantao"], version: "v0.3", isNew: true,
+    costModel: "US$ 1,10 por 1k tokens de saída", needs: "adapter: foundry-models",
+    contract: [{ k: "accepts", v: "transcript (com ou sem falantes)" }, { k: "emits", v: "field proposals com âncora t=" }, { k: "runsOn", v: "backend" }, { k: "needs", v: "o formflow do alvo" }],
+    never: [{ t: "Aplicar valor — proposta é decidida por gesto humano." }, { t: "Citar trecho abaixo da confiança mínima do stt." }] },
+  { id: "voice-gate", what: "Recebe a decisão por voz e emite a aprovação assinada. O mais perigoso do catálogo.", io: "decisão falada → aprovação", role: "Approver", state: "quarentena", cost: "US$ 0", cap: 120, capLabel: "US$ 120", areas: [], version: "v0.1 · terceiro", isNew: true,
+    costModel: "US$ 0,02 por decisão", needs: "adapter: azure-speech + entra-identity",
+    contract: [{ k: "accepts", v: "trecho de decisão + identidade do falante" }, { k: "emits", v: "approval assinada (papel + ator)" }, { k: "runsOn", v: "backend" }, { k: "needs", v: "confiança ≥ 0,90 · identidade confirmada" }],
+    never: [{ t: "Assumir aprovação por silêncio ou por palavra diferente da declarada." }, { t: "Assinar sem identidade confirmada." }, { t: "Sair de quarentena sem revisão de segurança." }] },
+  { id: "tts-readback", what: "Lê em voz alta o que será executado, antes da decisão. O payload, falado.", io: "payload → áudio", role: "automático", state: "ativo", cost: "US$ 37 / mês", cap: 80, capLabel: "US$ 80", areas: ["plantao", "campo"], version: "v1",
+    costModel: "US$ 0,016 por 1k caracteres", needs: "adapter: azure-speech",
+    contract: [{ k: "accepts", v: "payload da operação" }, { k: "emits", v: "áudio" }, { k: "runsOn", v: "backend" }, { k: "needs", v: "adapter azure-speech" }],
+    never: [{ t: "Resumir o payload: ler menos do que será executado é pior que não ler." }] },
+];
+
+const ADAPTERS = [
+  { id: "azure-speech", vendor: "Microsoft · Azure AI Speech", what: "Fala: transcrição em tempo real, diarização e síntese. Um adaptador, três middlewares.", auth: "identidade gerenciada", region: "brazilsouth", billing: "por minuto de áudio", usedBy: "stt-realtime, diarize, tts-readback", spend: "US$ 737", cap: "US$ 950", pct: 78, areas: ["plantao", "campo"], state: "ativo" },
+  { id: "foundry-models", vendor: "Microsoft · Foundry", what: "Os deployments de modelo do projeto. É por aqui que todo token é cobrado.", auth: "identidade gerenciada", region: "eastus2", billing: "por 1k tokens", usedBy: "copilotos, okf-from-transcript", spend: "US$ 402", cap: "US$ 600", pct: 67, areas: ["rh", "plantao", "campo"], state: "ativo" },
+  { id: "entra-identity", vendor: "Microsoft · Entra", what: "Quem é quem: papéis, e a confirmação de identidade que o gate por voz exige.", auth: "app registration", region: "global", billing: "sem custo por uso", usedBy: "voice-gate, todo gate de papel", spend: "US$ 0", cap: "—", pct: 4, areas: ["rh", "plantao", "campo"], state: "ativo" },
+  { id: "ado-workitems", vendor: "Microsoft · Azure DevOps", what: "Abre e atualiza chamado. Toda escrita passa por gate com papel.", auth: "connection do projeto", region: "global", billing: "sem custo por uso", usedBy: "create_ticket", spend: "US$ 0", cap: "—", pct: 2, areas: ["rh", "plantao"], state: "ativo" },
+  { id: "vendor-crm", vendor: "Terceiro · CRM", what: "Leads e contas. É o único que autentica por chave — a tela mostra que existe, nunca o valor.", auth: "chave · rotação por Owner", region: "us-east", billing: "por chamada", spend: "US$ 24", cap: "US$ 60", pct: 40, usedBy: "vendor-crm copilot (quarentena)", areas: [], state: "quarentena" },
+  { id: "telephony-sip", vendor: "Terceiro · SIP trunk", what: "O áudio da chamada de plantão. Sem ele, voz não existe — e é ele que fatura por minuto.", auth: "certificado", region: "brazilsouth", billing: "por minuto de chamada", usedBy: "stt-realtime", spend: "US$ 219", cap: "US$ 300", pct: 73, areas: ["plantao"], state: "ativo" },
+];
+
+const AGENTS = [
+  { title: "Helpdesk", path: "agents/helpdesk/", hosting: "Foundry hosted agent", where: "prompt agent · v7", proto: "AG-UI", copilot: "atendimento-rh", indexed: "indexado", cost: "US$ 96 / mês", cap: "US$ 200", state: "ativo" },
+  { title: "Triagem de incidente", path: "agents/oncall-graph/", hosting: "container próprio", where: "acr.io/fa/oncall:2.4", proto: "AG-UI · langgraph", copilot: "triagem-oncall", indexed: "indexado", cost: "US$ 311 / mês", cap: "US$ 400", state: "ativo" },
+  { title: "Agente de RH do time", path: "agents/rh-time/", hosting: "container próprio", where: "acr.io/rh/agente:0.9", proto: "AG-UI", copilot: "— nenhum ainda", indexed: "indexado", cost: "US$ 12 / mês", cap: "US$ 100", state: "sombra", isNew: true },
+  { title: "DeepCall do fornecedor", path: "vendor/deepcall/", hosting: "endpoint externo", where: "https://deepcall.vendor/agui", proto: "AG-UI (declarado)", copilot: "—", indexed: "não indexado", cost: "US$ 0", cap: "US$ 150", state: "quarentena" },
+];
+
+const CASES = [
+  { title: "Plantão às 3h, sem tela", surface: "voz · tempo real", tone: "w",
+    scene: "O engenheiro é acordado por uma chamada. Ele dirige, não tem laptop, e precisa decidir se escala o incidente para o time de banco.",
+    needs: ["stt-realtime", "tts-readback", "voice-gate", "diarize"],
+    challenge: "O gate humano precisa acontecer por voz — com leitura do payload antes, palavra de confirmação declarada e identidade confirmada. Nada disso pode virar “ok” interpretado como aprovação.",
+    gap: "Não temos assinatura de aprovação por voz fora de quarentena, nem prova de identidade do falante. E o custo por minuto não tem teto por chamada, só por área." },
+  { title: "War room com seis pessoas", surface: "transcrição · diarização", tone: "a",
+    scene: "Incidente maior: seis pessoas numa call de 90 minutos. No fim, alguém precisa escrever o post-mortem e ninguém lembra quem prometeu o quê.",
+    needs: ["diarize", "okf-from-transcript"],
+    challenge: "A fonte de cada afirmação é um trecho de áudio com um falante. A citação precisa resolver para um instante e uma pessoa — não para um documento.",
+    gap: "Nosso gate de citação valida arquivo e range de linha; não sabe validar t=00:41:12 nem falante. É o piso de citação que precisa aprender um segundo tipo de fonte." },
+  { title: "Técnico em campo, mãos ocupadas", surface: "voz · offline parcial", tone: "w",
+    scene: "Subestação, luva grossa, sem sinal estável. O técnico dita o laudo e o copiloto preenche o formulário de manutenção.",
+    needs: ["stt-realtime", "okf-from-transcript"],
+    challenge: "Preencher vários campos de um formflow a partir de fala corrida, e depois ler de volta para confirmação campo por campo, sem tela.",
+    gap: "Fila offline: propostas feitas sem rede precisam ser decididas depois, sem perder a âncora do áudio. Não temos esse estado intermediário." },
+  { title: "Qualidade do atendimento", surface: "lote · pós-chamada", tone: "n",
+    scene: "Mil chamadas por dia. O time de qualidade quer saber onde o roteiro não foi seguido — e provar com o trecho.",
+    needs: ["stt-realtime", "okf-from-transcript"],
+    challenge: "Processar em lote com teto de custo por área, e propor achados que uma pessoa confirma por amostragem.",
+    gap: "Lote e teto brigam: hoje o teto para tudo quando estoura. Falta política de degradação — amostrar em vez de parar." },
+  { title: "Passagem de turno", surface: "voz → documento", tone: "a",
+    scene: "Turno que sai fala cinco minutos; turno que entra precisa de um resumo confiável do que está aberto.",
+    needs: ["stt-realtime", "okf-from-transcript"],
+    challenge: "O resumo é um documento novo do bundle — e vira base de conhecimento indexada, com citação para o trecho falado.",
+    gap: "Retenção: áudio de passagem de turno tem prazo. Precisamos de citação que continue válida depois do áudio expirar — hoje ela simplesmente quebra." },
+  { title: "Auditoria pedindo prova", surface: "sem interface", tone: "b",
+    scene: "Seis meses depois, o auditor pergunta: quem aprovou a mudança de credencial em produção, com base em quê, e quem podia ter aprovado.",
+    needs: ["okf-to-search", "trilha"],
+    challenge: "A resposta precisa sair da própria plataforma — porque tudo é bundle indexado, incluindo middleware, adaptador e agente.",
+    gap: "Falta a consulta em linguagem natural sobre a trilha com citação que resolve para o evento, não só para o documento." },
+];
+
+class Component extends DCLogic {
+  state = { tab: "mw", area: "rh", sel: "stt-realtime", uploading: false, registering: false, caps: {}, over: {}, areasOf: {}, agent: { id: "rh-time", hosting: "container próprio", image: "acr.io/rh/agente:0.9", proto: "AG-UI" } };
+
+  areaObj() { return AREAS.find((a) => a.id === this.state.area) || AREAS[0]; }
+  mw(id) { return MWS.find((m) => m.id === id) || MWS[0]; }
+  areasFor(id) { const o = this.state.areasOf[id]; return o || this.mw(id).areas; }
+
+  toggleArea(id, area) {
+    const cur = this.areasFor(id);
+    const next = cur.indexOf(area) > -1 ? cur.filter((x) => x !== area) : cur.concat([area]);
+    this.setState((s) => ({ areasOf: { ...s.areasOf, [id]: next } }));
+  }
+
+  chip(on) {
+    return {
+      line: on ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)",
+      bg: on ? "oklch(0.955 0.024 262)" : "#fff",
+      ink: on ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)",
+    };
+  }
+  stateTone(st) {
+    const map = {
+      ativo: ["oklch(0.958 0.028 158)", "oklch(0.492 0.126 158)"],
+      indexado: ["oklch(0.958 0.028 158)", "oklch(0.492 0.126 158)"],
+      sombra: ["oklch(0.955 0.024 262)", "oklch(0.452 0.152 262)"],
+      quarentena: ["oklch(0.958 0.030 26)", "oklch(0.505 0.176 26)"],
+    };
+    const v = map[st] || ["oklch(0.955 0.005 258)", "oklch(0.487 0.018 260)"];
+    return { stBg: v[0], stInk: v[1] };
+  }
+
+  renderVals() {
+    const s = this.state;
+    const area = this.areaObj();
+    const pct = Math.round((area.spend / area.cap) * 100);
+    const over = area.spend > area.cap;
+    const sel = this.mw(s.sel);
+    const selAreas = this.areasFor(sel.id);
+    const overMode = s.over[sel.id] || (sel.id === "voice-gate" ? "parar" : "degradar");
+
+    // A MESMA lista do AppShell (WORKSPACE_NAV + ADMIN_NAV), com as três entradas novas
+    // INSERIDAS — nunca substituindo item existente: o shell não pode mudar de tela para tela.
+    const navItems = [
+      { icon: "◎", label: "Casos de uso", tab: "uc" },
+      { icon: "💬", label: "Assistentes", tab: null },
+      { icon: "◇", label: "Copilotos", tab: null },
+      { icon: "◆", label: "Agentes hospedados", tab: "ag", isNew: true },
+      { icon: "⇌", label: "Middlewares", tab: "mw", isNew: true },
+      { icon: "🔌", label: "Adaptadores", tab: "ad", isNew: true },
+      { icon: "◈", label: "Meus agentes", tab: null },
+      { icon: "▤", label: "Conhecimento", tab: null },
+      { icon: "✦", label: "Skills", tab: null },
+      { icon: "🎫", label: "Chamados", tab: null },
+      { icon: "✓", label: "Avaliações", tab: null },
+      { icon: "▦", label: "Visão geral", tab: null },
+      { icon: "🔗", label: "Auditoria", tab: null },
+      { icon: "🛡️", label: "Administração", tab: null },
+    ];
+
+    return {
+      nav: navItems.map((n) => {
+        const on = n.tab === s.tab;
+        return { icon: n.icon, label: n.label, isNew: !!n.isNew, bg: on ? "oklch(0.955 0.024 262)" : "transparent", ink: on ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)", weight: on ? "600" : "400", pick: () => { if (n.tab) this.setState({ tab: n.tab }); } };
+      }),
+      areaRef: "contoso · área " + area.label.toLowerCase(),
+      areaName: area.label,
+      areas: AREAS.map((a) => ({ label: a.label, pick: () => this.setState({ area: a.id }), bg: s.area === a.id ? "#fff" : "transparent", ink: s.area === a.id ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)" })),
+      spend: "US$ " + area.spend, cap: "US$ " + area.cap, spendPct: pct + "%",
+      spendInk: over ? "oklch(0.505 0.176 26)" : pct > 80 ? "oklch(0.545 0.126 68)" : "oklch(0.492 0.126 158)",
+      over,
+      crumb: s.tab === "mw" ? "Middlewares" : s.tab === "ad" ? "Adaptadores" : s.tab === "ag" ? "Agentes hospedados" : "Casos de uso",
+      isMw: s.tab === "mw", isAd: s.tab === "ad", isAg: s.tab === "ag", isUc: s.tab === "uc",
+
+      toggleUpload: () => this.setState({ uploading: !s.uploading }),
+      uploadLabel: s.uploading ? "Fechar" : "Subir middleware",
+      uploading: s.uploading,
+      uploadYaml: [
+        "---",
+        "type: middleware",
+        "title: Decisão por voz",
+        "resource: voice-gate",
+        'okf_version: "0.2"',
+        "provenance: vendor/acme",
+        "lifecycle: shadow",
+        "---",
+        "",
+        "## Contract",
+        "",
+        "```yaml",
+        "accepts: transcript.segment",
+        "emits: approval          # ← pede para assinar decisão humana",
+        "role: Approver",
+        "runsOn: backend",
+        "needs:",
+        "  adapters: [azure-speech, entra-identity]",
+        "  confidence: 0.90",
+        "cost:",
+        "  model: per-decision",
+        "  unit: 0.02 USD",
+        "  cap: {rh: 0, plantao: 120, campo: 0}",
+        "areas: [plantao]",
+        "shadow: true",
+        "never:",
+        "  - approve-on-silence",
+        "  - sign-without-identity",
+        "```",
+      ].join("\n"),
+      installChecks: [
+        { title: "Contrato completo", detail: "accepts, emits, role, runsOn e never declarados.", mark: "✓", line: "oklch(0.492 0.126 158)", bg: "oklch(0.958 0.028 158)" },
+        { title: "Adaptadores existem e estão habilitados na área", detail: "azure-speech ✓ · entra-identity ✓ — em Plantão.", mark: "✓", line: "oklch(0.492 0.126 158)", bg: "oklch(0.958 0.028 158)" },
+        { title: "Teto de custo por área", detail: "Declarado: 120 USD/mês em Plantão, 0 nas outras. Sem teto, não instala.", mark: "✓", line: "oklch(0.492 0.126 158)", bg: "oklch(0.958 0.028 158)" },
+        { title: "emits: approval exige revisão de segurança", detail: "Este middleware assina em nome de uma pessoa: entra em quarentena até revisão do Owner.", mark: "!", line: "oklch(0.545 0.126 68)", bg: "oklch(0.960 0.038 68)" },
+        { title: "Procedência externa", detail: "provenance: vendor/acme — fica marcado como de terceiro em toda execução.", mark: "!", line: "oklch(0.545 0.126 68)", bg: "oklch(0.960 0.038 68)" },
+        { title: "Modo sombra obrigatório na primeira instalação", detail: "Roda e registra o que faria, sem emitir aprovação.", mark: "!", line: "oklch(0.545 0.126 68)", bg: "oklch(0.960 0.038 68)" },
+      ],
+
+      mwCols: [{ t: "Middleware" }, { t: "Entrada → saída" }, { t: "Papel" }, { t: "Estado" }, { t: "Custo no mês" }, { t: "Áreas" }],
+      mwRows: MWS.map((m) => {
+        const tone = this.stateTone(m.state);
+        return {
+          id: m.id, what: m.what, io: m.io, role: m.role, state: m.state, cost: m.cost, capLabel: m.capLabel, isNew: !!m.isNew,
+          stBg: tone.stBg, stInk: tone.stInk,
+          areaChips: this.areasFor(m.id).map((x) => ({ t: (AREAS.find((a) => a.id === x) || {}).label || x })),
+          rowBg: s.sel === m.id ? "oklch(0.955 0.024 262)" : "transparent",
+          pick: () => this.setState({ sel: m.id }),
+        };
+      }),
+      sel: {
+        id: sel.id, what: sel.what, version: sel.version, state: sel.state,
+        ...this.stateTone(sel.state),
+        contract: sel.contract,
+        costModel: sel.costModel,
+        capValue: String(s.caps[sel.id] === undefined ? sel.cap : s.caps[sel.id]),
+        setCap: (e) => this.setState((st) => ({ caps: { ...st.caps, [sel.id]: e.target.value } })),
+        onOver: [
+          { key: "degradar", label: "degradar" },
+          { key: "parar", label: "parar" },
+          { key: "avisar", label: "só avisar" },
+        ].map((o) => {
+          const on = overMode === o.key;
+          return { label: o.label, ...this.chip(on), pick: () => this.setState((st) => ({ over: { ...st.over, [sel.id]: o.key } })) };
+        }),
+        overNote: overMode === "parar"
+          ? "Parar: a chamada é recusada antes de acontecer. É o único comportamento aceitável para middleware que assina decisão."
+          : overMode === "degradar"
+            ? "Degradar: cai para o caminho mais barato (lote em vez de tempo real) e diz na tela que está degradado."
+            : "Só avisar: continua gastando e notifica o Owner. Não vale para middleware de escrita.",
+        areaToggles: AREAS.map((a) => {
+          const on = selAreas.indexOf(a.id) > -1;
+          return { label: a.label, ...this.chip(on), toggle: () => this.toggleArea(sel.id, a.id) };
+        }),
+        never: sel.never,
+      },
+
+      adapters: ADAPTERS.map((a) => {
+        const tone = this.stateTone(a.state);
+        const cur = this.state.areasOf["ad:" + a.id] || a.areas;
+        return {
+          id: a.id, vendor: a.vendor, what: a.what, auth: a.auth, region: a.region, billing: a.billing, usedBy: a.usedBy,
+          spend: a.spend, cap: a.cap, pct: a.pct + "%",
+          spendInk: a.pct > 80 ? "oklch(0.505 0.176 26)" : a.pct > 65 ? "oklch(0.545 0.126 68)" : "oklch(0.492 0.126 158)",
+          state: a.state, stBg: tone.stBg, stInk: tone.stInk,
+          line: a.state === "quarentena" ? "oklch(0.505 0.176 26)" : "oklch(0.902 0.006 258)",
+          areaToggles: AREAS.map((x) => {
+            const on = cur.indexOf(x.id) > -1;
+            return { label: x.label, ...this.chip(on), toggle: () => this.setState((st) => ({ areasOf: { ...st.areasOf, ["ad:" + a.id]: on ? cur.filter((y) => y !== x.id) : cur.concat([x.id]) } })) };
+          }),
+        };
+      }),
+
+      toggleAgent: () => this.setState({ registering: !s.registering }),
+      agentLabel: s.registering ? "Fechar" : "Registrar agente",
+      registering: s.registering,
+      premiseQs: [
+        { q: "Quem pode aprovar escrita em produção na área de Plantão?", a: "responde do type: policy e dos papéis declarados, citando o documento e a linha" },
+        { q: "Qual middleware toca o campo instructions deste formulário?", a: "responde do type: middleware cruzado com o type: formflow" },
+        { q: "Este agente é de terceiro? Desde quando, e quem revisou?", a: "responde do type: agent + provenance + log.md" },
+        { q: "Quanto a área de Campo gastou com voz no mês passado?", a: "responde do type: adapter com o teto e o consumo por área" },
+      ],
+      agentForm: [
+        { label: "identificador", isText: true, value: s.agent.id, set: (e) => this.setState((st) => ({ agent: { ...st.agent, id: e.target.value } })) },
+        { label: "hospedagem", isChoice: true, options: ["Foundry hosted agent", "container próprio", "endpoint externo"].map((o) => { const on = s.agent.hosting === o; return { label: o, ...this.chip(on), pick: () => this.setState((st) => ({ agent: { ...st.agent, hosting: o } })) }; }) },
+        { label: "imagem / endpoint", isText: true, value: s.agent.image, set: (e) => this.setState((st) => ({ agent: { ...st.agent, image: e.target.value } })) },
+        { label: "protocolo", isChoice: true, options: ["AG-UI", "AG-UI · langgraph"].map((o) => { const on = s.agent.proto === o; return { label: o, ...this.chip(on), pick: () => this.setState((st) => ({ agent: { ...st.agent, proto: o } })) }; }) },
+      ],
+      agentYaml: [
+        "---",
+        "type: agent",
+        "title: Agente de RH do time",
+        "resource: " + s.agent.id,
+        'okf_version: "0.2"',
+        "provenance: team/rh",
+        "lifecycle: shadow",
+        "index: true            # ← a premissa: entra na base de conhecimento",
+        "---",
+        "",
+        "## Runtime",
+        "",
+        "```yaml",
+        "hosting: " + s.agent.hosting,
+        "ref: " + s.agent.image,
+        "protocol: " + s.agent.proto,
+        "auth: managed-identity",
+        "adapters: [foundry-models]",
+        "cost:",
+        "  model: per-1k-tokens",
+        "  cap: {rh: 100}",
+        "areas: [rh]",
+        "```",
+        "",
+        "## Surface",
+        "",
+        "```yaml",
+        "copilot: copilots/atendimento-rh   # opcional: um copiloto sobre este agente",
+        "```",
+      ].join("\n"),
+      agentChecks: [
+        { title: "Fala AG-UI", detail: "Eventos de stream reconhecidos; interrupção mapeada para o gate do produto.", mark: "✓", line: "oklch(0.492 0.126 158)", bg: "oklch(0.958 0.028 158)" },
+        { title: "Autentica por identidade gerenciada", detail: "Sem chave em variável de ambiente.", mark: "✓", line: "oklch(0.492 0.126 158)", bg: "oklch(0.958 0.028 158)" },
+        { title: "index: true", detail: "O documento do agente entra na base — é isso que faz a plataforma ser consultável sobre si mesma.", mark: "✓", line: "oklch(0.492 0.126 158)", bg: "oklch(0.958 0.028 158)" },
+        { title: "Teto por área declarado", detail: "100 USD/mês em RH. Agente sem teto não sobe.", mark: "✓", line: "oklch(0.492 0.126 158)", bg: "oklch(0.958 0.028 158)" },
+        { title: "Escrita ainda não declarada", detail: "Sem tools de escrita: se ele passar a escrever, volta para revisão.", mark: "!", line: "oklch(0.545 0.126 68)", bg: "oklch(0.960 0.038 68)" },
+        { title: "Sombra na primeira semana", detail: "Responde e é medido; nada que ele proponha é aplicado sem gesto humano.", mark: "!", line: "oklch(0.545 0.126 68)", bg: "oklch(0.960 0.038 68)" },
+      ],
+      agCols: [{ t: "Agente" }, { t: "Hospedagem" }, { t: "Protocolo" }, { t: "Copiloto sobre ele" }, { t: "Base" }, { t: "Custo no mês" }, { t: "Estado" }],
+      agents: AGENTS.map((a) => {
+        const tone = this.stateTone(a.state);
+        const idx = this.stateTone(a.indexed === "indexado" ? "indexado" : "x");
+        return { ...a, ...tone, idxBg: idx.stBg, idxInk: idx.stInk };
+      }),
+
+      cases: CASES.map((c) => {
+        const tones = { w: "oklch(0.545 0.126 68)", a: "oklch(0.452 0.152 262)", b: "oklch(0.505 0.176 26)", n: "oklch(0.902 0.006 258)" };
+        const tags = { w: ["oklch(0.960 0.038 68)", "oklch(0.545 0.126 68)"], a: ["oklch(0.955 0.024 262)", "oklch(0.452 0.152 262)"], b: ["oklch(0.958 0.030 26)", "oklch(0.505 0.176 26)"], n: ["oklch(0.955 0.005 258)", "oklch(0.487 0.018 260)"] };
+        return { title: c.title, surface: c.surface, scene: c.scene, challenge: c.challenge, gap: c.gap, line: tones[c.tone], tagBg: tags[c.tone][0], tagInk: tags[c.tone][1], needs: c.needs.map((n) => ({ t: n })) };
+      }),
+      voice: [
+        { who: "agente", text: "Incidente sev-2 no cluster de pagamentos. Posso abrir chamado para o time de banco de dados?", bg: "#fff", line: "oklch(0.902 0.006 258)" },
+        { who: "readback", text: "Vou executar: abrir chamado no time Banco de Dados, severidade 2, resumo “latência de escrita acima de 900 ms desde 02h48”. Confirma dizendo aprovar.", bg: "oklch(0.960 0.038 68)", line: "oklch(0.545 0.126 68)" },
+        { who: "pessoa", text: "aprovar", bg: "oklch(0.955 0.024 262)", line: "oklch(0.452 0.152 262)" },
+        { who: "gate", text: "Identidade confirmada (voz + Entra), confiança 0,94, palavra declarada reconhecida. Aprovação assinada.", bg: "oklch(0.958 0.028 158)", line: "oklch(0.492 0.126 158)" },
+        { who: "agente", text: "Chamado #4821 aberto. Vou continuar acompanhando a latência.", bg: "#fff", line: "oklch(0.902 0.006 258)" },
+        { who: "recusa", text: "Se a resposta fosse “acho que sim”, o gate recusa e repete a leitura: só a palavra declarada aprova.", bg: "oklch(0.958 0.030 26)", line: "oklch(0.505 0.176 26)" },
+      ],
+      voiceTrail: [
+        "scope: approval",
+        "actor: rafael@contoso.com (voz + entra)",
+        "role: Approver",
+        "confidence: 0.94",
+        "phrase: aprovar",
+        "payload_readback: true",
+        "source: call/2026-08-29T02:51Z t=00:03:12-00:03:29",
+        "outcome: approved",
+        "area: plantao",
+        "cost: 0.02 USD",
+      ].join("\n"),
+      voiceRules: [
+        { n: "1", t: "Ler antes de decidir", d: "O payload é lido inteiro, sem resumo. Ler menos do que será executado é pior que não ler." },
+        { n: "2", t: "Palavra declarada, e só ela", d: "Silêncio, “ok” e “acho que sim” não aprovam. A palavra vive no manifesto." },
+        { n: "3", t: "Identidade antes de assinatura", d: "Sem confirmar quem fala, não há aprovação — o gate exige voz mais Entra." },
+        { n: "4", t: "A fonte é o trecho", d: "A trilha guarda arquivo, instante e confiança; a citação aponta para o áudio, não para o resumo." },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

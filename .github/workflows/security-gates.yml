@@ -40,6 +40,7 @@ jobs:
       # The document-content gate additionally downloads the real blob to prove the reader
       # never leaks it — needs the storage account behind the techdocs corpus container.
       AZURE_STORAGE_ACCOUNT: ${{ vars.AZURE_STORAGE_ACCOUNT }}
+      AZURE_STORAGE_RESOURCE_ID: ${{ vars.AZURE_STORAGE_RESOURCE_ID }}
     steps:
       - uses: actions/checkout@v5
       - uses: astral-sh/setup-uv@v6
@@ -58,6 +59,9 @@ jobs:
       # é barato e porque um carimbo com prazo de validade invalida o que vem depois.
       - name: ACL durability (nenhum índice com trim depende de indexer agendado)
         run: uv run python -m eval.acl_durability_test
+
+      - name: MCP deployed security (SSE, WORM and egress topology)
+        run: uv run python -m tests.platform_ops.mcp_deployed_security_test --require-azure
 
       - name: Access-control gate (no cross-group leak — agentic retrieval path)
         run: uv run python -m eval.access_control_test

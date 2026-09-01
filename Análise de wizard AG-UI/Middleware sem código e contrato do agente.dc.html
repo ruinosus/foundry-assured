@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, input, button { box-sizing:border-box; }
+  input, button { font-family:inherit; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  button:focus-visible, input:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">Middleware sem código · e o contrato do agente</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:92ch;text-wrap:pretty">Duas respostas concretas: uma tela que <b>declara</b> o middleware comum (quando · condição · então) e diz onde ela para; e o contrato do agente escrito por extenso — endpoint, headers, eventos, interrupção — com teste de conformidade.</p>
+  </div>
+
+  <div style="width:2276px;height:1340px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+        <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+        <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+      </div>
+      <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Área · tenant</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">contoso · compras</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="15">
+          <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;background:{{ n.bg }};color:{{ n.ink }};font-weight:{{ n.weight }}">
+            <span style="width:18px;text-align:center">{{ n.icon }}</span>{{ n.label }}
+          </span>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px">
+          <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">R</span>
+          <div style="min-width:0"><div style="font-size:13px;font-weight:600">Rafael Duarte</div><div style="font-size:11px;color:oklch(0.487 0.018 260)">Owner · Admin · Approver</div></div>
+        </div>
+        <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="height:56px;flex:0 0 56px;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;padding:0 20px;gap:12px">
+        <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Copilotos</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">{{ crumb }}</b></nav>
+        <div style="display:flex;gap:2px;padding:2px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:6px;margin-left:6px">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+            <button type="button" onClick="{{ t.pick }}" style="border:0;padding:6px 13px;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;background:{{ t.bg }};color:{{ t.ink }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <span style="margin-left:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ ref }}</span>
+      </header>
+
+      <div style="flex:1;min-height:0;display:flex">
+
+        <!-- ════════ MIDDLEWARE SEM CÓDIGO ════════ -->
+        <sc-if value="{{ isMw }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;min-width:0;display:flex;min-height:0">
+          <main style="flex:1;min-width:0;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:13px">
+            <div>
+              <h2 style="margin:0;font-size:21px;font-weight:640;letter-spacing:-0.015em">Nova regra — middleware declarado</h2>
+              <p style="margin:4px 0 0;font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:86ch;text-wrap:pretty">Três frases: <b>quando</b> algo acontece, <b>se</b> uma condição vale, <b>então</b> faça uma coisa — citando a fonte. Isso cobre a maioria dos middlewares que se escreve à mão hoje. O que não cabe aqui está listado embaixo, e vira scaffold.</p>
+            </div>
+
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:baseline;gap:10px"><b style="font-size:15px;font-weight:650">Identidade</b><span style="margin-left:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ id }}</span></div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <input type="text" value="{{ id }}" onChange="{{ setId }}" placeholder="limite-alcada" style="flex:1;min-width:220px;padding:9px 11px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:13px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" />
+                <input type="text" value="{{ title }}" onChange="{{ setTitle }}" placeholder="Limite de alçada" style="flex:1;min-width:220px;padding:9px 11px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:13px" />
+              </div>
+            </section>
+
+            <sc-for list="{{ blocks }}" as="b" hint-placeholder-count="3">
+              <section style="background:#fff;border:1px solid {{ b.line }};border-left:4px solid {{ b.line }};border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:11px">
+                <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ b.line }}">{{ b.word }}</span>
+                  <b style="font-size:15px;font-weight:650">{{ b.title }}</b>
+                  <span style="margin-left:auto;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ b.badge }}</span>
+                </div>
+                <p style="margin:0;font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:84ch">{{ b.help }}</p>
+                <sc-for list="{{ b.fields }}" as="f" hint-placeholder-count="2">
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                      <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ f.label }}</span>
+                      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.612 0.014 258)">{{ f.key }}</span>
+                    </div>
+                    <sc-if value="{{ f.isChoice }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex;gap:6px;flex-wrap:wrap">
+                        <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="3">
+                          <button type="button" onClick="{{ o.pick }}" style="padding:7px 11px;border:1px solid {{ o.line }};background:{{ o.bg }};color:{{ o.ink }};border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer">{{ o.label }}</button>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ f.isText }}" hint-placeholder-val="{{ false }}">
+                      <input type="text" value="{{ f.value }}" onChange="{{ f.set }}" placeholder="{{ f.ph }}" style="width:100%;padding:9px 11px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:13px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" />
+                    </sc-if>
+                    <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ f.help }}</span>
+                  </div>
+                </sc-for>
+              </section>
+            </sc-for>
+
+            <section style="background:#fff;border:1px solid oklch(0.505 0.176 26);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:11px">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">o limite desta tela</span>
+                <b style="font-size:15px;font-weight:650">O que uma regra declarada não faz</b>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+                <sc-for list="{{ limits }}" as="l" hint-placeholder-count="4">
+                  <div style="display:flex;gap:9px;align-items:flex-start;padding:10px 12px;background:oklch(0.955 0.005 258);border-radius:5px">
+                    <span style="flex:none;color:oklch(0.505 0.176 26);font-weight:700">·</span>
+                    <span style="min-width:0"><b style="display:block;font-size:12.5px;font-weight:600">{{ l.t }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ l.d }}</span></span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <button type="button" onClick="{{ gen }}" style="padding:10px 14px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:{{ genBg }};color:{{ genInk }};font-size:13px;font-weight:600;cursor:pointer">{{ genLabel }}</button>
+                <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:70ch">Precisando de algo da lista, a regra não é jogada fora: ela vira o <b>scaffold</b> — manifesto, handler e teste de contrato já preenchidos com o que você declarou aqui.</span>
+              </div>
+            </section>
+          </main>
+
+          <aside style="width:600px;flex:0 0 600px;background:#fff;border-left:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;min-height:0">
+            <div style="flex:none;padding:12px 14px;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ outLabel }}</span>
+              <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:{{ vBg }};color:{{ vInk }}">{{ vState }}</span>
+            </div>
+            <pre style="flex:1;min-height:0;overflow:auto;margin:0;padding:14px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.6;white-space:pre">{{ out }}</pre>
+            <div style="flex:none;border-top:1px solid oklch(0.902 0.006 258);padding:13px 14px;display:flex;flex-direction:column;gap:9px;max-height:380px;overflow:auto">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Validação da regra</span>
+              <sc-for list="{{ checks }}" as="c" hint-placeholder-count="4">
+                <div style="display:flex;gap:9px;align-items:flex-start">
+                  <span style="flex:none;width:17px;height:17px;border-radius:50%;background:{{ c.line }};color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ c.mark }}</span>
+                  <span style="min-width:0"><b style="display:block;font-size:12px;font-weight:600">{{ c.t }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ c.d }}</span></span>
+                </div>
+              </sc-for>
+              <button type="button" onClick="{{ commit }}" disabled="{{ commitOff }}" style="margin-top:4px;padding:10px 14px;border:1px solid {{ cLine }};border-radius:8px;background:{{ cBg }};color:{{ cInk }};font-size:13px;font-weight:600;cursor:pointer">{{ commitLabel }}</button>
+            </div>
+          </aside>
+        </div>
+        </sc-if>
+
+        <!-- ════════ CONTRATO DO AGENTE ════════ -->
+        <sc-if value="{{ isAg }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;min-width:0;display:flex;min-height:0">
+          <main style="flex:1;min-width:0;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:13px">
+            <div>
+              <h2 style="margin:0;font-size:21px;font-weight:640;letter-spacing:-0.015em">O que “falar AG-UI” quer dizer, exatamente</h2>
+              <p style="margin:4px 0 0;font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:88ch;text-wrap:pretty">O agente é <b>aberto</b>: qualquer serviço pode ser registrado. O que não é aberto é o <b>contrato</b> — e ele é testável, então “conforme” não é opinião de quem integrou.</p>
+            </div>
+
+            <sc-for list="{{ contract }}" as="c" hint-placeholder-count="4">
+              <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">{{ c.key }}</span>
+                  <b style="font-size:15px;font-weight:650">{{ c.title }}</b>
+                  <span style="margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:{{ c.reqBg }};color:{{ c.reqInk }}">{{ c.req }}</span>
+                </div>
+                <pre style="margin:0;padding:12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:5px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.6;overflow:auto;white-space:pre">{{ c.code }}</pre>
+                <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);max-width:92ch;text-wrap:pretty">{{ c.note }}</p>
+              </section>
+            </sc-for>
+          </main>
+
+          <aside style="width:600px;flex:0 0 600px;background:#fff;border-left:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;min-height:0">
+            <div style="flex:none;padding:14px;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;gap:9px">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Teste de conformidade</span>
+                <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:{{ tBg }};color:{{ tInk }}">{{ tState }}</span>
+              </div>
+              <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center">
+                <input type="text" value="{{ url }}" onChange="{{ setUrl }}" placeholder="https://meu-agente/agui" style="flex:1;min-width:240px;padding:9px 11px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:12.5px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" />
+                <button type="button" onClick="{{ run }}" style="padding:9px 13px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:#fff;font-size:12.5px;font-weight:600;cursor:pointer">{{ runLabel }}</button>
+              </div>
+              <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">O teste abre uma execução real, provoca uma interrupção e tenta retomar. É o mesmo caminho que a tela usa — se passa aqui, monta lá.</span>
+            </div>
+            <div style="flex:1;min-height:0;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:9px">
+              <sc-for list="{{ probes }}" as="p" hint-placeholder-count="8">
+                <div style="display:flex;gap:9px;align-items:flex-start;padding:10px;border:1px solid oklch(0.902 0.006 258);border-radius:5px;background:{{ p.bg }}">
+                  <span style="flex:none;width:17px;height:17px;border-radius:50%;background:{{ p.line }};color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ p.mark }}</span>
+                  <span style="min-width:0">
+                    <b style="display:block;font-size:12px;font-weight:600">{{ p.t }}</b>
+                    <span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ p.d }}</span>
+                  </span>
+                  <span style="margin-left:auto;flex:none;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ p.line }}">{{ p.tag }}</span>
+                </div>
+              </sc-for>
+              <span style="font-size:11.5px;line-height:1.5;color:oklch(0.487 0.018 260)">{{ verdict }}</span>
+            </div>
+          </aside>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2340,&quot;height&quot;:1420}}">
+const NAV = [
+  { icon: "◎", label: "Casos de uso" }, { icon: "💬", label: "Assistentes" },
+  { icon: "◇", label: "Copilotos" }, { icon: "⚖", label: "Conformidade" },
+  { icon: "◆", label: "Agentes hospedados" }, { icon: "⇌", label: "Middlewares", on: true },
+  { icon: "🔌", label: "Adaptadores" }, { icon: "◈", label: "Meus agentes" },
+  { icon: "▤", label: "Conhecimento" }, { icon: "✦", label: "Skills" }, { icon: "🎫", label: "Chamados" },
+  { icon: "✓", label: "Avaliações" }, { icon: "▦", label: "Visão geral" }, { icon: "🔗", label: "Auditoria" },
+  { icon: "🛡️", label: "Administração" },
+];
+
+const WHEN = ["proposta de campo", "gravação de documento", "chamada de tool", "resposta pronta"];
+const STAGE = { "proposta de campo": "inline", "gravação de documento": "pre-persist", "chamada de tool": "gate", "resposta pronta": "post" };
+const OPS = ["maior que", "menor que", "contém", "está ausente", "casa com"];
+const THEN = ["avisar", "propor correção", "exigir aprovação", "bloquear"];
+const EMITS = { avisar: "warning", "propor correção": "proposal", "exigir aprovação": "approval", bloquear: "block" };
+
+const CONTRACT = [
+  {
+    key: "endpoint", title: "Endpoint e headers", req: "obrigatório",
+    code: "POST /agui HTTP/1.1\nContent-Type: application/json\nAccept: text/event-stream\nAuthorization: Bearer <token do usuário, repassado pela tela>\nX-Request-Id: 9f2c…a41b\nX-Area: compras\n\n{ \"threadId\": \"t-8812\",\n  \"messages\": [ { \"role\": \"user\", \"content\": \"…\" } ],\n  \"state\": { }, \"tools\": [ ] }",
+    note: "Um endpoint só, e ele responde em stream. O Authorization é o token de quem está na tela — não um segredo do serviço: é assim que o ACL por documento continua valendo do outro lado. X-Area é o que faz o custo fechar por área.",
+  },
+  {
+    key: "events", title: "Eventos que a tela entende", req: "obrigatório",
+    code: "data: {\"type\":\"RUN_STARTED\",\"threadId\":\"t-8812\",\"runId\":\"r-1\"}\ndata: {\"type\":\"TEXT_MESSAGE_START\",\"messageId\":\"m1\"}\ndata: {\"type\":\"TEXT_MESSAGE_CONTENT\",\"messageId\":\"m1\",\"delta\":\"Encontrei \"}\ndata: {\"type\":\"TEXT_MESSAGE_END\",\"messageId\":\"m1\"}\ndata: {\"type\":\"TOOL_CALL_START\",\"toolCallId\":\"c1\",\"toolCallName\":\"buscar_item\"}\ndata: {\"type\":\"TOOL_CALL_ARGS\",\"toolCallId\":\"c1\",\"delta\":\"{\\\"q\\\":\\\"cadeira\\\"}\"}\ndata: {\"type\":\"TOOL_CALL_END\",\"toolCallId\":\"c1\"}\ndata: {\"type\":\"RUN_FINISHED\",\"threadId\":\"t-8812\",\"runId\":\"r-1\"}",
+    note: "Sem TOOL_CALL_* a tela não mostra a linha de atividade e a pessoa fica olhando um spinner. STEP_STARTED/STEP_FINISHED são opcionais e é o que acende a fita de passos.",
+  },
+  {
+    key: "interrupt", title: "Interrupção — como o gate humano acontece", req: "obrigatório se escreve",
+    code: "// o agente para e pede uma pessoa\ndata: {\"type\":\"CUSTOM\",\"name\":\"request_info\",\n       \"value\":{\"request_id\":\"i-77\",\n                \"data\":{\"summary\":\"Reservar SKU-88213 ×40\",\n                        \"reason\":\"acima do estoque local\",\n                        \"payload\":{\"sku\":\"SKU-88213\",\"qtd\":40}}}}\ndata: {\"type\":\"RUN_FINISHED\",\"interrupt\":{\"id\":\"i-77\"}}\n\n// a decisão volta pelo MESMO endpoint\nPOST /agui\n{ \"threadId\":\"t-8812\",\n  \"resume\":[ { \"interruptId\":\"i-77\",\n               \"status\":\"resolved\",\n               \"payload\":{\"type\":\"approve\"} } ] }",
+    note: "É o ponto que mais dá errado. Três regras: o payload que a tela exibe é o que vai ser executado (não um resumo); o run TERMINA na interrupção e a retomada é uma execução nova referenciando o interruptId; e qualquer payload não reconhecido é tratado como recusa — nunca como aprovação.",
+  },
+  {
+    key: "health", title: "Saúde, limites e versão", req: "obrigatório",
+    code: "GET /healthz  →  200 {\"ok\":true,\"version\":\"0.9.2\"}\n\n# limites que o registro aplica\ntimeout_first_event: 5s      # nada em 5s = fora do ar\ntimeout_run: 120s\nmax_event_bytes: 64k\nretry: none                  # a tela não repete escrita",
+    note: "Sem health, o registry não distingue “fora do ar” de “sem uso” — e o painel de custo passa a mentir. A tela nunca repete uma execução que escreveu: retomada é gesto humano, não retry.",
+  },
+];
+
+class Component extends DCLogic {
+  state = {
+    tab: "mw",
+    id: "limite-alcada", title: "Limite de alçada",
+    when: "proposta de campo", field: "items.total", op: "maior que",
+    refKind: "valor do bundle", value: "knowledge/politicas-compras#limite_alcada",
+    then: "avisar", role: "—", cite: "knowledge/politicas-compras#L12-L18",
+    gen: false, done: false,
+    url: "https://compras-req.internal/agui", ran: false,
+  };
+
+  set(k, v) { this.setState({ [k]: v, done: false }); }
+
+  renderVals() {
+    const s = this.state;
+    const chip = (on) => ({ line: on ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)", bg: on ? "oklch(0.955 0.024 262)" : "#fff", ink: on ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)" });
+    const choice = (key, label, opts, cur, onPick, help) => ({
+      key, label, help: help || "", isChoice: true,
+      options: opts.map((o) => ({ label: o, ...chip(cur === o), pick: () => onPick(o) })),
+    });
+    const txt = (key, label, value, set, ph, help) => ({ key, label, help: help || "", ph: ph || "", isText: true, value, set });
+
+    const stage = STAGE[s.when];
+    const emits = EMITS[s.then];
+    const needsRole = s.then === "exigir aprovação";
+    const isBlock = s.then === "bloquear";
+    const blockOk = !isBlock || stage === "pre-persist";
+
+    const blocks = [
+      {
+        word: "quando", title: "O gancho", badge: "estágio: " + stage, line: "oklch(0.452 0.152 262)",
+        help: "O gancho decide o estágio, e o estágio decide o que a regra pode fazer. Gravação roda antes de persistir — é o único lugar onde bloquear impede algo.",
+        fields: [choice("when", "acontece quando", WHEN, s.when, (o) => this.set("when", o), "")],
+      },
+      {
+        word: "se", title: "A condição", badge: s.field + " " + s.op, line: "oklch(0.452 0.152 262)",
+        help: "Compara um campo do que passou com um valor fixo ou com um valor que vive num bundle — e é isso que evita regra com número cravado.",
+        fields: [
+          choice("field", "campo", ["items.total", "summary", "severity", "texto livre"], s.field, (o) => this.set("field", o), ""),
+          choice("op", "operador", OPS, s.op, (o) => this.set("op", o), ""),
+          choice("refKind", "compara com", ["valor fixo", "valor do bundle"], s.refKind, (o) => this.set("refKind", o), "Valor do bundle é o caminho certo: a política muda sem publicar versão do middleware."),
+          txt("value", s.refKind === "valor fixo" ? "valor" : "referência no bundle", s.value, (e) => this.set("value", e.target.value), "knowledge/…#chave", ""),
+        ],
+      },
+      {
+        word: "então", title: "O efeito", badge: "emits: " + emits, line: isBlock ? "oklch(0.505 0.176 26)" : needsRole ? "oklch(0.545 0.126 68)" : "oklch(0.492 0.126 158)",
+        help: "Avisar e propor são baratos. Exigir aprovação assina em nome de alguém — pede papel e revisão. Bloquear impede gravação — só existe em pre-persist.",
+        fields: [
+          choice("then", "faça", THEN, s.then, (o) => this.set("then", o), ""),
+          choice("role", "papel exigido", ["—", "Approver", "Admin", "Owner"], s.role, (o) => this.set("role", o), needsRole ? "Obrigatório: sem papel, aprovação não vale." : "Só se aplica a exigir aprovação."),
+          txt("cite", "fonte citada", s.cite, (e) => this.set("cite", e.target.value), "bundle#L…", "O aviso sai com a citação — quem recebe consegue conferir."),
+        ],
+      },
+    ];
+
+    const yaml = [
+      "---", "type: middleware", "title: " + s.title, "resource: " + s.id,
+      'okf_version: "0.2"', "authored: declarative      # gerado por esta tela, sem código", "lifecycle: shadow", "---",
+      "", "## Contract", "", "```yaml",
+      "accepts: " + ({ "proposta de campo": "proposal", "gravação de documento": "document", "chamada de tool": "toolcall", "resposta pronta": "message" })[s.when],
+      "emits: " + emits, "stage: " + stage, "role: " + s.role,
+      isBlock ? "singleWritePath: true" : "singleWritePath: false",
+      "```", "", "## Rule", "", "```yaml", "rule:",
+      "  when: " + JSON.stringify(s.when),
+      "  if: {field: " + s.field + ", op: " + JSON.stringify(s.op) + ", " + (s.refKind === "valor fixo" ? "value: " + JSON.stringify(s.value) : "ref: " + s.value) + "}",
+      "  then: {" + emits + ": true" + (needsRole ? ", role: " + s.role : "") + "}",
+      "  cite: " + s.cite, "```",
+    ].join("\n");
+
+    const scaffold = [
+      "$ okf init middleware " + s.id + " --from-rule",
+      "  ✓ middlewares/" + s.id + "/index.md          (o contrato acima, já preenchido)",
+      "  ✓ middlewares/" + s.id + "/handler.py        (a regra convertida)",
+      "  ✓ middlewares/" + s.id + "/test_contract.py  (o teste do contrato)",
+      "",
+      "# handler.py — ponto de partida, agora editável",
+      "def handle(ev, ctx):",
+      "    limite = ctx.ref(" + JSON.stringify(s.value) + ")",
+      "    if ev." + s.field + " " + ({ "maior que": ">", "menor que": "<", "contém": "in", "está ausente": "is None", "casa com": "~" })[s.op] + " limite:",
+      "        return " + emits + "(",
+      "            f\"" + s.title + ": acima de {limite}\",",
+      "            cite=ctx.cite(" + JSON.stringify(s.cite) + "),",
+      "        )",
+      "    return ok()",
+      "",
+      "# daqui em diante é código: chamada externa, agregação, estado.",
+    ].join("\n");
+
+    const checks = [
+      { ok: /^[a-z0-9]+(-[a-z0-9]+)*$/.test(s.id), t: "Identificador válido", d: "Minúsculas e hífens." },
+      { ok: blockOk, t: "Bloqueio no estágio certo", d: isBlock ? (blockOk ? "block em pre-persist: impede a gravação." : "Bloquear em " + stage + " não impede nada — o dado já passou. Troque o gancho para gravação de documento.") : "A regra não bloqueia." },
+      { ok: !needsRole || s.role !== "—", t: "Papel para quem aprova", d: needsRole ? (s.role === "—" ? "Exigir aprovação sem papel: recusado." : "Papel " + s.role + "; entra em quarentena até revisão do Owner.") : "Não emite aprovação." },
+      { ok: !!s.cite.trim(), t: "Fonte citada", d: s.cite.trim() ? "O efeito sai com citação — dá para conferir." : "Sem fonte, o aviso é opinião da máquina." },
+      { ok: s.refKind !== "valor fixo", t: "Número fora do código", d: s.refKind === "valor fixo" ? "Valor fixo funciona, e amarra a política à versão do middleware. Prefira referência no bundle." : "A política vive no bundle: muda sem publicar middleware." },
+    ];
+    const bad = checks.filter((c) => !c.ok).length;
+
+    // ── conformidade do agente
+    const httpsOk = /^https:\/\//.test(s.url);
+    const probeDefs = [
+      { t: "POST no endpoint, com stream", d: "Responde 200 e text/event-stream, com o Authorization repassado.", req: true },
+      { t: "RUN_STARTED e RUN_FINISHED", d: "Abre e fecha a execução com threadId e runId.", req: true },
+      { t: "TEXT_MESSAGE_* em delta", d: "A resposta chega em pedaços — sem isso a tela espera o parágrafo inteiro.", req: true },
+      { t: "TOOL_CALL_* nomeado", d: "buscar_item apareceu com id, nome e argumentos.", req: true },
+      { t: "Interrupção por request_info", d: "Pediu uma pessoa com request_id e payload — não com um resumo.", req: true },
+      { t: "Retomada por interruptId", d: "Aceitou resume com status resolved e executou a decisão.", req: true },
+      { t: "Payload desconhecido = recusa", d: "Mandamos lixo no payload: ele NÃO executou.", req: true },
+      { t: "GET /healthz com versão", d: "200 com ok e version.", req: true },
+      { t: "STEP_* (opcional)", d: "Não emite: a fita de passos fica vazia, o resto funciona.", req: false, fail: true },
+    ];
+    const probes = probeDefs.map((p) => {
+      const state = !s.ran ? "aguardando" : !httpsOk && p.req ? "falhou" : p.fail ? "ausente" : "passou";
+      const tone = state === "passou" ? ["oklch(0.492 0.126 158)", "✓", "#fff"] : state === "ausente" ? ["oklch(0.545 0.126 68)", "!", "oklch(0.960 0.038 68)"] : state === "falhou" ? ["oklch(0.505 0.176 26)", "✕", "oklch(0.958 0.030 26)"] : ["oklch(0.836 0.008 258)", "·", "#fff"];
+      return { t: p.t, d: state === "aguardando" ? "—" : p.d, tag: state, line: tone[0], mark: tone[1], bg: tone[2] };
+    });
+    const reqFail = s.ran && !httpsOk;
+
+    return {
+      nav: NAV.map((n) => ({ icon: n.icon, label: n.label, bg: n.on ? "oklch(0.955 0.024 262)" : "transparent", ink: n.on ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)", weight: n.on ? "600" : "400" })),
+      tabs: [{ id: "mw", label: "Middleware sem código" }, { id: "ag", label: "Contrato do agente" }].map((t) => ({
+        label: t.label, pick: () => this.setState({ tab: t.id }),
+        bg: s.tab === t.id ? "#fff" : "transparent", ink: s.tab === t.id ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)",
+      })),
+      crumb: s.tab === "mw" ? "Middlewares / Nova regra" : "Agentes hospedados / Contrato",
+      ref: s.tab === "mw" ? "okf · type: middleware · declarative" : "AG-UI · contrato + conformidade",
+      isMw: s.tab === "mw", isAg: s.tab === "ag",
+
+      id: s.id, setId: (e) => this.set("id", e.target.value),
+      title: s.title, setTitle: (e) => this.set("title", e.target.value),
+      blocks,
+      limits: [
+        { t: "Chamar sistema de fora", d: "Nenhuma regra faz requisição. Precisa consultar um ERP? é adaptador + código." },
+        { t: "Agregar histórico", d: "A regra vê o evento atual. Média de 30 dias exige estado, e estado exige código." },
+        { t: "Escrever no bundle", d: "Ela avisa, propõe ou bloqueia. Gravar é operação com gate, não efeito de middleware." },
+        { t: "Mais de uma condição composta", d: "Uma condição por regra, de propósito. Duas regras são mais legíveis que um E/OU aninhado." },
+      ],
+      gen: () => this.setState({ gen: !s.gen }),
+      genLabel: s.gen ? "Ver a regra declarada" : "Gerar scaffold a partir desta regra",
+      genBg: s.gen ? "#fff" : "oklch(0.452 0.152 262)", genInk: s.gen ? "oklch(0.452 0.152 262)" : "#fff",
+      outLabel: s.gen ? "scaffold gerado" : "index.md · regra declarada",
+      out: s.gen ? scaffold : yaml,
+      checks: checks.map((c) => ({ t: c.t, d: c.d, mark: c.ok ? "✓" : "✕", line: c.ok ? "oklch(0.492 0.126 158)" : "oklch(0.505 0.176 26)" })),
+      vState: bad ? bad + (bad === 1 ? " impedimento" : " impedimentos") : "regra válida",
+      vBg: bad ? "oklch(0.958 0.030 26)" : "oklch(0.958 0.028 158)",
+      vInk: bad ? "oklch(0.505 0.176 26)" : "oklch(0.492 0.126 158)",
+      commitOff: bad > 0 || s.done,
+      commitLabel: s.done ? "Registrado em sombra" : bad ? "Corrija " + bad + (bad === 1 ? " item" : " itens") : "Registrar em sombra",
+      cLine: bad ? "oklch(0.836 0.008 258)" : "oklch(0.452 0.152 262)",
+      cBg: bad || s.done ? "#fff" : "oklch(0.452 0.152 262)",
+      cInk: bad || s.done ? "oklch(0.487 0.018 260)" : "#fff",
+      commit: () => { if (!bad && !s.done) this.setState({ done: true }); },
+
+      contract: CONTRACT.map((c) => ({
+        key: c.key, title: c.title, code: c.code, note: c.note, req: c.req,
+        reqBg: c.req === "obrigatório" ? "oklch(0.958 0.030 26)" : "oklch(0.960 0.038 68)",
+        reqInk: c.req === "obrigatório" ? "oklch(0.505 0.176 26)" : "oklch(0.545 0.126 68)",
+      })),
+      url: s.url, setUrl: (e) => this.setState({ url: e.target.value, ran: false }),
+      run: () => this.setState({ ran: true }), runLabel: s.ran ? "Rodar de novo" : "Rodar teste",
+      probes,
+      tState: !s.ran ? "não rodou" : reqFail ? "não conforme" : "conforme · 8 de 8 obrigatórios",
+      tBg: !s.ran ? "oklch(0.955 0.005 258)" : reqFail ? "oklch(0.958 0.030 26)" : "oklch(0.958 0.028 158)",
+      tInk: !s.ran ? "oklch(0.487 0.018 260)" : reqFail ? "oklch(0.505 0.176 26)" : "oklch(0.492 0.126 158)",
+      verdict: !s.ran
+        ? "Enquanto não rodar, o registro fica bloqueado: “conforme” é resultado de teste, não declaração de quem integrou."
+        : reqFail
+          ? "Endpoint sem https: o teste para no primeiro item. O token do usuário não viaja em claro."
+          : "Conforme nos oito obrigatórios; STEP_* ausente é aviso — a fita de passos fica vazia e o resto funciona. Pode registrar em sombra.",
+    };
+  }
+}
+</script>
+</body>
+</html>

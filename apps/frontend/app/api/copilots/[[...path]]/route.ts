@@ -1,5 +1,11 @@
 // Repassa a leitura de copilotos, com o token do chamador.
 //
+// `[[...path]]` — OPTIONAL catch-all, e o par de colchetes não é detalhe. Com `[...path]` a rota
+// exige ao menos um segmento: `/api/copilots/builder` casava e `/api/copilots` (a LISTA) devolvia
+// 404. O catálogo abria com "não consegui ler o catálogo: 404" enquanto o backend respondia
+// certo — encontrado rodando a tela, não por gate: `tsc`, `lint`, `build` e os seis verificadores
+// passavam, porque nenhum deles resolve rota do Next.
+//
 // Mesmo desenho dos outros proxies em app/api/: o browser não fala com o backend direto (origem
 // diferente) e o token nunca sai do fluxo Entra. 404 e 422 atravessam intactos — "não existe" e
 // "existe e está torto" pedem ações diferentes de quem lê.

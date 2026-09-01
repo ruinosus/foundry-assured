@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, input, textarea, button { box-sizing:border-box; }
+  input, textarea, button { font-family:inherit; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  button:focus-visible, input:focus-visible, textarea:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">Copiloto de conformidade — lacuna declarada e citação de dispositivo</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:86ch;text-wrap:pretty">Um domínio regulado rodando no mesmo motor: a avaliação preliminar do Art. 12, com campo que declara ausência, citação que aponta para artigo e não só para arquivo, guardrail que bloqueia antes de persistir, e assinatura que só o Diretor Técnico faz. A segunda aba é o delta que o motor precisa.</p>
+  </div>
+
+  <div style="width:2028px;height:1360px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+        <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+        <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+      </div>
+      <div style="display:grid;gap:3px;padding:9px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Unidade · sujeito da norma</span>
+        <span style="font-size:12.5px;font-weight:600">Hospital Aurora — Unidade Norte</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260)">CRM-SP · CNPJ 12.345.678/0002-10</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="8">
+          <button type="button" onClick="{{ n.pick }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:8px;font-size:14px;text-align:left;cursor:pointer;background:{{ n.bg }};color:{{ n.ink }};font-weight:{{ n.weight }}">
+            <span style="width:18px;text-align:center">{{ n.icon }}</span>{{ n.label }}
+            <sc-if value="{{ n.isNew }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:oklch(0.958 0.028 158);color:oklch(0.492 0.126 158)">novo</span></sc-if>
+          </button>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px">
+          <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">M</span>
+          <div style="min-width:0"><div style="font-size:13px;font-weight:600">Dra. Marina Alves</div><div style="font-size:11px;color:oklch(0.487 0.018 260)">Diretoria Técnica · assina</div></div>
+        </div>
+        <div style="padding:10px;font-size:11.5px;color:oklch(0.487 0.018 260);line-height:1.4;display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;flex:none;border-radius:50%;background:oklch(0.492 0.126 158)"></span>guardrail ativo · zero dado de paciente</div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="height:60px;flex:0 0 60px;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;padding:0 20px;gap:14px">
+        <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Conformidade</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">{{ crumb }}</b></nav>
+        <div style="display:flex;gap:2px;padding:2px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:6px;margin-left:6px">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="2">
+            <button type="button" onClick="{{ t.pick }}" style="border:0;padding:6px 13px;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;background:{{ t.bg }};color:{{ t.ink }}">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <span style="margin-left:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ ref }}</span>
+        <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:999px;background:{{ dossieBg }};color:{{ dossieInk }}">{{ dossieState }}</span>
+      </header>
+
+      <div style="flex:1;min-height:0;display:flex">
+
+        <!-- ══════════ AVALIAÇÃO ══════════ -->
+        <sc-if value="{{ isAval }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;min-width:0;display:flex;min-height:0">
+          <main style="flex:1;min-width:0;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+            <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+              <div style="flex:1;min-width:320px">
+                <h2 style="margin:0;font-size:21px;font-weight:640;letter-spacing:-0.015em">Avaliação preliminar — pré-leitura de imagem torácica</h2>
+                <p style="margin:4px 0 0;font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:80ch;text-wrap:pretty">Sistema do catálogo corporativo, em uso nesta unidade desde 03/2026. A avaliação de referência da rede <b>não supre</b> esta assinatura.</p>
+              </div>
+              <div style="display:flex;gap:9px;flex-wrap:wrap">
+                <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="3">
+                  <div style="display:grid;gap:2px;padding:10px 14px;background:oklch(0.955 0.005 258);border-radius:4px;min-width:120px">
+                    <span style="font-size:20px;font-weight:620;font-variant-numeric:tabular-nums;color:{{ m.ink }}">{{ m.v }}</span>
+                    <span style="font-size:11.5px;color:oklch(0.487 0.018 260)">{{ m.l }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <sc-if value="{{ pii }}" hint-placeholder-val="{{ false }}">
+              <div style="border:1px solid oklch(0.505 0.176 26);background:oklch(0.958 0.030 26);border-radius:6px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">guardrail bloqueou antes de persistir</span>
+                <span style="font-size:13px;line-height:1.5">{{ piiMsg }}</span>
+              </div>
+            </sc-if>
+
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <b style="font-size:15px;font-weight:650">Os seis fatores</b>
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">CFM 2.454/2026 · Art. 12, § único</span>
+                <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">{{ factorNote }}</span>
+              </div>
+
+              <sc-for list="{{ factors }}" as="f" hint-placeholder-count="6">
+                <div style="border:1px solid {{ f.line }};border-left:4px solid {{ f.line }};border-radius:6px;padding:13px;display:flex;flex-direction:column;gap:9px;background:{{ f.bg }}">
+                  <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                    <span style="flex:none;width:22px;height:22px;border-radius:999px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);display:grid;place-items:center;font-size:11.5px;font-weight:700">{{ f.n }}</span>
+                    <b style="font-size:13.5px;font-weight:600">{{ f.title }}</b>
+                    <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260)">{{ f.disp }}</span>
+                    <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:{{ f.stBg }};color:{{ f.stInk }}">{{ f.state }}</span>
+                  </div>
+
+                  <sc-if value="{{ f.isGap }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:7px;padding:11px;background:#fff;border:1px solid oklch(0.545 0.126 68);border-radius:5px">
+                      <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">lacuna declarada — entra na evidência assinada</span>
+                      <div style="display:flex;flex-direction:column;gap:5px">
+                        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">motivo</span>
+                        <input type="text" value="{{ f.motivo }}" onChange="{{ f.setMotivo }}" placeholder="por que a instituição não tem este dado" style="width:100%;padding:9px 11px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:12.5px" />
+                      </div>
+                      <div style="display:flex;flex-direction:column;gap:5px">
+                        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">destino</span>
+                        <div style="display:flex;gap:6px;flex-wrap:wrap">
+                          <sc-for list="{{ f.destinos }}" as="d" hint-placeholder-count="3">
+                            <button type="button" onClick="{{ d.pick }}" style="padding:6px 11px;border:1px solid {{ d.line }};background:{{ d.bg }};color:{{ d.ink }};border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">{{ d.label }}</button>
+                          </sc-for>
+                        </div>
+                      </div>
+                      <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">Dispositivo que exige o dado: <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">{{ f.disp }}</span> — vai junto da lacuna no dossiê.</span>
+                      <button type="button" onClick="{{ f.undoGap }}" style="align-self:flex-start;padding:7px 12px;border:1px solid oklch(0.836 0.008 258);border-radius:6px;background:#fff;font-size:12.5px;font-weight:600;cursor:pointer">Voltar a preencher</button>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ f.isFill }}" hint-placeholder-val="{{ true }}">
+                    <div style="display:flex;flex-direction:column;gap:8px">
+                      <textarea rows="2" value="{{ f.analise }}" onChange="{{ f.setAnalise }}" placeholder="a análise escrita da instituição para este fator" style="width:100%;padding:10px 12px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:12.5px;line-height:1.5;resize:vertical"></textarea>
+                      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">grau neste fator</span>
+                        <sc-for list="{{ f.graus }}" as="g" hint-placeholder-count="3">
+                          <button type="button" onClick="{{ g.pick }}" style="padding:6px 12px;border:1px solid {{ g.line }};background:{{ g.bg }};color:{{ g.ink }};border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">{{ g.label }}</button>
+                        </sc-for>
+                        <span style="margin-left:auto;display:flex;gap:7px">
+                          <button type="button" onClick="{{ f.ask }}" style="padding:6px 11px;border:1px solid oklch(0.452 0.152 262);border-radius:4px;background:#fff;color:oklch(0.452 0.152 262);font-size:12px;font-weight:600;cursor:pointer">{{ f.askLabel }}</button>
+                          <button type="button" onClick="{{ f.declareGap }}" style="padding:6px 11px;border:1px solid oklch(0.545 0.126 68);border-radius:4px;background:#fff;color:oklch(0.545 0.126 68);font-size:12px;font-weight:600;cursor:pointer">Declarar lacuna</button>
+                        </span>
+                      </div>
+                      <sc-if value="{{ f.hasSrc }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">fontes</span>
+                          <sc-for list="{{ f.srcs }}" as="sc" hint-placeholder-count="2">
+                            <span style="display:inline-flex;align-items:center;gap:6px;font-size:11.5px;padding:2px 9px 2px 3px;border-radius:999px;border:1px solid {{ sc.line }};background:#fff">
+                              <span style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:{{ sc.tagBg }};color:{{ sc.tagInk }}">{{ sc.kind }}</span>
+                              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">{{ sc.ref }}</span>
+                              <span style="color:oklch(0.612 0.014 258)">↗</span>
+                            </span>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </section>
+
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:11px">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <b style="font-size:15px;font-weight:650">Classificação da solução</b>
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">Art. 13 · Anexo II</span>
+                <span style="margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 9px;border-radius:999px;background:oklch(0.958 0.030 26);color:oklch(0.505 0.176 26)">o copiloto não toca este campo</span>
+              </div>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);max-width:84ch;text-wrap:pretty">Declarado <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">ai: false</span> no manifesto: o Art. 12 atribui a avaliação à instituição, então nenhuma proposta de máquina pode preencher isto — não é preferência de tela, é o gate.</p>
+              <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px">
+                <sc-for list="{{ niveis }}" as="n" hint-placeholder-count="4">
+                  <button type="button" onClick="{{ n.pick }}" style="text-align:left;border:1px solid {{ n.line }};background:{{ n.bg }};border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer">
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <span style="font-size:13px;color:{{ n.mkInk }}">{{ n.mark }}</span>
+                      <b style="font-size:13px;font-weight:650">{{ n.label }}</b>
+                    </div>
+                    <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ n.carac }}</span>
+                    <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10.5px;color:{{ n.citeInk }}">{{ n.cite }}</span>
+                  </button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ ressalva }}" hint-placeholder-val="{{ true }}">
+                <div style="border:1px solid oklch(0.545 0.126 68);background:oklch(0.960 0.038 68);border-radius:5px;padding:11px 13px;font-size:12.5px;line-height:1.5">O Art. 13 prevê o nível <b>inaceitável</b> e o Anexo II <b>não o caracteriza</b>. A tela declara a ressalva em vez de preencher o vazio: graduar um fator num nível sem critério publicado seria registrar palpite como avaliação.</div>
+              </sc-if>
+            </section>
+
+            <section style="background:{{ signBg }};border:1px solid {{ signLine }};border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:11px">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ signLine }}">{{ signEyebrow }}</span>
+                <b style="font-size:15px;font-weight:650">{{ signTitle }}</b>
+                <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:#fff;border:1px solid oklch(0.492 0.126 158);color:oklch(0.492 0.126 158)">Diretoria Técnica ✓</span>
+              </div>
+              <p style="margin:0;font-size:13px;line-height:1.5;max-width:92ch;text-wrap:pretty">{{ signBody }}</p>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">o que esta assinatura vai gerar</span>
+                <sc-for list="{{ willGenerate }}" as="w" hint-placeholder-count="4">
+                  <div style="display:flex;gap:9px;align-items:baseline;font-size:12.5px;line-height:1.45"><span style="flex:none;width:6px;height:6px;border-radius:50%;margin-top:5px;background:{{ w.dot }}"></span><span style="min-width:0">{{ w.t }}</span></div>
+                </sc-for>
+              </div>
+              <sc-if value="{{ needTotp }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">TOTP no ato</span>
+                  <input type="text" value="{{ totp }}" onChange="{{ setTotp }}" placeholder="6 dígitos" style="width:120px;padding:9px 11px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:13px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;letter-spacing:0.14em" />
+                  <span style="font-size:11.5px;color:oklch(0.487 0.018 260)">Não é configuração: é o Anexo III, III e a 997/1980.</span>
+                </div>
+              </sc-if>
+              <div style="display:flex;gap:9px;flex-wrap:wrap;align-items:center">
+                <button type="button" onClick="{{ sign }}" disabled="{{ cantSign }}" style="padding:10px 15px;border:1px solid {{ signBtnLine }};border-radius:8px;background:{{ signBtnBg }};color:{{ signBtnInk }};font-size:13.5px;font-weight:600;cursor:pointer">{{ signLabel }}</button>
+                <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:64ch">{{ signHint }}</span>
+              </div>
+              <sc-if value="{{ signed }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:6px;padding:12px;background:#fff;border:1px solid oklch(0.492 0.126 158);border-radius:5px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.492 0.126 158)">cadeia probatória</span>
+                  <sc-for list="{{ trail }}" as="t" hint-placeholder-count="0">
+                    <div style="display:flex;gap:9px;align-items:baseline;font-size:12px;line-height:1.45">
+                      <span style="flex:none;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260);min-width:112px">{{ t.k }}</span>
+                      <span style="min-width:0;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;overflow-wrap:anywhere">{{ t.v }}</span>
+                    </div>
+                  </sc-for>
+                  <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">O documento assinado não é editado: revisão cria versão nova, e a anterior é depreciada — não apagada.</span>
+                </div>
+              </sc-if>
+            </section>
+          </main>
+
+          <!-- dock -->
+          <aside style="width:420px;flex:0 0 420px;background:#fff;border-left:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;min-height:0">
+            <div style="flex:none;padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;gap:7px">
+              <div style="display:flex;align-items:center;gap:9px">
+                <span style="width:22px;height:22px;flex:none;border-radius:5px;background:oklch(0.452 0.152 262);color:#fff;display:grid;place-items:center;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700">c</span>
+                <b style="font-size:13.5px;font-weight:650">conformidade-cfm</b>
+                <span style="margin-left:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260)">v1 · unidade</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:oklch(0.955 0.024 262);border:1px solid oklch(0.452 0.152 262);border-radius:4px">
+                <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">campo em foco</span>
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;font-weight:600">{{ focus }}</span>
+              </div>
+            </div>
+            <div style="flex:1;min-height:0;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:11px">
+              <div style="padding:11px;border:1px solid oklch(0.902 0.006 258);border-radius:5px;display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">o que eu posso tocar aqui</span>
+                <div style="display:flex;flex-wrap:wrap;gap:5px">
+                  <sc-for list="{{ canWrite }}" as="c" hint-placeholder-count="3">
+                    <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;padding:2px 8px;border-radius:999px;background:oklch(0.958 0.028 158);color:oklch(0.492 0.126 158)">{{ c.t }}</span>
+                  </sc-for>
+                </div>
+                <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">Não toco: <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">classificacao</span>, <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">assinatura</span> — e não escrevo nada com dado de paciente.</span>
+              </div>
+
+              <sc-for list="{{ chat }}" as="m" hint-placeholder-count="2">
+                <div style="align-self:{{ m.align }};max-width:88%;background:{{ m.bg }};border:1px solid {{ m.line }};border-radius:10px;padding:9px 12px;font-size:12.5px;line-height:1.5;white-space:pre-wrap">{{ m.text }}</div>
+              </sc-for>
+
+              <sc-if value="{{ prop }}" hint-placeholder-val="{{ false }}">
+              <div style="border:1px solid oklch(0.545 0.126 68);border-left:3px solid oklch(0.545 0.126 68);border-radius:5px;padding:12px;display:flex;flex-direction:column;gap:9px">
+                <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+                  <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">proposta · {{ prop.field }}</span>
+                  <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">decida você</span>
+                </div>
+                <div style="border:1px solid oklch(0.902 0.006 258);border-radius:4px;overflow:hidden;font-size:12px;line-height:1.5">
+                  <sc-if value="{{ prop.hasBefore }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;gap:9px;padding:7px 10px;background:oklch(0.958 0.030 26)"><span style="color:oklch(0.505 0.176 26);font-weight:700">−</span><span style="text-decoration:line-through">{{ prop.before }}</span></div>
+                  </sc-if>
+                  <div style="display:flex;gap:9px;padding:7px 10px;background:oklch(0.958 0.028 158)"><span style="color:oklch(0.492 0.126 158);font-weight:700">+</span><span>{{ prop.after }}</span></div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:5px;padding:9px 10px;background:oklch(0.955 0.005 258);border-radius:4px">
+                  <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">fontes — duas espécies</span>
+                  <sc-for list="{{ prop.srcs }}" as="sc" hint-placeholder-count="2">
+                    <div style="display:flex;align-items:baseline;gap:8px;font-size:11.5px">
+                      <span style="flex:none;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:{{ sc.tagBg }};color:{{ sc.tagInk }}">{{ sc.kind }}</span>
+                      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;min-width:0;overflow-wrap:anywhere">{{ sc.ref }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button type="button" onClick="{{ prop.use }}" style="padding:8px 13px;border:1px solid oklch(0.492 0.126 158);border-radius:6px;background:oklch(0.492 0.126 158);color:#fff;font-size:12.5px;font-weight:600;cursor:pointer">Usar</button>
+                  <button type="button" onClick="{{ prop.discard }}" style="padding:8px 13px;border:1px solid oklch(0.836 0.008 258);border-radius:6px;background:#fff;color:oklch(0.487 0.018 260);font-size:12.5px;font-weight:600;cursor:pointer">Descartar</button>
+                </div>
+              </div>
+              </sc-if>
+
+              <div style="padding:11px;border:1px dashed oklch(0.505 0.176 26);border-radius:5px;display:flex;flex-direction:column;gap:7px">
+                <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">testar o guardrail</span>
+                <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">Cola um trecho com CPF numa análise e tenta gravar. O middleware roda <b>antes</b> de persistir.</span>
+                <button type="button" onClick="{{ tryPii }}" style="align-self:flex-start;padding:7px 12px;border:1px solid oklch(0.505 0.176 26);border-radius:6px;background:#fff;color:oklch(0.505 0.176 26);font-size:12.5px;font-weight:600;cursor:pointer">Colar trecho do prontuário</button>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:7px;padding:11px;border:1px solid oklch(0.902 0.006 258);border-radius:5px">
+                <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">decisões desta sessão</span>
+                <sc-if value="{{ noDec }}" hint-placeholder-val="{{ true }}"><span style="font-size:11.5px;color:oklch(0.487 0.018 260)">Nada decidido ainda.</span></sc-if>
+                <sc-for list="{{ decisions }}" as="d" hint-placeholder-count="0">
+                  <div style="display:flex;align-items:baseline;gap:8px;font-size:11.5px;line-height:1.4">
+                    <span style="flex:none;width:6px;height:6px;border-radius:50%;background:{{ d.dot }}"></span>
+                    <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">{{ d.what }}</span>
+                    <span style="color:oklch(0.487 0.018 260);min-width:0">{{ d.text }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </aside>
+        </div>
+        </sc-if>
+
+        <!-- ══════════ DELTA DO MOTOR ══════════ -->
+        <sc-if value="{{ isMotor }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;min-width:0;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+          <div>
+            <h2 style="margin:0;font-size:21px;font-weight:640;letter-spacing:-0.015em">O delta do motor — o que um domínio regulado exige</h2>
+            <p style="margin:4px 0 0;font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:88ch;text-wrap:pretty">Seis evoluções, cada uma como campo novo do manifesto. À esquerda o que o motor já faz; à direita o que falta e o que ele passa a declarar.</p>
+          </div>
+          <sc-for list="{{ delta }}" as="d" hint-placeholder-count="6">
+            <section style="background:#fff;border:1px solid {{ d.line }};border-left:4px solid {{ d.line }};border-radius:8px;padding:15px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) 300px;gap:18px">
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">
+                  <span style="flex:none;width:22px;height:22px;border-radius:999px;background:{{ d.line }};color:#fff;display:grid;place-items:center;font-size:11.5px;font-weight:700">{{ d.n }}</span>
+                  <b style="font-size:15px;font-weight:650">{{ d.title }}</b>
+                  <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 9px;border-radius:999px;background:{{ d.stBg }};color:{{ d.stInk }}">{{ d.state }}</span>
+                </div>
+                <span style="font-size:12.5px;line-height:1.5">{{ d.why }}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">hoje</span>
+                <span style="font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260)">{{ d.today }}</span>
+                <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26);margin-top:4px">o risco de não fazer</span>
+                <span style="font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260)">{{ d.risk }}</span>
+              </div>
+              <pre style="margin:0;padding:11px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);border-radius:5px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;line-height:1.55;overflow:auto;white-space:pre">{{ d.yaml }}</pre>
+            </section>
+          </sc-for>
+          <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <b style="font-size:13.5px;font-weight:650">O que o motor não deve absorver</b>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">O julgamento. Classificar risco é da instituição por atribuição do Art. 12 — um copiloto que sugerisse o nível estaria fazendo o que a norma deu a outro. É por isso que o campo é <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">ai: false</span>, e não "com aprovação".</p>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <b style="font-size:13.5px;font-weight:650">O que se ganha se fizer</b>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Os seis itens não são para medicina: lacuna declarada serve a qualquer formulário de auditoria, citação de dispositivo serve a contrato e a norma técnica, e a trilha encadeada é o que transforma o nosso log em peça probatória. O domínio regulado é o teste mais duro do mesmo parser.</p>
+            </div>
+          </section>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2090,&quot;height&quot;:1500},&quot;strictSignature&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Assinatura&quot;}}">
+const FACTORS = [
+  { n: 1, title: "Impacto nos direitos fundamentais e na saúde", disp: "Art. 12, § único", seedAnalise: "A pré-leitura orienta conduta em suspeita de pneumotórax; erro de omissão pode retardar drenagem.", seedGrau: "alto" },
+  { n: 2, title: "Criticidade do contexto de uso", disp: "Art. 12, § único", seedAnalise: "Pronto-socorro, 24h, com pico noturno.", seedGrau: "alto" },
+  { n: 3, title: "Complexidade e grau de autonomia do modelo", disp: "Art. 12, § único", seedAnalise: "", seedGrau: "" },
+  { n: 4, title: "Finalidade pretendida e finalidades potenciais", disp: "Art. 12, § único", seedAnalise: "", seedGrau: "" },
+  { n: 5, title: "Nível de intervenção humana no resultado", disp: "Art. 12, § único", seedAnalise: "", seedGrau: "" },
+  { n: 6, title: "Quantidade e sensibilidade dos dados utilizados", disp: "Art. 12, § único", seedAnalise: "", seedGrau: "" },
+];
+
+const PROPOSTAS = {
+  3: { after: "Rede convolucional de terceiro, sem ajuste local; saída é escore por achado, sem laudo automático. Autonomia técnica média: não emite documento nem aciona conduta.",
+       srcs: [{ kind: "dispositivo", ref: "CFM 2.454/2026 · Art. 12, § único (fator 3)" }, { kind: "documento", ref: "fornecedor/ficha-tecnica.md#L14-L38" }] },
+  4: { after: "Pretendida: triagem de urgência por achado crítico. Potenciais: uso como apoio à decisão no plantão generalista e, na prática, priorização de fila — declaradas porque o § único as exige nomeadamente.",
+       srcs: [{ kind: "dispositivo", ref: "CFM 2.454/2026 · Art. 12, § único (fator 4)" }, { kind: "documento", ref: "implantacao/uso-observado.md#L3-L22" }] },
+  5: { after: "Entre 22h e 6h não há radiologista presencial: a pré-leitura orienta o plantonista generalista antes de qualquer laudo. Intervenção humana existe, mas é do generalista — não do especialista.",
+       srcs: [{ kind: "dispositivo", ref: "CFM 2.454/2026 · Art. 18, § 1º" }, { kind: "documento", ref: "escala/plantao-noturno.md#L8-L19" }] },
+  6: { after: "", srcs: [] },
+};
+
+const NIVEIS = [
+  { id: "baixo", label: "Baixo", carac: "Sem influência decisória direta em diagnóstico ou tratamento individual. Ex.: agendamento, logística de insumos.", cite: "Anexo II, I" },
+  { id: "medio", label: "Médio", carac: "Influência indireta na conduta, com revisão humana estruturada.", cite: "Anexo II, II" },
+  { id: "alto", label: "Alto", carac: "Influência direta em diagnóstico ou tratamento, ou contexto crítico.", cite: "Anexo II, III" },
+  { id: "inaceitavel", label: "Inaceitável", carac: "O Anexo II não caracteriza este nível. Sem critério publicado, a tela não inventa definição.", cite: "Art. 13 · sem caracterização" },
+];
+
+const DELTA = [
+  { n: 1, title: "Lacuna declarada como estado de campo", state: "falta", why: "Campo vazio com motivo, dispositivo e destino — que PASSA na validação e viaja para a evidência assinada.",
+    today: "Um campo é válido ou inválido. Vazio obrigatório bloqueia.", risk: "O gate ensina a instituição a preencher com palpite, e palpite parece resposta.",
+    yaml: "fields:\n  - id: fator_6\n    required: true\n    allowDeclaredGap: true\n    gap:\n      requires: [motivo, destino]\n      cite: from(field.dispositivo)\n      entersEvidence: true" },
+  { n: 2, title: "Citação de dispositivo, não só de arquivo", state: "falta", why: "Uma segunda espécie de fonte: norma, artigo, inciso — com a mesma exigência de resolver que a blob URL.",
+    today: "O piso de citação valida blob URL com SHA e range de linhas.", risk: "Numa avaliação normativa, quase toda fonte é um artigo — e ele hoje não conta como citação.",
+    yaml: "citation:\n  kinds:\n    - blob   # repo + sha + range\n    - dispositivo:\n        norma: required\n        artigo: required\n        inciso: optional\n        resolvesTo: docs/normas/*.md\n  floor: 0.80" },
+  { n: 3, title: "Middleware que bloqueia antes de persistir", state: "parcial", why: "O guardrail não avisa: ele impede. Caminho único de escrita, e teste que varre o código-fonte.",
+    today: "Middleware emite aviso, proposta ou aprovação — nenhum bloqueia a gravação.", risk: "Uma ferramenta de conformidade que acumula dado assistencial cria o risco que existe para reduzir.",
+    yaml: "type: middleware\nresource: pii-guard\nstage: pre-persist\nemits: block\ndetect: [cpf, cns, rg, data_nascimento]\nscope: any-free-text\nsingleWritePath: true\ntest: source-scan" },
+  { n: 4, title: "O log virar trilha", state: "parcial", why: "Hash encadeado ao evento anterior, âncora diária write-once e carimbo RFC 3161.",
+    today: "log.md é texto append-only, sem encadeamento nem carimbo externo.", risk: "Sem cadeia, \"não mudou depois\" é promessa de disciplina, não propriedade do sistema.",
+    yaml: "type: log\nchain: sha256-prev\nanchor:\n  cadence: daily\n  storage: blob-write-once\ntimestamp:\n  authority: rfc3161\n  required: on-signature" },
+  { n: 5, title: "Duas camadas e papéis declaráveis", state: "falta", why: "Rede publica referência e não assina; unidade assina. Postura confirma|desvio com justificativa, e rollup pelo pior elo.",
+    today: "areas são planas, e os papéis são fixos em Owner/Admin/Approver.", risk: "Um dossiê da rede cria um sujeito que a norma não reconhece — e a pergunta \"quem assina\" fica sem resposta.",
+    yaml: "tenancy:\n  layers: [rede, unidade]\n  signer: unidade\n  reference: {publishedBy: rede, supersedes: false}\n  posture: [confirma, desvio]\n  deviationReason: required\n  rollup: worst-link\nroles: [diretoria_tecnica, qualidade, ti, leitura]" },
+  { n: 6, title: "Assinatura com step-up e dossiê", state: "falta", why: "TOTP exigido no ato, e um tipo novo que exporta a peça que vai ao órgão de controle.",
+    today: "Gate por papel, sem segundo fator; nenhum tipo exporta evidência.", risk: "O Anexo III, VIII prevê acesso de órgão externo: um dossiê que só convence quem já confia não serve.",
+    yaml: "gate:\n  role: diretoria_tecnica\n  stepUp: totp\n  atTimeOfAct: true\n---\ntype: dossier\nsource: bundle\nshows: [lacunas, desvios, trilha]\nhides: []\nformat: pdf" },
+];
+
+class Component extends DCLogic {
+  state = {
+    tab: "aval",
+    an: { 1: FACTORS[0].seedAnalise, 2: FACTORS[1].seedAnalise, 3: "", 4: "", 5: "", 6: "" },
+    grau: { 1: "alto", 2: "alto", 3: "", 4: "", 5: "", 6: "" },
+    gap: {}, focus: "fator_3", prop: null, chat: [], decisions: [],
+    pii: false, totp: "", signed: false,
+  };
+
+  set(k, v) { this.setState({ [k]: v }); }
+  decide(what, text, ok) { this.setState((s) => ({ decisions: [{ what, text, dot: ok ? "oklch(0.492 0.126 158)" : "oklch(0.505 0.176 26)" }].concat(s.decisions) })); }
+
+  ask(n) {
+    const p = PROPOSTAS[n];
+    if (!p || !p.after) {
+      this.setState((s) => ({
+        focus: "fator_" + n,
+        chat: s.chat.concat([
+          { who: "u", text: "Escreva a análise do fator " + n + "." },
+          { who: "a", text: "Não tenho fonte para este fator: o inventário do dado que o fornecedor usa não existe no bundle. Escrever daqui seria inventar — declare a lacuna." },
+        ]),
+        prop: null,
+      }));
+      return;
+    }
+    this.setState((s) => ({
+      focus: "fator_" + n,
+      chat: s.chat.concat([{ who: "u", text: (s.an[n] ? "Melhore" : "Escreva") + " a análise do fator " + n + "." }, { who: "a", text: "Chamei propose_field para fator_" + n + ", citando o dispositivo e o documento." }]),
+      prop: { n, field: "fator_" + n, before: s.an[n], after: p.after, srcs: p.srcs },
+    }));
+  }
+
+  usar() {
+    const p = this.state.prop;
+    if (!p) return;
+    this.setState((s) => ({ an: { ...s.an, [p.n]: p.after }, prop: null }));
+    this.decide("fator_" + p.n, "análise usada · fonte: dispositivo + documento", true);
+  }
+
+  renderVals() {
+    const s = this.state;
+    const total = FACTORS.length;
+    const resolved = FACTORS.filter((f) => s.gap[f.n] || (s.an[f.n] && s.grau[f.n])).length;
+    const gaps = Object.keys(s.gap).length;
+    const level = s.level;
+    const needTotp = this.props.strictSignature ?? true;
+    const cantSign = s.signed || resolved < total || !level || (needTotp && (s.totp || "").replace(/\D/g, "").length !== 6);
+
+    const chip = (on) => ({ line: on ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)", bg: on ? "oklch(0.955 0.024 262)" : "#fff", ink: on ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)" });
+    const srcTag = (kind) => kind === "dispositivo"
+      ? { tagBg: "oklch(0.955 0.024 262)", tagInk: "oklch(0.452 0.152 262)", line: "oklch(0.452 0.152 262)" }
+      : { tagBg: "oklch(0.955 0.005 258)", tagInk: "oklch(0.487 0.018 260)", line: "oklch(0.902 0.006 258)" };
+
+    return {
+      nav: [
+        { icon: "◎", label: "Casos de uso" },
+        { icon: "💬", label: "Assistentes" },
+        { icon: "◇", label: "Copilotos" },
+        { icon: "⚖", label: "Conformidade", tab: "aval", isNew: true },
+        { icon: "◆", label: "Agentes hospedados" },
+        { icon: "⇌", label: "Middlewares" },
+        { icon: "🔌", label: "Adaptadores" },
+        { icon: "◈", label: "Meus agentes" },
+        { icon: "▤", label: "Conhecimento" },
+        { icon: "✦", label: "Skills" },
+        { icon: "🎫", label: "Chamados" },
+        { icon: "✓", label: "Avaliações" },
+        { icon: "▦", label: "Visão geral" },
+        { icon: "🔗", label: "Auditoria" },
+        { icon: "🛡️", label: "Administração" },
+      ].map((n) => ({
+        icon: n.icon, label: n.label, isNew: !!n.isNew,
+        bg: n.tab ? "oklch(0.955 0.024 262)" : "transparent",
+        ink: n.tab ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)",
+        weight: n.tab ? "600" : "400",
+        pick: () => { if (n.tab) this.set("tab", n.tab); },
+      })),
+      tabs: [{ id: "aval", label: "Avaliação" }, { id: "motor", label: "Delta do motor" }].map((t) => ({
+        label: t.label, pick: () => this.set("tab", t.id),
+        bg: s.tab === t.id ? "#fff" : "transparent",
+        ink: s.tab === t.id ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)",
+      })),
+      crumb: s.tab === "aval" ? "Avaliação preliminar" : "Delta do motor",
+      ref: s.tab === "aval" ? "okf · type: formflow · conformidade" : "okf · engine delta",
+      isAval: s.tab === "aval", isMotor: s.tab === "motor",
+      dossieState: s.signed ? "dossiê assinado · v1" : gaps ? gaps + (gaps === 1 ? " lacuna declarada" : " lacunas declaradas") : "rascunho — não é evidência",
+      dossieBg: s.signed ? "oklch(0.958 0.028 158)" : "oklch(0.960 0.038 68)",
+      dossieInk: s.signed ? "oklch(0.492 0.126 158)" : "oklch(0.545 0.126 68)",
+
+      metrics: [
+        { v: resolved + "/" + total, l: "fatores resolvidos", ink: resolved === total ? "oklch(0.492 0.126 158)" : "oklch(0.235 0.017 262)" },
+        { v: String(gaps), l: "lacunas declaradas", ink: gaps ? "oklch(0.545 0.126 68)" : "oklch(0.235 0.017 262)" },
+        { v: "0", l: "dados de paciente", ink: "oklch(0.492 0.126 158)" },
+      ],
+      factorNote: "cada fator tem análise escrita da instituição — ou lacuna declarada",
+
+      factors: FACTORS.map((f) => {
+        const g = s.gap[f.n];
+        const done = !!g || (s.an[f.n] && s.grau[f.n]);
+        return {
+          n: String(f.n), title: f.title, disp: f.disp,
+          isGap: !!g, isFill: !g,
+          motivo: g ? g.motivo : "", destinos: ["TI da unidade", "Fornecedor", "Comissão corporativa"].map((d) => ({
+            label: d, ...chip(g && g.destino === d),
+            pick: () => this.setState((st) => ({ gap: { ...st.gap, [f.n]: { ...(st.gap[f.n] || {}), destino: d } } })),
+          })),
+          setMotivo: (e) => this.setState((st) => ({ gap: { ...st.gap, [f.n]: { ...(st.gap[f.n] || {}), motivo: e.target.value } } })),
+          undoGap: () => this.setState((st) => { const n = { ...st.gap }; delete n[f.n]; return { gap: n }; }),
+          declareGap: () => { this.setState((st) => ({ gap: { ...st.gap, [f.n]: { motivo: "", destino: "" } }, focus: "fator_" + f.n })); this.decide("fator_" + f.n, "lacuna declarada", true); },
+          analise: s.an[f.n] || "",
+          setAnalise: (e) => this.setState((st) => ({ an: { ...st.an, [f.n]: e.target.value } })),
+          graus: ["baixo", "médio", "alto"].map((x) => ({ label: x, ...chip(s.grau[f.n] === x), pick: () => this.setState((st) => ({ grau: { ...st.grau, [f.n]: x } })) })),
+          ask: () => this.ask(f.n), askLabel: s.an[f.n] ? "✎ Melhorar" : "✨ Escrever",
+          hasSrc: !!(s.an[f.n] && PROPOSTAS[f.n] && PROPOSTAS[f.n].srcs.length),
+          srcs: (PROPOSTAS[f.n] ? PROPOSTAS[f.n].srcs : []).map((x) => ({ kind: x.kind, ref: x.ref, ...srcTag(x.kind) })),
+          state: g ? "lacuna declarada" : done ? "preenchido" : "pendente",
+          stBg: g ? "oklch(0.960 0.038 68)" : done ? "oklch(0.958 0.028 158)" : "oklch(0.955 0.005 258)",
+          stInk: g ? "oklch(0.545 0.126 68)" : done ? "oklch(0.492 0.126 158)" : "oklch(0.487 0.018 260)",
+          line: g ? "oklch(0.545 0.126 68)" : done ? "oklch(0.492 0.126 158)" : "oklch(0.902 0.006 258)",
+          bg: s.focus === "fator_" + f.n ? "oklch(0.977 0.003 258)" : "#fff",
+        };
+      }),
+
+      niveis: NIVEIS.map((n) => {
+        const on = level === n.id;
+        const isUn = n.id === "inaceitavel";
+        return {
+          label: n.label, carac: n.carac, cite: n.cite, mark: on ? "◉" : "○",
+          mkInk: on ? "oklch(0.452 0.152 262)" : "oklch(0.612 0.014 258)",
+          line: on ? "oklch(0.452 0.152 262)" : isUn ? "oklch(0.545 0.126 68)" : "oklch(0.902 0.006 258)",
+          bg: on ? "oklch(0.955 0.024 262)" : "#fff",
+          citeInk: isUn ? "oklch(0.545 0.126 68)" : "oklch(0.487 0.018 260)",
+          pick: () => { this.set("level", n.id); this.decide("classificacao", "declarada pela instituição: " + n.label, true); },
+        };
+      }),
+      ressalva: true,
+
+      signEyebrow: s.signed ? "Assinado" : "Assinatura da Diretoria Técnica",
+      signTitle: s.signed ? "Avaliação preliminar assinada — v1" : "Você está assinando com " + gaps + (gaps === 1 ? " lacuna declarada" : " lacuna(s) declarada(s)"),
+      signBody: s.signed
+        ? "O documento entrou na trilha e a âncora do dia foi gravada. Revisão futura cria versão nova; esta não é editada."
+        : "Rascunho não é evidência: nada entra na trilha antes da assinatura. A tela mostra, antes do ato, exatamente quais eventos ela vai gerar.",
+      signBg: s.signed ? "oklch(0.958 0.028 158)" : "oklch(0.960 0.038 68)",
+      signLine: s.signed ? "oklch(0.492 0.126 158)" : "oklch(0.545 0.126 68)",
+      willGenerate: [
+        { t: "documento assinado: avaliacao-preliminar/pre-leitura-toracica.md (markdown + frontmatter, com quem verificou e quando)", dot: "oklch(0.452 0.152 262)" },
+        { t: "evento na trilha, encadeado por hash ao anterior", dot: "oklch(0.452 0.152 262)" },
+        { t: "âncora do dia gravada write-once", dot: "oklch(0.545 0.126 68)" },
+        { t: gaps ? gaps + " lacuna(s) declarada(s), com motivo, dispositivo e destino — visíveis no dossiê" : "nenhuma lacuna — todos os fatores com análise e grau", dot: gaps ? "oklch(0.545 0.126 68)" : "oklch(0.492 0.126 158)" },
+      ],
+      needTotp, totp: s.totp, setTotp: (e) => this.set("totp", e.target.value),
+      cantSign,
+      signLabel: s.signed ? "Assinado · v1" : "Assinar",
+      signBtnLine: cantSign ? "oklch(0.836 0.008 258)" : "oklch(0.492 0.126 158)",
+      signBtnBg: cantSign ? "#fff" : "oklch(0.492 0.126 158)",
+      signBtnInk: cantSign ? "oklch(0.487 0.018 260)" : "#fff",
+      signHint: s.signed
+        ? "Dossiê disponível para o CRM da jurisdição — mostra o que está provado, o que está pendente e o que falta."
+        : resolved < total
+          ? "Faltam " + (total - resolved) + " fator(es): preencha com análise e grau, ou declare a lacuna."
+          : !level
+            ? "Declare a classificação da solução (Art. 13) — o copiloto não pode fazer isso por você."
+            : needTotp && (s.totp || "").replace(/\D/g, "").length !== 6
+              ? "Informe o TOTP de 6 dígitos: o segundo fator é exigido no ato, não na sessão."
+              : "Só a Diretoria Técnica assina, e a assinatura gera os eventos listados acima.",
+      sign: () => {
+        if (cantSign) return;
+        this.setState({ signed: true });
+        this.decide("assinatura", "assinada por Dra. Marina Alves (DT) com " + gaps + " lacuna(s)", true);
+      },
+      signed: s.signed,
+      trail: [
+        { k: "documento", v: "avaliacao-preliminar/pre-leitura-toracica.md · v1" },
+        { k: "hash", v: "sha256:9f2c…a41b" },
+        { k: "prev", v: "sha256:41d0…77ce" },
+        { k: "âncora", v: "2026-08-29 · write-once · blob imutável" },
+        { k: "carimbo", v: "RFC 3161 · autoridade externa · 2026-08-29T14:52:11Z" },
+        { k: "signatário", v: "Marina Alves · Diretoria Técnica · TOTP verificado no ato" },
+      ],
+
+      focus: s.focus,
+      canWrite: [{ t: "fator_1..6.analise" }, { t: "implantacao.resumo" }],
+      chat: s.chat.map((m) => ({
+        text: m.text, align: m.who === "u" ? "flex-end" : "flex-start",
+        bg: m.who === "u" ? "oklch(0.955 0.024 262)" : "oklch(0.977 0.003 258)",
+        line: m.who === "u" ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)",
+      })),
+      prop: s.prop ? {
+        field: s.prop.field, before: s.prop.before, after: s.prop.after, hasBefore: !!s.prop.before,
+        srcs: s.prop.srcs.map((x) => ({ kind: x.kind, ref: x.ref, ...srcTag(x.kind) })),
+        use: () => this.usar(),
+        discard: () => { this.setState({ prop: null }); this.decide(s.prop.field, "proposta descartada", false); },
+      } : null,
+
+      pii: s.pii, piiMsg: "pii-guard recusou a gravação: padrão de CPF detectado em texto livre no fator 2 · valor não registrado, nem aqui nem em log. O dado não entra — não é filtro de exibição: um único módulo pode gravar documento, e o teste de código falha se outro caminho tentar.",
+      tryPii: () => { this.setState({ pii: true }); this.decide("pii-guard", "gravação bloqueada antes de persistir · tipo do achado, sem o valor", false); },
+
+      decisions: s.decisions, noDec: !s.decisions.length,
+
+      delta: DELTA.map((d) => ({
+        n: String(d.n), title: d.title, why: d.why, today: d.today, risk: d.risk, yaml: d.yaml, state: d.state,
+        line: d.state === "falta" ? "oklch(0.505 0.176 26)" : "oklch(0.545 0.126 68)",
+        stBg: d.state === "falta" ? "oklch(0.958 0.030 26)" : "oklch(0.960 0.038 68)",
+        stInk: d.state === "falta" ? "oklch(0.505 0.176 26)" : "oklch(0.545 0.126 68)",
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>

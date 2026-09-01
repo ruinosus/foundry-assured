@@ -137,6 +137,29 @@ def load_flow(nome: str) -> dict[str, Any]:
     return _carregar(flows_dir(), nome, validar=_validar)
 
 
+def _frontmatter(texto: str) -> dict[str, Any]:
+    """O frontmatter OKF do documento: `type`, `title`, `description`.
+
+    ELE PRECISA CHEGAR À TELA, e não chegava. O loader devolvia só o `spec` do bloco YAML, então
+    o catálogo mostrava `builder` onde o documento diz "Assistente do formulário" — o título
+    existia no arquivo e sumia no caminho. Encontrado rodando a tela.
+
+    Frontmatter torto NÃO derruba o documento: o `spec` é o que a tela precisa para renderizar, e
+    um `title:` mal escrito não é motivo para a tela não abrir. A conformidade do frontmatter é
+    do verificador OKF (`tests.knowledge.okf_conformance_test`), que é quem deve reclamar dele.
+    """
+    if not texto.startswith("---"):
+        return {}
+    fim = texto.find("\n---", 3)
+    if fim == -1:
+        return {}
+    try:
+        meta = yaml.safe_load(texto[3:fim])
+    except yaml.YAMLError:
+        return {}
+    return meta if isinstance(meta, dict) else {}
+
+
 def _carregar(diretorio: Path, nome: str, validar=None) -> dict[str, Any]:
     """Um documento declarativo: frontmatter OKF + `spec` no bloco YAML do corpo."""
     # O nome vira CAMINHO, então ele é conferido antes: um `../../.env` que virasse `Path` seria
@@ -146,10 +169,19 @@ def _carregar(diretorio: Path, nome: str, validar=None) -> dict[str, Any]:
     caminho = diretorio / f"{nome}.md"
     if not caminho.is_file():
         raise FlowNotFound(f"nenhum documento '{nome}' em {diretorio}")
-    spec = _extrair_spec(caminho.read_text(encoding="utf-8"), nome)
+    texto = caminho.read_text(encoding="utf-8")
+    spec = _extrair_spec(texto, nome)
     if validar:
         validar(spec, nome)
-    return {"name": nome, **spec}
+    meta = _frontmatter(texto)
+    # O `spec` vence o frontmatter num conflito de chave: ele é o que descreve o comportamento, e
+    # o frontmatter é transporte. `name` vence os dois — é o nome do ARQUIVO, e um `resource:`
+    # divergente no frontmatter não pode fazer a tela buscar outro documento.
+    return {
+        **{k: meta[k] for k in ("title", "description") if k in meta},
+        **spec,
+        "name": nome,
+    }
 
 
 def list_flows() -> list[str]:

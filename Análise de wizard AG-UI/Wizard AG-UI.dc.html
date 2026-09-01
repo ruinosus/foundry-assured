@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  @keyframes pip-pulse { 0%,100% { box-shadow:0 0 0 3px oklch(0.960 0.038 68); } 50% { box-shadow:0 0 0 6px transparent; } }
+</style>
+</helmet>
+
+<section style="display:flex;flex-direction:column;gap:24px;padding:40px">
+  <div style="display:flex;align-items:baseline;gap:16px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:22px;font-weight:640;letter-spacing:-0.015em">Wizard de agente — análise e versão aprimorada</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:68ch;text-wrap:pretty">Recriação fiel da tela atual (<a href="#1a">1a</a>) e o redesenho pedido — página única com progresso lateral, dock colado ao campo em foco, proposta com diff e HITL com contexto (<a href="#1b">1b</a>).</p>
+  </div>
+
+  <div style="display:flex;gap:32px;align-items:flex-start;flex-wrap:wrap">
+
+    <!-- ══════════════════════════ 1a · HOJE ══════════════════════════ -->
+    <div id="1a" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;background:oklch(0.235 0.017 262);color:oklch(0.99 0.005 262);padding:3px 8px;border-radius:999px">1a</span>
+        <b style="font-size:14px;font-weight:650">Hoje — recriado do código</b>
+        <span style="font-size:12px;color:oklch(0.487 0.018 260);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">AgentWizard.tsx · passo 2 · dock aberto</span>
+      </div>
+
+      <div style="width:1360px;height:900px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+        <!-- sidebar -->
+        <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+            <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+            <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+          </div>
+          <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Projeto</span>
+            <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;overflow-wrap:anywhere">fa-prod-eastus2</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">◎</span>Casos de uso</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">💬</span>Assistentes</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;background:oklch(0.955 0.024 262);color:oklch(0.452 0.152 262);font-weight:600"><span style="width:18px;text-align:center">◆</span>Meus agentes</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">▤</span>Conhecimento</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">✦</span>Skills</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">🎫</span>Chamados</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">✓</span>Avaliações</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">▦</span>Visão geral</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">🧩</span>Assistentes de tela</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">🔗</span>Auditoria</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">🛡️</span>Administração</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">🔌</span>Conexões</span>
+          </div>
+          <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+            <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">R</span>
+                <div style="min-width:0">
+                  <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Rafael Duarte</div>
+                  <div style="font-size:11px;color:oklch(0.487 0.018 260);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">rafael@contoso.com</div>
+                </div>
+              </div>
+              <div style="width:100%;padding:7px 10px;border:1px solid oklch(0.902 0.006 258);border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;text-align:center">Sair</div>
+            </div>
+            <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;padding:2px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:8px;font-size:13px;text-align:center">
+              <span style="padding:8px 0;border-radius:4px;background:#fff;color:oklch(0.452 0.152 262);box-shadow:0 1px 2px oklch(0.235 0.017 262 / 0.06)">☀</span>
+              <span style="padding:8px 0;color:oklch(0.487 0.018 260)">☾</span>
+              <span style="padding:8px 0;color:oklch(0.487 0.018 260)">◐</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;padding:2px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:8px;font-size:12px;text-align:center">
+              <span style="padding:6px 0;border-radius:4px;background:#fff;font-weight:600">PT</span>
+              <span style="padding:6px 0;color:oklch(0.487 0.018 260)">EN</span>
+            </div>
+          </div>
+        </aside>
+
+        <!-- content -->
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+          <header style="height:56px;flex:0 0 56px;border-bottom:1px solid oklch(0.902 0.006 258);background:#fff;display:flex;align-items:center;padding:0 24px;gap:8px">
+            <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Visão geral</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">Meus agentes</b></nav>
+            <span style="margin-left:auto;border:1px solid oklch(0.452 0.152 262);color:oklch(0.452 0.152 262);background:#fff;border-radius:4px;padding:4px 8px;line-height:1;font-size:13px">💬</span>
+          </header>
+
+          <div style="flex:1;min-height:0;display:flex">
+            <!-- página -->
+            <main style="flex:1;min-width:0;padding:24px;display:flex;flex-direction:column;gap:24px;overflow:hidden">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                <div>
+                  <h2 style="margin:0;font-size:22px;font-weight:640;letter-spacing:-0.015em">Agentes</h2>
+                  <p style="margin:4px 0 0;font-size:13px;line-height:1.4;color:oklch(0.487 0.018 260);max-width:68ch;text-wrap:pretty">Os agentes do seu projeto no Foundry — criados aqui ou no portal, e conversáveis por esta tela.</p>
+                </div>
+                <span style="display:inline-flex;align-items:center;padding:12px 16px;font-size:15px;font-weight:600;line-height:1;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff">Atualizar</span>
+              </div>
+
+              <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:8px">
+                <header style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+                  <h3 style="margin:0;font-size:13px;font-weight:600;color:oklch(0.487 0.018 260);text-transform:uppercase;letter-spacing:0.05em">Novo agente</h3>
+                  <span style="display:inline-flex;align-items:center;padding:12px 16px;font-size:15px;font-weight:600;line-height:1;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff">Cancelar</span>
+                </header>
+
+                <ol style="display:flex;flex-wrap:wrap;gap:12px;list-style:none;margin:0;padding:0">
+                  <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span style="display:grid;place-items:center;width:1.5rem;height:1.5rem;border-radius:999px;border:1px solid oklch(0.492 0.126 158);color:oklch(0.492 0.126 158);font-size:12px">1</span><span>Identidade</span></li>
+                  <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.235 0.017 262);font-weight:600"><span style="display:grid;place-items:center;width:1.5rem;height:1.5rem;border-radius:999px;background:oklch(0.452 0.152 262);border:1px solid oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-size:12px">2</span><span>Comportamento</span></li>
+                  <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span style="display:grid;place-items:center;width:1.5rem;height:1.5rem;border-radius:999px;border:1px solid oklch(0.902 0.006 258);font-size:12px">3</span><span>Capacidades</span></li>
+                  <li style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span style="display:grid;place-items:center;width:1.5rem;height:1.5rem;border-radius:999px;border:1px solid oklch(0.902 0.006 258);font-size:12px">4</span><span>Revisão</span><sc-if value="{{ ann }}" hint-placeholder-val="{{ true }}"><span style="margin-left:2px;width:16px;height:16px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:10px;display:grid;place-items:center;font-weight:700">5</span></sc-if></li>
+                </ol>
+
+                <p style="margin:8px 0 0;font-size:13px;color:oklch(0.487 0.018 260)">O que o agente faz e como responde. Escreva como quem explica a um colega novo.</p>
+
+                <!-- AiField (estado hover: ações reveladas) -->
+                <div style="display:flex;flex-direction:column;gap:2px;position:relative">
+                  <div style="display:flex;gap:4px;justify-content:flex-end;align-items:center">
+                    <sc-if value="{{ ann }}" hint-placeholder-val="{{ true }}"><span style="margin-right:auto;font-size:11px;color:oklch(0.505 0.176 26);display:flex;align-items:center;gap:4px"><span style="width:16px;height:16px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:10px;display:grid;place-items:center;font-weight:700">4</span>só aparecem no hover/foco</span></sc-if>
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:4px;border:1px solid oklch(0.452 0.152 262);background:#fff;color:oklch(0.452 0.152 262);font-size:11px;line-height:1.6">✨ Escrever</span>
+                    <span style="display:inline-flex;align-items:center;gap:4px;padding:1px 4px;border-radius:4px;border:1px solid oklch(0.902 0.006 258);background:#fff;color:oklch(0.487 0.018 260);font-size:11px;line-height:1.6">💬</span>
+                  </div>
+                  <div style="width:100%;padding:7px 10px;border:1px solid oklch(0.902 0.006 258);border-radius:8px;background:#fff;font-size:12.5px;color:oklch(0.487 0.018 260);height:172px;line-height:1.5">Você responde dúvidas de RH citando a política de origem. Se a resposta não estiver na base, diga que não sabe…</div>
+                </div>
+
+                <label style="font-size:12px;color:oklch(0.487 0.018 260)">Modelo (deployment)</label>
+                <div style="width:100%;padding:7px 10px;border:1px solid oklch(0.902 0.006 258);border-radius:8px;background:#fff;font-size:12.5px;font-weight:600">gpt-5-mini</div>
+
+                <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+                  <span style="display:inline-flex;align-items:center;padding:12px 16px;font-size:15px;font-weight:600;line-height:1;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff">Voltar</span>
+                  <span style="flex:1"></span>
+                  <span style="display:inline-flex;align-items:center;padding:12px 16px;font-size:15px;font-weight:600;line-height:1;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262)">Avançar</span>
+                </div>
+              </section>
+            </main>
+
+            <!-- dock -->
+            <aside style="width:420px;flex:0 0 420px;background:#fff;border-left:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column">
+              <header style="display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid oklch(0.902 0.006 258)">
+                <div style="flex:1;min-width:0;padding:7px 10px;border:1px solid oklch(0.902 0.006 258);border-radius:8px;font-size:12.5px;font-weight:600;display:flex;justify-content:space-between">Builder <span style="color:oklch(0.487 0.018 260)">▾</span></div>
+                <div style="padding:7px 10px;border:1px solid oklch(0.902 0.006 258);border-radius:8px;font-size:12.5px;font-weight:600">✕</div>
+              </header>
+              <div style="flex:1;min-height:0;padding:12px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+                <div style="align-self:flex-end;max-width:80%;background:oklch(0.955 0.024 262);border-radius:12px;padding:8px 12px;font-size:13px;line-height:1.45">Escreva o campo “Comportamento” (identificador: instructions) para um agente que estou criando.</div>
+                <div style="max-width:92%;font-size:13px;line-height:1.5;color:oklch(0.235 0.017 262)">Escrevi uma versão baseada na base <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">rh-politicas</span>. A proposta está no card abaixo.</div>
+                <div style="display:flex;align-items:baseline;gap:8px;padding:2px 0;font-size:12px"><span style="width:6px;height:6px;border-radius:50%;background:oklch(0.492 0.126 158);align-self:center"></span><span>propose_field</span><span style="color:oklch(0.487 0.018 260);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Proposal shown to the user.</span></div>
+
+                <!-- proposal card -->
+                <div style="display:flex;flex-direction:column;gap:8px;border:1px solid oklch(0.545 0.126 68);background:#fff;border-radius:4px;padding:12px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">Proposta para instructions</span>
+                  <pre style="background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:12px;margin:0;font-size:12px;line-height:1.6;white-space:pre-wrap;word-break:break-word;max-height:150px;overflow:hidden;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Você atende dúvidas de RH consultando a base rh-politicas e cita sempre o documento de origem. Quando a resposta não estiver na base, diga que não sabe e indique o time responsável. Nunca invente número de política.</pre>
+                  <sc-if value="{{ ann }}" hint-placeholder-val="{{ true }}"><span style="font-size:11px;color:oklch(0.505 0.176 26);display:flex;align-items:center;gap:4px"><span style="width:16px;height:16px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:10px;display:grid;place-items:center;font-weight:700">1</span>não há como comparar com o texto que já está no campo</span></sc-if>
+                  <p style="display:flex;gap:8px;align-items:baseline;font-size:13px;margin:0">
+                    <span style="flex:none;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68);border:1px solid oklch(0.545 0.126 68);border-radius:4px;padding:0 4px">segundo o agente</span>
+                    <span style="color:oklch(0.487 0.018 260)">Priorizei recusar sem fonte, que é a regra do produto.</span>
+                  </p>
+                  <p style="margin:4px 0 0;font-size:12px;color:oklch(0.487 0.018 260)">Fontes: rh-politicas<sc-if value="{{ ann }}" hint-placeholder-val="{{ true }}"><span style="margin-left:6px;width:16px;height:16px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:10px;display:inline-grid;place-items:center;font-weight:700;vertical-align:middle">3</span></sc-if></p>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <span style="display:inline-flex;align-items:center;padding:12px 16px;font-size:15px;font-weight:600;line-height:1;border:1px solid oklch(0.492 0.126 158);border-radius:8px;background:oklch(0.492 0.126 158);color:#fff">Usar</span>
+                    <span style="display:inline-flex;align-items:center;padding:12px 16px;font-size:15px;font-weight:600;line-height:1;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff">Editar</span>
+                    <span style="display:inline-flex;align-items:center;padding:12px 16px;font-size:15px;font-weight:600;line-height:1;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff">Descartar</span>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      <!-- peças de hoje -->
+      <div style="display:flex;gap:16px;align-items:flex-start;width:1360px">
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:8px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Card de aprovação · TicketApproval.tsx</span>
+          <div style="padding:16px;background:oklch(0.960 0.038 68);border:1px solid oklch(0.545 0.126 68);border-radius:8px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">Aguardando aprovação</span>
+              <h3 style="margin:0;font-size:15px;font-weight:640">Abrir chamado?</h3>
+            </div>
+            <dl style="font-size:13px;line-height:1.4;margin:0">
+              <dt style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);margin-bottom:4px">Resumo</dt>
+              <dd style="margin:0 0 8px">Recuperar 2FA do GitHub para rafael@contoso.com — time IT Identity, urgência média.</dd>
+              <dt style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);margin-bottom:4px">Por que escalar</dt>
+              <dd style="margin:0;display:flex;gap:8px;align-items:baseline;font-size:13px">
+                <span style="flex:none;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68);border:1px solid oklch(0.545 0.126 68);border-radius:4px;padding:0 4px">segundo o agente</span>
+                <span style="color:oklch(0.487 0.018 260)">O runbook exige verificação de dispositivo, que só o time pode fazer.</span>
+              </dd>
+            </dl>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <span style="display:inline-flex;align-items:center;padding:12px 16px;font-size:15px;font-weight:600;line-height:1;border:1px solid oklch(0.492 0.126 158);border-radius:8px;background:oklch(0.492 0.126 158);color:#fff">Aprovar</span>
+              <span style="display:inline-flex;align-items:center;padding:12px 16px;font-size:15px;font-weight:600;line-height:1;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff">Corrigir</span>
+              <span style="display:inline-flex;align-items:center;padding:12px 16px;font-size:15px;font-weight:600;line-height:1;border:1px solid oklch(0.505 0.176 26);border-radius:8px;background:#fff;color:oklch(0.505 0.176 26)">Recusar</span>
+            </div>
+            <sc-if value="{{ ann }}" hint-placeholder-val="{{ true }}"><p style="margin:0;font-size:11px;color:oklch(0.505 0.176 26);display:flex;align-items:center;gap:4px"><span style="width:16px;height:16px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:10px;display:grid;place-items:center;font-weight:700;flex:none">2</span>quem aprova não vê o payload exato, nem o próprio papel, nem o que já decidiu antes — e recusar não pede motivo</p></sc-if>
+          </div>
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);margin-top:8px">Fita de passos + atividade de tool · WorkflowSteps / ToolActivity</span>
+          <div style="display:flex;align-items:center;gap:12px;padding:8px 16px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:6px;font-size:12px">
+            <span style="color:oklch(0.487 0.018 260);white-space:nowrap">Passos</span>
+            <ul style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;list-style:none;margin:0;padding:0">
+              <li style="display:flex;align-items:center;gap:8px"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.492 0.126 158)"></span><span>triage</span></li>
+              <li style="color:oklch(0.612 0.014 258)">→</li>
+              <li style="display:flex;align-items:center;gap:8px"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.492 0.126 158)"></span><span>retrieve</span></li>
+              <li style="color:oklch(0.612 0.014 258)">→</li>
+              <li style="display:flex;align-items:center;gap:8px"><span style="width:7px;height:7px;border-radius:50%;background:oklch(0.545 0.126 68);animation:pip-pulse 1.4s ease-in-out infinite"></span><span style="font-weight:600">escalate</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <sc-if value="{{ ann }}" hint-placeholder-val="{{ true }}">
+        <div style="width:420px;flex:0 0 420px;border:1px solid oklch(0.505 0.176 26);background:oklch(0.958 0.030 26);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">O que trava hoje</span>
+          <ol style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:13px;line-height:1.45">
+            <li style="display:flex;gap:8px"><span style="flex:none;width:18px;height:18px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:11px;display:grid;place-items:center;font-weight:700">1</span><span>A proposta aparece isolada: não há comparação com o texto atual do campo.</span></li>
+            <li style="display:flex;gap:8px"><span style="flex:none;width:18px;height:18px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:11px;display:grid;place-items:center;font-weight:700">2</span><span>HITL sem contexto: sem payload, sem papel do aprovador, sem histórico, recusa sem motivo.</span></li>
+            <li style="display:flex;gap:8px"><span style="flex:none;width:18px;height:18px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:11px;display:grid;place-items:center;font-weight:700">3</span><span>Procedência é uma linha de texto cinza — o que sustenta o campo não tem peso visual.</span></li>
+            <li style="display:flex;gap:8px"><span style="flex:none;width:18px;height:18px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:11px;display:grid;place-items:center;font-weight:700">4</span><span>As ações de IA vivem no hover: quem não passa o mouse não descobre que existem.</span></li>
+            <li style="display:flex;gap:8px"><span style="flex:none;width:18px;height:18px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:11px;display:grid;place-items:center;font-weight:700">5</span><span>O stepper é indicador, não navegação: não dá para voltar ou pular clicando.</span></li>
+            <li style="display:flex;gap:8px"><span style="flex:none;width:18px;height:18px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:11px;display:grid;place-items:center;font-weight:700">6</span><span>A revisão é um JSON cru — o documento é legível para quem escreve SDK, não para quem publica.</span></li>
+            <li style="display:flex;gap:8px"><span style="flex:none;width:18px;height:18px;border-radius:50%;background:oklch(0.505 0.176 26);color:#fff;font-size:11px;display:grid;place-items:center;font-weight:700">7</span><span>Validação só no clique em Avançar: o erro chega depois da tentativa, não durante.</span></li>
+          </ol>
+        </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════ 1b · PROPOSTA ══════════════════════════ -->
+    <div id="1b" style="display:flex;flex-direction:column;gap:12px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);padding:3px 8px;border-radius:999px">1b</span>
+        <b style="font-size:14px;font-weight:650">Proposta — página única, progresso lateral, dock colado ao campo</b>
+      </div>
+
+      <div style="width:1680px;height:1430px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+        <!-- sidebar (inalterada) -->
+        <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+          <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+            <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+            <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+          </div>
+          <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+            <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Projeto</span>
+            <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">fa-prod-eastus2</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">◎</span>Casos de uso</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">💬</span>Assistentes</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;background:oklch(0.955 0.024 262);color:oklch(0.452 0.152 262);font-weight:600"><span style="width:18px;text-align:center">◆</span>Meus agentes</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">▤</span>Conhecimento</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">✦</span>Skills</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">🎫</span>Chamados</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">✓</span>Avaliações</span>
+            <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">▦</span>Visão geral</span>
+          </div>
+          <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+            <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:10px;min-width:0">
+                <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">R</span>
+                <div style="min-width:0">
+                  <div style="font-size:13px;font-weight:600">Rafael Duarte</div>
+                  <div style="font-size:11px;color:oklch(0.487 0.018 260)">Admin · Approver</div>
+                </div>
+              </div>
+            </div>
+            <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+          </div>
+        </aside>
+
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+          <header style="height:56px;flex:0 0 56px;border-bottom:1px solid oklch(0.902 0.006 258);background:#fff;display:flex;align-items:center;padding:0 24px;gap:12px">
+            <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Visão geral</span><span>/</span><span>Meus agentes</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">Novo agente</b></nav>
+            <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:oklch(0.545 0.126 68)"></span>rascunho salvo · 14:22</span>
+            <span style="display:inline-flex;align-items:center;padding:8px 12px;font-size:13px;font-weight:600;line-height:1;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff">Cancelar</span>
+            <span style="display:inline-flex;align-items:center;gap:8px;padding:8px 12px;font-size:13px;font-weight:600;line-height:1;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262)">Criar e publicar versão</span>
+          </header>
+
+          <div style="flex:1;min-height:0;display:flex">
+
+            <!-- rail de progresso -->
+            <nav style="width:252px;flex:0 0 252px;background:oklch(0.955 0.005 258);border-right:1px solid oklch(0.902 0.006 258);padding:20px 16px;display:flex;flex-direction:column;gap:20px">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Progresso</span>
+                <div style="display:flex;align-items:baseline;gap:6px"><b style="font-size:22px;font-weight:640;font-variant-numeric:tabular-nums">3</b><span style="font-size:13px;color:oklch(0.487 0.018 260)">de 4 prontas</span></div>
+                <div style="height:4px;border-radius:999px;background:oklch(0.902 0.006 258);overflow:hidden"><div style="width:75%;height:100%;background:oklch(0.492 0.126 158)"></div></div>
+              </div>
+
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px">
+                <li style="display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:6px;background:transparent">
+                  <span style="flex:none;width:20px;height:20px;border-radius:999px;border:1px solid oklch(0.492 0.126 158);color:oklch(0.492 0.126 158);display:grid;place-items:center;font-size:12px">✓</span>
+                  <span style="min-width:0"><b style="display:block;font-size:13px;font-weight:600">Identidade</b><span style="display:block;font-size:12px;color:oklch(0.487 0.018 260);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">suporte-rh</span></span>
+                </li>
+                <li style="display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:6px;background:#fff;box-shadow:inset 2px 0 0 oklch(0.452 0.152 262);border:1px solid oklch(0.902 0.006 258)">
+                  <span style="flex:none;width:20px;height:20px;border-radius:999px;background:oklch(0.452 0.152 262);border:1px solid oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);display:grid;place-items:center;font-size:12px">2</span>
+                  <span style="min-width:0"><b style="display:block;font-size:13px;font-weight:600">Comportamento</b><span style="display:block;font-size:12px;color:oklch(0.545 0.126 68)">1 proposta aguardando</span></span>
+                </li>
+                <li style="display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:6px">
+                  <span style="flex:none;width:20px;height:20px;border-radius:999px;border:1px solid oklch(0.492 0.126 158);color:oklch(0.492 0.126 158);display:grid;place-items:center;font-size:12px">✓</span>
+                  <span style="min-width:0"><b style="display:block;font-size:13px;font-weight:600">Capacidades</b><span style="display:block;font-size:12px;color:oklch(0.487 0.018 260)">1 base · 2 ferramentas · 1 MCP</span></span>
+                </li>
+                <li style="display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:6px">
+                  <span style="flex:none;width:20px;height:20px;border-radius:999px;border:1px solid oklch(0.836 0.008 258);color:oklch(0.487 0.018 260);display:grid;place-items:center;font-size:12px">4</span>
+                  <span style="min-width:0"><b style="display:block;font-size:13px;font-weight:600">Revisão</b><span style="display:block;font-size:12px;color:oklch(0.487 0.018 260)">nada é enviado antes daqui</span></span>
+                </li>
+              </ul>
+
+              <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px;padding:12px;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Procedência</span>
+                <p style="margin:0;font-size:12px;line-height:1.5;color:oklch(0.235 0.017 262)">2 campos escritos pelo agente. Vão no <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">metadata.provenance</span> da versão.</p>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <span style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:3px;padding:1px 5px">description</span><span style="color:oklch(0.487 0.018 260)">rh-politicas</span></span>
+                  <span style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:3px;padding:1px 5px">instructions</span><span style="color:oklch(0.545 0.126 68)">aguardando decisão</span></span>
+                </div>
+              </div>
+            </nav>
+
+            <!-- formulário -->
+            <main style="flex:1;min-width:0;padding:24px 28px;display:flex;flex-direction:column;gap:20px;overflow:hidden">
+
+              <div style="display:flex;flex-direction:column;gap:20px">
+                <!-- seção 2 -->
+                <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px">
+                  <header style="display:flex;align-items:baseline;gap:10px">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">Seção 2</span>
+                    <h3 style="margin:0;font-size:17px;font-weight:640;letter-spacing:-0.015em">Comportamento</h3>
+                    <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">obrigatória</span>
+                  </header>
+                  <p style="margin:0;font-size:13px;line-height:1.4;color:oklch(0.487 0.018 260);max-width:68ch;text-wrap:pretty">O que o agente faz e como responde. Escreva como quem explica a um colega novo.</p>
+
+                  <div style="display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid oklch(0.452 0.152 262);border-radius:6px;background:oklch(0.955 0.024 262)">
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                      <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Instruções</span>
+                      <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262);border:1px solid oklch(0.452 0.152 262);border-radius:999px;padding:1px 8px;background:#fff">em foco no chat →</span>
+                      <span style="margin-left:auto;display:flex;gap:6px">
+                        <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;border:1px solid oklch(0.452 0.152 262);background:#fff;color:oklch(0.452 0.152 262);font-size:12px;font-weight:600">✎ Melhorar</span>
+                        <span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;border:1px solid oklch(0.836 0.008 258);background:#fff;color:oklch(0.235 0.017 262);font-size:12px">💬 Instrução própria</span>
+                      </span>
+                    </div>
+                    <div style="width:100%;padding:12px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;background:#fff;font-size:13px;line-height:1.5;min-height:96px">Você responde dúvidas de RH citando a política de origem. Se a resposta não estiver na base, diga que não sabe.</div>
+                    <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:oklch(0.487 0.018 260)"><span>142 caracteres</span><span>·</span><span style="color:oklch(0.492 0.126 158)">✓ mínimo atendido</span><span>·</span><span>escrito por você</span></div>
+                  </div>
+
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Modelo (deployment)</span>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap">
+                      <span style="padding:8px 12px;border:1px solid oklch(0.452 0.152 262);background:oklch(0.955 0.024 262);color:oklch(0.452 0.152 262);border-radius:4px;font-size:13px;font-weight:600;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">gpt-5-mini</span>
+                      <span style="padding:8px 12px;border:1px solid oklch(0.902 0.006 258);background:#fff;border-radius:4px;font-size:13px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">gpt-5</span>
+                      <span style="padding:8px 12px;border:1px solid oklch(0.902 0.006 258);background:#fff;border-radius:4px;font-size:13px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">o4-mini</span>
+                      <span style="padding:8px 12px;border:1px dashed oklch(0.836 0.008 258);background:#fff;border-radius:4px;font-size:13px;color:oklch(0.487 0.018 260)">outro deployment…</span>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- seção 3 -->
+                <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px">
+                  <header style="display:flex;align-items:baseline;gap:10px">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.492 0.126 158)">Seção 3 · ✓</span>
+                    <h3 style="margin:0;font-size:17px;font-weight:640;letter-spacing:-0.015em">Capacidades</h3>
+                    <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">opcional — nunca trava</span>
+                  </header>
+                  <p style="margin:0;font-size:13px;line-height:1.4;color:oklch(0.487 0.018 260);max-width:68ch;text-wrap:pretty">O que este agente pode alcançar. Sem nenhuma capacidade ele responde só do modelo, sem fonte.</p>
+
+                  <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+                    <div style="border:1px solid oklch(0.452 0.152 262);background:oklch(0.955 0.024 262);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px">
+                      <div style="display:flex;align-items:center;gap:8px"><span style="width:20px;height:20px;border-radius:4px;background:#fff;border:1px solid oklch(0.452 0.152 262);display:grid;place-items:center;font-size:12px;color:oklch(0.452 0.152 262)">✓</span><b style="font-size:13px;font-weight:600">Base de conhecimento</b></div>
+                      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">rh-politicas</span>
+                      <span style="font-size:12px;color:oklch(0.487 0.018 260);line-height:1.4">Busca na base e cita o documento de origem.</span>
+                      <span style="align-self:flex-start;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:oklch(0.958 0.028 158);color:oklch(0.492 0.126 158)">habilita citação</span>
+                    </div>
+                    <div style="border:1px solid oklch(0.902 0.006 258);background:#fff;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px">
+                      <div style="display:flex;align-items:center;gap:8px"><span style="width:20px;height:20px;border-radius:4px;border:1px solid oklch(0.836 0.008 258);display:grid;place-items:center"></span><b style="font-size:13px;font-weight:600">Toolbox</b></div>
+                      <span style="font-size:12px;color:oklch(0.487 0.018 260);line-height:1.4">Nenhum toolbox criado ainda. Um toolbox agrupa ferramentas e skills.</span>
+                      <span style="align-self:flex-start;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:oklch(0.960 0.038 68);color:oklch(0.545 0.126 68)">exige connection do projeto</span>
+                    </div>
+                    <div style="border:1px solid oklch(0.902 0.006 258);background:#fff;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px">
+                      <b style="font-size:13px;font-weight:600">Ferramentas prontas</b>
+                      <div style="display:flex;flex-wrap:wrap;gap:6px">
+                        <span style="font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid oklch(0.452 0.152 262);background:oklch(0.955 0.024 262);color:oklch(0.452 0.152 262);font-weight:600">✓ Interpretador de código</span>
+                        <span style="font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid oklch(0.452 0.152 262);background:oklch(0.955 0.024 262);color:oklch(0.452 0.152 262);font-weight:600">✓ Busca na web</span>
+                        <span style="font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid oklch(0.902 0.006 258);background:#fff">Geração de imagem</span>
+                      </div>
+                    </div>
+                    <div style="grid-column:1 / -1;border:1px solid oklch(0.902 0.006 258);background:#fff;border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px">
+                      <div style="display:flex;align-items:center;gap:8px"><b style="font-size:13px;font-weight:600">Servidores MCP externos</b><span style="margin-left:auto;font-size:12px;color:oklch(0.452 0.152 262);font-weight:600">+ adicionar</span></div>
+                      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+                        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:600">rh_docs</span>
+                        <span style="flex:1;min-width:180px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">https://mcp.contoso.com/mcp/</span>
+                        <span style="flex:none;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:oklch(0.960 0.038 68);color:oklch(0.545 0.126 68)">escrita exige aprovação</span>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <!-- seção 4 -->
+                <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px">
+                  <header style="display:flex;align-items:baseline;gap:10px">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Seção 4</span>
+                    <h3 style="margin:0;font-size:17px;font-weight:640;letter-spacing:-0.015em">Revisão</h3>
+                    <span style="margin-left:auto;display:inline-flex;gap:2px;padding:2px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+                      <span style="padding:4px 10px;border-radius:4px;font-size:12px;font-weight:600;background:#fff;color:oklch(0.452 0.152 262);box-shadow:0 1px 2px oklch(0.235 0.017 262 / 0.06)">Resumo</span>
+                      <span style="padding:4px 10px;border-radius:4px;font-size:12px;color:oklch(0.487 0.018 260)">Documento</span>
+                    </span>
+                  </header>
+
+                  <sc-if value="{{ resumo }}" hint-placeholder-val="{{ true }}">
+                  <dl style="display:grid;grid-template-columns:170px minmax(0,1fr);gap:10px 16px;margin:0;font-size:13px">
+                    <dt style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Vai criar</dt>
+                    <dd style="margin:0">o agente <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:600">suporte-rh</span> e a sua primeira versão, no projeto <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">fa-prod-eastus2</span></dd>
+                    <dt style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Vai responder</dt>
+                    <dd style="margin:0">com <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">gpt-5-mini</span>, buscando em <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">rh-politicas</span> e citando a fonte</dd>
+                    <dt style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Vai poder</dt>
+                    <dd style="margin:0">rodar código, buscar na web e chamar <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">rh_docs</span> — escrita atrás de aprovação humana</dd>
+                    <dt style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Não vai poder</dt>
+                    <dd style="margin:0;color:oklch(0.487 0.018 260)">abrir chamado, alterar recurso do Azure nem escrever sem aprovação do papel Approver</dd>
+                    <dt style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Procedência</dt>
+                    <dd style="margin:0">1 campo escrito pelo agente (<span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">description</span>, fonte <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">rh-politicas</span>) — registrado no metadata da versão</dd>
+                  </dl>
+                  </sc-if>
+                  <sc-if value="{{ json }}" hint-placeholder-val="{{ false }}">
+                  <pre style="background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:14px;margin:0;font-size:12px;line-height:1.6;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;overflow:hidden">{
+  "kind": "prompt",
+  "model": "gpt-5-mini",
+  "instructions": "Você responde dúvidas de RH…",
+  "knowledge_base": "rh-politicas",
+  "tools": [
+    { "type": "code_interpreter" },
+    { "type": "web_search" },
+    { "type": "mcp", "server_label": "rh_docs",
+      "server_url": "https://mcp.contoso.com/mcp/",
+      "require_approval": "always" }
+  ],
+  "metadata": { "provenance": "{\"description\":[\"rh-politicas\"]}" }
+}</pre>
+                  </sc-if>
+                </section>
+              </div>
+            </main>
+
+            <!-- dock -->
+            <aside style="width:440px;flex:0 0 440px;background:#fff;border-left:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column">
+              <header style="display:flex;flex-direction:column;gap:8px;padding:12px;border-bottom:1px solid oklch(0.902 0.006 258)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <span style="font-size:13px;font-weight:600">Builder</span>
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);border:1px solid oklch(0.902 0.006 258);border-radius:999px;padding:1px 8px">agent-framework</span>
+                  <span style="margin-left:auto;font-size:13px;color:oklch(0.487 0.018 260)">✕</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:oklch(0.955 0.024 262);border:1px solid oklch(0.452 0.152 262);border-radius:4px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">Campo em foco</span>
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:600">instructions</span>
+                  <span style="margin-left:auto;font-size:12px;color:oklch(0.452 0.152 262);font-weight:600">trocar</span>
+                </div>
+              </header>
+
+              <div style="flex:1;min-height:0;padding:12px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+                <div style="align-self:flex-end;max-width:82%;background:oklch(0.955 0.005 258);border-radius:12px;padding:8px 12px;font-size:13px;line-height:1.45">Melhore as instruções: mais curto e cite a base de RH.</div>
+                <div style="display:flex;align-items:baseline;gap:8px;font-size:12px"><span style="width:6px;height:6px;border-radius:50%;background:oklch(0.492 0.126 158);align-self:center"></span><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">search_docs</span><span style="color:oklch(0.487 0.018 260);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">3 documentos · rh-politicas</span></div>
+
+                <!-- proposta com diff -->
+                <div style="display:flex;flex-direction:column;gap:10px;border:1px solid oklch(0.545 0.126 68);border-left:3px solid oklch(0.545 0.126 68);background:#fff;border-radius:4px;padding:12px">
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">Proposta · instructions</span>
+                    <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">aguardando sua decisão</span>
+                  </div>
+
+                  <sc-if value="{{ diff }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;flex-direction:column;gap:1px;border:1px solid oklch(0.902 0.006 258);border-radius:4px;overflow:hidden;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;line-height:1.55">
+                    <div style="display:flex;align-items:center;gap:8px;padding:4px 10px;background:oklch(0.955 0.005 258);font-family:ui-sans-serif, system-ui, sans-serif;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Antes → depois</div>
+                    <div style="display:flex;gap:8px;padding:8px 10px;background:oklch(0.958 0.030 26)"><span style="flex:none;color:oklch(0.505 0.176 26);font-weight:700">−</span><span style="text-decoration:line-through;text-decoration-color:oklch(0.505 0.176 26)">Você responde dúvidas de RH citando a política de origem. Se a resposta não estiver na base, diga que não sabe.</span></div>
+                    <div style="display:flex;gap:8px;padding:8px 10px;background:oklch(0.958 0.028 158)"><span style="flex:none;color:oklch(0.492 0.126 158);font-weight:700">+</span><span>Você atende dúvidas de RH consultando a base <b>rh-politicas</b> e cita sempre o documento de origem. Sem fonte na base, diga que não sabe e indique o time responsável. <b>Nunca invente número de política.</b></span></div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:12px;font-size:12px;color:oklch(0.487 0.018 260)"><span>+2 frases</span><span>·</span><span>142 → 268 caracteres</span><span>·</span><span style="color:oklch(0.452 0.152 262);font-weight:600">ver lado a lado</span></div>
+                  </sc-if>
+                  <sc-if value="{{ nodiff }}" hint-placeholder-val="{{ false }}">
+                  <pre style="background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px;padding:12px;margin:0;font-size:12px;line-height:1.6;white-space:pre-wrap;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">Você atende dúvidas de RH consultando a base rh-politicas e cita sempre o documento de origem.</pre>
+                  </sc-if>
+
+                  <div style="display:flex;flex-direction:column;gap:6px;padding:10px;background:oklch(0.955 0.005 258);border-radius:4px">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Procedência</span>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px">
+                      <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 8px 3px 4px;border-radius:999px;border:1px solid oklch(0.902 0.006 258);background:#fff"><span style="width:18px;height:18px;border-radius:999px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-size:11px;font-weight:700;display:grid;place-items:center">1</span><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">rh-politicas/ferias.md</span><span style="color:oklch(0.612 0.014 258);font-size:11px">↗</span></span>
+                      <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 8px 3px 4px;border-radius:999px;border:1px solid oklch(0.902 0.006 258);background:#fff"><span style="width:18px;height:18px;border-radius:999px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-size:11px;font-weight:700;display:grid;place-items:center">2</span><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">rh-politicas/conduta.md</span><span style="color:oklch(0.612 0.014 258);font-size:11px">↗</span></span>
+                    </div>
+                  </div>
+
+                  <p style="display:flex;gap:8px;align-items:baseline;font-size:13px;margin:0">
+                    <span style="flex:none;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68);border:1px solid oklch(0.545 0.126 68);border-radius:4px;padding:0 4px">segundo o agente</span>
+                    <span style="color:oklch(0.487 0.018 260);line-height:1.45">Acrescentei a recusa sem fonte, que é a regra do produto, e o nome da base.</span>
+                  </p>
+
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <span style="display:inline-flex;align-items:center;padding:10px 14px;font-size:14px;font-weight:600;line-height:1;border:1px solid oklch(0.492 0.126 158);border-radius:8px;background:oklch(0.492 0.126 158);color:#fff">Usar</span>
+                    <span style="display:inline-flex;align-items:center;padding:10px 14px;font-size:14px;font-weight:600;line-height:1;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff">Editar antes de usar</span>
+                    <span style="display:inline-flex;align-items:center;padding:10px 14px;font-size:14px;font-weight:600;line-height:1;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;color:oklch(0.487 0.018 260)">Descartar</span>
+                  </div>
+                </div>
+
+                <!-- HITL sticky -->
+                <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px;padding:12px;background:oklch(0.960 0.038 68);border:1px solid oklch(0.545 0.126 68);border-radius:6px">
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">Aguardando aprovação · 2 pendentes</span>
+                    <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fff;border:1px solid oklch(0.492 0.126 158);color:oklch(0.492 0.126 158)">seu papel: Approver ✓</span>
+                  </div>
+                  <h4 style="margin:0;font-size:15px;font-weight:640">Executar <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:13px">rh_docs.create_ticket</span>?</h4>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">O que será executado</span>
+                    <pre style="margin:0;padding:10px;background:#fff;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:11.5px;line-height:1.5;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;white-space:pre-wrap">POST /tickets
+{ "team": "IT Identity",
+  "summary": "Recuperar 2FA do GitHub — rafael@contoso.com",
+  "urgency": "medium" }</pre>
+                  </div>
+                  <p style="display:flex;gap:8px;align-items:baseline;font-size:13px;margin:0">
+                    <span style="flex:none;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68);border:1px solid oklch(0.545 0.126 68);border-radius:4px;padding:0 4px">segundo o agente</span>
+                    <span style="color:oklch(0.487 0.018 260);line-height:1.45">O runbook exige verificação de dispositivo, que só o time pode fazer.</span>
+                  </p>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px">
+                    <span style="display:inline-flex;align-items:center;padding:10px 14px;font-size:14px;font-weight:600;line-height:1;border:1px solid oklch(0.492 0.126 158);border-radius:8px;background:oklch(0.492 0.126 158);color:#fff">Aprovar</span>
+                    <span style="display:inline-flex;align-items:center;padding:10px 14px;font-size:14px;font-weight:600;line-height:1;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff">Corrigir</span>
+                    <span style="display:inline-flex;align-items:center;padding:10px 14px;font-size:14px;font-weight:600;line-height:1;border:1px solid oklch(0.505 0.176 26);border-radius:8px;background:#fff;color:oklch(0.505 0.176 26)">Recusar com motivo</span>
+                    <span style="display:inline-flex;align-items:center;padding:10px 14px;font-size:13px;font-weight:600;line-height:1;border:1px dashed oklch(0.836 0.008 258);border-radius:8px;background:#fff;color:oklch(0.487 0.018 260)">Aprovar as 2</span>
+                  </div>
+                </div>
+
+                <!-- log de decisões -->
+                <div style="display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Decisões desta sessão</span><span style="margin-left:auto;font-size:12px;color:oklch(0.452 0.152 262);font-weight:600">exportar</span></div>
+                  <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:12px">
+                    <li style="display:flex;align-items:baseline;gap:8px"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:oklch(0.492 0.126 158)"></span><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">description</span><span style="color:oklch(0.487 0.018 260)">usada com correção · 14:19</span></li>
+                    <li style="display:flex;align-items:baseline;gap:8px"><span style="flex:none;width:6px;height:6px;border-radius:50%;background:oklch(0.505 0.176 26)"></span><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">name</span><span style="color:oklch(0.487 0.018 260)">descartada — “nome não segue o padrão do time” · 14:15</span></li>
+                  </ul>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      <!-- o que mudou -->
+      <div style="width:1680px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+        <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-left:3px solid oklch(0.452 0.152 262);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:6px">
+          <b style="font-size:13px;font-weight:650">Página única, rail navegável</b>
+          <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">As quatro seções existem ao mesmo tempo; o rail mostra estado real (pronta, pendente, opcional) e leva a qualquer uma. Validação aparece no campo, com contagem e o mínimo atendido — não no clique em Avançar.</p>
+        </div>
+        <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-left:3px solid oklch(0.452 0.152 262);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:6px">
+          <b style="font-size:13px;font-weight:650">Proposta com diff e fonte clicável</b>
+          <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">O card compara antes/depois no lugar de mostrar só o texto novo, as fontes viram fichas que abrem o documento, e as ações de IA saem do hover para uma linha fixa e discreta no campo. O dock diz qual campo está em foco.</p>
+        </div>
+        <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-left:3px solid oklch(0.545 0.126 68);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:6px">
+          <b style="font-size:13px;font-weight:650">HITL com contexto</b>
+          <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">O card fica preso no rodapé do dock enquanto há pendência, mostra o payload exato, o papel de quem decide, o lote pendente, e recusar exige motivo — que entra no log de decisões da sessão junto com o desfecho de cada proposta.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showAnnotations&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Análise&quot;},&quot;reviewMode&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;resumo&quot;,&quot;json&quot;],&quot;default&quot;:&quot;resumo&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Proposta&quot;},&quot;proposalDiff&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Proposta&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const ann = p.showAnnotations ?? true;
+    const rev = p.reviewMode ?? "resumo";
+    const diff = p.proposalDiff ?? true;
+    return { ann, resumo: rev === "resumo", json: rev === "json", diff, nodiff: !diff };
+  }
+}
+</script>
+</body>
+</html>

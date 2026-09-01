@@ -1,0 +1,1320 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  *, input, textarea, button { box-sizing:border-box; }
+  input, textarea, button { font-family:inherit; }
+  input:focus-visible, textarea:focus-visible, button:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:16px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">FormFlow — um renderizador, três manifestos</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:72ch;text-wrap:pretty">Troque o manifesto na barra: a máquina é a mesma. Campos, validação, ações de IA, plano de publicação e política de HITL vêm da notação — não do componente.</p>
+  </div>
+
+  <div style="width:1760px;height:1240px;display:flex;flex-direction:column;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <!-- barra -->
+    <header style="height:56px;flex:0 0 56px;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;gap:16px;padding:0 20px">
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">FormFlow</span>
+      <div style="display:flex;gap:2px;padding:2px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+        <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+          <button type="button" onClick="{{ t.pick }}" style="border:0;background:transparent;padding:6px 14px;border-radius:4px;font-size:13px;font-weight:600;cursor:pointer;color:oklch(0.487 0.018 260)" style-hover="background:#fff">
+            <sc-if value="{{ t.on }}" hint-placeholder-val="{{ false }}"><span style="color:oklch(0.452 0.152 262)">{{ t.label }}</span></sc-if>
+            <sc-if value="{{ t.off }}" hint-placeholder-val="{{ true }}"><span>{{ t.label }}</span></sc-if>
+          </button>
+        </sc-for>
+      </div>
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;color:oklch(0.487 0.018 260)">{{ apiRef }}</span>
+      <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">{{ clock }}</span>
+      <button type="button" onClick="{{ toggleManifest }}" style="padding:7px 12px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer">{{ manifestBtn }}</button>
+      <button type="button" onClick="{{ publish }}" style="padding:7px 12px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-size:13px;font-weight:600;cursor:pointer">{{ publishLabel }}</button>
+    </header>
+
+    <div style="flex:1;min-height:0;display:flex">
+
+      <!-- manifesto -->
+      <sc-if value="{{ showManifest }}" hint-placeholder-val="{{ true }}">
+      <aside style="width:440px;flex:0 0 440px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);display:flex;flex-direction:column;min-height:0">
+        <div style="padding:12px 16px;border-bottom:1px solid oklch(0.302 0.012 262);display:flex;align-items:center;gap:8px">
+          <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.726 0.014 258)">O manifesto</span>
+          <span style="margin-left:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.612 0.014 258)">{{ manifestFile }}</span>
+        </div>
+        <pre style="flex:1;min-height:0;overflow:auto;margin:0;padding:16px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.65;white-space:pre">{{ manifestYaml }}</pre>
+        <div style="padding:12px 16px;border-top:1px solid oklch(0.302 0.012 262);font-size:12px;line-height:1.5;color:oklch(0.726 0.014 258)">Tudo à direita é renderizado deste texto. Nenhum campo, regra, rótulo de revisão ou gate de aprovação está escrito no componente.</div>
+      </aside>
+      </sc-if>
+
+      <!-- rail -->
+      <nav style="width:236px;flex:0 0 236px;background:oklch(0.955 0.005 258);border-right:1px solid oklch(0.902 0.006 258);padding:18px 14px;display:flex;flex-direction:column;gap:18px;min-height:0;overflow:auto">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ flowTitle }}</span>
+          <div style="display:flex;align-items:baseline;gap:6px"><b style="font-size:20px;font-weight:640;font-variant-numeric:tabular-nums">{{ doneCount }}</b><span style="font-size:13px;color:oklch(0.487 0.018 260)">{{ ofTotal }}</span></div>
+          <div style="height:4px;border-radius:999px;background:oklch(0.902 0.006 258);overflow:hidden"><div style="height:100%;background:oklch(0.492 0.126 158);width:{{ pct }}"></div></div>
+        </div>
+
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px">
+          <sc-for list="{{ rail }}" as="r" hint-placeholder-count="4">
+            <li style="display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:6px;background:#fff;border:1px solid oklch(0.902 0.006 258)">
+              <sc-if value="{{ r.ok }}" hint-placeholder-val="{{ true }}"><span style="flex:none;width:20px;height:20px;border-radius:999px;border:1px solid oklch(0.492 0.126 158);color:oklch(0.492 0.126 158);display:grid;place-items:center;font-size:12px">✓</span></sc-if>
+              <sc-if value="{{ r.blocked }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:20px;height:20px;border-radius:999px;border:1px solid oklch(0.505 0.176 26);color:oklch(0.505 0.176 26);display:grid;place-items:center;font-size:12px">!</span></sc-if>
+              <sc-if value="{{ r.neutral }}" hint-placeholder-val="{{ false }}"><span style="flex:none;width:20px;height:20px;border-radius:999px;border:1px solid oklch(0.836 0.008 258);color:oklch(0.487 0.018 260);display:grid;place-items:center;font-size:12px">{{ r.num }}</span></sc-if>
+              <span style="min-width:0"><b style="display:block;font-size:13px;font-weight:600">{{ r.title }}</b><span style="display:block;font-size:12px;color:oklch(0.487 0.018 260);line-height:1.35">{{ r.note }}</span></span>
+            </li>
+          </sc-for>
+        </ul>
+
+        <div style="display:flex;flex-direction:column;gap:8px;padding:12px;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Procedência</span>
+          <p style="margin:0;font-size:12px;line-height:1.5">{{ provNote }}</p>
+          <sc-for list="{{ provList }}" as="p" hint-placeholder-count="1">
+            <span style="display:flex;align-items:center;gap:6px;font-size:12px"><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:3px;padding:1px 5px">{{ p.field }}</span><span style="color:oklch(0.487 0.018 260)">{{ p.sources }}</span></span>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px;padding:12px;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Plano de publicação</span>
+          <sc-for list="{{ plan }}" as="o" hint-placeholder-count="2">
+            <div style="display:flex;gap:8px;align-items:flex-start;font-size:12px">
+              <span style="flex:none;width:6px;height:6px;border-radius:50%;margin-top:5px;background:{{ o.dot }}"></span>
+              <span style="min-width:0"><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">{{ o.id }}</span><span style="display:block;color:oklch(0.487 0.018 260);line-height:1.35">{{ o.note }}</span></span>
+            </div>
+          </sc-for>
+        </div>
+      </nav>
+
+      <!-- formulário -->
+      <main style="flex:1;min-width:0;padding:20px 24px;display:flex;flex-direction:column;gap:16px;min-height:0;overflow:auto">
+        <sc-if value="{{ provMissing }}" hint-placeholder-val="{{ false }}">
+        <div style="border:1px solid oklch(0.505 0.176 26);background:oklch(0.958 0.030 26);border-radius:6px;padding:12px">
+          <p style="margin:0;font-size:13px;line-height:1.45">{{ provMissingMsg }}</p>
+        </div>
+        </sc-if>
+
+        <sc-for list="{{ sections }}" as="s" hint-placeholder-count="3">
+          <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:12px">
+            <header style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">{{ s.eyebrow }}</span>
+              <h3 style="margin:0;font-size:17px;font-weight:640;letter-spacing:-0.015em">{{ s.title }}</h3>
+              <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">{{ s.badge }}</span>
+            </header>
+            <p style="margin:0;font-size:13px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:68ch;text-wrap:pretty">{{ s.help }}</p>
+
+            <sc-if value="{{ s.locked }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;padding:10px 12px;background:oklch(0.955 0.005 258);border:1px dashed oklch(0.836 0.008 258);border-radius:4px;font-size:12.5px;color:oklch(0.487 0.018 260)">{{ s.lockedMsg }}</p>
+            </sc-if>
+
+            <sc-for list="{{ s.fields }}" as="f" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:6px;padding:12px;border:1px solid oklch(0.902 0.006 258);border-radius:6px;background:{{ f.bg }}">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ f.label }}</span>
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.612 0.014 258)">{{ f.id }}</span>
+                  <sc-if value="{{ f.req }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;color:oklch(0.487 0.018 260)">obrigatório</span></sc-if>
+                  <sc-if value="{{ f.focused }}" hint-placeholder-val="{{ false }}"><span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262);border:1px solid oklch(0.452 0.152 262);border-radius:999px;padding:1px 8px;background:#fff">em foco no chat →</span></sc-if>
+                  <sc-if value="{{ f.ai }}" hint-placeholder-val="{{ true }}">
+                    <span style="margin-left:auto;display:flex;gap:6px">
+                      <button type="button" onClick="{{ f.propose }}" style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:4px;border:1px solid oklch(0.452 0.152 262);background:#fff;color:oklch(0.452 0.152 262);font-size:12px;font-weight:600;cursor:pointer">{{ f.aiLabel }}</button>
+                      <button type="button" onClick="{{ f.focus }}" style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:4px;border:1px solid oklch(0.836 0.008 258);background:#fff;font-size:12px;cursor:pointer">Instrução própria</button>
+                    </span>
+                  </sc-if>
+                </div>
+
+                <sc-if value="{{ f.isText }}" hint-placeholder-val="{{ true }}">
+                  <input type="text" value="{{ f.value }}" onChange="{{ f.set }}" onFocus="{{ f.focus }}" placeholder="{{ f.placeholder }}" style="width:100%;padding:10px 12px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;background:#fff;font-size:13px;color:oklch(0.235 0.017 262)" />
+                </sc-if>
+                <sc-if value="{{ f.isLong }}" hint-placeholder-val="{{ false }}">
+                  <textarea rows="4" value="{{ f.value }}" onChange="{{ f.set }}" onFocus="{{ f.focus }}" placeholder="{{ f.placeholder }}" style="width:100%;padding:10px 12px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;background:#fff;font-size:13px;line-height:1.5;color:oklch(0.235 0.017 262);resize:vertical"></textarea>
+                </sc-if>
+                <sc-if value="{{ f.isSecret }}" hint-placeholder-val="{{ false }}">
+                  <input type="password" value="{{ f.value }}" onChange="{{ f.set }}" placeholder="{{ f.placeholder }}" style="width:100%;padding:10px 12px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;background:#fff;font-size:13px" />
+                </sc-if>
+                <sc-if value="{{ f.isChoice }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;gap:8px;flex-wrap:wrap">
+                    <sc-for list="{{ f.options }}" as="o" hint-placeholder-count="3">
+                      <button type="button" onClick="{{ o.pick }}" style="padding:7px 12px;border:1px solid {{ o.line }};background:{{ o.bg }};color:{{ o.ink }};border-radius:4px;font-size:12.5px;font-weight:600;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;cursor:pointer">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ f.emptyCatalog }}" hint-placeholder-val="{{ false }}">
+                    <p style="margin:0;font-size:12px;color:oklch(0.545 0.126 68);line-height:1.45">{{ f.emptyMsg }}</p>
+                  </sc-if>
+                </sc-if>
+                <sc-if value="{{ f.isList }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <sc-for list="{{ f.items }}" as="it" hint-placeholder-count="1">
+                      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+                        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:600">{{ it.name }}</span>
+                        <span style="flex:1;min-width:140px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ it.detail }}</span>
+                        <sc-if value="{{ it.chip }}" hint-placeholder-val="{{ false }}"><span style="flex:none;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:oklch(0.960 0.038 68);color:oklch(0.545 0.126 68)">{{ it.chipText }}</span></sc-if>
+                        <button type="button" onClick="{{ it.remove }}" style="flex:none;border:1px solid oklch(0.902 0.006 258);background:#fff;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;color:oklch(0.487 0.018 260)">remover</button>
+                      </div>
+                    </sc-for>
+                    <button type="button" onClick="{{ f.add }}" style="align-self:flex-start;padding:6px 12px;border:1px dashed oklch(0.836 0.008 258);border-radius:4px;background:#fff;font-size:12.5px;font-weight:600;color:oklch(0.452 0.152 262);cursor:pointer">{{ f.addLabel }}</button>
+                  </div>
+                </sc-if>
+
+                <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:oklch(0.487 0.018 260);flex-wrap:wrap">
+                  <span>{{ f.help }}</span>
+                </div>
+                <sc-if value="{{ f.err }}" hint-placeholder-val="{{ false }}">
+                  <p style="margin:0;font-size:12px;color:oklch(0.505 0.176 26);line-height:1.45">{{ f.errMsg }}</p>
+                </sc-if>
+                <sc-if value="{{ f.okLine }}" hint-placeholder-val="{{ false }}">
+                  <p style="margin:0;font-size:12px;color:oklch(0.492 0.126 158)">{{ f.okMsg }}</p>
+                </sc-if>
+              </div>
+            </sc-for>
+          </section>
+        </sc-for>
+
+        <!-- revisão -->
+        <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:12px">
+          <header style="display:flex;align-items:baseline;gap:10px">
+            <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Revisão</span>
+            <h3 style="margin:0;font-size:17px;font-weight:640;letter-spacing:-0.015em">O que vai acontecer</h3>
+            <span style="margin-left:auto;display:inline-flex;gap:2px;padding:2px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+              <button type="button" onClick="{{ setResumo }}" style="padding:4px 10px;border:0;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;background:{{ resumoBg }};color:{{ resumoInk }}">Resumo</button>
+              <button type="button" onClick="{{ setDoc }}" style="padding:4px 10px;border:0;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;background:{{ docBg }};color:{{ docInk }}">Documento</button>
+            </span>
+          </header>
+          <sc-if value="{{ isResumo }}" hint-placeholder-val="{{ true }}">
+            <dl style="display:grid;grid-template-columns:150px minmax(0,1fr);gap:10px 16px;margin:0;font-size:13px;line-height:1.45">
+              <sc-for list="{{ resumo }}" as="r" hint-placeholder-count="4">
+                <dt style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ r.dt }}</dt>
+                <dd style="margin:0">{{ r.dd }}</dd>
+              </sc-for>
+            </dl>
+            <p style="margin:0;font-size:12px;color:oklch(0.487 0.018 260);line-height:1.45">Cada linha vem de <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">review:</span> no manifesto. É por isso que a revisão não precisa mais ser JSON cru.</p>
+          </sc-if>
+          <sc-if value="{{ isDoc }}" hint-placeholder-val="{{ false }}">
+            <pre style="background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:14px;margin:0;font-size:12px;line-height:1.6;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;overflow:auto;white-space:pre">{{ doc }}</pre>
+          </sc-if>
+        </section>
+      </main>
+
+      <!-- dock -->
+      <aside style="width:420px;flex:0 0 420px;background:#fff;border-left:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;min-height:0">
+        <header style="display:flex;flex-direction:column;gap:8px;padding:12px;border-bottom:1px solid oklch(0.902 0.006 258)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px;font-weight:600">Builder</span>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);border:1px solid oklch(0.902 0.006 258);border-radius:999px;padding:1px 8px">propose_field</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:oklch(0.955 0.024 262);border:1px solid oklch(0.452 0.152 262);border-radius:4px">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">Campo em foco</span>
+            <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:600">{{ focusId }}</span>
+            <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">{{ focusKind }}</span>
+          </div>
+        </header>
+
+        <div style="flex:1;min-height:0;overflow:auto;padding:12px;display:flex;flex-direction:column;gap:12px">
+
+          <sc-for list="{{ msgs }}" as="m" hint-placeholder-count="2">
+            <div style="align-self:{{ m.align }};max-width:86%;background:{{ m.bg }};border:1px solid {{ m.line }};border-radius:12px;padding:8px 12px;font-size:13px;line-height:1.45;white-space:pre-wrap">{{ m.text }}</div>
+          </sc-for>
+
+          <sc-if value="{{ noProposal }}" hint-placeholder-val="{{ true }}">
+            <p style="margin:0;font-size:13px;line-height:1.5;color:oklch(0.487 0.018 260)">{{ idleMsg }}</p>
+          </sc-if>
+
+          <!-- proposta -->
+          <sc-if value="{{ hasProposal }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;border:1px solid oklch(0.545 0.126 68);border-left:3px solid oklch(0.545 0.126 68);border-radius:4px;padding:12px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">Proposta · {{ p.field }}</span>
+              <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">aguardando sua decisão</span>
+            </div>
+
+            <sc-if value="{{ p.editing }}" hint-placeholder-val="{{ false }}">
+              <textarea rows="6" value="{{ p.draft }}" onChange="{{ p.setDraft }}" style="width:100%;padding:10px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:12px;line-height:1.55;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;resize:vertical"></textarea>
+            </sc-if>
+            <sc-if value="{{ p.showDiff }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex;flex-direction:column;gap:1px;border:1px solid oklch(0.902 0.006 258);border-radius:4px;overflow:hidden;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.55">
+                <div style="padding:4px 10px;background:oklch(0.955 0.005 258);font-family:ui-sans-serif, system-ui, sans-serif;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Antes → depois</div>
+                <sc-if value="{{ p.hasBefore }}" hint-placeholder-val="{{ true }}">
+                  <div style="display:flex;gap:8px;padding:8px 10px;background:oklch(0.958 0.030 26)"><span style="flex:none;color:oklch(0.505 0.176 26);font-weight:700">−</span><span style="text-decoration:line-through;text-decoration-color:oklch(0.505 0.176 26)">{{ p.before }}</span></div>
+                </sc-if>
+                <sc-if value="{{ p.noBefore }}" hint-placeholder-val="{{ false }}">
+                  <div style="padding:8px 10px;background:oklch(0.955 0.005 258);color:oklch(0.487 0.018 260);font-family:ui-sans-serif, system-ui, sans-serif;font-size:12px">campo vazio — nada a comparar</div>
+                </sc-if>
+                <div style="display:flex;gap:8px;padding:8px 10px;background:oklch(0.958 0.028 158)"><span style="flex:none;color:oklch(0.492 0.126 158);font-weight:700">+</span><span>{{ p.after }}</span></div>
+              </div>
+              <p style="margin:0;font-size:12px;color:oklch(0.487 0.018 260)">{{ p.delta }}</p>
+            </sc-if>
+
+            <sc-if value="{{ p.invalid }}" hint-placeholder-val="{{ false }}">
+              <p style="margin:0;padding:8px 10px;background:oklch(0.958 0.030 26);border:1px solid oklch(0.505 0.176 26);border-radius:4px;font-size:12px;line-height:1.45;color:oklch(0.235 0.017 262)">{{ p.invalidMsg }}</p>
+            </sc-if>
+
+            <div style="display:flex;flex-direction:column;gap:6px;padding:10px;background:oklch(0.955 0.005 258);border-radius:4px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Procedência</span>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ p.sources }}" as="s" hint-placeholder-count="2">
+                  <span style="display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 8px 3px 4px;border-radius:999px;border:1px solid oklch(0.902 0.006 258);background:#fff"><span style="width:18px;height:18px;border-radius:999px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-size:11px;font-weight:700;display:grid;place-items:center">{{ s.n }}</span><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">{{ s.name }}</span><span style="color:oklch(0.612 0.014 258);font-size:11px">↗</span></span>
+                </sc-for>
+              </div>
+              <sc-if value="{{ p.noSources }}" hint-placeholder-val="{{ false }}">
+                <p style="margin:0;font-size:12px;color:oklch(0.487 0.018 260)">Sem fonte declarada — escrito pelo modelo.</p>
+              </sc-if>
+            </div>
+
+            <p style="display:flex;gap:8px;align-items:baseline;font-size:13px;margin:0">
+              <span style="flex:none;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68);border:1px solid oklch(0.545 0.126 68);border-radius:4px;padding:0 4px">segundo o agente</span>
+              <span style="color:oklch(0.487 0.018 260);line-height:1.45">{{ p.reason }}</span>
+            </p>
+
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <button type="button" onClick="{{ p.use }}" disabled="{{ p.invalid }}" style="padding:9px 14px;font-size:13.5px;font-weight:600;border:1px solid oklch(0.492 0.126 158);border-radius:8px;background:oklch(0.492 0.126 158);color:#fff;cursor:pointer">{{ p.useLabel }}</button>
+              <button type="button" onClick="{{ p.edit }}" style="padding:9px 14px;font-size:13.5px;font-weight:600;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;cursor:pointer">{{ p.editLabel }}</button>
+              <button type="button" onClick="{{ p.discard }}" style="padding:9px 14px;font-size:13.5px;font-weight:600;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;color:oklch(0.487 0.018 260);cursor:pointer">Descartar</button>
+            </div>
+          </div>
+          </sc-if>
+
+          <!-- aprovação de operação -->
+          <sc-if value="{{ hasApproval }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px;padding:12px;background:oklch(0.960 0.038 68);border:1px solid oklch(0.545 0.126 68);border-radius:6px">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">{{ a.eyebrow }}</span>
+              <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:#fff;border:1px solid oklch(0.492 0.126 158);color:oklch(0.492 0.126 158)">{{ a.role }}</span>
+            </div>
+            <h4 style="margin:0;font-size:15px;font-weight:640">{{ a.title }}</h4>
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">O que será executado</span>
+              <pre style="margin:0;padding:10px;background:#fff;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:11.5px;line-height:1.5;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;white-space:pre-wrap">{{ a.payload }}</pre>
+            </div>
+            <p style="margin:0;font-size:12px;line-height:1.45;color:oklch(0.235 0.017 262)">{{ a.note }}</p>
+            <sc-if value="{{ a.rejecting }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">Motivo da recusa — obrigatório</span>
+                <textarea rows="2" value="{{ a.reason }}" onChange="{{ a.setReason }}" style="width:100%;padding:8px 10px;border:1px solid oklch(0.505 0.176 26);border-radius:4px;font-size:12.5px;line-height:1.45;resize:vertical"></textarea>
+              </div>
+            </sc-if>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <button type="button" onClick="{{ a.approve }}" style="padding:9px 14px;font-size:13.5px;font-weight:600;border:1px solid oklch(0.492 0.126 158);border-radius:8px;background:oklch(0.492 0.126 158);color:#fff;cursor:pointer">{{ a.approveLabel }}</button>
+              <button type="button" onClick="{{ a.reject }}" style="padding:9px 14px;font-size:13.5px;font-weight:600;border:1px solid oklch(0.505 0.176 26);border-radius:8px;background:#fff;color:oklch(0.505 0.176 26);cursor:pointer">{{ a.rejectLabel }}</button>
+              <sc-if value="{{ a.batch }}" hint-placeholder-val="{{ false }}">
+                <button type="button" onClick="{{ a.approveAll }}" style="padding:9px 14px;font-size:13px;font-weight:600;border:1px dashed oklch(0.836 0.008 258);border-radius:8px;background:#fff;color:oklch(0.487 0.018 260);cursor:pointer">{{ a.batchLabel }}</button>
+              </sc-if>
+            </div>
+          </div>
+          </sc-if>
+
+          <!-- política -->
+          <div style="display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Política de HITL declarada</span>
+            <sc-for list="{{ gates }}" as="g" hint-placeholder-count="4">
+              <div style="display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.45">
+                <span style="flex:none;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:3px;padding:1px 5px">{{ g.id }}</span>
+                <span style="min-width:0;color:oklch(0.487 0.018 260)">{{ g.text }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- log -->
+          <div style="display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Decisões desta sessão</span>
+            <sc-if value="{{ noDecisions }}" hint-placeholder-val="{{ true }}">
+              <p style="margin:0;font-size:12px;color:oklch(0.487 0.018 260)">Nada decidido ainda. Cada uso, correção, descarte, aprovação e recusa entra aqui — e sai no mesmo formato para a auditoria.</p>
+            </sc-if>
+            <sc-for list="{{ decisions }}" as="d" hint-placeholder-count="0">
+              <div style="display:flex;align-items:baseline;gap:8px;font-size:12px;line-height:1.45">
+                <span style="flex:none;width:6px;height:6px;border-radius:50%;background:{{ d.dot }}"></span>
+                <span style="flex:none;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">{{ d.field }}</span>
+                <span style="color:oklch(0.487 0.018 260);min-width:0">{{ d.text }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="flex:none;padding:12px;border-top:1px solid oklch(0.902 0.006 258);display:flex;gap:8px;align-items:center">
+          <input type="text" value="{{ input }}" onChange="{{ setInput }}" onKeyDown="{{ onKey }}" placeholder="{{ inputHint }}" style="flex:1;min-width:0;padding:10px 12px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;font-size:13px" />
+          <button type="button" onClick="{{ send }}" style="padding:10px 14px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-size:13px;font-weight:600;cursor:pointer">Enviar</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <div style="width:1760px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+    <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-left:3px solid oklch(0.452 0.152 262);border-radius:6px;padding:14px">
+      <b style="font-size:13px;font-weight:650">O componente não conhece campo nenhum</b>
+      <p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Não existe <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">aplicar()</span> com <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">if p.field === "instructions"</span>: o setter é derivado do id declarado. Trocar de manifesto troca o wizard inteiro, inclusive os campos que o copiloto pode escrever.</p>
+    </div>
+    <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-left:3px solid oklch(0.452 0.152 262);border-radius:6px;padding:14px">
+      <b style="font-size:13px;font-weight:650">A proposta é validada antes de virar decisão</b>
+      <p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Peça um <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">name</span> ao agente: a proposta chega com maiúsculas, bate na mesma regra do campo e <b>Usar</b> fica desabilitado com o motivo. Hoje isso só apareceria na publicação.</p>
+    </div>
+    <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-left:3px solid oklch(0.545 0.126 68);border-radius:6px;padding:14px">
+      <b style="font-size:13px;font-weight:650">Um gate, quatro lugares</b>
+      <p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">A mesma política cobre proposta de campo, operação de publicação, tool de escrita do agente e escalação do workflow: papel exigido, payload exibido, recusa com motivo, lote. Publique a skill e a base para ver plano com dependência e falha parcial.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1820,&quot;height&quot;:1420}}">
+const RE_NAME = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+
+const POLICY = [
+  { id: "fieldProposal", text: "o agente propõe, a pessoa decide (usar · corrigir · descartar); desfecho medido" },
+  { id: "publishOp", text: "toda operação de publicação exige aprovação e o papel declarado, com o payload exibido" },
+  { id: "agentWriteTool", text: "tool de escrita do agente publicado nasce com require_approval: always" },
+  { id: "workflowEscalation", text: "escalação do workflow pausa em request_info; recusar exige motivo" },
+];
+
+const MANIFESTS = {
+  agent: {
+    label: "agente",
+    file: "flows/agent/index.md",
+    api: "OKF · type: formflow · agent",
+    title: "Novo agente",
+    resource: "agente",
+    provenance: "metadata.provenance",
+    sections: [
+      { id: "identity", title: "Identidade", help: "Como o recurso se chama no projeto. O nome é a chave e não muda depois.", fields: [
+        { id: "name", label: "Nome", type: "text", required: true, ai: true, placeholder: "nome-do-agente", help: "Letras minúsculas, números e hífens no meio — por exemplo, suporte-rh.", rules: ["resourceName", "max63", "unique"],
+          demo: { value: "Suporte-RH", reason: "Usei o nome do time como aparece no organograma.", sources: [] } },
+        { id: "description", label: "Descrição da versão", type: "text", ai: true, placeholder: "opcional", help: "Aparece no catálogo e no histórico de versões.",
+          demo: { value: "Atende dúvidas de RH com citação da política de origem.", reason: "Descrevi pelo comportamento, não pela tecnologia.", sources: ["rh-politicas"] } },
+      ] },
+      { id: "behavior", title: "Comportamento", help: "O que o agente faz e como responde. Escreva como quem explica a um colega novo.", fields: [
+        { id: "instructions", label: "Instruções", type: "long", required: true, ai: true, placeholder: "Você responde dúvidas de RH citando a política de origem…", help: "É o texto que o modelo recebe em cada resposta.",
+          demo: { value: "Você atende dúvidas de RH consultando a base rh-politicas e cita sempre o documento de origem. Sem fonte na base, diga que não sabe e indique o time responsável. Nunca invente número de política.", reason: "Acrescentei a recusa sem fonte, que é a regra do produto, e o nome da base.", sources: ["rh-politicas/ferias.md", "rh-politicas/conduta.md"] } },
+        { id: "model", label: "Modelo (deployment)", type: "choice", required: true, help: "Nome do deployment como aparece no portal.", options: ["gpt-5-mini", "gpt-5", "o4-mini"], initial: "gpt-5-mini" },
+      ] },
+      { id: "capabilities", title: "Capacidades", optional: true, help: "O que este agente pode alcançar. Sem nenhuma capacidade ele responde só do modelo, sem fonte.", fields: [
+        { id: "knowledge_base", label: "Base de conhecimento", type: "choice", help: "O agente busca nesta base e cita o documento de origem.", options: ["rh-politicas", "helpdesk-kb", "selfwiki"] },
+        { id: "toolbox", label: "Toolbox", type: "choice", options: [], emptyMsg: "Nenhum toolbox criado ainda — e o endpoint exige uma connection do projeto para autenticar.", help: "Um toolbox agrupa ferramentas e skills." },
+        { id: "tools", label: "Ferramentas prontas", type: "choice", multi: true, options: ["code_interpreter", "web_search", "image_generation"], help: "Tools de primeira parte cujo único campo obrigatório é o type." },
+        { id: "mcp", label: "Servidores MCP externos", type: "list", addLabel: "+ adicionar servidor", help: "Escrita nasce exigindo aprovação — quem aplica é o runtime do agente.",
+          sample: [{ name: "rh_docs", detail: "https://mcp.contoso.com/mcp/", chipText: "escrita exige aprovação" }, { name: "jira_ro", detail: "https://mcp.contoso.com/jira/", chipText: "escrita exige aprovação" }] },
+      ] },
+    ],
+    review: [
+      { dt: "Vai criar", f: (v) => "o agente " + (v.name || "—") + " e a sua primeira versão, no projeto fa-prod-eastus2" },
+      { dt: "Vai responder", f: (v) => "com " + (v.model || "—") + (v.knowledge_base ? ", buscando em " + v.knowledge_base + " e citando a fonte" : ", sem base — nenhuma resposta terá fonte") },
+      { dt: "Vai poder", f: (v) => { const t = [].concat(v.tools || []); const m = (v.mcp || []).map((x) => x.name); const all = t.concat(m); return all.length ? all.join(", ") + " — escrita atrás de aprovação humana" : "nada além de responder"; } },
+      { dt: "Não vai poder", f: () => "abrir chamado nem escrever sem aprovação do papel Approver" },
+    ],
+    plan: [
+      { id: "create_agent", title: "Criar agente e publicar versão", method: "POST", path: "/api/foundry/agents/{name}", role: "Admin", approval: true, note: "cria o recurso e a versão 1" },
+    ],
+  },
+
+  skill: {
+    label: "skill",
+    file: "flows/skill/index.md",
+    api: "OKF · type: formflow · skill",
+    title: "Nova skill",
+    resource: "skill",
+    provenance: "metadata.provenance",
+    sections: [
+      { id: "identity", title: "Identidade", help: "Nome e descrição. Aqui a descrição é obrigatória: o serviço recusa a skill sem ela.", fields: [
+        { id: "name", label: "Nome", type: "text", required: true, ai: true, placeholder: "nome-da-skill", help: "Mesma regra de nome de recurso.", rules: ["resourceName", "max63", "unique"],
+          demo: { value: "rollback de deploy", reason: "Nomeei pelo procedimento que a skill executa.", sources: [] } },
+        { id: "description", label: "Descrição", type: "text", required: true, ai: true, placeholder: "o que a skill faz", help: "Obrigatória pelo serviço — pedida aqui para não falhar na publicação.",
+          demo: { value: "Reverte um deploy com falha seguindo o runbook de rollback.", reason: "Uma frase, verbo primeiro, sem jargão de produto.", sources: ["runbooks/deploy-rollback.md"] } },
+      ] },
+      { id: "instructions", title: "Instruções", help: "O procedimento que a skill executa, passo a passo.", fields: [
+        { id: "instructions", label: "Instruções", type: "long", required: true, ai: true, placeholder: "Para reverter um deploy…", help: "Vira o conteúdo da versão default da skill.",
+          demo: { value: "1. Confirme a versão anterior sadia em deployments. 2. Rode scripts/rollback.sh com a tag confirmada. 3. Verifique o healthcheck por 5 minutos. 4. Se o healthcheck falhar duas vezes, escale para o on-call em vez de tentar de novo.", reason: "Escrevi em passos numerados porque a skill é executada sob pressão.", sources: ["runbooks/deploy-rollback.md"] } },
+      ] },
+      { id: "files", title: "Arquivos", optional: true, help: "Scripts que a skill executa e referências que ela consulta. O grupo vira pasta no bundle.", fields: [
+        { id: "scripts", label: "scripts", type: "list", addLabel: "+ anexar script", help: "Nome de arquivo sem barra, sem ponto inicial.", sample: [{ name: "rollback.sh", detail: "2,1 kB · shell" }, { name: "verify.py", detail: "1,4 kB · python" }] },
+        { id: "references", label: "references", type: "list", addLabel: "+ anexar referência", help: "Documentos que a skill cita.", sample: [{ name: "deploy-rollback.md", detail: "8,7 kB · markdown" }] },
+      ] },
+    ],
+    review: [
+      { dt: "Vai criar", f: (v) => "a skill " + (v.name || "—") + " com a versão default inline" },
+      { dt: "Vai anexar", f: (v) => { const s = (v.scripts || []).length, r = (v.references || []).length; return s + r ? "scripts: " + s + " · references: " + r + " (segunda operação, depois da skill existir)" : "nenhum arquivo — a skill fica só com as instruções"; } },
+      { dt: "Se falhar", f: (v) => ((v.scripts || []).length + (v.references || []).length ? "a skill já existirá e só o bundle falha — a tela diz as duas coisas, para você não tentar criar de novo" : "nada parcial: é uma operação só") },
+    ],
+    plan: [
+      { id: "create_skill", title: "Criar skill e versão default", method: "POST", path: "/api/foundry/skills/{name}", role: "Admin", approval: true, note: "instruções inline; obrigatória antes do bundle" },
+      { id: "upload_bundle", title: "Subir bundle de arquivos", method: "POST", path: "/api/foundry/skills/{name} (multipart)", role: "Admin", approval: false, requires: "create_skill", note: "depende de create_skill; falha aqui deixa a skill criada" },
+    ],
+  },
+
+  knowledge: {
+    label: "base",
+    file: "flows/knowledge/index.md",
+    api: "OKF · type: formflow · knowledge",
+    title: "Nova base de conhecimento",
+    resource: "base",
+    provenance: null,
+    provMissing: "Este fluxo declara provenance: null. O contrato de criação da base não tem metadata, então a procedência do que o agente escreveu NÃO viaja com o recurso — o manifesto diz isso em vez de fingir que viaja.",
+    sections: [
+      { id: "identity", title: "Identidade", help: "A base precisa existir antes de receber conteúdo: o container vem do nome dela.", fields: [
+        { id: "name", label: "Nome", type: "text", required: true, ai: true, placeholder: "nome-da-base", help: "Mesma regra de nome de recurso.", rules: ["resourceName", "max63", "unique"],
+          demo: { value: "rh-politicas-2026", reason: "Incluí o ano porque a base é substituída por ciclo.", sources: [] } },
+        { id: "description", label: "Descrição", type: "text", ai: true, placeholder: "o que existe nesta base", help: "É o texto que o AGENTE lê para decidir se consulta esta base — não é rótulo de vitrine.",
+          demo: { value: "Políticas de RH vigentes: férias, conduta, benefícios e reembolso. Não contém folha de pagamento.", reason: "Disse também o que a base NÃO tem, que é o que evita consulta errada.", sources: [] } },
+      ] },
+      { id: "feed", title: "Alimentar", optional: true, lockedUntil: "create_base", lockedMsg: "Travado até a base existir: o container onde os arquivos vão é derivado do nome. Publique a operação create_base primeiro.", help: "Por arquivos ou por repositório. O caminho de repositório lê os arquivos e escreve no blob; do blob em diante o pipeline oficial retoma.", fields: [
+        { id: "files", label: "Arquivos", type: "list", addLabel: "+ escolher arquivos", help: "Enviados em multipart.", sample: [{ name: "ferias.md", detail: "12 kB" }, { name: "conduta.md", detail: "9 kB" }] },
+        { id: "repo", label: "Repositório", type: "text", placeholder: "organizacao/repositorio", help: "Único caminho não-Microsoft deste produto." },
+        { id: "token", label: "Token", type: "secret", placeholder: "token de leitura", help: "Sai da memória do browser assim que a chamada termina." },
+      ] },
+    ],
+    review: [
+      { dt: "Vai criar", f: (v) => "a base " + (v.name || "—") + " e o container derivado do nome" },
+      { dt: "Vai alimentar", f: (v) => ((v.files || []).length ? (v.files || []).length + " arquivo(s) em multipart" : v.repo ? "importando de " + v.repo : "nada ainda — a base nasce vazia") },
+      { dt: "Procedência", f: () => "não viaja: o contrato de criação não tem metadata" },
+    ],
+    plan: [
+      { id: "create_base", title: "Criar base", method: "POST", path: "/api/foundry/knowledge", role: "Admin", approval: true, note: "o passo 2 depende desta operação" },
+      { id: "upload_files", title: "Enviar arquivos", method: "POST", path: "/api/foundry/knowledge/{name}/files", role: "Admin", approval: false, requires: "create_base", note: "multipart; requer create_base" },
+      { id: "import_repo", title: "Importar repositório", method: "POST", path: "/api/foundry/knowledge/{name}/github", role: "Admin", approval: true, requires: "create_base", note: "lê token de terceiro — aprovação sempre" },
+    ],
+  },
+};
+
+const YAML = {
+  agent: `apiVersion: foundry.dev/v1
+kind: FormFlow
+metadata:
+  name: agent
+  title: Novo agente
+  resource: agente
+spec:
+  provenance: metadata.provenance   # campos escritos pelo agente viajam aqui
+
+  sections:
+    - id: identity
+      title: Identidade
+      fields:
+        - id: name
+          label: Nome
+          type: text
+          required: true
+          ai: true
+          rules: [resourceName, max63, unique]
+        - id: description
+          label: Descrição da versão
+          type: text
+          ai: true
+    - id: behavior
+      title: Comportamento
+      fields:
+        - id: instructions
+          type: longtext
+          required: true
+          ai: true
+        - id: model
+          type: choice
+          required: true
+          initial: gpt-5-mini
+          catalog: { source: deployments }
+    - id: capabilities
+      title: Capacidades
+      optional: true            # opcional nunca trava
+      fields:
+        - id: knowledge_base
+          type: choice
+          catalog: { source: /api/foundry/knowledge }
+        - id: toolbox
+          type: choice
+          catalog: { source: /api/foundry/toolboxes }
+          emptyIsNotFailure: true
+        - id: tools
+          type: choice
+          multi: true
+          options: [code_interpreter, web_search, image_generation]
+        - id: mcp
+          type: list
+          item: { name: label, detail: url }
+          defaults: { require_approval: always }
+
+  review:                        # a revisão legível nasce daqui
+    - label: Vai criar
+      from: "agente {name} + versão 1"
+    - label: Vai responder
+      from: "{model} · base {knowledge_base}"
+    - label: Vai poder
+      from: "{tools} {mcp[].name}"
+    - label: Não vai poder
+      const: "escrever sem aprovação do papel Approver"
+
+  plan:
+    - id: create_agent
+      method: POST
+      path: /api/foundry/agents/{name}
+      approval: { required: true, role: Admin }
+
+  hitl: *policy                  # o bloco único, abaixo`,
+
+  skill: `apiVersion: foundry.dev/v1
+kind: FormFlow
+metadata:
+  name: skill
+  title: Nova skill
+  resource: skill
+spec:
+  provenance: metadata.provenance
+
+  sections:
+    - id: identity
+      fields:
+        - id: name
+          type: text
+          required: true
+          ai: true
+          rules: [resourceName, max63, unique]
+        - id: description
+          type: text
+          required: true       # o serviço recusa a skill sem descrição
+          ai: true
+    - id: instructions
+      fields:
+        - id: instructions
+          type: longtext
+          required: true
+          ai: true
+    - id: files
+      optional: true
+      fields:
+        - id: scripts
+          type: list
+          item: { name: filename }
+          rules: [safeFilename]
+        - id: references
+          type: list
+          item: { name: filename }
+          rules: [safeFilename]
+
+  review:
+    - label: Vai criar
+      from: "skill {name} + versão default"
+    - label: Vai anexar
+      from: "scripts {scripts[]} · references {references[]}"
+    - label: Se falhar
+      const: "a skill já existirá e só o bundle falha"
+
+  plan:
+    - id: create_skill
+      method: POST
+      path: /api/foundry/skills/{name}
+      approval: { required: true, role: Admin }
+    - id: upload_bundle
+      method: POST
+      path: /api/foundry/skills/{name}
+      encoding: multipart
+      requires: [create_skill]        # a dependência é DADO
+      onFailure: partialSucceeded     # e a falha parcial também
+
+  hitl: *policy`,
+
+  knowledge: `apiVersion: foundry.dev/v1
+kind: FormFlow
+metadata:
+  name: knowledge
+  title: Nova base de conhecimento
+  resource: base
+spec:
+  provenance: null      # o contrato de criação não tem metadata
+
+  sections:
+    - id: identity
+      fields:
+        - id: name
+          type: text
+          required: true
+          ai: true
+          rules: [resourceName, max63, unique]
+        - id: description
+          type: text
+          ai: true
+          note: "o agente lê para decidir se consulta esta base"
+    - id: feed
+      optional: true
+      lockedUntil: create_base    # o container vem do nome
+      fields:
+        - id: files
+          type: list
+        - id: repo
+          type: text
+        - id: token
+          type: secret
+          retain: false           # sai da memória após a chamada
+
+  review:
+    - label: Vai criar
+      from: "base {name} + container"
+    - label: Vai alimentar
+      from: "{files[]} ou {repo}"
+    - label: Procedência
+      const: "não viaja: sem metadata no contrato"
+
+  plan:
+    - id: create_base
+      method: POST
+      path: /api/foundry/knowledge
+      approval: { required: true, role: Admin }
+    - id: upload_files
+      requires: [create_base]
+    - id: import_repo
+      requires: [create_base]
+      approval: { required: true, role: Admin, because: "lê token de terceiro" }
+
+  hitl: *policy`,
+};
+
+const POLICY_YAML = `
+# ── policy (uma vez, herdada pelos quatro gates) ─────────────
+policy: &policy
+  fieldProposal:
+    tool: propose_field
+    respond: immediately        # o modelo não fica preso na decisão humana
+    decide: [use, edit, discard]
+    validateAgainst: field.rules
+    record: /api/builder-assist
+  publishOperation:
+    approval: always
+    show: payload
+    role: from(operation.approval.role)
+  agentWriteTool:
+    require_approval: always
+    role: Approver
+  workflowEscalation:
+    interrupt: request_info
+    editable: [summary]
+    rejectReason: required`;
+
+const EXISTING = ["helpdesk", "selfwiki", "oncall", "platform"];
+
+/** Semente declarada: o que o manifesto diz em `initial:` já vale no primeiro render. */
+function seedFlow(k) {
+  const o = {};
+  for (const sec of MANIFESTS[k].sections) for (const f of sec.fields) if (typeof f.initial !== "undefined") o[f.id] = f.initial;
+  return o;
+}
+function seedAll() {
+  const out = {};
+  for (const k of Object.keys(MANIFESTS)) out[k] = seedFlow(k);
+  return out;
+}
+
+class Component extends DCLogic {
+  state = {
+    flow: "agent",
+    values: seedAll(),
+    msgs: [],
+    input: "",
+    focus: { agent: "name", skill: "name", knowledge: "name" },
+    prov: { agent: {}, skill: {}, knowledge: {} },
+    proposal: null,
+    draft: null,
+    decisions: [],
+    showManifest: true,
+    review: "resumo",
+    plan: null,
+    rejecting: false,
+    reason: "",
+    tick: 0,
+  };
+
+  m() { return MANIFESTS[this.state.flow]; }
+  v() { return this.state.values[this.state.flow] || {}; }
+  now() { return "14:" + String(22 + this.state.tick).padStart(2, "0"); }
+
+  setV(id, value) {
+    this.setState((s) => ({ values: { ...s.values, [s.flow]: { ...s.values[s.flow], [id]: value } } }));
+  }
+
+  fieldDef(id) {
+    for (const s of this.m().sections) for (const f of s.fields) if (f.id === id) return f;
+    return null;
+  }
+
+  problem(f, raw) {
+    const val = typeof raw === "string" ? raw.trim() : raw;
+    const rules = f.rules || [];
+    if (!val || (Array.isArray(val) && !val.length)) return f.required ? "Informe " + f.label.toLowerCase() + "." : null;
+    if (typeof val === "string") {
+      if (rules.includes("resourceName") && !RE_NAME.test(val)) return "Use apenas letras minúsculas, números e hífens no meio — " + JSON.stringify(val) + " não passa em resourceName.";
+      if (rules.includes("max63") && val.length > 63) return "O nome passa de 63 caracteres.";
+      if (rules.includes("unique") && EXISTING.includes(val)) return "Já existe um recurso chamado " + val + ". Publicar com este nome cria uma versão nova dele.";
+      if (rules.includes("safeFilename") && (val.includes("/") || val.startsWith("."))) return "Nome de arquivo não pode ter barra nem começar com ponto.";
+    }
+    return null;
+  }
+
+  log(field, text, tone) {
+    this.setState((s) => ({ tick: s.tick + 1, decisions: [{ field, text: text + " · " + this.now(), dot: tone }].concat(s.decisions).slice(0, 8) }));
+  }
+
+  propose(f, viaChat) {
+    const cur = this.v()[f.id] || "";
+    const demo = f.demo || { value: "(sem demonstração declarada para este campo)", reason: "", sources: [] };
+    const pedido = (cur ? "Melhore" : "Escreva") + ' o campo "' + f.label + '" (identificador: ' + f.id + ") deste " + this.m().resource + ".";
+    this.setState((s) => ({
+      focus: { ...s.focus, [s.flow]: f.id },
+      draft: null,
+      msgs: s.msgs.concat(viaChat ? [] : [{ who: "u", text: pedido }]).concat([
+        { who: "a", text: "Chamei propose_field para " + f.id + ". A tool respondeu na hora; a decisão é sua, no card abaixo." },
+      ]),
+      proposal: { id: f.id, label: f.label, before: typeof cur === "string" ? cur : "", after: demo.value, reason: demo.reason, sources: demo.sources || [] },
+    }));
+  }
+
+  /** O chat do dock. Ele age sobre o CAMPO EM FOCO — é o que amarra conversa e formulário. */
+  send() {
+    const txt = (this.state.input || "").trim();
+    if (!txt) return;
+    const f = this.fieldDef(this.state.focus[this.state.flow]);
+    this.setState((s) => ({ input: "", msgs: s.msgs.concat([{ who: "u", text: txt }]) }));
+    if (f && f.ai) this.propose(f, true);
+    else
+      this.setState((s) => ({
+        msgs: s.msgs.concat([
+          { who: "a", text: "O campo em foco não está declarado com ai: true neste manifesto — não posso propor para ele." },
+        ]),
+      }));
+  }
+
+  usarProposta() {
+    const p = this.state.proposal;
+    if (!p) return;
+    const value = this.state.draft === null ? p.after : this.state.draft;
+    const f = this.fieldDef(p.id);
+    if (this.problem(f, value)) return;
+    this.setV(p.id, value);
+    this.setState((s) => ({ prov: { ...s.prov, [s.flow]: { ...s.prov[s.flow], [p.id]: p.sources } }, proposal: null, draft: null }));
+    this.log(p.id, this.state.draft === null ? "usada" : "usada com correção", "oklch(0.492 0.126 158)");
+  }
+
+  /** Avança sobre as operações SEM gate declarado: elas executam sozinhas, e cada uma é dita no
+   *  log. Parar nelas era o que travava o plano — aprovação é gate, ausência de gate não é. */
+  advanceFrom(i, done, ops) {
+    const auto = [];
+    while (i < ops.length && !ops[i].approval) { done = done.concat([ops[i].id]); auto.push(ops[i].id); i++; }
+    return { plan: { i, done, aborted: null }, auto };
+  }
+
+  runPlan() {
+    const ops = this.m().plan;
+    const r = this.advanceFrom(0, [], ops);
+    this.setState({ plan: r.plan, rejecting: false, reason: "" });
+    for (const id of r.auto) this.log(id, "executada — sem gate declarado", "oklch(0.492 0.126 158)");
+  }
+
+  approveOp(all) {
+    const ops = this.m().plan;
+    const p = this.state.plan || { i: 0, done: [] };
+    if (all) {
+      this.setState({ plan: { i: ops.length, done: ops.map((o) => o.id), aborted: null }, rejecting: false, reason: "" });
+      this.log("plano", "aprovado em lote (" + (ops.length - p.i) + " operações)", "oklch(0.492 0.126 158)");
+      return;
+    }
+    const id = ops[p.i].id;
+    const r = this.advanceFrom(p.i + 1, p.done.concat([id]), ops);
+    this.setState({ plan: r.plan, rejecting: false, reason: "" });
+    this.log(id, "aprovada", "oklch(0.492 0.126 158)");
+    for (const a of r.auto) this.log(a, "executada — sem gate declarado", "oklch(0.492 0.126 158)");
+  }
+
+  rejectOp() {
+    if (!this.state.rejecting) { this.setState({ rejecting: true }); return; }
+    if (!this.state.reason.trim()) return;
+    const ops = this.m().plan;
+    const p = this.state.plan || { i: 0, done: [] };
+    const id = ops[p.i].id;
+    const reason = this.state.reason.trim();
+    this.setState({ plan: { i: p.i, done: p.done, aborted: id }, rejecting: false, reason: "" });
+    this.log(id, "recusada — " + JSON.stringify(reason), "oklch(0.505 0.176 26)");
+  }
+
+  renderVals() {
+    const s = this.state;
+    const m = this.m();
+    const v = this.v();
+    const focusId = s.focus[s.flow];
+    const prov = s.prov[s.flow] || {};
+    const plan = s.plan;
+    const doneIds = plan ? plan.done : [];
+
+    const sections = m.sections.map((sec, si) => {
+      const locked = !!(sec.lockedUntil && doneIds.indexOf(sec.lockedUntil) === -1);
+      const fields = sec.fields.map((f) => {
+        const raw = v[f.id];
+        const err = typeof raw !== "undefined" && raw !== "" ? this.problem(f, raw) : null;
+        const filled = Array.isArray(raw) ? raw.length > 0 : !!(raw && String(raw).trim());
+        const isChoice = f.type === "choice";
+        const opts = (f.options || []).map((o) => {
+          const on = f.multi ? [].concat(v[f.id] || []).indexOf(o) > -1 : v[f.id] === o;
+          return {
+            label: (on ? "✓ " : "") + o, on,
+            line: on ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)",
+            bg: on ? "oklch(0.955 0.024 262)" : "#fff",
+            ink: on ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)",
+            pick: () => {
+              if (f.multi) {
+                const cur = [].concat(v[f.id] || []);
+                this.setV(f.id, cur.indexOf(o) > -1 ? cur.filter((x) => x !== o) : cur.concat([o]));
+              } else this.setV(f.id, v[f.id] === o ? "" : o);
+            },
+          };
+        });
+        const items = [].concat(v[f.id] || []).map((it, ix) => ({
+          name: it.name, detail: it.detail, chip: !!it.chipText, chipText: it.chipText || "",
+          remove: () => this.setV(f.id, [].concat(v[f.id] || []).filter((_, k) => k !== ix)),
+        }));
+        return {
+          id: f.id, label: f.label, help: f.help || "", placeholder: f.placeholder || "",
+          req: !!f.required, ai: !!f.ai, aiLabel: filled ? "✎ Melhorar" : "✨ Escrever",
+          focused: focusId === f.id,
+          value: typeof raw === "string" ? raw : "",
+          bg: focusId === f.id ? "oklch(0.955 0.024 262)" : "#fff",
+          isText: f.type === "text", isLong: f.type === "long", isSecret: f.type === "secret",
+          isChoice, isList: f.type === "list",
+          options: opts, emptyCatalog: isChoice && !(f.options || []).length, emptyMsg: f.emptyMsg || "",
+          items, addLabel: f.addLabel || "+ adicionar",
+          add: () => {
+            const cur = [].concat(v[f.id] || []);
+            const sample = (f.sample || [])[cur.length % Math.max(1, (f.sample || []).length)];
+            if (sample) this.setV(f.id, cur.concat([sample]));
+          },
+          err: !!err, errMsg: err || "",
+          okLine: !err && filled && !!f.required, okMsg: "✓ válido pela regra do campo",
+          set: (e) => this.setV(f.id, e.target.value),
+          focus: () => this.setState((st) => ({ focus: { ...st.focus, [st.flow]: f.id } })),
+          propose: () => this.propose(f),
+        };
+      });
+      const missing = sec.fields.filter((f) => f.required && this.problem(f, v[f.id]));
+      const optional = !!sec.optional;
+      return {
+        id: sec.id, eyebrow: "Seção " + (si + 1), title: sec.title, help: sec.help,
+        badge: optional ? "opcional — nunca trava" : missing.length ? "falta preencher" : "pronta",
+        locked, lockedMsg: sec.lockedMsg || "",
+        fields, ok: !missing.length, optional,
+      };
+    });
+
+    const rail = sections.map((sec, i) => ({
+      num: String(i + 1), title: sec.title,
+      ok: sec.ok && !sec.optional, blocked: !sec.ok && !sec.optional, neutral: sec.optional,
+      note: sec.optional ? "opcional" : sec.ok ? "pronta" : "obrigatória",
+    }));
+    const req = sections.filter((x) => !x.optional);
+    const done = req.filter((x) => x.ok).length;
+
+    const provList = Object.keys(prov).map((k) => ({ field: k, sources: (prov[k] || []).length ? (prov[k] || []).join(", ") : "sem fonte declarada" }));
+
+    const p = s.proposal;
+    const pf = p ? this.fieldDef(p.id) : null;
+    const pValue = p ? (s.draft === null ? p.after : s.draft) : "";
+    const pErr = p ? this.problem(pf, pValue) : null;
+
+    const ops = m.plan;
+    const cur = plan && !plan.aborted && plan.i < ops.length ? ops[plan.i] : null;
+    const needsApproval = cur && cur.approval;
+    const planView = ops.map((o) => ({
+      id: o.id,
+      note: (doneIds.indexOf(o.id) > -1 ? "concluída · " : plan && plan.aborted === o.id ? "recusada · " : o.approval ? "aprovação " + o.role + " · " : "") + (o.requires ? "requer " + o.requires : o.note),
+      dot: doneIds.indexOf(o.id) > -1 ? "oklch(0.492 0.126 158)" : plan && plan.aborted === o.id ? "oklch(0.505 0.176 26)" : cur && cur.id === o.id ? "oklch(0.545 0.126 68)" : "oklch(0.612 0.014 258)",
+    }));
+
+    const payload = cur ? cur.method + " " + cur.path.replace("{name}", v.name || "—") + "\n" + JSON.stringify(this.docObject(), null, 2).slice(0, 420) : "";
+
+    return {
+      tabs: Object.keys(MANIFESTS).map((k) => ({
+        label: MANIFESTS[k].label, on: s.flow === k, off: s.flow !== k,
+        pick: () => this.setState({ flow: k, proposal: null, draft: null, plan: null, rejecting: false, msgs: [], input: "" }),
+      })),
+      apiRef: m.api, clock: "rascunho salvo · " + this.now(),
+      manifestFile: m.file, manifestYaml: (OKF[s.flow] || "") + POLICY_MD,
+      showManifest: s.showManifest, manifestBtn: s.showManifest ? "Esconder manifesto" : "Ver manifesto",
+      toggleManifest: () => this.setState({ showManifest: !s.showManifest }),
+      publish: () => this.runPlan(),
+      publishLabel: !plan ? "Publicar"
+        : plan.aborted ? "Plano recusado — publicar de novo"
+        : plan.i >= ops.length ? "Plano concluído — publicar de novo"
+        : "Executando plano…",
+
+      flowTitle: m.title, doneCount: String(done), ofTotal: "de " + req.length + " obrigatórias", pct: Math.round((done / Math.max(1, req.length)) * 100) + "%",
+      rail, sections,
+      provNote: m.provenance ? "Campos escritos pelo agente viajam em " + m.provenance + "." : "Este fluxo não carrega procedência.",
+      provList,
+      provMissing: !m.provenance, provMissingMsg: m.provMissing || "",
+      plan: planView,
+
+      isResumo: s.review === "resumo", isDoc: s.review === "doc",
+      setResumo: () => this.setState({ review: "resumo" }), setDoc: () => this.setState({ review: "doc" }),
+      resumoBg: s.review === "resumo" ? "#fff" : "transparent", resumoInk: s.review === "resumo" ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)",
+      docBg: s.review === "doc" ? "#fff" : "transparent", docInk: s.review === "doc" ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)",
+      resumo: m.review.map((r) => ({ dt: r.dt, dd: r.f(v) })),
+      doc: JSON.stringify(this.docObject(), null, 2),
+
+      focusId: focusId, focusKind: pf && p ? "proposta na tela" : "pronto para propor",
+      idleMsg: "Peça um campo pelo botão ✨/✎ ao lado do rótulo. O agente só pode propor para os campos declarados com ai: true — " + m.sections.reduce((acc, x) => acc.concat(x.fields.filter((f) => f.ai).map((f) => f.id)), []).join(", ") + ".",
+      noProposal: !p, hasProposal: !!p,
+      p: p ? {
+        field: p.id, editing: s.draft !== null, draft: s.draft || "",
+        showDiff: s.draft === null, hasBefore: !!p.before, noBefore: !p.before,
+        before: p.before, after: p.after,
+        delta: p.before ? p.before.length + " → " + p.after.length + " caracteres" : p.after.length + " caracteres, campo antes vazio",
+        invalid: !!pErr, invalidMsg: pErr ? "A proposta não pode ser usada: " + pErr : "",
+        sources: (p.sources || []).map((x, i) => ({ n: String(i + 1), name: x })), noSources: !(p.sources || []).length,
+        reason: p.reason || "sem justificativa declarada",
+        useLabel: s.draft === null ? "Usar" : "Usar com a correção",
+        editLabel: s.draft === null ? "Editar antes de usar" : "Cancelar edição",
+        use: () => this.usarProposta(),
+        edit: () => this.setState({ draft: s.draft === null ? p.after : null }),
+        setDraft: (e) => this.setState({ draft: e.target.value }),
+        discard: () => { this.setState({ proposal: null, draft: null }); this.log(p.id, "descartada", "oklch(0.505 0.176 26)"); },
+      } : null,
+
+      hasApproval: !!needsApproval,
+      a: needsApproval ? {
+        eyebrow: "Aguardando aprovação · operação " + (plan.i + 1) + " de " + ops.length,
+        role: "seu papel: " + cur.role + " ✓", title: cur.title, payload,
+        note: cur.requires ? "Depende de " + cur.requires + ", já concluída." : cur.note,
+        rejecting: s.rejecting, reason: s.reason, setReason: (e) => this.setState({ reason: e.target.value }),
+        approve: () => this.approveOp(false), approveLabel: "Aprovar",
+        reject: () => this.rejectOp(), rejectLabel: s.rejecting ? (s.reason.trim() ? "Confirmar recusa" : "Escreva o motivo") : "Recusar com motivo",
+        batch: ops.length - plan.i > 1, batchLabel: "Aprovar as " + (ops.length - plan.i), approveAll: () => this.approveOp(true),
+      } : null,
+
+      msgs: s.msgs.map((x) => ({
+        text: x.text,
+        align: x.who === "u" ? "flex-end" : "flex-start",
+        bg: x.who === "u" ? "oklch(0.955 0.024 262)" : "oklch(0.977 0.003 258)",
+        line: x.who === "u" ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)",
+      })),
+      input: s.input,
+      setInput: (e) => this.setState({ input: e.target.value }),
+      onKey: (e) => { if (e.key === "Enter") this.send(); },
+      send: () => this.send(),
+      inputHint: "Peça algo para o campo em foco — ex.: mais curto, e cite a base",
+      gates: POLICY,
+      decisions: s.decisions, noDecisions: !s.decisions.length,
+    };
+  }
+
+  docObject() {
+    const m = this.m();
+    const v = this.v();
+    const prov = this.state.prov[this.state.flow] || {};
+    const doc = {};
+    for (const sec of m.sections) for (const f of sec.fields) {
+      if (f.type === "secret") continue;
+      const val = v[f.id];
+      if (val === undefined || val === "" || (Array.isArray(val) && !val.length)) continue;
+      doc[f.id] = Array.isArray(val) ? val.map((x) => x.name || x) : val;
+    }
+    const withSrc = Object.keys(prov).filter((k) => (prov[k] || []).length);
+    if (m.provenance && withSrc.length) {
+      const o = {};
+      for (const k of withSrc) o[k] = prov[k];
+      doc.metadata = { provenance: JSON.stringify(o) };
+    }
+    return doc;
+  }
+}
+
+// ── O manifesto em OKF ────────────────────────────────────────────────────────────────────
+// Formato de mercado, não notação própria: OKF (Open Knowledge Format, Google) — um diretório
+// de markdown com frontmatter YAML, `index.md` por unidade e `log.md` append-only. A convenção
+// de citação é a do openwiki deste repositório: blob URL com SHA e range de linhas, para que
+// cada regra do manifesto aponte para o código que a originou.
+// (Os literais `YAML`/`POLICY_YAML` acima ficaram como registro do formato anterior; o painel
+//  lê `OKF`/`POLICY_MD`.)
+
+const OKF = {
+  agent: `---
+type: formflow
+title: Novo agente
+description: Criação de um agente do Foundry. Marca os campos em que o copiloto pode atuar.
+resource: agent
+tags: [copilot, wizard, foundry, agent]
+timestamp: 2026-08-29T14:22:00Z
+okf_version: "0.2"
+provenance: metadata.provenance   # campo de confiança do OKF v0.2
+lifecycle: active
+freshness: 2026-08-29
+---
+
+# Novo agente
+
+Quatro seções. O copiloto escreve apenas o que está marcado \`ai: true\`; o valor entra
+por gesto humano e a fonte entra junto dele.
+
+## Fields
+
+\`\`\`yaml
+sections:
+  - id: identity
+    fields:
+      - id: name
+        type: text
+        required: true
+        ai: true
+        rules: [resourceName, max63, unique]
+      - id: description
+        type: text
+        ai: true
+  - id: behavior
+    fields:
+      - id: instructions
+        type: longtext
+        required: true
+        ai: true
+      - id: model
+        type: choice
+        required: true
+        initial: gpt-5-mini
+        catalog: /api/foundry/deployments
+  - id: capabilities
+    optional: true            # opcional nunca trava
+    fields:
+      - id: knowledge_base
+        type: choice
+        catalog: /api/foundry/knowledge
+      - id: toolbox
+        type: choice
+        catalog: /api/foundry/toolboxes
+        emptyIsNotFailure: true
+      - id: tools
+        type: choice
+        multi: true
+        options: [code_interpreter, web_search, image_generation]
+      - id: mcp
+        type: list
+        item: {name: label, detail: url}
+        defaults: {require_approval: always}
+\`\`\`
+
+## Review
+
+\`\`\`yaml
+review:
+  - {label: Vai criar,      from: "agente {name} + versão 1"}
+  - {label: Vai responder,  from: "{model} · base {knowledge_base}"}
+  - {label: Vai poder,      from: "{tools} {mcp[].name}"}
+  - {label: Não vai poder,  const: escrever sem aprovação do papel Approver}
+\`\`\`
+
+## Plan
+
+\`\`\`yaml
+plan:
+  - id: create_agent
+    method: POST
+    path: /api/foundry/agents/{name}
+    approval: {required: true, role: Admin}
+
+provenance: metadata.provenance
+storage: foundry.dataset      # flow.yaml, uma versão por gravação
+index: true                   # entra na base de conhecimento com o resto do bundle
+areas: [rh]                   # habilitado por área, como o enabled_domains do tenant
+\`\`\`
+
+## Sources
+
+- [\`AgentWizard.tsx\`](https://github.com/ruinosus/foundry-assured/blob/<HEAD>/apps/frontend/components/agents/AgentWizard.tsx#L28-L39)
+- [\`FieldProposal.tsx\`](https://github.com/ruinosus/foundry-assured/blob/<HEAD>/apps/frontend/components/shell/FieldProposal.tsx#L160-L200)
+- [\`flow_store.py\`](https://github.com/ruinosus/foundry-assured/blob/<HEAD>/apps/backend/app/modules/foundry/internal/flow_store.py#L69-L112)
+`,
+
+  skill: `---
+type: formflow
+title: Nova skill
+description: Criação de skill com versão default inline e bundle de arquivos em segunda operação.
+resource: skill
+tags: [copilot, wizard, foundry, skill]
+timestamp: 2026-08-29T14:22:00Z
+okf_version: "0.2"
+provenance: metadata.provenance
+lifecycle: active
+---
+
+# Nova skill
+
+Mesma máquina do fluxo de agente. Duas diferenças declaradas: a descrição é obrigatória
+(o serviço recusa a skill sem ela) e o plano tem **dependência** entre operações.
+
+## Fields
+
+\`\`\`yaml
+sections:
+  - id: identity
+    fields:
+      - id: name
+        type: text
+        required: true
+        ai: true
+        rules: [resourceName, max63, unique]
+      - id: description
+        type: text
+        required: true      # o serviço recusa sem descrição
+        ai: true
+  - id: instructions
+    fields:
+      - id: instructions
+        type: longtext
+        required: true
+        ai: true
+  - id: files
+    optional: true
+    fields:
+      - id: scripts
+        type: list
+        item: {name: filename}
+        rules: [safeFilename]
+      - id: references
+        type: list
+        item: {name: filename}
+        rules: [safeFilename]
+\`\`\`
+
+## Plan
+
+\`\`\`yaml
+plan:
+  - id: create_skill
+    method: POST
+    path: /api/foundry/skills/{name}
+    approval: {required: true, role: Admin}
+  - id: upload_bundle
+    method: POST
+    path: /api/foundry/skills/{name}
+    encoding: multipart
+    requires: [create_skill]      # a dependência é DADO
+    onFailure: partialSucceeded   # e a falha parcial também
+
+provenance: metadata.provenance
+storage: foundry.dataset
+\`\`\`
+
+## Sources
+
+- [\`SkillWizard.tsx\`](https://github.com/ruinosus/foundry-assured/blob/<HEAD>/apps/frontend/components/skills/SkillWizard.tsx#L120-L160)
+- [\`names.py\`](https://github.com/ruinosus/foundry-assured/blob/<HEAD>/apps/backend/app/modules/foundry/internal/names.py#L1-L40)
+`,
+
+  knowledge: `---
+type: formflow
+title: Nova base de conhecimento
+description: Criação da base e alimentação por arquivos ou repositório. Não carrega procedência.
+resource: knowledge
+tags: [copilot, wizard, foundry, knowledge]
+timestamp: 2026-08-29T14:22:00Z
+okf_version: "0.2"
+provenance: null       # o contrato de criação não tem metadata
+lifecycle: active
+---
+
+# Nova base de conhecimento
+
+A seção 2 depende da operação \`create_base\`: o container onde os arquivos vão é derivado
+do nome da base.
+
+## Fields
+
+\`\`\`yaml
+sections:
+  - id: identity
+    fields:
+      - id: name
+        type: text
+        required: true
+        ai: true
+        rules: [resourceName, max63, unique]
+      - id: description
+        type: text
+        ai: true
+        note: o agente lê para decidir se consulta esta base
+  - id: feed
+    optional: true
+    lockedUntil: create_base
+    fields:
+      - id: files
+        type: list
+      - id: repo
+        type: text
+      - id: token
+        type: secret
+        retain: false           # sai da memória após a chamada
+\`\`\`
+
+## Plan
+
+\`\`\`yaml
+plan:
+  - id: create_base
+    method: POST
+    path: /api/foundry/knowledge
+    approval: {required: true, role: Admin}
+  - id: upload_files
+    requires: [create_base]
+  - id: import_repo
+    requires: [create_base]
+    approval: {required: true, role: Admin, because: lê token de terceiro}
+
+provenance: null   # o contrato de criação não tem metadata
+storage: blob + azure-ai-search
+\`\`\`
+
+## Sources
+
+- [\`CreateKnowledge.tsx\`](https://github.com/ruinosus/foundry-assured/blob/<HEAD>/apps/frontend/components/knowledge/CreateKnowledge.tsx#L100-L140)
+- [\`knowledge_write.py\`](https://github.com/ruinosus/foundry-assured/blob/<HEAD>/apps/backend/app/modules/foundry/internal/knowledge_write.py#L60-L130)
+`,
+};
+
+const POLICY_MD = `
+---
+type: policy
+title: HITL — um gate, quatro lugares
+resource: hitl
+tags: [copilot, hitl, approval]
+---
+
+# hitl.md · herdado por todo formflow
+
+\`\`\`yaml
+hitl:
+  fieldProposal:
+    tool: propose_field
+    respond: immediately        # o modelo não fica preso na decisão humana
+    decide: [use, edit, discard]
+    validateAgainst: field.rules
+    record: POST /builder-assist/proposals   # desfecho na trilha, sem o texto
+  publishOperation:
+    approval: always
+    show: payload
+    role: from(operation.approval.role)
+    area: from(request.area)      # cada execução carrega a área que a pediu
+    cost:
+      cap: from(area.cap)         # teto aplicado ANTES da chamada
+      onExceed: stop
+  agentWriteTool:
+    require_approval: always
+    role: Approver
+  workflowEscalation:
+    interrupt: request_info
+    editable: [summary]
+    rejectReason: required
+\`\`\`
+
+# log.md · append-only
+
+\`\`\`text
+2026-08-29 · formflow: agent — campo mcp virou lista (era par único).
+2026-08-29 · policy: hitl — rejectReason passa a required.
+\`\`\`
+`;
+</script>
+</body>
+</html>

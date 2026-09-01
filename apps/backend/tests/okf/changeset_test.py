@@ -1,0 +1,520 @@
+"""Proposta multi-documento OKF sem publicação ou efeitos colaterais."""
+
+from __future__ import annotations
+
+import sys
+from typing import Any
+
+import yaml
+
+from app.modules.okf.public import (
+    AuthoringInvalid,
+    ChangeDecision,
+    ChangeEvidence,
+    ChangeGap,
+    ChangeOperation,
+    OkfChangeSet,
+    parse_authoring_document,
+)
+
+
+def _document(
+    doc_type: str,
+    identifier: str,
+    spec: dict[str, Any],
+    *,
+    writes: list[dict[str, Any]] | None = None,
+    revision: str = "1",
+    publication_state: str = "proposed",
+    supersedes: dict[str, str] | None = None,
+):
+    actual_spec = (
+        {"writes": writes, "cannotWrite": [{"type": "policy"}]}
+        if doc_type == "copilot"
+        else spec
+    )
+    profile = {
+        "profile_version": "1",
+        "id": identifier,
+        "revision": revision,
+        "publication_state": publication_state,
+        "tenant": "tenant-a",
+        "area": "support",
+        "spec": actual_spec,
+    }
+    if supersedes is not None:
+        profile["supersedes"] = supersedes
+    header = {
+        "type": doc_type,
+        "status": {
+            "active": "stable",
+            "deprecated": "deprecated",
+        }.get(publication_state, "draft"),
+        "generated": {"by": "process:builder", "at": "2026-08-31T12:00:00Z"},
+        "x-foundry-authoring": profile,
+    }
+    return parse_authoring_document(
+        f"---\n{yaml.safe_dump(header, sort_keys=False).rstrip()}\n---\n\n# {identifier}\n"
+    )
+
+
+def _valid_changeset() -> OkfChangeSet:
+    proposer = _document(
+        "copilot",
+        "builder",
+        {},
+        writes=[
+            {"type": "agent-binding", "operations": ["create", "revise", "deprecate"]},
+            {"type": "mcp-binding", "operations": ["create"]},
+            {"type": "usecase", "operations": ["create"]},
+        ],
+    )
+    agent = _document(
+        "agent-binding",
+        "ticket-agent",
+        {"agent": {"name": "ticket-agent", "version": "1"}},
+    )
+    mcp = _document(
+        "mcp-binding",
+        "ticket-mcp",
+        {
+            "toolbox": {"name": "ticket-tools", "version": "1"},
+            "tools": ["create_ticket"],
+            "reviewedSnapshot": {"id": "msnap_0123456789abcdef", "hash": "a" * 64},
+        },
+    )
+    usecase = _document(
+        "usecase",
+        "ticket-create",
+        {
+            "requires": [
+                {"type": "agent-binding", "id": "ticket-agent", "revision": "1"},
+                {"type": "mcp-binding", "id": "ticket-mcp", "revision": "1"},
+            ],
+            "targets": [{"type": "agent-binding", "id": "ticket-agent", "revision": "1"}],
+            "approval": {"required": True, "role": "Approver"},
+            "cost": {"kind": "unknown"},
+            "citation": "required",
+            "gaps": [],
+        },
+    )
+    return OkfChangeSet(
+        id="ticket-proposal",
+        base_version="catalog-42",
+        proposer=proposer,
+        justification="Criar o fluxo de tickets com capacidades reais.",
+        gaps=(ChangeGap("duplicate-ticket-check", "Implementação ainda não registrada."),),
+        operations=(
+            ChangeOperation(
+                "create-agent",
+                "create",
+                agent,
+                "Seleciona o agente publicado.",
+                evidence=(ChangeEvidence("spec.agent", "foundry:agent/ticket-agent@1"),),
+            ),
+            ChangeOperation(
+                "create-mcp",
+                "create",
+                mcp,
+                "Seleciona o toolbox publicado.",
+                evidence=(
+                    ChangeEvidence("spec.toolbox", "foundry:toolbox/ticket-tools@1"),
+                    ChangeEvidence("spec.tools", "mcp-snapshot:msnap_0123456789abcdef"),
+                    ChangeEvidence(
+                        "spec.reviewedSnapshot", "mcp-snapshot:msnap_0123456789abcdef"
+                    ),
+                ),
+            ),
+            ChangeOperation(
+                "create-usecase",
+                "create",
+                usecase,
+                "Compõe consulta e criação de ticket.",
+                depends_on=("create-agent", "create-mcp"),
+                evidence=(
+                    ChangeEvidence("spec.requires", "catalog:ticket-capabilities"),
+                    ChangeEvidence("spec.targets", "catalog:ticket-capabilities"),
+                    ChangeEvidence("spec.approval", "policy:tool-approval"),
+                    ChangeEvidence("spec.cost", "catalog:ticket-capabilities"),
+                    ChangeEvidence("spec.citation", "policy:assurance"),
+                    ChangeEvidence("spec.gaps", "builder:analysis"),
+                ),
+            ),
+        ),
+    )
+
+
+def main() -> int:
+    failures: list[str] = []
+    current_version = "catalog-42"
+
+    def check(name: str, operation, *, fails: bool = False) -> None:
+        if not callable(operation):
+            passed = bool(operation) is not fails
+            print(f"  {'✓' if passed else '✗'} {name}")
+            if not passed:
+                failures.append(name)
+            return
+        try:
+            operation()
+        except AuthoringInvalid:
+            passed = fails
+        else:
+            passed = not fails
+        print(f"  {'✓' if passed else '✗'} {name}")
+        if not passed:
+            failures.append(name)
+
+    changeset = _valid_changeset()
+    check(
+        "multi-document proposal resolves intra-set references",
+        lambda: changeset.validate(current_version=current_version),
+    )
+
+    denied = OkfChangeSet(
+        id="denied-proposal",
+        base_version="catalog-42",
+        proposer=changeset.proposer,
+        justification="Tentar tocar policy.",
+        operations=(
+            ChangeOperation(
+                "create-policy",
+                "create",
+                _document(
+                    "policy",
+                    "ticket-policy",
+                    {"enforcement": "external", "sources": ["entra"]},
+                ),
+                "Não permitido.",
+                evidence=(ChangeEvidence("spec", "user:request"),),
+            ),
+        ),
+    )
+    check(
+        "operation outside writes is denied",
+        lambda: denied.validate(current_version=current_version),
+        fails=True,
+    )
+
+    cyclic = _valid_changeset()
+    cyclic = OkfChangeSet(
+        id=cyclic.id,
+        base_version=cyclic.base_version,
+        proposer=cyclic.proposer,
+        justification=cyclic.justification,
+        operations=(
+            ChangeOperation(
+                "first",
+                "create",
+                cyclic.operations[0].document,
+                "Primeiro.",
+                depends_on=("second",),
+                evidence=(ChangeEvidence("spec", "catalog:first"),),
+            ),
+            ChangeOperation(
+                "second",
+                "create",
+                cyclic.operations[1].document,
+                "Segundo.",
+                depends_on=("first",),
+                evidence=(ChangeEvidence("spec", "catalog:second"),),
+            ),
+        ),
+    )
+    check(
+        "dependency cycle is denied",
+        lambda: cyclic.validate(current_version=current_version),
+        fails=True,
+    )
+
+    structured = changeset.to_dict(current_version=current_version)
+    check("patch transport is structured", isinstance(structured["operations"], list))
+    check(
+        "patch identifies changed field paths",
+        any(item["path"].endswith("spec.agent.name") for item in structured["operations"][0]["patch"]),
+    )
+    check("ChangeSet declares its base version", structured["base_version"] == "catalog-42")
+    check("gaps are separate from references", structured["gaps"][0]["capability"] == "duplicate-ticket-check")
+    check(
+        "review markdown is generated only at the edge",
+        changeset.render_review(current_version=current_version).startswith("# ChangeSet"),
+    )
+    check("proposal cannot be confirmed before review", not hasattr(changeset, "confirm"))
+
+    decisions = tuple(
+        ChangeDecision(operation.id, "accept") for operation in changeset.operations
+    )
+    reviewed = changeset.review(decisions, current_version=current_version)
+    check(
+        "each document can be accepted",
+        reviewed is not None and len(reviewed.changeset.operations) == 3,
+    )
+    confirmed = reviewed.confirm(current_version=current_version) if reviewed is not None else None
+    check(
+        "confirmation digest is stable only after review",
+        confirmed is not None
+        and confirmed.digest == reviewed.confirm(current_version=current_version).digest,
+    )
+    check(
+        "reviewed state cannot be constructed directly",
+        lambda: type(reviewed)(reviewed.changeset, None),
+        fails=True,
+    )
+    check(
+        "confirmed state cannot be constructed directly",
+        lambda: type(confirmed)(reviewed, confirmed.digest, None),
+        fails=True,
+    )
+    discarded = changeset.review(
+        (ChangeDecision(operation.id, "discard") for operation in changeset.operations),
+        current_version=current_version,
+    )
+    check("discarding the proposal leaves no ChangeSet", discarded is None)
+
+    edited_agent = _document(
+        "agent-binding",
+        "ticket-agent",
+        {"agent": {"name": "ticket-agent", "version": "2"}},
+    )
+    edited = changeset.review(
+        (
+            ChangeDecision(
+                "create-agent",
+                "edit",
+                edited_agent,
+                (ChangeEvidence("spec.agent", "human:review"),),
+            ),
+            ChangeDecision("create-mcp", "accept"),
+            ChangeDecision("create-usecase", "accept"),
+        ),
+        current_version=current_version,
+    )
+    check(
+        "editing replaces the document and its evidence",
+        edited is not None
+        and edited.changeset.operations[0].document.spec["agent"]["version"] == "2"
+        and edited.changeset.operations[0].evidence[0].source == "human:review",
+    )
+    check(
+        "editing invalidates the previous confirmation",
+        edited is not None
+        and confirmed is not None
+        and edited.confirm(current_version=current_version).digest != confirmed.digest,
+    )
+
+    active = _document(
+        "agent-binding",
+        "existing-agent",
+        {"agent": {"name": "existing-agent", "version": "1"}},
+        publication_state="active",
+    )
+    revised = _document(
+        "agent-binding",
+        "existing-agent",
+        {"agent": {"name": "existing-agent", "version": "2"}},
+        revision="2",
+        supersedes={"type": "agent-binding", "id": "existing-agent", "revision": "1"},
+    )
+    revision_change = OkfChangeSet(
+        id="revision-proposal",
+        base_version="catalog-42",
+        proposer=changeset.proposer,
+        justification="Revisar agente existente.",
+        operations=(
+            ChangeOperation(
+                "revise-agent",
+                "revise",
+                revised,
+                "Atualiza a versão do binding.",
+                base_revision="1",
+                evidence=(ChangeEvidence("spec.agent", "foundry:agent/existing-agent@2"),),
+            ),
+        ),
+    )
+    check(
+        "revision with current base is accepted",
+        lambda: revision_change.validate((active,), current_version=current_version),
+    )
+    stale = OkfChangeSet(
+        id="stale-proposal",
+        base_version="catalog-41",
+        proposer=changeset.proposer,
+        justification=revision_change.justification,
+        operations=(
+            ChangeOperation(
+                "revise-agent",
+                "revise",
+                revised,
+                "Usa base antiga.",
+                base_revision="1",
+                evidence=(ChangeEvidence("spec.agent", "foundry:agent/existing-agent@2"),),
+            ),
+        ),
+    )
+    check(
+        "stale ChangeSet base version is denied",
+        lambda: stale.validate((active,), current_version=current_version),
+        fails=True,
+    )
+    revision_diff = revision_change.diffs((active,), current_version=current_version)[0]
+    check("revision diff carries structured before and after", revision_diff.before is not None)
+    check("semantic diff lists changed fields", any(change.kind == "replace" for change in revision_diff.changes))
+    try:
+        revision_diff.after["type"] = "policy"
+    except TypeError:
+        immutable_diff = True
+    else:
+        immutable_diff = False
+    check("public diff snapshots are immutable", immutable_diff)
+
+    deprecated = _document(
+        "agent-binding",
+        "existing-agent",
+        {"agent": {"name": "existing-agent", "version": "1"}},
+        revision="2",
+        publication_state="deprecated",
+        supersedes={"type": "agent-binding", "id": "existing-agent", "revision": "1"},
+    )
+    deprecation = OkfChangeSet(
+        id="deprecation-proposal",
+        base_version="catalog-42",
+        proposer=changeset.proposer,
+        justification="Deprecar binding existente.",
+        operations=(
+            ChangeOperation(
+                "deprecate-agent",
+                "deprecate",
+                deprecated,
+                "Retira o binding sem apagar histórico.",
+                base_revision="1",
+                evidence=(ChangeEvidence("publication_state", "human:review"),),
+            ),
+        ),
+    )
+    check(
+        "deprecate creates a new immutable revision",
+        lambda: deprecation.validate((active,), current_version=current_version),
+    )
+    check(
+        "delete is outside the operation vocabulary",
+        lambda: ChangeOperation(
+            "delete-agent",
+            "delete",
+            deprecated,
+            "Não permitido.",
+            evidence=(ChangeEvidence("publication_state", "human:review"),),
+        ),
+        fails=True,
+    )
+
+    invented = _document(
+        "usecase",
+        "invented-reference",
+        {
+            "requires": [{"type": "mcp-binding", "id": "does-not-exist", "revision": "1"}],
+            "targets": [{"type": "agent-binding", "id": "ticket-agent", "revision": "1"}],
+            "approval": {"required": True, "role": "Approver"},
+            "cost": {"kind": "unknown"},
+            "citation": "required",
+            "gaps": [],
+        },
+    )
+    invented_change = OkfChangeSet(
+        id="invented-reference-proposal",
+        base_version="catalog-42",
+        proposer=changeset.proposer,
+        justification="Não aceitar capacidade inventada.",
+        operations=(
+            changeset.operations[0],
+            ChangeOperation(
+                "create-invented-usecase",
+                "create",
+                invented,
+                "Referência inexistente.",
+                depends_on=("create-agent",),
+                evidence=(
+                    ChangeEvidence("spec.requires", "user:request"),
+                    ChangeEvidence("spec.targets", "catalog:ticket-capabilities"),
+                    ChangeEvidence("spec.approval", "policy:tool-approval"),
+                    ChangeEvidence("spec.cost", "catalog:ticket-capabilities"),
+                    ChangeEvidence("spec.citation", "policy:assurance"),
+                    ChangeEvidence("spec.gaps", "builder:analysis"),
+                ),
+            ),
+        ),
+    )
+    check(
+        "invented external reference is denied",
+        lambda: invented_change.validate(current_version=current_version),
+        fails=True,
+    )
+
+    missing_dependency = OkfChangeSet(
+        id="missing-dependency-proposal",
+        base_version=changeset.base_version,
+        proposer=changeset.proposer,
+        justification=changeset.justification,
+        operations=(
+            changeset.operations[0],
+            changeset.operations[1],
+            ChangeOperation(
+                "create-usecase",
+                "create",
+                changeset.operations[2].document,
+                "Omite a ordem exigida pelas referências.",
+                evidence=changeset.operations[2].evidence,
+            ),
+        ),
+    )
+    check(
+        "internal reference requires producer dependency",
+        lambda: missing_dependency.validate(current_version=current_version),
+        fails=True,
+    )
+
+    invalid_evidence = OkfChangeSet(
+        id="invalid-evidence-proposal",
+        base_version=changeset.base_version,
+        proposer=changeset.proposer,
+        justification="Não aceitar procedência sem campo real.",
+        operations=(
+            ChangeOperation(
+                "create-agent",
+                "create",
+                changeset.operations[0].document,
+                "Campo de evidência inventado.",
+                evidence=(ChangeEvidence("spec.missing", "model:guess"),),
+            ),
+        ),
+    )
+    check(
+        "evidence must point to a real changed field",
+        lambda: invalid_evidence.validate(current_version=current_version),
+        fails=True,
+    )
+
+    check(
+        "connection is denied before entering a ChangeSet",
+        lambda: _document("connection", "ticket-connection", {}),
+        fails=True,
+    )
+
+    gap_only = OkfChangeSet(
+        id="invented-name-as-gap",
+        base_version=changeset.base_version,
+        proposer=changeset.proposer,
+        justification="Registrar ausência sem fabricar referência.",
+        operations=(changeset.operations[0],),
+        gaps=(ChangeGap("does-not-exist", "Nenhum recurso correspondente no catálogo."),),
+    )
+    check(
+        "invented name is representable as a gap",
+        lambda: gap_only.validate(current_version=current_version),
+    )
+
+    print(f"\n{'❌' if failures else '✅'} {len(failures)} failure(s)")
+    return 1 if failures else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

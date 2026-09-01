@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, input, button { box-sizing:border-box; }
+  input, button { font-family:inherit; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  button:focus-visible, input:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">Novo agente — três rotas, duas sem código</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:92ch;text-wrap:pretty">A primeira rota <b>já existe</b> no produto (o wizard publica um prompt agent no Foundry). A terceira sempre existiu (container próprio). A do meio é a que falta: declarar o <b>workflow</b> na tela e deixar o nosso harness executá-lo — sem container, sem deploy.</p>
+  </div>
+
+  <div style="width:2276px;height:1340px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+        <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+        <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+      </div>
+      <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Área · tenant</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">contoso · compras</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="15">
+          <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;background:{{ n.bg }};color:{{ n.ink }};font-weight:{{ n.weight }}">
+            <span style="width:18px;text-align:center">{{ n.icon }}</span>{{ n.label }}
+          </span>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px">
+          <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">R</span>
+          <div style="min-width:0"><div style="font-size:13px;font-weight:600">Rafael Duarte</div><div style="font-size:11px;color:oklch(0.487 0.018 260)">Owner · Admin · Approver</div></div>
+        </div>
+        <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="height:56px;flex:0 0 56px;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;padding:0 20px;gap:12px">
+        <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Agentes hospedados</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">Novo agente</b></nav>
+        <span style="margin-left:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ ref }}</span>
+      </header>
+
+      <div style="flex:1;min-height:0;display:flex">
+        <main style="flex:1;min-width:0;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:13px">
+
+          <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+            <sc-for list="{{ routes }}" as="r" hint-placeholder-count="3">
+              <button type="button" onClick="{{ r.pick }}" style="text-align:left;border:1px solid {{ r.line }};border-top:4px solid {{ r.accent }};background:{{ r.bg }};border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:7px;cursor:pointer">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:{{ r.tagBg }};color:{{ r.tagInk }}">{{ r.tag }}</span>
+                  <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ r.dev }}</span>
+                </div>
+                <b style="font-size:15px;font-weight:650">{{ r.title }}</b>
+                <span style="font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260)">{{ r.what }}</span>
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260)">{{ r.runtime }}</span>
+              </button>
+            </sc-for>
+          </div>
+
+          <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:11px">
+            <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <b style="font-size:16px;font-weight:650">{{ sel.title }}</b>
+              <span style="font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:{{ sel.tagBg }};color:{{ sel.tagInk }}">{{ sel.tag }}</span>
+              <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">{{ sel.who }}</span>
+            </div>
+            <p style="margin:0;font-size:13px;line-height:1.5;max-width:92ch;text-wrap:pretty">{{ sel.lead }}</p>
+          </section>
+
+          <!-- rota 1 · prompt agent -->
+          <sc-if value="{{ is1 }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:baseline;gap:10px"><b style="font-size:15px;font-weight:650">Os campos que o wizard já pede</b><span style="margin-left:auto;font-size:11.5px;color:oklch(0.492 0.126 158);font-weight:600">existe hoje no produto</span></div>
+              <dl style="display:grid;grid-template-columns:150px minmax(0,1fr);gap:9px 16px;margin:0;font-size:13px;line-height:1.45">
+                <sc-for list="{{ promptRows }}" as="p" hint-placeholder-count="5">
+                  <dt style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ p.k }}</dt>
+                  <dd style="margin:0">{{ p.v }}</dd>
+                </sc-for>
+              </dl>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);max-width:92ch;text-wrap:pretty">O que ele <b>não</b> faz: sequência. Um prompt agent é um turno — instrução, base, ferramentas. Se o caso exige “triar, buscar, redigir, esperar aprovação, registrar”, ele não dá conta, e é aí que entra a rota do meio.</p>
+            </section>
+          </sc-if>
+
+          <!-- rota 2 · workflow declarado -->
+          <sc-if value="{{ is2 }}" hint-placeholder-val="{{ true }}">
+            <section style="background:#fff;border:1px solid oklch(0.452 0.152 262);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <b style="font-size:15px;font-weight:650">Os passos</b>
+                <span style="font-size:12px;color:oklch(0.487 0.018 260)">o harness executa nesta ordem; um passo humano para o fluxo</span>
+                <span style="margin-left:auto;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ stepBadge }}</span>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ steps }}" as="st" hint-placeholder-count="4">
+                  <div style="display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid {{ st.line }};border-left:4px solid {{ st.line }};border-radius:6px;background:{{ st.bg }}">
+                    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                      <span style="flex:none;width:22px;height:22px;border-radius:999px;background:{{ st.line }};color:#fff;font-size:11.5px;font-weight:700;display:grid;place-items:center">{{ st.n }}</span>
+                      <input type="text" value="{{ st.label }}" onChange="{{ st.setLabel }}" style="flex:1;min-width:200px;padding:8px 10px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:13px" />
+                      <button type="button" onClick="{{ st.remove }}" style="flex:none;padding:6px 11px;border:1px solid oklch(0.902 0.006 258);border-radius:6px;background:#fff;font-size:11.5px;cursor:pointer;color:oklch(0.487 0.018 260)">remover</button>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                      <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);min-width:66px">quem faz</span>
+                      <sc-for list="{{ st.kinds }}" as="k" hint-placeholder-count="3">
+                        <button type="button" onClick="{{ k.pick }}" style="padding:6px 11px;border:1px solid {{ k.line }};background:{{ k.bg }};color:{{ k.ink }};border-radius:4px;font-size:12px;font-weight:600;cursor:pointer">{{ k.label }}</button>
+                      </sc-for>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                      <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);min-width:66px">{{ st.usesLabel }}</span>
+                      <sc-for list="{{ st.uses }}" as="u" hint-placeholder-count="3">
+                        <button type="button" onClick="{{ u.pick }}" style="padding:6px 11px;border:1px solid {{ u.line }};background:{{ u.bg }};color:{{ u.ink }};border-radius:4px;font-size:12px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;cursor:pointer">{{ u.label }}</button>
+                      </sc-for>
+                    </div>
+                    <sc-if value="{{ st.isHuman }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;padding:9px 11px;background:#fff;border:1px solid oklch(0.545 0.126 68);border-radius:5px">
+                        <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">gate</span>
+                        <span style="font-size:12.5px;line-height:1.45;flex:1;min-width:220px">Aqui o fluxo para: a tela mostra o payload e espera decisão. Papel exigido:</span>
+                        <sc-for list="{{ st.roles }}" as="r" hint-placeholder-count="3">
+                          <button type="button" onClick="{{ r.pick }}" style="padding:5px 11px;border:1px solid {{ r.line }};background:{{ r.bg }};color:{{ r.ink }};border-radius:999px;font-size:11.5px;font-weight:600;cursor:pointer">{{ r.label }}</button>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+                <button type="button" onClick="{{ addStep }}" style="align-self:flex-start;padding:8px 13px;border:1px dashed oklch(0.836 0.008 258);border-radius:6px;background:#fff;color:oklch(0.452 0.152 262);font-size:12.5px;font-weight:600;cursor:pointer">+ acrescentar passo</button>
+              </div>
+            </section>
+
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px">
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <b style="font-size:13.5px;font-weight:650">Quem executa isto</b>
+                <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Nenhum container novo: o <b>harness</b> que já roda os agentes deste produto lê o documento e executa os passos. Escolha qual — os dois falam AG-UI, e a interrupção do passo humano vira o gate da tela.</p>
+                <div style="display:flex;gap:7px;flex-wrap:wrap">
+                  <sc-for list="{{ harnesses }}" as="h" hint-placeholder-count="2">
+                    <button type="button" onClick="{{ h.pick }}" style="padding:8px 12px;border:1px solid {{ h.line }};background:{{ h.bg }};color:{{ h.ink }};border-radius:4px;font-size:12.5px;font-weight:600;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;cursor:pointer">{{ h.label }}</button>
+                  </sc-for>
+                </div>
+                <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ harnessNote }}</span>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <b style="font-size:13.5px;font-weight:650">O que esta rota não faz</b>
+                <sc-for list="{{ limits }}" as="l" hint-placeholder-count="3">
+                  <div style="display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.45"><span style="flex:none;color:oklch(0.505 0.176 26)">·</span><span style="min-width:0">{{ l.t }}</span></div>
+                </sc-for>
+                <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">Precisando de algo daí, é a rota 3 — e o workflow declarado vira o scaffold dela.</span>
+              </div>
+            </section>
+          </sc-if>
+
+          <!-- rota 3 · container -->
+          <sc-if value="{{ is3 }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;align-items:baseline;gap:10px"><b style="font-size:15px;font-weight:650">O que o registro exige</b><span style="margin-left:auto;font-size:11.5px;color:oklch(0.545 0.126 68);font-weight:600">exige dev</span></div>
+              <dl style="display:grid;grid-template-columns:150px minmax(0,1fr);gap:9px 16px;margin:0;font-size:13px;line-height:1.45">
+                <sc-for list="{{ contRows }}" as="p" hint-placeholder-count="4">
+                  <dt style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ p.k }}</dt>
+                  <dd style="margin:0">{{ p.v }}</dd>
+                </sc-for>
+              </dl>
+              <a href="Middleware sem código e contrato do agente.dc.html" style="align-self:flex-start;padding:9px 14px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:#fff;font-size:13px;font-weight:600;text-decoration:none">Ver o contrato AG-UI e rodar o teste</a>
+            </section>
+          </sc-if>
+        </main>
+
+        <aside style="width:600px;flex:0 0 600px;background:#fff;border-left:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;min-height:0">
+          <div style="flex:none;padding:12px 14px;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+            <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">agents/{{ id }}/index.md</span>
+            <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:{{ vBg }};color:{{ vInk }}">{{ vState }}</span>
+          </div>
+          <pre style="flex:1;min-height:0;overflow:auto;margin:0;padding:14px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.6;white-space:pre">{{ yaml }}</pre>
+          <div style="flex:none;border-top:1px solid oklch(0.902 0.006 258);padding:13px 14px;display:flex;flex-direction:column;gap:9px;max-height:360px;overflow:auto">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">O que já existe e o que falta</span>
+            <sc-for list="{{ gaps }}" as="g" hint-placeholder-count="4">
+              <div style="display:flex;gap:9px;align-items:flex-start">
+                <span style="flex:none;width:17px;height:17px;border-radius:50%;background:{{ g.line }};color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ g.mark }}</span>
+                <span style="min-width:0"><b style="display:block;font-size:12px;font-weight:600">{{ g.t }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ g.d }}</span></span>
+              </div>
+            </sc-for>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2340,&quot;height&quot;:1420}}">
+const NAV = [
+  { icon: "◎", label: "Casos de uso" }, { icon: "💬", label: "Assistentes" },
+  { icon: "◇", label: "Copilotos" }, { icon: "⚖", label: "Conformidade" },
+  { icon: "◆", label: "Agentes hospedados", on: true }, { icon: "⇌", label: "Middlewares" },
+  { icon: "🔌", label: "Adaptadores" }, { icon: "◈", label: "Meus agentes" },
+  { icon: "▤", label: "Conhecimento" }, { icon: "✦", label: "Skills" }, { icon: "🎫", label: "Chamados" },
+  { icon: "✓", label: "Avaliações" }, { icon: "▦", label: "Visão geral" }, { icon: "🔗", label: "Auditoria" },
+  { icon: "🛡️", label: "Administração" },
+];
+
+const KINDS = ["agente", "humano", "sistema"];
+const TOOLS = ["buscar_item", "search_docs", "cotar", "reservar_item"];
+const BASES = ["politicas-compras", "catalogo-cache"];
+const ROLES = ["Approver", "Admin", "Owner"];
+
+class Component extends DCLogic {
+  state = {
+    route: 2, id: "compras-fluxo", harness: "agent-framework",
+    steps: [
+      { label: "Triar o pedido", kind: "agente", uses: "search_docs", role: "—" },
+      { label: "Buscar itens no catálogo", kind: "agente", uses: "buscar_item", role: "—" },
+      { label: "Redigir a requisição", kind: "agente", uses: "politicas-compras", role: "—" },
+      { label: "Aprovar a reserva", kind: "humano", uses: "reservar_item", role: "Approver" },
+      { label: "Registrar o desfecho", kind: "sistema", uses: "—", role: "—" },
+    ],
+  };
+
+  set(k, v) { this.setState({ [k]: v }); }
+  setStep(i, k, v) { this.setState((s) => ({ steps: s.steps.map((x, j) => (j === i ? { ...x, [k]: v } : x)) })); }
+
+  renderVals() {
+    const s = this.state;
+    const chip = (on) => ({ line: on ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)", bg: on ? "oklch(0.955 0.024 262)" : "#fff", ink: on ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)" });
+
+    const ROUTES = [
+      { n: 1, title: "Prompt agent no Foundry", tag: "já existe", dev: "sem código", what: "Instrução, base e ferramentas prontas. Um turno: pergunta, resposta com fonte.", runtime: "runtime: foundry", tone: "ok",
+        who: "qualquer Admin, pelo wizard de agente",
+        lead: "Esta rota está no produto hoje: o wizard publica a versão no Foundry e o agente já fala AG-UI pelo adaptador. Nada a implementar — e nada de sequência." },
+      { n: 2, title: "Workflow declarado no harness", tag: "falta construir", dev: "sem código", what: "Uma lista de passos: quem faz cada um, o que usa, e onde para num humano.", runtime: "runtime: harness", tone: "acc",
+        who: "Admin declara; o harness que já existe executa",
+        lead: "É a rota que responde a sua pergunta. Os harnesses já existem neste produto (os dois adaptadores AG-UI) — o que falta é um documento type: agent com workflow declarado que eles leiam, em vez de o fluxo viver no código do backend." },
+      { n: 3, title: "Container próprio", tag: "sempre existiu", dev: "exige dev", what: "Orquestração sua, estado seu, biblioteca sua. O requisito é falar AG-UI.", runtime: "runtime: container", tone: "wait",
+        who: "desenvolvedor do time",
+        lead: "Para o que não cabe em passos: laço, estado entre execuções, máquina de estados própria. O contrato é o de sempre, e ele é testável." },
+    ];
+    const tone = (t) => ({
+      ok: ["oklch(0.958 0.028 158)", "oklch(0.492 0.126 158)", "oklch(0.492 0.126 158)"],
+      acc: ["oklch(0.955 0.024 262)", "oklch(0.452 0.152 262)", "oklch(0.452 0.152 262)"],
+      wait: ["oklch(0.960 0.038 68)", "oklch(0.545 0.126 68)", "oklch(0.545 0.126 68)"],
+    }[t]);
+
+    const sel = ROUTES.find((r) => r.n === s.route) || ROUTES[1];
+    const selT = tone(sel.tone);
+    const human = s.steps.filter((x) => x.kind === "humano");
+
+    const steps = s.steps.map((st, i) => {
+      const isHuman = st.kind === "humano";
+      const line = isHuman ? "oklch(0.545 0.126 68)" : st.kind === "sistema" ? "oklch(0.902 0.006 258)" : "oklch(0.452 0.152 262)";
+      const opts = st.kind === "agente" ? TOOLS.concat(BASES) : st.kind === "humano" ? TOOLS : ["—"];
+      return {
+        n: String(i + 1), label: st.label, line, bg: isHuman ? "oklch(0.977 0.003 258)" : "#fff",
+        setLabel: (e) => this.setStep(i, "label", e.target.value),
+        remove: () => this.setState((x) => ({ steps: x.steps.filter((_, j) => j !== i) })),
+        kinds: KINDS.map((k) => ({ label: k, ...chip(st.kind === k), pick: () => this.setStep(i, "kind", k) })),
+        usesLabel: st.kind === "agente" ? "usa" : st.kind === "humano" ? "decide sobre" : "registra",
+        uses: opts.map((o) => ({ label: o, ...chip(st.uses === o), pick: () => this.setStep(i, "uses", o) })),
+        isHuman,
+        roles: ROLES.map((r) => ({ label: r, ...chip(st.role === r), pick: () => this.setStep(i, "role", r) })),
+      };
+    });
+
+    let yaml = "";
+    if (s.route === 1) {
+      yaml = ["---", "type: agent", "resource: " + s.id, "runtime: foundry", 'okf_version: "0.2"', "lifecycle: shadow", "index: true", "---", "", "```yaml",
+        "kind: prompt", "model: gpt-5-mini", "instructions: |", "  Você responde dúvidas de compras citando a política de origem.",
+        "knowledge_base: politicas-compras", "tools: [{type: code_interpreter}]", "```"].join("\n");
+    } else if (s.route === 2) {
+      yaml = ["---", "type: agent", "resource: " + s.id, "runtime: harness", "harness: " + s.harness, 'okf_version: "0.2"', "lifecycle: shadow", "index: true", "---", "", "## Workflow", "", "```yaml", "workflow:"]
+        .concat(s.steps.map((x) => "  - {id: " + x.label.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "") + ", by: " + x.kind + (x.uses !== "—" ? ", uses: " + x.uses : "") + (x.kind === "humano" ? ", gate: {role: " + x.role + ", show: payload}" : "") + "}"))
+        .concat(["```", "", "## Cost", "", "```yaml", "cost: {model: per-1k-tokens, cap: {compras: 300}}", "areas: [compras]", "```"]).join("\n");
+    } else {
+      yaml = ["---", "type: agent", "resource: " + s.id, "runtime: container", 'okf_version: "0.2"', "lifecycle: shadow", "index: true", "---", "", "```yaml",
+        "ref: acr.io/compras/fluxo:0.1", "protocol: AG-UI", "endpoint: /agui", "health: /healthz", "auth: managed-identity",
+        "conformance: {run: required, probes: 8}", "```"].join("\n");
+    }
+
+    const gaps = s.route === 1
+      ? [
+          { ok: true, t: "Wizard de agente", d: "Já publica prompt agent com nome, instruções, modelo, base e tools." },
+          { ok: true, t: "AG-UI pelo adaptador", d: "O agente do Foundry já é servido pelo adaptador — a tela mostra passos e citação." },
+          { ok: false, t: "Sequência", d: "Não existe: um prompt agent é um turno. Para fluxo, rota 2." },
+        ]
+      : s.route === 2
+        ? [
+            { ok: true, t: "Os harnesses existem", d: "Os dois adaptadores AG-UI já executam agente e workflow neste produto — inclusive a interrupção que vira gate." },
+            { ok: true, t: "O gate humano existe", d: "request_info → payload na tela → resume. É o mesmo caminho da aprovação de chamado." },
+            { ok: false, t: "O documento type: agent com workflow", d: "Falta: hoje o fluxo de três passos vive no código do backend (runtime: backend). Declarado, ele passa a ser dado." },
+            { ok: false, t: "O editor de passos", d: "Falta: é esta tela. Sem ela, declarar workflow seria escrever YAML à mão." },
+          ]
+        : [
+            { ok: true, t: "Registro de container", d: "Já existe: imagem, endpoint, health, identidade e teto." },
+            { ok: true, t: "Teste de conformidade", d: "Oito probes obrigatórios; conforme é resultado de teste." },
+            { ok: false, t: "Scaffold a partir do workflow", d: "Falta: gerar o esqueleto do container já com os passos declarados na rota 2." },
+          ];
+
+    return {
+      nav: NAV.map((n) => ({ icon: n.icon, label: n.label, bg: n.on ? "oklch(0.955 0.024 262)" : "transparent", ink: n.on ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)", weight: n.on ? "600" : "400" })),
+      ref: sel.runtime,
+      routes: ROUTES.map((r) => {
+        const t = tone(r.tone);
+        const on = s.route === r.n;
+        return { title: r.title, what: r.what, tag: r.tag, dev: r.dev, runtime: r.runtime, tagBg: t[0], tagInk: t[1], accent: t[2],
+          line: on ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)", bg: on ? "oklch(0.955 0.024 262)" : "#fff",
+          pick: () => this.set("route", r.n) };
+      }),
+      sel: { title: sel.title, tag: sel.tag, who: sel.who, lead: sel.lead, tagBg: selT[0], tagInk: selT[1] },
+      is1: s.route === 1, is2: s.route === 2, is3: s.route === 3,
+
+      promptRows: [
+        { k: "nome", v: "compras-duvidas — minúsculas, hífens no meio" },
+        { k: "instruções", v: "o comportamento, em texto; o copiloto pode escrever este campo" },
+        { k: "modelo", v: "gpt-5-mini (deployment do projeto)" },
+        { k: "base", v: "politicas-compras — habilita citação" },
+        { k: "ferramentas", v: "code interpreter, busca na web, geração de imagem" },
+      ],
+      contRows: [
+        { k: "imagem", v: "acr.io/compras/fluxo:0.1" },
+        { k: "endpoint", v: "POST /agui + GET /healthz" },
+        { k: "identidade", v: "managed identity — sem chave em variável" },
+        { k: "conformidade", v: "8 probes obrigatórios; sem passar, não registra" },
+      ],
+
+      steps, stepBadge: s.steps.length + " passos · " + (human.length ? human.length + " humano(s)" : "nenhum passo humano"),
+      addStep: () => this.setState((x) => ({ steps: x.steps.concat([{ label: "Novo passo", kind: "agente", uses: "search_docs", role: "—" }]) })),
+      harnesses: ["agent-framework", "langgraph"].map((h) => ({ label: h, ...chip(s.harness === h), pick: () => this.set("harness", h) })),
+      harnessNote: s.harness === "agent-framework"
+        ? "Interrupção por request_info — o caminho que a aprovação de chamado já usa hoje."
+        : "Interrupção pelo mecanismo próprio do grafo, tratada pelo hook do runtime. Dois runtimes, dois idiomas, sem camada normalizadora.",
+      limits: [
+        { t: "Laço: repetir um passo até uma condição — precisa de estado, e estado é código." },
+        { t: "Ramificação além de um desvio simples: dois caminhos declarados já ficam ilegíveis." },
+        { t: "Estado entre execuções: o workflow declarado é sem memória além do thread." },
+      ],
+
+      id: s.id, yaml,
+      vState: s.route === 2 ? "rascunho · declarado" : s.route === 1 ? "rascunho · prompt" : "rascunho · container",
+      vBg: "oklch(0.955 0.024 262)", vInk: "oklch(0.452 0.152 262)",
+      gaps: gaps.map((g) => ({ t: g.t, d: g.d, mark: g.ok ? "✓" : "—", line: g.ok ? "oklch(0.492 0.126 158)" : "oklch(0.545 0.126 68)" })),
+    };
+  }
+}
+</script>
+</body>
+</html>

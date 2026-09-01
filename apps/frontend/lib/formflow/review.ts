@@ -53,13 +53,24 @@ function resolver(
   // As capacidades são uma LISTA DINÂMICA, não um template: quantas e quais depende do que a
   // pessoa marcou, e um `{tools} {mcp}` produziria "code_interpreter " com um espaço solto
   // quando não há MCP.
+  //
+  // QUAIS CAMPOS SÃO CAPACIDADE VEM DO MANIFESTO (`fields:`), não do TIPO deles. A primeira
+  // versão varria todo `choice`/`multi`/`pair` — o que acerta no formulário do agente (onde
+  // `choice` é base e toolbox) e ERRA feio no do copiloto, onde `choice` é `mount` e `runtime`:
+  // a revisão dizia "vai poder escrever: dock lateral, backend". Visto rodando a tela.
+  //
+  // Sem `fields:` a linha não presume nada — volta ao comportamento antigo apenas quando o
+  // manifesto pede, o que mantém os manifestos existentes funcionando sem herdar o erro.
   if (l.fromCapabilities) {
+    const declarados = l.fields;
+    const campos = m.sections
+      .flatMap((s) => s.fields)
+      .filter((c) => (declarados ? declarados.includes(c.id) : ["multi", "choice", "pair"].includes(c.type)));
     const partes: string[] = [];
-    for (const c of m.sections.flatMap((s) => s.fields)) {
+    for (const c of campos) {
       const v = valores[c.id];
-      if (c.type === "multi" && Array.isArray(v) && v.length) partes.push(...v);
-      else if (c.type === "choice" && typeof v === "string" && v.trim()) partes.push(v.trim());
-      else if (c.type === "pair" && typeof v === "string" && v.trim()) partes.push(v.trim());
+      if (Array.isArray(v)) partes.push(...v);
+      else if (typeof v === "string" && v.trim()) partes.push(v.trim());
     }
     return partes.length ? vazio.comCapacidades(partes.join(", ")) : vazio.semCapacidades;
   }

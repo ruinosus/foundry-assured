@@ -43,7 +43,67 @@ PROIBIDAS = {
     "save_flow",
 }
 
+COLECOES_DE_RECURSOS = {"agents", "knowledge", "skills", "toolboxes"}
+METODOS_DE_ESCRITA = {"create", "create_version", "delete", "update", "upload"}
+
 PROPOSER = Path(_app.__file__).resolve().parent / "modules" / "proposer"
+
+
+def _attribute_chain(node: ast.expr) -> list[str]:
+    chain: list[str] = []
+    while isinstance(node, ast.Attribute):
+        chain.append(node.attr)
+        node = node.value
+    if isinstance(node, ast.Name):
+        chain.append(node.id)
+    return list(reversed(chain))
+
+
+def _write_findings(tree: ast.AST, where: str) -> list[str]:
+    findings: list[str] = []
+    collection_aliases = {
+        target.id
+        for node in ast.walk(tree)
+        if isinstance(node, ast.Assign)
+        for target in node.targets
+        if isinstance(target, ast.Name)
+        and COLECOES_DE_RECURSOS & set(_attribute_chain(node.value))
+    }
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom):
+            for alias in node.names:
+                if alias.name in PROIBIDAS:
+                    findings.append(f"{where}:{node.lineno} importa {alias.name}")
+        elif isinstance(node, ast.Attribute):
+            chain = _attribute_chain(node)
+            if (
+                chain
+                and chain[-1] in METODOS_DE_ESCRITA
+                and (COLECOES_DE_RECURSOS | collection_aliases) & set(chain[:-1])
+            ):
+                findings.append(
+                    f"{where}:{node.lineno} referencia escrita oficial {'.'.join(chain)}"
+                )
+        elif isinstance(node, ast.Call):
+            function = node.func
+            name = (
+                function.id if isinstance(function, ast.Name)
+                else function.attr if isinstance(function, ast.Attribute)
+                else ""
+            )
+            if name in PROIBIDAS:
+                findings.append(f"{where}:{node.lineno} chama {name}()")
+            if (
+                isinstance(function, ast.Name)
+                and function.id == "getattr"
+                and len(node.args) >= 2
+                and isinstance(node.args[1], ast.Constant)
+                and node.args[1].value in METODOS_DE_ESCRITA
+                and (COLECOES_DE_RECURSOS | collection_aliases)
+                & set(_attribute_chain(node.args[0]))
+            ):
+                findings.append(f"{where}:{node.lineno} obtém escrita oficial via getattr")
+    return findings
 
 
 def main() -> int:
@@ -66,26 +126,19 @@ def main() -> int:
     for arq in arquivos:
         arvore = ast.parse(arq.read_text(encoding="utf-8"), filename=str(arq))
         rel = arq.relative_to(PROPOSER.parent.parent)
-        for no in ast.walk(arvore):
-            # `from ... import create_agent_version`
-            if isinstance(no, ast.ImportFrom):
-                for alias in no.names:
-                    if alias.name in PROIBIDAS:
-                        achados.append(f"{rel}:{no.lineno} importa {alias.name}")
-            # `create_agent_version(...)` ou `foundry.create_agent_version(...)`
-            elif isinstance(no, ast.Call):
-                fn = no.func
-                nome = (
-                    fn.id if isinstance(fn, ast.Name)
-                    else fn.attr if isinstance(fn, ast.Attribute)
-                    else ""
-                )
-                if nome in PROIBIDAS:
-                    achados.append(f"{rel}:{no.lineno} chama {nome}()")
+        achados.extend(_write_findings(arvore, str(rel)))
 
     for a in achados:
         print(f"     ✗ {a}")
     check("nenhuma função de escrita de recurso é importada ou chamada", not achados)
+    direct = ast.parse("import azure.ai.projects as projects\nclient.agents.create_version({})")
+    aliased = ast.parse("agents = client.agents\nagents.create_version({})")
+    indirect = ast.parse('getattr(client.toolboxes, "delete")("name")')
+    read_only = ast.parse("client.responses.create(model='gpt')\nclient.agents.list()")
+    check("escrita oficial direta é detectada", bool(_write_findings(direct, "fixture")))
+    check("escrita oficial por alias é detectada", bool(_write_findings(aliased, "fixture")))
+    check("escrita oficial via getattr é detectada", bool(_write_findings(indirect, "fixture")))
+    check("chamadas de inferência e leitura continuam permitidas", not _write_findings(read_only, "fixture"))
 
     if falhas:
         print(f"\n❌ {len(falhas)} verificação(ões) falharam.")

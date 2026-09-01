@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  *, input, textarea, button { box-sizing:border-box; }
+  input, textarea, button { font-family:inherit; }
+  input:focus-visible, textarea:focus-visible, button:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">Novo copiloto — criado do zero pelo builder</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:76ch;text-wrap:pretty">O copiloto deixa de ser código e passa a ser um documento OKF. Preencha à esquerda: o bundle à direita é escrito ao vivo, e a prévia embaixo é ele renderizado por parser — nenhum componente novo.</p>
+  </div>
+
+  <div style="width:2028px;height:1300px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+        <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+        <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+      </div>
+      <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Projeto</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">fa-prod-eastus2</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">◎</span>Casos de uso</span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">💬</span>Assistentes</span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;background:oklch(0.955 0.024 262);color:oklch(0.452 0.152 262);font-weight:600"><span style="width:18px;text-align:center">◇</span>Copilotos<span style="margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:oklch(0.958 0.028 158);color:oklch(0.492 0.126 158)">novo</span></span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">◆</span>Agentes hospedados<span style="margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:oklch(0.958 0.028 158);color:oklch(0.492 0.126 158)">novo</span></span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">⇌</span>Middlewares</span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">🔌</span>Adaptadores</span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">◈</span>Meus agentes</span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">▤</span>Conhecimento</span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">✦</span>Skills</span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">🎫</span>Chamados</span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">✓</span>Avaliações</span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">▦</span>Visão geral</span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">🔗</span>Auditoria</span>
+        <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px"><span style="width:18px;text-align:center">🛡️</span>Administração</span>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px;min-width:0">
+            <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">R</span>
+            <div style="min-width:0">
+              <div style="font-size:13px;font-weight:600">Rafael Duarte</div>
+              <div style="font-size:11px;color:oklch(0.487 0.018 260)">Admin · Approver</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+
+    <header style="height:58px;flex:0 0 58px;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;gap:14px;padding:0 20px">
+      <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Visão geral</span><span>/</span><span>Copilotos</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">Novo copiloto</b></nav>
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">okf · type: copilot · v0.2</span>
+      <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">{{ validNote }}</span>
+      <button type="button" onClick="{{ publish }}" style="padding:8px 13px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-size:13px;font-weight:600;cursor:pointer">{{ publishLabel }}</button>
+    </header>
+
+    <div style="flex:1;min-height:0;display:flex">
+
+      <!-- rail -->
+      <nav style="width:230px;flex:0 0 230px;background:oklch(0.955 0.005 258);border-right:1px solid oklch(0.902 0.006 258);padding:16px 12px;display:flex;flex-direction:column;gap:14px;min-height:0;overflow:auto">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">O documento</span>
+          <b style="font-size:13px;font-weight:600;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">{{ docPath }}</b>
+          <div style="height:4px;border-radius:999px;background:oklch(0.902 0.006 258);overflow:hidden"><div style="height:100%;background:oklch(0.492 0.126 158);width:{{ pct }}"></div></div>
+          <span style="font-size:12px;color:oklch(0.487 0.018 260)">{{ pctNote }}</span>
+        </div>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px">
+          <sc-for list="{{ rail }}" as="r" hint-placeholder-count="8">
+            <li style="display:flex;gap:8px;align-items:baseline;padding:8px 9px;border-radius:5px;background:{{ r.bg }}">
+              <span style="flex:none;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:{{ r.ink }}">{{ r.mark }}</span>
+              <span style="min-width:0"><b style="display:block;font-size:12.5px;font-weight:600">{{ r.title }}</b><span style="display:block;font-size:11.5px;color:oklch(0.487 0.018 260);line-height:1.35">{{ r.note }}</span></span>
+            </li>
+          </sc-for>
+        </ul>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding:11px;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Como isto roda</span>
+          <p style="margin:0;font-size:11.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">O agente lê o bundle e despacha por <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">type</span>: <b>copilot</b> monta a superfície, <b>formflow</b> monta o formulário, <b>policy</b> aplica os gates. Copiloto novo = documento novo, não componente novo.</p>
+        </div>
+      </nav>
+
+      <!-- formulário -->
+      <main style="flex:1;min-width:0;padding:18px 22px;display:flex;flex-direction:column;gap:14px;min-height:0;overflow:auto">
+        <sc-for list="{{ sections }}" as="s" hint-placeholder-count="4">
+          <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+            <header style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">{{ s.key }}</span>
+              <h3 style="margin:0;font-size:16px;font-weight:640;letter-spacing:-0.015em">{{ s.title }}</h3>
+              <span style="margin-left:auto;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ s.badge }}</span>
+            </header>
+            <p style="margin:0;font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:70ch;text-wrap:pretty">{{ s.help }}</p>
+
+            <sc-for list="{{ s.controls }}" as="c" hint-placeholder-count="2">
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ c.label }}</span>
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.612 0.014 258)">{{ c.key }}</span>
+                  <sc-if value="{{ c.fixed }}" hint-placeholder-val="{{ false }}"><span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.492 0.126 158);border:1px solid oklch(0.492 0.126 158);border-radius:3px;padding:0 5px">não negociável</span></sc-if>
+                </div>
+
+                <sc-if value="{{ c.isText }}" hint-placeholder-val="{{ true }}">
+                  <input type="text" value="{{ c.value }}" onChange="{{ c.set }}" placeholder="{{ c.placeholder }}" style="width:100%;padding:9px 11px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:13px" />
+                </sc-if>
+
+                <sc-if value="{{ c.isChoice }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <sc-for list="{{ c.options }}" as="o" hint-placeholder-count="3">
+                      <button type="button" onClick="{{ o.pick }}" style="padding:7px 11px;border:1px solid {{ o.line }};background:{{ o.bg }};color:{{ o.ink }};border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer">{{ o.label }}</button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ c.isToggle }}" hint-placeholder-val="{{ false }}">
+                  <button type="button" onClick="{{ c.toggle }}" style="align-self:flex-start;display:flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid {{ c.line }};background:{{ c.bg }};color:{{ c.ink }};border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer">{{ c.state }}</button>
+                </sc-if>
+
+                <sc-if value="{{ c.isTargets }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:8px">
+                    <sc-for list="{{ c.rows }}" as="t" hint-placeholder-count="3">
+                      <div style="border:1px solid {{ t.line }};border-radius:5px;padding:10px;display:flex;flex-direction:column;gap:7px;background:{{ t.bg }}">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                          <button type="button" onClick="{{ t.toggle }}" style="display:flex;align-items:center;gap:7px;border:0;background:transparent;cursor:pointer;padding:0;font-size:12.5px;font-weight:600;color:oklch(0.235 0.017 262)"><span style="width:16px;height:16px;border-radius:3px;border:1px solid {{ t.boxLine }};background:{{ t.boxBg }};color:#fff;font-size:11px;display:grid;place-items:center">{{ t.check }}</span><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">{{ t.id }}</span></button>
+                          <span style="font-size:11.5px;color:oklch(0.487 0.018 260)">{{ t.note }}</span>
+                        </div>
+                        <sc-if value="{{ t.on }}" hint-placeholder-val="{{ true }}">
+                          <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+                            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">escreve</span>
+                            <sc-for list="{{ t.fields }}" as="ff" hint-placeholder-count="3">
+                              <button type="button" onClick="{{ ff.toggle }}" style="padding:3px 9px;border:1px solid {{ ff.line }};background:{{ ff.bg }};color:{{ ff.ink }};border-radius:999px;font-size:11.5px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;cursor:pointer">{{ ff.label }}</button>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{ c.isTools }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <sc-for list="{{ c.rows }}" as="w" hint-placeholder-count="2">
+                      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+                        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:600">{{ w.name }}</span>
+                        <span style="font-size:11.5px;color:oklch(0.487 0.018 260);flex:1;min-width:120px">{{ w.note }}</span>
+                        <span style="flex:none;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68);border:1px solid oklch(0.545 0.126 68);border-radius:3px;padding:0 5px">require_approval: always</span>
+                        <button type="button" onClick="{{ w.cycle }}" style="flex:none;padding:4px 10px;border:1px solid oklch(0.452 0.152 262);border-radius:999px;background:#fff;color:oklch(0.452 0.152 262);font-size:11.5px;font-weight:600;cursor:pointer">papel: {{ w.role }}</button>
+                        <button type="button" onClick="{{ w.remove }}" style="flex:none;border:1px solid oklch(0.902 0.006 258);background:#fff;border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer;color:oklch(0.487 0.018 260)">remover</button>
+                      </div>
+                    </sc-for>
+                    <button type="button" onClick="{{ c.add }}" style="align-self:flex-start;padding:6px 11px;border:1px dashed oklch(0.836 0.008 258);border-radius:4px;background:#fff;font-size:12.5px;font-weight:600;color:oklch(0.452 0.152 262);cursor:pointer">+ adicionar tool de escrita</button>
+                  </div>
+                </sc-if>
+
+                <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ c.help }}</span>
+                <sc-if value="{{ c.err }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:11.5px;color:oklch(0.505 0.176 26)">{{ c.errMsg }}</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </section>
+        </sc-for>
+      </main>
+
+      <!-- bundle + prévia -->
+      <aside style="width:620px;flex:0 0 620px;border-left:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;min-height:0;background:#fff">
+
+        <div style="flex:none;display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid oklch(0.902 0.006 258);background:oklch(0.955 0.005 258)">
+          <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Bundle OKF</span>
+          <div style="display:flex;gap:2px;margin-left:6px">
+            <sc-for list="{{ files }}" as="f" hint-placeholder-count="3">
+              <button type="button" onClick="{{ f.pick }}" style="padding:5px 10px;border:1px solid {{ f.line }};background:{{ f.bg }};color:{{ f.ink }};border-radius:4px;font-size:11.5px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;cursor:pointer">{{ f.name }}</button>
+            </sc-for>
+          </div>
+          <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">{{ bytes }}</span>
+        </div>
+
+        <pre style="flex:1;min-height:0;overflow:auto;margin:0;padding:16px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.6;white-space:pre">{{ fileText }}</pre>
+
+        <div style="flex:none;border-top:1px solid oklch(0.902 0.006 258);padding:14px;display:flex;flex-direction:column;gap:10px;background:oklch(0.977 0.003 258)">
+          <div style="display:flex;align-items:baseline;gap:10px">
+            <b style="font-size:13px;font-weight:650">Prévia — renderizado do bundle</b>
+            <span style="font-size:11.5px;color:oklch(0.487 0.018 260)">{{ previewNote }}</span>
+          </div>
+
+          <div style="border:1px solid oklch(0.902 0.006 258);border-radius:6px;background:#fff;display:flex;flex-direction:column;overflow:hidden">
+            <div style="padding:9px 12px;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;gap:8px">
+              <span style="width:22px;height:22px;flex:none;border-radius:5px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);display:grid;place-items:center;font-size:11px;font-weight:700;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">{{ previewMark }}</span>
+              <b style="font-size:12.5px;font-weight:650">{{ previewTitle }}</b>
+              <span style="font-size:11px;color:oklch(0.487 0.018 260);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">{{ previewEngine }}</span>
+              <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">{{ previewMount }}</span>
+            </div>
+            <div style="padding:12px;display:flex;flex-direction:column;gap:9px">
+              <div style="align-self:flex-start;max-width:88%;background:oklch(0.977 0.003 258);border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:8px 11px;font-size:12.5px;line-height:1.45">{{ previewGreeting }}</div>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ previewChips }}" as="c" hint-placeholder-count="2">
+                  <span style="padding:4px 10px;border:1px solid oklch(0.902 0.006 258);border-radius:999px;font-size:11.5px">{{ c.text }}</span>
+                </sc-for>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:oklch(0.955 0.024 262);border:1px solid oklch(0.452 0.152 262);border-radius:4px">
+                <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">Eu escrevo</span>
+                <div style="display:flex;flex-wrap:wrap;gap:5px">
+                  <sc-for list="{{ previewWrites }}" as="w" hint-placeholder-count="3">
+                    <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;padding:1px 7px;border-radius:999px;background:#fff;border:1px solid oklch(0.902 0.006 258)">{{ w.id }}</span>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ noWrites }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;color:oklch(0.505 0.176 26)">nada — nenhum alvo declarado</span></sc-if>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <sc-for list="{{ previewGates }}" as="g" hint-placeholder-count="3">
+                  <div style="display:flex;gap:7px;align-items:baseline;font-size:11.5px;line-height:1.4"><span style="flex:none;width:6px;height:6px;border-radius:50%;margin-top:4px;background:{{ g.dot }}"></span><span style="color:oklch(0.487 0.018 260)">{{ g.text }}</span></div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+    </div>
+  </div>
+
+  <div style="width:2028px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+    <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-left:3px solid oklch(0.452 0.152 262);border-radius:6px;padding:14px">
+      <b style="font-size:13px;font-weight:650">Os campos de um copiloto</b>
+      <p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Identidade, superfície (onde monta e em quais telas), motor, fundamentação, <b>alvos</b> (qual formflow e quais campos dele ele escreve), tools de escrita com papel, HITL herdado, medição, tom e plano de publicação. Nada de prompt solto: o prompt é derivado destes campos.</p>
+    </div>
+    <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-left:3px solid oklch(0.452 0.152 262);border-radius:6px;padding:14px">
+      <b style="font-size:13px;font-weight:650">Parser, não framework</b>
+      <p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">O agente lê o bundle e despacha por <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">type</span>. Três tipos bastam: <b>copilot</b>, <b>formflow</b>, <b>policy</b>. Um quarto tipo amanhã é um parser novo, não um produto novo — e bundles de terceiros já entram porque o formato é vendor-neutral.</p>
+    </div>
+    <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-left:3px solid oklch(0.545 0.126 68);border-radius:6px;padding:14px">
+      <b style="font-size:13px;font-weight:650">O que continua sendo código</b>
+      <p style="margin:6px 0 0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Os <i>tipos de campo</i> e os <i>gates</i>. Declarar um campo novo é dado; inventar um controle novo é código, com escape hatch registrado no manifesto. É a linha que impede o manifesto de virar uma linguagem de programação pela porta dos fundos.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1840,&quot;height&quot;:1500}}">
+const RE_ID = /^[a-z0-9]+(-[a-z0-9]+)*$/;
+const ROLES = ["Approver", "Admin", "Owner"];
+
+/** Os alvos possíveis: os formflows que já existem no bundle, com os campos que cada um declara
+ *  como `ai: true`. É daqui que sai "onde o copiloto atua" — não de uma lista no prompt. */
+const FLOWS = [
+  { id: "flows/agent", note: "wizard de agente", fields: ["name", "description", "instructions"] },
+  { id: "flows/skill", note: "wizard de skill", fields: ["name", "description", "instructions"] },
+  { id: "flows/knowledge", note: "base de conhecimento", fields: ["name", "description"] },
+];
+
+const READ_TOOLS = ["search_docs", "list_catalog", "read_manifest"];
+const SCREENS = ["/agents", "/skills", "/knowledge", "/usecases", "/d/*"];
+const BASES = ["rh-politicas", "helpdesk-kb", "selfwiki"];
+const MOUNTS = ["dock lateral", "console (tela inteira)", "ancorado no campo", "página própria"];
+const ENGINES = ["agent-framework", "langgraph"];
+const MODELS = ["gpt-5-mini", "gpt-5", "o4-mini"];
+
+class Component extends DCLogic {
+  state = {
+    id: "atendimento-rh",
+    title: "Copiloto de RH",
+    blurb: "Ajuda a montar agentes e bases de RH sem escrever JSON.",
+    mount: "dock lateral",
+    screens: ["/agents", "/knowledge"],
+    openByDefault: false,
+    engine: "agent-framework",
+    model: "gpt-5-mini",
+    bases: ["rh-politicas"],
+    citeRequired: true,
+    refuseWithoutSource: true,
+    targets: { "flows/agent": ["description", "instructions"], "flows/knowledge": ["description"] },
+    readTools: ["search_docs", "list_catalog"],
+    writeTools: [{ name: "create_ticket", role: "Approver", note: "abre chamado no destino" }],
+    batch: true,
+    inheritHitl: true,
+    rejectReason: true,
+    lang: "pt-BR",
+    areasOn: ["rh"],
+    capUsd: "150",
+    overMode: "degradar",
+    hosting: "Foundry hosted agent",
+    greeting: "Posso escrever a descrição e as instruções deste agente. Digo o que vou tocar antes de tocar.",
+    file: "index.md",
+    published: false,
+  };
+
+  set(k, v) { this.setState({ [k]: v }); }
+  toggleIn(k, v) {
+    const cur = [].concat(this.state[k] || []);
+    this.set(k, cur.indexOf(v) > -1 ? cur.filter((x) => x !== v) : cur.concat([v]));
+  }
+  toggleTarget(flow) {
+    const t = { ...this.state.targets };
+    if (t[flow]) delete t[flow];
+    else t[flow] = [];
+    this.set("targets", t);
+  }
+  toggleTargetField(flow, f) {
+    const t = { ...this.state.targets };
+    const cur = [].concat(t[flow] || []);
+    t[flow] = cur.indexOf(f) > -1 ? cur.filter((x) => x !== f) : cur.concat([f]);
+    this.set("targets", t);
+  }
+
+  writes() {
+    const out = [];
+    for (const k of Object.keys(this.state.targets)) for (const f of this.state.targets[k]) if (out.indexOf(f) === -1) out.push(f);
+    return out;
+  }
+
+  idErr() {
+    const v = (this.state.id || "").trim();
+    if (!v) return "Informe um identificador.";
+    if (!RE_ID.test(v)) return "Use apenas minúsculas, números e hífens no meio — o id é o caminho do documento.";
+    return null;
+  }
+
+  /** O bundle. Escrito a partir do estado, em OKF: markdown + frontmatter, `type` obrigatório. */
+  indexMd() {
+    const s = this.state;
+    const tgt = Object.keys(s.targets);
+    const lines = [];
+    lines.push("---");
+    lines.push("type: copilot");
+    lines.push("title: " + (s.title || "(sem título)"));
+    lines.push("description: " + (s.blurb || ""));
+    lines.push("resource: " + (s.id || "(sem id)"));
+    lines.push("tags: [copilot, " + s.engine + ", " + s.lang + "]");
+    lines.push("timestamp: 2026-08-29T14:22:00Z");
+    lines.push('okf_version: "0.2"');
+    lines.push("lifecycle: active");
+    lines.push("provenance: metadata.provenance");
+    lines.push("trust: " + (s.citeRequired ? "cited" : "uncited"));
+    lines.push("index: true            # a premissa: este documento entra na base de conhecimento");
+    lines.push("---");
+    lines.push("");
+    lines.push("# " + (s.title || "(sem título)"));
+    lines.push("");
+    lines.push(s.blurb || "");
+    lines.push("");
+    lines.push("## Surface");
+    lines.push("");
+    lines.push("```yaml");
+    lines.push("surface:");
+    lines.push("  mount: " + JSON.stringify(s.mount));
+    lines.push("  screens: [" + (s.screens.join(", ") || "") + "]");
+    lines.push("  openByDefault: " + s.openByDefault);
+    lines.push("```");
+    lines.push("");
+    lines.push("## Engine");
+    lines.push("");
+    lines.push("```yaml");
+    lines.push("engine:");
+    lines.push("  framework: " + s.engine);
+    lines.push("  model: " + s.model);
+    lines.push("  runtime: " + (s.engine === "agent-framework" ? "foundry" : "backend"));
+    lines.push("```");
+    lines.push("");
+    lines.push("## Grounding");
+    lines.push("");
+    lines.push("```yaml");
+    lines.push("grounding:");
+    lines.push("  bases: [" + s.bases.join(", ") + "]");
+    lines.push("  citation: " + (s.citeRequired ? "required" : "optional"));
+    lines.push("  refuseWithoutSource: " + s.refuseWithoutSource);
+    lines.push("  acl: perDocument      # aplicado antes do modelo ver o conteúdo");
+    lines.push("```");
+    lines.push("");
+    lines.push("## Targets");
+    lines.push("");
+    lines.push("```yaml");
+    lines.push("targets:");
+    if (!tgt.length) lines.push("  []                    # sem alvo, ele conversa e não escreve nada");
+    for (const k of tgt) {
+      lines.push("  - flow: " + k);
+      lines.push("    writes: [" + (s.targets[k].join(", ") || "") + "]");
+      lines.push("    validateAgainst: field.rules   # não negociável");
+      lines.push("    proposeBatch: " + s.batch);
+    }
+    lines.push("```");
+    lines.push("");
+    lines.push("## Tools");
+    lines.push("");
+    lines.push("```yaml");
+    lines.push("tools:");
+    lines.push("  read: [" + s.readTools.join(", ") + "]");
+    lines.push("  write:");
+    if (!s.writeTools.length) lines.push("    []");
+    for (const w of s.writeTools) {
+      lines.push("    - name: " + w.name);
+      lines.push("      require_approval: always");
+      lines.push("      role: " + w.role);
+    }
+    lines.push("```");
+    lines.push("");
+    lines.push("## Voice");
+    lines.push("");
+    lines.push("```yaml");
+    lines.push("voice:");
+    lines.push("  language: " + s.lang);
+    lines.push("  greeting: " + JSON.stringify(s.greeting));
+    lines.push("  declareBeforeActing: true   # diz o que vai tocar antes de tocar");
+    lines.push("```");
+    lines.push("");
+    lines.push("## Measurement");
+    lines.push("");
+    lines.push("```yaml");
+    lines.push("measurement:");
+    lines.push("  record: POST /builder-assist/proposals   # desfecho, nunca o texto");
+    lines.push("  outcomes: [accepted, edited, discarded]");
+    lines.push("  span: copilot." + (s.id || "sem-id"));
+    lines.push("```");
+    lines.push("");
+    lines.push("## Area and cost");
+    lines.push("");
+    lines.push("```yaml");
+    lines.push("areas: [" + s.areasOn.join(", ") + "]");
+    lines.push("runtime:");
+    lines.push("  hosting: " + JSON.stringify(s.hosting));
+    lines.push("  agent: agents/helpdesk        # type: agent, declarado à parte");
+    lines.push("cost:");
+    lines.push("  model: per-1k-tokens");
+    lines.push("  cap: {" + s.areasOn.map((a) => a + ": " + (s.capUsd || 0)).join(", ") + "}");
+    lines.push("  onExceed: " + (s.overMode === "só avisar" ? "warn" : s.overMode === "parar" ? "stop" : "degrade"));
+    lines.push("```");
+    lines.push("");
+    lines.push("## Policy");
+    lines.push("");
+    lines.push(s.inheritHitl ? "Herda [`hitl.md`](./hitl.md)." + (s.rejectReason ? " Override: `rejectReason: required`." : " Override: `rejectReason: optional`.") : "Não herda `hitl.md` — declara os gates aqui, o que exige revisão de segurança.");
+    lines.push("");
+    lines.push("## Sources");
+    lines.push("");
+    lines.push("- [`FieldProposal.tsx`](https://github.com/ruinosus/foundry-assured/blob/<HEAD>/apps/frontend/components/shell/FieldProposal.tsx#L160-L200)");
+    lines.push("- [`assist_log.py`](https://github.com/ruinosus/foundry-assured/blob/<HEAD>/apps/backend/app/modules/builder/internal/assist_log.py#L36-L66)");
+    lines.push("- [`flow_store.py`](https://github.com/ruinosus/foundry-assured/blob/<HEAD>/apps/backend/app/modules/foundry/internal/flow_store.py#L69-L112)");
+    return lines.join("\n");
+  }
+
+  hitlMd() {
+    const s = this.state;
+    return [
+      "---",
+      "type: policy",
+      "title: HITL — um gate, quatro lugares",
+      "resource: hitl",
+      "tags: [copilot, hitl, approval]",
+      'okf_version: "0.2"',
+      "---",
+      "",
+      "# hitl.md",
+      "",
+      "Herdado por todo `type: copilot` e todo `type: formflow` do bundle.",
+      "",
+      "```yaml",
+      "hitl:",
+      "  fieldProposal:",
+      "    tool: propose_field",
+      "    respond: immediately          # o modelo não fica preso na decisão humana",
+      "    decide: [use, edit, discard]",
+      "    validateAgainst: field.rules",
+      "    record: POST /builder-assist/proposals",
+      "  publishOperation:",
+      "    approval: always",
+      "    show: payload",
+      "    role: from(operation.approval.role)",
+      "  agentWriteTool:",
+      "    require_approval: always",
+      "    role: from(tool.role)",
+      "  workflowEscalation:",
+      "    interrupt: request_info",
+      "    editable: [summary]",
+      "    rejectReason: " + (s.rejectReason ? "required" : "optional"),
+      "```",
+    ].join("\n");
+  }
+
+  logMd() {
+    const s = this.state;
+    return [
+      "---",
+      "type: log",
+      "resource: " + (s.id || "sem-id"),
+      "---",
+      "",
+      "# log.md · append-only, ISO 8601",
+      "",
+      "```text",
+      "2026-08-29T14:22:00Z · copilot: " + (s.id || "sem-id") + " — rascunho criado pelo builder.",
+      "2026-08-29T14:24:10Z · targets — " + (Object.keys(s.targets).join(", ") || "nenhum") + ".",
+      "2026-08-29T14:25:02Z · tools.write — " + (s.writeTools.map((w) => w.name + " (" + w.role + ")").join(", ") || "nenhuma") + ".",
+      s.published ? "2026-08-29T14:26:40Z · publicado como Dataset versionado do Foundry (flow.yaml → v1)." : "(ainda não publicado)",
+      "```",
+    ].join("\n");
+  }
+
+  renderVals() {
+    const s = this.state;
+    const idErr = this.idErr();
+    const writes = this.writes();
+    const nCampos = writes.length === 1 ? "1 campo" : writes.length + " campos";
+    const tgtKeys = Object.keys(s.targets);
+
+    const choice = (key, label, options, help, cur, onPick) => ({
+      key, label, help: help || "", isChoice: true,
+      options: options.map((o) => ({
+        label: o, on: cur === o || (Array.isArray(cur) && cur.indexOf(o) > -1),
+        line: cur === o || (Array.isArray(cur) && cur.indexOf(o) > -1) ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)",
+        bg: cur === o || (Array.isArray(cur) && cur.indexOf(o) > -1) ? "oklch(0.955 0.024 262)" : "#fff",
+        ink: cur === o || (Array.isArray(cur) && cur.indexOf(o) > -1) ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)",
+        pick: () => onPick(o),
+      })),
+    });
+    const toggle = (key, label, on, help, onToggle, fixed) => ({
+      key, label, help: help || "", isToggle: true, fixed: !!fixed,
+      state: on ? "sim" : "não", toggle: onToggle,
+      line: on ? "oklch(0.492 0.126 158)" : "oklch(0.902 0.006 258)",
+      bg: on ? "oklch(0.958 0.028 158)" : "#fff",
+      ink: on ? "oklch(0.492 0.126 158)" : "oklch(0.487 0.018 260)",
+    });
+
+    const sections = [
+      { key: "resource", title: "Identidade", help: "O id é o caminho do documento no bundle — ele identifica o copiloto em todo lugar.", badge: idErr ? "corrigir" : "pronta", controls: [
+        { key: "resource", label: "Identificador", isText: true, value: s.id, placeholder: "atendimento-rh", set: (e) => this.set("id", e.target.value), help: "Minúsculas, números e hífens no meio.", err: !!idErr, errMsg: idErr || "" },
+        { key: "title", label: "Título", isText: true, value: s.title, set: (e) => this.set("title", e.target.value), help: "O que aparece no cabeçalho da conversa." },
+        { key: "description", label: "Uma frase", isText: true, value: s.blurb, set: (e) => this.set("blurb", e.target.value), help: "Some no frontmatter como description — é o que outro agente lê para saber se este copiloto serve." },
+      ] },
+      { key: "surface", title: "Onde ele atua", help: "Superfície e telas. A mesma definição serve para o dock, para o console e para o campo ancorado — quem decide é o parser.", badge: s.screens.length ? "pronta" : "sem tela", controls: [
+        choice("surface.mount", "Monta como", MOUNTS, "Dock divide a área; console é a tela; ancorado abre junto do campo.", s.mount, (o) => this.set("mount", o)),
+        choice("surface.screens", "Nas telas", SCREENS, "Fora destas rotas ele não existe — não há copiloto onipresente por acidente.", s.screens, (o) => this.toggleIn("screens", o)),
+        toggle("surface.openByDefault", "Abre por padrão", s.openByDefault, "Fechado, ele fica montado (a conexão acontece) mas invisível.", () => this.set("openByDefault", !s.openByDefault)),
+      ] },
+      { key: "engine", title: "Motor", help: "Framework e deployment. O runtime é derivado: agent-framework roda no Foundry, langgraph é orquestrado no backend.", badge: "pronta", controls: [
+        choice("engine.framework", "Framework", ENGINES, "Dois runtimes, dois idiomas de interrupção — sem camada normalizadora.", s.engine, (o) => this.set("engine", o)),
+        choice("engine.model", "Deployment", MODELS, "Nome do deployment como aparece no portal.", s.model, (o) => this.set("model", o)),
+      ] },
+      { key: "grounding", title: "Fundamentação", help: "De onde ele tira o que escreve, e o que acontece quando não tira de lugar nenhum.", badge: s.bases.length ? "pronta" : "sem base", controls: [
+        choice("grounding.bases", "Bases", BASES, "O ACL por documento é aplicado antes do modelo ver o conteúdo.", s.bases, (o) => this.toggleIn("bases", o)),
+        toggle("grounding.citation", "Exigir citação", s.citeRequired, "Sem fonte, sem resposta — a proposta chega com a fonte ou chega declarando que não tem.", () => this.set("citeRequired", !s.citeRequired)),
+        toggle("grounding.refuseWithoutSource", "Recusar sem fonte", s.refuseWithoutSource, "Recusar é melhor que inventar; a recusa é dita, não silenciosa.", () => this.set("refuseWithoutSource", !s.refuseWithoutSource)),
+      ] },
+      { key: "targets", title: "Alvos — em quais campos ele escreve", help: "O ponto do copiloto. Ele só toca campo declarado aqui, e a proposta é validada contra as regras do próprio campo antes de virar decisão.", badge: writes.length ? nCampos : "nenhum alvo", controls: [
+        { key: "targets", label: "Formflows do bundle", isTargets: true, help: "A lista de campos vem do formflow, não deste formulário — é o que impede o copiloto de propor para um campo que não existe.",
+          rows: FLOWS.map((f) => {
+            const on = tgtKeys.indexOf(f.id) > -1;
+            return {
+              id: f.id, note: f.note, on, check: on ? "✓" : "",
+              boxLine: on ? "oklch(0.452 0.152 262)" : "oklch(0.836 0.008 258)",
+              boxBg: on ? "oklch(0.452 0.152 262)" : "#fff",
+              line: on ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)",
+              bg: on ? "oklch(0.955 0.024 262)" : "#fff",
+              toggle: () => this.toggleTarget(f.id),
+              fields: f.fields.map((x) => {
+                const fon = on && (s.targets[f.id] || []).indexOf(x) > -1;
+                return {
+                  label: x, line: fon ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)",
+                  bg: fon ? "#fff" : "oklch(0.977 0.003 258)",
+                  ink: fon ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)",
+                  toggle: () => this.toggleTargetField(f.id, x),
+                };
+              }),
+            };
+          }) },
+        toggle("targets.proposeBatch", "Propor vários campos num turno", s.batch, "Cada proposta continua sendo decidida em separado — lote é sobre o turno, não sobre a decisão.", () => this.set("batch", !s.batch)),
+        toggle("targets.validateAgainst", "Validar contra as regras do campo", true, "Fixo: uma proposta que viola a regra do campo não pode ser usada. Sem isso, o erro só aparece na publicação.", () => {}, true),
+      ] },
+      { key: "tools", title: "Ferramentas", help: "Leitura responde direto. Escrita passa por gate, sempre, com papel declarado.", badge: s.writeTools.length + (s.writeTools.length === 1 ? " de escrita" : " de escrita"), controls: [
+        choice("tools.read", "Leitura", READ_TOOLS, "Sem aprovação: ler não muda nada.", s.readTools, (o) => this.toggleIn("readTools", o)),
+        { key: "tools.write", label: "Escrita", isTools: true, help: "require_approval: always não é opção — é o que o gate do produto garante.",
+          rows: s.writeTools.map((w, i) => ({
+            name: w.name, note: w.note, role: w.role,
+            cycle: () => { const arr = s.writeTools.slice(); arr[i] = { ...w, role: ROLES[(ROLES.indexOf(w.role) + 1) % ROLES.length] }; this.set("writeTools", arr); },
+            remove: () => this.set("writeTools", s.writeTools.filter((_, k) => k !== i)),
+          })),
+          add: () => {
+            const cands = [{ name: "update_manifest", note: "grava nova versão do bundle" }, { name: "open_pr", note: "abre PR no repositório" }, { name: "rotate_secret", note: "troca credencial" }];
+            const c = cands[s.writeTools.length % cands.length];
+            this.set("writeTools", s.writeTools.concat([{ name: c.name, role: "Approver", note: c.note }]));
+          } },
+      ] },
+      { key: "policy", title: "Política de HITL", help: "Um bloco único, herdado. Não herdar é possível e caro: exige declarar os quatro gates aqui.", badge: s.inheritHitl ? "herdada" : "própria", controls: [
+        toggle("policy.inherit", "Herdar hitl.md", s.inheritHitl, "O mesmo bloco cobre proposta de campo, operação de publicação, tool de escrita e escalação do workflow.", () => this.set("inheritHitl", !s.inheritHitl)),
+        toggle("policy.rejectReason", "Recusar exige motivo", s.rejectReason, "O motivo entra no log de decisões e na trilha.", () => this.set("rejectReason", !s.rejectReason)),
+      ] },
+      { key: "cost", title: "Área e custo", help: "Onde ele vale e até quanto pode gastar. Copiloto sem teto não publica — e o teto é por área, porque a fatura também é.", badge: s.areasOn.length ? "pronta" : "sem área", controls: [
+        choice("areas", "Áreas habilitadas", ["RH", "Plantão", "Campo"], "Fora destas áreas ele não existe — mesmo mecanismo do enabled_domains do tenant.", s.areasOn.map((x) => ({ rh: "RH", plantao: "Plantão", campo: "Campo" }[x] || x)), (o) => {
+          const key = { RH: "rh", "Plantão": "plantao", Campo: "campo" }[o];
+          const cur = s.areasOn.slice();
+          this.set("areasOn", cur.indexOf(key) > -1 ? cur.filter((x) => x !== key) : cur.concat([key]));
+        }),
+        { key: "cost.cap", label: "Teto por área (USD/mês)", isText: true, value: s.capUsd, set: (e) => this.set("capUsd", e.target.value), help: "Aplicado antes da chamada. Consumo em modo sombra também conta." },
+        choice("cost.onOver", "Ao estourar", ["degradar", "parar", "só avisar"], "Degradar cai para o caminho mais barato e diz na tela; parar recusa antes de acontecer.", s.overMode, (o) => this.set("overMode", o)),
+        choice("runtime.hosting", "Roda sobre", ["Foundry hosted agent", "agente hospedado do time", "endpoint externo"], "O agente é outro documento (type: agent) — o copiloto se monta sobre ele sem código novo.", s.hosting, (o) => this.set("hosting", o)),
+      ] },
+      { key: "voice", title: "Tom", help: "Idioma e a primeira frase. O resto do prompt é derivado dos campos acima — não há prompt solto para editar.", badge: "pronta", controls: [
+        choice("voice.language", "Idioma", ["pt-BR", "en"], "", s.lang, (o) => this.set("lang", o)),
+        { key: "voice.greeting", label: "Primeira frase", isText: true, value: s.greeting, set: (e) => this.set("greeting", e.target.value), help: "Ela declara o escopo: o que ele pode tocar, antes de tocar." },
+      ] },
+    ];
+
+    const railDone = [!idErr, s.screens.length > 0, true, s.bases.length > 0, writes.length > 0, true, true, s.areasOn.length > 0, true];
+    const rail = sections.map((sec, i) => ({
+      title: sec.title, note: sec.badge,
+      mark: railDone[i] ? "✓" : "·",
+      ink: railDone[i] ? "oklch(0.492 0.126 158)" : "oklch(0.505 0.176 26)",
+      bg: railDone[i] ? "transparent" : "#fff",
+    }));
+    const done = railDone.filter(Boolean).length;
+
+    const texts = { "index.md": this.indexMd(), "hitl.md": this.hitlMd(), "log.md": this.logMd() };
+    const fileText = texts[s.file] || "";
+
+    return {
+      docPath: "copilots/" + (s.id || "sem-id") + "/",
+      pct: Math.round((done / railDone.length) * 100) + "%",
+      pctNote: done + " de " + railDone.length + " seções resolvidas",
+      rail, sections,
+      validNote: idErr ? "id inválido" : writes.length ? "válido · escreve " + nCampos : "válido · não escreve nada ainda",
+      publish: () => this.set("published", true),
+      publishLabel: s.published ? "Publicado — v1 no Foundry" : "Publicar bundle",
+
+      files: ["index.md", "hitl.md", "log.md"].map((n) => ({
+        name: n, pick: () => this.set("file", n),
+        line: s.file === n ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)",
+        bg: s.file === n ? "oklch(0.955 0.024 262)" : "#fff",
+        ink: s.file === n ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)",
+      })),
+      fileText, bytes: new Blob([fileText]).size + " bytes",
+
+      previewNote: "o parser leu type: copilot",
+      previewMark: (s.id || "c").slice(0, 1),
+      previewTitle: s.title || "(sem título)",
+      previewEngine: s.engine + " · " + s.model,
+      previewMount: s.mount + (s.openByDefault ? " · aberto" : " · fechado"),
+      previewGreeting: s.greeting || "(sem primeira frase)",
+      previewChips: s.screens.map((x) => ({ text: x })),
+      previewWrites: writes.map((x) => ({ id: x })), noWrites: !writes.length,
+      previewGates: [
+        { text: s.citeRequired ? "cita a fonte em toda proposta; sem fonte, recusa" : "pode escrever sem declarar fonte", dot: s.citeRequired ? "oklch(0.492 0.126 158)" : "oklch(0.545 0.126 68)" },
+        { text: s.writeTools.length ? "escrita atrás de aprovação: " + s.writeTools.map((w) => w.name + " (" + w.role + ")").join(", ") : "nenhuma tool de escrita", dot: "oklch(0.545 0.126 68)" },
+        { text: s.rejectReason ? "recusar exige motivo, e o motivo vai para a trilha" : "recusa sem motivo", dot: s.rejectReason ? "oklch(0.492 0.126 158)" : "oklch(0.545 0.126 68)" },
+        { text: "desfecho medido em accepted · edited · discarded, sem guardar o texto", dot: "oklch(0.492 0.126 158)" },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

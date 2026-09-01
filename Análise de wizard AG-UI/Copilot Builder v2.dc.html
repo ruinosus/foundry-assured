@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, input, textarea, button { box-sizing:border-box; }
+  input, textarea, button { font-family:inherit; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  button:focus-visible, input:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">Builder de copiloto — v2, com o motor evoluído</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:88ch;text-wrap:pretty">A mesma tela editando quatro copilotos muito diferentes: conformidade normativa, compras com MCP, RH e plantão por voz. Troque no topo — o formulário, o manifesto e a conformidade do motor mudam juntos. É assim que se valida se a evolução cobre mesmo os casos.</p>
+  </div>
+
+  <div style="width:2028px;height:1400px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+        <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+        <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+      </div>
+      <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">{{ scopeLabel }}</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">{{ scopeRef }}</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="15">
+          <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;background:{{ n.bg }};color:{{ n.ink }};font-weight:{{ n.weight }}">
+            <span style="width:18px;text-align:center">{{ n.icon }}</span>{{ n.label }}
+            <sc-if value="{{ n.isNew }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:oklch(0.958 0.028 158);color:oklch(0.492 0.126 158)">novo</span></sc-if>
+          </span>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px">
+          <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">R</span>
+          <div style="min-width:0"><div style="font-size:13px;font-weight:600">Rafael Duarte</div><div style="font-size:11px;color:oklch(0.487 0.018 260)">Owner · Admin · Approver</div></div>
+        </div>
+        <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="height:64px;flex:0 0 64px;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;padding:0 20px;gap:14px">
+        <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Copilotos</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">Editar</b></nav>
+        <div style="display:flex;gap:3px;padding:3px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:7px">
+          <sc-for list="{{ pickers }}" as="p" hint-placeholder-count="4">
+            <button type="button" onClick="{{ p.pick }}" style="border:1px solid {{ p.line }};padding:7px 12px;border-radius:5px;font-size:12.5px;font-weight:600;cursor:pointer;background:{{ p.bg }};color:{{ p.ink }};display:flex;flex-direction:column;align-items:flex-start;gap:1px">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">{{ p.id }}</span>
+              <span style="font-size:10.5px;font-weight:500;opacity:0.8">{{ p.note }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <span style="margin-left:auto;display:flex;align-items:center;gap:10px">
+          <span style="font-size:12px;color:oklch(0.487 0.018 260)">{{ validNote }}</span>
+          <button type="button" onClick="{{ toggleDiff }}" style="padding:9px 13px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer">{{ diffLabel }}</button>
+          <button type="button" onClick="{{ openGate }}" style="padding:9px 14px;border:1px solid {{ pubLine }};border-radius:8px;background:{{ pubBg }};color:{{ pubInk }};font-size:13px;font-weight:600;cursor:pointer">{{ pubLabel }}</button>
+        </span>
+      </header>
+
+      <div style="flex:1;min-height:0;display:flex">
+
+        <!-- rail -->
+        <nav style="width:236px;flex:0 0 236px;background:oklch(0.955 0.005 258);border-right:1px solid oklch(0.902 0.006 258);padding:16px 12px;display:flex;flex-direction:column;gap:14px;min-height:0;overflow:auto">
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ curTitle }}</span>
+            <span style="font-size:12px;line-height:1.4;color:oklch(0.487 0.018 260)">{{ curBlurb }}</span>
+          </div>
+          <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px">
+            <sc-for list="{{ rail }}" as="r" hint-placeholder-count="9">
+              <li style="display:flex;gap:9px;align-items:baseline;padding:8px 9px;border-radius:5px;background:{{ r.bg }}">
+                <span style="flex:none;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:{{ r.ink }}">{{ r.mark }}</span>
+                <span style="min-width:0"><b style="display:block;font-size:12.5px;font-weight:600">{{ r.title }}</b><span style="display:block;font-size:11px;color:oklch(0.487 0.018 260);line-height:1.35">{{ r.note }}</span></span>
+              </li>
+            </sc-for>
+          </ul>
+          <div style="margin-top:auto;display:flex;flex-direction:column;gap:8px;padding:11px;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Motor v2 — o que este usa</span>
+            <sc-for list="{{ engineUse }}" as="e" hint-placeholder-count="6">
+              <div style="display:flex;gap:8px;align-items:baseline;font-size:11.5px;line-height:1.4">
+                <span style="flex:none;width:14px;color:{{ e.ink }};font-weight:700">{{ e.mark }}</span>
+                <span style="min-width:0">{{ e.t }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </nav>
+
+        <!-- formulário -->
+        <main style="flex:1;min-width:0;overflow:auto;padding:18px 20px;display:flex;flex-direction:column;gap:13px">
+          <sc-if value="{{ gateOpen }}" hint-placeholder-val="{{ false }}">
+            <section style="background:oklch(0.960 0.038 68);border:1px solid oklch(0.545 0.126 68);border-radius:8px;padding:15px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">aguardando aprovação</span>
+                <b style="font-size:15px;font-weight:650">Publicar nova versão do manifesto</b>
+                <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:#fff;border:1px solid oklch(0.492 0.126 158);color:oklch(0.492 0.126 158)">seu papel: Admin ✓</span>
+              </div>
+              <pre style="margin:0;padding:11px;background:#fff;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.55;white-space:pre-wrap">{{ gatePayload }}</pre>
+              <span style="font-size:12.5px;line-height:1.45">{{ gateNote }}</span>
+              <div style="display:flex;gap:9px;flex-wrap:wrap">
+                <button type="button" onClick="{{ approve }}" disabled="{{ noDiff }}" style="padding:9px 14px;border:1px solid oklch(0.492 0.126 158);border-radius:8px;background:oklch(0.492 0.126 158);color:#fff;font-size:13px;font-weight:600;cursor:pointer">Aprovar e publicar</button>
+                <button type="button" onClick="{{ toggleDiff }}" style="padding:9px 14px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer">{{ diffLabel }}</button>
+                <button type="button" onClick="{{ openGate }}" style="padding:9px 14px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;color:oklch(0.487 0.018 260);font-size:13px;font-weight:600;cursor:pointer">Cancelar</button>
+              </div>
+            </section>
+          </sc-if>
+          <sc-for list="{{ sections }}" as="s" hint-placeholder-count="5">
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:15px;display:flex;flex-direction:column;gap:11px">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">{{ s.key }}</span>
+                <b style="font-size:15px;font-weight:650">{{ s.title }}</b>
+                <sc-if value="{{ s.isNew }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:oklch(0.958 0.028 158);color:oklch(0.492 0.126 158)">motor v2</span></sc-if>
+                <span style="margin-left:auto;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ s.badge }}</span>
+              </div>
+              <p style="margin:0;font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:82ch;text-wrap:pretty">{{ s.help }}</p>
+
+              <sc-for list="{{ s.controls }}" as="c" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ c.label }}</span>
+                    <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.612 0.014 258)">{{ c.key }}</span>
+                    <sc-if value="{{ c.fixed }}" hint-placeholder-val="{{ false }}"><span style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.492 0.126 158);border:1px solid oklch(0.492 0.126 158);border-radius:3px;padding:0 5px">fixo</span></sc-if>
+                  </div>
+
+                  <sc-if value="{{ c.isText }}" hint-placeholder-val="{{ true }}">
+                    <input type="text" value="{{ c.value }}" onChange="{{ c.set }}" style="width:100%;padding:9px 11px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:13px" />
+                  </sc-if>
+                  <sc-if value="{{ c.isChoice }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;gap:6px;flex-wrap:wrap">
+                      <sc-for list="{{ c.options }}" as="o" hint-placeholder-count="3">
+                        <button type="button" onClick="{{ o.pick }}" style="padding:7px 11px;border:1px solid {{ o.line }};background:{{ o.bg }};color:{{ o.ink }};border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer">{{ o.label }}</button>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ c.isToggle }}" hint-placeholder-val="{{ false }}">
+                    <button type="button" onClick="{{ c.toggle }}" style="align-self:flex-start;padding:7px 12px;border:1px solid {{ c.line }};background:{{ c.bg }};color:{{ c.ink }};border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer">{{ c.state }}</button>
+                  </sc-if>
+
+                  <sc-if value="{{ c.isFields }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:6px">
+                      <div style="display:grid;grid-template-columns:minmax(0,1.4fr) 130px 150px minmax(0,1fr);gap:10px;padding:0 10px">
+                        <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">campo</span>
+                        <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">copiloto escreve</span>
+                        <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">aceita lacuna</span>
+                        <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">regras · fonte exigida</span>
+                      </div>
+                      <sc-for list="{{ c.rows }}" as="f" hint-placeholder-count="3">
+                        <div style="display:grid;grid-template-columns:minmax(0,1.4fr) 130px 150px minmax(0,1fr);gap:10px;align-items:center;padding:9px 10px;background:{{ f.bg }};border:1px solid {{ f.line }};border-radius:5px">
+                          <span style="min-width:0"><span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:600">{{ f.id }}</span><span style="display:block;font-size:11px;color:oklch(0.487 0.018 260);line-height:1.35">{{ f.note }}</span></span>
+                          <button type="button" onClick="{{ f.toggleAi }}" style="padding:5px 10px;border:1px solid {{ f.aiLine }};background:{{ f.aiBg }};color:{{ f.aiInk }};border-radius:999px;font-size:11.5px;font-weight:600;cursor:pointer">{{ f.aiLabel }}</button>
+                          <button type="button" onClick="{{ f.toggleGap }}" style="padding:5px 10px;border:1px solid {{ f.gapLine }};background:{{ f.gapBg }};color:{{ f.gapInk }};border-radius:999px;font-size:11.5px;font-weight:600;cursor:pointer">{{ f.gapLabel }}</button>
+                          <div style="display:flex;gap:4px;flex-wrap:wrap;min-width:0">
+                            <sc-for list="{{ f.chips }}" as="ch" hint-placeholder-count="2">
+                              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10.5px;padding:1px 7px;border-radius:999px;background:{{ ch.bg }};color:{{ ch.ink }};border:1px solid {{ ch.line }}">{{ ch.t }}</span>
+                            </sc-for>
+                          </div>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+
+                  <sc-if value="{{ c.isList }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:flex;flex-direction:column;gap:6px">
+                      <sc-for list="{{ c.rows }}" as="r" hint-placeholder-count="2">
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 11px;background:oklch(0.955 0.005 258);border-radius:4px">
+                          <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:600">{{ r.name }}</span>
+                          <span style="font-size:11.5px;color:oklch(0.487 0.018 260);flex:1;min-width:140px">{{ r.what }}</span>
+                          <sc-for list="{{ r.tags }}" as="t" hint-placeholder-count="1">
+                            <span style="flex:none;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:{{ t.bg }};color:{{ t.ink }}">{{ t.t }}</span>
+                          </sc-for>
+                        </div>
+                      </sc-for>
+                      <sc-if value="{{ c.empty }}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size:12px;color:oklch(0.487 0.018 260)">{{ c.emptyMsg }}</span>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+
+                  <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ c.help }}</span>
+                </div>
+              </sc-for>
+            </section>
+          </sc-for>
+        </main>
+
+        <!-- bundle + conformidade -->
+        <aside style="width:520px;flex:0 0 520px;display:flex;flex-direction:column;min-height:0;background:#fff;border-left:1px solid oklch(0.902 0.006 258)">
+          <div style="flex:none;padding:12px 14px;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+            <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">index.md</span>
+            <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260)">{{ path }}</span>
+            <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">{{ bytes }}</span>
+          </div>
+          <pre style="flex:1;min-height:0;overflow:auto;margin:0;padding:14px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.6;white-space:pre">{{ yaml }}</pre>
+          <div style="flex:none;border-top:1px solid oklch(0.902 0.006 258);padding:13px 14px;display:flex;flex-direction:column;gap:9px;max-height:440px;overflow:auto">
+            <sc-if value="{{ showDiff }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;flex-direction:column;gap:7px;padding-bottom:11px;border-bottom:1px solid oklch(0.902 0.006 258)">
+                <div style="display:flex;align-items:baseline;gap:9px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">diff contra a versão publicada</span>
+                  <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">{{ diffCount }}</span>
+                </div>
+                <sc-if value="{{ noDiff }}" hint-placeholder-val="{{ true }}">
+                  <span style="font-size:11.5px;color:oklch(0.487 0.018 260)">Nada mudou ainda neste copiloto — mexa em qualquer controle e o diff aparece campo a campo.</span>
+                </sc-if>
+                <sc-for list="{{ diffRows }}" as="d" hint-placeholder-count="0">
+                  <div style="display:flex;flex-direction:column;gap:2px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;line-height:1.5">
+                    <span style="font-weight:700">{{ d.k }}</span>
+                    <span style="padding:3px 8px;background:oklch(0.958 0.030 26);border-radius:3px;overflow-wrap:anywhere">− {{ d.from }}</span>
+                    <span style="padding:3px 8px;background:oklch(0.958 0.028 158);border-radius:3px;overflow-wrap:anywhere">+ {{ d.to }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <div style="display:flex;align-items:baseline;gap:9px;flex-wrap:wrap">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Recursos do motor em uso</span>
+              <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">usa {{ usedCount }} · não precisa {{ naCount }}</span>
+            </div>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.492 0.126 158)">usa</span>
+            <sc-for list="{{ usedList }}" as="c" hint-placeholder-count="3">
+              <div style="display:flex;gap:9px;align-items:flex-start">
+                <span style="flex:none;width:17px;height:17px;border-radius:50%;background:{{ c.line }};color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ c.mark }}</span>
+                <span style="min-width:0"><b style="display:block;font-size:12px;font-weight:600">{{ c.title }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ c.detail }}</span></span>
+              </div>
+            </sc-for>
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);margin-top:4px">não precisa — e o motivo</span>
+            <sc-for list="{{ naList }}" as="c" hint-placeholder-count="3">
+              <div style="display:flex;gap:9px;align-items:flex-start">
+                <span style="flex:none;width:17px;height:17px;border-radius:50%;background:{{ c.line }};color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ c.mark }}</span>
+                <span style="min-width:0"><b style="display:block;font-size:12px;font-weight:600">{{ c.title }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ c.detail }}</span></span>
+              </div>
+            </sc-for>
+            <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260);margin-top:2px">Sem nota e sem fração de propósito: “não precisa” não é “não cumpre”. Um copiloto de RH não fica pior por não ter trilha encadeada — ele não tem peça probatória a sustentar.</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2090,&quot;height&quot;:1540}}">
+// Quatro copilotos muito diferentes no MESMO formulário. Se o motor v2 estiver certo, nenhum
+// deles precisa de campo fora do manifesto — e os que não usam um recurso simplesmente não o
+// declaram.
+const P0 = {
+  "conformidade-cfm": {
+    title: "Copiloto de conformidade CFM", blurb: "Avaliação preliminar do Art. 12 com lacuna declarada e citação de dispositivo.",
+    scopeLabel: "Unidade · sujeito da norma", scopeRef: "aurora-norte · CRM-SP",
+    mount: "dock lateral", screens: ["/conformidade"], hosting: "Foundry hosted agent", agent: "agents/helpdesk", model: "gpt-5-mini",
+    bases: ["normas-cfm", "implantacoes"], citeReq: true, refuse: true,
+    citeKinds: ["blob", "dispositivo"],
+    flow: "flows/avaliacao-preliminar",
+    fields: [
+      { id: "fator_1..6.analise", note: "análise escrita por fator", ai: true, gap: true, rules: ["minChars:80"], src: "dispositivo" },
+      { id: "classificacao", note: "nível do Anexo II", ai: false, gap: false, rules: ["enum:Anexo II"], src: "—" },
+      { id: "implantacao.resumo", note: "uso local do sistema", ai: true, gap: true, rules: [], src: "documento" },
+    ],
+    mids: [{ name: "pii-guard", what: "bloqueia dado de paciente antes de persistir", tags: ["pre-persist", "block"] }, { name: "okf-validate", what: "schema, piso de citação, alvos", tags: ["entrada"] }],
+    mcp: [], adapters: ["foundry-models"],
+    tenancy: { layers: ["rede", "unidade"], signer: "unidade", posture: true, rollup: "worst-link", roles: ["diretoria_tecnica", "qualidade", "ti", "leitura"] },
+    trail: { chain: true, anchor: "daily", stamp: "rfc3161" }, stepUp: "totp", dossier: true,
+    area: "saude", cap: "180", over: "parar", lang: "pt-BR",
+  },
+  "compras-requisicao": {
+    title: "Copiloto de requisição", blurb: "Monta requisições a partir do catálogo do fornecedor, via MCP.",
+    scopeLabel: "Área · tenant", scopeRef: "contoso · compras",
+    mount: "dock lateral", screens: ["/requisicoes"], hosting: "agente hospedado do time", agent: "agents/compras-req", model: "gpt-5-mini",
+    bases: ["politicas-compras"], citeReq: true, refuse: true,
+    citeKinds: ["blob"],
+    flow: "flows/requisicao",
+    fields: [
+      { id: "description", note: "o que se pede", ai: true, gap: false, rules: [], src: "documento" },
+      { id: "justification", note: "por que se pede", ai: true, gap: false, rules: ["minChars:40"], src: "documento" },
+      { id: "items", note: "SKU, quantidade, preço", ai: true, gap: false, rules: ["sku"], src: "mcp" },
+    ],
+    mids: [{ name: "price-check", what: "confere preço contra a última cotação", tags: ["proposta", "warning"] }, { name: "okf-validate", what: "schema e piso de citação", tags: ["entrada"] }],
+    mcp: [{ name: "catalogo.buscar_item", what: "consulta o catálogo", tags: ["leitura"] }, { name: "catalogo.reservar_item", what: "reserva quantidade", tags: ["escrita", "Approver"] }],
+    adapters: ["mcp-gateway", "foundry-models"],
+    tenancy: { layers: ["area"], signer: "area", posture: false, rollup: "—", roles: ["admin", "approver"] },
+    trail: { chain: false, anchor: "—", stamp: "—" }, stepUp: "—", dossier: false,
+    area: "compras", cap: "300", over: "degradar", lang: "pt-BR",
+  },
+  "atendimento-rh": {
+    title: "Copiloto de RH", blurb: "Ajuda a montar agentes e bases de RH sem escrever JSON.",
+    scopeLabel: "Área · tenant", scopeRef: "contoso · rh",
+    mount: "dock lateral", screens: ["/agents", "/knowledge"], hosting: "Foundry hosted agent", agent: "agents/helpdesk", model: "gpt-5-mini",
+    bases: ["rh-politicas"], citeReq: true, refuse: true,
+    citeKinds: ["blob"],
+    flow: "flows/agent",
+    fields: [
+      { id: "description", note: "descrição da versão", ai: true, gap: false, rules: [], src: "documento" },
+      { id: "instructions", note: "comportamento do agente", ai: true, gap: false, rules: ["minChars:60"], src: "documento" },
+      { id: "name", note: "nome do recurso", ai: true, gap: false, rules: ["resourceName", "unique"], src: "—" },
+    ],
+    mids: [{ name: "okf-validate", what: "schema e piso de citação", tags: ["entrada"] }],
+    mcp: [], adapters: ["foundry-models"],
+    tenancy: { layers: ["area"], signer: "area", posture: false, rollup: "—", roles: ["admin", "approver"] },
+    trail: { chain: false, anchor: "—", stamp: "—" }, stepUp: "—", dossier: false,
+    area: "rh", cap: "400", over: "degradar", lang: "pt-BR",
+  },
+  "triagem-oncall": {
+    title: "Copiloto de plantão", blurb: "Triagem de incidente por voz, com decisão falada e leitura do payload.",
+    scopeLabel: "Área · tenant", scopeRef: "contoso · plantão",
+    mount: "console (tela inteira)", screens: ["/d/oncall"], hosting: "agente hospedado do time", agent: "agents/oncall-graph", model: "gpt-5",
+    bases: ["runbooks"], citeReq: true, refuse: true,
+    citeKinds: ["blob", "trecho"],
+    flow: "flows/incidente",
+    fields: [
+      { id: "summary", note: "resumo da escalação", ai: true, gap: true, rules: ["minChars:40"], src: "trecho" },
+      { id: "severity", note: "severidade declarada", ai: true, gap: false, rules: ["enum:sev1..4"], src: "trecho" },
+      { id: "aprovacao", note: "decisão de abrir chamado", ai: false, gap: false, rules: ["role:Approver"], src: "—" },
+    ],
+    mids: [
+      { name: "stt-realtime", what: "transcreve a chamada com confiança por trecho", tags: ["entrada"] },
+      { name: "diarize", what: "separa quem falou o quê", tags: ["entrada"] },
+      { name: "tts-readback", what: "lê o payload antes da decisão", tags: ["saída", "obrigatório"] },
+      { name: "voice-gate", what: "recebe a decisão falada e assina a aprovação", tags: ["gate", "Approver"] },
+    ],
+    mcp: [], adapters: ["azure-speech", "entra-identity", "foundry-models", "telephony-sip"],
+    tenancy: { layers: ["area"], signer: "area", posture: false, rollup: "—", roles: ["approver", "leitura"] },
+    trail: { chain: true, anchor: "daily", stamp: "rfc3161" }, stepUp: "voz + entra", dossier: false,
+    area: "plantao", cap: "900", over: "parar", lang: "pt-BR",
+  },
+};
+
+const NAV = [
+  { icon: "◎", label: "Casos de uso" }, { icon: "💬", label: "Assistentes" },
+  { icon: "◇", label: "Copilotos", on: true }, { icon: "⚖", label: "Conformidade", isNew: true },
+  { icon: "◆", label: "Agentes hospedados", isNew: true }, { icon: "⇌", label: "Middlewares", isNew: true },
+  { icon: "🔌", label: "Adaptadores", isNew: true }, { icon: "◈", label: "Meus agentes" },
+  { icon: "▤", label: "Conhecimento" }, { icon: "✦", label: "Skills" }, { icon: "🎫", label: "Chamados" },
+  { icon: "✓", label: "Avaliações" }, { icon: "▦", label: "Visão geral" }, { icon: "🔗", label: "Auditoria" },
+  { icon: "🛡️", label: "Administração" },
+];
+
+class Component extends DCLogic {
+  state = { cur: "conformidade-cfm", p: JSON.parse(JSON.stringify(P0)), showDiff: false, gate: false, published: {} };
+
+  c() { return this.state.p[this.state.cur]; }
+  setC(k, v) { this.setState((s) => ({ p: { ...s.p, [s.cur]: { ...s.p[s.cur], [k]: v } } })); }
+  toggleIn(k, item) { const cur = (this.c()[k] || []).slice(); this.setC(k, cur.indexOf(item) > -1 ? cur.filter((x) => x !== item) : cur.concat([item])); }
+  setField(i, prop, v) {
+    const fs = this.c().fields.map((f, k) => (k === i ? { ...f, [prop]: v } : f));
+    this.setC("fields", fs);
+  }
+  setTen(k, v) { this.setC("tenancy", { ...this.c().tenancy, [k]: v }); }
+  setTrail(k, v) { this.setC("trail", { ...this.c().trail, [k]: v }); }
+
+  renderVals() {
+    const s = this.state;
+    const c = this.c();
+    const chip = (on) => ({ line: on ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)", bg: on ? "oklch(0.955 0.024 262)" : "#fff", ink: on ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)" });
+    const txt = (key, label, value, set, help) => ({ key, label, help: help || "", isText: true, value, set });
+    const choice = (key, label, opts, cur, onPick, help, fixed) => ({
+      key, label, help: help || "", isChoice: true, fixed: !!fixed,
+      options: opts.map((o) => { const on = Array.isArray(cur) ? cur.indexOf(o) > -1 : cur === o; return { label: (Array.isArray(cur) && on ? "✓ " : "") + o, ...chip(on), pick: () => onPick(o) }; }),
+    });
+    const toggle = (key, label, on, onT, help) => ({
+      key, label, help: help || "", isToggle: true, state: on ? "sim" : "não", toggle: onT,
+      line: on ? "oklch(0.492 0.126 158)" : "oklch(0.902 0.006 258)", bg: on ? "oklch(0.958 0.028 158)" : "#fff", ink: on ? "oklch(0.492 0.126 158)" : "oklch(0.487 0.018 260)",
+    });
+    const tagTone = (t) => {
+      const map = {
+        block: ["oklch(0.958 0.030 26)", "oklch(0.505 0.176 26)"], "pre-persist": ["oklch(0.958 0.030 26)", "oklch(0.505 0.176 26)"],
+        gate: ["oklch(0.960 0.038 68)", "oklch(0.545 0.126 68)"], escrita: ["oklch(0.960 0.038 68)", "oklch(0.545 0.126 68)"],
+        Approver: ["oklch(0.960 0.038 68)", "oklch(0.545 0.126 68)"], obrigatório: ["oklch(0.960 0.038 68)", "oklch(0.545 0.126 68)"],
+        leitura: ["oklch(0.958 0.028 158)", "oklch(0.492 0.126 158)"],
+      };
+      const v = map[t] || ["oklch(0.955 0.005 258)", "oklch(0.487 0.018 260)"];
+      return { bg: v[0], ink: v[1] };
+    };
+
+    const gapCount = c.fields.filter((f) => f.gap).length;
+    const aiCount = c.fields.filter((f) => f.ai).length;
+    const blockers = c.mids.filter((m) => m.tags.indexOf("block") > -1);
+
+    const sections = [
+      { key: "resource", title: "Identidade", badge: "pronta", help: "O id é o caminho do documento; o título e a frase são o que outro agente lê para saber se este copiloto serve.", controls: [
+        txt("title", "título", c.title, (e) => this.setC("title", e.target.value)),
+        txt("description", "uma frase", c.blurb, (e) => this.setC("blurb", e.target.value)),
+      ] },
+      { key: "surface", title: "Onde ele atua", badge: c.screens.join(" · "), help: "Superfície e rotas. Fora das telas declaradas ele não existe.", controls: [
+        choice("surface.mount", "monta como", ["dock lateral", "console (tela inteira)", "ancorado no campo", "página própria"], c.mount, (o) => this.setC("mount", o)),
+        choice("engine.hosting", "roda sobre", ["Foundry hosted agent", "agente hospedado do time", "endpoint externo"], c.hosting, (o) => this.setC("hosting", o), "O agente é outro documento (type: agent) — inclusive um que o time subiu."),
+        choice("engine.agent", "agente", ["agents/helpdesk", "agents/compras-req", "agents/oncall-graph"], c.agent, (o) => this.setC("agent", o)),
+      ] },
+      { key: "targets", title: "Alvos — campo por campo", isNew: true, badge: aiCount + " escritos · " + gapCount + " aceitam lacuna", help: "A matriz que o motor v2 trouxe: por campo, se o copiloto escreve, se o campo aceita LACUNA DECLARADA (vazio com motivo, dispositivo e destino, que passa na validação) e qual espécie de fonte é exigida.", controls: [
+        { key: "flow", label: "formflow", isText: true, value: c.flow, set: (e) => this.setC("flow", e.target.value), help: "A lista de campos vem dele, não deste formulário." },
+        { key: "targets.fields", label: "matriz de campos", isFields: true, help: "Clique para alternar. Um campo com ai: não é decisão de produto — no fluxo de conformidade é o Art. 12 atribuindo a avaliação à instituição.",
+          rows: c.fields.map((f, i) => ({
+            id: f.id, note: f.note,
+            aiLabel: f.ai ? "escreve" : "não toca",
+            aiLine: f.ai ? "oklch(0.452 0.152 262)" : "oklch(0.505 0.176 26)",
+            aiBg: f.ai ? "oklch(0.955 0.024 262)" : "oklch(0.958 0.030 26)",
+            aiInk: f.ai ? "oklch(0.452 0.152 262)" : "oklch(0.505 0.176 26)",
+            toggleAi: () => this.setField(i, "ai", !f.ai),
+            gapLabel: f.gap ? "lacuna declarada" : "não aceita",
+            gapLine: f.gap ? "oklch(0.545 0.126 68)" : "oklch(0.902 0.006 258)",
+            gapBg: f.gap ? "oklch(0.960 0.038 68)" : "#fff",
+            gapInk: f.gap ? "oklch(0.545 0.126 68)" : "oklch(0.487 0.018 260)",
+            toggleGap: () => this.setField(i, "gap", !f.gap),
+            chips: f.rules.map((r) => ({ t: r, bg: "oklch(0.955 0.005 258)", ink: "oklch(0.487 0.018 260)", line: "oklch(0.902 0.006 258)" }))
+              .concat([{ t: "fonte: " + f.src, bg: f.src === "dispositivo" ? "oklch(0.955 0.024 262)" : f.src === "trecho" ? "oklch(0.960 0.038 68)" : "oklch(0.955 0.005 258)", ink: f.src === "dispositivo" ? "oklch(0.452 0.152 262)" : f.src === "trecho" ? "oklch(0.545 0.126 68)" : "oklch(0.487 0.018 260)", line: "oklch(0.902 0.006 258)" }]),
+            bg: f.ai ? "#fff" : "oklch(0.977 0.003 258)",
+            line: f.ai ? "oklch(0.902 0.006 258)" : "oklch(0.836 0.008 258)",
+          })) },
+      ] },
+      { key: "grounding", title: "Fundamentação e citação", isNew: true, badge: c.citeKinds.join(" + "), help: "A segunda evolução: a citação deixou de ser só blob URL. Agora o manifesto declara quais espécies de fonte contam — e o piso vale para todas.", controls: [
+        choice("grounding.bases", "bases", ["normas-cfm", "implantacoes", "politicas-compras", "rh-politicas", "runbooks"], c.bases, (o) => this.toggleIn("bases", o)),
+        choice("citation.kinds", "espécies de fonte", ["blob", "dispositivo", "trecho"], c.citeKinds, (o) => this.toggleIn("citeKinds", o), "blob = repo + sha + range · dispositivo = norma, artigo, inciso · trecho = áudio com instante e falante."),
+        toggle("grounding.refuseWithoutSource", "recusar sem fonte", c.refuse, () => this.setC("refuse", !c.refuse)),
+      ] },
+      { key: "extensions", title: "Middlewares, MCP e adaptadores", badge: c.mids.length + " · " + c.mcp.length + " · " + c.adapters.length, help: "Middleware transforma; MCP alcança sistema de fora por tool; adaptador liga e fatura. Um middleware com pre-persist + block é guardrail — ele impede, não avisa.", controls: [
+        { key: "middlewares", label: "middlewares", isList: true, rows: c.mids.map((m) => ({ name: m.name, what: m.what, tags: m.tags.map((t) => ({ t, ...tagTone(t) })) })), help: "" },
+        { key: "mcp", label: "servidores MCP", isList: true, rows: c.mcp.map((m) => ({ name: m.name, what: m.what, tags: m.tags.map((t) => ({ t, ...tagTone(t) })) })), empty: !c.mcp.length, emptyMsg: "Nenhum servidor MCP declarado — este copiloto não alcança sistema de fora.", help: "" },
+        { key: "adapters", label: "adaptadores", isList: true, rows: c.adapters.map((a) => ({ name: a, what: "identidade, região e cota", tags: [] })), help: "Middleware que depende de adaptador não instala sem ele." },
+      ] },
+      { key: "tenancy", title: "Camadas, papéis e escopo", isNew: true, badge: c.tenancy.layers.join(" → "), help: "A quinta evolução: quem é o sujeito. Onde há duas camadas, a rede publica referência e a unidade assina — e a referência não supre a assinatura local.", controls: [
+        choice("tenancy.layers", "camadas", ["area", "rede", "unidade"], c.tenancy.layers, (o) => { const cur = c.tenancy.layers.slice(); this.setTen("layers", cur.indexOf(o) > -1 ? cur.filter((x) => x !== o) : cur.concat([o])); }),
+        choice("tenancy.signer", "quem assina", ["area", "unidade"], c.tenancy.signer, (o) => this.setTen("signer", o), "Nunca a rede: um dossiê de rede cria um sujeito que a norma não reconhece."),
+        toggle("tenancy.posture", "postura confirma|desvio", !!c.tenancy.posture, () => this.setTen("posture", !c.tenancy.posture), "Desvio exige justificativa e o dossiê mostra os dois lados."),
+        choice("tenancy.rollup", "rollup", ["worst-link", "—"], c.tenancy.rollup, (o) => this.setTen("rollup", o), "Nunca média: vale o pior elo, porque é ele que recebe a fiscalização."),
+        choice("roles", "papéis declarados", ["diretoria_tecnica", "qualidade", "ti", "leitura", "admin", "approver"], c.tenancy.roles, (o) => { const cur = c.tenancy.roles.slice(); this.setTen("roles", cur.indexOf(o) > -1 ? cur.filter((x) => x !== o) : cur.concat([o])); }, "Papel virou dado: Owner/Admin/Approver deixou de ser a lista fixa."),
+      ] },
+      { key: "evidence", title: "Evidência, trilha e assinatura", isNew: true, badge: c.trail.chain ? "trilha encadeada" : "log simples", help: "As evoluções 4 e 6: o log virar trilha (hash encadeado, âncora write-once, carimbo externo) e a assinatura com segundo fator no ato, mais o dossiê exportável.", controls: [
+        toggle("log.chain", "encadear por hash", !!c.trail.chain, () => this.setTrail("chain", !c.trail.chain), "Sem cadeia, “não mudou depois” é promessa de disciplina."),
+        choice("log.anchor", "âncora", ["daily", "—"], c.trail.anchor, (o) => this.setTrail("anchor", o), "Write-once: gravada uma vez, imutável."),
+        choice("log.timestamp", "carimbo de tempo", ["rfc3161", "—"], c.trail.stamp, (o) => this.setTrail("stamp", o)),
+        choice("gate.stepUp", "segundo fator na assinatura", ["totp", "voz + entra", "—"], c.stepUp, (o) => this.setC("stepUp", o), "Exigido no ato, não na sessão."),
+        toggle("dossier", "exporta dossiê", !!c.dossier, () => this.setC("dossier", !c.dossier), "A peça que vai ao órgão de controle — mostra lacunas e desvios, não esconde."),
+      ] },
+      { key: "cost", title: "Área e custo", badge: "teto US$ " + c.cap, help: "Teto por área, aplicado antes da chamada. Copiloto sem teto não publica.", controls: [
+        txt("cost.cap", "teto (USD/mês)", c.cap, (e) => this.setC("cap", e.target.value)),
+        choice("cost.onExceed", "ao estourar", ["degradar", "parar", "só avisar"], c.over, (o) => this.setC("over", o)),
+      ] },
+    ];
+
+    // ── manifesto
+    const L = [];
+    L.push("---");
+    L.push("type: copilot");
+    L.push("title: " + c.title);
+    L.push("description: " + c.blurb);
+    L.push("resource: " + s.cur);
+    L.push('okf_version: "0.2"');
+    L.push("index: true");
+    L.push("provenance: metadata.provenance");
+    L.push("---");
+    L.push("");
+    L.push("## Surface");
+    L.push("");
+    L.push("```yaml");
+    L.push("surface: {mount: " + JSON.stringify(c.mount) + ", screens: [" + c.screens.join(", ") + "]}");
+    L.push("engine: {hosting: " + JSON.stringify(c.hosting) + ", agent: " + c.agent + ", model: " + c.model + "}");
+    L.push("```");
+    L.push("");
+    L.push("## Targets");
+    L.push("");
+    L.push("```yaml");
+    L.push("targets:");
+    L.push("  - flow: " + c.flow);
+    L.push("    fields:");
+    for (const f of c.fields) {
+      L.push("      - id: " + f.id);
+      L.push("        ai: " + f.ai + (f.ai ? "" : "                # atribuição de outro: nenhuma proposta pode preencher"));
+      L.push("        allowDeclaredGap: " + f.gap);
+      if (f.rules.length) L.push("        rules: [" + f.rules.join(", ") + "]");
+      if (f.src !== "—") L.push("        citationKind: " + f.src);
+    }
+    L.push("```");
+    L.push("");
+    L.push("## Citation");
+    L.push("");
+    L.push("```yaml");
+    L.push("citation:");
+    L.push("  kinds: [" + c.citeKinds.join(", ") + "]");
+    L.push("  floor: 0.80");
+    L.push("  refuseWithoutSource: " + c.refuse);
+    L.push("grounding: {bases: [" + c.bases.join(", ") + "], acl: perDocument}");
+    L.push("```");
+    L.push("");
+    L.push("## Requires");
+    L.push("");
+    L.push("```yaml");
+    L.push("requires:");
+    L.push("  adapters: [" + c.adapters.join(", ") + "]");
+    L.push("  middlewares:");
+    for (const m of c.mids) L.push("    - {name: " + m.name + ", stage: " + (m.tags.indexOf("pre-persist") > -1 ? "pre-persist, emits: block" : m.tags.indexOf("gate") > -1 ? "gate, emits: approval" : "inline") + "}");
+    L.push(c.mcp.length
+      ? "  mcp:\n" + c.mcp.map((m) => "    - {tool: " + m.name + ", write: " + (m.tags.indexOf("escrita") > -1) + (m.tags.indexOf("escrita") > -1 ? ", require_approval: always, role: Approver" : "") + "}").join("\n")
+      : "  mcp: []");
+    L.push("```");
+    L.push("");
+    L.push("## Tenancy");
+    L.push("");
+    L.push("```yaml");
+    L.push("tenancy:");
+    L.push("  layers: [" + c.tenancy.layers.join(", ") + "]");
+    L.push("  signer: " + c.tenancy.signer);
+    if (c.tenancy.posture) { L.push("  posture: [confirma, desvio]"); L.push("  deviationReason: required"); }
+    L.push("  rollup: " + c.tenancy.rollup);
+    L.push("roles: [" + c.tenancy.roles.join(", ") + "]");
+    L.push("```");
+    L.push("");
+    L.push("## Evidence");
+    L.push("");
+    L.push("```yaml");
+    L.push("log:");
+    L.push("  chain: " + (c.trail.chain ? "sha256-prev" : "none"));
+    L.push("  anchor: " + (c.trail.anchor === "daily" ? "{cadence: daily, storage: blob-write-once}" : "none"));
+    L.push("  timestamp: " + (c.trail.stamp === "rfc3161" ? "{authority: rfc3161, required: on-signature}" : "none"));
+    L.push("gate: {stepUp: " + c.stepUp + ", atTimeOfAct: " + (c.stepUp !== "—") + "}");
+    L.push("dossier: " + (c.dossier ? "{source: bundle, shows: [lacunas, desvios, trilha], format: pdf}" : "false"));
+    L.push("cost: {cap: {" + c.area + ": " + c.cap + "}, onExceed: " + (c.over === "só avisar" ? "warn" : c.over === "parar" ? "stop" : "degrade") + "}");
+    L.push("```");
+    const yaml = L.join("\n");
+
+    // ── conformidade com o motor v2
+    const mk = (ok, title, detail) => ({ title, detail, mark: ok ? "✓" : "—", line: ok ? "oklch(0.492 0.126 158)" : "oklch(0.836 0.008 258)" });
+    const checks = [
+      mk(gapCount > 0, "Lacuna declarada", gapCount ? gapCount + " campo(s) aceitam vazio com motivo, dispositivo e destino." : "Nenhum campo aceita lacuna — para este domínio, exigir tudo não ensina a mentir."),
+      mk(c.citeKinds.length > 1, "Citação além do arquivo", "Espécies declaradas: " + c.citeKinds.join(", ") + "."),
+      mk(blockers.length > 0, "Guardrail que bloqueia", blockers.length ? blockers[0].name + " roda pre-persist e emite block." : "Nenhum middleware bloqueante — não há dado proibido neste fluxo."),
+      mk(!!c.trail.chain, "Trilha encadeada", c.trail.chain ? "hash + âncora " + c.trail.anchor + " + carimbo " + c.trail.stamp + "." : "log.md simples: suficiente quando não há peça probatória."),
+      mk(c.tenancy.layers.length > 1, "Duas camadas", c.tenancy.layers.length > 1 ? "rede publica referência; " + c.tenancy.signer + " assina; rollup " + c.tenancy.rollup + "." : "camada única (área) — sem sujeito subordinado."),
+      mk(c.stepUp !== "—", "Assinatura com step-up", c.stepUp !== "—" ? "segundo fator " + c.stepUp + ", exigido no ato." : "sem segundo fator: o gate é só o papel."),
+      mk(c.fields.some((f) => !f.ai), "Campo fora do alcance", c.fields.some((f) => !f.ai) ? "Há campo com ai: false — atribuição que não é do copiloto." : "Todos os campos são escrevíveis pelo copiloto."),
+      // Recursos do motor que NÃO são das seis evoluções — sem eles o painel dizia "usa 0"
+      // para um copiloto cujo manifesto ao lado declara gate de escrita e teto de custo.
+      mk(c.fields.some((f) => f.ai), "Proposta de campo com decisão humana", aiCount + " campo(s) escritos por proposta: usar, corrigir ou descartar, com desfecho medido."),
+      mk(c.mcp.some((m) => m.tags.indexOf("escrita") > -1), "Tool de escrita atrás de gate",
+        c.mcp.some((m) => m.tags.indexOf("escrita") > -1)
+          ? c.mcp.filter((m) => m.tags.indexOf("escrita") > -1).map((m) => m.name).join(", ") + " com require_approval: always e papel."
+          : "Nenhuma tool de escrita declarada — este copiloto não muda sistema de fora."),
+      mk(!!c.cap, "Teto de custo por área", c.cap ? "US$ " + c.cap + "/mês em " + c.area + ", aplicado antes da chamada (" + c.over + ")." : "Sem teto declarado — não publica."),
+    ];
+    const used = checks.filter((x) => x.mark === "✓").length;
+    const na = checks.length - used;
+
+    // diff real: perfil atual contra a linha de base do arquivo
+    const base = P0[s.cur];
+    const diffRows = Object.keys(base).filter((k) => JSON.stringify(base[k]) !== JSON.stringify(c[k])).map((k) => ({
+      k,
+      from: typeof base[k] === "object" ? JSON.stringify(base[k]) : String(base[k]),
+      to: typeof c[k] === "object" ? JSON.stringify(c[k]) : String(c[k]),
+    }));
+    const isPub = !!s.published[s.cur];
+
+    return {
+      nav: NAV.map((n) => ({ icon: n.icon, label: n.label, isNew: !!n.isNew, bg: n.on ? "oklch(0.955 0.024 262)" : "transparent", ink: n.on ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)", weight: n.on ? "600" : "400" })),
+      scopeLabel: c.scopeLabel, scopeRef: c.scopeRef,
+      pickers: Object.keys(P0).map((k) => {
+        const on = s.cur === k;
+        return {
+          id: k, note: { "conformidade-cfm": "norma · unidade", "compras-requisicao": "MCP · compras", "atendimento-rh": "simples · RH", "triagem-oncall": "voz · plantão" }[k],
+          ...chip(on), line: on ? "oklch(0.452 0.152 262)" : "transparent",
+          pick: () => this.setState({ cur: k }),
+        };
+      }),
+      validNote: "usa " + used + (used === 1 ? " recurso" : " recursos") + " do motor · " + na + (na === 1 ? " não se aplica" : " não se aplicam") + " aqui",
+      pubLabel: isPub ? "Publicado · v2" : s.gate ? "Fechar gate" : "Publicar versão",
+      pubLine: isPub ? "oklch(0.492 0.126 158)" : "oklch(0.452 0.152 262)",
+      pubBg: isPub ? "oklch(0.958 0.028 158)" : "oklch(0.452 0.152 262)",
+      pubInk: isPub ? "oklch(0.492 0.126 158)" : "#fff",
+      openGate: () => this.setState({ gate: !s.gate }),
+      gateOpen: s.gate && !isPub,
+      gatePayload: "POST /api/foundry/datasets/copilot-" + s.cur + "\n{ \"version\": \"2\", \"changed\": " + diffRows.length + ", \"areas\": [\"" + c.area + "\"] }",
+      gateNote: diffRows.length
+        ? diffRows.length + " campo(s) mudaram desde a versão publicada — a v2 não sobrescreve a v1."
+        : "Nada mudou desde a v1: publicar criaria uma versão idêntica.",
+      canApprove: diffRows.length > 0,
+      approve: () => { if (!diffRows.length) return; this.setState((st) => ({ published: { ...st.published, [st.cur]: true }, gate: false })); },
+      diffLabel: s.showDiff ? "Esconder diff" : "Ver diff" + (diffRows.length ? " (" + diffRows.length + ")" : ""),
+      toggleDiff: () => this.setState({ showDiff: !s.showDiff }),
+      showDiff: s.showDiff, diffRows, noDiff: !diffRows.length,
+      diffCount: diffRows.length === 1 ? "1 campo" : diffRows.length + " campos",
+      curTitle: c.title, curBlurb: c.blurb,
+      rail: sections.map((x) => ({ title: x.title, note: x.badge, mark: x.isNew ? "▲" : "·", ink: x.isNew ? "oklch(0.492 0.126 158)" : "oklch(0.487 0.018 260)", bg: "transparent" })),
+      engineUse: checks.map((x) => ({ t: x.title, mark: x.mark, ink: x.line })),
+      sections,
+      path: "copilots/" + s.cur + "/", bytes: new Blob([yaml]).size + " bytes", yaml,
+      checks, usedCount: String(used), naCount: String(na),
+      usedList: checks.filter((x) => x.mark === "✓"),
+      naList: checks.filter((x) => x.mark !== "✓"),
+    };
+  }
+}
+</script>
+</body>
+</html>

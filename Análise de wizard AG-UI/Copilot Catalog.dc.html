@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, input, textarea, button { box-sizing:border-box; }
+  input, textarea, button { font-family:inherit; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  button:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">Catálogo, caso de uso e destino do bundle</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:78ch;text-wrap:pretty">Três telas do mesmo produto: onde os copilotos vivem, a que caso de uso cada um serve, e onde o bundle OKF nasce, é validado e passa a ser servido. Troque na barra.</p>
+  </div>
+
+  <div style="width:2028px;height:1280px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+        <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+        <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+      </div>
+      <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Projeto</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">fa-prod-eastus2</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="10">
+          <button type="button" onClick="{{ n.pick }}" style="display:flex;align-items:center;gap:10px;padding:9px 10px;border:0;border-radius:8px;font-size:14px;text-align:left;cursor:pointer;background:{{ n.bg }};color:{{ n.ink }};font-weight:{{ n.weight }}">
+            <span style="width:18px;text-align:center">{{ n.icon }}</span>{{ n.label }}
+            <sc-if value="{{ n.isNew }}" hint-placeholder-val="{{ false }}"><span style="margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:oklch(0.958 0.028 158);color:oklch(0.492 0.126 158)">novo</span></sc-if>
+          </button>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px">
+          <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">R</span>
+          <div style="min-width:0"><div style="font-size:13px;font-weight:600">Rafael Duarte</div><div style="font-size:11px;color:oklch(0.487 0.018 260)">Admin · Approver</div></div>
+        </div>
+        <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="height:56px;flex:0 0 56px;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;padding:0 20px;gap:8px">
+        <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Visão geral</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">{{ crumb }}</b></nav>
+        <span style="margin-left:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ ref }}</span>
+      </header>
+
+      <main style="flex:1;min-height:0;overflow:auto;padding:22px 24px;display:flex;flex-direction:column;gap:18px">
+
+        <!-- ══════════ A · CATÁLOGO ══════════ -->
+        <sc-if value="{{ isCatalog }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap">
+            <div>
+              <h2 style="margin:0;font-size:22px;font-weight:640;letter-spacing:-0.015em">Copilotos</h2>
+              <p style="margin:4px 0 0;font-size:13px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:68ch;text-wrap:pretty">Cada copiloto é um documento OKF <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">type: copilot</span> neste projeto. Ele serve a um caso de uso e escreve nos campos que o manifesto declara — nada além.</p>
+            </div>
+            <div style="display:flex;gap:8px">
+              <span style="padding:11px 15px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;font-size:14px;font-weight:600">Importar bundle</span>
+              <a href="Copilot.dc.html" style="padding:11px 15px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-size:14px;font-weight:600;text-decoration:none">Novo copiloto</a>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px">
+            <sc-for list="{{ metrics }}" as="m" hint-placeholder-count="4">
+              <div style="display:grid;gap:2px;padding:12px;background:oklch(0.955 0.005 258);border-radius:4px">
+                <span style="font-size:22px;font-weight:620;font-variant-numeric:tabular-nums;letter-spacing:-0.015em;color:{{ m.ink }}">{{ m.value }}</span>
+                <span style="font-size:12px;color:oklch(0.487 0.018 260)">{{ m.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Filtrar</span>
+            <div style="display:flex;gap:2px;padding:2px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:8px">
+              <sc-for list="{{ filters }}" as="f" hint-placeholder-count="4">
+                <button type="button" onClick="{{ f.pick }}" style="border:0;padding:6px 13px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;background:{{ f.bg }};color:{{ f.ink }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+            <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">{{ rowsNote }}</span>
+          </div>
+
+          <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:12px;overflow:hidden">
+            <table style="width:100%;border-collapse:collapse;font-size:13px">
+              <thead>
+                <tr>
+                  <th style="text-align:left;padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);background:oklch(0.955 0.005 258);white-space:nowrap">Copiloto</th>
+                  <th style="text-align:left;padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);background:oklch(0.955 0.005 258);white-space:nowrap">Atua no caso de uso</th>
+                  <th style="text-align:left;padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);background:oklch(0.955 0.005 258);white-space:nowrap">Escreve</th>
+                  <th style="text-align:left;padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);background:oklch(0.955 0.005 258);white-space:nowrap">Superfície</th>
+                  <th style="text-align:left;padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);background:oklch(0.955 0.005 258);white-space:nowrap">Versão</th>
+                  <th style="text-align:left;padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);background:oklch(0.955 0.005 258);white-space:nowrap">Aproveitamento</th>
+                  <th style="padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);background:oklch(0.955 0.005 258)"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <sc-for list="{{ rows }}" as="r" hint-placeholder-count="5">
+                  <tr>
+                    <td style="padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top">
+                      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                        <b style="font-weight:600">{{ r.title }}</b>
+                        <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:{{ r.stBg }};color:{{ r.stInk }}">{{ r.status }}</span>
+                        <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);color:oklch(0.487 0.018 260)">{{ r.area }}</span>
+                      </div>
+                      <div style="margin-top:3px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ r.path }}</div>
+                      <sc-if value="{{ r.warn }}" hint-placeholder-val="{{ false }}">
+                        <div style="margin-top:5px;font-size:11.5px;line-height:1.4;color:oklch(0.505 0.176 26)">{{ r.warnText }}</div>
+                      </sc-if>
+                    </td>
+                    <td style="padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top">{{ r.usecase }}</td>
+                    <td style="padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top">
+                      <div style="display:flex;flex-wrap:wrap;gap:4px">
+                        <sc-for list="{{ r.writes }}" as="w" hint-placeholder-count="2">
+                          <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;padding:1px 7px;border-radius:999px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258)">{{ w.id }}</span>
+                        </sc-for>
+                      </div>
+                      <sc-if value="{{ r.readOnly }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:oklch(0.487 0.018 260)">só leitura</span></sc-if>
+                    </td>
+                    <td style="padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top">{{ r.surface }}<div style="font-size:11.5px;color:oklch(0.487 0.018 260);margin-top:2px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">{{ r.engine }}</div></td>
+                    <td style="padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">{{ r.version }}</td>
+                    <td style="padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top">
+                      <sc-if value="{{ r.hasStats }}" hint-placeholder-val="{{ true }}">
+                        <div style="display:flex;flex-direction:column;gap:3px;min-width:130px">
+                          <div style="display:flex;align-items:baseline;gap:6px;font-variant-numeric:tabular-nums"><b style="font-weight:600">{{ r.used }}</b><span style="font-size:11.5px;color:oklch(0.487 0.018 260)">usado</span><span style="margin-left:auto;font-size:11.5px;color:{{ r.editInk }}">{{ r.edited }} editado</span></div>
+                          <div style="height:4px;border-radius:999px;background:oklch(0.902 0.006 258);overflow:hidden"><div style="height:100%;background:oklch(0.492 0.126 158);width:{{ r.usedPct }}"></div></div>
+                          <span style="font-size:11px;color:oklch(0.487 0.018 260)">{{ r.statNote }}</span>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ r.noStats }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;color:oklch(0.487 0.018 260)">{{ r.statNote }}</span></sc-if>
+                    </td>
+                    <td style="padding:12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;text-align:right;white-space:nowrap">
+                      <button type="button" onClick="{{ r.go }}" style="padding:6px 11px;border:1px solid oklch(0.902 0.006 258);border-radius:8px;background:#fff;font-size:12px;font-weight:600;cursor:pointer">{{ r.action }}</button>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </div>
+
+          <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);max-width:100ch;text-wrap:pretty">A coluna <b>aproveitamento</b> vem da trilha, não de um contador: <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">used_rate</span> e <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">edited_rate</span> de <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">/builder-assist/stats</span>. Muito usado <i>e</i> muito editado é um copiloto tolerado, não um copiloto bom — por isso as duas aparecem juntas.</p>
+        </div>
+        </sc-if>
+
+        <!-- ══════════ B · CASO DE USO ══════════ -->
+        <sc-if value="{{ isUsecase }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap">
+            <div>
+              <h2 style="margin:0;font-size:22px;font-weight:640;letter-spacing:-0.015em">Atendimento de RH</h2>
+              <p style="margin:4px 0 0;font-size:13px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:70ch;text-wrap:pretty">O caso de uso é a unidade que o negócio lê — e é onde o copiloto atua. Ele não "existe na tela"; ele serve a um fluxo, passo por passo, com o que pode fazer em cada um declarado.</p>
+            </div>
+            <span style="padding:11px 15px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;font-size:14px;font-weight:600">Abrir manifesto</span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+            <sc-for list="{{ outcomes }}" as="o" hint-placeholder-count="4">
+              <div style="display:grid;gap:2px;padding:12px;background:oklch(0.955 0.005 258);border-radius:4px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ o.tagInk }}">{{ o.tag }}</span>
+                <span style="font-size:22px;font-weight:620;font-variant-numeric:tabular-nums;letter-spacing:-0.015em">{{ o.value }}</span>
+                <span style="font-size:12px;color:oklch(0.487 0.018 260)">{{ o.label }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <p style="margin:0;font-size:12px;line-height:1.5;color:oklch(0.487 0.018 260);max-width:96ch;text-wrap:pretty">O que é <b>medido</b> e o que é <b>estimado</b> ficam em blocos separados de propósito: misturá-los faz um cálculo parecer uma medida, e é assim que um painel de ROI vira propaganda.</p>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:16px;align-items:start">
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <header style="display:flex;align-items:baseline;gap:10px">
+                <h3 style="margin:0;font-size:16px;font-weight:640;letter-spacing:-0.015em">O fluxo</h3>
+                <span style="margin-left:auto;font-size:11.5px;color:oklch(0.545 0.126 68)">1 passo espera uma pessoa</span>
+              </header>
+              <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ steps }}" as="s" hint-placeholder-count="5">
+                  <li style="display:flex;flex-direction:column;gap:6px;padding:10px 12px;background:oklch(0.955 0.005 258);border-radius:4px;border-left:3px solid {{ s.line }}">
+                    <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                      <span style="flex:none;min-width:82px;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ s.kindInk }}">{{ s.kind }}</span>
+                      <b style="font-weight:560;font-size:13.5px">{{ s.label }}</b>
+                      <span style="margin-left:auto;font-size:11.5px;color:oklch(0.487 0.018 260);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">{{ s.id }}</span>
+                    </div>
+                    <div style="display:flex;align-items:baseline;gap:8px">
+                      <span style="flex:none;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ s.roleInk }};border:1px solid {{ s.roleInk }};border-radius:3px;padding:0 5px">{{ s.role }}</span>
+                      <span style="font-size:12.5px;line-height:1.45;color:oklch(0.235 0.017 262)">{{ s.copilot }}</span>
+                    </div>
+                  </li>
+                </sc-for>
+              </ul>
+            </section>
+
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <section style="background:#fff;border:1px solid oklch(0.452 0.152 262);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                <header style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span style="width:24px;height:24px;flex:none;border-radius:5px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);display:grid;place-items:center;font-size:11px;font-weight:700;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace">a</span>
+                  <b style="font-size:14px;font-weight:650">Copiloto de RH</b>
+                  <span style="font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:oklch(0.958 0.028 158);color:oklch(0.492 0.126 158)">vinculado</span>
+                  <span style="margin-left:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260)">copilots/atendimento-rh/</span>
+                </header>
+                <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">O vínculo é um campo do manifesto do caso de uso, não uma configuração de tela: <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">copilot: copilots/atendimento-rh</span>. Trocar o copiloto é trocar uma linha e publicar uma versão.</p>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">O que ele não faz aqui</span>
+                  <sc-for list="{{ never }}" as="n" hint-placeholder-count="3">
+                    <div style="display:flex;gap:7px;font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260)"><span style="color:oklch(0.505 0.176 26)">·</span>{{ n.text }}</div>
+                  </sc-for>
+                </div>
+              </section>
+
+              <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                <b style="font-size:13.5px;font-weight:650">Hierarquia dos alvos</b>
+                <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Três níveis, do negócio ao campo. O copiloto entra pelo topo e só alcança o que o nível de baixo declara.</p>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <sc-for list="{{ hier }}" as="h" hint-placeholder-count="3">
+                    <div style="display:flex;align-items:baseline;gap:8px;padding:8px 10px;background:oklch(0.955 0.005 258);border-radius:4px">
+                      <span style="flex:none;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;padding:1px 6px;border-radius:3px;background:#fff;border:1px solid oklch(0.902 0.006 258)">{{ h.type }}</span>
+                      <span style="font-size:12.5px;line-height:1.4">{{ h.text }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ══════════ C · DESTINO E PARSERS ══════════ -->
+        <sc-if value="{{ isStorage }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:18px">
+          <div>
+            <h2 style="margin:0;font-size:22px;font-weight:640;letter-spacing:-0.015em">Onde o bundle nasce, vive e é servido</h2>
+            <p style="margin:4px 0 0;font-size:13px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:74ch;text-wrap:pretty">O copiloto escreve documentos OKF. Isso exige responder três coisas: onde ele grava, quem valida antes de valer, e qual parser transforma cada <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">type</span> em comportamento.</p>
+          </div>
+
+          <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+            <header style="display:flex;align-items:baseline;gap:10px">
+              <h3 style="margin:0;font-size:16px;font-weight:640;letter-spacing:-0.015em">O caminho de uma gravação</h3>
+              <span style="margin-left:auto;font-size:11.5px;color:oklch(0.487 0.018 260)">nenhum passo é opcional</span>
+            </header>
+            <div style="display:flex;align-items:stretch;gap:8px;flex-wrap:wrap">
+              <sc-for list="{{ pipeline }}" as="p" hint-placeholder-count="6">
+                <div style="flex:1;min-width:150px;display:flex;flex-direction:column;gap:5px;padding:11px;border:1px solid {{ p.line }};border-radius:5px;background:{{ p.bg }}">
+                  <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ p.ink }}">{{ p.step }}</span>
+                  <b style="font-size:12.5px;font-weight:600">{{ p.title }}</b>
+                  <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ p.note }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start">
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <header style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <h3 style="margin:0;font-size:16px;font-weight:640;letter-spacing:-0.015em">Armazenamento</h3>
+                <span style="margin-left:auto;font-size:11.5px;color:oklch(0.487 0.018 260)">clique para comparar</span>
+              </header>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <sc-for list="{{ stores }}" as="s" hint-placeholder-count="4">
+                  <button type="button" onClick="{{ s.pick }}" style="text-align:left;border:1px solid {{ s.line }};background:{{ s.bg }};border-radius:5px;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer">
+                    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                      <b style="font-size:13px;font-weight:650">{{ s.name }}</b>
+                      <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 7px;border-radius:999px;background:{{ s.tagBg }};color:{{ s.tagInk }}">{{ s.tag }}</span>
+                      <span style="margin-left:auto;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260)">{{ s.impl }}</span>
+                    </div>
+                    <span style="font-size:12.5px;line-height:1.45;color:oklch(0.235 0.017 262)">{{ s.what }}</span>
+                    <div style="display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:oklch(0.487 0.018 260)">
+                      <span>histórico: {{ s.history }}</span>
+                      <span>gate: {{ s.gate }}</span>
+                      <span>latência: {{ s.latency }}</span>
+                    </div>
+                  </button>
+                </sc-for>
+              </div>
+              <p style="margin:0;font-size:12px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">{{ storeNote }}</p>
+            </section>
+
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+              <header style="display:flex;align-items:baseline;gap:10px">
+                <h3 style="margin:0;font-size:16px;font-weight:640;letter-spacing:-0.015em">Parsers e middlewares</h3>
+                <span style="margin-left:auto;font-size:11.5px;color:oklch(0.487 0.018 260)">registro, não código espalhado</span>
+              </header>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">Parsers — type → comportamento</span>
+                <sc-for list="{{ parsers }}" as="p" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:baseline;gap:8px;padding:8px 10px;background:oklch(0.955 0.005 258);border-radius:4px">
+                    <span style="flex:none;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;padding:1px 6px;border-radius:3px;background:#fff;border:1px solid oklch(0.902 0.006 258)">{{ p.type }}</span>
+                    <span style="flex:none;color:oklch(0.612 0.014 258)">→</span>
+                    <span style="font-size:12.5px;line-height:1.4">{{ p.does }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:5px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">Middlewares — integração</span>
+                <sc-for list="{{ middles }}" as="m" hint-placeholder-count="5">
+                  <div style="display:flex;align-items:baseline;gap:8px;padding:8px 10px;border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+                    <span style="flex:none;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;padding:1px 6px;border-radius:3px;background:oklch(0.955 0.005 258)">{{ m.id }}</span>
+                    <span style="font-size:12.5px;line-height:1.4;min-width:0">{{ m.does }}</span>
+                    <span style="margin-left:auto;flex:none;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ m.dirInk }}">{{ m.dir }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <p style="margin:0;font-size:12px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Um <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">type</span> novo é um parser novo — não um produto novo. E porque o formato é vendor-neutral, bundle de terceiro entra pelo mesmo caminho: valida, cai em quarentena se as citações não resolvem, e só então é servido.</p>
+            </section>
+          </div>
+        </div>
+        </sc-if>
+        <!-- ══════════ D · QUARENTENA / VALIDAÇÃO ══════════ -->
+        <sc-if value="{{ isQuarantine }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap">
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <h2 style="margin:0;font-size:22px;font-weight:640;letter-spacing:-0.015em">Copiloto do fornecedor CRM</h2>
+                <span style="font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:{{ vStBg }};color:{{ vStInk }}">{{ vStatus }}</span>
+              </div>
+              <p style="margin:4px 0 0;font-size:13px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:74ch;text-wrap:pretty">Bundle importado por <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">okf-from-vendor</span> · <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">vendor/crm-copilot/</span> · 9 documentos, 14 citações. Bundle de terceiro entra pelo mesmo caminho de um nosso — e para no mesmo piso.</p>
+            </div>
+            <button type="button" onClick="{{ backToCatalog }}" style="padding:10px 14px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;font-size:13.5px;font-weight:600;cursor:pointer">Voltar ao catálogo</button>
+          </div>
+
+          <div style="border:1px solid {{ verdictLine }};background:{{ verdictBg }};border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ verdictInk }}">{{ verdictEyebrow }}</span>
+              <b style="font-size:15px;font-weight:640">{{ verdictTitle }}</b>
+            </div>
+            <p style="margin:0;font-size:13px;line-height:1.5;max-width:96ch;text-wrap:pretty">{{ verdictBody }}</p>
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+              <div style="display:flex;flex-direction:column;gap:4px;min-width:260px">
+                <div style="display:flex;align-items:baseline;gap:8px;font-size:12.5px"><b style="font-weight:600;font-variant-numeric:tabular-nums">78,6%</b><span style="color:oklch(0.487 0.018 260)">das citações resolvem</span><span style="margin-left:auto;color:oklch(0.487 0.018 260)">piso: 80%</span></div>
+                <div style="height:6px;border-radius:999px;background:#fff;border:1px solid oklch(0.902 0.006 258);overflow:hidden;position:relative">
+                  <div style="height:100%;background:oklch(0.505 0.176 26);width:78.6%"></div>
+                </div>
+                <span style="font-size:11.5px;color:oklch(0.487 0.018 260)">11 de 14 · o piso vive em <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px">build.fidelity_min</span></span>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <span style="font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid oklch(0.505 0.176 26);color:oklch(0.505 0.176 26)">{{ blockCount }}</span>
+                <span style="font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid oklch(0.545 0.126 68);color:oklch(0.545 0.126 68)">{{ warnCount }}</span>
+                <span style="font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px;background:#fff;border:1px solid oklch(0.492 0.126 158);color:oklch(0.492 0.126 158)">{{ passCount }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;align-items:start">
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                <header style="display:flex;align-items:baseline;gap:10px">
+                  <h3 style="margin:0;font-size:16px;font-weight:640;letter-spacing:-0.015em">As oito checagens</h3>
+                  <span style="margin-left:auto;font-size:11.5px;color:oklch(0.487 0.018 260)">bloqueio ≠ aviso: um recusa, o outro só é dito</span>
+                </header>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <sc-for list="{{ checks }}" as="c" hint-placeholder-count="8">
+                    <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:5px;background:{{ c.bg }};border-left:3px solid {{ c.line }}">
+                      <span style="flex:none;width:18px;height:18px;border-radius:50%;background:{{ c.line }};color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ c.mark }}</span>
+                      <span style="min-width:0">
+                        <b style="display:block;font-size:13px;font-weight:600">{{ c.title }}</b>
+                        <span style="display:block;font-size:12.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ c.detail }}</span>
+                      </span>
+                      <span style="margin-left:auto;flex:none;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ c.line }}">{{ c.kind }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </section>
+
+              <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                <header style="display:flex;align-items:baseline;gap:10px">
+                  <h3 style="margin:0;font-size:16px;font-weight:640;letter-spacing:-0.015em">As citações que não resolvem</h3>
+                  <span style="margin-left:auto;font-size:11.5px;color:oklch(0.487 0.018 260)">3 de 14</span>
+                </header>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <sc-for list="{{ cites }}" as="c" hint-placeholder-count="3">
+                    <div style="display:flex;flex-direction:column;gap:4px;padding:10px;background:oklch(0.955 0.005 258);border-radius:4px">
+                      <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap">
+                        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;overflow-wrap:anywhere">{{ c.target }}</span>
+                        <span style="margin-left:auto;flex:none;font-size:11px;color:oklch(0.487 0.018 260)">em {{ c.where }}</span>
+                      </div>
+                      <span style="font-size:12.5px;line-height:1.45;color:oklch(0.505 0.176 26)">{{ c.why }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+                <p style="margin:0;font-size:12px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Caminho relativo <b>passa</b> no gate por sufixo e mesmo assim é ruim: não resolve quando renderizado e perde o range de linha. Aqui ele conta como aviso, não como citação válida.</p>
+              </section>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <section style="background:#fff;border:1px solid oklch(0.545 0.126 68);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                <header style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">Decisão</span>
+                  <span style="margin-left:auto;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;background:{{ roleBg }};border:1px solid {{ roleLine }};color:{{ roleLine }}">{{ roleNote }}</span>
+                </header>
+                <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.235 0.017 262);text-wrap:pretty">{{ decisionBody }}</p>
+
+                <sc-if value="{{ excepting }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">Motivo da exceção — obrigatório</span>
+                  <textarea rows="3" value="{{ reason }}" onChange="{{ setReason }}" placeholder="Por que este bundle deve ser servido abaixo do piso, e até quando" style="width:100%;padding:9px 11px;border:1px solid oklch(0.505 0.176 26);border-radius:4px;font-size:12.5px;line-height:1.45;resize:vertical"></textarea>
+                  <span style="font-size:11.5px;color:oklch(0.487 0.018 260)">Vai para a trilha com seu nome, a versão do bundle e a data. Exceção sem motivo é exceção que ninguém consegue revisar depois.</span>
+                </div>
+                </sc-if>
+
+                <sc-if value="{{ excepted }}" hint-placeholder-val="{{ false }}">
+                <div style="padding:10px 12px;background:oklch(0.960 0.038 68);border:1px solid oklch(0.545 0.126 68);border-radius:4px;display:flex;flex-direction:column;gap:4px">
+                  <b style="font-size:12.5px;font-weight:650">Exceção registrada</b>
+                  <span style="font-size:12px;line-height:1.45;color:oklch(0.235 0.017 262)">{{ exceptedNote }}</span>
+                </div>
+                </sc-if>
+
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <a href="Bundle Editor.dc.html" style="padding:9px 13px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-size:13px;font-weight:600;text-decoration:none">Corrigir o bundle</a>
+                  <button type="button" onClick="{{ ask }}" style="padding:9px 13px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer">Pedir correção ao fornecedor</button>
+                  <button type="button" onClick="{{ except }}" disabled="{{ exceptDisabled }}" style="padding:9px 13px;border:1px solid oklch(0.505 0.176 26);border-radius:8px;background:#fff;color:oklch(0.505 0.176 26);font-size:13px;font-weight:600;cursor:pointer">{{ exceptLabel }}</button>
+                  <button type="button" onClick="{{ discard }}" style="padding:9px 13px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;color:oklch(0.487 0.018 260);font-size:13px;font-weight:600;cursor:pointer">Descartar bundle</button>
+                </div>
+              </section>
+
+              <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+                <b style="font-size:13.5px;font-weight:650">O que ele passa a poder, se for servido</b>
+                <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">A validação não é burocracia: cada item abaixo é permissão real que o bundle está pedindo.</p>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <sc-for list="{{ grants }}" as="g" hint-placeholder-count="4">
+                    <div style="display:flex;gap:8px;align-items:flex-start;padding:9px 11px;border:1px solid {{ g.line }};border-radius:4px">
+                      <span style="flex:none;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ g.line }};min-width:64px">{{ g.tag }}</span>
+                      <span style="font-size:12.5px;line-height:1.45;min-width:0">{{ g.text }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </section>
+
+              <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:8px">
+                <b style="font-size:13.5px;font-weight:650">Onde ele está agora</b>
+                <div style="display:flex;flex-direction:column;gap:5px">
+                  <sc-for list="{{ where }}" as="w" hint-placeholder-count="3">
+                    <div style="display:flex;gap:8px;align-items:baseline;font-size:12.5px;line-height:1.4"><span style="flex:none;width:6px;height:6px;border-radius:50%;margin-top:5px;background:{{ w.dot }}"></span><span style="min-width:0">{{ w.text }}</span></div>
+                  </sc-for>
+                </div>
+              </section>
+            </div>
+          </div>
+        </div>
+        </sc-if>
+      </main>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2090,&quot;height&quot;:1400}}">
+const ROWS = [
+  { id: "atendimento-rh", title: "Copiloto de RH", path: "copilots/atendimento-rh/", status: "publicado", usecase: "Atendimento de RH", area: "RH", writes: ["description", "instructions", "summary"], surface: "dock lateral", engine: "agents/helpdesk · hosted", version: "v3", used: 82, edited: 34, statNote: "saudável", state: "pub" },
+  { id: "triagem-oncall", title: "Copiloto de plantão", path: "copilots/triagem-oncall/", status: "publicado", usecase: "Triagem de incidente", area: "Plantão", writes: ["summary", "severity"], surface: "console · voz", engine: "agents/oncall-graph · container", version: "v2", used: 71, edited: 52, statNote: "muito editado — revisar o prompt derivado", state: "pub", warn: "Metade do que ele escreve precisa de conserto: aproveitamento alto com edição alta é tolerância, não uso." },
+  { id: "ops-plataforma", title: "Copiloto de plataforma", path: "copilots/ops-plataforma/", status: "publicado", usecase: "Operação de plataforma", writes: ["ticket.summary"], surface: "ancorado no campo", engine: "agent-framework · gpt-5", version: "v5", used: 64, edited: 18, statNote: "3 tools de escrita, todas com gate", state: "pub" },
+  { id: "docs-selfwiki", title: "Copiloto de docs", path: "copilots/docs-selfwiki/", status: "publicado", usecase: "Perguntas sobre o repositório", writes: [], surface: "dock lateral", engine: "agent-framework · gpt-5-mini", version: "v1", used: null, edited: null, statNote: "não escreve — não há desfecho a medir", state: "pub" },
+  { id: "compras", title: "Copiloto de compras", path: "copilots/compras/", status: "rascunho", usecase: "— sem caso de uso vinculado", writes: [], surface: "não definida", engine: "—", version: "—", used: null, edited: null, statNote: "rascunho: falta alvo", state: "draft" },
+  { id: "vendor-crm", title: "Copiloto do fornecedor CRM", path: "vendor/crm-copilot/", status: "quarentena", usecase: "Atendimento comercial (proposto)", writes: ["lead.summary"], surface: "dock lateral", engine: "declarado: agent-framework", version: "importado", used: null, edited: null, statNote: "bloqueado pela validação", state: "quar", warn: "Bundle de terceiro: 3 de 14 citações não resolvem para arquivo real. Abaixo do piso de 80%, não é servido." },
+];
+
+const STORES = [
+  { id: "repo", name: "Repositório (git)", tag: "canônico", impl: "PR + review", what: "A fonte da verdade do bundle — e do bundle inteiro: copiloto, caso de uso, formulário, política, agente, middleware e adaptador.", history: "por commit", gate: "code review", latency: "minutos",
+    note: "Recomendado como canônico. O copiloto não faz push: ele abre PR pelo middleware okf-to-git, e o gate de citação roda no CI — o mesmo que já recusa bundle de wiki abaixo de 80%." },
+  { id: "dataset", name: "Dataset versionado do Foundry", tag: "runtime", impl: "flow.yaml · v+1", what: "O override que a tela edita. Uma versão nova por gravação, sem sobrescrever — e o portal mostra o mesmo que a tela.", history: "por versão", gate: "aprovação de publicação", latency: "segundos",
+    note: "Recomendado para o que o copiloto grava em runtime. Já existe: é o mesmo caminho de pending_upload → SAS → create_or_update que guarda o fluxo do canvas. Sem dataset, o parser cai no bundle do repositório — precedência que o load_flow já implementa." },
+  { id: "blob", name: "Blob Storage (tarball)", tag: "distribuição", impl: "container write-once", what: "O bundle empacotado para outro agente consumir. Versioning e imutabilidade ligados no container — o que sobe não é reescrito.", history: "por versão de blob", gate: "nenhum extra", latency: "segundos",
+    note: "Para consumo por terceiros e para arquivamento. Não é lugar de edição: um bundle editável em blob perde a revisão que o PR dá." },
+  { id: "search", name: "Base de conhecimento", tag: "consulta", impl: "ingest → Azure AI Search", what: "O bundle INTEIRO indexado para consulta, com ACL por documento — é a premissa: tudo é bundle, logo tudo é base. A plataforma passa a responder sobre si mesma, com citação.", history: "por ingest", gate: "ACL por documento", latency: "minutos (indexação)",
+    note: "É o destino de leitura, não de escrita. Confundir os dois é como tratar o índice como o repositório: a primeira divergência não dá erro, só faz a resposta mentir." },
+];
+
+class Component extends DCLogic {
+  state = { tab: "catalog", filter: "todos", store: "dataset", excepting: false, reason: "", excepted: false };
+
+  renderVals() {
+    const s = this.state;
+    const nav = [
+      { icon: "◎", label: "Casos de uso", tab: "usecase" },
+      { icon: "💬", label: "Assistentes", tab: null },
+      { icon: "◇", label: "Copilotos", tab: "catalog", isNew: true },
+      { icon: "◆", label: "Agentes hospedados", tab: null, isNew: true },
+      { icon: "⇌", label: "Middlewares", tab: null, isNew: true },
+      { icon: "🔌", label: "Adaptadores", tab: null, isNew: true },
+      { icon: "◈", label: "Meus agentes", tab: null },
+      { icon: "▤", label: "Conhecimento", tab: "storage" },
+      { icon: "✦", label: "Skills", tab: null },
+      { icon: "🎫", label: "Chamados", tab: null },
+      { icon: "✓", label: "Avaliações", tab: null },
+      { icon: "▦", label: "Visão geral", tab: null },
+      { icon: "🔗", label: "Auditoria", tab: null },
+    ];
+    const activeTab = s.tab;
+    const navView = nav.map((n) => {
+      const on = n.tab === activeTab;
+      return {
+        icon: n.icon, label: n.label, isNew: !!n.isNew,
+        bg: on ? "oklch(0.955 0.024 262)" : "transparent",
+        ink: on ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)",
+        weight: on ? "600" : "400",
+        pick: () => { if (n.tab) this.setState({ tab: n.tab }); },
+      };
+    });
+
+    const filters = ["todos", "publicados", "rascunho", "de terceiros"].map((f) => ({
+      label: f, pick: () => this.setState({ filter: f }),
+      bg: s.filter === f ? "#fff" : "transparent",
+      ink: s.filter === f ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)",
+    }));
+
+    const keep = (r) =>
+      s.filter === "todos" ? true
+      : s.filter === "publicados" ? r.state === "pub"
+      : s.filter === "rascunho" ? r.state === "draft"
+      : r.state === "quar";
+    const rows = ROWS.filter(keep).map((r) => ({
+      title: r.title, path: r.path, status: r.status, usecase: r.usecase, area: r.area || "—",
+      writes: r.writes.map((w) => ({ id: w })), readOnly: !r.writes.length,
+      surface: r.surface, engine: r.engine, version: r.version,
+      hasStats: r.used !== null, noStats: r.used === null,
+      used: r.used === null ? "" : r.used + "%",
+      edited: r.edited === null ? "" : r.edited + "%",
+      usedPct: (r.used || 0) + "%",
+      editInk: (r.edited || 0) >= 45 ? "oklch(0.505 0.176 26)" : "oklch(0.487 0.018 260)",
+      statNote: r.statNote,
+      warn: !!r.warn, warnText: r.warn || "",
+      stBg: r.state === "pub" ? "oklch(0.958 0.028 158)" : r.state === "draft" ? "oklch(0.955 0.005 258)" : "oklch(0.958 0.030 26)",
+      stInk: r.state === "pub" ? "oklch(0.492 0.126 158)" : r.state === "draft" ? "oklch(0.487 0.018 260)" : "oklch(0.505 0.176 26)",
+      action: r.state === "pub" ? "Conversar" : r.state === "draft" ? "Continuar" : "Ver validação",
+      go: () => {
+        if (r.state === "quar") this.setState({ tab: "quarantine" });
+        else if (r.state === "draft") window.location.href = "Copilot.dc.html";
+      },
+    }));
+
+    const store = STORES.find((x) => x.id === s.store) || STORES[0];
+
+    return {
+      nav: navView,
+      crumb: s.tab === "catalog" ? "Copilotos" : s.tab === "usecase" ? "Casos de uso" : s.tab === "quarantine" ? "Copilotos / validação" : "Conhecimento",
+      ref: s.tab === "catalog" ? "okf · type: copilot" : s.tab === "usecase" ? "okf · type: usecase" : s.tab === "quarantine" ? "okf-validate · quarentena" : "okf · bundle · parsers",
+      isCatalog: s.tab === "catalog", isUsecase: s.tab === "usecase", isStorage: s.tab === "storage", isQuarantine: s.tab === "quarantine",
+      backToCatalog: () => this.setState({ tab: "catalog" }),
+
+      vStatus: s.excepted ? "servido com exceção" : "quarentena",
+      vStBg: s.excepted ? "oklch(0.960 0.038 68)" : "oklch(0.958 0.030 26)",
+      vStInk: s.excepted ? "oklch(0.545 0.126 68)" : "oklch(0.505 0.176 26)",
+      verdictEyebrow: s.excepted ? "Exceção em vigor" : "Não é servido",
+      verdictTitle: s.excepted ? "Servido abaixo do piso, com exceção registrada" : "3 bloqueios · 4 avisos",
+      verdictBody: s.excepted
+        ? "O bundle é servido e cada documento carrega a marca de exceção. A trilha guarda o motivo, quem decidiu e contra qual versão — e o aviso continua aparecendo até os bloqueios serem resolvidos."
+        : "O bundle está no projeto e não está em uso: nenhum parser o monta enquanto houver bloqueio. Vazio e bloqueado são coisas diferentes, e esta tela existe para não confundir as duas.",
+      verdictLine: s.excepted ? "oklch(0.545 0.126 68)" : "oklch(0.505 0.176 26)",
+      verdictBg: s.excepted ? "oklch(0.960 0.038 68)" : "oklch(0.958 0.030 26)",
+      verdictInk: s.excepted ? "oklch(0.545 0.126 68)" : "oklch(0.505 0.176 26)",
+      blockCount: "3 bloqueios", warnCount: "4 avisos", passCount: "1 passou",
+
+      checks: [
+        { title: "Citações resolvem para arquivo real", detail: "11 de 14 · 78,6%, abaixo do piso de 80% em build.fidelity_min. Uma citação que não resolve é uma resposta que não pode ser auditada.", kind: "bloqueio", mark: "✕", line: "oklch(0.505 0.176 26)", bg: "oklch(0.958 0.030 26)" },
+        { title: "Os alvos declarados existem neste projeto", detail: "O manifesto declara targets: flows/lead — não existe formflow com esse caminho aqui. O copiloto proporia para um formulário que ninguém tem.", kind: "bloqueio", mark: "✕", line: "oklch(0.505 0.176 26)", bg: "oklch(0.958 0.030 26)" },
+        { title: "Tool de escrita atrás de gate", detail: "lead.push declara require_approval: false. A política do projeto não permite: escrita sem aprovação é o único item que nunca vira exceção por conveniência.", kind: "bloqueio", mark: "✕", line: "oklch(0.505 0.176 26)", bg: "oklch(0.958 0.030 26)" },
+        { title: "Formato da citação", detail: "3 usam caminho relativo em vez de blob URL com SHA e range. Passa no gate por sufixo, mas não resolve quando renderizado.", kind: "aviso", mark: "!", line: "oklch(0.545 0.126 68)", bg: "oklch(0.960 0.038 68)" },
+        { title: "Nome reservado log.md", detail: "Ausente. Sem ele, não há histórico cronológico do bundle — o que mudou e quando fica sem resposta.", kind: "aviso", mark: "!", line: "oklch(0.545 0.126 68)", bg: "oklch(0.960 0.038 68)" },
+        { title: "Procedência no frontmatter", detail: "provenance ausente. Pelo OKF v0.2 é opcional; para um bundle de terceiro que escreve campos, é o que liga o texto à origem.", kind: "aviso", mark: "!", line: "oklch(0.545 0.126 68)", bg: "oklch(0.960 0.038 68)" },
+        { title: "Idioma", detail: "O bundle declara language: en; este projeto serve pt-BR. A superfície ficaria bilíngue sem ninguém decidir isso.", kind: "aviso", mark: "!", line: "oklch(0.545 0.126 68)", bg: "oklch(0.960 0.038 68)" },
+        { title: "Schema OKF", detail: "9 de 9 documentos com type presente e frontmatter válido. É a única checagem que o formato exige — e é a que passou.", kind: "passou", mark: "✓", line: "oklch(0.492 0.126 158)", bg: "oklch(0.958 0.028 158)" },
+      ],
+      cites: [
+        { target: "blob/<sha>/src/crm/leadService.ts#L40-L88", where: "index.md", why: "O arquivo não existe neste repositório — a citação aponta para o repositório do fornecedor." },
+        { target: "blob/<sha>/apps/backend/app/modules/crm/api.py#L120-L180", where: "flows/lead/index.md", why: "Arquivo existe, mas tem 96 linhas: o range citado começa depois do fim." },
+        { target: "../../docs/crm-integration.md", where: "hitl.md", why: "Caminho relativo, sem SHA e sem range — não resolve quando renderizado." },
+      ],
+      grants: [
+        { tag: "escreve", text: "lead.summary em um formflow que ainda não existe aqui", line: "oklch(0.505 0.176 26)" },
+        { tag: "executa", text: "lead.push — escrita em sistema de terceiro, hoje sem gate declarado", line: "oklch(0.505 0.176 26)" },
+        { tag: "lê", text: "a base helpdesk-kb, sujeita ao ACL por documento de quem estiver na tela", line: "oklch(0.452 0.152 262)" },
+        { tag: "monta", text: "um dock lateral nas rotas que ele declarar", line: "oklch(0.452 0.152 262)" },
+      ],
+      where: [
+        { text: "Importado e armazenado: o bundle está no Blob, como veio, sem reescrita.", dot: "oklch(0.492 0.126 158)" },
+        { text: "Não publicado: nenhuma versão de Dataset foi criada — não há o que o parser leia.", dot: "oklch(0.545 0.126 68)" },
+        { text: "Não indexado: fora da base de conhecimento, então também não é consultável.", dot: "oklch(0.545 0.126 68)" },
+        { text: "Registrado na trilha: import, validação e resultado, com a procedência marcada como externa.", dot: "oklch(0.492 0.126 158)" },
+      ],
+      roleNote: "seu papel: Owner ✓", roleLine: "oklch(0.492 0.126 158)", roleBg: "#fff",
+      decisionBody: s.excepted
+        ? "A exceção vale para esta versão do bundle. Uma versão nova do fornecedor volta para a fila de validação — exceção não é permissão permanente."
+        : "Três caminhos honestos: corrigir aqui, devolver ao fornecedor, ou servir com exceção registrada. Aprovar com exceção exige Owner e motivo — e os dois vão para a trilha.",
+      excepting: s.excepting, excepted: s.excepted,
+      reason: s.reason, setReason: (e) => this.setState({ reason: e.target.value }),
+      exceptLabel: s.excepted ? "Exceção registrada" : s.excepting ? (s.reason.trim() ? "Confirmar exceção" : "Escreva o motivo") : "Servir com exceção",
+      exceptDisabled: s.excepted,
+      except: () => {
+        if (this.state.excepted) return;
+        if (!this.state.excepting) { this.setState({ excepting: true }); return; }
+        if (!this.state.reason.trim()) return;
+        this.setState({ excepted: true, excepting: false });
+      },
+      exceptedNote: "Rafael Duarte · Owner · 29/08/2026 14:31 — " + (s.reason.trim() || ""),
+      ask: () => this.setState({ excepting: false }),
+      discard: () => this.setState({ tab: "catalog", excepting: false, excepted: false, reason: "" }),
+
+      metrics: [
+        { value: "4", label: "publicados", ink: "oklch(0.235 0.017 262)" },
+        { value: "1", label: "rascunho", ink: "oklch(0.235 0.017 262)" },
+        { value: "1", label: "em quarentena", ink: "oklch(0.505 0.176 26)" },
+        { value: "6", label: "campos escritos por copiloto", ink: "oklch(0.235 0.017 262)" },
+      ],
+      filters, rows,
+      rowsNote: rows.length === 1 ? "1 copiloto" : rows.length + " copilotos",
+
+      outcomes: [
+        { tag: "Medido", tagInk: "oklch(0.492 0.126 158)", value: "1.284", label: "conversas atendidas" },
+        { tag: "Medido", tagInk: "oklch(0.492 0.126 158)", value: "76%", label: "resolvidas sem escalar" },
+        { tag: "Medido", tagInk: "oklch(0.492 0.126 158)", value: "82%", label: "propostas aproveitadas" },
+        { tag: "Estimado", tagInk: "oklch(0.545 0.126 68)", value: "214 h", label: "depende da premissa de minutos por referência" },
+      ],
+      steps: [
+        { id: "triage", kind: "agente", label: "Triagem — intenção e urgência", role: "lê", copilot: "Nenhuma escrita. Ele lê a classificação para saber do que a conversa trata.", line: "oklch(0.902 0.006 258)", kindInk: "oklch(0.487 0.018 260)", roleInk: "oklch(0.452 0.152 262)" },
+        { id: "retrieve", kind: "agente", label: "Buscar na base, com ACL do usuário", role: "lê", copilot: "Propõe a consulta e cita os documentos que voltaram. Sem fonte, ele recusa em vez de completar.", line: "oklch(0.902 0.006 258)", kindInk: "oklch(0.487 0.018 260)", roleInk: "oklch(0.452 0.152 262)" },
+        { id: "resolve", kind: "agente", label: "Redigir a resposta", role: "escreve", copilot: "Propõe summary e instructions — os dois campos que o formflow declara com ai: true. Cada um decidido em separado.", line: "oklch(0.452 0.152 262)", kindInk: "oklch(0.452 0.152 262)", roleInk: "oklch(0.492 0.126 158)" },
+        { id: "escalate", kind: "humano", label: "Aprovar a abertura do chamado", role: "não atua", copilot: "Ele monta e exibe o payload exato; a decisão é do papel Approver. Este passo é onde o processo para — e o copiloto não o atravessa.", line: "oklch(0.545 0.126 68)", kindInk: "oklch(0.545 0.126 68)", roleInk: "oklch(0.505 0.176 26)" },
+        { id: "remember", kind: "sistema", label: "Registrar preferência e desfecho", role: "não atua", copilot: "Memória por usuário e trilha de auditoria. O desfecho da proposta entra aqui — accepted, edited ou discarded.", line: "oklch(0.902 0.006 258)", kindInk: "oklch(0.487 0.018 260)", roleInk: "oklch(0.487 0.018 260)" },
+      ],
+      never: [
+        { text: "Abrir o chamado. Ele prepara; quem abre é o handler, depois do gate." },
+        { text: "Escrever campo que o formflow não declara com ai: true." },
+        { text: "Responder sem citar, quando o caso de uso exige citação." },
+        { text: "Ver documento fora do ACL de quem está na tela." },
+      ],
+      hier: [
+        { type: "usecase", text: "O caso de uso: o fluxo que o negócio lê, e onde o copiloto é vinculado." },
+        { type: "formflow", text: "O formulário de cada passo: os campos, as regras e o plano de publicação." },
+        { type: "field", text: "O campo: a unidade que o copiloto escreve, sempre por gesto humano." },
+      ],
+
+      pipeline: [
+        { step: "1 · propor", title: "O copiloto escreve", note: "documento OKF, com fonte declarada por campo", line: "oklch(0.902 0.006 258)", bg: "#fff", ink: "oklch(0.452 0.152 262)" },
+        { step: "2 · validar", title: "Schema e citações", note: "type obrigatório; citação que não resolve derruba o bundle", line: "oklch(0.902 0.006 258)", bg: "#fff", ink: "oklch(0.452 0.152 262)" },
+        { step: "3 · atestar", title: "Procedência e papel", note: "quem propôs, quem aprovou, contra qual versão", line: "oklch(0.545 0.126 68)", bg: "oklch(0.960 0.038 68)", ink: "oklch(0.545 0.126 68)" },
+        { step: "4 · publicar", title: "Versão nova", note: "nunca sobrescreve: v+1, com histórico", line: "oklch(0.902 0.006 258)", bg: "#fff", ink: "oklch(0.452 0.152 262)" },
+        { step: "5 · indexar", title: "Se for consultável", note: "ingest para a base, com ACL por documento", line: "oklch(0.902 0.006 258)", bg: "#fff", ink: "oklch(0.452 0.152 262)" },
+        { step: "6 · servir", title: "O parser monta", note: "type → superfície, formulário ou gate", line: "oklch(0.492 0.126 158)", bg: "oklch(0.958 0.028 158)", ink: "oklch(0.492 0.126 158)" },
+      ],
+      stores: STORES.map((x) => ({
+        name: x.name, tag: x.tag, impl: x.impl, what: x.what, history: x.history, gate: x.gate, latency: x.latency,
+        pick: () => this.setState({ store: x.id }),
+        line: s.store === x.id ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)",
+        bg: s.store === x.id ? "oklch(0.955 0.024 262)" : "#fff",
+        tagBg: s.store === x.id ? "#fff" : "oklch(0.955 0.005 258)",
+        tagInk: "oklch(0.487 0.018 260)",
+      })),
+      storeNote: store.note,
+
+      parsers: [
+        { type: "copilot", does: "monta a superfície: dock, console, campo ancorado ou página; e o contrato do que ele pode tocar" },
+        { type: "formflow", does: "monta o formulário: campos, regras, revisão legível e plano de publicação" },
+        { type: "policy", does: "aplica os gates: proposta de campo, operação, tool de escrita, escalação" },
+        { type: "usecase", does: "monta o fluxo: passos, quem executa cada um e onde ele para num humano" },
+        { type: "agent", does: "registra quem executa: hosted agent, container próprio ou endpoint — e entra na base (index: true)" },
+        { type: "middleware", does: "instala transformação de documento e evento, com papel, teto de custo e áreas" },
+        { type: "adapter", does: "conecta a um sistema de fora: identidade, região, cobrança e cota" },
+        { type: "log", does: "renderiza o histórico append-only, em ISO 8601" },
+      ],
+      middles: [
+        { id: "okf-validate", does: "schema + piso de citação; reprova cai em quarentena, não em produção", dir: "entrada", dirInk: "oklch(0.505 0.176 26)" },
+        { id: "okf-to-git", does: "abre PR com o diff do bundle — o copiloto propõe, o review aprova", dir: "saída", dirInk: "oklch(0.452 0.152 262)" },
+        { id: "okf-to-dataset", does: "publica versão nova do Dataset do Foundry; o portal vê o mesmo que a tela", dir: "saída", dirInk: "oklch(0.452 0.152 262)" },
+        { id: "okf-to-search", does: "indexa o bundle para consulta, preservando ACL por documento", dir: "saída", dirInk: "oklch(0.452 0.152 262)" },
+        { id: "okf-to-mcp", does: "expõe o bundle como MCP resource para cliente de fora da tela", dir: "saída", dirInk: "oklch(0.452 0.152 262)" },
+        { id: "okf-from-vendor", does: "importa bundle de terceiro, valida e marca a procedência como externa", dir: "entrada", dirInk: "oklch(0.505 0.176 26)" },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

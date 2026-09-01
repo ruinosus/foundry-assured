@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, button { box-sizing:border-box; }
+  button { font-family:inherit; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  button:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">Do zero — o Diligo, arquivo por arquivo</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:94ch;text-wrap:pretty">Projeto vazio: nenhum bundle, nenhum copiloto. Crie os seis na ordem e veja <b>o arquivo de verdade</b> aparecer, o que ele faz, e o que quebraria sem ele. No fim, o copiloto — que é só mais um arquivo, apontando para os outros cinco.</p>
+  </div>
+
+  <div style="width:2524px;height:1360px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+        <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+        <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+      </div>
+      <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Área · tenant</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">aurora · saúde</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="15">
+          <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;background:{{ n.bg }};color:{{ n.ink }};font-weight:{{ n.weight }}">
+            <span style="width:18px;text-align:center">{{ n.icon }}</span>{{ n.label }}
+          </span>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px">
+          <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">M</span>
+          <div style="min-width:0"><div style="font-size:13px;font-weight:600">Dra. Marina Alves</div><div style="font-size:11px;color:oklch(0.487 0.018 260)">Diretoria Técnica</div></div>
+        </div>
+        <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <header style="height:56px;flex:0 0 56px;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;padding:0 20px;gap:10px">
+        <nav style="display:flex;align-items:center;gap:8px;font-size:13px;color:oklch(0.487 0.018 260)"><span>Conhecimento</span><span>/</span><span>Bundles</span><span>/</span><b style="color:oklch(0.235 0.017 262);font-weight:600">Projeto novo</b></nav>
+        <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">{{ headNote }}</span>
+      </header>
+
+      <div style="flex:1;min-height:0;display:flex">
+
+        <!-- árvore -->
+        <nav style="width:330px;flex:0 0 330px;background:oklch(0.955 0.005 258);border-right:1px solid oklch(0.902 0.006 258);padding:18px 14px;display:flex;flex-direction:column;gap:12px;min-height:0;overflow:auto">
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">O projeto</span>
+            <b style="font-size:13.5px;font-weight:650">aurora-norte</b>
+            <span style="font-size:12px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ treeNote }}</span>
+          </div>
+          <sc-if value="{{ empty }}" hint-placeholder-val="{{ true }}">
+            <div style="border:1px dashed oklch(0.836 0.008 258);border-radius:6px;padding:20px;text-align:center;display:flex;flex-direction:column;gap:7px">
+              <b style="font-size:13px;font-weight:650">Nenhum bundle ainda</b>
+              <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">É este o ponto de partida real: pasta vazia. Nada de banco, nada de schema — arquivos.</span>
+            </div>
+          </sc-if>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <sc-for list="{{ tree }}" as="t" hint-placeholder-count="0">
+              <button type="button" onClick="{{ t.pick }}" style="text-align:left;display:flex;flex-direction:column;gap:4px;padding:10px;border:1px solid {{ t.line }};background:{{ t.bg }};border-radius:5px;cursor:pointer">
+                <span style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;font-weight:600;overflow-wrap:anywhere">{{ t.path }}</span>
+                </span>
+                <span style="display:flex;gap:4px;flex-wrap:wrap">
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10px;padding:1px 6px;border-radius:999px;background:{{ t.kBg }};color:{{ t.kInk }}">{{ t.kind }}</span>
+                  <span style="font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 6px;border-radius:999px;background:oklch(0.955 0.005 258);color:oklch(0.487 0.018 260)">{{ t.size }}</span>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+          <sc-if value="{{ allDone }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid oklch(0.492 0.126 158);background:oklch(0.958 0.028 158);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px">
+              <b style="font-size:12.5px;font-weight:650">Seis arquivos, e o produto existe</b>
+              <span style="font-size:11.5px;line-height:1.45">Nenhuma linha de código foi escrita. O que você criou é o Diligo desta unidade: norma citável, formulário, gate, sujeito, copiloto e trilha.</span>
+            </div>
+          </sc-if>
+        </nav>
+
+        <!-- passos -->
+        <main style="flex:1;min-width:0;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:12px">
+          <sc-for list="{{ steps }}" as="s" hint-placeholder-count="6">
+            <section style="background:{{ s.bg }};border:1px solid {{ s.line }};border-left:4px solid {{ s.line }};border-radius:8px;padding:15px;display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <span style="flex:none;width:22px;height:22px;border-radius:999px;background:{{ s.line }};color:#fff;font-size:11.5px;font-weight:700;display:grid;place-items:center">{{ s.n }}</span>
+                <b style="font-size:14.5px;font-weight:650">{{ s.title }}</b>
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;padding:2px 8px;border-radius:999px;background:{{ s.kBg }};color:{{ s.kInk }}">{{ s.kind }}</span>
+                <span style="margin-left:auto;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ s.stInk }}">{{ s.state }}</span>
+              </div>
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">{{ s.path }}</span>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;max-width:88ch;text-wrap:pretty">{{ s.what }}</p>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <button type="button" onClick="{{ s.act }}" disabled="{{ s.off }}" style="padding:9px 14px;border:1px solid {{ s.btnLine }};border-radius:8px;background:{{ s.btnBg }};color:{{ s.btnInk }};font-size:13px;font-weight:600;cursor:pointer">{{ s.label }}</button>
+                <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260);max-width:66ch">{{ s.hint }}</span>
+              </div>
+            </section>
+          </sc-for>
+        </main>
+
+        <!-- conteúdo -->
+        <aside style="width:660px;flex:0 0 660px;background:#fff;border-left:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;min-height:0">
+          <div style="flex:none;padding:13px 15px;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+            <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;font-weight:700">{{ sel.path }}</span>
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:{{ sel.kBg }};color:{{ sel.kInk }}">{{ sel.kind }}</span>
+            <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">{{ sel.size }}</span>
+          </div>
+          <pre style="flex:1;min-height:0;overflow:auto;margin:0;padding:15px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.62;white-space:pre">{{ sel.body }}</pre>
+          <div style="flex:none;border-top:1px solid oklch(0.902 0.006 258);padding:14px 15px;display:flex;flex-direction:column;gap:10px;max-height:340px;overflow:auto">
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">o que este arquivo faz</span>
+              <span style="font-size:12.5px;line-height:1.5">{{ sel.does }}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.505 0.176 26)">o que quebra sem ele</span>
+              <span style="font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260)">{{ sel.breaks }}</span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2580,&quot;height&quot;:1440}}">
+const KT = {
+  doc: ["oklch(0.958 0.028 158)", "oklch(0.492 0.126 158)"],
+  formflow: ["oklch(0.955 0.024 262)", "oklch(0.452 0.152 262)"],
+  policy: ["oklch(0.960 0.038 68)", "oklch(0.545 0.126 68)"],
+  copilot: ["oklch(0.955 0.024 262)", "oklch(0.452 0.152 262)"],
+  log: ["oklch(0.955 0.005 258)", "oklch(0.487 0.018 260)"],
+};
+
+const FILES = [
+  {
+    n: "1", path: "normas/cfm-2454-2026/index.md", kind: "doc", title: "A norma, em dispositivos citáveis",
+    what: "Antes de qualquer tela, o texto da norma precisa existir como documento — quebrado por artigo, para que uma citação aponte para um dispositivo e resolva.",
+    hint: "Sem norma no bundle, não há de onde citar: toda proposta sairia sem fonte.",
+    does: "Guarda o texto por dispositivo, com o inciso como âncora. É o que permite a citação do tipo dispositivo — a segunda espécie de fonte, ao lado do blob URL.",
+    breaks: "Nenhuma citação resolve. O piso de 80% derruba o bundle, e o copiloto — que exige fonte — recusa tudo.",
+    body: `---
+type: doc
+title: Resolução CFM nº 2.454/2026
+resource: cfm-2454-2026
+tags: [norma, ia, medicina]
+okf_version: "0.2"
+provenance: dou/2026-02-27
+freshness: 2026-03-05      # retificação apurada
+---
+
+# Art. 12 — avaliação preliminar
+
+> As instituições médicas […] deverão realizar uma avaliação
+> preliminar com a finalidade de definir seu grau de risco.
+
+## § único — os seis fatores  {#art12-p1}
+
+1. impacto nos direitos fundamentais e na saúde
+2. criticidade do contexto de uso
+3. complexidade e grau de autonomia
+4. finalidade pretendida e finalidades potenciais
+5. nível de intervenção humana no resultado
+6. quantidade e sensibilidade dos dados
+
+# Art. 13 — níveis  {#art13}
+
+> […] baixo, médio, alto ou inaceitável, conforme o anexo II.
+
+**Ressalva registrada:** o Anexo II caracteriza três níveis.
+"Inaceitável" não é caracterizado — e este documento não inventa.`,
+  },
+  {
+    n: "2", path: "flows/avaliacao-preliminar/index.md", kind: "formflow", title: "O formulário — é ele que define os campos",
+    what: "Aqui, e só aqui, ficam os campos: os seis fatores, a classificação, e por campo se o copiloto pode escrever, se aceita lacuna declarada e qual fonte é exigida.",
+    hint: "É a resposta à sua dúvida: “bundle define campos?” — este tipo define; os outros, não.",
+    does: "Declara cada campo com ai, allowDeclaredGap, rules e citationKind. O renderizador monta a tela a partir disto; nenhum wizard é escrito à mão.",
+    breaks: "Sem formflow não existe onde escrever: o copiloto conversa e não preenche nada. E “classificação” voltaria a ser um campo que qualquer proposta pode preencher.",
+    body: `---
+type: formflow
+title: Avaliação preliminar (Art. 12)
+resource: avaliacao-preliminar
+okf_version: "0.2"
+---
+
+## Fields
+
+\`\`\`yaml
+sections:
+  - id: fatores
+    fields:
+      - id: fator_1..6.analise
+        type: longtext
+        required: true
+        ai: true                    # o copiloto pode escrever
+        allowDeclaredGap: true      # vazio com motivo + destino PASSA
+        citationKind: dispositivo   # a fonte é artigo, não arquivo
+        rules: [minChars:80]
+      - id: classificacao
+        type: enum
+        options: [baixo, medio, alto, inaceitavel]
+        ai: false                   # atribuição da instituição (Art. 12)
+        cite: normas/cfm-2454-2026#art13
+\`\`\`
+
+## Review
+
+\`\`\`yaml
+review:
+  - {label: Vai declarar, from: "risco {classificacao} para {sistema}"}
+  - {label: Lacunas, from: "{gaps[]}"}
+\`\`\`
+
+## Plan
+
+\`\`\`yaml
+plan:
+  - id: assinar
+    approval: {required: true, role: diretoria_tecnica, stepUp: totp}
+\`\`\``,
+  },
+  {
+    n: "3", path: "policy/hitl-conformidade/index.md", kind: "policy", title: "O gate — quem assina, e como",
+    what: "Os quatro gates num arquivo herdado: proposta de campo, publicação, tool de escrita e escalação. Aqui entram o papel e o segundo fator no ato.",
+    hint: "Herdar é o normal. Política própria existe porque este domínio exige TOTP na assinatura.",
+    does: "Diz que só a Diretoria Técnica assina, que o TOTP é exigido no momento do ato e que recusar pede motivo. O gate é dado, não código de tela.",
+    breaks: "A assinatura viraria um clique de quem estivesse logado. E “só o DT assina” seria promessa de disciplina, não propriedade do sistema.",
+    body: `---
+type: policy
+title: HITL — conformidade CFM
+resource: hitl-conformidade
+okf_version: "0.2"
+---
+
+\`\`\`yaml
+hitl:
+  fieldProposal:
+    tool: propose_field
+    decide: [use, edit, discard]
+    validateAgainst: field.rules
+    record: POST /builder-assist/proposals   # desfecho, nunca o texto
+  publishOperation:
+    approval: always
+    role: diretoria_tecnica
+    stepUp: totp
+    atTimeOfAct: true
+    show: payload
+  agentWriteTool:
+    require_approval: always
+  workflowEscalation:
+    rejectReason: required
+
+guardrail:
+  middleware: pii-guard
+  stage: pre-persist
+  emits: block                      # impede, não avisa
+\`\`\``,
+  },
+  {
+    n: "4", path: "unidades/aurora-norte/index.md", kind: "doc", title: "O sujeito — quem responde perante o conselho",
+    what: "A norma dá a fiscalização ao CRM da jurisdição de cada estabelecimento. Então a unidade é o sujeito: CNPJ, CRM e o Diretor Técnico inscrito.",
+    hint: "A rede não assina. Se este arquivo não existir, não há quem assine.",
+    does: "Identifica a unidade e o signatário. É o que amarra a assinatura a uma pessoa com inscrição, e o rollup do grupo ao pior elo.",
+    breaks: "O dossiê ficaria sem sujeito — e a pergunta seguinte, “quem assinou”, sem resposta. Um dossiê de rede cria um sujeito que a norma não reconhece.",
+    body: `---
+type: doc
+title: Hospital Aurora — Unidade Norte
+resource: aurora-norte
+okf_version: "0.2"
+lifecycle: active
+---
+
+\`\`\`yaml
+unidade:
+  cnpj: 12.345.678/0002-10
+  conselho: CRM-SP
+  diretoria_tecnica:
+    nome: Marina Alves
+    inscricao: CRM-SP 123456
+  rede: aurora
+  papeis: [diretoria_tecnica, qualidade, ti, leitura]
+  rollup: worst-link        # a marca vale o pior elo, nunca a média
+\`\`\`
+
+A avaliação de referência da rede **não supre** a assinatura local.`,
+  },
+  {
+    n: "5", path: "copilots/conformidade-cfm/index.md", kind: "copilot", title: "O copiloto — só mais um arquivo",
+    what: "Agora sim. Ele não contém nada: aponta. Lê a norma e a unidade, propõe nos campos que o formflow marcou com ai: true, herda a política, e mora na sua própria pasta.",
+    hint: "Cinco arquivos depois, criar o copiloto é declarar referências — e é por isso que ele nasce em minutos.",
+    does: "Amarra as peças: bundles.reads, bundles.proposes, inherits e o agente que executa. Trocar qualquer peça é trocar uma linha.",
+    breaks: "Sem ele existem os dados e o formulário, e ninguém propõe nada — o preenchimento volta a ser inteiramente manual.",
+    body: `---
+type: copilot
+title: Copiloto de conformidade CFM
+resource: conformidade-cfm
+okf_version: "0.2"
+index: true
+lifecycle: shadow
+---
+
+## Bundles
+
+\`\`\`yaml
+bundles:
+  home: copilots/conformidade-cfm
+  reads:
+    - normas/cfm-2454-2026        # de onde ele cita
+    - unidades/aurora-norte       # quem é o sujeito
+  proposes:
+    - {bundle: flows/avaliacao-preliminar,
+       fields: [fator_1..6.analise], via: propose_field}
+  inherits: [policy/hitl-conformidade]
+  acl: perDocument
+\`\`\`
+
+## Requires
+
+\`\`\`yaml
+requires:
+  agent: agents/helpdesk          # prompt agent do Foundry, sem código
+  middlewares: [okf-validate, pii-guard]
+  adapters: [foundry-models]
+  mcp: []
+cost: {cap: {saude: 180}, onExceed: stop}
+areas: [saude]
+\`\`\``,
+  },
+  {
+    n: "6", path: "copilots/conformidade-cfm/log.md", kind: "log", title: "A trilha — o que aconteceu, encadeado",
+    what: "O último arquivo é o que transforma o resto em evidência: append-only, com hash do evento anterior, âncora do dia e carimbo externo na assinatura.",
+    hint: "É o que faz “não mudou depois” ser propriedade do sistema, e não promessa.",
+    does: "Registra desfecho de cada proposta e cada gate, encadeado por hash, com âncora write-once por dia e carimbo RFC 3161 no ato da assinatura.",
+    breaks: "Tudo continuaria funcionando — e nada seria provável seis meses depois, quando o auditor perguntar quem aprovou o quê.",
+    body: `---
+type: log
+resource: conformidade-cfm
+chain: sha256-prev
+anchor: {cadence: daily, storage: blob-write-once}
+timestamp: {authority: rfc3161, required: on-signature}
+---
+
+\`\`\`text
+2026-08-29T14:22Z · bundle normas/cfm-2454-2026 publicado.
+2026-08-29T14:31Z · formflow avaliacao-preliminar publicado (2 campos ai).
+2026-08-29T14:38Z · proposta usada em fator_4 (fonte: Art. 12 § único).
+2026-08-29T14:41Z · fator_6 — lacuna declarada (destino: TI da unidade).
+2026-08-29T14:52Z · assinado por Marina Alves (DT) · TOTP no ato
+                     hash 9f2c…a41b · prev 41d0…77ce · âncora do dia gravada.
+\`\`\``,
+  },
+];
+
+class Component extends DCLogic {
+  state = { created: [], sel: null };
+
+  renderVals() {
+    const s = this.state;
+    const has = (p) => s.created.indexOf(p) > -1;
+    const nextIdx = s.created.length;
+    const selFile = FILES.find((f) => f.path === s.sel) || FILES.find((f) => has(f.path)) || FILES[0];
+    const selShown = has(selFile.path);
+
+    return {
+      nav: [
+        { icon: "◎", label: "Casos de uso" }, { icon: "💬", label: "Assistentes" },
+        { icon: "◇", label: "Copilotos" }, { icon: "⚖", label: "Conformidade" },
+        { icon: "◆", label: "Agentes hospedados" }, { icon: "⇌", label: "Middlewares" },
+        { icon: "🔌", label: "Adaptadores" }, { icon: "◈", label: "Meus agentes" },
+        { icon: "▤", label: "Conhecimento", on: true }, { icon: "✦", label: "Skills" },
+        { icon: "🎫", label: "Chamados" }, { icon: "✓", label: "Avaliações" },
+        { icon: "▦", label: "Visão geral" }, { icon: "🔗", label: "Auditoria" },
+        { icon: "🛡️", label: "Administração" },
+      ].map((n) => ({ icon: n.icon, label: n.label, bg: n.on ? "oklch(0.955 0.024 262)" : "transparent", ink: n.on ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)", weight: n.on ? "600" : "400" })),
+      headNote: s.created.length + " de 6 arquivos · nenhuma linha de código",
+      treeNote: s.created.length ? s.created.length + (s.created.length === 1 ? " arquivo" : " arquivos") + " · " + (6 - s.created.length) + " a criar" : "vazio — é onde todo projeto começa",
+      empty: !s.created.length,
+      allDone: s.created.length === 6,
+      tree: FILES.filter((f) => has(f.path)).map((f) => ({
+        path: f.path, kind: f.kind, size: new Blob([f.body]).size + " B",
+        kBg: KT[f.kind][0], kInk: KT[f.kind][1],
+        line: s.sel === f.path ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)",
+        bg: s.sel === f.path ? "oklch(0.955 0.024 262)" : "#fff",
+        pick: () => this.setState({ sel: f.path }),
+      })),
+      steps: FILES.map((f, i) => {
+        const done = has(f.path);
+        const isNext = i === nextIdx;
+        const line = done ? "oklch(0.492 0.126 158)" : isNext ? "oklch(0.452 0.152 262)" : "oklch(0.902 0.006 258)";
+        return {
+          n: f.n, title: f.title, path: f.path, kind: f.kind, what: f.what, hint: done ? f.does : f.hint,
+          kBg: KT[f.kind][0], kInk: KT[f.kind][1], line,
+          bg: done ? "oklch(0.977 0.003 258)" : "#fff",
+          state: done ? "criado" : isNext ? "próximo" : "aguarda o anterior",
+          stInk: done ? "oklch(0.492 0.126 158)" : isNext ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)",
+          off: done || !isNext,
+          label: done ? "✓ criado" : isNext ? "Criar este arquivo" : "bloqueado",
+          btnLine: done || !isNext ? "oklch(0.836 0.008 258)" : "oklch(0.452 0.152 262)",
+          btnBg: done || !isNext ? "#fff" : "oklch(0.452 0.152 262)",
+          btnInk: done || !isNext ? "oklch(0.487 0.018 260)" : "#fff",
+          act: () => { if (!done && isNext) this.setState((st) => ({ created: st.created.concat([f.path]), sel: f.path })); },
+        };
+      }),
+      sel: {
+        path: selShown ? selFile.path : "— nenhum arquivo criado ainda —",
+        kind: selShown ? selFile.kind : "vazio",
+        kBg: selShown ? KT[selFile.kind][0] : "oklch(0.955 0.005 258)",
+        kInk: selShown ? KT[selFile.kind][1] : "oklch(0.487 0.018 260)",
+        size: selShown ? new Blob([selFile.body]).size + " bytes" : "0 bytes",
+        body: selShown ? selFile.body : "# o projeto está vazio\n\nCrie o primeiro arquivo à esquerda.\n\nBundle não é um banco nem um schema: é uma pasta\nde markdown com frontmatter. O que você vai ver\naqui é o conteúdo real de cada um.",
+        does: selShown ? selFile.does : "Nada ainda. Comece pela norma: sem ela, não há de onde citar.",
+        breaks: selShown ? selFile.breaks : "—",
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

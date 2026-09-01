@@ -78,6 +78,10 @@ export interface LinhaRevisao {
   const?: string;
   /** Derivada das capacidades marcadas, em vez de um template: a lista é dinâmica. */
   fromCapabilities?: boolean;
+  /** QUAIS campos contam como capacidade. Sem isto, `fromCapabilities` varre por TIPO — o que
+   *  acerta no formulário do agente e erra no do copiloto, onde `choice` é `mount` e `runtime`
+   *  (a revisão dizia "vai poder escrever: dock lateral, backend"). O manifesto declara. */
+  fields?: string[];
   /** Derivada dos arquivos anexados. */
   fromFiles?: boolean;
 }

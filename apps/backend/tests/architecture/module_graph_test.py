@@ -59,6 +59,10 @@ MODULES = (
     # componentes React com os mesmos campos escritos à mão. O módulo só CARREGA e valida a forma;
     # quem aplica as regras é a tela, no campo, e o backend na fronteira.
     "formflow",
+    # O contrato canônico dos documentos OKF autoráveis: envelope, identidade, versão e
+    # referências. Separado de formflow porque o formulário tolera frontmatter torto para ainda
+    # renderizar; publicação e autoria precisam falhar alto.
+    "okf",
     "hitl",  # ADR-019: approve/edit/reject/respond + the role gate neither framework has
     # Onde uma conversa fica depois que a aba fecha. O store (blobs de apêndice) e o
     # HistoryProvider do agent-framework; o caminho do blob começa no object-id do usuário, que é

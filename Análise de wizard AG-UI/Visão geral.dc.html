@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, button { box-sizing:border-box; }
+  button { font-family:inherit; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  button:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:16px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:22px;font-weight:640;letter-spacing:-0.015em">Visão geral — o que construímos e o que é proposta</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:94ch;text-wrap:pretty">Um mapa: os tipos de documento, os quatro planos, as telas (todas clicáveis), e a separação honesta entre o que existe no produto hoje e o que estamos propondo. Filtre por origem para ver só um dos dois.</p>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+    <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">Mostrar</span>
+    <div style="display:flex;gap:2px;padding:2px;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px">
+      <sc-for list="{{ filters }}" as="f" hint-placeholder-count="3">
+        <button type="button" onClick="{{ f.pick }}" style="border:0;padding:7px 14px;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;background:{{ f.bg }};color:{{ f.ink }}">{{ f.label }}</button>
+      </sc-for>
+    </div>
+    <span style="font-size:12.5px;color:oklch(0.487 0.018 260)">{{ countNote }}</span>
+  </div>
+
+  <!-- ═════ 1 · OS TIPOS ═════ -->
+  <section style="background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:8px;padding:22px;display:flex;flex-direction:column;gap:14px;width:2100px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.487 0.018 260)">1 · o modelo</span>
+      <h2 style="margin:0;font-size:19px;font-weight:640;letter-spacing:-0.015em">Nove tipos de documento — e o parser que os monta</h2>
+      <span style="margin-left:auto;font-size:12.5px;color:oklch(0.487 0.018 260)">tudo em OKF: markdown + frontmatter, o caminho é a identidade</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+      <sc-for list="{{ types }}" as="t" hint-placeholder-count="9">
+        <div style="background:#fff;border:1px solid {{ t.line }};border-left:4px solid {{ t.accent }};border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:7px">
+          <div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+            <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:700;color:oklch(0.452 0.152 262)">{{ t.type }}</span>
+            <span style="margin-left:auto;font-size:10px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:{{ t.stBg }};color:{{ t.stInk }}">{{ t.origin }}</span>
+          </div>
+          <b style="font-size:13.5px;font-weight:650">{{ t.title }}</b>
+          <span style="font-size:12px;line-height:1.5;color:oklch(0.487 0.018 260)">{{ t.what }}</span>
+          <span style="font-size:11.5px;line-height:1.4;color:oklch(0.487 0.018 260)"><b>quem cria:</b> {{ t.who }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- ═════ 2 · OS PLANOS ═════ -->
+  <section style="background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:8px;padding:22px;display:flex;flex-direction:column;gap:14px;width:2100px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.487 0.018 260)">2 · os planos</span>
+      <h2 style="margin:0;font-size:19px;font-weight:640;letter-spacing:-0.015em">Quatro planos que não se misturam</h2>
+      <span style="margin-left:auto;font-size:12.5px;color:oklch(0.487 0.018 260)">e a área atravessa os quatro</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+      <sc-for list="{{ planes }}" as="p" hint-placeholder-count="4">
+        <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:6px;padding:15px;display:flex;flex-direction:column;gap:8px">
+          <b style="font-size:14px;font-weight:650">{{ p.title }}</b>
+          <span style="font-size:12px;line-height:1.5;color:oklch(0.487 0.018 260)">{{ p.what }}</span>
+          <div style="display:flex;gap:5px;flex-wrap:wrap">
+            <sc-for list="{{ p.chips }}" as="c" hint-placeholder-count="3">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10.5px;padding:2px 8px;border-radius:999px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258)">{{ c.t }}</span>
+            </sc-for>
+          </div>
+          <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260);border-top:1px solid oklch(0.902 0.006 258);padding-top:7px">{{ p.rule }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- ═════ 3 · AS TELAS ═════ -->
+  <section style="background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:8px;padding:22px;display:flex;flex-direction:column;gap:14px;width:2100px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.487 0.018 260)">3 · as telas</span>
+      <h2 style="margin:0;font-size:19px;font-weight:640;letter-spacing:-0.015em">O que já está desenhado — clique para abrir</h2>
+      <span style="margin-left:auto;font-size:12.5px;color:oklch(0.487 0.018 260)">{{ screenNote }}</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;align-items:start">
+      <sc-for list="{{ groups }}" as="g" hint-placeholder-count="5">
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <div style="display:flex;align-items:baseline;gap:8px;padding-bottom:7px;border-bottom:2px solid {{ g.accent }}">
+            <b style="font-size:14px;font-weight:650">{{ g.title }}</b>
+            <span style="margin-left:auto;font-size:11px;color:oklch(0.487 0.018 260)">{{ g.count }}</span>
+          </div>
+          <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ g.what }}</span>
+          <sc-for list="{{ g.items }}" as="i" hint-placeholder-count="3">
+            <a href="{{ i.href }}" style="display:flex;flex-direction:column;gap:4px;padding:11px;background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:5px;text-decoration:none">
+              <span style="display:flex;align-items:center;gap:7px;flex-wrap:wrap">
+                <b style="font-size:12.5px;font-weight:650;color:oklch(0.235 0.017 262)">{{ i.title }}</b>
+                <span style="margin-left:auto;font-size:9.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:1px 7px;border-radius:999px;background:{{ i.stBg }};color:{{ i.stInk }}">{{ i.origin }}</span>
+              </span>
+              <span style="font-size:11.5px;line-height:1.4;color:oklch(0.487 0.018 260)">{{ i.what }}</span>
+            </a>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- ═════ 4 · EXISTE VS PROPOSTA ═════ -->
+  <section style="width:2100px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">
+    <div style="background:#fff;border:1px solid oklch(0.492 0.126 158);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:11px">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.492 0.126 158)">existe no produto hoje</span>
+        <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">lido do código</span>
+      </div>
+      <sc-for list="{{ have }}" as="h" hint-placeholder-count="6">
+        <div style="display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.5">
+          <span style="flex:none;width:16px;height:16px;border-radius:50%;background:oklch(0.492 0.126 158);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;margin-top:2px">✓</span>
+          <span style="min-width:0"><b style="font-weight:600">{{ h.t }}</b> — {{ h.d }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <div style="background:#fff;border:1px solid oklch(0.545 0.126 68);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:11px">
+      <div style="display:flex;align-items:baseline;gap:10px">
+        <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.545 0.126 68)">proposta — o que falta construir</span>
+        <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">em ordem de dependência</span>
+      </div>
+      <sc-for list="{{ todo }}" as="t" hint-placeholder-count="7">
+        <div style="display:flex;gap:9px;align-items:flex-start;font-size:12.5px;line-height:1.5">
+          <span style="flex:none;width:16px;height:16px;border-radius:50%;background:oklch(0.545 0.126 68);color:#fff;font-size:10px;font-weight:700;display:grid;place-items:center;margin-top:2px">{{ t.n }}</span>
+          <span style="min-width:0"><b style="font-weight:600">{{ t.t }}</b> — {{ t.d }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <!-- ═════ 5 · INVARIANTES ═════ -->
+  <section style="background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);border-radius:8px;padding:22px;display:flex;flex-direction:column;gap:14px;width:2100px">
+    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+      <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:oklch(0.726 0.014 258)">5 · o que não negocia</span>
+      <h2 style="margin:0;font-size:19px;font-weight:640;letter-spacing:-0.015em">Seis invariantes — é o que faz o resto ser explicável</h2>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px">
+      <sc-for list="{{ rules }}" as="r" hint-placeholder-count="6">
+        <div style="display:flex;flex-direction:column;gap:6px;padding:14px;background:oklch(0.302 0.012 262);border-radius:6px">
+          <b style="font-size:13.5px;font-weight:650">{{ r.t }}</b>
+          <span style="font-size:12px;line-height:1.55;color:oklch(0.844 0.008 258)">{{ r.d }}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2160,&quot;height&quot;:1500}}">
+const TYPES = [
+  { type: "type: copilot", title: "O copiloto", what: "Onde monta, sobre qual agente roda, em quais campos escreve, com que fonte, a que custo.", who: "Admin, no builder", origin: "proposta" },
+  { type: "type: usecase", title: "O caso de uso", what: "O fluxo que o negócio lê, e onde ele para num humano. É por aqui que o copiloto é vinculado.", who: "negócio + Admin", origin: "existe" },
+  { type: "type: formflow", title: "O formulário", what: "Campos, regras, revisão legível e plano de publicação. Substitui o wizard escrito à mão.", who: "Admin, declarado", origin: "proposta" },
+  { type: "type: policy", title: "A política de HITL", what: "Quatro gates num bloco só: proposta, publicação, tool de escrita, escalação.", who: "Owner", origin: "proposta" },
+  { type: "type: agent", title: "Quem executa", what: "Prompt agent no Foundry, workflow no harness, ou container próprio que fala AG-UI.", who: "Admin ou dev", origin: "parcial" },
+  { type: "type: middleware", title: "O que transforma", what: "Aceita, emite, estágio e papel. Regra simples é declarada na tela; o resto é código com contrato.", who: "Admin ou dev", origin: "proposta" },
+  { type: "type: adapter", title: "O que liga fora", what: "Identidade, região, cobrança e cota. Não transforma nada — conecta e fatura.", who: "plataforma", origin: "proposta" },
+  { type: "type: mcp", title: "As tools de terceiro", what: "URL, descoberta e tools. Escrita nasce com aprovação obrigatória e papel.", who: "Admin", origin: "parcial" },
+  { type: "type: bundle · log", title: "O dado e o histórico", what: "O conteúdo em markdown e o registro append-only do que mudou — com hash e âncora quando é prova.", who: "qualquer pessoa da área", origin: "parcial" },
+];
+
+const PLANES = [
+  { title: "Controle", what: "Os registries: agente, middleware, adaptador, MCP. Guardam referência e contrato — nunca o código da peça.", chips: ["agent", "middleware", "adapter", "mcp"], rule: "Nada entra em produção direto: primeira instalação é sombra." },
+  { title: "Dado", what: "Os bundles: manifestos, formulários, políticas, documentos e log. Uma casa por manifesto.", chips: ["bundle", "formflow", "policy", "log"], rule: "Tudo é bundle, logo tudo é base de conhecimento — indexado, com ACL por documento." },
+  { title: "Execução", what: "O agente e o harness rodam; o copiloto propõe; as tools alcançam o mundo.", chips: ["copilot", "agent", "harness", "tools"], rule: "Nada é escrito sem gesto humano, e o payload exibido é o que será executado." },
+  { title: "Evidência", what: "A trilha do que foi decidido, a âncora do dia, o carimbo externo e o dossiê.", chips: ["trilha", "âncora", "rfc3161", "dossier"], rule: "Documento publicado não é editado: revisão cria versão, a anterior é depreciada." },
+];
+
+const GROUPS = [
+  { title: "Entender", accent: "oklch(0.487 0.018 260)", what: "As peças que explicam o modelo para outra pessoa.", items: [
+    { title: "Diagrama", what: "Três quadros: o bundle no meio, o copiloto entrando pelo caso de uso, e o ciclo da proposta ao serviço.", href: "Diagrama.dc.html", origin: "proposta" },
+    { title: "De onde vem cada peça", what: "Quem cria, onde e como — e quais das cinco exigem desenvolvimento.", href: "De onde vem cada peça.dc.html", origin: "proposta" },
+    { title: "Exemplo prático (animado)", what: "50s: um copiloto do zero ao v2, com timeline e exportação.", href: "Exemplo Prático.dc.html", origin: "proposta" },
+    { title: "Visão geral", what: "Este mapa.", href: "Visão geral.dc.html", origin: "proposta" },
+  ] },
+  { title: "Criar", accent: "oklch(0.452 0.152 262)", what: "Onde um copiloto e as peças dele nascem.", items: [
+    { title: "Ponta a ponta", what: "Seis passos clicáveis: cadastrar, criar, bundle, dependências, publicar, usar.", href: "Ponta a Ponta.dc.html", origin: "proposta" },
+    { title: "Builder v2", what: "A tela de criação com o motor evoluído, editando quatro copilotos diferentes.", href: "Copilot Builder v2.dc.html", origin: "proposta" },
+    { title: "Cadastro — registries e bundles", what: "De onde vêm as peças que o copiloto referencia, e o plano de dados.", href: "Cadastro - registries e bundles.dc.html", origin: "proposta" },
+    { title: "Novo agente — três rotas", what: "Prompt agent, workflow no harness, container próprio.", href: "Novo agente - três rotas.dc.html", origin: "parcial" },
+  ] },
+  { title: "Registrar", accent: "oklch(0.452 0.152 262)", what: "As cinco telas de cadastro de peça, com contrato e validação.", items: [
+    { title: "Registros", what: "Agente, middleware, adaptador, MCP e bundle — cada um com o seu contrato.", href: "Registros.dc.html", origin: "proposta" },
+    { title: "Middleware sem código", what: "Quando · se · então, com o limite escrito e scaffold na saída.", href: "Middleware sem código e contrato do agente.dc.html", origin: "proposta" },
+    { title: "Contrato do agente (AG-UI)", what: "Endpoint, headers, eventos, interrupção — e o teste de conformidade.", href: "Middleware sem código e contrato do agente.dc.html", origin: "proposta" },
+    { title: "Editor de bundle", what: "Markdown à mão, com validação ao vivo, correções de um clique e PR na saída.", href: "Bundle Editor.dc.html", origin: "proposta" },
+  ] },
+  { title: "Operar", accent: "oklch(0.545 0.126 68)", what: "O dia a dia: catálogo, recurso, extensões e custo.", items: [
+    { title: "Catálogo de copilotos", what: "Quem existe, em qual área, aproveitamento e quarentena.", href: "Copilot Catalog.dc.html", origin: "proposta" },
+    { title: "Copiloto (recurso)", what: "O recurso com estado, versões, atividade, custo, permissões e fim de vida.", href: "Copiloto (recurso).dc.html", origin: "proposta" },
+    { title: "Middlewares e casos de uso", what: "Extensões com teto por área, adaptadores, agentes hospedados e casos difíceis.", href: "Middlewares e Casos de Uso.dc.html", origin: "proposta" },
+    { title: "FormFlow", what: "Um renderizador, três manifestos: agente, skill e base no mesmo formulário.", href: "FormFlow.dc.html", origin: "proposta" },
+  ] },
+  { title: "Provar", accent: "oklch(0.492 0.126 158)", what: "Onde a coisa precisa se sustentar diante de terceiro.", items: [
+    { title: "Conformidade", what: "Lacuna declarada, citação de dispositivo, guardrail, assinatura com TOTP e trilha.", href: "Conformidade.dc.html", origin: "proposta" },
+    { title: "Delta do motor", what: "As seis evoluções que um domínio regulado exige, cada uma como campo de manifesto.", href: "Conformidade.dc.html", origin: "proposta" },
+    { title: "Wizard AG-UI (hoje · 1a)", what: "A recriação fiel da tela atual, com os sete pontos que travam.", href: "Wizard AG-UI.dc.html", origin: "existe" },
+    { title: "Wizard AG-UI (proposta · 1b)", what: "Página única, progresso lateral, dock no campo em foco, HITL com contexto.", href: "Wizard AG-UI.dc.html", origin: "proposta" },
+  ] },
+];
+
+const HAVE = [
+  { t: "AG-UI + CopilotKit", d: "stream, tool activity, citação clicável e o gate de aprovação com editar/aprovar/recusar." },
+  { t: "propose_field", d: "o copiloto propõe campo, responde na hora e a decisão humana é medida em aceita/editada/descartada." },
+  { t: "Wizards de agente, skill e base", d: "as três telas que o FormFlow generaliza — inclusive o prompt agent publicado no Foundry." },
+  { t: "Dois harnesses AG-UI", d: "agent-framework e langgraph, cada um com o seu idioma de interrupção." },
+  { t: "flow_store", d: "YAML versionado como Dataset do Foundry: uma versão por gravação, com precedência sobre o repo." },
+  { t: "Trilha de auditoria", d: "desfecho, campo, fontes e tamanho — nunca o texto; e as estatísticas saem dela, sem contador paralelo." },
+  { t: "MCP como deployment próprio", d: "resource server por RFC 9728, com o mesmo ACL da conversa." },
+];
+
+const TODO = [
+  { t: "type: bundle + okf-validate", d: "o formato, o piso de citação e a quarentena. Tudo depende disto." },
+  { t: "type: formflow + renderizador", d: "campos, regras, revisão legível e plano de publicação como dado." },
+  { t: "type: policy", d: "os quatro gates num bloco herdado, com papel e payload." },
+  { t: "type: copilot + builder", d: "a superfície declarada sobre agente, alvos, MCP, área e teto." },
+  { t: "Registries de middleware e adapter", d: "com sombra obrigatória, teto por área e revisão para quem emite aprovação." },
+  { t: "workflow no harness", d: "o passo que falta para agente sem código: fluxo declarado em vez de código no backend." },
+  { t: "Trilha encadeada + dossiê", d: "hash, âncora write-once, carimbo RFC 3161 e a peça que vai ao órgão de controle." },
+];
+
+const RULES = [
+  { t: "Nada escrito sem gesto humano", d: "O copiloto propõe; a pessoa usa, corrige ou descarta. Escrita em sistema de fora passa por gate com papel, e o payload exibido é o que será executado." },
+  { t: "Citação que resolve", d: "Fonte é arquivo com SHA e range, dispositivo de norma, ou trecho de áudio com instante. Abaixo do piso, o bundle não é servido." },
+  { t: "Teto antes da chamada", d: "Cada execução carrega a área que a pediu. O limite é aplicado antes, não no relatório do mês seguinte." },
+  { t: "Sombra primeiro", d: "Peça que executa entra rodando e registrando o que faria, sem escrever — e já contando custo." },
+  { t: "Publicado não se edita", d: "Revisão cria versão nova; a anterior é depreciada, não apagada. Alguém pode ter respondido a uma auditoria citando ela." },
+  { t: "Lacuna declarada, nunca palpite", d: "Campo sem dado vira pendência com motivo, dispositivo e destino — e entra na evidência. Exigir tudo ensina a mentir." },
+];
+
+class Component extends DCLogic {
+  state = { filter: "tudo" };
+
+  renderVals() {
+    const s = this.state;
+    const keep = (o) => s.filter === "tudo" || (s.filter === "existe" ? o !== "proposta" : o !== "existe");
+    const tone = (o) => ({
+      existe: ["oklch(0.958 0.028 158)", "oklch(0.492 0.126 158)", "oklch(0.492 0.126 158)"],
+      parcial: ["oklch(0.955 0.024 262)", "oklch(0.452 0.152 262)", "oklch(0.452 0.152 262)"],
+      proposta: ["oklch(0.960 0.038 68)", "oklch(0.545 0.126 68)", "oklch(0.545 0.126 68)"],
+    }[o]);
+
+    const types = TYPES.filter((t) => keep(t.origin));
+    const groups = GROUPS.map((g) => {
+      const items = g.items.filter((i) => keep(i.origin));
+      return {
+        title: g.title, what: g.what, accent: g.accent, count: items.length + (items.length === 1 ? " tela" : " telas"),
+        items: items.map((i) => { const t = tone(i.origin); return { title: i.title, what: i.what, href: i.href, origin: i.origin, stBg: t[0], stInk: t[1] }; }),
+      };
+    }).filter((g) => g.items.length);
+
+    const total = GROUPS.reduce((a, g) => a + g.items.filter((i) => keep(i.origin)).length, 0);
+
+    return {
+      filters: ["tudo", "existe", "proposta"].map((f) => ({
+        label: f === "existe" ? "existe hoje" : f === "proposta" ? "proposta" : "tudo",
+        pick: () => this.setState({ filter: f }),
+        bg: s.filter === f ? "oklch(0.955 0.024 262)" : "transparent",
+        ink: s.filter === f ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)",
+      })),
+      countNote: types.length + " tipos · " + total + " telas nesta visão",
+      screenNote: total + " entradas · 17 arquivos (algumas são abas da mesma tela)",
+      types: types.map((t) => { const c = tone(t.origin); return { ...t, stBg: c[0], stInk: c[1], accent: c[2], line: "oklch(0.902 0.006 258)" }; }),
+      planes: PLANES.map((p) => ({ title: p.title, what: p.what, rule: p.rule, chips: p.chips.map((c) => ({ t: c })) })),
+      groups,
+      have: HAVE, todo: TODO.map((t, i) => ({ n: String(i + 1), t: t.t, d: t.d })),
+      rules: RULES,
+    };
+  }
+}
+</script>
+</body>
+</html>

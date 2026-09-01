@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+  body { margin:0; background:oklch(0.93 0.004 258); font-family:ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color:oklch(0.235 0.017 262); }
+  *, input, button { box-sizing:border-box; }
+  input, button { font-family:inherit; }
+  a { color:oklch(0.452 0.152 262); text-decoration:none; }
+  a:hover { color:oklch(0.396 0.152 262); text-decoration:underline; }
+  button:focus-visible, input:focus-visible { outline:2px solid oklch(0.452 0.152 262); outline-offset:1px; }
+</style>
+</helmet>
+
+<div style="padding:28px;display:flex;flex-direction:column;gap:14px">
+  <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+    <h1 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">O copiloto como recurso — não como arquivo</h1>
+    <p style="margin:0;font-size:13px;color:oklch(0.487 0.018 260);max-width:88ch;text-wrap:pretty">O manifesto é a <b>definição</b> dele: uma aba. O recurso tem estado, versões, atividade, custo, permissões e fim de vida. Esta é a tela que faltava — a de gerir, com o editor sendo só um dos caminhos.</p>
+  </div>
+
+  <div style="width:2028px;height:1300px;display:flex;background:oklch(0.977 0.003 258);border:1px solid oklch(0.836 0.008 258);border-radius:6px;overflow:hidden;box-shadow:0 2px 8px oklch(0.235 0.017 262 / 0.08)">
+
+    <aside style="width:248px;flex:0 0 248px;background:#fff;border-right:1px solid oklch(0.902 0.006 258);display:flex;flex-direction:column;padding:16px 12px;gap:4px">
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 10px 16px;font-weight:700;font-size:15px">
+        <span style="width:30px;height:30px;flex:0 0 30px;border-radius:8px;background:oklch(0.452 0.152 262);display:grid;place-items:center;color:oklch(0.99 0.005 262);font-size:16px">⚡</span>
+        <span>Foundry Assured<small style="display:block;font-weight:500;color:oklch(0.487 0.018 260);font-size:11px">Suporte de engenharia</small></span>
+      </div>
+      <div style="display:grid;gap:2px;padding:8px 12px;margin:0 8px 12px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:4px">
+        <span style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;color:oklch(0.487 0.018 260)">Área · tenant</span>
+        <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px">contoso · rh</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <sc-for list="{{ nav }}" as="n" hint-placeholder-count="15">
+          <span style="display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;font-size:14px;background:{{ n.bg }};color:{{ n.ink }};font-weight:{{ n.weight }}">
+            <span style="width:18px;text-align:center">{{ n.icon }}</span>{{ n.label }}
+          </span>
+        </sc-for>
+      </div>
+      <div style="margin-top:auto;display:flex;flex-direction:column;gap:6px;padding-top:10px">
+        <div style="border:1px solid oklch(0.902 0.006 258);border-radius:10px;padding:10px;display:flex;align-items:center;gap:10px">
+          <span style="width:30px;height:30px;flex:0 0 30px;border-radius:50%;display:grid;place-items:center;background:oklch(0.452 0.152 262);color:oklch(0.99 0.005 262);font-weight:700;font-size:13px">R</span>
+          <div style="min-width:0"><div style="font-size:13px;font-weight:600">Rafael Duarte</div><div style="font-size:11px;color:oklch(0.487 0.018 260)">Owner · Admin · Approver</div></div>
+        </div>
+        <div style="padding:10px;font-size:12px;color:oklch(0.487 0.018 260);display:flex;align-items:center;gap:8px"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.492 0.126 158)"></span>backend no ar</div>
+      </div>
+    </aside>
+
+    <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+      <!-- cabeçalho do recurso -->
+      <header style="flex:none;background:#fff;border-bottom:1px solid oklch(0.902 0.006 258);padding:14px 20px 0;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:12px;min-width:0">
+            <span style="width:38px;height:38px;flex:none;border-radius:8px;background:oklch(0.452 0.152 262);color:#fff;display:grid;place-items:center;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:15px;font-weight:700">c</span>
+            <div style="min-width:0">
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <h2 style="margin:0;font-size:20px;font-weight:640;letter-spacing:-0.015em">Copiloto de RH</h2>
+                <span style="font-size:11px;font-weight:600;padding:2px 10px;border-radius:999px;background:{{ stBg }};color:{{ stInk }}">{{ state }}</span>
+                <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;color:oklch(0.487 0.018 260)">{{ ver }}</span>
+              </div>
+              <div style="margin-top:3px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;color:oklch(0.487 0.018 260)">copilots/atendimento-rh/ · área rh · roda sobre agents/helpdesk</div>
+            </div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <span style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <sc-if value="{{ isTerm }}" hint-placeholder-val="{{ false }}">
+              <a href="Copilot Catalog.dc.html" style="padding:9px 13px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:#fff;font-size:13px;font-weight:600;text-decoration:none">Voltar ao catálogo</a>
+              <button type="button" onClick="{{ goTrail }}" style="padding:9px 13px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;color:oklch(0.235 0.017 262);font-size:13px;font-weight:600;cursor:pointer">Ver a trilha (permanece)</button>
+            </sc-if>
+            <sc-if value="{{ notTerm }}" hint-placeholder-val="{{ true }}">
+              <a href="Ponta a Ponta.dc.html" style="padding:9px 13px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:#fff;font-size:13px;font-weight:600;text-decoration:none">Conversar</a>
+              <button type="button" onClick="{{ goDef }}" style="padding:9px 13px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;color:oklch(0.235 0.017 262);font-size:13px;font-weight:600;cursor:pointer">Editar definição</button>
+              <button type="button" onClick="{{ doDup }}" disabled="{{ dupOff }}" style="padding:9px 13px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;color:oklch(0.235 0.017 262);font-size:13px;font-weight:600;cursor:pointer">{{ dupLabel }}</button>
+              <button type="button" onClick="{{ askDep }}" style="padding:9px 13px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;color:oklch(0.487 0.018 260);font-size:13px;font-weight:600;cursor:pointer">{{ depLabel }}</button>
+              <button type="button" onClick="{{ askDel }}" style="padding:9px 13px;border:1px solid oklch(0.505 0.176 26);border-radius:8px;background:#fff;color:oklch(0.505 0.176 26);font-size:13px;font-weight:600;cursor:pointer">Excluir</button>
+            </sc-if>
+            </span>
+          </div>
+        </div>
+        <div style="display:flex;gap:2px">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="6">
+            <button type="button" onClick="{{ t.pick }}" style="border:0;border-bottom:2px solid {{ t.line }};background:transparent;padding:10px 14px;font-size:13px;font-weight:{{ t.w }};color:{{ t.ink }};cursor:pointer">{{ t.label }}<sc-if value="{{ t.badge }}" hint-placeholder-val="{{ false }}"><span style="margin-left:7px;font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:999px;background:oklch(0.955 0.005 258);color:oklch(0.487 0.018 260)">{{ t.badgeText }}</span></sc-if></button>
+          </sc-for>
+        </div>
+      </header>
+
+      <main style="flex:1;min-height:0;overflow:auto;padding:20px 22px;display:flex;flex-direction:column;gap:14px">
+
+        <sc-if value="{{ dup }}" hint-placeholder-val="{{ false }}">
+          <section style="border:1px solid oklch(0.452 0.152 262);background:oklch(0.955 0.024 262);border-radius:8px;padding:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">cópia criada</span>
+            <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12.5px;font-weight:600">copilots/atendimento-rh-copia/</span>
+            <span style="font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:#fff;border:1px solid oklch(0.836 0.008 258);color:oklch(0.487 0.018 260)">rascunho</span>
+            <span style="font-size:12.5px;line-height:1.45;flex:1;min-width:260px">Copiou o manifesto da v3 e <b>não</b> a trilha nem as versões: a cópia começa em rascunho, com procedência registrando de quem veio.</span>
+            <a href="Copilot Builder v2.dc.html" style="padding:8px 13px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:#fff;color:oklch(0.452 0.152 262);font-size:12.5px;font-weight:600;text-decoration:none">Abrir a cópia</a>
+            <button type="button" onClick="{{ closeDup }}" style="padding:8px 12px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;font-size:12.5px;font-weight:600;cursor:pointer">Fechar</button>
+          </section>
+        </sc-if>
+
+        <sc-if value="{{ danger }}" hint-placeholder-val="{{ false }}">
+          <section style="border:1px solid oklch(0.505 0.176 26);background:oklch(0.958 0.030 26);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:10px">
+            <b style="font-size:15px;font-weight:650">{{ dangerTitle }}</b>
+            <p style="margin:0;font-size:13px;line-height:1.5;max-width:92ch;text-wrap:pretty">{{ dangerBody }}</p>
+            <div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap">
+              <input type="text" value="{{ confirm }}" onChange="{{ setConfirm }}" placeholder="digite atendimento-rh" style="width:240px;padding:9px 11px;border:1px solid oklch(0.836 0.008 258);border-radius:4px;font-size:13px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" />
+              <button type="button" onClick="{{ doDanger }}" disabled="{{ dangerOff }}" style="padding:9px 14px;border:1px solid oklch(0.505 0.176 26);border-radius:8px;background:{{ dangerBg }};color:{{ dangerInk }};font-size:13px;font-weight:600;cursor:pointer">{{ dangerLabel }}</button>
+              <button type="button" onClick="{{ closeDanger }}" style="padding:9px 14px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;font-size:13px;font-weight:600;cursor:pointer">Cancelar</button>
+            </div>
+          </section>
+        </sc-if>
+
+        <!-- ═════ VISÃO GERAL ═════ -->
+        <sc-if value="{{ isOver }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <section style="background:#fff;border:1px solid oklch(0.452 0.152 262);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+              <b style="font-size:15px;font-weight:650">O que é um copiloto, exatamente</b>
+              <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">o manifesto é uma das cinco peças — não o copiloto todo</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px">
+              <sc-for list="{{ parts }}" as="p" hint-placeholder-count="5">
+                <button type="button" onClick="{{ p.go }}" style="text-align:left;border:1px solid {{ p.line }};background:{{ p.bg }};border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:6px;cursor:pointer">
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ p.tagInk }}">{{ p.tag }}</span>
+                  <b style="font-size:13px;font-weight:650">{{ p.title }}</b>
+                  <span style="font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ p.what }}</span>
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260)">{{ p.val }}</span>
+                </button>
+              </sc-for>
+            </div>
+            <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);max-width:104ch;text-wrap:pretty">O manifesto declara <b>o que ele pode</b>; o agente <b>executa</b>; os adaptadores e o MCP são <b>o alcance</b>; a política é <b>onde ele para</b>; a trilha é <b>o que ele fez</b>. Editar o manifesto é uma operação sobre a definição — e é por isso que ela vive numa aba, com versão e gate, em vez de ser a tela inteira.</p>
+          </section>
+
+          <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px">
+            <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:14px;display:flex;flex-direction:column;gap:4px">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ k.l }}</span>
+                <b style="font-size:24px;font-weight:620;font-variant-numeric:tabular-nums;letter-spacing:-0.02em;color:{{ k.ink }}">{{ k.v }}</b>
+                <span style="font-size:11.5px;line-height:1.4;color:oklch(0.487 0.018 260)">{{ k.n }}</span>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:14px;align-items:start">
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:11px">
+              <b style="font-size:14px;font-weight:650">Ciclo de vida</b>
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+                <sc-for list="{{ lifecycle }}" as="l" hint-placeholder-count="4">
+                  <span style="display:flex;align-items:center;gap:6px">
+                    <span style="padding:6px 11px;border-radius:999px;font-size:12px;font-weight:600;background:{{ l.bg }};color:{{ l.ink }};border:1px solid {{ l.line }}">{{ l.label }}</span>
+                    <sc-if value="{{ l.arrow }}" hint-placeholder-val="{{ true }}"><span style="color:oklch(0.612 0.014 258)">▶</span></sc-if>
+                  </span>
+                </sc-for>
+              </div>
+              <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">{{ lifeNote }}</p>
+            </section>
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:9px">
+              <b style="font-size:14px;font-weight:650">Pendências</b>
+              <sc-for list="{{ pend }}" as="p" hint-placeholder-count="2">
+                <div style="display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border-radius:5px;background:{{ p.bg }}">
+                  <span style="flex:none;width:17px;height:17px;border-radius:50%;background:{{ p.line }};color:#fff;font-size:10.5px;font-weight:700;display:grid;place-items:center;margin-top:1px">{{ p.mark }}</span>
+                  <span style="min-width:0"><b style="display:block;font-size:12.5px;font-weight:600">{{ p.t }}</b><span style="display:block;font-size:11.5px;line-height:1.45;color:oklch(0.487 0.018 260)">{{ p.d }}</span></span>
+                </div>
+              </sc-for>
+            </section>
+          </div>
+        </div>
+        </sc-if>
+
+        <!-- ═════ DEFINIÇÃO ═════ -->
+        <sc-if value="{{ isDef }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) 520px;gap:14px;align-items:start">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:11px">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <b style="font-size:15px;font-weight:650">Definição publicada — v3</b>
+                <span style="font-size:12px;color:oklch(0.487 0.018 260)">somente leitura: mudar a definição é publicar versão</span>
+                <a href="Copilot Builder v2.dc.html" style="margin-left:auto;padding:9px 13px;border:1px solid oklch(0.452 0.152 262);border-radius:8px;background:oklch(0.452 0.152 262);color:#fff;font-size:13px;font-weight:600;text-decoration:none">Abrir editor</a>
+              </div>
+              <dl style="display:grid;grid-template-columns:170px minmax(0,1fr);gap:9px 16px;margin:0;font-size:13px;line-height:1.45">
+                <sc-for list="{{ defRows }}" as="d" hint-placeholder-count="6">
+                  <dt style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">{{ d.k }}</dt>
+                  <dd style="margin:0">{{ d.v }}</dd>
+                </sc-for>
+              </dl>
+            </section>
+            <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:8px">
+              <b style="font-size:14px;font-weight:650">Por que a definição não é editável aqui</b>
+              <p style="margin:0;font-size:12.5px;line-height:1.55;color:oklch(0.487 0.018 260);text-wrap:pretty">Porque documento publicado não é editado: revisão cria versão nova, a anterior é depreciada e não apagada. O editor abre um <b>rascunho</b>; publicar passa pelo gate com papel e payload. É a mesma razão por que a aba Versões existe.</p>
+            </section>
+          </div>
+          <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;overflow:hidden;display:flex;flex-direction:column">
+            <div style="padding:11px 13px;border-bottom:1px solid oklch(0.902 0.006 258);display:flex;align-items:center;gap:9px">
+              <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260)">index.md · v3</span>
+              <a href="Bundle Editor.dc.html" style="margin-left:auto;font-size:12px;font-weight:600">editar como texto</a>
+            </div>
+            <pre style="flex:1;min-height:0;overflow:auto;margin:0;padding:14px;background:oklch(0.235 0.017 262);color:oklch(0.944 0.004 258);font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.6;white-space:pre">{{ yaml }}</pre>
+          </section>
+        </div>
+        </sc-if>
+
+        <!-- ═════ ATIVIDADE ═════ -->
+        <sc-if value="{{ isAct }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:11px">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+              <b style="font-size:15px;font-weight:650">O que ele fez</b>
+              <div style="display:flex;gap:2px;padding:2px;background:oklch(0.955 0.005 258);border:1px solid oklch(0.902 0.006 258);border-radius:6px;margin-left:6px">
+                <sc-for list="{{ filters }}" as="f" hint-placeholder-count="4">
+                  <button type="button" onClick="{{ f.pick }}" style="border:0;padding:6px 12px;border-radius:4px;font-size:12.5px;font-weight:600;cursor:pointer;background:{{ f.bg }};color:{{ f.ink }}">{{ f.label }}</button>
+                </sc-for>
+              </div>
+              <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">{{ feedNote }}</span>
+            </div>
+            <sc-for list="{{ feed }}" as="e" hint-placeholder-count="6">
+              <div style="display:flex;gap:11px;align-items:flex-start;padding:11px;border:1px solid oklch(0.902 0.006 258);border-left:3px solid {{ e.line }};border-radius:5px">
+                <span style="flex:none;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11px;color:oklch(0.487 0.018 260);min-width:112px">{{ e.when }}</span>
+                <span style="flex:none;font-size:10.5px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:{{ e.line }};min-width:96px">{{ e.kind }}</span>
+                <span style="min-width:0;font-size:12.5px;line-height:1.45">{{ e.text }}</span>
+                <span style="margin-left:auto;flex:none;font-size:11px;color:oklch(0.487 0.018 260)">{{ e.who }}</span>
+              </div>
+            </sc-for>
+          </section>
+          <p style="margin:0;font-size:12px;line-height:1.5;color:oklch(0.487 0.018 260);max-width:104ch;text-wrap:pretty">A trilha guarda o desfecho, o campo, as fontes e o tamanho — <b>nunca o texto</b>. É o que permite medir aproveitamento e edição sem transformar a auditoria num arquivo de conteúdo.</p>
+        </div>
+        </sc-if>
+
+        <!-- ═════ VERSÕES ═════ -->
+        <sc-if value="{{ isVer }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;overflow:hidden">
+            <table style="width:100%;border-collapse:collapse;font-size:13px">
+              <thead><tr>
+                <sc-for list="{{ verCols }}" as="c" hint-placeholder-count="5">
+                  <th style="text-align:left;padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);background:oklch(0.955 0.005 258);font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.487 0.018 260);white-space:nowrap">{{ c.t }}</th>
+                </sc-for>
+              </tr></thead>
+              <tbody>
+                <sc-for list="{{ versions }}" as="v" hint-placeholder-count="3">
+                  <tr>
+                    <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12.5px;font-weight:600">{{ v.n }}</td>
+                    <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top"><span style="font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:{{ v.stBg }};color:{{ v.stInk }}">{{ v.state }}</span></td>
+                    <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top">{{ v.what }}</td>
+                    <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;white-space:nowrap">{{ v.who }}<div style="font-size:11px;color:oklch(0.487 0.018 260)">{{ v.when }}</div></td>
+                    <td style="padding:11px 12px;border-bottom:1px solid oklch(0.902 0.006 258);vertical-align:top;text-align:right;white-space:nowrap">
+                      <button type="button" onClick="{{ v.act }}" disabled="{{ v.off }}" style="padding:6px 11px;border:1px solid oklch(0.902 0.006 258);border-radius:8px;background:#fff;font-size:12px;font-weight:600;cursor:pointer">{{ v.label }}</button>
+                    </td>
+                  </tr>
+                </sc-for>
+              </tbody>
+            </table>
+          </section>
+          <sc-if value="{{ showDiff }}" hint-placeholder-val="{{ false }}">
+            <section style="background:#fff;border:1px solid oklch(0.452 0.152 262);border-radius:8px;padding:15px;display:flex;flex-direction:column;gap:9px">
+              <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap">
+                <span style="font-size:11px;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.452 0.152 262)">diff · v2 → v3</span>
+                <span style="margin-left:auto;font-size:12px;color:oklch(0.487 0.018 260)">{{ diffCount }}</span>
+                <button type="button" onClick="{{ closeDiff }}" style="padding:6px 11px;border:1px solid oklch(0.836 0.008 258);border-radius:8px;background:#fff;font-size:12px;font-weight:600;cursor:pointer">Fechar</button>
+              </div>
+              <sc-for list="{{ diffRows }}" as="d" hint-placeholder-count="3">
+                <div style="display:flex;flex-direction:column;gap:2px;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;line-height:1.5">
+                  <span style="font-weight:700">{{ d.k }}</span>
+                  <span style="padding:4px 9px;background:oklch(0.958 0.030 26);border-radius:3px;overflow-wrap:anywhere">− {{ d.from }}</span>
+                  <span style="padding:4px 9px;background:oklch(0.958 0.028 158);border-radius:3px;overflow-wrap:anywhere">+ {{ d.to }}</span>
+                </div>
+              </sc-for>
+            </section>
+          </sc-if>
+          <sc-if value="{{ restored }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid oklch(0.492 0.126 158);background:oklch(0.958 0.028 158);border-radius:6px;padding:12px 14px;font-size:13px;line-height:1.5">{{ restoredMsg }}</div>
+          </sc-if>
+          <p style="margin:0;font-size:12px;line-height:1.5;color:oklch(0.487 0.018 260);max-width:104ch;text-wrap:pretty">Restaurar não volta no tempo: cria uma versão nova com o conteúdo da antiga. A v1 continua existindo, depreciada — porque alguém pode ter respondido a uma auditoria citando ela.</p>
+        </div>
+        </sc-if>
+
+        <!-- ═════ CUSTO ═════ -->
+        <sc-if value="{{ isCost }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+              <b style="font-size:15px;font-weight:650">Consumo do mês · área rh</b>
+              <span style="margin-left:auto;font-size:12.5px;color:oklch(0.487 0.018 260)">teto US$ 400 · ao estourar: degradar</span>
+            </div>
+            <div style="display:flex;align-items:baseline;gap:10px"><b style="font-size:30px;font-weight:620;font-variant-numeric:tabular-nums">US$ 118</b><span style="font-size:13px;color:oklch(0.487 0.018 260)">29,5% do teto</span></div>
+            <div style="height:8px;border-radius:999px;background:oklch(0.902 0.006 258);overflow:hidden"><div style="height:100%;width:29.5%;background:oklch(0.492 0.126 158)"></div></div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <sc-for list="{{ costRows }}" as="c" hint-placeholder-count="3">
+                <div style="display:flex;align-items:baseline;gap:12px;padding:9px 11px;background:oklch(0.955 0.005 258);border-radius:4px;flex-wrap:wrap">
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:12px;font-weight:600;min-width:150px">{{ c.id }}</span>
+                  <span style="font-size:12px;color:oklch(0.487 0.018 260);flex:1;min-width:180px">{{ c.what }}</span>
+                  <span style="font-size:12.5px;font-weight:600;font-variant-numeric:tabular-nums">{{ c.v }}</span>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+          <p style="margin:0;font-size:12px;line-height:1.5;color:oklch(0.487 0.018 260);max-width:104ch;text-wrap:pretty">Cada execução carrega a área que a pediu — é assim que a fatura fecha por área, e é por isso que o teto pode ser aplicado antes da chamada em vez de no relatório do mês seguinte.</p>
+        </div>
+        </sc-if>
+
+        <!-- ═════ PERMISSÕES ═════ -->
+        <sc-if value="{{ isPerm }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <section style="background:#fff;border:1px solid oklch(0.902 0.006 258);border-radius:8px;padding:16px;display:flex;flex-direction:column;gap:11px">
+            <b style="font-size:15px;font-weight:650">Quem pode o quê</b>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <sc-for list="{{ perms }}" as="p" hint-placeholder-count="5">
+                <div style="display:flex;align-items:baseline;gap:12px;padding:10px 12px;border:1px solid oklch(0.902 0.006 258);border-radius:5px;flex-wrap:wrap">
+                  <span style="font-size:13px;font-weight:600;min-width:190px">{{ p.what }}</span>
+                  <span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px;padding:2px 9px;border-radius:999px;background:oklch(0.955 0.024 262);color:oklch(0.452 0.152 262)">{{ p.role }}</span>
+                  <span style="font-size:12px;color:oklch(0.487 0.018 260);flex:1;min-width:200px">{{ p.note }}</span>
+                </div>
+              </sc-for>
+            </div>
+            <p style="margin:0;font-size:12.5px;line-height:1.5;color:oklch(0.487 0.018 260);text-wrap:pretty">Os papéis vêm do bundle (<span style="font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;font-size:11.5px">roles:</span>), não de uma lista fixa do produto — e cada endpoint recheca no servidor: a tela não é fronteira de segurança.</p>
+          </section>
+        </div>
+        </sc-if>
+      </main>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:2090,&quot;height&quot;:1420}}">
+const NAV = [
+  { icon: "◎", label: "Casos de uso" }, { icon: "💬", label: "Assistentes" },
+  { icon: "◇", label: "Copilotos", on: true }, { icon: "⚖", label: "Conformidade" },
+  { icon: "◆", label: "Agentes hospedados" }, { icon: "⇌", label: "Middlewares" },
+  { icon: "🔌", label: "Adaptadores" }, { icon: "◈", label: "Meus agentes" },
+  { icon: "▤", label: "Conhecimento" }, { icon: "✦", label: "Skills" }, { icon: "🎫", label: "Chamados" },
+  { icon: "✓", label: "Avaliações" }, { icon: "▦", label: "Visão geral" }, { icon: "🔗", label: "Auditoria" },
+  { icon: "🛡️", label: "Administração" },
+];
+
+const YAML = `---
+type: copilot
+title: Copiloto de RH
+description: Ajuda a montar agentes e bases de RH sem escrever JSON.
+resource: atendimento-rh
+okf_version: "0.2"
+index: true
+provenance: metadata.provenance
+lifecycle: active
+---
+
+## Surface
+
+\`\`\`yaml
+surface: {mount: "dock lateral", screens: [/agents, /knowledge]}
+engine: {hosting: "Foundry hosted agent", agent: agents/helpdesk, model: gpt-5-mini}
+\`\`\`
+
+## Targets
+
+\`\`\`yaml
+targets:
+  - flow: flows/agent
+    fields:
+      - {id: description, ai: true, allowDeclaredGap: false}
+      - {id: instructions, ai: true, rules: [minChars:60]}
+      - {id: name, ai: true, rules: [resourceName, unique]}
+\`\`\`
+
+## Requires
+
+\`\`\`yaml
+requires:
+  adapters: [foundry-models]
+  middlewares: [{name: okf-validate, stage: inline}]
+  mcp: []
+\`\`\`
+
+## Evidence
+
+\`\`\`yaml
+gate: {stepUp: "—"}
+cost: {cap: {rh: 400}, onExceed: degrade}
+roles: [admin, approver]
+\`\`\``;
+
+const FEED = [
+  { kind: "proposta", text: "instructions — usada com correção (2 fontes)", who: "Ana Prado", when: "hoje 14:22", tone: "ok", f: "propostas" },
+  { kind: "proposta", text: "name — descartada: “não segue o padrão do time”", who: "Ana Prado", when: "hoje 14:15", tone: "bad", f: "propostas" },
+  { kind: "publicação", text: "v3 publicada — + instructions no alvo flows/knowledge", who: "Rafael Duarte", when: "ontem 09:41", tone: "acc", f: "versoes" },
+  { kind: "gate", text: "create_ticket aprovado por papel Approver", who: "Marina Alves", when: "ontem 09:02", tone: "wait", f: "gates" },
+  { kind: "gate", text: "create_ticket recusado — “fora do escopo de RH”", who: "Marina Alves", when: "2 dias 17:30", tone: "bad", f: "gates" },
+  { kind: "conversa", text: "38 conversas · 82% das propostas aproveitadas", who: "—", when: "7 dias", tone: "acc", f: "conversas" },
+];
+
+class Component extends DCLogic {
+  state = { tab: "over", filter: "tudo", state: "publicado", ver: "v3", danger: null, confirm: "", restored: false, dup: false, showDiff: false };
+
+  set(k, v) { this.setState({ [k]: v }); }
+
+  renderVals() {
+    const s = this.state;
+    const tone = {
+      publicado: ["oklch(0.958 0.028 158)", "oklch(0.492 0.126 158)"],
+      sombra: ["oklch(0.955 0.024 262)", "oklch(0.452 0.152 262)"],
+      depreciado: ["oklch(0.955 0.005 258)", "oklch(0.487 0.018 260)"],
+      excluído: ["oklch(0.958 0.030 26)", "oklch(0.505 0.176 26)"],
+    }[s.state] || ["oklch(0.955 0.005 258)", "oklch(0.487 0.018 260)"];
+
+    const tabs = [
+      { id: "over", label: "Visão geral" },
+      { id: "def", label: "Definição", badgeText: "v3" },
+      { id: "act", label: "Atividade", badgeText: "6" },
+      { id: "ver", label: "Versões", badgeText: "3" },
+      { id: "cost", label: "Custo" },
+      { id: "perm", label: "Permissões" },
+    ];
+
+    const dangerKind = s.danger;
+    const okConfirm = s.confirm.trim() === "atendimento-rh";
+
+    return {
+      nav: NAV.map((n) => ({ icon: n.icon, label: n.label, bg: n.on ? "oklch(0.955 0.024 262)" : "transparent", ink: n.on ? "oklch(0.452 0.152 262)" : "oklch(0.235 0.017 262)", weight: n.on ? "600" : "400" })),
+      state: s.state, stBg: tone[0], stInk: tone[1], ver: s.ver + " · publicada ontem",
+
+      isTerm: s.state === "excluído", notTerm: s.state !== "excluído",
+      goTrail: () => this.set("tab", "act"),
+      goDef: () => this.set("tab", "def"),
+      doDup: () => this.setState({ dup: true }),
+      dupOff: s.dup, dupLabel: s.dup ? "Cópia criada · rascunho" : "Duplicar",
+      askDep: () => this.set("danger", s.state === "depreciado" ? "reativar" : "depreciar"),
+      depLabel: s.state === "depreciado" ? "Reativar" : "Depreciar",
+      askDel: () => this.set("danger", "excluir"),
+      dup: s.dup, closeDup: () => this.set("dup", false),
+
+      tabs: tabs.map((t) => {
+        const on = s.tab === t.id;
+        return {
+          label: t.label, badge: !!t.badgeText, badgeText: t.badgeText || "",
+          pick: () => this.set("tab", t.id),
+          line: on ? "oklch(0.452 0.152 262)" : "transparent",
+          ink: on ? "oklch(0.235 0.017 262)" : "oklch(0.487 0.018 260)",
+          w: on ? "600" : "500",
+        };
+      }),
+      isOver: s.tab === "over", isDef: s.tab === "def", isAct: s.tab === "act", isVer: s.tab === "ver", isCost: s.tab === "cost", isPerm: s.tab === "perm",
+
+      danger: !!dangerKind,
+      dangerTitle: dangerKind === "excluir" ? "Excluir o copiloto" : dangerKind === "depreciar" ? "Depreciar o copiloto" : "Reativar o copiloto",
+      dangerBody: dangerKind === "excluir"
+        ? "Isto remove o copiloto e todo o histórico de versões dele. Não há desfazer — e a trilha das decisões que ele participou continua, porque ela não é dele: é da auditoria. Digite o nome para confirmar."
+        : dangerKind === "depreciado" || dangerKind === "depreciar"
+          ? "Depreciar mantém tudo: versões, trilha e dossiês continuam. Ele para de montar em qualquer tela e some do catálogo ativo. Digite o nome para confirmar."
+          : "Reativar volta a montar nas telas declaradas, na última versão publicada. Digite o nome para confirmar.",
+      confirm: s.confirm, setConfirm: (e) => this.set("confirm", e.target.value),
+      dangerOff: !okConfirm,
+      dangerLabel: dangerKind === "excluir" ? "Excluir definitivamente" : dangerKind === "depreciar" ? "Depreciar" : "Reativar",
+      dangerBg: okConfirm ? "oklch(0.505 0.176 26)" : "#fff",
+      dangerInk: okConfirm ? "#fff" : "oklch(0.505 0.176 26)",
+      doDanger: () => {
+        if (!okConfirm) return;
+        this.setState({ state: dangerKind === "excluir" ? "excluído" : dangerKind === "depreciar" ? "depreciado" : "publicado", danger: null, confirm: "" });
+      },
+      closeDanger: () => this.setState({ danger: null, confirm: "" }),
+
+      parts: [
+        { tag: "type: copilot", title: "O manifesto", what: "declara o que ele pode tocar, onde monta, com que fonte e a que custo.", val: "index.md · v3", go: () => this.set("tab", "def"), line: "oklch(0.452 0.152 262)", bg: "oklch(0.955 0.024 262)", tagInk: "oklch(0.452 0.152 262)" },
+        { tag: "type: agent", title: "Quem executa", what: "o agente que responde — hosted agent, container ou endpoint.", val: "agents/helpdesk", go: () => this.set("tab", "def"), line: "oklch(0.902 0.006 258)", bg: "#fff", tagInk: "oklch(0.487 0.018 260)" },
+        { tag: "adapters · mcp", title: "O alcance", what: "o que ele consegue ler e escrever fora daqui.", val: "1 adaptador · 0 MCP", go: () => this.set("tab", "def"), line: "oklch(0.902 0.006 258)", bg: "#fff", tagInk: "oklch(0.487 0.018 260)" },
+        { tag: "type: policy", title: "Onde ele para", what: "os gates: proposta, publicação, escrita, escalação.", val: "herda hitl.md", go: () => this.set("tab", "perm"), line: "oklch(0.902 0.006 258)", bg: "#fff", tagInk: "oklch(0.487 0.018 260)" },
+        { tag: "trilha", title: "O que ele fez", what: "desfecho de cada proposta e cada gate — sem o texto.", val: "6 eventos hoje", go: () => this.set("tab", "act"), line: "oklch(0.902 0.006 258)", bg: "#fff", tagInk: "oklch(0.487 0.018 260)" },
+      ],
+      kpis: [
+        { l: "aproveitamento", v: "82%", n: "34% precisaram de correção", ink: "oklch(0.492 0.126 158)" },
+        { l: "conversas · 30d", v: "412", n: "em /agents e /knowledge", ink: "oklch(0.235 0.017 262)" },
+        { l: "custo do mês", v: "US$ 118", n: "de US$ 400 na área rh", ink: "oklch(0.235 0.017 262)" },
+        { l: "campos que escreve", v: "3", n: "todos por gesto humano", ink: "oklch(0.235 0.017 262)" },
+      ],
+      lifecycle: (s.state === "excluído" ? ["rascunho", "sombra", "publicado", "depreciado", "excluído"] : ["rascunho", "sombra", "publicado", "depreciado"]).map((l, i, arr) => {
+        const on = s.state === l;
+        const term = l === "excluído";
+        return {
+          label: l, arrow: i < arr.length - 1,
+          bg: on ? (term ? "oklch(0.958 0.030 26)" : "oklch(0.955 0.024 262)") : "#fff",
+          ink: on ? (term ? "oklch(0.505 0.176 26)" : "oklch(0.452 0.152 262)") : "oklch(0.487 0.018 260)",
+          line: on ? (term ? "oklch(0.505 0.176 26)" : "oklch(0.452 0.152 262)") : "oklch(0.902 0.006 258)",
+        };
+      }),
+      lifeNote: s.state === "publicado"
+        ? "Publicado: monta nas telas declaradas e conta custo na área. Sair daqui é depreciar (mantém tudo) ou excluir (não há desfazer)."
+        : s.state === "depreciado"
+          ? "Depreciado: não monta em tela nenhuma, e continua existindo para quem precisar responder por uma decisão antiga."
+          : "Excluído: o recurso saiu; a trilha das decisões permanece, porque ela é da auditoria e não dele.",
+      pend: [
+        { t: "1 proposta descartada sem motivo registrado", d: "Descartar não exige motivo hoje — e é o único desfecho que não explica a si mesmo.", mark: "!", line: "oklch(0.545 0.126 68)", bg: "oklch(0.960 0.038 68)" },
+        { t: "edição em 34%", d: "Aproveitamento alto com edição alta é tolerância. Vale revisar o que o manifesto declara em instructions.", mark: "!", line: "oklch(0.545 0.126 68)", bg: "oklch(0.960 0.038 68)" },
+      ],
+
+      defRows: [
+        { k: "monta como", v: "dock lateral em /agents e /knowledge" },
+        { k: "executa sobre", v: "agents/helpdesk (Foundry hosted agent) · gpt-5-mini" },
+        { k: "escreve", v: "description, instructions, name — em flows/agent, sempre por proposta" },
+        { k: "não toca", v: "nenhum campo declarado como atribuição de outro" },
+        { k: "alcance", v: "adapter foundry-models · nenhum servidor MCP" },
+        { k: "política", v: "herda hitl.md · sem segundo fator · sem dossiê" },
+        { k: "custo", v: "teto US$ 400/mês na área rh · ao estourar, degradar" },
+      ],
+      yaml: YAML,
+
+      filters: ["tudo", "propostas", "gates", "versoes"].map((f) => ({
+        label: f === "versoes" ? "versões" : f, pick: () => this.set("filter", f),
+        bg: s.filter === f ? "#fff" : "transparent",
+        ink: s.filter === f ? "oklch(0.452 0.152 262)" : "oklch(0.487 0.018 260)",
+      })),
+      feed: FEED.filter((e) => s.filter === "tudo" || e.f === s.filter).map((e) => ({
+        kind: e.kind, text: e.text, who: e.who, when: e.when,
+        line: { ok: "oklch(0.492 0.126 158)", bad: "oklch(0.505 0.176 26)", wait: "oklch(0.545 0.126 68)", acc: "oklch(0.452 0.152 262)" }[e.tone],
+      })),
+      feedNote: (FEED.filter((e) => s.filter === "tudo" || e.f === s.filter).length) + " eventos",
+
+      verCols: [{ t: "Versão" }, { t: "Estado" }, { t: "O que mudou" }, { t: "Por quem" }, { t: "" }],
+      versions: [
+        { n: "v3", state: "publicada", what: "+ instructions no alvo flows/knowledge", who: "Rafael Duarte", when: "ontem 09:41", label: "Ver diff", off: false },
+        { n: "v2", state: "depreciada", what: "teto de custo declarado (US$ 400)", who: "Rafael Duarte", when: "12/07", label: "Restaurar", off: false },
+        { n: "v1", state: "depreciada", what: "criação", who: "Ana Prado", when: "03/06", label: "Restaurar", off: false },
+      ].map((v) => ({
+        ...v,
+        stBg: v.state === "publicada" ? "oklch(0.958 0.028 158)" : "oklch(0.955 0.005 258)",
+        stInk: v.state === "publicada" ? "oklch(0.492 0.126 158)" : "oklch(0.487 0.018 260)",
+        act: () => { if (v.label === "Restaurar") this.setState({ restored: v.n, showDiff: false }); else this.setState({ showDiff: true, restored: false }); },
+      })),
+      restored: !!s.restored,
+      showDiff: s.showDiff, closeDiff: () => this.set("showDiff", false),
+      diffCount: "3 campos",
+      diffRows: [
+        { k: "targets", from: "flows/agent: [description, instructions, name]", to: "flows/agent: […] + flows/knowledge: [description]" },
+        { k: "surface.screens", from: "[/agents]", to: "[/agents, /knowledge]" },
+        { k: "cost.cap", from: "{rh: 300}", to: "{rh: 400}" },
+      ],
+      restoredMsg: "Restaurar " + s.restored + " criaria a v4 com o conteúdo dela — passando pelo mesmo gate de publicação. A " + s.restored + " continua depreciada, não volta a ser a atual.",
+
+      costRows: [
+        { id: "foundry-models", what: "tokens das propostas · 412 conversas", v: "US$ 96" },
+        { id: "okf-to-search", what: "reindexação do bundle a cada versão", v: "US$ 14" },
+        { id: "okf-validate", what: "sem custo externo", v: "US$ 0" },
+      ],
+      perms: [
+        { what: "Conversar", role: "qualquer autenticado", note: "e só vê documento que o ACL dele permite" },
+        { what: "Aceitar proposta de campo", role: "quem está no formulário", note: "o desfecho entra na trilha com o nome de quem decidiu" },
+        { what: "Editar definição (rascunho)", role: "admin", note: "editar não publica" },
+        { what: "Publicar versão", role: "admin", note: "gate com payload à vista" },
+        { what: "Aprovar escrita (tool)", role: "approver", note: "declarado por tool no manifesto" },
+        { what: "Excluir ou depreciar", role: "owner", note: "exige digitar o nome — não há desfazer para excluir" },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

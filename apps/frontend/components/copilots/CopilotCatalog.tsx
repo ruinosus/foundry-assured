@@ -85,7 +85,14 @@ export function CopilotCatalog() {
             </thead>
             <tbody>
               {itens.map((c) => {
-                const campos = (c.targets ?? []).flatMap((x) => x.writes ?? []);
+                // QUALIFICADO por formulário (`agent.name`), e não só o nome do campo. Três
+                // `name` seguidos numa linha não dizem nada — e, como chave de lista, produziam
+                // "two children with the same key" no console. Um bug, dois sintomas: a coluna
+                // ilegível e o aviso do React. Encontrado rodando a tela; `tsc`, `lint` e `build`
+                // passavam, porque nenhum deles renderiza.
+                const campos = (c.targets ?? []).flatMap((x) =>
+                  (x.writes ?? []).map((w) => `${x.flow}.${w}`),
+                );
                 const quebrado = (c.target_problems ?? []).length > 0;
                 return (
                   <tr key={c.name}>
