@@ -1,9 +1,15 @@
 # PRD — Autoria OKF e evolução completa do frontend
 
 > Arquivo: `.smart-coding/20260901-0338-autoria-okf-frontend/02-prd.md`
-> Artefato gerado pela skill `sc-formalizar` (Rede Dor Smart Coding).
+> Artefato gerado pela skill `sc-formalizar`.
 > Próxima fase obrigatória: `sc-detalhar`.
 > Baseado em: `.smart-coding/20260901-0338-autoria-okf-frontend/01-entendimento.md`
+
+## Revisão 2026-09-01 — fundação visual independente
+
+Removidos CURA, pacotes `@rededor/*` e qualquer identidade visual da Rede D'Or. O frontend redesenhado passa a usar o Assured UI, fundação própria baseada nos tokens e componentes React/CSS do produto, preservando os mesmos requisitos de paridade, acessibilidade e ativação controlada.
+
+**Seções afetadas:** Problema, Solução, US-001, decisões de implementação, pendências e notas
 
 ## Problema
 
@@ -11,11 +17,11 @@ O produto já expõe agentes, casos de uso, conhecimento, skills, copilotos, aud
 
 Os protótipos descrevem essa plataforma de autoria, porém são referências conceituais com dados embutidos e não contratos executáveis. A implementação atual também possui partes relevantes da solução, como FormFlow, Builder, proposer, perfil estrito de autoria OKF, `OkfChangeSet`, projeções do Foundry e auditoria, mas não as reúne em uma jornada completa. Sem essa consolidação, há risco de criar catálogos paralelos, apresentar capacidades inexistentes, perder isolamento entre tenant e área ou deixar repositório e Foundry divergirem após uma falha parcial.
 
-Além disso, o frontend atual não usa o Design System CURA. A substituição integral escolhida exige preservar as capacidades de todas as rotas existentes, redesenhar as novas jornadas e provar equivalência funcional, responsividade e acessibilidade antes de ativar o novo conjunto.
+Além disso, o frontend atual precisa consolidar uma linguagem visual própria e consistente. A substituição integral escolhida exige preservar as capacidades de todas as rotas existentes, redesenhar as novas jornadas e provar equivalência funcional, responsividade e acessibilidade antes de ativar o novo conjunto.
 
 ## Solução
 
-Entregar uma aplicação de gestão e autoria integralmente redesenhada em CURA, com navegação, estados globais e conteúdo de todas as rotas atuais consistentes. A mesma aplicação oferecerá catálogo, detalhe de recurso, Builder, FormFlow, casos de uso, registries, bundles, Bundle Editor, conformidade e publicação ponta a ponta.
+Entregar uma aplicação de gestão e autoria integralmente redesenhada no Assured UI, sem dependências ou identidade visual da Rede D'Or, com navegação, estados globais e conteúdo de todas as rotas atuais consistentes. A mesma aplicação oferecerá catálogo, detalhe de recurso, Builder, FormFlow, casos de uso, registries, bundles, Bundle Editor, conformidade e publicação ponta a ponta.
 
 A autoria terá três rotas: agente declarativo no Foundry, workflow declarativo executável por um harness existente e agente com container próprio. Neste desafio, a aplicação cria, edita, valida, versiona e publica os contratos dessas rotas; interpretar ou executar um workflow declarado permanece fora do escopo.
 
@@ -25,13 +31,13 @@ O ciclo de publicação será explícito e retomável: `Author` cria e submete; 
 
 ## User stories
 
-### US-001 — Shell CURA unificado
+### US-001 — Shell Assured UI unificado
 
-Como **usuário autenticado**, eu quero **navegar por um shell integralmente construído com CURA**, para **usar todas as áreas do produto com padrões visuais, de interação e acessibilidade consistentes**.
+Como **usuário autenticado**, eu quero **navegar por um shell integralmente construído com a linguagem visual própria do produto**, para **usar todas as áreas com padrões visuais, de interação e acessibilidade consistentes**.
 
 **Critérios de aceite:**
-- O shell inicializa CURA antes do primeiro uso dos componentes, carrega assets e fontes locais e usa versões 2.x alinhadas dos pacotes base e React.
-- Navegação, cabeçalhos, contexto de tenant e área, identidade, idioma, estados globais e feedback usam componentes e tokens CURA quando houver equivalente.
+- O shell carrega os tokens, estilos e componentes compartilhados do Assured UI antes de renderizar as rotas, sem dependências `@rededor/*`.
+- Navegação, cabeçalhos, contexto de tenant e área, identidade, idioma, estados globais e feedback usam componentes e tokens próprios compartilhados quando houver equivalente.
 - O shell mantém autenticação, internacionalização, temas suportados e integrações CopilotKit/AG-UI funcionais.
 - Nenhum conteúdo, controle ou estado global se sobrepõe ou fica inacessível nos viewports de aceite.
 
@@ -211,7 +217,7 @@ Como **usuário em desktop ou dispositivo móvel**, eu quero **concluir todas as
 
 1. **Classificação de impacto:** a mudança é `estrutural`, pois altera contratos, persistência, versionamento, autenticação delegada, múltiplas integrações e todas as superfícies do frontend. Exige validação de tech lead ou arquiteto, testes de integração e ADR antes de `sc-fatiar`.
 2. **Arquitetura de produto:** o frontend novo será ativado como substituição única após equivalência comprovada, mas o plano de implementação deve permitir desenvolver e validar slices independentes sem desativar o frontend atual.
-3. **Fundação CURA:** os pacotes `@rededor/cura` e `@rededor/cura-react` serão adicionados na mesma versão 2.x ou superior. Inicialização, custom elements, assets, fontes, tokens, eventos e integração com Next.js serão uma fundação compartilhada, não repetidos por rota.
+3. **Fundação Assured UI:** os tokens e componentes React/CSS próprios existentes serão consolidados numa fundação compartilhada, sem dependências `@rededor/*`, fontes institucionais externas ou custom elements. Inicialização, estilos, assets, eventos e integração com Next.js não serão repetidos por rota.
 4. **Preservação funcional:** a matriz de rotas e estados será um contrato verificável da migração. O redesign pode reorganizar informação, mas não remover capacidade existente sem decisão explícita de produto.
 5. **Contratos antes das telas:** catálogo, detalhe, versões, atividade, custo, permissões, conformidade e publicação terão contratos canônicos independentes do adapter. A UI não deduzirá estados por texto ou por presença acidental de campos.
 6. **Adapter local:** SQLite será uma implementação backend do mesmo contrato da API conectada. Regras de produto ficarão nos módulos donos e serão compartilhadas; o adapter não ganhará semântica exclusiva.
@@ -264,7 +270,7 @@ Como **usuário em desktop ou dispositivo móvel**, eu quero **concluir todas as
 - [ ] Definir a máquina de estados, chaves de idempotência e estratégia de reconciliação da publicação — impacto: crítico · bloqueia `sc-fatiar`? sim
 - [ ] Definir a matriz completa de rotas, capacidades preservadas e gates comparativos para a troca única — impacto: crítico · bloqueia `sc-fatiar`? sim
 - [ ] Definir a convivência técnica do frontend novo com o atual até a substituição — impacto: crítico · bloqueia `sc-fatiar`? sim
-- [ ] Definir padrões responsivos CURA para canvas, tabelas densas e editores — impacto: médio · bloqueia `sc-fatiar`? sim
+- [ ] Definir padrões responsivos do Assured UI para canvas, tabelas densas e editores — impacto: médio · bloqueia `sc-fatiar`? sim
 - [ ] Definir retenção, minimização e auditoria dos dados pessoais e executar o threat modeling aplicável do NORDOR-122 — impacto: crítico · bloqueia `sc-fatiar`? sim
 - [ ] Resolver no registro arquitetural o conflito entre isolamento por área e a D08 da ADR-032 proposta — impacto: crítico · bloqueia `sc-fatiar`? sim
 - [ ] Resolver no registro arquitetural o conflito entre `Approver` como autorizador da publicação e `Admin` como publicador no plano anterior — impacto: crítico · bloqueia `sc-fatiar`? sim
@@ -273,8 +279,8 @@ Como **usuário em desktop ou dispositivo móvel**, eu quero **concluir todas as
 
 - O levantamento atual encontrou 21 arquivos de rota/layout no App Router, incluindo redirecionamentos, e 23 módulos públicos no backend. A matriz definitiva deve ser gerada no detalhamento, pois quantidade de arquivos não equivale a quantidade de jornadas.
 - A ADR-032 e o plano anterior já registram pesquisa de capacidades oficiais e implementações concluídas do perfil de autoria e `OkfChangeSet`. O detalhamento deve partir desse estado real e não reabrir decisões já comprovadas, exceto onde o entendimento mais recente criou conflito explícito.
-- Os protótipos organizam a visão em entender, criar, registrar, operar e provar. Essa estrutura pode orientar a arquitetura de informação, mas CURA, acessibilidade e ergonomia das tarefas densas governam a composição final.
-- O frontend atual ainda não declara dependências CURA. A instalação completa inclui pacotes alinhados, assets, fontes, inicialização e contratos TypeScript; adicionar apenas componentes não satisfaz a fundação.
+- Os protótipos organizam a visão em entender, criar, registrar, operar e provar. Essa estrutura pode orientar a arquitetura de informação, mas acessibilidade, identidade própria e ergonomia das tarefas densas governam a composição final.
+- O frontend já possui tokens e componentes próprios que serão consolidados, não substituídos por pacotes ou identidade visual da Rede D'Or.
 
 ---
 
@@ -282,4 +288,4 @@ Como **usuário em desktop ou dispositivo móvel**, eu quero **concluir todas as
 
 Log cronológico de revisões deste PRD (mais antigo primeiro). Mantido por `sc-revisar`.
 
-- (sem revisões ainda)
+- 2026-09-01 — patch — removida dependência e identidade visual da Rede D'Or; adotado Assured UI próprio

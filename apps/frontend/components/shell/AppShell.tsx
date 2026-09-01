@@ -21,6 +21,7 @@ import { DockProvider } from "@/components/shell/DockProvider";
 import { useApiToken } from "@/lib/auth/useApiToken";
 import { ChatDockProvider, useChatDock } from "@/lib/chat-dock";
 import { DecisionLogProvider } from "@/lib/decision-log";
+import { frontendMode, isLocalDataMode, type FrontendMode } from "@/lib/frontend-mode";
 
 // The domain agents are config-driven from the registry → /d/<id>. Workspace pages are
 // static. Two sections so the sidebar reads as "tools" + "agents".
@@ -149,6 +150,19 @@ function BackendStatus() {
   );
 }
 
+function EnvironmentBanner() {
+  const t = useTranslations("common");
+  if (!isLocalDataMode) return null;
+
+  return (
+    <div className="environment-banner" role="status" title={t("localEnvironmentHint")}>
+      <span className="environment-dot" aria-hidden />
+      <span className="environment-label-long">{t("localEnvironment")}</span>
+      <span className="environment-label-short">{t("localEnvironmentShort")}</span>
+    </div>
+  );
+}
+
 // Account chip + sign in/out. Only rendered when Entra is configured (so MsalProvider
 // exists), so the MSAL hooks are always inside a provider.
 function AccountChip() {
@@ -190,9 +204,11 @@ function AccountChip() {
 function Shell({
   children,
   flush,
+  mode,
 }: {
   children: React.ReactNode;
   flush?: boolean;
+  mode: FrontendMode;
 }) {
   const t = useTranslations("nav");
   const td = useTranslations("domains");
@@ -201,6 +217,7 @@ function Shell({
   const pathname = usePathname() || "/";
   const roles = useMyRoles();
   const apiToken = useApiToken();
+  const [navigationOpen, setNavigationOpen] = useState(false);
   // O conteúdo recua quando o dock abre — ver `.page.with-dock`.
   const { open: dockOpen } = useChatDock();
 
@@ -220,8 +237,8 @@ function Shell({
     {/* O provider do CopilotKit envolve o dock E o conteúdo: é o que permite a uma tela
         registrar uma tool que o agente do dock consegue chamar. Ver DockProvider. */}
     <DockProvider authorization={apiToken ? `Bearer ${apiToken}` : undefined}>
-    <div className="shell">
-      <aside className="sidebar">
+    <div className={`shell shell-${mode}`} data-frontend-mode={mode}>
+      <aside className={`sidebar${navigationOpen ? " navigation-open" : ""}`}>
         <div className="brand">
           <span className="brand-mark">⚡</span>
           <span>
@@ -245,6 +262,7 @@ function Shell({
                   key={item.href}
                   href={item.href}
                   className={`nav-item ${active ? "active" : ""}`}
+                  onClick={() => setNavigationOpen(false)}
                 >
                   <span className="ico">{item.icon}</span>
                   {t(item.key)}
@@ -261,9 +279,28 @@ function Shell({
           <LanguageToggle />
         </div>
       </aside>
+      {mode === "assured" && navigationOpen && (
+        <button
+          type="button"
+          className="navigation-overlay"
+          aria-label={tc("closeNavigation")}
+          onClick={() => setNavigationOpen(false)}
+        />
+      )}
 
       <div className="content">
         <header className="topbar">
+          {mode === "assured" && (
+            <button
+              type="button"
+              className="mobile-navigation-toggle"
+              aria-label={tc(navigationOpen ? "closeNavigation" : "openNavigation")}
+              aria-expanded={navigationOpen}
+              onClick={() => setNavigationOpen((open) => !open)}
+            >
+              <span aria-hidden>{navigationOpen ? "×" : "☰"}</span>
+            </button>
+          )}
           <nav className="crumbs">
             <Link href="/">{t("overview")}</Link>
             {title && pathname !== "/" && (
@@ -273,6 +310,7 @@ function Shell({
               </>
             )}
           </nav>
+          {mode === "assured" && <EnvironmentBanner />}
           <DockHost />
         </header>
         <main className={`page${flush ? " flush" : ""}${dockOpen ? " with-dock" : ""}`}>
@@ -285,15 +323,24 @@ function Shell({
   );
 }
 
+function LegacyShell(props: { children: React.ReactNode; flush?: boolean }) {
+  return <Shell {...props} mode="legacy" />;
+}
+
+function AssuredShell(props: { children: React.ReactNode; flush?: boolean }) {
+  return <Shell {...props} mode="assured" />;
+}
 
 export function AppShell(props: { children: React.ReactNode; flush?: boolean }) {
+  const ActiveShell = frontendMode === "assured" ? AssuredShell : LegacyShell;
+
   return (
     <ChatDockProvider>
       {/* O log de decisões acompanha o dock: quem decide são os cards que aparecem lá dentro
           (proposta de campo, aprovação de ação), e quem lê é a mesma pessoa, na mesma sessão.
           É efêmero e NÃO substitui a trilha — ver lib/decision-log.tsx. */}
       <DecisionLogProvider>
-        <Shell {...props} />
+        <ActiveShell {...props} />
       </DecisionLogProvider>
     </ChatDockProvider>
   );

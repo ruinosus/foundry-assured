@@ -6,14 +6,15 @@ supersedes_partially:
   - docs/adr/ADR-032-okf-projections-bindings-and-compensable-publication.md#d08
 ---
 
-# ADR-034 — Autoria CURA isola por área e publica Git antes do Foundry
+# ADR-034 — Autoria independente isola por área e publica Git antes do Foundry
 
 Decisão estrutural aceita pelo desenvolvedor atuando com autoridade de tech lead/arquiteto em
 2026-09-01, após revisão das decisões, alternativas, consequências e do threat model associado.
 
 ## Contexto
 
-O produto precisa substituir todo o frontend por uma experiência CURA, preservar as URLs e
+O produto precisa substituir todo o frontend por uma experiência Assured UI própria, sem pacote,
+asset, fonte ou identidade visual da Rede D'Or, preservar as URLs e
 capacidades atuais e acrescentar autoria OKF ponta a ponta. O mesmo fluxo deve funcionar localmente
 sem Azure e, quando conectado, abrir pull request com a identidade do usuário e materializar apenas
 o commit integrado usando as capacidades oficiais do Foundry e do AI Search.
@@ -30,12 +31,13 @@ Também é necessário desenvolver todas as rotas novas sem desligar o frontend 
 
 ## Decisão
 
-### 1. Um seam de composição mantém `legacy` e `cura`
+### 1. Um seam de composição mantém `legacy` e `assured`
 
-O modo de frontend será selecionado por configuração `legacy | cura` no composition root. Os dois
+O modo de frontend será selecionado por configuração `legacy | assured` no composition root. Os dois
 modos usam as mesmas URLs públicas e contratos de API; não haverá prefixo `/v2`, duplicação de regra
 de negócio nem ativação por usuário. `legacy` permanece o default até a matriz completa de rotas
-passar. A ativação de `cura` é uma troca única e reversível de configuração.
+passar. A ativação de `assured` é uma troca única e reversível de configuração. O modo `assured`
+consolida os tokens e componentes React/CSS próprios do projeto e proíbe dependências `@rededor/*`.
 
 As rotas atuais são preservadas, inclusive `/chat` e `/techdocs` como redirects. As capacidades
 novas usam `/catalog`, `/catalog/[kind]/[id]`, `/builder`, `/registries`, `/bundles`,

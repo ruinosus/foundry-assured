@@ -6,7 +6,7 @@ branch: feat/wizard-decisao-com-contexto
 # Entendimento — Autoria OKF e evolução completa do frontend
 
 > Arquivo: `.smart-coding/20260901-0338-autoria-okf-frontend/01-entendimento.md`
-> Artefato gerado pela skill `sc-entender` (Rede Dor Smart Coding).
+> Artefato gerado pela skill `sc-entender`.
 > Input para a próxima fase: `sc-formalizar`.
 
 ## Escopo
@@ -20,13 +20,13 @@ branch: feat/wizard-decisao-com-contexto
 
 ## Objetivo
 
-Permitir que perfis não especialistas criem, revisem, versionem, publiquem e acompanhem recursos OKF em uma experiência coerente e completa, sem depender do portal do Foundry para operar o ciclo de autoria. Ao mesmo tempo, elevar todo o frontend existente ao Design System CURA e preservar suas capacidades atuais.
+Permitir que perfis não especialistas criem, revisem, versionem, publiquem e acompanhem recursos OKF em uma experiência coerente e completa, sem depender do portal do Foundry para operar o ciclo de autoria. Ao mesmo tempo, elevar todo o frontend existente a uma fundação visual própria do produto e preservar suas capacidades atuais.
 
 ## Contexto e motivação
 
 Os protótipos em `Análise de wizard AG-UI/` descrevem uma experiência de produto mais ampla e detalhada do que a disponível hoje, com jornadas de catálogo, autoria, registries, bundles, conformidade e publicação. A validação Azure do desafio de descoberta de bindings está parcialmente bloqueada por infraestrutura ainda não provisionada, mas a maior parte desta evolução pode avançar por contratos e por um adapter local durável.
 
-O trabalho ocorrerá na branch existente `feat/wizard-decisao-com-contexto`, sem criar ou trocar de branch. Os protótipos são referência conceitual: suas capacidades orientam o produto, mas a arquitetura de informação e os componentes serão redesenhados conforme CURA, sem obrigação de reproduzir cada controle visual.
+O trabalho ocorrerá na branch existente `feat/wizard-decisao-com-contexto`, sem criar ou trocar de branch. Os protótipos são referência conceitual: suas capacidades orientam o produto, mas a arquitetura de informação e os componentes serão redesenhados como Assured UI, sem obrigação de reproduzir cada controle visual.
 
 ## Usuários e atores
 
@@ -39,8 +39,8 @@ O trabalho ocorrerá na branch existente `feat/wizard-decisao-com-contexto`, sem
 
 ## Dentro do escopo
 
-- Instalar e inicializar a fundação CURA compatível com a stack atual do frontend.
-- Redesenhar em CURA o shell e o conteúdo de todas as rotas existentes, preservando suas capacidades.
+- Consolidar a fundação Assured UI sobre os tokens e componentes próprios da aplicação, sem dependência ou identidade visual da Rede D'Or.
+- Redesenhar no Assured UI o shell e o conteúdo de todas as rotas existentes, preservando suas capacidades.
 - Substituir o frontend atual de uma única vez, somente após o conjunto redesenhado passar pelos gates comparativos.
 - Entregar as capacidades conceituais dos protótipos: catálogo, detalhe de recurso, Builder, FormFlow, casos de uso, registries, bundles, Bundle Editor, conformidade e jornada ponta a ponta.
 - Suportar três rotas de autoria: prompt agent no Foundry, workflow declarativo executado por harness e agente com container próprio.
@@ -61,7 +61,7 @@ O trabalho ocorrerá na branch existente `feat/wizard-decisao-com-contexto`, sem
 ## Fora do escopo
 
 - Interpretar ou executar no runtime o workflow declarado criado pela interface.
-- Tratar os protótipos HTML/JSX como especificação visual literal ou reproduzir todos os seus controles sem validação de produto e CURA.
+- Tratar os protótipos HTML/JSX como especificação visual literal ou reproduzir todos os seus controles sem validação de produto e acessibilidade.
 - Marcar como aprovada qualquer verificação dependente de Azure quando o ambiente estiver desconectado.
 - Substituir capacidades oficiais de Foundry, GitHub ou Azure DevOps por implementações próprias; a aplicação deve atuar como camada de acesso e orquestração.
 - Armazenar tokens, segredos ou credenciais dos provedores no SQLite ou nos documentos OKF.
@@ -80,7 +80,7 @@ O trabalho ocorrerá na branch existente `feat/wizard-decisao-com-contexto`, sem
 
 ## Integrações
 
-- Design System CURA e seus pacotes compatíveis com o frontend atual.
+- Assured UI, fundação visual interna baseada em React, CSS e tokens próprios do produto.
 - GitHub, para criação de branch e pull request com identidade delegada.
 - Azure DevOps Repos, para criação de branch e pull request com identidade delegada.
 - Microsoft Foundry, para provisionamento do recurso somente após merge confirmado.
@@ -89,7 +89,7 @@ O trabalho ocorrerá na branch existente `feat/wizard-decisao-com-contexto`, sem
 
 ## Restrições conhecidas
 
-- Frontend obrigatório em Next.js 16, React 19 e CURA; integrações de chat existentes usam CopilotKit/AG-UI e devem continuar funcionando.
+- Frontend obrigatório em Next.js 16 e React 19, sem pacotes ou identidade visual da Rede D'Or; integrações de chat existentes usam CopilotKit/AG-UI e devem continuar funcionando.
 - Backend obrigatório em Python 3.12 e na arquitetura modular existente, respeitando fronteiras `public.py`/`internal/` e os gates de importação.
 - APIs e SDKs de Microsoft Foundry devem ser verificados nas fontes oficiais e nos pacotes instalados antes da implementação; não inventar assinaturas.
 - O adapter local deve implementar os mesmos contratos consumidos pela UI conectada para evitar uma segunda interface de produto.
@@ -113,12 +113,12 @@ O trabalho ocorrerá na branch existente `feat/wizard-decisao-com-contexto`, sem
 | Verificações Azure indisponíveis no modo local | Usuário pode interpretar readiness parcial como aprovação total | Representar estados `aprovado`, `reprovado` e `pendente`, com pendência explícita para checks não executados |
 | Provisionamento pela UI reimplementar capacidade do Foundry | Aumenta manutenção e viola a MÁXIMA MAIOR | Usar serviços e SDKs oficiais apenas como cola e validar previamente as superfícies disponíveis |
 | Dados pessoais de identidade, autorização e auditoria em integrações externas | Exposição ou uso indevido da identidade do usuário | Aplicar minimização, retenção, autorização e trilha de auditoria; pode acionar threat modeling do NORDOR-122 — confirmar em `sc-detalhar` |
-| Paridade mobile para editores e canvas densos | Fluxos podem ficar impraticáveis ou inacessíveis em telas pequenas | Definir padrões responsivos CURA e testes por viewport para cada jornada de autoria |
+| Paridade mobile para editores e canvas densos | Fluxos podem ficar impraticáveis ou inacessíveis em telas pequenas | Definir padrões responsivos do Assured UI e testes por viewport para cada jornada de autoria |
 
 ## Decisões resolvidas
 
-1. **Estratégia CURA**: migrar o shell inteiro e todas as rotas existentes para CURA.
-   - **Alternativas consideradas**: fundação CURA apenas nas telas desta iniciativa; migração somente de superfícies compartilhadas.
+1. **Estratégia visual**: migrar o shell inteiro e todas as rotas existentes para o Assured UI próprio do produto.
+   - **Alternativas consideradas**: adotar um design system institucional externo; migrar somente superfícies compartilhadas.
    - **Porquê**: o desenvolvedor quer uma evolução visual e funcional integral, sem manter partes do frontend no padrão anterior.
 2. **Ativação do novo frontend**: substituir o frontend atual de uma única vez quando o conjunto estiver completo.
    - **Alternativas consideradas**: ativação incremental por shell, rota ou jornada.
@@ -134,7 +134,7 @@ O trabalho ocorrerá na branch existente `feat/wizard-decisao-com-contexto`, sem
    - **Porquê**: o objetivo é entregar a experiência completa de autoria e gestão.
 6. **Fidelidade aos protótipos**: tratá-los como referência conceitual, não como especificação visual literal.
    - **Alternativas consideradas**: transformar cada controle em requisito ou preservar apenas uma referência visual.
-   - **Porquê**: permite redesenhar a experiência conforme CURA e as necessidades reais do produto.
+   - **Porquê**: permite redesenhar a experiência conforme a identidade e as necessidades reais do produto.
 7. **Três rotas de autoria**: cobrir prompt agent, workflow declarado e agente com container próprio.
    - **Alternativas consideradas**: nenhuma exclusão entre as três rotas apresentadas.
    - **Porquê**: são os três modelos de criação necessários para representar recursos com diferentes runtimes.
@@ -174,7 +174,7 @@ O trabalho ocorrerá na branch existente `feat/wizard-decisao-com-contexto`, sem
 - [ ] Definir a máquina de estados, as chaves de idempotência e a estratégia de reconciliação do fluxo de publicação.
 - [ ] Definir a matriz completa de rotas existentes, capacidades que devem ser preservadas e gates comparativos para a troca única.
 - [ ] Definir a estratégia técnica de convivência do frontend novo com o atual até o momento da substituição.
-- [ ] Definir a arquitetura responsiva CURA para canvas, tabelas densas e editores.
+- [ ] Definir a arquitetura responsiva do Assured UI para canvas, tabelas densas e editores.
 - [ ] Definir retenção, minimização e auditoria dos dados pessoais e confirmar o threat modeling do NORDOR-122.
 
 ## Próximo passo sugerido
@@ -187,4 +187,4 @@ Rodar `sc-formalizar` para transformar este entendimento em PRD. Como o workflow
 
 Log cronológico de revisões deste artefato (mais antigo primeiro). Mantido por `sc-revisar`.
 
-- (sem revisões ainda)
+- 2026-09-01 — patch — removida dependência e identidade visual da Rede D'Or; adotado Assured UI próprio

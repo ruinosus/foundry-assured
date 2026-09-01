@@ -1,7 +1,7 @@
 # Threat model — autoria OKF e publicação compensável
 
 - **Data:** 2026-09-01
-- **Escopo:** frontend CURA, autoria por tenant e área, SQLite/PostgreSQL, GitHub,
+- **Escopo:** frontend Assured UI próprio, autoria por tenant e área, SQLite/PostgreSQL, GitHub,
   Azure DevOps, Foundry, AI Search, aprovação e saga pós-merge
 - **Método:** STRIDE, informado por NORDOR-122, NORDOR-107 e POLDOR-015
 - **Status:** Proposto; revisão de segurança e arquitetura obrigatória antes da implementação

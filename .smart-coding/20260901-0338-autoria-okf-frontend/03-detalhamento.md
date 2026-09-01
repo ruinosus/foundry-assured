@@ -1,14 +1,20 @@
 # Detalhamento técnico — Autoria OKF e evolução completa do frontend
 
 > Arquivo: `.smart-coding/20260901-0338-autoria-okf-frontend/03-detalhamento.md`
-> Artefato gerado pela skill `sc-detalhar` (Rede Dor Smart Coding).
+> Artefato gerado pela skill `sc-detalhar`.
 > Próxima fase: `sc-fatiar`.
 > Baseado em: `.smart-coding/20260901-0338-autoria-okf-frontend/01-entendimento.md` e `02-prd.md`.
 
+## Revisão 2026-09-01 — fundação visual independente
+
+O seam foi renomeado de `legacy | cura` para `legacy | assured`. O modo novo usa o Assured UI próprio do projeto e não inclui pacote, asset, fonte ou identidade visual da Rede D'Or; os contratos backend e de publicação permanecem inalterados.
+
+**Seções afetadas:** resumo, arquitetura, stack, troca do frontend, responsividade e decisões técnicas
+
 ## Resumo técnico
 
-O frontend Next.js passa a ter duas composições internas, `legacy` e `cura`, selecionadas no
-composition root sem alterar URLs ou APIs. O modo CURA só se torna o padrão após paridade funcional,
+O frontend Next.js passa a ter duas composições internas, `legacy` e `assured`, selecionadas no
+composition root sem alterar URLs ou APIs. O modo Assured UI só se torna o padrão após paridade funcional,
 responsiva e acessível de todas as rotas. A autoria usa `OkfChangeSet` como unidade versionada,
 persistida por um contrato comum em SQLite local e PostgreSQL conectado, sempre sob tenant e área.
 
@@ -20,7 +26,7 @@ capacidade beta ou preview bloqueia a etapa correspondente, sem reimplementaçã
 ## Proposta arquitetural
 
 ```text
-[Next.js legacy | CURA]
+[Next.js legacy | Assured UI]
           |
           v
 [APIs de autoria e tenant] -> [OKF / FormFlow / Builder / Proposer]
@@ -39,8 +45,8 @@ capacidade beta ou preview bloqueia a etapa correspondente, sem reimplementaçã
 
 | Componente | Status | Detalhe |
 |---|---|---|
-| Composition root do frontend | modificado | Seleciona `legacy | cura`; `legacy` permanece default até os gates finais |
-| Shell e rotas Next.js | modificados | Redesign integral em CURA, preservando URLs, redirects, auth, i18n e AG-UI |
+| Composition root do frontend | modificado | Seleciona `legacy | assured`; `legacy` permanece default até os gates finais |
+| Shell e rotas Next.js | modificados | Redesign integral no Assured UI, preservando URLs, redirects, auth, i18n e AG-UI |
 | `tenancy` | modificado | Resolve áreas autorizadas a partir de grupos Entra e compõe o contexto tenant-área |
 | `okf` | modificado | Continua dono do perfil, validação, referências e `OkfChangeSet` |
 | `formflow` | modificado | Continua renderer declarativo usado no Builder e Bundle Editor, sem regra paralela |
@@ -82,7 +88,8 @@ capacidade beta ou preview bloqueia a etapa correspondente, sem reimplementaçã
 ## Stack e runtime
 
 - **Frontend**: TypeScript 6, Next.js 16.3, React 19.2, App Router, `next-intl`, MSAL,
-  CopilotKit/AG-UI e pacotes CURA alinhados na mesma versão 2.x ou superior.
+  CopilotKit/AG-UI e Assured UI próprio baseado nos tokens e componentes React/CSS do projeto,
+  sem dependências `@rededor/*`.
 - **Backend**: Python 3.12, FastAPI, arquitetura modular `public.py`/`internal/` e dependências via
   `uv`.
 - **Persistência local**: SQLite durável.
@@ -91,7 +98,7 @@ capacidade beta ou preview bloqueia a etapa correspondente, sem reimplementaçã
 - **Integrações**: Microsoft Entra ID, Azure DevOps REST 7.1, GitHub MCP oficial via Foundry
   Toolbox, Foundry Agent Service e Azure AI Search.
 - **ADRs aplicáveis**: ADR-023 (evidence layer), ADR-032 (projeções, bindings e compensação) e
-  ADR-034 (CURA, área e publicação Git-first). A ADR-034 substitui somente a D08 da ADR-032; sua
+  ADR-034 (Assured UI, área e publicação Git-first). A ADR-034 substitui somente a D08 da ADR-032; sua
   matriz de papéis também substitui a atribuição de publicação ao Admin registrada no plano anterior.
 
 ## Contratos transversais
@@ -295,10 +302,10 @@ indisponível bloqueia a operação, sem catálogo ou runtime substituto.
 - Novas: `/catalog`, `/catalog/[kind]/[id]`, `/builder`, `/registries`, `/bundles`,
   `/bundles/[id]`, `/bundles/[id]/edit`, `/compliance` e `/publications/[id]`.
 - FormFlow é renderer/modo de edição, sem rota própria.
-- `cura` só vira default quando todas as rotas passam ações/estados, RBAC, links profundos,
+- `assured` só vira default quando todas as rotas passam ações/estados, RBAC, links profundos,
   desktop/mobile, acessibilidade, testes e build.
 
-### Responsividade CURA
+### Responsividade Assured UI
 
 - Desktop: painéis redimensionáveis com dimensões mínimas estáveis.
 - Tablet: dois painéis; terceiro conteúdo em drawer.
@@ -354,7 +361,7 @@ indisponível bloqueia a operação, sem catálogo ou runtime substituto.
 
 ## Decisões técnicas registradas
 
-1. O composition root seleciona `legacy | cura`, nas mesmas URLs e APIs, com uma ativação única.
+1. O composition root seleciona `legacy | assured`, nas mesmas URLs e APIs, com uma ativação única.
 2. Tenant vem do `tid`; área é tenant-local, ligada a grupos Entra e revalidada no servidor.
 3. App Role define a ação e grupos definem a área; a permissão efetiva é a interseção.
 4. `OkfChangeSet` é a unidade de autoria; revisões, relatórios e decisões são imutáveis.
@@ -381,4 +388,4 @@ Nenhuma — pronto para `sc-fatiar`.
 
 Log cronológico de revisões deste detalhamento (mais antigo primeiro). Mantido por `sc-revisar`.
 
-- (sem revisões ainda)
+- 2026-09-01 — patch — removida dependência e identidade visual da Rede D'Or; adotado Assured UI próprio

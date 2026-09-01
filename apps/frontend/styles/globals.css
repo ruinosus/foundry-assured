@@ -29,6 +29,20 @@ a {
   min-height: 100vh;
 }
 
+.shell-assured {
+  background: var(--bg);
+}
+
+.shell-assured .sidebar {
+  background: var(--sunk);
+  border-right-color: var(--line-strong);
+}
+
+.shell-assured .brand-mark {
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-sm);
+}
+
 .sidebar {
   position: sticky;
   top: 0;
@@ -208,6 +222,102 @@ a {
   position: sticky;
   top: 0;
   z-index: 5;
+}
+
+.environment-banner {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-pill);
+  background: var(--wait-wash);
+  color: var(--ink);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.environment-dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  flex: 0 0 0.5rem;
+  border-radius: 50%;
+  background: var(--wait);
+}
+
+.environment-label-short {
+  display: none;
+}
+
+.mobile-navigation-toggle,
+.navigation-overlay {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .shell-assured {
+    grid-template-columns: 1fr;
+  }
+
+  .shell-assured .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 8;
+    width: min(82vw, 17.5rem);
+    transform: translateX(-100%);
+    transition: transform var(--dur-fast) var(--ease-out);
+  }
+
+  .shell-assured .sidebar.navigation-open {
+    transform: translateX(0);
+  }
+
+  .shell-assured .navigation-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 7;
+    border: 0;
+    background: rgb(0 0 0 / 45%);
+  }
+
+  .shell-assured .topbar {
+    gap: var(--space-2);
+    padding-inline: var(--space-2);
+  }
+
+  .shell-assured .mobile-navigation-toggle {
+    display: grid;
+    width: 2rem;
+    height: 2rem;
+    flex: 0 0 2rem;
+    place-items: center;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--ink);
+    font-size: var(--text-lg);
+    cursor: pointer;
+  }
+
+  .shell-assured .crumbs {
+    display: none;
+  }
+
+  .shell-assured .environment-banner {
+    margin-left: 0;
+    padding-inline: var(--space-2);
+  }
+
+  .shell-assured .environment-label-long {
+    display: none;
+  }
+
+  .shell-assured .environment-label-short {
+    display: inline;
+  }
 }
 
 .crumbs {
