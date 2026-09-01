@@ -122,6 +122,75 @@ def main() -> int:
         fails=True,
     )
 
+    from app.modules.authoring.public import (
+        CatalogSource,
+        catalog_page,
+        resource_activity,
+        resource_detail,
+        resource_versions,
+    )
+
+    changing = {"agents": [{"id": "agent-b", "name": "Beta", "state": "active"}]}
+
+    def sources() -> tuple[CatalogSource, ...]:
+        return (
+            CatalogSource(
+                kind="agent",
+                owner="Microsoft Foundry Agents",
+                list_items=lambda: changing["agents"],
+                get_item=lambda resource_id: {
+                    "id": resource_id,
+                    "name": "Beta",
+                    "state": "active",
+                    "versions": [{"version": "2"}, {"version": "1"}],
+                    "sessions": None,
+                },
+            ),
+            CatalogSource(
+                kind="skill",
+                owner="Microsoft Foundry Skills",
+                list_items=lambda: [{"id": "skill-a", "name": "Alpha"}],
+                get_item=lambda resource_id: {"id": resource_id, "name": "Alpha"},
+            ),
+            CatalogSource(
+                kind="knowledge",
+                owner="Azure AI Search",
+                list_items=lambda: (_ for _ in ()).throw(RuntimeError("token=secret")),
+                get_item=lambda resource_id: (_ for _ in ()).throw(RuntimeError(resource_id)),
+            ),
+        )
+
+    first = catalog_page(sources=sources(), limit=1, observed_at="2026-09-01T10:00:00Z")
+    repeated = catalog_page(sources=sources(), limit=1, observed_at="2026-09-01T11:00:00Z")
+    check("catalog is globally ordered before pagination", lambda: first["items"][0]["id"] == "agent-b")
+    check("snapshot identity is stable for equal content", lambda: first["snapshot"]["id"] == repeated["snapshot"]["id"])
+    check("snapshot hash is stable for equal content", lambda: first["snapshot"]["hash"] == repeated["snapshot"]["hash"])
+    check("snapshot observation time remains factual", lambda: first["snapshot"]["at"] != repeated["snapshot"]["at"])
+    check("bounded page returns an opaque continuation", lambda: isinstance(first["next_cursor"], str))
+    check("partial source failure is explicit", lambda: first["partial"] is True and first["gaps"] == [{"kind": "knowledge", "source": "Azure AI Search", "code": "SOURCE_UNAVAILABLE"}])
+    check("external error detail is not exposed", lambda: "secret" not in repr(first))
+
+    second = catalog_page(sources=sources(), limit=1, cursor=first["next_cursor"])
+    check("continuation keeps the same snapshot", lambda: second["snapshot"]["hash"] == first["snapshot"]["hash"])
+    check("continuation reaches the next globally ordered item", lambda: second["items"][0]["id"] == "skill-a")
+
+    stale_cursor = first["next_cursor"]
+    changing["agents"] = [{"id": "agent-c", "name": "Changed", "state": "active"}]
+    check(
+        "changed source rejects a stale cursor",
+        lambda: catalog_page(sources=sources(), limit=1, cursor=stale_cursor),
+        fails=True,
+    )
+
+    detail_sources = sources()
+    detail = resource_detail("agent", "agent-b", sources=detail_sources)
+    versions = resource_versions("agent", "agent-b", sources=detail_sources)
+    activity = resource_activity("agent", "agent-b", sources=detail_sources)
+    check("detail identifies its official source", lambda: detail["source"] == "Microsoft Foundry Agents")
+    check("unknown cost stays unavailable", lambda: detail["cost"]["state"] == "unavailable" and detail["cost"]["value"] is None)
+    check("versions identify their official source", lambda: versions["source"] == "Microsoft Foundry Agents" and len(versions["items"]) == 2)
+    check("unavailable activity declares coverage", lambda: activity["state"] == "unavailable" and activity["coverage"] == "none")
+
     print(f"\n{'❌' if failures else '✅'} {len(failures)} failure(s)")
     return 1 if failures else 0
 

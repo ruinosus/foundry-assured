@@ -4,3 +4,5 @@
   dod: `verify:shell-foundation` ok · lint 0 erros (23 avisos preexistentes) · typecheck ok · i18n 697/697 · build 17/17 rotas · 96/96 gates backend verdes · Playwright desktop/móvel sem overflow no shell Assured UI · `/d/helpdesk` com composer CopilotKit montado
 - 2026-09-01T12:56:00Z F02 [~]→[x] jefferson.barnabe commit=ca2f3cd
   dod: tenancy resolution 3/3 · isolation 3/3 · snapshots 97/101/108 · area context 10/10 · areas API 8/8 · import-linter 28/28 · lint 0 erros (23 avisos preexistentes) · typecheck ok · i18n 727/727 · build 18/18 rotas · gate global 98/98 backend + frontend verde · Playwright 390/1440 px sem overflow, `X-Area-ID` e `If-Match` confirmados no fio
+- 2026-09-01T13:29:00Z F03 [~]→[x] jefferson.barnabe commit=270bd93
+  dod: catálogo 29/29 · projeção Foundry ok · snapshots 101/105/112 · import-linter 29/29 · grafo 104 arestas · lint 0 erros (23 avisos preexistentes) · typecheck ok · i18n 795/795 · build 19/19 páginas · gate global 98/98 backend + frontend verde · Playwright Assured UI 390/1440 px sem overflow global, detalhe factual e estados vazio/parcial/403/409 validados

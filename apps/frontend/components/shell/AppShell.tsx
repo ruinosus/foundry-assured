@@ -32,6 +32,7 @@ import { frontendMode, isLocalDataMode, type FrontendMode } from "@/lib/frontend
 // Casos de uso ABRE a lista: o público é de negócio, e "que problema isto resolve" é a pergunta
 // que essa pessoa faz primeiro. Visão geral desce — ela é resumo de sistema, não porta de entrada.
 const WORKSPACE_NAV = [
+  { href: "/catalog", key: "catalog", icon: "▥" },
   { href: "/usecases", key: "usecases", icon: "◎" },
   // UM item para os assistentes, não seis. Os seis viraram o seletor no topo do console — mas
   // sem esta linha não haveria caminho até uma conversa a partir das telas de gestão, e o
@@ -61,6 +62,7 @@ const ADMIN_NAV = [
 // então nav e título não podem mais divergir.
 const TITLE_KEYS: Record<string, string> = {
   "/": "overview",
+  "/catalog": "catalog",
   "/usecases": "usecases",
   "/agents": "agents",
   "/knowledge": "knowledge",

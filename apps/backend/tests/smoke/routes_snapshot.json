@@ -62,6 +62,10 @@
     ],
     [
       "GET",
+      "/authoring/catalog"
+    ],
+    [
+      "GET",
       "/authoring/mcp-endpoints"
     ],
     [
@@ -71,6 +75,18 @@
     [
       "GET",
       "/authoring/mcp-sources/{source_id}"
+    ],
+    [
+      "GET",
+      "/authoring/resources/{kind}/{resource_id}"
+    ],
+    [
+      "GET",
+      "/authoring/resources/{kind}/{resource_id}/activity"
+    ],
+    [
+      "GET",
+      "/authoring/resources/{kind}/{resource_id}/versions"
     ],
     [
       "GET",
@@ -452,6 +468,10 @@
     ],
     [
       "GET",
+      "/authoring/catalog"
+    ],
+    [
+      "GET",
       "/authoring/mcp-endpoints"
     ],
     [
@@ -461,6 +481,18 @@
     [
       "GET",
       "/authoring/mcp-sources/{source_id}"
+    ],
+    [
+      "GET",
+      "/authoring/resources/{kind}/{resource_id}"
+    ],
+    [
+      "GET",
+      "/authoring/resources/{kind}/{resource_id}/activity"
+    ],
+    [
+      "GET",
+      "/authoring/resources/{kind}/{resource_id}/versions"
     ],
     [
       "GET",
@@ -862,6 +894,10 @@
     ],
     [
       "GET",
+      "/authoring/catalog"
+    ],
+    [
+      "GET",
       "/authoring/mcp-endpoints"
     ],
     [
@@ -871,6 +907,18 @@
     [
       "GET",
       "/authoring/mcp-sources/{source_id}"
+    ],
+    [
+      "GET",
+      "/authoring/resources/{kind}/{resource_id}"
+    ],
+    [
+      "GET",
+      "/authoring/resources/{kind}/{resource_id}/activity"
+    ],
+    [
+      "GET",
+      "/authoring/resources/{kind}/{resource_id}/versions"
     ],
     [
       "GET",

@@ -6,6 +6,9 @@
     "audit": [
       "registry.py"
     ],
+    "authoring": [
+      "registry.py"
+    ],
     "builder": [
       "registry.py"
     ],
@@ -90,6 +93,30 @@
     ],
     "tenancy": [
       "modules/audit/internal/trail.py"
+    ]
+  },
+  "authoring": {
+    "formflow": [
+      "modules/authoring/internal/sources.py"
+    ],
+    "foundry": [
+      "modules/authoring/internal/sources.py"
+    ],
+    "okf": [
+      "modules/authoring/api.py",
+      "modules/authoring/internal/catalog.py"
+    ],
+    "shared": [
+      "modules/authoring/api.py",
+      "modules/authoring/internal/catalog.py"
+    ],
+    "tenancy": [
+      "modules/authoring/api.py",
+      "modules/authoring/internal/catalog.py",
+      "modules/authoring/internal/sources.py"
+    ],
+    "usecases": [
+      "modules/authoring/internal/sources.py"
     ]
   },
   "builder": {
@@ -178,6 +205,7 @@
       "modules/foundry/internal/agents.py",
       "modules/foundry/internal/assist.py",
       "modules/foundry/internal/chat.py",
+      "modules/foundry/internal/connection_credentials.py",
       "modules/foundry/internal/connections.py",
       "modules/foundry/internal/flow_store.py",
       "modules/foundry/internal/knowledge_catalog.py",
@@ -325,7 +353,9 @@
       "modules/platform_ops/internal/platform.py"
     ],
     "audit": [
+      "modules/platform_ops/internal/mcp_classification.py",
       "modules/platform_ops/internal/mcp_discovery.py",
+      "modules/platform_ops/internal/mcp_drift.py",
       "modules/platform_ops/internal/mcp_endpoints.py",
       "modules/platform_ops/internal/platform.py"
     ],
@@ -333,6 +363,8 @@
       "modules/platform_ops/api.py",
       "modules/platform_ops/internal/mcp_conformity.py",
       "modules/platform_ops/internal/mcp_discovery.py",
+      "modules/platform_ops/internal/mcp_egress.py",
+      "modules/platform_ops/internal/mcp_tools.py",
       "modules/platform_ops/internal/platform.py"
     ],
     "grounded": [
@@ -344,13 +376,18 @@
     ],
     "shared": [
       "modules/platform_ops/api.py",
+      "modules/platform_ops/internal/mcp_classification.py",
       "modules/platform_ops/internal/mcp_discovery.py",
+      "modules/platform_ops/internal/mcp_drift.py",
+      "modules/platform_ops/internal/mcp_egress.py",
       "modules/platform_ops/internal/mcp_endpoints.py",
       "modules/platform_ops/internal/mcp_tools.py",
       "modules/platform_ops/internal/platform.py"
     ],
     "tenancy": [
+      "modules/platform_ops/internal/mcp_classification.py",
       "modules/platform_ops/internal/mcp_discovery.py",
+      "modules/platform_ops/internal/mcp_drift.py",
       "modules/platform_ops/internal/mcp_egress.py",
       "modules/platform_ops/internal/mcp_endpoints.py",
       "modules/platform_ops/internal/mcp_tools.py",
@@ -373,6 +410,7 @@
   "tenancy": {
     "shared": [
       "modules/tenancy/api.py",
+      "modules/tenancy/internal/areas.py",
       "modules/tenancy/internal/onboarding.py",
       "modules/tenancy/internal/tenant.py",
       "modules/tenancy/internal/tenant_resolution.py",

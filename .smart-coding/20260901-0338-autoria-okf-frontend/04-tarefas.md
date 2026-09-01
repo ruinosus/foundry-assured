@@ -19,7 +19,7 @@ As fatias mantêm IDs, dependências e user stories, mas substituem CURA pelo As
 
 - [x] F01 [AFK] Fundação Assured UI com seam e ambiente local visível — deps: — — US: US-001, US-003 → F01.md
 - [x] F02 [AFK] Contexto tenant-área e administração autorizada — deps: F01 — US: US-003, US-016, US-017 — sec: auth, input-validation, logs, dados-sensiveis → F02.md
-- [ ] F03 [AFK] Catálogo factual e detalhe de recurso — deps: F02 — US: US-004, US-005 — sec: auth, input-validation, logs → F03.md
+- [x] F03 [AFK] Catálogo factual e detalhe de recurso — deps: F02 — US: US-004, US-005 — sec: auth, input-validation, logs → F03.md
 - [ ] F04 [AFK] ChangeSet local durável e concorrência otimista — deps: F02 — US: US-003, US-010, US-016 — sec: auth, input-validation, logs, dados-sensiveis → F04.md
 - [ ] F05 [AFK] Três rotas de autoria guiadas por FormFlow — deps: F01, F04 — US: US-006, US-007 — sec: auth, input-validation, logs → F05.md
 - [ ] F06 [AFK] Builder multi-documento fundamentado no catálogo — deps: F03, F04, F05 — US: US-008 — sec: auth, input-validation, logs, dados-sensiveis → F06.md

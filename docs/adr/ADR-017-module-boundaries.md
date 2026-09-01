@@ -216,6 +216,20 @@ It does not grant authority from the selected `X-Area-ID`; tenancy revalidates t
 the same resolved set on every area-scoped request. The dependency follows the ADR rule by crossing
 only through `public.py`, and the reverse edge does not exist.
 
+## Recorded edges: `authoring` projects the modules that own factual resources
+
+The authoring catalog is a bounded context because its business decision is transversal: present a
+single, tenant-and-area-authorized observation without becoming a second operational registry. It
+depends on `foundry`, `formflow`, `usecases` and `tenancy` only through their `public.py` surfaces;
+`okf` supplies stable validation errors and `shared` supplies request roles. The composition root
+mounts its HTTP router.
+
+These edges do not transfer ownership. Agents, knowledge bases, skills and toolboxes remain in
+Foundry/Search; FormFlows and copilots remain documents; use cases remain projections over Foundry
+metadata; connections remain tenancy references. `authoring` materializes and sorts one ephemeral
+snapshot, hashes it, paginates it and reports unavailable sources as gaps. It has no resource store,
+SDK client or resource declaration of its own, and no reverse edge points back to it.
+
 ## Recorded edges: five modules depend on `conversations` so that measuring is uniform
 
 A second batch of intended edges — `hosted`, `oncall` and `deepcall` now import `conversations`,

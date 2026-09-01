@@ -43,7 +43,11 @@ MAP: dict[str, str] = {
 # explicitly rather than globbed so that a typo in a directory name fails the run instead of
 # silently inventing a module.
 MODULES = (
-    "tenancy", "admin", "knowledge", "helpdesk", "grounded",
+    "tenancy", "admin",
+    # Catálogo factual transversal para a autoria. Só projeta as superfícies públicas dos módulos
+    # donos; não persiste recursos nem substitui Foundry, Search, FormFlow ou casos de uso.
+    "authoring",
+    "knowledge", "helpdesk", "grounded",
     "platform_ops", "tickets", "hosted", "evaluation", "agentdefs",
     "oncall",  # ADR-020: the LangGraph domain — a different runtime, same guarantees
     # Gêmeo do oncall no harness deepagents. Existe para MEDIR a diferença entre os dois, não
