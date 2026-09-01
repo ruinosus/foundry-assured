@@ -24,7 +24,7 @@ As fatias mantêm IDs, dependências e user stories, mas substituem CURA pelo As
 - [x] F05 [AFK] Três rotas de autoria guiadas por FormFlow — deps: F01, F04 — US: US-006, US-007 — sec: auth, input-validation, logs → F05.md
 - [x] F06 [AFK] Builder multi-documento fundamentado no catálogo — deps: F03, F04, F05 — US: US-008 — sec: auth, input-validation, logs, dados-sensiveis → F06.md
 - [x] F07 [AFK] Registries e bindings isolados por área — deps: F02, F03 — US: US-009, US-016 — sec: auth, input-validation, logs, dados-sensiveis → F07.md
-- [ ] F08 [AFK] Bundle Editor versionado e consistente — deps: F04, F05, F06, F07 — US: US-010 — sec: auth, input-validation, logs → F08.md
+- [x] F08 [AFK] Bundle Editor versionado e consistente — deps: F04, F05, F06, F07 — US: US-010 — sec: auth, input-validation, logs → F08.md
 - [ ] F09 [AFK] Conformidade honesta por fase — deps: F03, F04, F07, F08 — US: US-011 — sec: auth, input-validation, logs → F09.md
 - [ ] F10 [HITL] Submissão, revisão e decisão do Approver — deps: F04, F08, F09 — US: US-012, US-017 — sec: auth, input-validation, logs, dados-sensiveis → F10.md
 - [ ] F11 [HITL] Pull request GitHub com identidade delegada — deps: F10 — US: US-013, US-015, US-017 — sec: auth, input-validation, rate-limit, criptografia, logs, dados-sensiveis → F11.md

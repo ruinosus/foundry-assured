@@ -33,6 +33,7 @@ import { frontendMode, isLocalDataMode, type FrontendMode } from "@/lib/frontend
 // que essa pessoa faz primeiro. Visão geral desce — ela é resumo de sistema, não porta de entrada.
 const WORKSPACE_NAV = [
   { href: "/catalog", key: "catalog", icon: "▥" },
+  { href: "/bundles", key: "bundles", icon: "▧" },
   { href: "/usecases", key: "usecases", icon: "◎" },
   // UM item para os assistentes, não seis. Os seis viraram o seletor no topo do console — mas
   // sem esta linha não haveria caminho até uma conversa a partir das telas de gestão, e o
@@ -64,6 +65,7 @@ const ADMIN_NAV = [
 const TITLE_KEYS: Record<string, string> = {
   "/": "overview",
   "/catalog": "catalog",
+  "/bundles": "bundles",
   "/usecases": "usecases",
   "/agents": "agents",
   "/knowledge": "knowledge",
@@ -232,10 +234,11 @@ function Shell({
   // Construídos no componente, não no módulo: rótulo é texto, e texto depende do idioma
   // escolhido — uma constante avaliada no import nasce numa língua só e nunca mais muda.
   const domainTitle = DOMAINS.find((d) => pathname.startsWith(`/d/${d.id}`));
+  const titleKey = TITLE_KEYS[pathname] ?? (pathname.startsWith("/bundles/") ? "bundles" : undefined);
   const title = domainTitle
     ? td(`${domainTitle.id}.label`)
-    : TITLE_KEYS[pathname]
-      ? t(TITLE_KEYS[pathname])
+    : titleKey
+      ? t(titleKey)
       : "";
   // Show Admin in the nav only to Admins (the page + every endpoint re-check server-side).
   const workspace = isAdmin(roles) ? [...WORKSPACE_NAV, ...ADMIN_NAV] : WORKSPACE_NAV;

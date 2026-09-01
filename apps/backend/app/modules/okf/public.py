@@ -27,6 +27,7 @@ from app.modules.okf.internal.migration import (
     LEGACY_MANIFEST_FORMAT,
     migrate_legacy_manifest,
 )
+from app.modules.okf.internal.schemas import spec_references
 
 __all__ = [
     "LEGACY_MANIFEST_FORMAT",
@@ -52,4 +53,5 @@ __all__ = [
     "parse_authoring_document",
     "parse_mcp_binding",
     "serialize_authoring_document",
+    "spec_references",
 ]

@@ -11,6 +11,9 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from app.modules.authoring.public import (
+    BundleBlocked,
+    BundleNotFound,
+    BundleService,
     ChangeSetConflict,
     ChangeSetNotFound,
     ChangeSetPreconditionFailed,
@@ -57,6 +60,7 @@ ChangeSetId = Annotated[
 ]
 IdempotencyKey = Annotated[str, Header(alias="Idempotency-Key", min_length=8, max_length=128)]
 IfMatch = Annotated[str, Header(alias="If-Match", min_length=68, max_length=80)]
+_bundle_author = [Depends(require_role("Author"))]
 
 
 class CreateChangeSetBody(BaseModel):
@@ -93,6 +97,13 @@ def _error(exc: Exception):
         raise HTTPException(404, "RESOURCE_NOT_FOUND") from exc
     if isinstance(exc, ChangeSetNotFound):
         raise HTTPException(404, "CHANGESET_NOT_FOUND") from exc
+    if isinstance(exc, BundleNotFound):
+        raise HTTPException(404, "BUNDLE_NOT_FOUND") from exc
+    if isinstance(exc, BundleBlocked):
+        return JSONResponse(
+            status_code=409,
+            content={"error": {"code": "BUNDLE_SUBMISSION_BLOCKED"}},
+        )
     if isinstance(exc, ChangeSetPreconditionFailed):
         return JSONResponse(status_code=412, content={"error": {"code": "CHANGESET_REVISION_STALE"}})
     if isinstance(exc, ChangeSetConflict):
@@ -109,6 +120,120 @@ def _error(exc: Exception):
         status_code=502,
         content={"error": {"code": "SOURCE_UNAVAILABLE", "message": "A fonte do recurso está indisponível.", "correlationId": correlation_id}},
     )
+
+
+def _bundle_service(
+    changesets: Annotated[ChangeSetService, Depends(default_changeset_service)],
+) -> BundleService:
+    return BundleService(changesets=changesets, sources=default_sources())
+
+
+@router.get("/bundles", response_model=None)
+def list_bundles(
+    scope: Annotated[ChangeSetScope, Depends(_scope)],
+    service: Annotated[BundleService, Depends(_bundle_service)],
+) -> dict[str, Any] | JSONResponse:
+    try:
+        return {"items": service.list(scope)}
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
+
+
+@router.get("/bundles/{changeset_id}", response_model=None)
+def get_bundle(
+    changeset_id: ChangeSetId,
+    scope: Annotated[ChangeSetScope, Depends(_scope)],
+    service: Annotated[BundleService, Depends(_bundle_service)],
+    revision: Annotated[int | None, Query(ge=1)] = None,
+) -> Response:
+    try:
+        record = service.get(scope, changeset_id, revision=revision)
+        return JSONResponse(
+            status_code=200,
+            content=record,
+            headers={"ETag": record["etag"], "Cache-Control": "no-store"},
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
+
+
+@router.patch(
+    "/bundles/{changeset_id}",
+    response_model=None,
+    dependencies=_bundle_author,
+)
+def update_bundle(
+    changeset_id: ChangeSetId,
+    body: UpdateChangeSetBody,
+    if_match: IfMatch,
+    scope: Annotated[ChangeSetScope, Depends(_scope)],
+    service: Annotated[BundleService, Depends(_bundle_service)],
+) -> Response:
+    try:
+        record = service.update(
+            scope,
+            changeset_id,
+            expected_etag=if_match,
+            content=body.content,
+            base_snapshot_id=body.base_snapshot_id,
+        )
+        return JSONResponse(
+            status_code=200,
+            content=record,
+            headers={"ETag": record["etag"], "Cache-Control": "no-store"},
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
+
+
+@router.post(
+    "/bundles/{changeset_id}/submit",
+    response_model=None,
+    dependencies=_bundle_author,
+)
+def submit_bundle(
+    changeset_id: ChangeSetId,
+    if_match: IfMatch,
+    scope: Annotated[ChangeSetScope, Depends(_scope)],
+    service: Annotated[BundleService, Depends(_bundle_service)],
+) -> Response:
+    try:
+        record = service.submit(scope, changeset_id, expected_etag=if_match)
+        logger.info(
+            "bundle submitted id=%s revision=%s content_hash=%s",
+            changeset_id,
+            record["revision"],
+            record["content_hash"],
+        )
+        return JSONResponse(
+            status_code=200,
+            content=record,
+            headers={"ETag": record["etag"], "Cache-Control": "no-store"},
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
+
+
+@router.post(
+    "/bundles/{changeset_id}/revisions",
+    response_model=None,
+    dependencies=_bundle_author,
+)
+def revise_bundle(
+    changeset_id: ChangeSetId,
+    if_match: IfMatch,
+    scope: Annotated[ChangeSetScope, Depends(_scope)],
+    service: Annotated[BundleService, Depends(_bundle_service)],
+) -> Response:
+    try:
+        record = service.revise(scope, changeset_id, expected_etag=if_match)
+        return JSONResponse(
+            status_code=201,
+            content=record,
+            headers={"ETag": record["etag"], "Cache-Control": "no-store"},
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
 
 
 @router.post(

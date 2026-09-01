@@ -1,5 +1,10 @@
 """Catálogo factual para autoria, projetado sem persistir uma segunda fonte de verdade."""
 
+from app.modules.authoring.internal.bundles import (
+    BundleBlocked,
+    BundleNotFound,
+    BundleService,
+)
 from app.modules.authoring.internal.catalog import (
     CatalogSource,
     ResourceNotFound,
@@ -25,6 +30,9 @@ from app.modules.authoring.internal.changesets import (
 from app.modules.authoring.internal.sources import default_sources
 
 __all__ = [
+    "BundleBlocked",
+    "BundleNotFound",
+    "BundleService",
     "CatalogSource",
     "ChangeSetConflict",
     "ChangeSetNotFound",

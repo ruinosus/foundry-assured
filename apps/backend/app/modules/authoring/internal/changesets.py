@@ -6,7 +6,7 @@ import json
 import re
 import sqlite3
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from hashlib import sha256
 from pathlib import Path
@@ -142,12 +142,25 @@ class ChangeSetRepository(Protocol):
     ) -> tuple[StoredChangeSet, bool]: ...
 
     def get(self, scope: ChangeSetScope, changeset_id: str) -> StoredChangeSet | None: ...
+    def get_revision(
+        self, scope: ChangeSetScope, changeset_id: str, revision: int
+    ) -> StoredChangeSet | None: ...
+    def list(self, scope: ChangeSetScope) -> list[StoredChangeSet]: ...
 
     def append(
         self,
         scope: ChangeSetScope,
         record: StoredChangeSet,
         *,
+        expected_revision: int,
+        expected_content_hash: str,
+    ) -> StoredChangeSet: ...
+    def transition(
+        self,
+        scope: ChangeSetScope,
+        record: StoredChangeSet,
+        *,
+        expected_state: str,
         expected_revision: int,
         expected_content_hash: str,
     ) -> StoredChangeSet: ...
@@ -179,7 +192,8 @@ class _SqlChangeSetRepository:
             )""",
             """CREATE TABLE IF NOT EXISTS authoring_changeset_revisions (
                 tenant_id TEXT NOT NULL, area_id TEXT NOT NULL, changeset_id TEXT NOT NULL,
-                revision BIGINT NOT NULL, base_snapshot_id TEXT NOT NULL, content_json TEXT NOT NULL,
+                revision BIGINT NOT NULL, state TEXT NOT NULL DEFAULT 'draft',
+                base_snapshot_id TEXT NOT NULL, content_json TEXT NOT NULL,
                 content_hash TEXT NOT NULL, author_oid TEXT NOT NULL, created_at TEXT NOT NULL,
                 PRIMARY KEY (tenant_id, area_id, changeset_id, revision)
             )""",
@@ -197,6 +211,15 @@ class _SqlChangeSetRepository:
             for statement in statements:
                 cursor.execute(statement)
             connection.commit()
+            try:
+                cursor.execute("SELECT state FROM authoring_changeset_revisions WHERE 1 = 0")
+            except Exception:  # noqa: BLE001 - adapters DB-API não compartilham exceção de schema
+                connection.rollback()
+                cursor.execute(
+                    "ALTER TABLE authoring_changeset_revisions "
+                    "ADD COLUMN state TEXT NOT NULL DEFAULT 'draft'"
+                )
+                connection.commit()
         finally:
             connection.close()
 
@@ -312,16 +335,17 @@ class _SqlChangeSetRepository:
     def _insert_revision(self, cursor, scope: ChangeSetScope, record: StoredChangeSet) -> None:
         cursor.execute(
             self._sql(
-                """INSERT INTO authoring_changeset_revisions
-                   (tenant_id, area_id, changeset_id, revision, base_snapshot_id,
+                     """INSERT INTO authoring_changeset_revisions
+                         (tenant_id, area_id, changeset_id, revision, state, base_snapshot_id,
                     content_json, content_hash, author_oid, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"""
             ),
             (
                 scope.tenant_id,
                 scope.area_id,
                 record.id,
                 record.revision,
+                record.state,
                 record.base_snapshot_id,
                 json.dumps(_thaw(record.content), sort_keys=True, separators=(",", ":")),
                 record.content_hash,
@@ -338,6 +362,51 @@ class _SqlChangeSetRepository:
         finally:
             connection.close()
 
+    def get_revision(
+        self, scope: ChangeSetScope, changeset_id: str, revision: int
+    ) -> StoredChangeSet | None:
+        connection = self._connection_factory()
+        try:
+            row = connection.cursor().execute(
+                self._sql(
+                    """SELECT c.changeset_id, c.source, r.state, r.revision,
+                              r.base_snapshot_id, r.content_json, r.content_hash,
+                              c.created_at, r.created_at
+                       FROM authoring_changesets c
+                       JOIN authoring_changeset_revisions r
+                         ON r.tenant_id = c.tenant_id AND r.area_id = c.area_id
+                        AND r.changeset_id = c.changeset_id
+                       WHERE c.tenant_id = ? AND c.area_id = ? AND c.changeset_id = ?
+                         AND r.revision = ?"""
+                ),
+                (scope.tenant_id, scope.area_id, changeset_id, revision),
+            ).fetchone()
+            return self._record(row) if row is not None else None
+        finally:
+            connection.close()
+
+    def list(self, scope: ChangeSetScope) -> list[StoredChangeSet]:
+        connection = self._connection_factory()
+        try:
+            rows = connection.cursor().execute(
+                self._sql(
+                    """SELECT c.changeset_id, c.source, c.state, c.current_revision,
+                              r.base_snapshot_id, r.content_json, r.content_hash,
+                              c.created_at, c.updated_at
+                       FROM authoring_changesets c
+                       JOIN authoring_changeset_revisions r
+                         ON r.tenant_id = c.tenant_id AND r.area_id = c.area_id
+                        AND r.changeset_id = c.changeset_id
+                        AND r.revision = c.current_revision
+                       WHERE c.tenant_id = ? AND c.area_id = ?
+                       ORDER BY c.updated_at DESC, c.changeset_id"""
+                ),
+                (scope.tenant_id, scope.area_id),
+            ).fetchall()
+            return [self._record(row) for row in rows]
+        finally:
+            connection.close()
+
     def append(
         self,
         scope: ChangeSetScope,
@@ -351,7 +420,7 @@ class _SqlChangeSetRepository:
             cursor = self._begin(connection)
             changed = cursor.execute(
                 self._sql(
-                    """UPDATE authoring_changesets SET current_revision = ?, updated_at = ?
+                    """UPDATE authoring_changesets SET state = ?, current_revision = ?, updated_at = ?
                        WHERE tenant_id = ? AND area_id = ? AND changeset_id = ?
                          AND current_revision = ?
                          AND EXISTS (
@@ -364,6 +433,7 @@ class _SqlChangeSetRepository:
                          )"""
                 ),
                 (
+                    record.state,
                     record.revision,
                     record.updated_at,
                     scope.tenant_id,
@@ -376,6 +446,68 @@ class _SqlChangeSetRepository:
             if changed != 1:
                 raise ChangeSetPreconditionFailed("CHANGESET_REVISION_STALE")
             self._insert_revision(cursor, scope, record)
+            connection.commit()
+            return record
+        except Exception:
+            connection.rollback()
+            raise
+        finally:
+            connection.close()
+
+    def transition(
+        self,
+        scope: ChangeSetScope,
+        record: StoredChangeSet,
+        *,
+        expected_state: str,
+        expected_revision: int,
+        expected_content_hash: str,
+    ) -> StoredChangeSet:
+        connection = self._connection_factory()
+        try:
+            cursor = self._begin(connection)
+            changed = cursor.execute(
+                self._sql(
+                    """UPDATE authoring_changesets SET state = ?, updated_at = ?
+                       WHERE tenant_id = ? AND area_id = ? AND changeset_id = ?
+                         AND state = ? AND current_revision = ?
+                         AND EXISTS (
+                           SELECT 1 FROM authoring_changeset_revisions r
+                           WHERE r.tenant_id = authoring_changesets.tenant_id
+                             AND r.area_id = authoring_changesets.area_id
+                             AND r.changeset_id = authoring_changesets.changeset_id
+                             AND r.revision = authoring_changesets.current_revision
+                             AND r.content_hash = ?
+                         )"""
+                ),
+                (
+                    record.state,
+                    record.updated_at,
+                    scope.tenant_id,
+                    scope.area_id,
+                    record.id,
+                    expected_state,
+                    expected_revision,
+                    expected_content_hash,
+                ),
+            ).rowcount
+            if changed != 1:
+                raise ChangeSetPreconditionFailed("CHANGESET_REVISION_STALE")
+            cursor.execute(
+                self._sql(
+                    """UPDATE authoring_changeset_revisions SET state = ?
+                       WHERE tenant_id = ? AND area_id = ? AND changeset_id = ?
+                         AND revision = ? AND content_hash = ?"""
+                ),
+                (
+                    record.state,
+                    scope.tenant_id,
+                    scope.area_id,
+                    record.id,
+                    record.revision,
+                    record.content_hash,
+                ),
+            )
             connection.commit()
             return record
         except Exception:
@@ -500,6 +632,20 @@ class ChangeSetService:
             raise ChangeSetNotFound("CHANGESET_NOT_FOUND")
         return record
 
+    def get_revision(
+        self, scope: ChangeSetScope, changeset_id: str, revision: int
+    ) -> StoredChangeSet:
+        identifier = self._identifier(changeset_id, field="id")
+        if not isinstance(revision, int) or revision < 1:
+            raise AuthoringInvalid("changeset.revision: valor inválido")
+        record = self._repository.get_revision(scope, identifier, revision)
+        if record is None:
+            raise ChangeSetNotFound("CHANGESET_REVISION_NOT_FOUND")
+        return record
+
+    def list(self, scope: ChangeSetScope) -> list[StoredChangeSet]:
+        return self._repository.list(scope)
+
     def update(
         self,
         scope: ChangeSetScope,
@@ -512,6 +658,8 @@ class ChangeSetService:
         current = self.get(scope, changeset_id)
         if expected_etag != current.etag:
             raise ChangeSetPreconditionFailed("CHANGESET_REVISION_STALE")
+        if current.state != "draft":
+            raise ChangeSetPreconditionFailed("CHANGESET_SUBMITTED_IMMUTABLE")
         normalized, content_hash = self._content(content)
         self._validate_documents(scope, normalized)
         snapshot = (
@@ -528,6 +676,40 @@ class ChangeSetService:
             content=normalized,
             content_hash=content_hash,
             created_at=current.created_at,
+            updated_at=_timestamp(),
+        )
+        return self._repository.append(
+            scope,
+            revised,
+            expected_revision=current.revision,
+            expected_content_hash=current.content_hash,
+        )
+
+    def submit(
+        self, scope: ChangeSetScope, changeset_id: str, *, expected_etag: str
+    ) -> StoredChangeSet:
+        current = self.get(scope, changeset_id)
+        if expected_etag != current.etag or current.state != "draft":
+            raise ChangeSetPreconditionFailed("CHANGESET_REVISION_STALE")
+        submitted = replace(current, state="submitted", updated_at=_timestamp())
+        return self._repository.transition(
+            scope,
+            submitted,
+            expected_state="draft",
+            expected_revision=current.revision,
+            expected_content_hash=current.content_hash,
+        )
+
+    def revise(
+        self, scope: ChangeSetScope, changeset_id: str, *, expected_etag: str
+    ) -> StoredChangeSet:
+        current = self.get(scope, changeset_id)
+        if expected_etag != current.etag or current.state != "submitted":
+            raise ChangeSetPreconditionFailed("CHANGESET_REVISION_STALE")
+        revised = replace(
+            current,
+            state="draft",
+            revision=current.revision + 1,
             updated_at=_timestamp(),
         )
         return self._repository.append(

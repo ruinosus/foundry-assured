@@ -11,7 +11,8 @@ from types import SimpleNamespace
 from typing import Any
 
 import yaml
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.routing import APIRoute
 from fastapi.testclient import TestClient
 
 from app.modules.okf.public import (
@@ -44,6 +45,9 @@ class _PostgresCursor:
 
     def fetchone(self):
         return self._cursor.fetchone()
+
+    def fetchall(self):
+        return self._cursor.fetchall()
 
 
 class _PostgresConnection:
@@ -681,6 +685,7 @@ def main() -> int:
     )
 
     from app.modules.authoring.public import (
+        BundleService,
         ChangeSetConflict,
         ChangeSetPreconditionFailed,
         ChangeSetScope,
@@ -851,6 +856,37 @@ def main() -> int:
         )
         check(f"{label}: edit appends revision 2", updated.revision == 2 and updated.etag != created.etag)
         check(
+            f"{label}: revision 1 remains immutable",
+            service.get_revision(scope, created.id, 1).content_hash
+            == created.content_hash,
+        )
+        check(
+            f"{label}: list returns only the current scope",
+            created.id in {record.id for record in service.list(scope)}
+            and created.id not in {record.id for record in service.list(other_area)},
+        )
+        submitted = service.submit(scope, created.id, expected_etag=updated.etag)
+        check(f"{label}: submit freezes the current revision", submitted.state == "submitted")
+        check(
+            f"{label}: submitted version cannot be overwritten",
+            lambda: service.update(
+                scope,
+                created.id,
+                expected_etag=submitted.etag,
+                content={"operations": content["operations"]},
+            ),
+            fails=True,
+        )
+        derived = service.revise(scope, created.id, expected_etag=submitted.etag)
+        check(
+            f"{label}: editing after submit creates a new draft revision",
+            derived.state == "draft" and derived.revision == 3,
+        )
+        check(
+            f"{label}: submitted revision remains frozen in history",
+            service.get_revision(scope, created.id, 2).state == "submitted",
+        )
+        check(
             f"{label}: stale If-Match cannot overwrite",
             lambda: service.update(
                 scope,
@@ -861,7 +897,7 @@ def main() -> int:
             fails=True,
         )
         reopened = ChangeSetService(repository_factory()).get(scope, created.id)
-        check(f"{label}: current revision survives repository restart", reopened.revision == 2)
+        check(f"{label}: current revision survives repository restart", reopened.revision == 3)
         check(
             f"{label}: stale write left the current revision unchanged",
             reopened.content["justification"] == "Revisado",
@@ -874,6 +910,85 @@ def main() -> int:
         repository_contract(
             "postgres",
             lambda: PostgresChangeSetRepository(lambda: _PostgresConnection(postgres_path)),
+        )
+
+        bundle_scope = ChangeSetScope("tenant-a", "area-a", "bundle-author")
+        bundle_changesets = ChangeSetService(
+            SQLiteChangeSetRepository(Path(directory) / "bundles.sqlite3")
+        )
+        policy_document = _document(
+            "policy",
+            "safe-output",
+            {"enforcement": "external", "sources": ["policy-engine"]},
+            area="area-a",
+        )
+        bundle_document = _document(
+            "bundle",
+            "support-bundle",
+            {
+                "includes": [
+                    {"type": "policy", "id": "safe-output", "revision": "1"}
+                ]
+            },
+            area="area-a",
+        )
+        bundle_record, _ = bundle_changesets.create(
+            bundle_scope,
+            source="manual",
+            base_snapshot_id="snapshot-42",
+            content={
+                "operations": [
+                    {
+                        "id": "create-policy",
+                        "operation": "create",
+                        "document_type": "policy",
+                        "document": serialize_authoring_document(policy_document),
+                    },
+                    {
+                        "id": "create-bundle",
+                        "operation": "create",
+                        "document_type": "bundle",
+                        "document": serialize_authoring_document(bundle_document),
+                    },
+                ]
+            },
+            idempotency_key="bundle-create-001",
+        )
+        bundles = BundleService(bundle_changesets, ())
+        projected = bundles.get(bundle_scope, bundle_record.id)
+        check(
+            "bundle resolves references from the same revision",
+            projected["canSubmit"]
+            and projected["dependencies"][0]["source"] == "changeset",
+        )
+        blocked_record, _ = bundle_changesets.create(
+            bundle_scope,
+            source="manual",
+            base_snapshot_id="snapshot-42",
+            content={
+                "operations": bundle_record.to_dict()["content"]["operations"],
+                "gaps": [{"id": "missing-approval", "reason": "Pendente"}],
+            },
+            idempotency_key="bundle-blocked-001",
+        )
+        check(
+            "blocking gaps prevent bundle submission",
+            lambda: bundles.submit(
+                bundle_scope, blocked_record.id, expected_etag=blocked_record.etag
+            ),
+            fails=True,
+        )
+        submitted_bundle = bundles.submit(
+            bundle_scope, bundle_record.id, expected_etag=bundle_record.etag
+        )
+        revised_bundle = bundles.revise(
+            bundle_scope, bundle_record.id, expected_etag=submitted_bundle["etag"]
+        )
+        check(
+            "bundle detail pins one immutable revision",
+            revised_bundle["revision"] == 2
+            and bundles.get(bundle_scope, bundle_record.id, revision=1)["state"]
+            == "submitted",
         )
 
         raw = sqlite_path.read_bytes()
@@ -895,6 +1010,26 @@ def main() -> int:
         if auth.azure_scheme is not None:
             application.dependency_overrides[auth.azure_scheme] = lambda: api_user
         client = TestClient(application)
+        bundle_write_routes = [
+            route
+            for route in application.routes
+            if isinstance(route, APIRoute)
+            and route.path.startswith("/authoring/bundles/")
+            and route.methods != {"GET"}
+        ]
+        bundle_author_dependency = authoring_api._bundle_author[0].dependency
+        application.dependency_overrides[bundle_author_dependency] = lambda: (
+            _ for _ in ()
+        ).throw(HTTPException(403, "AUTHOR_REQUIRED"))
+        forbidden_bundle = client.post(
+            f"/authoring/bundles/{'0' * 8}-{'0' * 4}-4000-8000-{'0' * 12}/submit",
+            headers={"If-Match": f'"1:{"0" * 64}"'},
+        )
+        check(
+            "bundle writes require Author and do not grant Admin implicitly",
+            len(bundle_write_routes) == 3 and forbidden_bundle.status_code == 403,
+        )
+        application.dependency_overrides.pop(bundle_author_dependency)
         payload = {
             "source": "manual",
             "base_snapshot_id": "snapshot-42",
