@@ -12,8 +12,9 @@ import { apiScopes, authConfigured } from "@/lib/auth/msal";
 import { branding } from "@/lib/branding";
 import { CHAT_DOMAINS, DOMAINS } from "@/lib/domains";
 import { authedFetch } from "@/lib/auth/api";
-import { useMyRoles, isAdmin } from "@/lib/auth/roles";
+import { useMyIdentity, isAdmin } from "@/lib/auth/roles";
 import { useTranslations } from "next-intl";
+import { AreaSelector } from "@/components/shell/AreaSelector";
 import { LanguageToggle } from "@/components/shell/LanguageToggle";
 import { ThemeToggle } from "@/components/shell/ThemeToggle";
 import { ChatDock } from "@/components/shell/ChatDock";
@@ -50,6 +51,7 @@ const WORKSPACE_NAV = [
 const ADMIN_NAV = [
   { href: "/assistants", key: "screenAssistants", icon: "🧩" },
   { href: "/audit", key: "audit", icon: "🔗" },
+  { href: "/admin/areas", key: "areas", icon: "▦" },
   { href: "/admin/users", key: "admin", icon: "🛡️" },
   { href: "/admin/connections", key: "connections", icon: "🔌" },
 ];
@@ -65,6 +67,7 @@ const TITLE_KEYS: Record<string, string> = {
   "/skills": "skills",
   "/tickets": "tickets",
   "/evals": "evals",
+  "/admin/areas": "areas",
   "/admin/users": "admin",
   "/admin/connections": "connections",
 };
@@ -215,7 +218,8 @@ function Shell({
   const tc = useTranslations("common");
   const tb = useTranslations("branding");
   const pathname = usePathname() || "/";
-  const roles = useMyRoles();
+  const identity = useMyIdentity();
+  const roles = identity?.roles ?? null;
   const apiToken = useApiToken();
   const [navigationOpen, setNavigationOpen] = useState(false);
   // O conteúdo recua quando o dock abre — ver `.page.with-dock`.
@@ -310,6 +314,7 @@ function Shell({
               </>
             )}
           </nav>
+          {mode === "assured" && <AreaSelector areas={identity?.areas ?? []} />}
           {mode === "assured" && <EnvironmentBanner />}
           <DockHost />
         </header>

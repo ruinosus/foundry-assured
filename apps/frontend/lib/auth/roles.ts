@@ -8,19 +8,48 @@ import { useEffect, useState } from "react";
 import { authedFetch } from "@/lib/auth/api";
 import { authConfigured } from "@/lib/auth/msal";
 
-export function useMyRoles(): string[] | null {
-  const [roles, setRoles] = useState<string[] | null>(null); // null = loading
+export interface MyArea {
+  id: string;
+  name: string;
+  status: "active";
+  revision: number;
+  permissions: string[];
+}
+
+export interface MyIdentity {
+  name?: string | null;
+  oid?: string | null;
+  tenant_id?: string | null;
+  roles: string[];
+  areas: MyArea[];
+  auth: boolean;
+}
+
+export function useMyIdentity(): MyIdentity | null {
+  const [identity, setIdentity] = useState<MyIdentity | null>(null);
   useEffect(() => {
     let alive = true;
     authedFetch("/api/me")
       .then((r) => r.json())
-      .then((d) => alive && setRoles(Array.isArray(d.roles) ? d.roles : []))
-      .catch(() => alive && setRoles([]));
+      .then((data) => {
+        if (!alive) return;
+        setIdentity({
+          ...data,
+          roles: Array.isArray(data.roles) ? data.roles : [],
+          areas: Array.isArray(data.areas) ? data.areas : [],
+          auth: data.auth === true,
+        });
+      })
+      .catch(() => alive && setIdentity({ roles: [], areas: [], auth: false }));
     return () => {
       alive = false;
     };
   }, []);
-  return roles;
+  return identity;
+}
+
+export function useMyRoles(): string[] | null {
+  return useMyIdentity()?.roles ?? null;
 }
 
 export const isAdmin = (roles: string[] | null): boolean => !!roles?.includes("Admin");

@@ -8,12 +8,16 @@ const BACKEND = process.env.BACKEND_URL ?? "http://localhost:8000";
 
 async function proxy(req: NextRequest, path: string[]) {
   const auth = req.headers.get("authorization");
+  const areaId = req.headers.get("x-area-id");
+  const ifMatch = req.headers.get("if-match");
   const url = `${BACKEND}/tenant/${path.join("/")}${req.nextUrl.search}`;
   const init: RequestInit = {
     method: req.method,
     cache: "no-store",
     headers: {
       ...(auth ? { Authorization: auth } : {}),
+      ...(areaId ? { "X-Area-ID": areaId } : {}),
+      ...(ifMatch ? { "If-Match": ifMatch } : {}),
       "Content-Type": "application/json",
     },
   };
@@ -23,9 +27,13 @@ async function proxy(req: NextRequest, path: string[]) {
   try {
     const r = await fetch(url, init);
     const text = await r.text();
+    const etag = r.headers.get("etag");
     return new NextResponse(text, {
       status: r.status,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(etag ? { ETag: etag } : {}),
+      },
     });
   } catch {
     return NextResponse.json({ error: "backend unreachable" }, { status: 502 });
@@ -40,6 +48,9 @@ export async function POST(req: NextRequest, ctx: Ctx) {
   return proxy(req, (await ctx.params).path);
 }
 export async function PUT(req: NextRequest, ctx: Ctx) {
+  return proxy(req, (await ctx.params).path);
+}
+export async function PATCH(req: NextRequest, ctx: Ctx) {
   return proxy(req, (await ctx.params).path);
 }
 export async function DELETE(req: NextRequest, ctx: Ctx) {

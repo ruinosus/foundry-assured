@@ -110,3 +110,26 @@ setting. Run the smoke once before freezing the slice.
 
 **Principle:** An executable acceptance criterion must carry its non-secret prerequisites; otherwise
 it measures implicit workstation state instead of the changed behavior.
+
+---
+
+### Observation 6: Separate workflow governance from product coupling
+
+**Date:** 2026-09-01
+**Session context:** Executing a Smart Coding slice in a Python product explicitly independent from the workflow framework's originating organization.
+**Skill:** sc-fatiar
+**Type:** internal
+**Phase/Area:** Skill selection in slice details
+**Status:** OPEN
+
+**Issue:** The slice detail retained a stack-specific validation skill even after the product was
+made explicitly independent and the repository stack was confirmed as Python/FastAPI. The detail
+needed an exception explaining why none of that skill's branded packages could apply.
+
+**Suggested improvement:** In the skill-selection step, verify both repository stack compatibility
+and requested product independence before attaching organization-specific implementation skills.
+When only a general principle applies, state it directly in the slice instead of loading an
+incompatible package contract and documenting an exception afterward.
+
+**Principle:** A process can govern quality without coupling the delivered product to the process
+owner's technology; skill selection must preserve that boundary explicitly.

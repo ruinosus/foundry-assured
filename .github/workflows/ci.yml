@@ -233,6 +233,12 @@ jobs:
       - name: MCP discovery — Connection isolada por tenant
         run: uv run python -m tests.tenancy.isolation_test
 
+      - name: Contexto tenant-área deriva de grupos e App Roles
+        run: uv run python -m tests.tenancy.area_context_test
+
+      - name: Administração de áreas é tenant-scoped e concorrente
+        run: uv run python -m tests.tenancy.areas_api_test
+
       # HITL decisions (ADR-019). `edit` lets the approver CORRECT an action before it runs,
       # which the Agent Framework cannot express — its approval is a boolean. Editing runs the
       # action, so it needs the same role as approving; these two guard that it does, and that
@@ -782,6 +788,8 @@ jobs:
 
       - name: Typecheck
         run: npm run typecheck
+      - name: Contexto de área (seleção, headers e concorrência)
+        run: npm run verify:area-context
       # O destaque do trecho citado (source-highlight.ts) roda contra um DOM real via jsdom —
       # sem este gate, uma regressão na normalização de espaço em branco só aparece quando
       # alguém clica numa citação e o trecho não acende.

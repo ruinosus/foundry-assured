@@ -204,6 +204,18 @@ The middleware is handed to `foundry` by the composition root rather than import
 `tenancy.set_server_catalog(...)` — the composition root is the one place allowed to know both
 sides.
 
+## Recorded edge: `admin` depends on `tenancy` for the caller's area context
+
+`GET /me` remains in `admin` because it projects the caller's identity and App Roles for the
+administrative interface. Its area list, however, cannot be computed there: `tenancy` owns tenant
+resolution, the tenant store and the intersection between validated Entra groups and active areas.
+The endpoint therefore calls `tenancy.public.authorized_areas` and returns only that projection.
+
+This edge keeps one authorization decision instead of reproducing group-to-area logic in `admin`.
+It does not grant authority from the selected `X-Area-ID`; tenancy revalidates that header against
+the same resolved set on every area-scoped request. The dependency follows the ADR rule by crossing
+only through `public.py`, and the reverse edge does not exist.
+
 ## Recorded edges: five modules depend on `conversations` so that measuring is uniform
 
 A second batch of intended edges — `hosted`, `oncall` and `deepcall` now import `conversations`,

@@ -1018,6 +1018,10 @@
     ],
     [
       "GET",
+      "/tenant/areas"
+    ],
+    [
+      "GET",
       "/tenant/connections"
     ],
     [
@@ -1051,6 +1055,10 @@
     [
       "HEAD",
       "/redoc"
+    ],
+    [
+      "PATCH",
+      "/tenant/areas/{area_id}"
     ],
     [
       "POST",
@@ -1183,6 +1191,10 @@
     [
       "POST",
       "/techdocs"
+    ],
+    [
+      "POST",
+      "/tenant/areas"
     ],
     [
       "POST",

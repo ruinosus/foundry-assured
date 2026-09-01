@@ -27,6 +27,15 @@ class Connection:
 
 
 @dataclass(frozen=True)
+class AuthoringArea:
+    id: str
+    name: str
+    entra_group_ids: tuple[str, ...]
+    status: str = "active"
+    revision: int = 1
+
+
+@dataclass(frozen=True)
 class TenantRecord:
     tid: str
     name: str
@@ -35,6 +44,7 @@ class TenantRecord:
     data_plane: TenantConfig
     connections: tuple[Connection, ...] = ()   # NEW (keep after data_plane)
     enabled_domains: tuple[str, ...] = ()   # NEW (D-runtime) — per-tenant license entitlement (ADR-010)
+    areas: tuple[AuthoringArea, ...] = ()
 
 
 # The MCP server catalog, injected by the composition root at boot (ADR-017). This file used
@@ -76,6 +86,14 @@ def without_connection(rec: TenantRecord, conn_id: str) -> TenantRecord:
     return replace(rec, connections=tuple(c for c in rec.connections if c.id != conn_id))
 
 
+def with_area(rec: TenantRecord, area: AuthoringArea) -> TenantRecord:
+    return replace(rec, areas=rec.areas + (area,))
+
+
+def replace_area(rec: TenantRecord, area: AuthoringArea) -> TenantRecord:
+    return replace(rec, areas=tuple(area if current.id == area.id else current for current in rec.areas))
+
+
 class TenantStore(Protocol):
     def get(self, tid: str) -> TenantRecord | None: ...
     def put(self, rec: TenantRecord) -> None: ...
@@ -100,11 +118,21 @@ class InMemoryTenantStore:
 
 def _record_from_entity(e, tid: str | None = None) -> TenantRecord:
     conns = tuple(Connection(**c) for c in json.loads(e.get("connections") or "[]"))
+    areas = tuple(
+        AuthoringArea(
+            **{
+                **area,
+                "entra_group_ids": tuple(area.get("entra_group_ids") or ()),
+            }
+        )
+        for area in json.loads(e.get("areas") or "[]")
+    )
     return TenantRecord(
         tid=tid or e["PartitionKey"], name=e["name"], tier=e["tier"], status=e["status"],
         data_plane=TenantConfig(**json.loads(e["data_plane"])),
         connections=conns,
         enabled_domains=tuple(json.loads(e.get("enabled_domains") or "[]")),
+        areas=areas,
     )
 
 
@@ -136,6 +164,7 @@ class TableStorageTenantStore:
             "data_plane": json.dumps(asdict(rec.data_plane)),
             "connections": json.dumps([asdict(c) for c in rec.connections]),
             "enabled_domains": json.dumps(list(rec.enabled_domains)),
+            "areas": json.dumps([asdict(area) for area in rec.areas]),
         })
 
     def list(self) -> list[TenantRecord]:

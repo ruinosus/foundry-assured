@@ -9,6 +9,13 @@ This module never stores a customer secret (ADR-005): a `Connection` REFERENCES 
 connection, and the broker resolves it.
 """
 
+from app.modules.tenancy.internal.areas import (
+    AreaAccess,
+    authorized_areas,
+    current_area,
+    require_area,
+    resolve_area,
+)
 from app.modules.tenancy.internal.onboarding import onboarding_guard
 from app.modules.tenancy.internal.tenant import (
     DOMAIN_IDS,
@@ -30,6 +37,7 @@ from app.modules.tenancy.internal.tenant_resolution import (
     tenant_store,
 )
 from app.modules.tenancy.internal.tenant_store import (
+    AuthoringArea,
     Connection,
     InMemoryTenantStore,
     TableStorageTenantStore,
@@ -43,12 +51,16 @@ from app.shared.settings import settings
 __all__ = [
     "DOMAIN_IDS",
     "TIER_DOMAINS",
+    "AreaAccess",
+    "AuthoringArea",
     "Connection",
     "InMemoryTenantStore",
     "MultiTenantConfigProvider",
     "TableStorageTenantStore",
     "TenantConfig",
     "TenantRecord",
+    "authorized_areas",
+    "current_area",
     "current_connection",
     "current_tenant_id",
     "domain_deps",
@@ -57,7 +69,9 @@ __all__ = [
     "install",
     "memory_scope",
     "onboarding_guard",
+    "require_area",
     "require_domain",
+    "resolve_area",
     "resolve_tenant_record",
     "set_current_tenant",
     "set_provider",

@@ -251,6 +251,32 @@ a {
   display: none;
 }
 
+.area-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.area-selector select {
+  width: clamp(8rem, 16vw, 13rem);
+  min-height: 2rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  padding: 0 var(--space-3);
+  font: inherit;
+}
+
+.area-selector + .environment-banner {
+  margin-left: var(--space-3);
+}
+
 .mobile-navigation-toggle,
 .navigation-overlay {
   display: none;
@@ -1351,6 +1377,28 @@ table.evals tr:last-child td {
 
 .input:disabled,
 .select:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.area-section-heading { margin-bottom: var(--space-4); }
+.area-form-grid { margin-top: var(--space-4); margin-bottom: var(--space-4); }
+.area-groups { min-height: 6.5rem; resize: vertical; }
+.area-mobile-list { display: none; }
+.notice {
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-sm);
+}
+.notice-error { color: var(--block); background: var(--block-wash); }
+.notice-success { color: var(--pass); background: var(--pass-wash); }
+
+@media (max-width: 720px) {
+  .area-admin .card { padding: var(--space-3); }
+  .area-admin .table-wrap { display: none; }
+  .area-mobile-list { display: flex; flex-direction: column; gap: var(--space-3); }
+  .area-mobile-item { display: flex; flex-direction: column; gap: var(--space-2); padding-block: var(--space-3); border-top: 1px solid var(--line); }
+  .area-mobile-id { overflow-wrap: anywhere; }
+  .area-mobile-item .btn { justify-content: center; }
+}
 
 .select {
   /* Seta própria porque `appearance:none` remove a nativa; desenhada com a cor do texto para

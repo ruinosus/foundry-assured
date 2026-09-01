@@ -73,6 +73,9 @@
       "modules/admin/api_admin.py",
       "modules/admin/api_me.py",
       "modules/admin/internal/graph.py"
+    ],
+    "tenancy": [
+      "modules/admin/api_me.py"
     ]
   },
   "agentdefs": {

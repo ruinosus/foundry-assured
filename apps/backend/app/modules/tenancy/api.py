@@ -8,11 +8,22 @@ own record (current_tenant_id()); no tid comes from the path. See the sub-projec
 
 from __future__ import annotations
 
+import logging
 from dataclasses import replace
+from typing import Annotated, Literal
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Security
+from fastapi import (
+    APIRouter,
+    Depends,
+    Header,
+    HTTPException,
+    Response,
+    Security,
+    status,
+)
 from fastapi_azure_auth.user import User
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, model_validator
 
 from app.modules.tenancy.internal import tenant_resolution as _tenant_resolution
 from app.modules.tenancy.internal.onboarding import onboarding_guard
@@ -23,9 +34,12 @@ from app.modules.tenancy.internal.tenant import (
     domains_for_tier,
 )
 from app.modules.tenancy.internal.tenant_store import (
+    AuthoringArea,
     Connection,
     TenantRecord,
+    replace_area,
     validate_kind,
+    with_area,
     with_connection,
     without_connection,
 )
@@ -33,6 +47,7 @@ from app.shared.auth import _current_user, azure_scheme, require_role, require_u
 from app.shared.settings import settings
 
 router = APIRouter(prefix="/tenant", tags=["tenant"])
+logger = logging.getLogger(__name__)
 _admin = Depends(require_role("Admin"))
 _user_admin = [Depends(require_user), Depends(require_role("Admin"))]
 
@@ -158,3 +173,94 @@ def put_domains(body: DomainsBody):
     enabled = tuple(d for d in DOMAIN_IDS if d in set(body.enabled))   # preserve catalog order, dedupe
     _store().put(replace(rec, enabled_domains=enabled))
     return {"ok": True}
+
+
+class AreaCreateBody(BaseModel):
+    id: UUID
+    name: str = Field(min_length=1, max_length=120)
+    entra_group_ids: list[UUID] = Field(default_factory=list, max_length=100)
+
+
+class AreaPatchBody(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    entra_group_ids: list[UUID] | None = Field(default=None, max_length=100)
+    status: Literal["active", "suspended"] | None = None
+
+    @model_validator(mode="after")
+    def require_change(self):
+        if self.name is None and self.entra_group_ids is None and self.status is None:
+            raise ValueError("at least one area field is required")
+        return self
+
+
+def _area(rec: TenantRecord, area_id: str) -> AuthoringArea | None:
+    return next((area for area in rec.areas if area.id == area_id), None)
+
+
+def _set_etag(response: Response, revision: int) -> None:
+    response.headers["ETag"] = f'"{revision}"'
+
+
+def _if_match_revision(value: str) -> int:
+    normalized = value.strip()
+    if normalized.startswith("W/"):
+        raise HTTPException(status.HTTP_412_PRECONDITION_FAILED, "AREA_REVISION_MISMATCH")
+    try:
+        return int(normalized.strip('"'))
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_412_PRECONDITION_FAILED, "AREA_REVISION_MISMATCH") from exc
+
+
+@router.get("/areas", dependencies=_user_admin)
+def list_areas():
+    return {"areas": list(_my_record().areas)}
+
+
+@router.post("/areas", dependencies=_user_admin, status_code=status.HTTP_201_CREATED)
+def create_area(body: AreaCreateBody, response: Response):
+    rec = _my_record()
+    area_id = str(body.id)
+    if _area(rec, area_id) is not None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "AREA_ALREADY_EXISTS")
+
+    area = AuthoringArea(
+        id=area_id,
+        name=body.name,
+        entra_group_ids=tuple(dict.fromkeys(str(group_id) for group_id in body.entra_group_ids)),
+    )
+    _store().put(with_area(rec, area))
+    _set_etag(response, area.revision)
+    logger.info("authoring_area_created", extra={"tenant_id": rec.tid, "area_id": area.id})
+    return {"area": area}
+
+
+@router.patch("/areas/{area_id}", dependencies=_user_admin)
+def patch_area(
+    area_id: UUID,
+    body: AreaPatchBody,
+    response: Response,
+    if_match: Annotated[str, Header(alias="If-Match")],
+):
+    rec = _my_record()
+    current = _area(rec, str(area_id))
+    if current is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "AREA_NOT_FOUND")
+    if _if_match_revision(if_match) != current.revision:
+        raise HTTPException(status.HTTP_412_PRECONDITION_FAILED, "AREA_REVISION_MISMATCH")
+
+    groups = (
+        current.entra_group_ids
+        if body.entra_group_ids is None
+        else tuple(dict.fromkeys(str(group_id) for group_id in body.entra_group_ids))
+    )
+    updated = replace(
+        current,
+        name=body.name if body.name is not None else current.name,
+        entra_group_ids=groups,
+        status=body.status if body.status is not None else current.status,
+        revision=current.revision + 1,
+    )
+    _store().put(replace_area(rec, updated))
+    _set_etag(response, updated.revision)
+    logger.info("authoring_area_updated", extra={"tenant_id": rec.tid, "area_id": updated.id})
+    return {"area": updated}

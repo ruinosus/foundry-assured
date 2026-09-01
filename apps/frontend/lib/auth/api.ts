@@ -7,6 +7,7 @@
 // dependency is a no-op there too.
 
 import { apiScopes, authConfigured, msalInstance } from "@/lib/auth/msal";
+import { selectedAreaId } from "@/lib/area-selection";
 import { LOCALE_COOKIE } from "@/lib/locale";
 
 /** A escolha de idioma da interface, do cookie — vazio quando a pessoa está em "automático". */
@@ -38,6 +39,8 @@ export async function authedFetch(input: RequestInfo | URL, init: RequestInit = 
   // e sobrescrevê-lo aqui apagaria a preferência real da pessoa.
   const locale = chosenLocale();
   if (locale && !headers.has("Accept-Language")) headers.set("Accept-Language", locale);
+  const areaId = selectedAreaId();
+  if (areaId && !headers.has("X-Area-ID")) headers.set("X-Area-ID", areaId);
 
   return fetch(input, { ...init, headers });
 }
