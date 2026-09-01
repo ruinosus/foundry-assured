@@ -38,18 +38,30 @@ def main() -> int:
 
     rec = TenantRecord(tid="t1", name="Acme", tier="shared", status="active",
                        data_plane=TenantConfig())
-    c1 = Connection(id="c1", kind="github", label="GH")
+    c1 = Connection(id="c1", kind="github", label="GH", area_id="area-a")
     rec2 = with_connection(rec, c1)
     check("with_connection adds it", rec2.connections == (c1,))
     check("original record is unchanged (frozen)", rec.connections == ())
 
     # upsert: same id replaces, doesn't duplicate
-    c1b = Connection(id="c1", kind="github", label="GH-renamed")
+    c1b = Connection(id="c1", kind="github", label="GH-renamed", area_id="area-a")
     rec2b = with_connection(rec2, c1b)
-    check("with_connection upserts by id (no dup)", rec2b.connections == (c1b,))
+    check("with_connection upserts by area and id (no dup)", rec2b.connections == (c1b,))
 
-    rec3 = without_connection(rec2, "c1")
-    check("without_connection removes it", rec3.connections == ())
+    same_id_other_area = Connection(
+        id="c1", kind="github", label="GH area B", area_id="area-b"
+    )
+    rec2c = with_connection(rec2b, same_id_other_area)
+    check(
+        "same id in another area cannot overwrite the owner",
+        rec2c.connections == (c1b, same_id_other_area),
+    )
+
+    rec3 = without_connection(rec2c, "c1", area_id="area-a")
+    check(
+        "area-scoped removal preserves the other area",
+        rec3.connections == (same_id_other_area,),
+    )
 
     if failures:
         print(f"\n❌ {len(failures)} assertion(s) failed.")

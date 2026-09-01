@@ -28,7 +28,7 @@ from app.modules.platform_ops.internal.mcp_registry import (
     enabled_servers,
     server_for_kind,
 )
-from app.modules.tenancy.public import current_tenant_id
+from app.modules.tenancy.public import current_authoring_scope_key
 
 
 class EgressDenied(ValueError):
@@ -150,7 +150,7 @@ def discovery_lease_store() -> DiscoveryLeaseStore:
 
 
 def _tenant_key() -> str:
-    return current_tenant_id() or "self-hosted"
+    return current_authoring_scope_key()
 
 
 def _resolve(host: str, port: int) -> list[str]:

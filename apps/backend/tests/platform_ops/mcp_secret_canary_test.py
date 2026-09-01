@@ -28,6 +28,7 @@ async def _run() -> tuple[dict, list[dict], list[str]]:
             "auth": {"mode": "connection", "connectionRef": "github-main"},
         },
         store=store,
+        connection_lookup=lambda _connection_id: object(),
     )
     endpoint = approve_mcp_endpoint(
         endpoint["id"],
@@ -76,6 +77,7 @@ async def _failed_auth_message(secret: str) -> str:
             "auth": {"mode": "connection", "connectionRef": "github-main"},
         },
         store=store,
+        connection_lookup=lambda _connection_id: object(),
     )
     endpoint = approve_mcp_endpoint(
         endpoint["id"],

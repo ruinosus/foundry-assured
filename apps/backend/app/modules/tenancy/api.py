@@ -23,9 +23,10 @@ from fastapi import (
     status,
 )
 from fastapi_azure_auth.user import User
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.modules.tenancy.internal import tenant_resolution as _tenant_resolution
+from app.modules.tenancy.internal.areas import current_area, require_area
 from app.modules.tenancy.internal.onboarding import onboarding_guard
 from app.modules.tenancy.internal.tenant import (
     DOMAIN_IDS,
@@ -73,13 +74,21 @@ class ConfigBody(BaseModel):
 
 
 class ConnectionBody(BaseModel):
-    id: str
-    kind: str
-    label: str
-    foundry_connection_id: str = ""
-    keyvault_ref: str = ""
-    min_role_read: str = "Reader"
-    min_role_write: str = "Author"
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(
+        min_length=1, max_length=128, pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    )
+    kind: str = Field(min_length=1, max_length=63, pattern=r"^[a-z][a-z0-9_-]*$")
+    label: str = Field(min_length=1, max_length=120)
+    foundry_connection_id: str = Field(
+        default="", max_length=512, pattern=r"^$|^[A-Za-z0-9][A-Za-z0-9._:/-]{0,511}$"
+    )
+    keyvault_ref: str = Field(
+        default="", max_length=512, pattern=r"^$|^[A-Za-z0-9][A-Za-z0-9._:/-]{0,511}$"
+    )
+    min_role_read: Literal["Reader", "Author", "Approver", "Admin"] = "Reader"
+    min_role_write: Literal["Reader", "Author", "Approver", "Admin"] = "Author"
     enabled: bool = True
 
 
@@ -131,25 +140,51 @@ def put_config(body: ConfigBody):
     return {"ok": True}
 
 
-@router.get("/connections", dependencies=_user_admin)
+@router.get("/connections", dependencies=[*_user_admin, Depends(require_area)])
 def list_connections():
-    return {"connections": list(_my_record().connections)}
+    area = current_area()
+    if area is None:
+        raise HTTPException(404, "AREA_NOT_FOUND")
+    return {
+        "connections": [
+            connection
+            for connection in _my_record().connections
+            if connection.area_id == area.id
+        ]
+    }
 
 
-@router.post("/connections", dependencies=_user_admin)
+@router.post("/connections", dependencies=[*_user_admin, Depends(require_area)])
 def add_connection(body: ConnectionBody):
     if not validate_kind(body.kind):
         raise HTTPException(422, f"unknown kind: {body.kind}")
     if not (body.foundry_connection_id or body.keyvault_ref):
         raise HTTPException(422, "a connection needs foundry_connection_id or keyvault_ref")
-    conn = Connection(**body.model_dump())
+    area = current_area()
+    if area is None:
+        raise HTTPException(404, "AREA_NOT_FOUND")
+    conn = Connection(**body.model_dump(), area_id=area.id)
     _store().put(with_connection(_my_record(), conn))
     return {"ok": True}
 
 
-@router.delete("/connections/{conn_id}", dependencies=_user_admin)
+@router.delete(
+    "/connections/{conn_id}", dependencies=[*_user_admin, Depends(require_area)]
+)
 def delete_connection(conn_id: str):
-    _store().put(without_connection(_my_record(), conn_id))
+    rec = _my_record()
+    area = current_area()
+    connection = next(
+        (
+            item
+            for item in rec.connections
+            if item.id == conn_id and area is not None and item.area_id == area.id
+        ),
+        None,
+    )
+    if connection is None:
+        raise HTTPException(404, "CONNECTION_NOT_FOUND")
+    _store().put(without_connection(rec, conn_id, area_id=area.id))
     return {"ok": True}
 
 

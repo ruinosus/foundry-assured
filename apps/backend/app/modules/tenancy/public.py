@@ -61,6 +61,7 @@ __all__ = [
     "TenantRecord",
     "authorized_areas",
     "current_area",
+    "current_authoring_scope_key",
     "current_connection",
     "current_tenant_id",
     "domain_deps",
@@ -82,16 +83,29 @@ __all__ = [
 ]
 
 
+def current_authoring_scope_key() -> str:
+    """Escopo do tenant, refinado pela área quando a requisição de autoria a resolveu."""
+    tenant_id = current_tenant_id() or "self-hosted"
+    area = current_area()
+    return f"{tenant_id}__area__{area.id}" if area is not None else tenant_id
+
+
 def current_connection(connection_id: str) -> Connection | None:
-    """Resolve uma referência somente dentro do tenant da request atual."""
+    """Resolve uma referência dentro do tenant e, em autoria, somente na área atual."""
     store = tenant_store()
     if store is None:
         return None
     record = store.get(current_tenant_id())
     if record is None:
         return None
+    area = current_area()
     return next(
-        (connection for connection in record.connections if connection.id == connection_id),
+        (
+            connection
+            for connection in record.connections
+            if connection.id == connection_id
+            and (area is None or connection.area_id == area.id)
+        ),
         None,
     )
 

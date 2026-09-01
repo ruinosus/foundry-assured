@@ -8,11 +8,12 @@ from app.modules.authoring.internal.catalog import CatalogSource
 
 
 def _connections() -> list[dict]:
-    from app.modules.tenancy.public import current_tenant_id, tenant_store
+    from app.modules.tenancy.public import current_area, current_tenant_id, tenant_store
 
     store = tenant_store()
     record = store.get(current_tenant_id()) if store is not None else None
-    if record is None:
+    area = current_area()
+    if record is None or area is None:
         return []
     return [
         {
@@ -22,6 +23,7 @@ def _connections() -> list[dict]:
             "kind": connection.kind,
         }
         for connection in record.connections
+        if connection.area_id == area.id
     ]
 
 

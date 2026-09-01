@@ -104,7 +104,8 @@
     ],
     "okf": [
       "modules/authoring/api.py",
-      "modules/authoring/internal/catalog.py"
+      "modules/authoring/internal/catalog.py",
+      "modules/authoring/internal/changesets.py"
     ],
     "shared": [
       "modules/authoring/api.py",
@@ -357,7 +358,8 @@
       "modules/platform_ops/internal/mcp_discovery.py",
       "modules/platform_ops/internal/mcp_drift.py",
       "modules/platform_ops/internal/mcp_endpoints.py",
-      "modules/platform_ops/internal/platform.py"
+      "modules/platform_ops/internal/platform.py",
+      "modules/platform_ops/internal/registry_bindings.py"
     ],
     "foundry": [
       "modules/platform_ops/api.py",
@@ -372,7 +374,8 @@
     ],
     "okf": [
       "modules/platform_ops/api.py",
-      "modules/platform_ops/internal/mcp_conformity.py"
+      "modules/platform_ops/internal/mcp_conformity.py",
+      "modules/platform_ops/internal/registry_bindings.py"
     ],
     "shared": [
       "modules/platform_ops/api.py",
@@ -382,9 +385,11 @@
       "modules/platform_ops/internal/mcp_egress.py",
       "modules/platform_ops/internal/mcp_endpoints.py",
       "modules/platform_ops/internal/mcp_tools.py",
-      "modules/platform_ops/internal/platform.py"
+      "modules/platform_ops/internal/platform.py",
+      "modules/platform_ops/internal/registry_bindings.py"
     ],
     "tenancy": [
+      "modules/platform_ops/api.py",
       "modules/platform_ops/internal/mcp_classification.py",
       "modules/platform_ops/internal/mcp_discovery.py",
       "modules/platform_ops/internal/mcp_drift.py",
@@ -395,14 +400,22 @@
     ]
   },
   "proposer": {
+    "authoring": [
+      "modules/proposer/api.py"
+    ],
     "foundry": [
       "modules/proposer/internal/draft.py",
       "modules/proposer/internal/optimize.py"
+    ],
+    "okf": [
+      "modules/proposer/api.py",
+      "modules/proposer/internal/changeset.py"
     ],
     "shared": [
       "modules/proposer/api.py"
     ],
     "tenancy": [
+      "modules/proposer/api.py",
       "modules/proposer/internal/draft.py",
       "modules/proposer/internal/optimize.py"
     ]

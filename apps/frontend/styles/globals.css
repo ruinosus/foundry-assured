@@ -93,6 +93,39 @@ a {
 @media (max-width: 960px) { .catalog-layout.has-detail { grid-template-columns: 1fr; } .catalog-detail { position: static; max-height: none; } }
 @media (max-width: 640px) { .catalog-heading { align-items: start; flex-direction: column; } .catalog-filters { align-items: stretch; flex-direction: column; } .catalog-filters label { min-width: 0; } .catalog-table { min-width: 46rem; } .catalog-state { align-items: stretch; flex-direction: column; } .catalog-facts { grid-template-columns: 1fr; } }
 
+/* ---------- Registries e bindings ---------- */
+.registries-page { display: grid; gap: var(--space-5); }
+.registries-heading { display: flex; align-items: end; justify-content: space-between; gap: var(--space-4); }
+.registries-heading h1 { margin-bottom: var(--space-1); }
+.registries-heading p, .registry-form header p { margin: 0; color: var(--muted); font-size: var(--text-sm); }
+.registries-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(20rem, 0.75fr); gap: var(--space-4); align-items: start; }
+.registries-list { display: grid; gap: var(--space-3); min-width: 0; }
+.registry-item, .registry-form { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.registry-item { display: grid; gap: var(--space-3); padding: var(--space-4); }
+.registry-item > header, .registry-item > footer, .registry-form > footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.registry-item > header div { display: grid; gap: 0.15rem; min-width: 0; }
+.registry-item code { color: var(--muted); font-size: var(--text-xs); overflow-wrap: anywhere; }
+.registry-item footer { justify-content: flex-end; }
+.registry-facts { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-2); margin: 0; }
+.registry-facts div { min-width: 0; padding: var(--space-2); border-radius: var(--radius-sm); background: var(--sunk); }
+.registry-facts dt { color: var(--muted); font-size: var(--text-xs); }
+.registry-facts dd { margin: var(--space-1) 0 0; font-size: var(--text-sm); font-weight: 650; overflow-wrap: anywhere; }
+.registry-tools { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+.registry-tools span { padding: var(--space-1) var(--space-2); border-radius: var(--radius-sm); font-size: var(--text-xs); }
+.registry-tools .allowed { background: var(--pass-wash); color: var(--pass); }
+.registry-tools .denied { background: var(--block-wash); color: var(--block); }
+.registry-reasons, .registry-guardrail { margin: 0; padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm); background: var(--wait-wash); color: var(--wait); font-size: var(--text-xs); }
+.registry-form { position: sticky; top: calc(var(--topbar-h) + var(--space-4)); display: grid; gap: var(--space-4); padding: var(--space-4); }
+.registry-form h2 { margin: 0 0 var(--space-1); font-size: var(--text-lg); }
+.registry-fields { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.registry-fields label { display: grid; gap: var(--space-1); color: var(--muted); font-size: var(--text-xs); font-weight: 650; }
+.registry-fields .wide { grid-column: 1 / -1; }
+.registry-fields input, .registry-fields select, .registry-fields textarea { width: 100%; min-width: 0; min-height: 2.75rem; padding: var(--space-2) var(--space-3); border: 1px solid var(--line-strong); border-radius: var(--radius-sm); background: var(--surface); color: var(--ink); font: inherit; }
+.registry-item > footer .btn, .registry-form > footer .btn { min-height: 2.75rem; }
+.registry-fields input:focus-visible, .registry-fields select:focus-visible, .registry-fields textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 960px) { .registries-layout { grid-template-columns: 1fr; } .registry-form { position: static; } }
+@media (max-width: 640px) { .registries-heading, .registry-item > header { align-items: start; flex-direction: column; } .registry-facts, .registry-fields { grid-template-columns: 1fr; } .registry-fields .wide { grid-column: auto; } .registry-item > footer, .registry-form > footer { flex-wrap: wrap; } }
+
 /* ---------- ChangeSet tracer ---------- */
 .changeset-tracer { display: grid; gap: var(--space-4); padding-top: var(--space-5); border-top: 1px solid var(--line); }
 .changeset-tracer > header, .changeset-tracer > footer { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }

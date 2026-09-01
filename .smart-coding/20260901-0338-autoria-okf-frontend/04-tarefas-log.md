@@ -12,3 +12,5 @@
   dod: OKF authoring/schema verdes · ChangeSet 76/76 com prompt/workflow/container em SQLite · FormFlow 31/31 e `visibleWhen` genérico · referências AgentSchema/workflow/container validadas no campo e no domínio · verify:okf/formflow verdes · lint 0 erros (23 avisos preexistentes) · typecheck e build verdes · i18n 836/836 · Playwright Assured UI desktop/móvel sem overflow, preview inspecionável e workflow não executável · impeccable detector `[]` e verdict `ship`
 - 2026-09-01T16:30:00Z F06 [~]→[x] jefferson.barnabe commit=pendente
   dod: `tests.okf.changeset_test` 0 falhas · `tests.architecture.proposer_read_only_test` ok · `verify:plan` ok · lint 0 erros · typecheck ok · build 19/19 páginas · gate global 98/98 verde · auditoria MÁXIMA MAIOR aprovada
+- 2026-09-01T18:03:39Z F07 [~]→[x] jefferson.barnabe commit=pendente
+  dod: binding/conformity/drift/connection store verdes · isolamento tenant-área, catálogo e canário de segredo verdes · import-linter 29 contratos · lint 0 erros (23 avisos preexistentes) · typecheck ok · i18n 895/895 · build 20/20 páginas · gate global 98/98 backend + frontend verde · auditoria MÁXIMA MAIOR aprovada

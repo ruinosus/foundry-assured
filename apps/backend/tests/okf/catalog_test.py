@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sys
 from dataclasses import FrozenInstanceError, replace
+from types import SimpleNamespace
 
 from app.modules.okf.public import (
     AuthoringCatalog,
@@ -180,6 +181,47 @@ def main() -> int:
         "changed source rejects a stale cursor",
         lambda: catalog_page(sources=sources(), limit=1, cursor=stale_cursor),
         fails=True,
+    )
+
+    from app.modules.authoring.internal import sources as source_adapters
+    from app.modules.tenancy import public as tenancy
+    from app.modules.tenancy.public import (
+        Connection,
+        InMemoryTenantStore,
+        TenantConfig,
+        TenantRecord,
+    )
+
+    connection_store = InMemoryTenantStore()
+    connection_store.put(
+        TenantRecord(
+            tid="tenant-a",
+            name="Tenant A",
+            tier="shared",
+            status="active",
+            data_plane=TenantConfig(),
+            connections=(
+                Connection("shared", "github", "Area A", area_id="area-a"),
+                Connection("shared", "github", "Area B", area_id="area-b"),
+            ),
+        )
+    )
+    original_store = tenancy.tenant_store
+    original_tenant = tenancy.current_tenant_id
+    original_area = tenancy.current_area
+    try:
+        tenancy.tenant_store = lambda: connection_store
+        tenancy.current_tenant_id = lambda: "tenant-a"
+        tenancy.current_area = lambda: SimpleNamespace(id="area-a")
+        visible_connections = source_adapters._connections()
+    finally:
+        tenancy.tenant_store = original_store
+        tenancy.current_tenant_id = original_tenant
+        tenancy.current_area = original_area
+    check(
+        "connection catalog exposes only the resolved area",
+        lambda: visible_connections
+        == [{"id": "shared", "name": "Area A", "state": "available", "kind": "github"}],
     )
 
     detail_sources = sources()

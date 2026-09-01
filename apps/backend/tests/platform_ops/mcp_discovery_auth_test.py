@@ -18,7 +18,11 @@ from app.modules.tenancy.public import Connection, set_current_tenant
 
 
 def _approved(store, origin: str, auth: dict) -> dict:
-    endpoint = create_mcp_endpoint({"url": origin, "auth": auth}, store=store)
+    endpoint = create_mcp_endpoint(
+        {"url": origin, "auth": auth},
+        store=store,
+        connection_lookup=lambda _connection_id: object(),
+    )
     return approve_mcp_endpoint(
         endpoint["id"],
         decision="approved",

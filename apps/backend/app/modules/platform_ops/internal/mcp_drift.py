@@ -10,7 +10,7 @@ from typing import Any, Protocol, cast
 
 from app.modules.audit.public import actor as current_actor
 from app.modules.audit.public import read_evidence, record
-from app.modules.tenancy.public import current_tenant_id
+from app.modules.tenancy.public import current_authoring_scope_key
 
 
 class SnapshotReviewInvalid(ValueError):
@@ -154,7 +154,7 @@ def mcp_source_store() -> McpSourceStore:
 
 
 def _tenant_key() -> str:
-    return current_tenant_id() or "self-hosted"
+    return current_authoring_scope_key()
 
 
 def _snapshot_reader(snapshot_id: str) -> dict[str, Any] | None:

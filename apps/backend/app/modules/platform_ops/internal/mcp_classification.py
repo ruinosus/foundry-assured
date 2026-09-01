@@ -13,7 +13,7 @@ import rfc8785
 
 from app.modules.audit.public import actor as current_actor
 from app.modules.audit.public import read_evidence, record
-from app.modules.tenancy.public import current_tenant_id
+from app.modules.tenancy.public import current_authoring_scope_key
 
 
 class ClassificationInvalid(ValueError):
@@ -189,7 +189,7 @@ def classification_store() -> ClassificationStore:
 
 
 def _tenant_key() -> str:
-    return current_tenant_id() or "self-hosted"
+    return current_authoring_scope_key()
 
 
 def _read_snapshot(snapshot_id: str) -> dict | None:

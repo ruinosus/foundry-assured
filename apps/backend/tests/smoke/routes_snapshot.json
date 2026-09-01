@@ -82,6 +82,10 @@
     ],
     [
       "GET",
+      "/authoring/registry-bindings"
+    ],
+    [
+      "GET",
       "/authoring/resources/{kind}/{resource_id}"
     ],
     [
@@ -306,6 +310,14 @@
     ],
     [
       "POST",
+      "/authoring/registry-bindings"
+    ],
+    [
+      "POST",
+      "/authoring/registry-bindings/{binding_id}/refresh"
+    ],
+    [
+      "POST",
       "/builder"
     ],
     [
@@ -383,6 +395,14 @@
     [
       "POST",
       "/platform-hosted"
+    ],
+    [
+      "POST",
+      "/proposer/changeset"
+    ],
+    [
+      "POST",
+      "/proposer/changeset/confirm"
     ],
     [
       "POST",
@@ -497,6 +517,10 @@
     [
       "GET",
       "/authoring/mcp-sources/{source_id}"
+    ],
+    [
+      "GET",
+      "/authoring/registry-bindings"
     ],
     [
       "GET",
@@ -732,6 +756,14 @@
     ],
     [
       "POST",
+      "/authoring/registry-bindings"
+    ],
+    [
+      "POST",
+      "/authoring/registry-bindings/{binding_id}/refresh"
+    ],
+    [
+      "POST",
       "/builder"
     ],
     [
@@ -817,6 +849,14 @@
     [
       "POST",
       "/platform-hosted"
+    ],
+    [
+      "POST",
+      "/proposer/changeset"
+    ],
+    [
+      "POST",
+      "/proposer/changeset/confirm"
     ],
     [
       "POST",
@@ -935,6 +975,10 @@
     [
       "GET",
       "/authoring/mcp-sources/{source_id}"
+    ],
+    [
+      "GET",
+      "/authoring/registry-bindings"
     ],
     [
       "GET",
@@ -1182,6 +1226,14 @@
     ],
     [
       "POST",
+      "/authoring/registry-bindings"
+    ],
+    [
+      "POST",
+      "/authoring/registry-bindings/{binding_id}/refresh"
+    ],
+    [
+      "POST",
       "/builder"
     ],
     [
@@ -1259,6 +1311,14 @@
     [
       "POST",
       "/platform-hosted"
+    ],
+    [
+      "POST",
+      "/proposer/changeset"
+    ],
+    [
+      "POST",
+      "/proposer/changeset/confirm"
     ],
     [
       "POST",

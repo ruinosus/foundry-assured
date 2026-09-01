@@ -5,6 +5,7 @@ from __future__ import annotations
 import ipaddress
 import json
 import re
+from collections.abc import Callable
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, datetime
 from typing import Any, Protocol
@@ -13,7 +14,7 @@ from uuid import uuid4
 
 from app.modules.audit.public import actor as current_actor
 from app.modules.audit.public import record
-from app.modules.tenancy.public import current_tenant_id
+from app.modules.tenancy.public import current_authoring_scope_key, current_connection
 
 _DNS_NAME = re.compile(
     r"^(?=.{1,253}\.?$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)*"
@@ -174,7 +175,7 @@ def endpoint_store() -> EndpointStore:
 
 
 def _tenant_key() -> str:
-    return current_tenant_id() or "self-hosted"
+    return current_authoring_scope_key()
 
 
 def validate_mcp_origin(value: str) -> str:
@@ -253,12 +254,15 @@ def create_mcp_endpoint(
     store: EndpointStore | None = None,
     network_probe=None,
     actor: str | None = None,
+    connection_lookup: Callable[[str], Any] = current_connection,
 ) -> dict[str, Any]:
     del network_probe
     if not isinstance(proposal, dict) or set(proposal) != {"url", "auth"}:
         raise EndpointInvalid("MCP_ENDPOINT_INVALID")
     origin = validate_mcp_origin(proposal["url"])
     auth_mode, connection_ref = _auth(proposal["auth"])
+    if connection_ref is not None and connection_lookup(connection_ref) is None:
+        raise EndpointInvalid("MCP_ENDPOINT_CONNECTION_NOT_FOUND")
     endpoint = McpEndpoint(
         id=f"mep_{uuid4().hex}",
         tenant_key=_tenant_key(),

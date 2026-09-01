@@ -52,6 +52,7 @@ const WORKSPACE_NAV = [
 const ADMIN_NAV = [
   { href: "/assistants", key: "screenAssistants", icon: "🧩" },
   { href: "/audit", key: "audit", icon: "🔗" },
+  { href: "/registries", key: "registries", icon: "⌘" },
   { href: "/admin/areas", key: "areas", icon: "▦" },
   { href: "/admin/users", key: "admin", icon: "🛡️" },
   { href: "/admin/connections", key: "connections", icon: "🔌" },
@@ -69,6 +70,7 @@ const TITLE_KEYS: Record<string, string> = {
   "/skills": "skills",
   "/tickets": "tickets",
   "/evals": "evals",
+  "/registries": "registries",
   "/admin/areas": "areas",
   "/admin/users": "admin",
   "/admin/connections": "connections",

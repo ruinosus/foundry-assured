@@ -17,6 +17,7 @@ class Connection:
     id: str
     kind: str                          # a registry server id VERBATIM: github | azdo | azure | entra | learn | m365
     label: str
+    area_id: str = ""                 # authoring ownership; empty only for legacy tenant-wide consumers
     endpoint: str = ""                 # per-connection target, e.g. the Azure DevOps org that fills the registry URL {org}
     foundry_connection_id: str = ""    # the Foundry project connection that brokers auth (Microsoft-native)
     keyvault_ref: str = ""             # DEPRECATED (C/ADR-009): the build no longer reads it; kept for back-compat
@@ -76,14 +77,28 @@ def validate_kind(kind: str) -> bool:
 
 
 def with_connection(rec: TenantRecord, conn: Connection) -> TenantRecord:
-    """Return a new record with `conn` added/replaced (by id) — upsert."""
-    others = tuple(c for c in rec.connections if c.id != conn.id)
+    """Return a new record with `conn` upserted by its area-local identity."""
+    others = tuple(
+        current
+        for current in rec.connections
+        if (current.area_id, current.id) != (conn.area_id, conn.id)
+    )
     return replace(rec, connections=others + (conn,))
 
 
-def without_connection(rec: TenantRecord, conn_id: str) -> TenantRecord:
-    """Return a new record with the connection `conn_id` removed."""
-    return replace(rec, connections=tuple(c for c in rec.connections if c.id != conn_id))
+def without_connection(
+    rec: TenantRecord, conn_id: str, *, area_id: str | None = None
+) -> TenantRecord:
+    """Remove an id globally for legacy callers, or only from the requested area."""
+    return replace(
+        rec,
+        connections=tuple(
+            current
+            for current in rec.connections
+            if current.id != conn_id
+            or (area_id is not None and current.area_id != area_id)
+        ),
+    )
 
 
 def with_area(rec: TenantRecord, area: AuthoringArea) -> TenantRecord:

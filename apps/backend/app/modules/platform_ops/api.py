@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -22,6 +22,10 @@ from app.modules.platform_ops.public import (
     EgressDenied,
     EndpointConflict,
     EndpointInvalid,
+    RegistryBindingConflict,
+    RegistryBindingInvalid,
+    RegistryBindingScope,
+    RegistryBindingService,
     SnapshotReviewConflict,
     SnapshotReviewInvalid,
     SnapshotReviewNotFound,
@@ -35,9 +39,16 @@ from app.modules.platform_ops.public import (
     get_snapshot,
     list_mcp_endpoints,
     project_snapshot_classifications,
+    registry_binding_store,
     review_mcp_snapshot,
 )
-from app.shared.auth import auth_dependencies, require_role
+from app.modules.tenancy.public import (
+    current_area,
+    current_connection,
+    current_tenant_id,
+    require_area,
+)
+from app.shared.auth import auth_dependencies, current_user, require_role
 
 router = APIRouter(prefix="/authoring", tags=["authoring"], dependencies=auth_dependencies())
 _admin = [Depends(require_role("Admin"))]
@@ -114,7 +125,96 @@ class SnapshotReviewBody(BaseModel):
     expected_revision: int = Field(alias="expectedRevision", ge=1)
 
 
-@router.post("/mcp-endpoints", status_code=201, responses={422: {}})
+class RegistryToolboxBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=63)
+    version: str = Field(min_length=1, max_length=64)
+
+
+class RegistryEndpointBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(pattern=r"^mep_[a-f0-9]{32}$")
+
+
+class RegistrySnapshotBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(min_length=1, max_length=128)
+    hash: str = Field(pattern=r"^[a-f0-9]{64}$")
+
+
+class RegistryMcpBindingBody(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    toolbox: RegistryToolboxBody | None = None
+    endpoint: RegistryEndpointBody | None = None
+    tools: list[str] = Field(min_length=1, max_length=100)
+    reviewed_snapshot: RegistrySnapshotBody = Field(alias="reviewedSnapshot")
+
+    @model_validator(mode="after")
+    def validate_binding(self):
+        if (self.toolbox is None) == (self.endpoint is None):
+            raise ValueError("Informe exatamente uma implementação MCP.")
+        if len(set(self.tools)) != len(self.tools) or any(
+            not tool or len(tool) > 128 for tool in self.tools
+        ):
+            raise ValueError("Tools devem ser referências únicas de até 128 caracteres.")
+        return self
+
+
+class RegistryBindingBody(BaseModel):
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+    id: str = Field(pattern=r"^[a-z0-9][a-z0-9-]{0,62}$")
+    name: str = Field(min_length=1, max_length=120)
+    connection_id: str = Field(
+        alias="connectionId", pattern=r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    )
+    risk: Literal["read", "write"]
+    binding: RegistryMcpBindingBody
+    expected_revision: int | None = Field(
+        default=None, alias="expectedRevision", ge=1
+    )
+
+
+def _registry_scope(area_id: str) -> RegistryBindingScope:
+    area = current_area()
+    if area is None or area.id != area_id:
+        raise HTTPException(404, "AREA_NOT_FOUND")
+    return RegistryBindingScope(current_tenant_id() or "self-hosted", area.id)
+
+
+def _registry_service() -> RegistryBindingService:
+    def connection_exists(tenant_id: str, connection_id: str) -> bool:
+        connection = current_connection(connection_id)
+        return (
+            tenant_id == (current_tenant_id() or "self-hosted")
+            and connection is not None
+            and connection.enabled
+        )
+
+    return RegistryBindingService(
+        registry_binding_store(), connection_exists=connection_exists
+    )
+
+
+def _registry_error(exc: Exception) -> HTTPException:
+    if isinstance(exc, RegistryBindingConflict):
+        return HTTPException(409, str(exc))
+    if isinstance(exc, RegistryBindingInvalid):
+        status_code = 404 if str(exc).endswith("NOT_FOUND") else 422
+        return HTTPException(status_code, str(exc))
+    return HTTPException(502, "Registry binding não pôde ser avaliado.")
+
+
+@router.post(
+    "/mcp-endpoints",
+    status_code=201,
+    dependencies=[*_admin, Depends(require_area)],
+    responses={422: {}},
+)
 def create_endpoint(body: EndpointBody) -> dict:
     try:
         return create_mcp_endpoint(body.model_dump(by_alias=True, exclude_none=True))
@@ -122,14 +222,14 @@ def create_endpoint(body: EndpointBody) -> dict:
         raise HTTPException(422, str(exc)) from exc
 
 
-@router.get("/mcp-endpoints")
+@router.get("/mcp-endpoints", dependencies=[*_admin, Depends(require_area)])
 def endpoints() -> dict:
     return {"items": list_mcp_endpoints()}
 
 
 @router.post(
     "/mcp-endpoints/{endpoint_id}/approval",
-    dependencies=_admin,
+    dependencies=[*_admin, Depends(require_area)],
     responses={404: {}, 409: {}, 422: {}},
 )
 def approve_endpoint(endpoint_id: str, body: ApprovalBody) -> dict:
@@ -147,7 +247,11 @@ def approve_endpoint(endpoint_id: str, body: ApprovalBody) -> dict:
         raise HTTPException(422, str(exc)) from exc
 
 
-@router.get("/toolboxes", responses={400: {}, 502: {}})
+@router.get(
+    "/toolboxes",
+    dependencies=[*_admin, Depends(require_area)],
+    responses={400: {}, 502: {}},
+)
 def toolboxes(
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
     cursor: str | None = None,
@@ -163,7 +267,7 @@ def toolboxes(
 @router.post(
     "/mcp-discoveries",
     status_code=201,
-    dependencies=_admin,
+    dependencies=[*_admin, Depends(require_area)],
     response_model=None,
     responses={404: {}, 409: {}, 413: {}, 422: {}, 424: {}, 429: {}, 502: {}, 504: {}},
 )
@@ -212,7 +316,11 @@ def _discovery_error(exc: Exception) -> JSONResponse:
     )
 
 
-@router.get("/mcp-snapshots/{snapshot_id}", responses={404: {}})
+@router.get(
+    "/mcp-snapshots/{snapshot_id}",
+    dependencies=[*_admin, Depends(require_area)],
+    responses={404: {}},
+)
 def snapshot(snapshot_id: str) -> dict:
     result = get_snapshot(snapshot_id)
     if result is None:
@@ -223,7 +331,11 @@ def snapshot(snapshot_id: str) -> dict:
         raise HTTPException(404, _SNAPSHOT_NOT_FOUND) from exc
 
 
-@router.get("/mcp-sources/{source_id}", responses={404: {}})
+@router.get(
+    "/mcp-sources/{source_id}",
+    dependencies=[*_admin, Depends(require_area)],
+    responses={404: {}},
+)
 def source(source_id: str) -> dict:
     result = get_mcp_source(source_id)
     if result is None:
@@ -233,7 +345,7 @@ def source(source_id: str) -> dict:
 
 @router.post(
     "/mcp-snapshots/{snapshot_id}/review",
-    dependencies=_admin,
+    dependencies=[*_admin, Depends(require_area)],
     responses={404: {}, 409: {}, 422: {}},
 )
 def review_snapshot(snapshot_id: str, body: SnapshotReviewBody) -> dict:
@@ -253,7 +365,7 @@ def review_snapshot(snapshot_id: str, body: SnapshotReviewBody) -> dict:
 
 @router.put(
     "/mcp-snapshots/{snapshot_id}/tools/{tool_name}/classification",
-    dependencies=_admin,
+    dependencies=[*_admin, Depends(require_area)],
     responses={404: {}, 409: {}, 422: {}},
 )
 def classify_tool(
@@ -277,6 +389,7 @@ def classify_tool(
 
 @router.post(
     "/mcp-bindings/conformity",
+    dependencies=[*_admin, Depends(require_area)],
     responses={404: {}, 422: {}, 502: {}},
 )
 def conformity(body: dict) -> dict:
@@ -290,3 +403,61 @@ def conformity(body: dict) -> dict:
         raise HTTPException(422, str(exc)) from exc
     except Exception as exc:
         raise HTTPException(502, "Conformidade MCP não pôde ser avaliada.") from exc
+
+
+@router.get(
+    "/registry-bindings",
+    dependencies=[*_admin, Depends(require_area)],
+)
+def registry_bindings(
+    area_id: Annotated[str, Header(alias="X-Area-ID")],
+    service: Annotated[RegistryBindingService, Depends(_registry_service)],
+) -> dict[str, Any]:
+    return service.list(_registry_scope(area_id))
+
+
+@router.post(
+    "/registry-bindings",
+    status_code=201,
+    dependencies=[*_admin, Depends(require_area)],
+    responses={404: {}, 409: {}, 422: {}, 502: {}},
+)
+def put_registry_binding(
+    body: RegistryBindingBody,
+    area_id: Annotated[str, Header(alias="X-Area-ID")],
+    service: Annotated[RegistryBindingService, Depends(_registry_service)],
+) -> dict[str, Any]:
+    try:
+        user = current_user()
+        return service.put(
+            _registry_scope(area_id),
+            body.model_dump(by_alias=True, exclude_none=True),
+            actor=getattr(user, "oid", None) or "local-admin",
+        )
+    except (RegistryBindingConflict, RegistryBindingInvalid) as exc:
+        raise _registry_error(exc) from exc
+    except Exception as exc:
+        raise _registry_error(exc) from exc
+
+
+@router.post(
+    "/registry-bindings/{binding_id}/refresh",
+    dependencies=[*_admin, Depends(require_area)],
+    responses={404: {}, 409: {}, 422: {}, 502: {}},
+)
+def refresh_registry_binding(
+    binding_id: str,
+    area_id: Annotated[str, Header(alias="X-Area-ID")],
+    service: Annotated[RegistryBindingService, Depends(_registry_service)],
+) -> dict[str, Any]:
+    try:
+        user = current_user()
+        return service.refresh(
+            _registry_scope(area_id),
+            binding_id,
+            actor=getattr(user, "oid", None) or "local-admin",
+        )
+    except (RegistryBindingConflict, RegistryBindingInvalid) as exc:
+        raise _registry_error(exc) from exc
+    except Exception as exc:
+        raise _registry_error(exc) from exc

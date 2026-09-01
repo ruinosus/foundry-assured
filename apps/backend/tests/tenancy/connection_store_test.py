@@ -23,7 +23,7 @@ def main() -> int:
         if not cond:
             failures.append(name)
 
-    conn = Connection(id="gh-acme", kind="github", label="Acme GitHub",
+    conn = Connection(id="gh-acme", kind="github", label="Acme GitHub", area_id="area-a",
                       foundry_connection_id="conn:gh-acme")
     rec = TenantRecord(tid="t1", name="Acme", tier="shared", status="active",
                        data_plane=TenantConfig(), connections=(conn,))
@@ -32,6 +32,7 @@ def main() -> int:
     got = store.get("t1")
     check("record round-trips with its connection", got == rec)
     check("connection is preserved", got.connections[0].foundry_connection_id == "conn:gh-acme")
+    check("connection keeps its owner area", got.connections[0].area_id == "area-a")
 
     bare = TenantRecord(tid="t2", name="B", tier="shared", status="active",
                         data_plane=TenantConfig())

@@ -16,7 +16,7 @@ import rfc8785
 
 from app.modules.audit.public import read_evidence, record, write_evidence
 from app.modules.foundry.public import resolve_toolbox_version
-from app.modules.tenancy.public import current_tenant_id
+from app.modules.tenancy.public import current_authoring_scope_key
 
 _ANNOTATIONS = ("title", "readOnlyHint", "destructiveHint", "idempotentHint", "openWorldHint")
 _MAX_TOOLS = 200
@@ -125,7 +125,7 @@ class _CapturingSession:
 
 
 def _tenant_key() -> str:
-    return current_tenant_id() or "self-hosted"
+    return current_authoring_scope_key()
 
 
 def _plain(value: Any) -> Any:

@@ -79,6 +79,15 @@ from app.modules.platform_ops.internal.platform import (
     platform_agent_proxy,
     platform_configured,
 )
+from app.modules.platform_ops.internal.registry_bindings import (
+    InMemoryRegistryBindingStore,
+    RegistryBindingConflict,
+    RegistryBindingInvalid,
+    RegistryBindingScope,
+    RegistryBindingService,
+    TableRegistryBindingStore,
+    registry_binding_store,
+)
 
 __all__ = [
     "SERVERS",
@@ -96,12 +105,18 @@ __all__ = [
     "InMemoryDiscoveryLeaseStore",
     "InMemoryEndpointStore",
     "InMemoryMcpSourceStore",
+    "InMemoryRegistryBindingStore",
+    "RegistryBindingConflict",
+    "RegistryBindingInvalid",
+    "RegistryBindingScope",
+    "RegistryBindingService",
     "SnapshotReviewConflict",
     "SnapshotReviewInvalid",
     "SnapshotReviewNotFound",
     "TableClassificationStore",
     "TableDiscoveryLeaseStore",
     "TableMcpSourceStore",
+    "TableRegistryBindingStore",
     "approve_mcp_endpoint",
     "build_from_connections",
     "build_hosted_from_connections",
@@ -127,6 +142,7 @@ __all__ = [
     "platform_agent_proxy",
     "platform_configured",
     "project_snapshot_classifications",
+    "registry_binding_store",
     "resolve_approved_endpoint",
     "review_mcp_snapshot",
     "server_for_kind",
