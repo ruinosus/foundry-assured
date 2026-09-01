@@ -24,6 +24,10 @@ from app.modules.okf.public import (
     parse_authoring_document,
     serialize_authoring_document,
 )
+from app.modules.proposer.public import (
+    build_changeset_proposal,
+    review_changeset_proposal,
+)
 
 
 class _PostgresCursor:
@@ -285,6 +289,125 @@ def main() -> int:
         changeset.render_review(current_version=current_version).startswith("# ChangeSet"),
     )
     check("proposal cannot be confirmed before review", not hasattr(changeset, "confirm"))
+
+    factual_catalog = {
+        "items": [
+            {
+                "kind": "agent",
+                "id": "ticket-agent",
+                "name": "ticket-agent",
+                "version": "3",
+                "source": "Microsoft Foundry Agents",
+                "state": "active",
+                "selectable": True,
+            }
+        ],
+        "snapshot": {"id": "cat_0123456789abcdef01234567", "hash": "a" * 64, "at": "2026-09-01T12:00:00Z"},
+        "partial": False,
+        "gaps": [],
+    }
+    builder_result = build_changeset_proposal(
+        {
+            "name": "new-ticket-agent",
+            "description": "Atende solicitações de ticket.",
+            "rationale": "Reutiliza a implementação já publicada.",
+            "reuse": [{"name": "ticket-agent", "why": "Já atende tickets."}],
+            "knowledge": ["support-kb"],
+        },
+        factual_catalog,
+        tenant_id="tenant-a",
+        area_id="support",
+        actor_id="author-a",
+    )
+    builder_operations = builder_result["proposal"]["operations"]
+    check("builder creates a multi-document proposal", len(builder_operations) == 2)
+    check(
+        "builder binds only the versioned catalog agent",
+        lambda: parse_authoring_document(builder_operations[0]["document"]).spec["agent"]
+        == {"name": "ticket-agent", "version": "3"},
+    )
+    check(
+        "builder declares intra-set dependency",
+        builder_operations[1]["depends_on"] == [builder_operations[0]["id"]],
+    )
+    check(
+        "builder exposes evidence, justification and gaps per operation",
+        all(operation["evidence"] and operation["justification"] and "gaps" in operation for operation in builder_operations),
+    )
+    check(
+        "builder provenance identifies the process",
+        lambda: parse_authoring_document(builder_operations[0]["document"]).generated["by"]
+        == "process:builder",
+    )
+    check(
+        "builder review requires an explicit decision per operation",
+        lambda: review_changeset_proposal(
+            builder_result["proposal"],
+            [{"operation_id": builder_operations[0]["id"], "decision": "accept"}],
+            factual_catalog,
+            tenant_id="tenant-a",
+            area_id="support",
+        ),
+        fails=True,
+    )
+    check(
+        "builder review rejects duplicate decisions",
+        lambda: review_changeset_proposal(
+            builder_result["proposal"],
+            [
+                {"operation_id": builder_operations[0]["id"], "decision": "accept"},
+                {"operation_id": builder_operations[0]["id"], "decision": "discard"},
+            ],
+            factual_catalog,
+            tenant_id="tenant-a",
+            area_id="support",
+        ),
+        fails=True,
+    )
+    reviewed_builder = review_changeset_proposal(
+        builder_result["proposal"],
+        [
+            {"operation_id": operation["id"], "decision": "accept"}
+            for operation in builder_operations
+        ],
+        factual_catalog,
+        tenant_id="tenant-a",
+        area_id="support",
+    )
+    check(
+        "builder confirmation revalidates the complete graph",
+        len(reviewed_builder["operations"]) == 2
+        and len(reviewed_builder["confirmation_digest"]) == 64,
+    )
+    invented_binding = builder_operations[0]["document"].replace(
+        "name: ticket-agent", "name: invented-agent"
+    )
+    check(
+        "edited external reference must exist in the factual snapshot",
+        lambda: review_changeset_proposal(
+            builder_result["proposal"],
+            [
+                {
+                    "operation_id": builder_operations[0]["id"],
+                    "decision": "edit",
+                    "edited_document": invented_binding,
+                },
+                {"operation_id": builder_operations[1]["id"], "decision": "accept"},
+            ],
+            factual_catalog,
+            tenant_id="tenant-a",
+            area_id="support",
+        ),
+        fails=True,
+    )
+    missing_result = build_changeset_proposal(
+        {"name": "invented-agent", "reuse": []},
+        {**factual_catalog, "items": []},
+        tenant_id="tenant-a",
+        area_id="support",
+        actor_id="author-a",
+    )
+    check("missing implementation is a gap, not an invented binding", missing_result["proposal"] is None and missing_result["gaps"][0]["status"] == "missing")
 
     decisions = tuple(
         ChangeDecision(operation.id, "accept") for operation in changeset.operations
@@ -812,6 +935,62 @@ def main() -> int:
         application.dependency_overrides[authoring_api._scope] = lambda: ChangeSetScope("tenant-a", "area-b", "author-a")
         cross_area = client.get(f"/authoring/changesets/{changeset_id}")
         check("api: cross-area read is indistinguishable from absent", cross_area.status_code == 404)
+
+        from app.modules.proposer import api as proposer_api
+
+        builder_service = ChangeSetService(
+            SQLiteChangeSetRepository(Path(directory) / "builder-api.sqlite3")
+        )
+        builder_application = FastAPI()
+        builder_application.include_router(proposer_api.router)
+        builder_application.dependency_overrides[proposer_api.require_area] = lambda: None
+        builder_application.dependency_overrides[
+            proposer_api.default_changeset_service
+        ] = lambda: builder_service
+        builder_application.dependency_overrides[auth.require_user] = lambda: api_user
+        if auth.azure_scheme is not None:
+            builder_application.dependency_overrides[auth.azure_scheme] = lambda: api_user
+        proposer_api.current_area = lambda: SimpleNamespace(id="support")
+        proposer_api.current_tenant_id = lambda: "tenant-a"
+        proposer_api.current_user = lambda: api_user
+        proposer_api._complete_catalog = lambda: factual_catalog
+        builder_client = TestClient(builder_application)
+        confirmation_payload = {
+            "proposal": builder_result["proposal"],
+            "decisions": [
+                {"operation_id": operation["id"], "decision": "accept"}
+                for operation in builder_operations
+            ],
+        }
+        confirmed_response = builder_client.post(
+            "/proposer/changeset/confirm",
+            json=confirmation_payload,
+            headers={
+                "X-Area-ID": "support",
+                "Idempotency-Key": "builder-confirm-001",
+            },
+        )
+        confirmed_body = confirmed_response.json()
+        check(
+            "builder api: confirmation persists one inert draft",
+            confirmed_response.status_code == 200
+            and confirmed_body["state"] == "draft"
+            and confirmed_body["source"] == "builder",
+        )
+        replayed_confirmation = builder_client.post(
+            "/proposer/changeset/confirm",
+            json=confirmation_payload,
+            headers={
+                "X-Area-ID": "support",
+                "Idempotency-Key": "builder-confirm-001",
+            },
+        )
+        check(
+            "builder api: confirmation is idempotent",
+            replayed_confirmation.status_code == 200
+            and replayed_confirmation.json()["id"] == confirmed_body["id"]
+            and replayed_confirmation.json()["revision"] == 1,
+        )
 
     check("domain exposes conflict type", issubclass(ChangeSetConflict, AuthoringInvalid))
     check("domain exposes precondition type", issubclass(ChangeSetPreconditionFailed, AuthoringInvalid))

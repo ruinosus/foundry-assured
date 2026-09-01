@@ -16,6 +16,7 @@ import { useMyRoles, canAdmin, canAuthor } from "@/lib/auth/roles";
 import { AgentProposer } from "@/components/agents/AgentProposer";
 import { AgentWizard, type AgentSeed } from "@/components/agents/AgentWizard";
 import { AgentRouteWizard } from "@/components/agents/AgentRouteWizard";
+import { ChangeSetBuilder } from "@/components/agents/ChangeSetBuilder";
 
 type AgentVersion = {
   version: string | null;
@@ -66,6 +67,7 @@ export function AgentsView() {
   const [criando, setCriando] = useState(false);
   const [authoring, setAuthoring] = useState(false);
   const [propondo, setPropondo] = useState(false);
+  const [building, setBuilding] = useState(false);
   const [seed, setSeed] = useState<AgentSeed | undefined>(undefined);
 
   const load = useCallback(async () => {
@@ -107,7 +109,9 @@ export function AgentsView() {
 
       {/* Criar vem antes da lista: numa tela sem agente nenhum, a lista não é o conteúdo — o
           próximo passo é. */}
-      {authoring ? (
+      {building ? (
+        <ChangeSetBuilder onCancel={() => setBuilding(false)} />
+      ) : authoring ? (
         <AgentRouteWizard onCancel={() => setAuthoring(false)} />
       ) : admin && criando ? (
           <AgentWizard
@@ -131,6 +135,9 @@ export function AgentsView() {
           />
         ) : author ? (
           <div className="row-tight">
+            <button type="button" className="btn btn-solid" onClick={() => setBuilding(true)}>
+              {t("buildProposalBtn")}
+            </button>
             <button type="button" className="btn btn-solid" onClick={() => setAuthoring(true)}>
               {t("newProposalBtn")}
             </button>

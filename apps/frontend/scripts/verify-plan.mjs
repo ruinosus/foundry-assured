@@ -23,6 +23,15 @@ const mod = { exports: {} };
 new Function("module", "exports", "require", outputText)(mod, mod.exports, () => {});
 const { executarPlano, resolverPath, pendentes } = mod.exports;
 
+const reviewSrc = readFileSync(path.join(here, "..", "lib", "authoring", "review.ts"), "utf8");
+const reviewOutput = ts.transpileModule(reviewSrc, {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2020 },
+  fileName: "review.ts",
+}).outputText;
+const reviewMod = { exports: {} };
+new Function("module", "exports", "require", reviewOutput)(reviewMod, reviewMod.exports, () => {});
+const { reviewedOperations } = reviewMod.exports;
+
 let falhas = 0;
 const check = (nome, ok, detalhe = "") => {
   console.log(`${ok ? "OK  " : "FALHA"} · ${nome}${detalhe ? ` — ${detalhe}` : ""}`);
@@ -111,6 +120,36 @@ check("pendentes vazio quando tudo rodou", pendentes(PLANO, ["create_skill", "up
 check("interpola o caminho", resolverPath(PLANO[0], V) === "/api/foundry/skills/rollback-de-deploy");
 // Um nome com barra viraria dois segmentos de rota e alcançaria outro recurso.
 check("escapa o valor", resolverPath(PLANO[0], { name: "a/b" }) === "/api/foundry/skills/a%2Fb");
+
+// ── REVISÃO DE CHANGESET: decisões locais não escrevem; só o payload confirmado muda ─────────
+{
+  const operations = [
+    { id: "first", operation: "create", document: "original-1", depends_on: [], decision: "pending" },
+    { id: "second", operation: "create", document: "original-2", depends_on: [], decision: "pending" },
+  ];
+  const reviewed = reviewedOperations(
+    operations,
+    { first: "edit", second: "discard" },
+    { first: "edited-1", second: "edited-2" },
+  );
+  check("descartar remove somente a operação escolhida", reviewed.length === 1 && reviewed[0].id === "first");
+  check("editar troca exatamente o documento confirmado", reviewed[0].document === "edited-1");
+  check("revisão não altera a proposta recebida", operations[0].document === "original-1" && operations.length === 2);
+
+  const dependent = reviewedOperations(
+    [
+      operations[0],
+      { ...operations[1], depends_on: ["first"] },
+    ],
+    { first: "discard", second: "accept" },
+    {},
+  );
+  check("descartar uma dependência remove também a operação dependente", dependent.length === 0);
+  check(
+    "sem gesto explícito a operação permanece pendente",
+    reviewedOperations([operations[0]], {}, {})[0].decision === "pending",
+  );
+}
 
 console.log(falhas ? `\n${falhas} verificação(ões) falharam.` : "\nTodas as verificações passaram.");
 process.exit(falhas ? 1 : 0);

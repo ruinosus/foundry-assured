@@ -22,7 +22,7 @@ As fatias mantêm IDs, dependências e user stories, mas substituem CURA pelo As
 - [x] F03 [AFK] Catálogo factual e detalhe de recurso — deps: F02 — US: US-004, US-005 — sec: auth, input-validation, logs → F03.md
 - [x] F04 [AFK] ChangeSet local durável e concorrência otimista — deps: F02 — US: US-003, US-010, US-016 — sec: auth, input-validation, logs, dados-sensiveis → F04.md
 - [x] F05 [AFK] Três rotas de autoria guiadas por FormFlow — deps: F01, F04 — US: US-006, US-007 — sec: auth, input-validation, logs → F05.md
-- [ ] F06 [AFK] Builder multi-documento fundamentado no catálogo — deps: F03, F04, F05 — US: US-008 — sec: auth, input-validation, logs, dados-sensiveis → F06.md
+- [x] F06 [AFK] Builder multi-documento fundamentado no catálogo — deps: F03, F04, F05 — US: US-008 — sec: auth, input-validation, logs, dados-sensiveis → F06.md
 - [ ] F07 [AFK] Registries e bindings isolados por área — deps: F02, F03 — US: US-009, US-016 — sec: auth, input-validation, logs, dados-sensiveis → F07.md
 - [ ] F08 [AFK] Bundle Editor versionado e consistente — deps: F04, F05, F06, F07 — US: US-010 — sec: auth, input-validation, logs → F08.md
 - [ ] F09 [AFK] Conformidade honesta por fase — deps: F03, F04, F07, F08 — US: US-011 — sec: auth, input-validation, logs → F09.md

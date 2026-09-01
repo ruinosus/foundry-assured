@@ -7,6 +7,10 @@ as rotas de escrita já existentes, com o papel Admin.
 
 from __future__ import annotations
 
+from app.modules.proposer.internal.changeset import (
+    build_changeset_proposal,
+    review_changeset_proposal,
+)
 from app.modules.proposer.internal.draft import (
     build_prompt,
     catalog_snapshot,
@@ -20,11 +24,13 @@ from app.modules.proposer.internal.optimize import (
 )
 
 __all__ = [
+    "build_changeset_proposal",
     "build_prompt",
     "catalog_snapshot",
     "get_optimization",
     "list_optimizations",
     "parse_draft",
     "propose_agent",
+    "review_changeset_proposal",
     "start_optimization",
 ]

@@ -73,7 +73,7 @@ def _item(source: CatalogSource, raw: Mapping) -> dict:
     if not isinstance(resource_id, str) or not resource_id.strip():
         raise ValueError("resource identity unavailable")
     state = str(raw.get("state") or "available")
-    return {
+    item = {
         "kind": source.kind,
         "id": resource_id,
         "name": raw.get("name") or resource_id,
@@ -81,6 +81,12 @@ def _item(source: CatalogSource, raw: Mapping) -> dict:
         "source": source.owner,
         "selectable": state in {"active", "available", "compatible"},
     }
+    current_version = raw.get("version")
+    if isinstance(current_version, Mapping):
+        current_version = current_version.get("version")
+    if isinstance(current_version, (str, int)) and not isinstance(current_version, bool):
+        item["version"] = str(current_version)
+    return item
 
 
 def catalog_page(
