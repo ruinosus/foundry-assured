@@ -1838,14 +1838,42 @@ the 2026-08-27 bump recorded at `wiki-regen.yml:68`); `index.md` declares
 If the pages already carry `generated`, the regeneration already happened — skip to
 Step 4.
 
+- [ ] **Step 1b: PUSH THE BRANCH FIRST — the workflow cannot see an unpushed ref**
+
+`wiki-regen.yml` runs on GitHub Actions against a ref GitHub can resolve. Verify, and stop
+if either line is empty:
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+git remote -v
+git ls-remote --heads origin "$(git branch --show-current)"
+```
+
+Found in execution on 2026-09-02: neither this branch nor its base existed on `origin`, so
+"Run workflow" would not have listed them. The plan had gone straight to dispatch.
+
+Pushing is the owner's call, not the implementer's — it publishes every commit on the
+branch, including any the base branch carries that were never pushed either. Ask, then push
+what the owner authorises.
+
+Two further preconditions the workflow needs, checkable only on GitHub:
+`vars.OPENWIKI_BASE_URL`, `vars.OPENWIKI_MODEL`, `secrets.OPENWIKI_API_KEY`.
+
 - [ ] **Step 2: Ask the operator to dispatch the workflow**
 
 Report to the user, and wait:
 
-> Run **Actions → Wiki regen → Run workflow** on this branch, with `force: true` and
+> Run **Actions → Wiki regen → Run workflow**, selecting this branch (it must appear in
+> the ref list — if it does not, Step 1b did not happen), with `force: true` and
 > `rebuild: false`. It installs `openwiki@0.4.3`, regenerates `openwiki/`, adapts it into
-> `knowledge/wiki-bundle/`, runs the fidelity gate and opens a pull request. Merge that PR
-> into this branch before Task 4.2.
+> `knowledge/wiki-bundle/` **using this branch's `adapt_openwiki`**, which is why Phase 3
+> lands first. It then runs the fidelity gate and opens a pull request from `wiki/regen`.
+> `peter-evans/create-pull-request` bases that PR on the checked-out branch by default —
+> confirm on the run that it targets this branch and not `main`. Merge it here before
+> Task 4.2.
+>
+> Note the run is not additive: a prune step deletes every bundle version that is not the
+> one just produced, so `v0.20260819` is replaced rather than joined.
 
 - [ ] **Step 3: Verify what came back**
 
