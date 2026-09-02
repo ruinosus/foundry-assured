@@ -9,7 +9,7 @@ o tamanho da lacuna. **Nada foi alterado.**
 - `apps/backend/app/modules/knowledge/internal/wiki_builder.py:395-416` (escritor)
 - `apps/backend/eval/wiki_freshness_test.py:137-140` (segundo leitor)
 - `apps/backend/eval/docbundle_contract_test.py` (o gate de contrato)
-- OKF v0.2 SPEC.md, `GoogleCloudPlatform/knowledge-catalog` (1006 linhas, lida por inteiro)
+- OKF v0.2 SPEC.md, `GoogleCloudPlatform/open-knowledge-format@ad30107c31c06aec8a7d5636e0d1058118604e6f` (1006 linhas, lida por inteiro)
 
 ---
 
