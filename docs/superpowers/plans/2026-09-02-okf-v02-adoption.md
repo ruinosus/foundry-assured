@@ -137,6 +137,11 @@ rebase before opening this one.
 - **Do not add a dependency.** Everything here uses `pyyaml` and the stdlib.
 - **`apps/backend/vendor/okf_validate.py` is read-only** third-party code
   (`vendor/README.md:11-14`). A needed behavior change is a finding to report, not an edit.
+- **Every command is worktree-relative.** Commands say `cd "$(git rev-parse --show-toplevel)"`,
+  never an absolute path. This plan was drafted in one worktree and is executed in another;
+  an absolute path to the drafting worktree resolves to a real checkout of a DIFFERENT
+  branch, where a verification passes while telling you nothing about your work. Found in
+  execution, after 13 such paths had been written.
 - **Commit after every task**, Conventional Commits, scope `okf`, `knowledge` or `docs`.
 - **CI must be green after every task**, with exactly one carved exception: Task 3.1
   ends red and Task 3.2 closes it. They are two commits on one branch and one pull
@@ -378,7 +383,7 @@ In `.github/workflows/ci.yml`, in the `backend` job, immediately after the line
 
 Run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 uv run --project apps/backend --no-sync python scripts/gates.py --list | grep -i "Frontmatter de docs"
 ```
 Expected: the new gate appears in the derived list.
@@ -406,7 +411,7 @@ git commit -m "fix(docs): quote description containing a colon, and gate the cla
 
 Run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 sed -n '10,14p' docs/superpowers/specs/2026-08-27-docbundle-vs-okf-medicao.md
 grep -n "ADRs 001" CLAUDE.md
 ls docs/adr/ | grep -c '^ADR-'
@@ -463,7 +468,7 @@ neither file shows which. The skill's own template would also fail §11.2 for la
 
 Run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 sed -n '45,56p' apps/backend/app/modules/knowledge/skills/wiki-page-writer/SKILL.md
 sed -n '196,203p;352,356p' apps/backend/app/modules/knowledge/internal/wiki_builder.py
 ```
@@ -804,7 +809,7 @@ that is Task 3.2, after the regeneration that makes it satisfiable.
 
 Run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 sed -n '32,52p' apps/backend/tests/knowledge/okf_conformance_test.py
 sed -n '86,102p' apps/backend/tests/knowledge/okf_conformance_test.py
 ```
@@ -960,7 +965,7 @@ decision, not a spec requirement.
 
 Run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 sed -n '300,306p;394,404p' apps/backend/app/modules/knowledge/internal/wiki_builder.py
 grep -n "write_text" apps/backend/app/modules/knowledge/internal/wiki_builder.py
 ```
@@ -1395,7 +1400,7 @@ decision that narrows nothing already decided.
 
 Run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 grep -n -i "verified\|forjar\|frontmatter" docs/adr/ADR-023-evidence-layer.md
 grep -n "Status:" docs/adr/ADR-023-evidence-layer.md
 sed -n '18,26p' apps/backend/tests/foundry/provenance_okf_test.py
@@ -1485,7 +1490,7 @@ Commit them separately for reviewability, but do not merge 3.1 without 3.2.
 
 Run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 sed -n '86,100p;188,196p' apps/backend/app/modules/knowledge/internal/adapt_openwiki.py
 ```
 Expected: `_split_front_matter` returning `(f"---\n{cru}\n---\n" if cru else "", corpo)`;
@@ -1726,7 +1731,7 @@ If `collect_pages` raises instead, its signature drifted from
 
 Run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 grep -rn "lstrip\|_split_front_matter\|frontmatter\." \
   apps/backend/app/modules/knowledge/internal/ingest_docbundles.py
 ```
@@ -1820,7 +1825,7 @@ credentials and opens a PR. An implementing agent cannot run it.
 
 Run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 grep -n "npm install --global openwiki@" .github/workflows/wiki-regen.yml
 cat openwiki/.last-update.json
 head -3 openwiki/index.md
@@ -1846,7 +1851,7 @@ Report to the user, and wait:
 
 After the PR lands, run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 echo "-- páginas sem generated (esperado: vazio):"
 grep -rL "^generated:" openwiki --include='*.md' | grep -v 'index\.md$' || true
 echo "-- versão declarada:"; sed -n '1,3p' openwiki/index.md
@@ -1901,7 +1906,7 @@ version we do not validate against is a false claim, not best-effort consumption
 
 Run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 sed -n '328,336p' apps/backend/vendor/okf_validate.py
 sed -n '86,96p' apps/backend/tests/knowledge/okf_conformance_test.py
 ```
@@ -1946,7 +1951,7 @@ still printed. If `openwiki` shows a fatal warning, Task 4.1 did not land — go
 
 Run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 sed -i.bak 's/okf_version: "0.2"/okf_version: "0.1"/' openwiki/index.md
 (cd apps/backend && uv run python -m tests.knowledge.okf_conformance_test); echo "exit=$?"
 mv openwiki/index.md.bak openwiki/index.md
@@ -1983,7 +1988,7 @@ preserves the block — no second dispatch and no local adapter re-run is needed
 
 Run:
 ```bash
-cd /Users/jefferson.barnabe/projects/foundry-spec
+cd "$(git rev-parse --show-toplevel)"
 ls knowledge/wiki-bundle/foundry-assured/
 for f in knowledge/wiki-bundle/foundry-assured/*/pages/*.md; do
   head -1 "$f" | grep -q '^---$' || echo "SEM frontmatter: $f"
