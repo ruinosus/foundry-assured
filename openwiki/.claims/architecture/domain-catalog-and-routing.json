@@ -1,0 +1,172 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:9516c2850ba7bf3a178b76fb48ada095532fcacf17cd0e639c4188d334c5a4a7",
+  "claims": [
+    {
+      "id": "claim_5108acb88bd64393aa58b448aba077ba",
+      "statement": "The backend defines assistant-domain topology in `app.modules.domains`: `public.py` re-exports `DOMAIN_KINDS`, `DomainSpec`, `domain_spec`, and `domain_specs`, and the internal catalog separates a static boot-safe kind map from lazily tenant-resolved domain specs so composition roots can share one catalog without reading tenant config at startup.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/domains/internal/catalog.py#L1-L23",
+          "version": "repo-lines-v1:sha256:223e1f86fc4c97b53af4cf558089ad2314efaaf58e131c0ba0232789bfa634c9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVkNjhkNzYwZjkwMTRiNDg1OTA0NzhjNmMyYmU3MGQ5OGJlODY5NWMzOGIxMTgzNTQwODUxMGM1ZDNkYmMwZmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMDNlY2RkNGE0ZDEwZjE5YzczZmQ0MmZkMTI0MzdmZDMzNTRhODI2ODE2MDVkYTUyNTVhOTdhMzkwNjhkYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1YjZlODcwNmI0MzA0N2YyYTZkYjY3ZjEzMjYzODU5NTYwNGU2N2YzNjk2Njg3NmNlMDE1OGYwMDUzZTZiZDEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/domains/internal/catalog.py#L81-L128",
+          "version": "repo-lines-v1:sha256:66084d6104f146f6eba4d751a9b69470af5437190727444797d7485a51f45fad:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjMmU1MWQyZWI2M2I2ZTg5OTJmYjAzODZhODEwMmZmYTQ1OTE0ZGY2NTQ4ODU5ZjM5MzIzMDk0ODJkYzBiZDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2YTcxNTI1NzJlZTg0ZjEwOTA2Yzc0YjlmMmE5MjQzNGRkYWIwZTNjNDI4MTNiMDRlNTk3ZWZjZWM5NTFiMjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU2ZGZiZjQ1M2Y3ZjFiZWJhYjcyODM2MWIwZjM5M2VlYjRjMWZiNjY4ZjllYTIyYjkxNmRhY2Y1ZGZmODFkODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVjZDA4NGEzZjZmY2FjZDBhNTdlMjlkZDc3OTVlNGE1NmQxMzU3MWY1OGM1ZGZmMDNjNDJiZmNlMjMwNmFlMTUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/domains/public.py#L1-L18",
+          "version": "repo-lines-v1:sha256:179d4a5ccb271e97a5c348afaa8255481820b5d08189f2e081afcd6d219044b6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk0MWVlNzBlMGI0YzU1ZWYyMmM2YThlOGIzMzQxM2ZjNjIwYjVmZjUyZjNjZjY5NjNhMzZmZDA0ZTcyNDQzMDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3ODVhNzBlZTk4Mjc0YTZmM2I1MjgwYzYyOWVjN2Q2MTBlY2NiNzk5YWRjN2I5NWE5OTllYWFkNDhkOWFjYTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8c56fd3b9a7b4fc383e73a54ab62d945",
+      "statement": "`mount_domains(app)` in `app/registry.py` is a single dispatch loop over `DOMAIN_KINDS` that mounts live domain endpoints by kind: grounded domains via `_mount_grounded`, workflow via `_mount_helpdesk`, tool via `_mount_builder` or `_mount_platform`, graph via `_mount_graph`, and then mounts `/flow` separately because it is a runtime surface rather than a catalog domain.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/registry.py#L103-L135",
+          "version": "repo-lines-v1:sha256:df7415aac4af45a190431d943730c7883e70fc6d993b83602dd5c0a741c4f9f0:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmMGU4MzdiZmI1ZjJkYzQ4MDU3ZGIyMWIwYTJiNDQ1MDI3NWI4OGU5NGQ0NTYyOTRkYTU4YmQ2MjA5NmIxNmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzMzg4ZDhlZjkxNjliNTA2OTNhN2YxYjJkOTE3YjdmMzg5OWMzMDczZTdmYjU2YWY2NzE0OWVkZGZkZGMzMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiNzgwNjkyZjc3NThhNjZhNzU2OWYzMjFjZGE4N2ZhNTNjMDIwMDVhOGFiM2YyM2E3MGFmN2NlOTE4OTM2OTQifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L168-L198",
+          "version": "repo-lines-v1:sha256:627bb98b0b7015ddee575c419d055c5a2e58530d6b830eadac486720bb282315:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2ZDIwNjAxMjliMzI4MDVjNDFjNjIzOTc1NTAxZWRiOTE3OWI0OWUyNjEzNTg2ZTY1NGJiZWJkNjQ4NjQ5YjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE4ZTNmZjNlY2VlNGNlNmI3ZGZjYWIzNDlmNTJkOWI4MDQwNDEyMmQ1OTBmNmJlM2RjNzNiOWZiMmNlNGRjOWQifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L200-L247",
+          "version": "repo-lines-v1:sha256:ea72f5391b45eb0c5504ba6933a600a7bc932abd881e8be1c93992ffa13ea6dc:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMzYzFlMzIyN2E3ZjlkOWYxOWI4NzRhODZkNTEyYmY1NzU4YWE3NTM0MWFhYzVmYzZiMWNjMGQ1ZDI5Yzg0NGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlMjY2NGY4ZTgzMTFmYTRiZjc4N2RjZTdlOGZkZDFmZGVjMjZhZWUwYTk4M2UyNzlkNTZmZDA2ZTJjMmRmMzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzZGYyYWNmMDZlOGMzZjAzYzcxMzVjNmU4YWM1YTljYTU0MzJhYmUwNmE3NGFjYTBmZGQ5YTUzYTAwOGY5ODciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRiZjhhNWQ5YjQxYjQyMWJjMDdiM2FlOWEzYjFiZDkwOTU3MjY4M2MyNmFmMTc4YzkzMDQ2MWRjMjFkNzNkMDEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L250-L270",
+          "version": "repo-lines-v1:sha256:e17f3d0570f8e4b1f3f7593b91ec88dbcda6a2aea5b274238c45e983ed2ed21b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzZmZmNmYxYTAxNDMwYzZhNmYxMjliMDZiNjNhN2Q5YzNkOTlhZmYzZmIwNmRjNzE0ODJmZjBmNTc1MGNiMzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5ODk5MTY5NDAzNDhlYWQzYmNhNGVhNWU2OTE0NTc2NTA4YjNlNDFjNmE4ZGIwMjQ2MDc5ODQwNTMxZGU0ZWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlZTUwNjgxNTMwMTMxMWM5ZWE1MDMzNjcxZGM3NDBmMWY2N2M2NjMwMDM3NzNhNmFiNTY3Y2JjYjY2OGZhODYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgzZjZhMzk1YTdiODFiMzdkYTE2MzEzMjQwOTIyZmI2YmE4YTcyOTVmOGRhNDZjNzFiOTUyYzQ1NWEzNTllOTgifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L46-L91",
+          "version": "repo-lines-v1:sha256:d42259d97e4e76e47a2edaabf6f2af3f8cda7cb49055a1f2c7f3c272cf1acda1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzOWRmMGExYjY5MDNkZWMwZTkyZjIxNTFmMzcxNDE4YmQ2OWU1OGQwZDU2OGI4YjVhYjMzMTQwZDlmMjhlZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUwYWFlNzIxNTBmYjNjY2U5MDc3MWYyOTU1NzIwMWYxNWMwY2U5ZWE3OTYxYTgyZGEzMzgxY2UwOGY3MmQ1YjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYwZDgwMWI0ZmVmMzljNDA3ZDQ5N2MyMDk0M2Y3NWMzMTM0OWU2YzZkMzIyMGJkMzdhNGI2ZTcxNTM2NmYyMmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a5488de7eeae4ce5ab2b5e72de1f3c21",
+      "statement": "Backend domain endpoints use a two-layer dependency contract: tenancy's `domain_deps(domain_id)` always applies auth and adds `require_domain(domain_id)` only in shared mode, while `app.registry.domain_deps(domain_id)` wraps that gate and appends the conversation-binding dependency so every mounted domain kind gets the same auth, entitlement, and conversation wiring.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/public.py#L113-L124",
+          "version": "repo-lines-v1:sha256:9ebfafecbbbe562b8b322150c4d801acf53c2dc86b4b6b491d6fa1b73b8b9d63:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0YzUzMWRkMjFiNDVjNGNhMDI5OGMzMTIyZmQ1YjE0Zjg4YjQxZTYxMDMzNThkMWIwYzhlYWU0NWUyOWJkNWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4YmZjMmQzNWI3NjBkYjRjNzVjZDU1ODE0ZWIyODk2M2NjNjIzZjAyOTFlMmY1M2Y3MDViMjM2ZGQzM2RlMjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L94-L100",
+          "version": "repo-lines-v1:sha256:0089aa488556a67c5e0434df5aa927e17033482da02f28b766d776f4c5c4aade:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjRjNTMxZGQyMWI0NWM0Y2EwMjk4YzMxMjJmZDViMTRmODhiNDFlNjEwMzM1OGQxYjBjOGVhZTQ1ZTI5YmQ1YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjRlZDhiNzFlYzZlZDIyNDg2MWUwMzA5NDcxZTM1N2IxYjlmZGJhMzE0MzI5N2FjZTBjYzRlZjJkZTBjMWM4NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGNjNGE3ZDFjYzc5NmFiYTNlNDY3MjMzMjdmNTE3ZTlmODExOTgyZDI1MGYwNzAyOTg2ZTRiNTc2NGFkOTU4OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjE5NTExZjE5Nzk5ZDlhNTU2NDI3YWVhZDVmZjA0NTY1Y2VlMWFkMDUzZjk1N2Y4ODkwOTE4MmQ2NWFmYzIwNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_22a4bac1fda941f8960268fde9e19c23",
+      "statement": "The graph-domain mount path uses an `APIRouter` wrapper because LangGraph's AG-UI adapter does not accept `dependencies=` directly; `_mount_graph` registers the adapter on the router and includes that router on the app with `domain_deps(domain_id)`, which is how `/oncall` and `/deepcall` receive auth and shared-mode entitlement checks.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/registry.py#L200-L247",
+          "version": "repo-lines-v1:sha256:ea72f5391b45eb0c5504ba6933a600a7bc932abd881e8be1c93992ffa13ea6dc:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMzYzFlMzIyN2E3ZjlkOWYxOWI4NzRhODZkNTEyYmY1NzU4YWE3NTM0MWFhYzVmYzZiMWNjMGQ1ZDI5Yzg0NGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlMjY2NGY4ZTgzMTFmYTRiZjc4N2RjZTdlOGZkZDFmZGVjMjZhZWUwYTk4M2UyNzlkNTZmZDA2ZTJjMmRmMzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzZGYyYWNmMDZlOGMzZjAzYzcxMzVjNmU4YWM1YTljYTU0MzJhYmUwNmE3NGFjYTBmZGQ5YTUzYTAwOGY5ODciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRiZjhhNWQ5YjQxYjQyMWJjMDdiM2FlOWEzYjFiZDkwOTU3MjY4M2MyNmFmMTc4YzkzMDQ2MWRjMjFkNzNkMDEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a1674611d07a4f8ab98a47f85c8e6e71",
+      "statement": "The frontend mirror of the domain catalog lives in `apps/frontend/lib/domains.ts`, where `DOMAINS` declares the stable domain id, kind, endpoint, framework, optional hosted twin, and surface, and `CHAT_DOMAINS` filters that registry to entries whose surface is `domain`, excluding dock-only assistants such as `builder` from the main console and landing-page domain lists.",
+      "evidence": [
+        {
+          "resource": "repo://apps/frontend/lib/domains.ts#L1-L16",
+          "version": "repo-lines-v1:sha256:59d16497713fdd6c0ff6de1b8433f84de56f64d39f4c459b951c508acdd7dfa9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxNDM3MTkyMjE5NTQ3ZDE3NWRmYTE3ZDUyZWY3MTFiNDZmMmRiZDliZTdjY2QwOWU1YmU0Yjc2YjNjY2FmZDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2YmFhZTVlYzIwYzZmNDdmM2E4YzJlZmZkMGY5MjJkNmRlYzkyYzkwNjE3MGM0NTljNGYwYzFiNmRhYWI2ZjkifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/lib/domains.ts#L24-L41",
+          "version": "repo-lines-v1:sha256:6626e2583e17067cae36edd9e8c2d2890d0f931e63a6dd7e7a43450e262b3bc1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ4YTNhYmIzMjBmYjZkY2Q1YjJlOWRkYTRjMWU2Y2UxY2QyYjZkMTAwZTZkMmFiYjQyNzNhOGRmODkwZjI4MTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhMmFhZWU0ZDhkY2M0NjM0N2JhODIzYTE4OTUwMGJiNTVhNjU4YjFiNDAwYjJhODU5ODBlMmI2MTc3ZDg3YmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM0MDdhOWYyNDM0MTkwYzZiMDQ2OTkwZjRkNDBkYzZhNzM3ZWVlYzhhYTc0YmE0ZDZiZmUzMGNmNmExNTMwZTIifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/lib/domains.ts#L43-L118",
+          "version": "repo-lines-v1:sha256:9052c27cd335a7dbec14aa424414c899e67317dd0fbf4c1837b5f554fa09b8bc:eyJzZWxlY3RlZExpbmVDb3VudCI6NzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlNmYyN2FiYzc2MThjMjdiYTgzYjVjZjZhYjFiM2NjYTM3N2Q4YjA4NThjMjExMWQxNzQ3YmNhNDM2YzFhMTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwOWYwOTk2NjIxNGFkYTVhYmEzMzMwZjRhYTM1NDVmOGU1NjY1MDBkMjJkMGUzZGI3YTNhYWZjMmZiNDY0NTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlNGQxOWFjMDI3ZTE4NjdkYWI3YjZjNDZhZTQzMDM3NjA4NTM0MGViNmIyZjhjZjA3MDczN2E3ZWQxMTc2ZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_364635ae006b472a8bd2552becf7f796",
+      "statement": "Frontend navigation surfaces consume the mirrored domain registry directly: `AppShell` uses `CHAT_DOMAINS[0]` for the assistants nav entry and `DOMAINS.find(...)` for `/d/<id>` titles, `DomainPicker` groups `CHAT_DOMAINS` by framework, the landing page maps `CHAT_DOMAINS` into assistant cards and its primary CTA, and `ChatDock` offers the full `DOMAINS` list so dock-only assistants remain selectable there.",
+      "evidence": [
+        {
+          "resource": "repo://apps/frontend/app/page.tsx#L23-L53",
+          "version": "repo-lines-v1:sha256:b3379c0be413de597941d29412d99b067f520fcc5635b47a4fa978d1c95fbea3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA4N2VmMTRlZTNmZjViNjEyZGJhMGNkM2M3OWJmZDY1MmYwMDc5MjJkMWFlYjJmZTEzY2UzMjYxM2U1N2I3ZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyZjNjZmQxMWRhNjE1MDE5N2FjZWVkMDg0MDZhYzY0YjA1MDM0MGRlN2JjMDQxMjRhNGNiN2VmYTY3MTM0MGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNmZjA0MTA3OThiNmRkN2VhNjlkOTdjYWVkY2M3ZmNhN2JhOTQwNGQwZGI4ZmIxNjdjNTgzZWYyMDM3ZjUxNTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRjNzdhNjk5MWE3ZTUyNTcwZjlmZGRkYzU4ZDgyMTkwOGRmYTViYzk5YzUxOTM1ZjYyMDZjM2EyZDkzNDMyMDEifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/components/console/DomainPicker.tsx#L16-L18",
+          "version": "repo-lines-v1:sha256:6885190db3dd1e17c603797c51cd39f5b3dba84c76f58d326610c66a60d87eee:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGZhN2ExOWViYTYwNmI4NWQyMWZjZTQzMjQyZGFkZjAyYTIyN2QzOGRhMDk3MTIwNzcyMmZlNzU5MTVjMWE0YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTQzYzEwN2I5YjMxNjExNjQxOTFlYWRlOTAwZGI3YTk0MDM2ZGJmZTZmZWMyOTUzZDU5MzVhZWE0MmIyM2NjYyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2QwZTNjNjI0MWQyNjkxMGVkOTY4ZTZjZjEzNzZkM2IwYWE1Y2M5OTNiNDU5YjU3ZmIyOTM3NWQ3NDg4Zjg5NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiODlmOWI1ZmJlZTk2M2Y2NzAwNWZjMGQ4Y2U5OWU1ZTcxNGYwOTg0ZTkxNzAxYTM4NTg3NmRjY2U4Y2Q4NzYyOSJ9"
+        },
+        {
+          "resource": "repo://apps/frontend/components/console/DomainPicker.tsx#L62-L96",
+          "version": "repo-lines-v1:sha256:4ed5b9edb5432f2358d5da383e96e20c5aa6649f4576964f4bf760a81f3db9c4:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMjU4ZWI1NzgwZjAwYzg2N2UwZTVmMmRkOTRkNWZlMzNhNzBmNGMzYzIyYzNhNmZhOGQyYjkxZjYyYmFiZWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxMzAwNDg0N2UwNGQ4ODQxMmY5NGVhYjZiMDU2NDlkNjJiMDQyM2QwNDliYjRiMzI3YTgxNjMxNmQ2NDQzY2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQzZGU2ZDJjMjM0NDA3ODUyMGE1N2FlZjBlYzhiN2FjNTQ1MTU1NDMxOGJkNmU5ZTgzZTNmYTExMGFiMzNiYzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwODY3YTYzODc0ZDM0YTJhMDAyNGMzYWRjYzdjNzExMmM2NjUyMzNiNzZhODQ1YTYxNmNmYjNmZmQzNDQ1OTUifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/components/shell/AppShell.tsx#L238-L249",
+          "version": "repo-lines-v1:sha256:35824d185f684a69a16bc1692a068dc4949bc96ebd6595eb3de45ba0ba6b9a0e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxYmQ5ZGM2Yjk5MzExNmRmODQyYjM5ZTJmMzRlYzQ3MjhmZDU3MTM0MzdiMjUwZmQ0YWJlYzMwOWY1MWU1ZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA2YmMyOWUwZTdjNDk3N2RiZmRlOTc1ZThlM2FhYTE3YmFmMjlkMDNlMmJlYTdiYzdmNTMyNmQwY2E0ZDgwZWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM0YWUxMDhhOGNjZjdiYmU5ZWFkYzk3YjI1MWFlNmQ3NDY1YTU0N2IzYzI0NmU1ZTBkMGI4YThmOTcyNzUxZDEifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/components/shell/AppShell.tsx#L34-L52",
+          "version": "repo-lines-v1:sha256:3d8d0d77d0f7b877bf37f58fee3173b3e46e1db022ec26af8276f6d44f974250:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzYWFhODYxODdjYmM1NDg2NjA2YzJhOTNiNmJhNzMzNDA4OTlkYTc1NGQ4NWVmODgwYjdhZmExMTVkYzM4M2MiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMmQyYzBkNmRjNWU3NGQ5MmZhMTRiOTFkYmVhMjY0MDkwYmViMzVmZGI5MTg4ZDliMzQxMTgxZGNlOWY0Y2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU4Y2MxYWJhNDc0YmYyMjQwMzhlMGI4OTE3YjQzNGYwZTFhYWRiYzU0NjZkZGJiZTAxYTc1M2Y3ODRmNWVlMTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJlMmM4MzA0YWE2YzQ4MzQ5YjA1NzE0MzQ0ODE4M2Q4NmEwZmUzMTE1M2MwMDYwOWY1MmVkZTNiY2U5MDdiZTYifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/components/shell/ChatDock.tsx#L17-L27",
+          "version": "repo-lines-v1:sha256:6843a8563edd20399b873465bc9139eab6064da39d803e88e6550f87dad69d37:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxMjNmYmFiZmJmMTEzYTQ1M2U0MjQ2MjIxMDcwZDZjZGY4OWQ3NmQxYWU0NmIyNDE1MTU3MWMxODhhNDIyNzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM1ZmM5ZjVjNTgwNTAwYmQxYmRlMjM1MTYzNjc1ZDViMWNjYmU5NGIxNDZjODZiN2MwYzI2NDEyZmY1NzI5ZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ5OTdmNTQ0MTA0NTE3Y2QwNmRmYzEwMjcxYzA1NDY0ZTYyYWQxMjcwZDAzMTQ0ZWIzMGI2ZTY5YjhlMzlmNmMifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/components/shell/ChatDock.tsx#L56-L78",
+          "version": "repo-lines-v1:sha256:e0fa2bcc29b9bf8d8abb5ef03d7bfeb9ca943e9d3a41fbfacc99bf3390f588b5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxZTI5MzExMzgyOTdhZDc0ZDY1NTUyOWMwM2NhYTYzZTcyMjFiMTRlNGQ2OWI2ZTgzMTM5YTFkNDE2M2IzOTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyZjNjZmQxMWRhNjE1MDE5N2FjZWVkMDg0MDZhYzY0YjA1MDM0MGRlN2JjMDQxMjRhNGNiN2VmYTY3MTM0MGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY0MjBjMTMyMjIyYjkwZWQ2MWNiMmNhMmNjMGRkM2JhZjBlMTBjODhhM2M2NmM3ZWY2NzE5ZmEyZDBhOTFlYTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ1M2Q3ZDQ0ZjI4MjZiY2E5ZjQ1NDgxNjc2ZDMxYzcwZmNkYjJjNzdlZTJjMWJmZjlhNGNiOTJjY2I0ODY0ZGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ad75340d9baf43ae9e7c11f3ce8d69bc",
+      "statement": "Backend/frontend domain parity is enforced by `apps/backend/tests/registry/domain_registry_test.py`, which reads `apps/frontend/lib/domains.ts` from disk, strips comments, extracts `{id, kind}` pairs, and compares them with backend `DOMAIN_KINDS`, failing on backend-only domains, frontend-only domains, or kind mismatches.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/tests/registry/domain_registry_test.py#L125-L145",
+          "version": "repo-lines-v1:sha256:f20e4f52fc2ab6277ab08ce1253090baf0945ec5154b9cc5026d61557d61ac0c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0Nzc0ZGQ1NGViMTYwNWQ1ODI2ZWY1MmIwZjc5MmRhZWY0OTRjZTk2MGQ1MDc1NjNlM2Y1NGUzNjFmYzkxNjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdmNTMyZWJmMWJlNjE0MDk5OTdhNDQyNDNiZmQwYTEzNTgwNmNkZWE0ODIyZDEyYmRhYzk4ZDQ3NmFhNzAzY2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImExODM2MWY3ZWQwYmVlZjcyOTZlN2IwN2M4MmYxNjE1Y2Q3ZWY2ODUzZDZmNDdmYWI1YzU3NTI2ZTgzNmQ1M2UifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/registry/domain_registry_test.py#L85-L115",
+          "version": "repo-lines-v1:sha256:94101dbaf4d644902c18ce86285fe77aff78b5b78669cd4f273bed84abb6ac74:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJkNTlhZTA2NTZhOWNjMGZkOTNjOGVhNGVlMGM1NDUwNWQ4ZjhkNzBkMzI2MWNiYTVhN2QyOTcwZjQ1NDBmOWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZhM2NmNTE5MjM1NGY3MTYxNWFjNTEwMzRiM2U5N2MyMGVkYTk5NjQzZmNhZjViYmU2ZDQxYWQ1OWJkMTIxNjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFlM2VlNzBhOTYwY2Q2YzAzODVmYWM4YmMzY2FhMzVkZjIzMmNmZjA3ZTU0NGNhMzYxM2RiMTFhMTdhMzAwNWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0b313260ed5f447f9cbbba994f5c4b35",
+      "statement": "HTTP route-surface drift is guarded separately by the smoke snapshot: `routes_snapshot_test.py` captures method+path pairs under fixed deployment profiles and compares them with `routes_snapshot.json`, so adding or removing mounted domain routes changes the reviewed baseline instead of slipping through a refactor unnoticed.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/tests/smoke/routes_snapshot.json#L296-L390",
+          "version": "repo-lines-v1:sha256:da66bb81cfd2ba408e8fea9862789e904f4442fbe9462b7aefcbe12381384a88:eyJzZWxlY3RlZExpbmVDb3VudCI6OTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4NzNjN2I5MTBmMDg4YjljNDJjZGU2MjA1NzY4MDRkYThmYzFlZGJhNGQ1YTc4MGRjYzllOWJmMDNkZmQ0YmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2M2Q1MzVjZTM4MDYzZDZiNGM1MWQ4YzM4NmE3ZjliM2U1ODBhMTRhMTBjMDdiMTk4ZGZhZjE5YzkzYTNiZmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU1Yzg5NGY2MzgxMDBjNjY4NWE1NmIxZjMyMmU5YzNiNWExY2JmMmY5YTQ5N2QzMWJkZWJiZjlmMzUwNzM4ZjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIwM2I2Y2Q3MDZjODViMjVhZDBkZmRhZWYwMDkwMGE1N2UzNDliNzdmOTUzNmY1OGFkMjg4ODkzOGEyZTYyMjMifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/smoke/routes_snapshot_test.py#L1-L18",
+          "version": "repo-lines-v1:sha256:7e8ee70855605f7b76ba9732e191b5988744665d7e044a76988c32c1d1e8b9f4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImViNzE4OTU0MDJhZjEzNjI4YmY2Y2JhYjM4YjQ2MmUyNjM3NDM5OTUzNGZjYTA0NzAwYTU2Yjk1MjI2MzNmMWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMDNlY2RkNGE0ZDEwZjE5YzczZmQ0MmZkMTI0MzdmZDMzNTRhODI2ODE2MDVkYTUyNTVhOTdhMzkwNjhkYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1YjZlODcwNmI0MzA0N2YyYTZkYjY3ZjEzMjYzODU5NTYwNGU2N2YzNjk2Njg3NmNlMDE1OGYwMDUzZTZiZDEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/smoke/routes_snapshot_test.py#L30-L85",
+          "version": "repo-lines-v1:sha256:1ae39357a95df1318b8ec3cb2f22e962ee212df1d43fb2e1404a8084e87c0f18:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1YmM3MWM5MjMwMThhNzZhN2ViODYyNjFmZWRhY2IxY2Q3MjJiZDU1NTFhMjRlYzIzMDU1ZDc4NDRiMzJhZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2MjMzYjNmZmVhMzJhMjNkZjUzMDY1MzQzNDhmMmRlZTc3NmE1YTZmNzRmYjUzMzE3NWRkYzUzOWE4ZmU0NjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY5NDhiYmY3OTg1ZjZlNzgxMzVhMzFjYjFjOTFmMDZhNDBjMzE0N2U1ZDNkMDA4YzkwZGVjYzYxYzM3NjNjZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkNDEzNDBjYzIzOWExNTljZTliNjAyMmU5ZjYzMjI4MzJlMmVhZDc2Y2FlOWU0NzU0ZDIxMGViOGZiNmQ1ZTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_096d26df43ca4a59b8f2621295070187",
+      "statement": "The composition root installs tenancy before serving requests and passes tenancy the valid server catalog ids via `set_server_catalog(...)`, keeping tenant-side validation dependent on composition-provided platform data instead of importing the platform registry inside tenancy.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/main.py#L78-L105",
+          "version": "repo-lines-v1:sha256:e53034f2a1432cbcb42b1e554a911afda1b14c7ca54a0490d574af1881eda0a3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViNDU1YzA5ODhmZDQ0MzU0MTQ3ZDRmNDI0ZDQzNzg5MjQxMTU5MjgzNmE5MTk4ODJhOTkwNDUwODVjMTQ5ZmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiZmQ1OTE4NGMwOGNlZDc2YzcwZGMwMjAyYTc2NjZjNTFkMzBlZGZhMDZlY2VhNDJlZDQxOWYxYWIwMmJmNzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0YWRkOGM2NDQzMzM5OTQ4ZmJmODg1NjY4MWZlNTUyMmI3OWU2NDg5MjFkZjViMjM0NjY3MTAxM2YwMGNlZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMxNDJhMTBkZGU0YWEzMzFlNzY1MGM2MGNhY2VjMTljNzkyYmQyM2EzZWZkOTA0MTBmZmM5YzZkOThjZWQzMWIifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-09-02T18:24:34.393Z"
+  }
+}

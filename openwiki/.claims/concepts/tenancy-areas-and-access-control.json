@@ -1,0 +1,312 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:35fc7c90837af9d9950c1a66e1138159ba802059a76f74db43e6a083a57e5561",
+  "claims": [
+    {
+      "id": "claim_7c5c1fdcbb9f45389af11a88bf42d1c5",
+      "statement": "The repository varies tenant behavior through a single seam: `tenant_config()` reads from `SingleTenantConfigProvider` in `self_hosted` and `dedicated`, but `tenancy.install()` switches to `MultiTenantConfigProvider`, builds the tenant store, and registers a post-authentication hook so authenticated requests in `shared` mode resolve a per-request tenant record before business logic runs.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/internal/tenant.py#L185-L218",
+          "version": "repo-lines-v1:sha256:3bfb58121075cd205696d3cef6fa337fa7538537fe2497289dfc6710f1f825bd:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMWVlYjE4YmRhNDZlNzI3MWFhODJiZWIxNTgxOGU4ZmI2OGEzMmQ3N2RkNWJmZTgzOGQ1ZWY4MTE5ZDYzOGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjYmQ5MjJlMDNhNDI1OWEzMmM5OWU2NTIxYWNlYTdiM2EyMWJkNDUwZmZhNzMxOTNiYjM3MzlhZTViM2U0MTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRkNGFhNDY3MDIzYWI0M2ZhNzM3ZjY3ZTg0ZDk2ZThmMzM1ODQyZTdlNWIwNjJmNWMyN2E1MWMzMmYyZjQyMzAifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/internal/tenant.py#L281-L292",
+          "version": "repo-lines-v1:sha256:53789e55d3d27e72c51ec8fc337c835dd78f19a1852546c21da56a642c45914e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzOTJmZDQwMzM2Y2Q4ZmM5OGQ4MWFkM2Q1NzI4YjNlYjJjMDk1YWE0N2IyNmZlZWNiNzljNWMxOWY3NzYzMGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2NjliZTAxYmYyM2FkZjQwZmYwY2JiZTdjZTMyOWYzOWNhN2RjYWZjMGFjNmYxZGYxMTQ2ZjhlNzFkMTViMTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRiMGYxOWZjZTE0N2FjOTY0OWIxNzYwN2QyZTM4MTZkOWVlMTM1YzRlOGIwZWYwZWI1Mzk0OGNhMjNkYTUzODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/internal/tenant_resolution.py#L101-L125",
+          "version": "repo-lines-v1:sha256:d5addfe418ca84899e853cdafe40a3d740dc430298ad80c7005e7fc22f79158d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0YTNhMTUyZjQ0ZDVlYWM3Zjk4YjVhODIzMThkZDc1MGU4NTFhZWMzM2MwMzFkOTMwOTNlYTkyMzQ4ZDhmYWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1MzQ4OTU3ZWViMWI3MmRjMDNhOTk3NzAzOTVhMzljZjE4MzYzY2U2NmVkNDY3MjU4ODU3ZWE4Zjk2ZDQ5NDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYzNDEyYTU2OTM4OWMzMTNmODVlYTg5NjkyY2FjNGE1YmU4ODJhNjY5NDQxZjBmYzM0OTljOTc4YWM4MDc5NjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fbe95ff7ef314fc5bf05612c055efe3f",
+      "statement": "When auth is enabled, JWT validation is single-tenant in `self_hosted` and `dedicated`, but multi-tenant with per-tenant issuer validation in `shared`; the same token `roles` claim then drives application authorization in all modes.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/shared/auth.py#L43-L79",
+          "version": "repo-lines-v1:sha256:17cc8cd0f0ed7f29072a993a985d38341eafd9b11e8692571bce7ad555869eb8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmNDZiODcwODY1MTdhZDg1ZWE0OTUwNTA4NzBkM2ZjNjU0MTdiZmY0ODhjOGQ0NWViMWM2NmMzOGM3MGE1ZjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI0MDI3ZDYzOWRkMjQ1MjBiMGE2MDI0MGFjZWE3MjA1MDQzNzY1MzFhZDZjYzlhOTc0OWE4NGI3MWI5OWUzZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI1MWMzZGEyYjE3NWQ5YmZkOGFkY2M4MmViM2Q3MzRiN2JlODFhODFjYzQyYzBlMDY3MzAxNjJmNDU4NDA2ZGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_44ba380bcea84d63b925b83edde61509",
+      "statement": "`domain_deps(domain_id)` is the canonical domain-route gate: in `self_hosted` and `dedicated` it returns only `auth_dependencies()`, while in `shared` it additionally requires `require_domain(domain_id)` so the request must pass per-tenant domain entitlement.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/internal/tenant.py#L262-L278",
+          "version": "repo-lines-v1:sha256:a6072c8cecec3ca5be027d50d6cca7d94a66e4a9ed2927bcc59a122d53fa1558:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRiNTQ5ZWVjYWYzNGUwZDRlYWM2YzVmOTVhZDQyNzQ3MjIxZTkxZjkwNjU3NWE4YzhhYzkxYjMwM2UxMTljYzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5YzA3ZmQ3MjUwZjkyNTY0NjU4M2FlNDg1M2RlMzA0ZDFlN2Q5NzA0NDk3NGQwOGQ2MWFlOTZmNzAxOTJjOTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg5MWI4ZGE1ZjgwNDc3OGJlODEyZmM5NzM2Y2YwYzFlODNhOTcyOWRmYzM0NmJjNjg1YTIwZGFhODFkZDA2N2MiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczMTVjOGRlYzQyNDdjNWYxYTk4ODQ4Yzg3ZDBiNjNhNmE0NDQ1NTMzNjRjYTE4YmRmN2FlNTg0ZTQ1ZDY5NDYifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/public.py#L113-L124",
+          "version": "repo-lines-v1:sha256:9ebfafecbbbe562b8b322150c4d801acf53c2dc86b4b6b491d6fa1b73b8b9d63:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0YzUzMWRkMjFiNDVjNGNhMDI5OGMzMTIyZmQ1YjE0Zjg4YjQxZTYxMDMzNThkMWIwYzhlYWU0NWUyOWJkNWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4YmZjMmQzNWI3NjBkYjRjNzVjZDU1ODE0ZWIyODk2M2NjNjIzZjAyOTFlMmY1M2Y3MDViMjM2ZGQzM2RlMjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ed2fcdc14bfe40799840b527416a9545",
+      "statement": "Per-request tenant resolution is fail-closed in shared mode: `resolve_tenant_record(user, store)` returns `None` unless the caller's `tid` exists in the tenant store and the tenant status is `active`, and the web path turns that into `403 tenant not onboarded`.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/internal/tenant_resolution.py#L65-L85",
+          "version": "repo-lines-v1:sha256:b6ec79eb5efde040d048885dad34bf9932182d011c511d7f8ccf95ee7a271e71:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyMzlmYzhmOGZhMWE3ZWEzZGU0YmNmNDRmNzQyYTBhMjUyYjViM2NlM2Y0MmE5MWFlMGVhZmUxZTMzYjg1ZGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY3YWY1Y2I0ZTQwMzk0MDAzY2E2ZTY4ZjU1M2I2ZmU1ODBlM2JjYjkxZjdiMDZlZmFhNDc3OGM4NWI4MWM0MDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3ZGU5YzNjYTMwYmM1MTlmMzE4M2ZkNTk3ODU5NGQ5MmY2YTkxZGFkNjg2OGI3NWE5MWY3ZTVmMGIwMWUwNDQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c73ce94b3bc14f1a8b25855d3c8f1c93",
+      "statement": "A `TenantRecord` is the shared-mode state carrier for access decisions and tenant scoping; it stores tenant identity and status, a per-tenant `TenantConfig`, per-tenant `connections`, `enabled_domains` for entitlement, and `areas` for authoring access partitioning.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/internal/tenant_store.py#L15-L49",
+          "version": "repo-lines-v1:sha256:d74c5596c8c277b1c332b969066468a46fd50075fd6defc87046eaff2c9aaf4c:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2OWExMzk3NWMyNTZlYzgzMjBlMjAxNjA4M2M5NmRmNjM3Y2EzZDM1YmViZGUyMzE0YmVlM2E0NzExYjU2Y2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM5NDk4MWQyMjNlNzllY2ZmY2VkN2JhMTdlNTdjOGY0MzY0NzgzZjYxZWIxZTVjYzQxNzVkZWRkMTg1OWM3NTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI0ODFiOTI5MTc5MmMzNzIzMzFhYzUzOGJhOWI1NDk0OWQyNTI2YjgwM2Y0M2RlMTk5OTY3YzEyZTBlMmUzMTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_95f7129df1a34b46800e81b2eb25fbdd",
+      "statement": "Tenant-store construction only happens in shared mode, using Azure Table Storage in production or an in-memory store for dev/CI, and shared-mode boot fails fast if `TENANT_STORE_ACCOUNT_URL` is missing when the table backend is selected.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/internal/tenant_resolution.py#L101-L125",
+          "version": "repo-lines-v1:sha256:d5addfe418ca84899e853cdafe40a3d740dc430298ad80c7005e7fc22f79158d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0YTNhMTUyZjQ0ZDVlYWM3Zjk4YjVhODIzMThkZDc1MGU4NTFhZWMzM2MwMzFkOTMwOTNlYTkyMzQ4ZDhmYWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1MzQ4OTU3ZWViMWI3MmRjMDNhOTk3NzAzOTVhMzljZjE4MzYzY2U2NmVkNDY3MjU4ODU3ZWE4Zjk2ZDQ5NDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYzNDEyYTU2OTM4OWMzMTNmODVlYTg5NjkyY2FjNGE1YmU4ODJhNjY5NDQxZjBmYzM0OTljOTc4YWM4MDc5NjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/internal/tenant_resolution.py#L34-L57",
+          "version": "repo-lines-v1:sha256:f901a734737221f0e92084c6b08ed45983ce4e54597a559de5560922a81c035a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEzN2E2MmVhOWM4MGNlOTRlZTI2YmU4ZDkzNTk2ZjFhNzliMzJmYTFmYjhkNjNkMDhiZDAzNmU2MGExZDhjNGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjViZDk0NGU4ODIyYTEzYTA5MjAyMWQ1Mjk4MTEwM2YxNTcwMTI4OWZhMmVhYWY5ZTRiOGQ1NTkzODE5ZDFhNmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE5NGUxMDFlYWIxYjliZDU1ZDM1YTNlM2E0OWYxNGYzMTM0Y2QzZmE1ZTU0MDk2MmU5YmFkZWI2MTljODk0OTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e78b8d9b444c45fc8cebaa7bbc8bddcf",
+      "statement": "Application-wide coarse authorization uses four app roles—`Admin`, `Author`, `Approver`, and `Reader`—and FastAPI `require_role(*roles)` requires any listed role from the token without giving `Admin` implicit access unless it is explicitly listed.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/shared/auth.py#L120-L144",
+          "version": "repo-lines-v1:sha256:99d5a7f49434aafa29d37ca0c45ca5469bfe6a3e6a981522371bd494ec7ff5a3:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE0NzMxYmE0NTgxNmVjOWZjODNhODUwZDdjNTQ4Yzk2Mjg3OTViODFjYzRjN2I2ZGNhOTIwZWViOWZlNTM4YjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5YzA3ZmQ3MjUwZjkyNTY0NjU4M2FlNDg1M2RlMzA0ZDFlN2Q5NzA0NDk3NGQwOGQ2MWFlOTZmNzAxOTJjOTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlMzgxMTQ2ZmQ3NmQ0OTIxYzNlNTRjYzAyYjQ0ZTU5ZWMyNjAzNTlmYjFkYTJlOGE5ZGQ0ZDI1MzZkMmJkMzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU4MDZhOThhYzA3NjllY2YwMWIwNmVkYzYwNTIwNDMxNWQyZmU0MGQyODk0ZjhiMmVkMTNmY2QxZWI1Y2RhZmYifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/shared/auth.py#L43-L45",
+          "version": "repo-lines-v1:sha256:e151351d64b722aacf650a1fb0d2c0ab38eba4c4ce695372370b436d9d8ea3a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNmY0NmI4NzA4NjUxN2FkODVlYTQ5NTA1MDg3MGQzZmM2NTQxN2JmZjQ4OGM4ZDQ1ZWIxYzY2YzM4YzcwYTVmOSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTk1MDAwZDFkNmU1ODdkZmEwMzIxZjkxNzcwODNkY2MwNjA3NzUyYTIzNDVhYTExMjBkNTRhMDFkMDM5NjExMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjQwMjdkNjM5ZGQyNDUyMGIwYTYwMjQwYWNlYTcyMDUwNDM3NjUzMWFkNmNjOWE5NzQ5YTg0YjcxYjk5ZTNlZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGJjZDZiNDZkYjRmNjA1MTEzOTQ5MjQ5NmRlMWVhMTZmN2I5MzI2NjFlMjk3NGQ0MzAyMzZiYmUzY2RlY2NhZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_c06336f86ab64f6bafef469df8759cb7",
+      "statement": "Authoring routes are area-scoped and role-gated: the `/authoring` router always requires authentication, one of `Reader|Author|Approver|Admin`, and a resolved area, while specific mutations further require `Author` or `Author|Admin`.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/api.py#L198-L201",
+          "version": "repo-lines-v1:sha256:e93b6ebe6a9920ae20ce4465ec78c29437cab82143334220c35e9b57aabf7d47:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmYzNjhhM2UyZTVlY2U4ZWI3NDM2Nzk1NmZlZTc5ZTZjNDE0YjdlNTlkOTA0M2YxMGQ2NGVkNGFkZmMyNTBkMCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzc4YTA0NGIxOWZhNmJjOWIwOTY1Y2FmZDczYmNlNzdiYWZjMjQ5ZWJmYTFkYTZmNzExYTc4NDYwYzY1MjA4NyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTY1YjQyNjY1ZjlhMDA2NzNlN2I2NTExZmE0MWE0ZTIyYTFlYzdjNWU1MzYxMmEwM2RjNTM1Mzg1MTU0N2JjNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTMyYTcyMWQ5ZTRkMGUyYjYwN2Y3NjUwYmE2NDFiNTg1ZGRmZTUwM2U1M2Y5MzRjYTUyNTM0MzliZjJmMzIzMiJ9"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/api.py#L277-L280",
+          "version": "repo-lines-v1:sha256:fa3cde660ccf460caaccf5e4c33676f2b0cd9aa46da7ac993a1339fb46022b4a:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDUzMjY5NWZmOTExMzM1MzkzZjJlYzIyM2ZhYTQ5YzBlMWM1MmM0NTZjNDcyZTRlYTQzOTNiZGQxM2ZkODE5MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTM5NzM0YzQ4MjYwZGZhMjFjNjkyYjdhMDU2YjdlYjY1MWVkNzgwMGJmOGI0ZWZiZTkwNTI1YTA2M2JiMzBkZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTY1YjQyNjY1ZjlhMDA2NzNlN2I2NTExZmE0MWE0ZTIyYTFlYzdjNWU1MzYxMmEwM2RjNTM1Mzg1MTU0N2JjNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjJiOGU4NmJlMGQ5MWQ1N2E2ZmZkNDdiNDk0ZmQzYzNiOTE2YWZlMjU1ODk1YTM4OGI1Y2JjMGUyNDdiNDdkMCJ9"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/api.py#L45-L52",
+          "version": "repo-lines-v1:sha256:da161348b25b5ffcdfe1274ec2cfb691d372d4d78196ce489948aea5ab05ee16:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjliYWQ2ZjFjY2Y1NDcwM2FiNGU5N2ZiZTk2MGRhOGU1MjlkNDYyMWUxZDY1NGJlNzJiNDY2MTFhYmE1Zjg1YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzYzZDUzNWNlMzgwNjNkNmI0YzUxZDhjMzg2YTdmOWIzZTU4MGExNGExMGMwN2IxOThkZmFmMTljOTNhM2JmZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTVjMWM0NjJlMmEzOWQ3NDc1OWY1ZTFiMTI2Zjc2ODNhMmI3MzAxMThlMThmNTEyMmIwOGNlZGVlYjY1MGUyMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzI0YWQ2YjMyOGU5ODQ0NzAzM2RiYzFlY2VkOGE4NDEyZWRiYzJkYWJlMWFmYzE4MjM1NzgzZTllMGYzYmZhNyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_bf0f8247302a47b282e73f7c461df57d",
+      "statement": "Publication routes use the same area-scoped base gate as authoring, then narrow sensitive operations by role: creation, approval, reconciliation, and decision endpoints require `Approver`, while compensations require `Admin`.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/publication/api.py#L151-L157",
+          "version": "repo-lines-v1:sha256:3f1ca4bbf5f0f3de8992d450b778e75206604fedd3e7081f543973e88c5d982c:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDczZGMxMThhNGQwYWQwNDA2MTAzNTU0ZGUzZjc5NTZlOTZmNjE0MDg3Zjc2ZmFiOGZmYzI4OWIxMGFjZjE4MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZmExNjBiYTc5OTBjM2IwMDE0YTM3NDViMGFlYmI0MTZjY2UwZGI1NDFkYzBkMDNjYjA1ZDhlNGJhNTFhNjNhOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjUwZjI4MjVkZWI5ODY4NmQxNDgzYmQyNjJiNmIxMTJhOGU5Mzg5ZGUwMzkzNTBiZTE0YzMzZWQyYTA0MGI0YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTFkNTg0MWVkY2RmZGI2NTZiNTFkNzU2ZWY3OGM1YTQ1ZmQ2MmE0Njg4YTg0MTQ1NWQxYTM1YjZlOGY1ZGVkNyJ9"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/api.py#L194-L203",
+          "version": "repo-lines-v1:sha256:a2a56d14412f53ac0901ec8a64fe43fb060b5d794979b2f98f3fa62c275866fd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1MzI2OTVmZjkxMTMzNTM5M2YyZWMyMjNmYWE0OWMwZTFjNTJjNDU2YzQ3MmU0ZWE0MzkzYmRkMTNmZDgxOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlN2ZiNGNjMjQyNWRmYTQzMDBiNGY2NmY2ZTFiYmI0ODhhNDIyMWExOTFhOGMyYzNkMTM5ZmRkN2UxYTMwMGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE2NWI0MjY2NWY5YTAwNjczZTdiNjUxMWZhNDFhNGUyMmExZWM3YzVlNTM2MTJhMDNkYzUzNTM4NTE1NDdiYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhiMmM2Y2M1NGFjYmIwNmEwN2FiNWQzMWQzNzgzMDdjYzYzMzFjMDlkYWEwNzExNzc1NDZmZjE0MjYyN2YzNGMifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/api.py#L251-L261",
+          "version": "repo-lines-v1:sha256:12b30f866cd303f3b6ce9a055a3f8f7653a9e277997684f0c12e02c1147184f5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1MzI2OTVmZjkxMTMzNTM5M2YyZWMyMjNmYWE0OWMwZTFjNTJjNDU2YzQ3MmU0ZWE0MzkzYmRkMTNmZDgxOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlN2ZiNGNjMjQyNWRmYTQzMDBiNGY2NmY2ZTFiYmI0ODhhNDIyMWExOTFhOGMyYzNkMTM5ZmRkN2UxYTMwMGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE2NWI0MjY2NWY5YTAwNjczZTdiNjUxMWZhNDFhNGUyMmExZWM3YzVlNTM2MTJhMDNkYzUzNTM4NTE1NDdiYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNiYmU1YWIzMDZiMDZlNzE4M2UwNmFiZjMzZDVkYzZjMzU4ZDFlZTAxZTAxNDQxNTQzOTBiNmQ0NTVlM2RlZTUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/api.py#L32-L39",
+          "version": "repo-lines-v1:sha256:bf8c03ed6ded041f80f6d99880006b8432497bcea40d24db97f62bdfca27edb9:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjliYWQ2ZjFjY2Y1NDcwM2FiNGU5N2ZiZTk2MGRhOGU1MjlkNDYyMWUxZDY1NGJlNzJiNDY2MTFhYmE1Zjg1YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzYzZDUzNWNlMzgwNjNkNmI0YzUxZDhjMzg2YTdmOWIzZTU4MGExNGExMGMwN2IxOThkZmFmMTljOTNhM2JmZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTVjMWM0NjJlMmEzOWQ3NDc1OWY1ZTFiMTI2Zjc2ODNhMmI3MzAxMThlMThmNTEyMmIwOGNlZGVlYjY1MGUyMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTk3ZjY0NTg5NmJhZDkxMjBiMGQyM2YzNWY3OGFkODU5ZTE3ZTg2YTBhNTNjZGRjN2RlMDdhZTY2ZjUxZGFlMyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_b05fe56146a5438d8a481d554633193f",
+      "statement": "Area access is derived from validated identity plus tenant configuration: a caller only gets an `AreaAccess` when their token `tid` matches the tenant, they hold at least one app role, the area is `active`, and their groups intersect the area's `entra_group_ids`.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/internal/areas.py#L33-L52",
+          "version": "repo-lines-v1:sha256:ae8d8a0790a4de7b55486803203d6a726715a4db99ed15a19a89ffd3267f48df:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdjZTM4NmRmMzhkYjFmOWNlYmEwY2JhNjU4YzU5ZmM2ZjlmYmZjOTNmODM0ZDdlMTY4ZGYxY2VlYmI5N2M5N2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5OGIwNjNkOWI0N2U2NTM3OTYyNTU3MmNjZTE5NzY2OWQ1NzY3ZTEyYzE4YmUwNzU2NTJiOGNkOTgxY2U4ZDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY3ZWViYWExY2M5OTdkYzk1MGNmYWVkZjcyODE2NzJlNWY4Y2ZhZTgzNTk1MGVhYjIzMjQzNDViMDVjODEzOGQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_046bda90ddc24d5a841bc8b76bf7f01d",
+      "statement": "`require_area` makes `X-Area-ID` part of the authorization boundary for area-scoped APIs by resolving the area against the current tenant store and returning `404 AREA_NOT_FOUND` when the caller cannot access that area.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/internal/areas.py#L65-L79",
+          "version": "repo-lines-v1:sha256:7d0dcc7b6368b58d874fd3a5026fba6350a66976d4f3728cca4aa29049555dbb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NmY2Y2Q1ZmMwNDczYjVjOTkzMTkyYjcwODBkMDFhNzQzNzdhMDI0NDk0NWZhZWJiNDM1ODY5ZTJhYjdmYjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlYmNhMjNjMWJkOGI0NjFhODFlMDViMzVkNzAxYzY4MTU0MzI3NzIxNGYxZmRkZTIxN2E5OTNhOTI3NzRhY2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVmOWQzMzBiOGZlNDljN2I3ZmI5YjE0MWRmNTBkMjM3ZjU0OTQ4OTVhYjhiMGI4NWM1NjI5NjQ3NzQwNDI4NmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d585c3fd158546728cc65a39a8802551",
+      "statement": "Authoring and publication derive their `ChangeSetScope` from the resolved area and current user, using `current_tenant_id() or \"self-hosted\"`, the area id, and the caller OID, so their state is always partitioned by both tenant and area when an area has been resolved.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/api.py#L105-L115",
+          "version": "repo-lines-v1:sha256:96b522e53ec3ebbba7333c574e35be1c2e9fa4c65a557df87a63bf31d2e0e390:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExNDJiNGIzMjZkYzg4YWM0ZWQ3MjM5MDQyMDA0OTJiOWZmMDQxOWUzNzk0ZGMxODExMTZjMzlhOWZiMTg0OTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRkMmMxYzRlNzc1NTQ4YmIyNjEyYWQyNWZjZGFlNmFjNzZmN2QxMTVkMmRhMjBlMmNmNGIyZDY3Y2I3MTZlNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYzODU5NTA4ZmJkZmZhN2Y2YmFjZWVlZjk3Y2I0NTM2OWM5NmZkODU5OWRmYjk1NWFlMTY0MjVhYTViNWJlZjMifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/api.py#L89-L99",
+          "version": "repo-lines-v1:sha256:543b7ecf970e7b68ed0ade7589c9395caac5c383bf9eb99fe9fd3ff215b9a102:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExNDJiNGIzMjZkYzg4YWM0ZWQ3MjM5MDQyMDA0OTJiOWZmMDQxOWUzNzk0ZGMxODExMTZjMzlhOWZiMTg0OTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1ZTU3Y2MzMjU4ZGUyM2ZmZWQxOTg5NWRiOTFkNjIzMzBhMTg0ODgwYzIxNDFhNjk3Mzg3YzAwNjI5NTA1NzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU5NmM1NWQwNmI4MWFiZjQ0ZjgxNjcxNmNmZTY1ZjRmMDIzZmU1YmUwNWJmMWQ3MWU2ZTczODQ2ZGU1MjgyYzMifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/public.py#L86-L91",
+          "version": "repo-lines-v1:sha256:8e50f3b9e8f3043b04692ec9244711d25d13a486bb8dc4a13407684d38dd78bf:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNzgwMzYzYjhlZDRlYmM1MDMyOWIwZDAwMzE3ZTAyOWY3YjY3YmE1YWNiZjNiYmZiNmRhYTc1MzE3NDNjMWMwMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDNkMTcxZGU3NTQzMWEwMjFhMGQ5NGZhNzZmYWJmMGQ3MTM5Yzg5OGMxYTBiNDRiNDNjYTYwOTAzZmExYjg0NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmU5ZDY2YzQyYTA0ZGNkZGU3Mzg4ZjBhNTE4MjU4ODlkOTg3MzA2MWM3Mzk1YjZiOGJjYjU1OWFmNzI3ZDY5YiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_acac6d8ff94347ad9d6bfaf8a596e349",
+      "statement": "Connection lookup is tenant- and area-scoped: `current_connection(connection_id)` only searches the current tenant's connections and, when an area is active, only returns a connection whose `area_id` matches that current area.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/public.py#L93-L110",
+          "version": "repo-lines-v1:sha256:48afe52afeeaa8b9191abeacfb8e567ec816cd1317d39f5869b99352b01e79eb:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjN2ViNTAxOGI4ZjZkMTUzNjcxY2FkNDZmM2YxNzY1NGVlMTRiZTIwZmQ2OTc5ZjFmZTFlZmM3ZjU1NmI2MTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFkZmVlNmE0MDZlOWIyMWE0NDY2NjA4NTg2M2FlOGMwZDVhN2NmNjNiYWRmODM4Mzk1NzM0MTZjY2QzNmZjYTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYwZDgwMWI0ZmVmMzljNDA3ZDQ5N2MyMDk0M2Y3NWMzMTM0OWU2YzZkMzIyMGJkMzdhNGI2ZTcxNTM2NmYyMmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_89546dc3b6a74ad48d02c5a3e8f0565c",
+      "statement": "Per-tenant domain entitlement is represented by `enabled_domains`; `domain_enabled(domain_id)` fails closed when no tenant is resolved, and `require_domain(domain_id)` turns that shared rule into a FastAPI 403 gate for domain-scoped routes.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/tenancy/internal/tenant.py#L248-L278",
+          "version": "repo-lines-v1:sha256:110ac70c4a6db51e349f178b397d1c7ea3ee0f2cc0337e87d3c8321b29a01a01:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2ZTU3MGJjZDc3NzJjYzJlMzMzNjUwZjMzM2M4MGRiYjFkMWNhNjlhOWQ5YjFkYzE5ZmQwODhlNDM4ODI5MWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5YzA3ZmQ3MjUwZjkyNTY0NjU4M2FlNDg1M2RlMzA0ZDFlN2Q5NzA0NDk3NGQwOGQ2MWFlOTZmNzAxOTJjOTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkYzk2ZWU1YjE5NmM2NjM1M2Y3YjBkOTdjMjlkMzFmMmU3NzQyMGVmZDI3NGNlMzhmOGI1Mzg2Y2ExMDYwODUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczMTVjOGRlYzQyNDdjNWYxYTk4ODQ4Yzg3ZDBiNjNhNmE0NDQ1NTMzNjRjYTE4YmRmN2FlNTg0ZTQ1ZDY5NDYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9b0ef0974ce2436791c38b475868a38a",
+      "statement": "The document source route `/source/{domain_id}/{name}` reuses the same shared-mode entitlement rule by calling `require_domain(domain_id)()` inside the handler before it touches the document, because `domain_id` is a path parameter and cannot be wired as a static router dependency there.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/api.py#L69-L88",
+          "version": "repo-lines-v1:sha256:91971a6d6b11d77e00715bf311c643ef88cad5151daf35d39a53aca2c00304ec:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlODlhMDZiMzFhYTgzNTI5MjhhZWU1YjNkNTU2NDBjYzA0ZWIwMDFmYjE4MjgxYjVhZjgxYmU1YzNjNmYwNDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyOWM1MjQ0MzRjMDA5YWFmMGQ3ZmU5ZTJmZmU3MjJiMTcwY2Y4ZWIxYzhjMTU3NWU0ZTNiZDUxZTkyNmM3MWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRlOTkxYzJiNmJlYmEzYTk4MGI1ZWZjNGRhYzdiN2ZkZGYzODliZjY1MjEyYmMwOTM4NDA0YjE4OGY5ZWRlYzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFkOGNiMDYyYzgwMjVkMGNhMGU2ZDk5YzQ1NTQxZjFjYjM0MmE0YTYyM2M2NGIyOTU0ZjAzYTc0ZDgxMzJjYzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bec04bc9ab714a6fa4d4cec7cbfc1d55",
+      "statement": "The knowledge module makes document ACL a data-driven backend responsibility and exports the main enforcement points—`authorized_document`, `authorized_components`, and `trim_agentic_content`—so other surfaces reuse those decisions instead of reimplementing them.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/public.py#L1-L37",
+          "version": "repo-lines-v1:sha256:9f7ff8905f029ba0040ab0909c953e064aab93cb8ae3a8c25ea5dc1b77fa9f0a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFjYmRkYTAxOWVjNjlkMTM2MTBhMGVkZjdlOTcwOTU2MThlYWViYTdiYmQ2MTdjMDlmMTFlNWM1NTJkYzNhYzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5NDE2ZTA5Zjc4YmEzMTZjMDMyNTY4MjEzYjg1NWVlNzU2ZTQxNTY1ZDkxOGYwOTUxOWM4MWZkNjIwZjQwNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bd73de2117eb4c878f0f97a6444108fc",
+      "statement": "Whole-document reads are reauthorized on every access by `authorized_document(domain, name, user)`: for `document_access == \"acl\"` domains it obtains a user search token, fails closed if auth is enabled but no user token is available, asks Azure Search whether the caller can read any chunks of that document, and only then downloads the blob.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/internal/document.py#L115-L166",
+          "version": "repo-lines-v1:sha256:11d14961ece552cb907b140ce5cf3d10a801e43cecaf7fdc60c6d91be11c5b75:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMyNTY1OWMxYTUyYzc0MzFkZDUzMGM3NjdlMjZjOGEzNjkzZmYyMzIyMjk5YWJlMzAzNjI3MGZiOWU0NWVlZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyMTUxMzMwZWQwOWFiNDEyNTA1NDQ5NzQ3ZmZjZjA1ZTZjY2I0NWRlZTljZDI4N2EzZmZjOWY4OGE5ZGNmM2MiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5ZDg0MTk1MjI4YjM1NTgyNTQ5MDllMDFmNTNkZmRmOGNjNTFhMWY3OTdiNDk5MTdkOWYyZWEyNTY0NWY3MzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzZDQ4MGFlZDhiYmM2ZmE4ZjIzZmU2NTc2OWJmOTdiM2FlYWJjN2Y2MDc1NGQ2OTdmMjAwYmFjOGQ1ODc0ZjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_751559612e6a48728953cb96e11f38b5",
+      "statement": "Whether full-document ACL is applied comes from the declared domain property `document_access`, not from the presence or absence of ACL configuration values, so missing runtime ACL config cannot silently downgrade an ACL-protected domain into session-only access.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/internal/document.py#L131-L151",
+          "version": "repo-lines-v1:sha256:37773a14a570cc4fad3fcc6da8c4172fc7b3072d8401513a5edbc650a3870876:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0NjczN2M4NmE5OWE1NWViYjU2N2JmZDViZGRkZWU4ZWVjMWNjNjFlMzk1MWZmYzE0ODEyM2UxNzIwNjllMmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVhN2QxM2I5YTQwZTZmZjZmMDExNzVjZDgzYmQ3NTZmNWE1OTg4OTE3MjQ1MDdiOTc4ZjY3NGY1MGNkYjhkNTUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1ZGI5MmRkM2FmNjYzYzI2YjFmODYwNzQyYTU4MzI2YTZmYTYzMTA5Y2FhNTQ4ZThmYWJlNTgzYzgxYzE4NDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI5YWQzYjc3N2NkMDU2ZWM3NTZkYWVjNzFlZTQzNDkwMDY0M2I1ZDNmOGQ3ZTEyYTA1NzAyMDdiZjFjMmUwNGUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3ea4083939eb43be8fb5494c3bad2f45",
+      "statement": "Retrieval-fed model context is trimmed before the model sees it: `authorized_components(caller_token)` asks the index, as the caller, which components are readable, and `trim_agentic_content(text, allowed)` drops any retrieved chunks from components outside that set, failing closed by returning an empty allowed set on search-side errors.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/internal/secure_search.py#L1-L18",
+          "version": "repo-lines-v1:sha256:3343bf441ea4c6257457ba9094231f8534d1e3df98ec77f5619d5e163fd09879:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0OWUzYjVlNzdhZWZlNjQ4ZTQ0OTFkODNlMmRlZTBhYzRjN2Y2MjMzZWNjNmQyYWI3MDMwYTUyYTY3OWU3ZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMyYTgwODk5OWYxN2IyYmY2YzM0NWFkMWU5YzU3ZTcwYzA4OTdmNjNhNDViN2QyNTBlOTQ0MDAzNjgxNDkxYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFhYWY3NjM3Y2I2ZTdlNWRiODVkNjM0Mjc0NjAxNGRmMDQxY2NkNTU4YTkyMGIyOWViNmFjNzE5ZDdiYWY1YzIifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/internal/secure_search.py#L36-L55",
+          "version": "repo-lines-v1:sha256:53d2d336e1d4a23a40cd4eb83d09048b88ed90519fea42ce1efd6bafa3d1429a:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5ZDRkMmRjNTgwYTIwOTRhMDk0ZmE0NDk5ZDE0MzlmY2YxZmJiMDZmMWQxNzBmNTI3NzE4MDIzMmMyNzI5ODkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhNWQ0Y2NmYWQ2ZGM1NTA0MTVlZmUyOGU3NzljZjZkMzIzYjFkYWIzZjE3NDExYmViMzIxZmQ2ZDhjZWZhNzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg5Yjk3ZjMwODI0YzgwYTA2NGRhMTJjMzhhNTEwY2E1NGZjZDQwNjY4ZDRlMjZhMThkMGFiNmFlOWExODgyMzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJkZTg1NDI3MmZkY2ViNzhhZDk1N2IxYTMxZGI4NmQzN2ZkOWY2ZWM1NTI5ZTg3NGM5YmJjM2YxYzIzYTI3ZDEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/internal/secure_search.py#L72-L88",
+          "version": "repo-lines-v1:sha256:1fd18d131754c1f2b724b6a4be4ccd3f065f1d1230cdea0f60f4ea76abe3fe62:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmNDFiN2Y3Yjk0MzExMGQyOTgwYTNkY2YyYzljMmVhNmNhZTY5NmYxY2JiYjIyNjcyYzdmZDdjOWZjZjJmZTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1ZmQzYjQyNjE2YTE5MDFjMzZmNzNkYTEyNWY3YTE0Y2VmOWI5MmExNjQxZjFjMmQ3YTY3YjUyN2QwMzJjYWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhMDUyZjUzZGM5OGNlYWJiYTc1ODZkNzAzNzNhMDM2YTA4YjJlMGQ1NjNmNGExNTA4OWI5ZWMxM2NjZTgwZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0e4cb0e6ecd44a14a682d2e3205364c7",
+      "statement": "The standalone MCP server reuses backend tenancy rather than implementing a parallel policy: in shared mode `wire_registry()` calls `tenancy.install()`, requires a tenant store, and injects its getter into `mcp_app.tenant_gate`; outside shared mode it leaves MCP behavior byte-identical to single-tenant operation.",
+      "evidence": [
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L121-L137",
+          "version": "repo-lines-v1:sha256:3d4f80b0923f29bb11de35e5b2e42591060be8c517d935d8709925ef0f8126c0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3NzJkYThkZGFiZTI2NDdmMzY2MDlhZjlkMjJhYmNhYzdmY2U4ODkwNWQwN2QwYTA0NjI3ZjkwZjU5ZmRkZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwZjgyYmU2ODU2NTQ2M2UwMThjNDM2NDNhNTg4NGFlYzcwOTc1YjRiNTQ1MmI4NzMxOTY1Yjg3MmVhMzdjNWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkOGU0YTEwZGM0NGE5OTRiMmI1MzZmZGY3ZmE3NDQyNGYzYzg4MDU4MWI3NjljOWE3ZjM5NzRiNjRkODVjNDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5c00647716164560a2158f608b591ae4",
+      "statement": "MCP knowledge tools and resources apply the same layered authorization model as HTTP routes: `search_docs` enforces reader-class roles, resolves the caller identity, applies shared-mode tenant and entitlement rejection through `recusa_de_tenant`, and delegates retrieval to `knowledge.public.retrieve`, while the `document://{domain}/{name}` resource applies caller identity, shared-mode tenant and entitlement checks, and then delegates whole-document authorization to `authorized_document`.",
+      "evidence": [
+        {
+          "resource": "repo://apps/mcp/mcp_app/resources_knowledge.py#L171-L205",
+          "version": "repo-lines-v1:sha256:0504bd611efe73d1b6aa5e5fa958f25c1d43a9d562d3f3a7be923a0868fed704:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwZmM1ZmZkZDgzNTQ5OWVhNTE1N2Y0MmQ5MzMxYTcwMWUyMmE2NmE1ZTk4OTRmMGMwMTM5NTZjM2U4MWJjYTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA2YWVjZGVjYjk3M2NkNTA1NzhlNzEzNWFhZmE5ZGVlNmJlY2FlYWVhMGQ0YTFiYjI0M2VmODBkNWU4NGIyY2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJlZTIyNTcxMjgzZmIyNGMyMjhhYThmNjJmOThkMDlmNDMwOGJjYzIyOGM3NTY3NTQ1YmQ0MzUyYTlmNDhiN2UifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/tools_knowledge.py#L137-L152",
+          "version": "repo-lines-v1:sha256:90a4bdf890afa0e4a3249e1d81abe5592ce4a45aad53cd3d902b520f3da43fe9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjljM2JmYmU5NGFhMTgzY2ViZWUwZjVjZDYxYzNiZGQ4YTQwYTRhY2RhNmRiMTU5YWYxOWZjZGQzYmZkMGI2MjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJjY2UzMTNhOWYyNGQ3YWE0MzIyODA0YjQ4OTg3YjdkNmJlNmZjZDFlYTVjMTQ5MzcyMDhkZWYyYTNiYWMxOGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/tools_knowledge.py#L56-L86",
+          "version": "repo-lines-v1:sha256:e74113180b63f24b476e6cf80c4c6579a56262f1e6c1dcd23b7f381586fe89fd:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4NmFiMmVlYzMxNzdmMTQ4ZGFlYjA5YjMyYmQwZWU5MDMxYmEyZDMxNjAwNDliMGY3MTEyMjhmZTM5YTNiNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyMDY4NTA2ZGIyZmFjYTcwMDc4ZmVhNjZlYjI5NjU2MjNlYWFlNDQ0MGE4MjA0YzJhYTM4NmFiMjMzODdiYzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU0ZjljYjI1NWNiZWYxZjdmNTg2Njc1YTMzYzFmYWQ4YTI3ODVjMDZjOTIzNjFlN2RmZWE1OGMzY2QyNzNiMjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVkNzMzZGViMTI0NTNmYzc2MjJlZDI3NTc0ODVmYWMxNWYxOTQ5OWRiZjZlMDJmYWI0NjFlYzk5MTFjNDRlOTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0f526e1fa4274bc292344eab3cb1d8c9",
+      "statement": "MCP completion is part of the security boundary too: because FastMCP does not enforce `auth=` on `completion/complete`, `resources_knowledge` manually runs the read-role gate for completion and filters suggested domains through the shared tenant-entitlement predicate.",
+      "evidence": [
+        {
+          "resource": "repo://apps/mcp/mcp_app/resources_knowledge.py#L11-L25",
+          "version": "repo-lines-v1:sha256:628f1615387b85a08643c94a91f3089a63fb2b4e2c2ce4f42fe5ddb3705c023d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlNzVhNWIzMzRmNWYzOTQ0NmIxZTYwOWZjMTljMTczOTU1N2MzMTY1OTMxNWYzY2M3ZTFhYjAyYWRjZmQzZmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3NTA2NzQ2ODdlM2E5OTdhNDYxODE2NzkzN2VjODZjYTk3Y2U3NGRlMzg4MzYzMjUyNGNjMThkZDZlY2IzZDAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFiODY0NTU3ZTYyYmY1YWVjZmQyY2M4ZDZlYWU1MDI1ZDNlZjgyODkwODZiM2ZhYWVhOTg5ZDMzMWY1MWNmNTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjNmU1ZjEyYTYyMThmMzViMGQ1NDdjOGQwNmVmYWIzZmM0YTY5MWE1MGNiOWU0M2IwYmMyOGI2N2ZlNWIwZDgifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/resources_knowledge.py#L212-L242",
+          "version": "repo-lines-v1:sha256:70f4d4a16d2eb2c6abdd1beb8c34263619034172dee4fa887c9d3ac5108d4814:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU4Mzg3MGQ4OTc2ZDM5YWI1MGNmYjRlMGYyM2QxMWIyMTJjYjFjMzI3OWQzYzRlMDJlZTAwNGJjMWMzMWJmMTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiMWJmOTJmNWMwNDFkN2FkNzcxNGUwMDM5ZGI5NzBjMmU4ZDViY2ZmZjFmN2RiMTIwY2YzNDkzODJmNWNlY2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5OWEyMjkzMTM1YjY0NTZmZTkzMjViYTJlODM5Y2NkNjU3YzllMzJhMDRjOThjZTc0ZTVkMzA3YjQ5ZTZiZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0NTg4YzFkMDVlYmU2YWJmYjUzMmQ3NWQ3NTVkNmVhNGEzOTI0YzJlNTUxOTNlMWYwMjk5NTBmZTExN2Q0ODYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6776afdbca0b473f9d956847c448baad",
+      "statement": "`apps/mcp/tests/client_surface_test.py` verifies protocol-level enforcement end to end by running the real ASGI MCP app with two tokens and asserting that a `Reader` can list read surfaces and read a document, while a caller with no roles sees no tools, prompts, or templates, gets refused on direct resource read, receives no completion suggestions, and does not receive leaked authorized content in the refusal path.",
+      "evidence": [
+        {
+          "resource": "repo://apps/mcp/tests/client_surface_test.py#L122-L143",
+          "version": "repo-lines-v1:sha256:257a6d90732ddbce2044937f8bb2d0509a6c1a23be977bb1bcc493aacf3814fc:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmZGQyZTQzNGU5NzIwY2U1ZTgzNjMzNDUyOGUzYWIwNGIxYzIyNjUxMzhmZTFlOWE5OTlhYjIyZDI4MGE0MzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVjNDA3NjZmYzczYTZkNjA2ZmUxY2YzMDBjMzliNWJjMmRmMTQxNjA3NGQ2ZDQyOThjODU3MjFjMTZjZjExYjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0OGQ3NDgzZDA2MGYxNzIyZTI0NTM2ODg4MzM0MjU2YjU0OTBlOGJiZTg2OTgyMDY3NmNhOWVhZjM1MDljYzkifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/tests/client_surface_test.py#L197-L239",
+          "version": "repo-lines-v1:sha256:ee891c47e449f04b1780a9e8e8b6029586dbbd992dd66af45d8eb59d5e740c51:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxYWYxYjUyMDMwNTkwODFhN2ZiOWY3ZDVkNzE3OWRhOTY5MTIwNjVkMGViODkwMTJhYmM3NTg2MWI3Nzc4ZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwYjVlZDMzZWYyNTk4ZDM3MDA1MzJkZjkzZDNkY2U2OGFmZTNhMTA1YzAxOGRhMDQ3MGMxMDFiNjg2OTliZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY3MTMzZjgyYjU3ZTJjN2Q3NWM5NjFiOTRiNDc1NjI4YzE3OTQ2YTcxM2Y3NDEzN2ZmOGEwNzEyMzBhYjgxODkifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-09-02T18:24:34.393Z"
+  }
+}

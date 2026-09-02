@@ -1,0 +1,264 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:9e05e03782a0950510861aed763058065a86daba9f0823f9d6486a01a1efe55f",
+  "claims": [
+    {
+      "id": "claim_ceae1411fc924dd9b307f1342b520cfe",
+      "statement": "The workflow is split into three owned boundaries: proposer drafts and reviews candidate OKF content but does not publish resources, authoring owns the factual catalog plus ChangeSets, validations, decisions, and bundle projections, and publication is the only external write path.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/public.py#L1-L47",
+          "version": "repo-lines-v1:sha256:2af5418b686651abb098d4a0ff367db03b15b5d1c554047208fe4881523ff5b3:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUxZDBlZGNkZWQ4MDQ3MmRiZjE4YjE5MmI2NTUxZGM4ZjE3NDM3M2QzODI1OTE0OTBlYTJlZDIwMjhkZTYxZGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkYTM1MDY0Yzg5MDY5MmYzYjliNzc0YjNhOTNkZGNmNTUzMjc2YjU5ZTJiYjNkZjYyYzMwYTRkM2IyNzAwMmEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/proposer/api.py#L1-L9",
+          "version": "repo-lines-v1:sha256:84a3399178e3ba17ff79018cbb1175c1615fc6c18786b7267d14c0715c0fbe9c:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGNhOGQzMTQ5ZjhjMjFkZjBhN2IwZjMyNWEwMGJjNzljMTQ0OTM0NTBiZGZlNmM1NWE5NDRiYTkxMDYyMTY0NSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTMwM2VjZGQ0YTRkMTBmMTljNzNmZDQyZmQxMjQzN2ZkMzM1NGE4MjY4MTYwNWRhNTI1NWE5N2EzOTA2OGRiYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTViNmU4NzA2YjQzMDQ3ZjJhNmRiNjdmMTMyNjM4NTk1NjA0ZTY3ZjM2OTY2ODc2Y2UwMTU4ZjAwNTNlNmJkMSJ9"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/public.py#L1-L28",
+          "version": "repo-lines-v1:sha256:f577c16c099eec8d8549a94a4090ef3a4d63cb0daf1c78237ae47a054268770c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhY2NlMWNkYjFhN2RkNjQwNzE3MDg4MDZiZTRkMjg4YzNhN2EyMjJkNTE3OGNlMTE0ZGVlOTQzNGU0ZGU1ZWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlhM2U3ZDkxYjkyMDk1MDFjZDk4Yzg5N2JjOTBjMmQ4OTI5NTllZjhkZjc5NDBjOGM0YjI4NWEwYThlYjUyOTIifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/architecture/proposer_read_only_test.py#L28-L47",
+          "version": "repo-lines-v1:sha256:a42ae0b1b3cbef5b0b960d5d0e818f55b70c1fa07e87a6a391d3d261dff3e010:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlN2RkNDBhN2QwZjFmY2RjM2MwMWYwYzNkNzdjMTMwYTE4MzJkNzBmNmQ5NmNiYThlYjhmMTYxMjk4MjRlNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRmZjE1NWJjMTVmMjdkYTNlNDE0ZjJkM2M2ODlhNjUxNTE3ZDI0MTIxYmYxYWRmZTVlYjgzZjM1OGJlMzdhOGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAxM2ViMzQ4ZDI2ODUxOGE4NDBmYjk1ZTIwZjZhMzdlNDAxODU1ZTk1NDYzNzU2M2FhYzMxZTRmZWQzOTVkOTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhNTMxZTY0NjgyZWJmZGVhNjU3ZjQ0NGMwNmYwYzdlNmI5MmMzMDIzMjE2ODZlNDA3YjViZGIxOGNiOTAzODgifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/architecture/proposer_read_only_test.py#L62-L106",
+          "version": "repo-lines-v1:sha256:8d3676752970b3320a9e80ebc2ff5c6a12754023e2eeb56b9601f7178caf57f2:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2NWQwOWU1ODVkZmJmZmIyMzQ3YTA4MGM1MmE0YmNiNTRiNzI1OTk1M2JjNWY5Y2QzZWRhMjgxYjU0ZDQyOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYmYyNTA4MTJlZjU0YWE2MTU2MjI1MjY3ODg2Mzk2NTc4NTVlMTRhYmNhNmNhM2VlN2MxNTdjMDg4ODBmNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4YThkZTQ3ODdkMzc2MjUwNWIxNTI4MzJmYjRiMGRlYTUwNjdiZTliZWExNzBkODAzOGU0MzM4NGEwMzUyZjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0OGQ3NDgzZDA2MGYxNzIyZTI0NTM2ODg4MzM0MjU2YjU0OTBlOGJiZTg2OTgyMDY3NmNhOWVhZjM1MDljYzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_66f5778075e64e8cbb7e7b3066212c19",
+      "statement": "Authoring and publication both derive ChangeSet scope from the current tenant, current area, and current caller identity, and fail with AREA_NOT_FOUND when no area is resolved; in self-hosted mode they still use an area-qualified scope with tenant fallback 'self-hosted'.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/api.py#L105-L115",
+          "version": "repo-lines-v1:sha256:96b522e53ec3ebbba7333c574e35be1c2e9fa4c65a557df87a63bf31d2e0e390:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExNDJiNGIzMjZkYzg4YWM0ZWQ3MjM5MDQyMDA0OTJiOWZmMDQxOWUzNzk0ZGMxODExMTZjMzlhOWZiMTg0OTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRkMmMxYzRlNzc1NTQ4YmIyNjEyYWQyNWZjZGFlNmFjNzZmN2QxMTVkMmRhMjBlMmNmNGIyZDY3Y2I3MTZlNTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYzODU5NTA4ZmJkZmZhN2Y2YmFjZWVlZjk3Y2I0NTM2OWM5NmZkODU5OWRmYjk1NWFlMTY0MjVhYTViNWJlZjMifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/api.py#L89-L99",
+          "version": "repo-lines-v1:sha256:543b7ecf970e7b68ed0ade7589c9395caac5c383bf9eb99fe9fd3ff215b9a102:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExNDJiNGIzMjZkYzg4YWM0ZWQ3MjM5MDQyMDA0OTJiOWZmMDQxOWUzNzk0ZGMxODExMTZjMzlhOWZiMTg0OTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg1ZTU3Y2MzMjU4ZGUyM2ZmZWQxOTg5NWRiOTFkNjIzMzBhMTg0ODgwYzIxNDFhNjk3Mzg3YzAwNjI5NTA1NzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU5NmM1NWQwNmI4MWFiZjQ0ZjgxNjcxNmNmZTY1ZjRmMDIzZmU1YmUwNWJmMWQ3MWU2ZTczODQ2ZGU1MjgyYzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_62c1ea2f252a4e07bfaf5937baf4b4fd",
+      "statement": "The proposer changeset flow can draft a proposal from a need and the full catalog, and then confirm exactly one reviewed proposal into a persisted ChangeSet through ChangeSetService, but it still performs no publication.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/proposer/api.py#L107-L144",
+          "version": "repo-lines-v1:sha256:265b7e6fd07f2eae891936ef58c7ecc27a8e378e478a10e96f41860c034b96d9:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1MzI2OTVmZjkxMTMzNTM5M2YyZWMyMjNmYWE0OWMwZTFjNTJjNDU2YzQ3MmU0ZWE0MzkzYmRkMTNmZDgxOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIyYmEzZGI4NWM2OGExYjJkNDM3N2UxZTI4YWNjMTZkOGJjNzdhNjYxOTI4YWM2ZDg5YjljYjdhNTJhNTdmMTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdiNzIxYWYzYjc1ODQ4ODhkMjM5MjA2ZDJiYzAyMGM4NjdhNGFlNzQwMjNlNzc1MmI3NGJmNTczMjcwOTQ1M2YifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/proposer/api.py#L146-L191",
+          "version": "repo-lines-v1:sha256:21857b78ed96265620dfd38443e5799b08313672e5ba4e8ceaf4e4c9aa0457df:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1MzI2OTVmZjkxMTMzNTM5M2YyZWMyMjNmYWE0OWMwZTFjNTJjNDU2YzQ3MmU0ZWE0MzkzYmRkMTNmZDgxOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlhNjY2NzNlYTI1YjQyODMwNDdhNzg5ZDJiZmRlYTRmMjhkODhkOWUzM2E4NmJiYjc0YzVlZTYxYWUxMzEyYjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzYWU5M2Y4ZTRmYzg0NjAyZTBhZjVkOGQ1MjUxYzQ2NzQ2MmFhOGVjMjQ2ZDg2NzY1Y2VmNzBlMTNjNGEyYmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYzMzM2NTdiYTc4NzkyYzE4MWUxNDllODI2YmUxNTg1NjA4MGU3ZTVjNzQyYTAxOWE1MzhiZTBlYjg1Yjc5OWEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/proposer/api.py#L68-L77",
+          "version": "repo-lines-v1:sha256:b284c4b11b0376da0bb1473d7e163928749c5dfadabd9a1edfd12d54885ccaa9:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2MTRkOWYwYjYwNTNmZjNlZmFlNzlkZmE5MTBjYjljNjY2YTNkNzhkOWZjNTI2NTY0YTJmOWY4MzgwOWIyYmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFjMGEwOTcxZjhmYmQ5ZjMzMWQ0ODMwYjgwNjE2OTA4ZjQ4NzdiZjkzNDU2NjdjNDU2MmFhYThkY2U3ODQ1NDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjExNGM0MzRhNzU5MzllZTExZjYyZWE4MmFmNmJjN2M3MGI0NTRiMDAyNDQ3NzY0ZjBjYWIwNGI4YTFhNDI1ZTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_821c689d59fc4f35a4e65774040b6601",
+      "statement": "ChangeSetService is the durable review boundary for proposed authoring changes: it accepts only known sources, requires 1 to 100 create/revise/deprecate operations, canonicalizes and hashes normalized content, enforces embedded OKF document validity, and rejects documents whose tenant or area diverge from the resolved ChangeSet scope.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/internal/changesets.py#L540-L583",
+          "version": "repo-lines-v1:sha256:835161a7e13b82027958b7b8b83b4c3e811d11c8aabc2caf141a273acf568be3:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxYWJjZDBjYzY5MTNkNGY1MWViMjFlNGY1YWZjMmU5MGY4NmQzNmE0NTBiYjQyY2IwNWM2ZjNlMGQ3MDZmOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQzYzJlY2JjYzVlZTQyN2NjYjkyNDdhZTlkOWE4NTQyM2Q4NmRmOTgzOWY5YjI0ZjMyNThiMTA1YmFiMTFmNzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjZGNlMDQ0NTE2MDFkOGFkMTBlZjEwZDhjY2Y2ZTA4YjQxMDZhZTY1YTc1NjU4MzdmNjEyMjA3ODJlYTU2ZWUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/internal/changesets.py#L590-L626",
+          "version": "repo-lines-v1:sha256:6d6fa8ee0b3cdf80b149ff6b78e04c401a2c939c6e65f8c3879f2b258d04ac29:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI4NjNlMjc3MzBjMmNiMDY1ODY2NDFiYThmNWQ2ZTdiOWU5NzUyYjMwNWZlYzc3ZWYzMDBkYWRhZjM3ZTkwNWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFlMDYwYTlmY2Q4MGQ1NGRmMDRmNDIzOTBhYzQ5NmFlNDgzZjgyYzU1MTQ4NTI5ZTlkOWZhNTU5NjgwZTI4ZDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAzYWIxMGU2ODE3NGUyNDVlNWQ4NDhiZDc5MjQ4YTJmODgwMWNkYTMwODk1ZWQ5YjM0ZTNmZWNmMDJlYWQwYmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ecd0c2b8149248759949f154b9ee1977",
+      "statement": "ChangeSets start in draft state, can only be updated while draft, submit transitions draft to submitted under ETag preconditions, and revise is the only path from submitted back to draft while incrementing the revision.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/internal/changesets.py#L609-L626",
+          "version": "repo-lines-v1:sha256:401e163e324710e7111ff2a1a781742e5b4ec8b588d68e38ba617087f1e848c2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzN2UxNmM3MDUyYmY0ZDgwMmVjNmIzYjk2NDEwMTUyOGQwNGYzOTNmOTFjNzBmMTVhNmFhNTE5YjE1NmZlZjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUwY2ExMmIyYjRkN2E4MjlhZDY0NmY3MzAwNjFmMDI3OWFiMThhMjdhZDk4Yjc4MmVkM2IyYWMwMjM0ZDg0NTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjAzYWIxMGU2ODE3NGUyNDVlNWQ4NDhiZDc5MjQ4YTJmODgwMWNkYTMwODk1ZWQ5YjM0ZTNmZWNmMDJlYWQwYmQifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/internal/changesets.py#L649-L720",
+          "version": "repo-lines-v1:sha256:133ef7dc6a234c1ddb4f02a8813bd5e0a9c3799b54e5cf85f2d56926bee7cfa4:eyJzZWxlY3RlZExpbmVDb3VudCI6NzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU0ODZkZjNkN2E3NDE3NTY5N2VhNGMxNzQwMmQxYjAwMzk5YTAzODQ2ZmI3OTQzMmVjNzViOGI0NDUyMzg0MGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM5ODExMjI0NTczNDAzYWJlNmQ3NWJiZjNjMzcwYmZhZDNhOGE5MjI3OWM3NjY3MjZmMjg2MjJkOGMyN2ZhNmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2OTAxMjc3NWM5NmY1ZThkNTczOWE4MmIzM2Y3NWU0ZjU1M2YxMDQ1YWFiNDdlOTgwYmQwYTIwOTUxZmRkNmQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5713607f82d74fa0adb219da0c55aeba",
+      "statement": "BundleService does not store a second bundle object; it projects a ChangeSet into parsed documents, a root bundle document, dependency checks against internal documents and the factual catalog, and a computed canSubmit flag, and submission is blocked when references or declared gaps remain unresolved.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/internal/bundles.py#L125-L188",
+          "version": "repo-lines-v1:sha256:3244ebcc0c7eee538a39b35466baa300b1100e6e770eed9aa5af1b0c2c01b0f5:eyJzZWxlY3RlZExpbmVDb3VudCI6NjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVmOWEzNmExNzUxMmFhOTdhYzI3MDI4OWFmZDdjOTkzOTQ0M2Y2NGU5MmM5MzZkYTEwMWIyZDU2MTM3ODYyZDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU5MmZhNTBmMGNhNDJjZmQ3M2QwZGI4ODcyNDVmOGIxOTkyMGI4Mjg3YTU3ZWJjYWQwOTRmYzc5ZmJiYzYyMGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhZjBiMjdhNmY2YTQ3NTUwYTVlN2VlN2Y5YzBjNWRkYWQ0ZjM1ZjRhYmJmNTNjOTcwOWRkNWJiNWIyNTExMjAifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/internal/bundles.py#L30-L66",
+          "version": "repo-lines-v1:sha256:7b590c28162b9252a34dc8cace8e2db43a6e8a1e1f786bddea3bb83d439e5212:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlM2ZiMWU1OGZiYzkwNDc5NGQ1MDczMTRmYTkxYzlmMmYxOThjODhkM2ZmMzk1ZTAwODI4OTAxYzM3ZGM5MWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzYzQ4MTBkNWNkYzRmODI2ZDg0OWU1MDEyZjg4YjU3NDJkMzA2ZTNlZTJlZDYwMzI5MGQ3ZTBiYmY2N2FlNjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFjYjUyYzhjZWRkZWU2N2UxZmViZjVlNDBlZGZiNmRjYjc0NjMzOGM0MjczOGI0NTdhYzY5YzczMTUwMzY3ODciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI0MTY0YTA4YzA5N2ZmNTVhMGVhZDA5NmE5NWM3MzAzMjM0NTgzYTEyNzM4MjMxMDliODQ0YTIyMmFlNzIyN2EifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/internal/bundles.py#L68-L123",
+          "version": "repo-lines-v1:sha256:bcab8f311509ea496561a96fa6681f4f32f820d01f78766f3cee3e712979a760:eyJzZWxlY3RlZExpbmVDb3VudCI6NTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2NDU1MWRlNzViN2ExNzA3NmI1N2U2OTQ1N2ViMTJiNTkwYTNjNTk4MmRkZTFkMTIxNmNkYmFiMjUyMzg4OWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkNzU5Y2UxMmM1MGQ1ZWY0YmU5MTYzYjFmNTRjNzhkN2IyNjM3MjIwNmM2OTliOTZlYzQzMDMxNTUyNzcxNTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZlNWEyNDcxODAxYTY0NGI3NDM0YzFkZjNkYzVkYWQxMDFlYWU1YmI5NGNmNjc2ZDhmNTU0N2JhNjRkZmYxMTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY4ZjgxNGVmYWZhNWM1ZGFkNTNjMTkyMjJjZWUwMzk5MjE4ODcwYWEyNWY2MWZjMjkzMWZhMzAxNDcwM2I5ZWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_54c14d9ee618466197786c6c06bca2b9",
+      "statement": "Validation is phase-aware across editing, submission, approval, and materialization, and assert_transition only allows a transition when there is a current-phase report for the current ChangeSet revision whose content hash still matches and whose blocking checks are all approved.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/api.py#L351-L390",
+          "version": "repo-lines-v1:sha256:decdb77f446c8b6298439d2f8b5d89a4d22c3e017f4b70c586dae5767b00a90d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1MzI2OTVmZjkxMTMzNTM5M2YyZWMyMjNmYWE0OWMwZTFjNTJjNDU2YzQ3MmU0ZWE0MzkzYmRkMTNmZDgxOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxMmY2MWQ5NTczYWI4YTVkZWZlNGFmOWZjM2E4NjliODU4ZGM0MjQzY2Y5ZWM0NTE3OWRlNDJkMDAyN2MyMzgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE2NWI0MjY2NWY5YTAwNjczZTdiNjUxMWZhNDFhNGUyMmExZWM3YzVlNTM2MTJhMDNkYzUzNTM4NTE1NDdiYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNhYzExNzkzMTQzZDZlNTk4ZDRjNTU1NGI2OTlmYmExMGI3NmZmMzg1YjExMjM0MWRiYWMwNjk2MDNmMzY4YWMifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/internal/validations.py#L38-L91",
+          "version": "repo-lines-v1:sha256:805862a47a11eb338626f8ebe26ca8f3159e2ec8b9b9de7ac0c9e791bef3d30c:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBlM2ZiMWU1OGZiYzkwNDc5NGQ1MDczMTRmYTkxYzlmMmYxOThjODhkM2ZmMzk1ZTAwODI4OTAxYzM3ZGM5MWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2YjA0NDkxNDY5NzIyZTgzNjNhOTRlNDA0NDUzOGUwMTNhMmEyMTdlMzZiMWU1NjhiYTYwYWNiN2I0YzhmMmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJlMTZmYjVjNDUyZWRmNzFjMWY3ZGUzNDc1MTE3ZGY2NzQwMGI3ODU2ZmIwOGRjYjNjODQ4NjM3ZGUzZTI2NTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjliZDkyZmRjMzA5YTlkYzcxMDIwZGFhNGYxNzVmZWM2MWRjMDAzNjEwZGU2MzM2Y2U2YTBkYjI5MjFhMzgyMTUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/internal/validations.py#L556-L572",
+          "version": "repo-lines-v1:sha256:254322c1b6b2fff5b1c31257f8fc593d1e0e58a1054ae71af505a6db0ba90a02:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2ZDQzYWIyM2Y0MGU2NTRjY2Q2Njk3NDExMzE3OWQ1ZjA5ZDZjMWM2YjgwZWYwOWU3ZjJhMDQ3MTY3MWU1N2UiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkODk0ZTNlZTVjNzU1MTg0NTE3OGMzNjBkMGJlMTA4ZjFiNjg2NDZiMDIwOTZlMWE3ZjFjNmEwMzhhMzIwMTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFkMjE1ODVjMDQ3YjUwNzNiZTdiNDk0OWE2ZGE2ODcyZTM5MzU1YzdjMmQyOGU3YzFiZjQ3YmU0ZjVkZWEzY2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkMWRjNWRjMjRlNzY1NTUzNGJiOTk3ZGU1MDA3MTlmOTg1ZDcwMjAwOTc3MTA0OTNjM2JmNzFhNjFkMDE2NjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fda81e7f456145c4b816fd7287abf88b",
+      "statement": "Approval decisions are revision- and content-hash-bound: a decision can be recorded only for the current submitted revision, approval additionally requires the approval validation gate, and a matching approve decision is later required for publication.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/api.py#L397-L424",
+          "version": "repo-lines-v1:sha256:2c52b433b5f990296a7cf5b4c1c7c951a8680eef8a6121038fbaed20023d5f83:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1MzI2OTVmZjkxMTMzNTM5M2YyZWMyMjNmYWE0OWMwZTFjNTJjNDU2YzQ3MmU0ZWE0MzkzYmRkMTNmZDgxOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlMTU3ZmYwMmNmOWE4OWMzYTE4ODEwYmQ2N2EyZTJlY2I4Y2Y2NjAyYTYzMDZkMzMyY2NmZjM0Njg4YjIzNjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjViOGU3YjAyMWU0MGQ4YWEzODhlZWRmOWY4YmNmYmRmOWI4YTMwMjllZWJiNTQzNjBiZTdmYmY3NDZiMzEwZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjViZTE5OWVmMTlhZTgzM2VjNDAwNTEwZDU0ODUxMzU2Mjk1MWExZTk5NGM2ZTM0NDI3ZWQ4YzkwZGQyYTFjODcifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/internal/decisions.py#L271-L337",
+          "version": "repo-lines-v1:sha256:1d18696ca1a8780acd1aa11f2984596e9e6962ff995349c462b9b3df70dcd736:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM1MTI3MDU1OGQ2ZDIzZTY5YzY4NmE3ZDRiOWQxMjYyY2JkNjdjYjlkNjM5ZWFkMDdmZTUwNzhjZmRiOWVlZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcyMWFlMzkwZTdmMzc1MWYwM2YyYmQwOTFmNWMwNDgyZGEwOGQyODU0NjczZmU4YmQ3NzgxYmIxNWNkNTU1OGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIxZGY4MDAwZjc1ZGIzZTZjMDA3NWRiOGY3YjRiZTg1MjIyNzdjMDZhYjE2MTRiMmU5MTk3MDZiYTQ3YTZhNzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5YTA5ZDJkNmE0Y2Q4ZWJmYmFkYmU5MjkxYjhiMmRlZGY0Yjg0NDRjOTRjN2I0MWI1YWMzMzFmNGZkYTE1ZGYifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/authoring/internal/decisions.py#L351-L368",
+          "version": "repo-lines-v1:sha256:60ed60681818b23182dc95befbb9e6b51043161daefeda4dc91610decfb15047:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhMWI0M2MyMjM0NDAyYWM0YWY5NmI3ODA5NDA3MjMzYjIyOTI4MWZmN2JhN2RlNjk4YjcyNjk1ZDMzNjE5YmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViOGVlZmE4ZDcxYjk3ZGNjYTIwZjUyNjgwYmYxMGY1ZTRlNjE4ZTJhMWMxMzQ5ODA5ZWVjYzZiZTViNjQyY2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmYmM0YzM5ZDQ4MmQ5NDVmZjgzNjFiODQwNDU0OGRiNWM5NjY4NjhiMTVmZjAyNmY5NmE5Mjk0ZDliMDEwNTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlmZTU4NjBlMjNmZjQ0ZDhiNjdmNTczZmJmODg1NzQxY2IxOWZmMWZkOTZhMTFjODY4ZTZiYjA5ZWRmN2ZiM2YifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_cb966019ed9046d58b45e62e7bfc64c4",
+      "statement": "The publication HTTP surface is area-scoped, creation, tool approval, and reconciliation require Approver, compensation requires Admin, and the router dispatches requests to either the GitHub or Azure DevOps publication service based on the request or stored publication provider.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/publication/api.py#L151-L277",
+          "version": "repo-lines-v1:sha256:5dfb81c3119d081192fb96f0040f973689680866463be912f4b067680d49cb4b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI3LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiIwNzNkYzExOGE0ZDBhZDA0MDYxMDM1NTRkZTNmNzk1NmU5NmY2MTQwODdmNzZmYWI4ZmZjMjg5YjEwYWNmMTgxIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI1ZTE1N2ZmMDJjZjlhODljM2ExODgxMGJkNjdhMmUyZWNiOGNmNjYwMmE2MzA2ZDMzMmNjZmYzNDY4OGIyMzYyIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiI2NTBmMjgyNWRlYjk4Njg2ZDE0ODNiZDI2MmI2YjExMmE4ZTkzODlkZTAzOTM1MGJlMTRjMzNlZDJhMDQwYjRiIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJjMGEzY2JkYjY0ZmFjMjQ5ZmMwY2U2NTRjYTM5YmIyNGQ5ZTFlNzFjNzZlMTU2NWM5YTFjOTJkOGE2M2JhMDRmIn0"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/api.py#L32-L39",
+          "version": "repo-lines-v1:sha256:bf8c03ed6ded041f80f6d99880006b8432497bcea40d24db97f62bdfca27edb9:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjliYWQ2ZjFjY2Y1NDcwM2FiNGU5N2ZiZTk2MGRhOGU1MjlkNDYyMWUxZDY1NGJlNzJiNDY2MTFhYmE1Zjg1YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzYzZDUzNWNlMzgwNjNkNmI0YzUxZDhjMzg2YTdmOWIzZTU4MGExNGExMGMwN2IxOThkZmFmMTljOTNhM2JmZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTVjMWM0NjJlMmEzOWQ3NDc1OWY1ZTFiMTI2Zjc2ODNhMmI3MzAxMThlMThmNTEyMmIwOGNlZGVlYjY1MGUyMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTk3ZjY0NTg5NmJhZDkxMjBiMGQyM2YzNWY3OGFkODU5ZTE3ZTg2YTBhNTNjZGRjN2RlMDdhZTY2ZjUxZGFlMyJ9"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/internal/azure_devops.py#L845-L909",
+          "version": "repo-lines-v1:sha256:65f61cc3780c5f2cc9192783a073c3b12f85fc922723872172cbd77bb786b92b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyMzk5OGMwM2M1YjY5YTI3YmM0ZmJhNThlZTEyY2YzNjFlZjkyZmU2YmM0YzZkNzJkZjNlY2Y2YWQ0ZDE5MzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIyMzM2YzI1NGMwYjYyZmFjYTBjMzMzNzJkODk3NGE5ZTU1YzllY2NmMzFiMWE1YjBlNzQzMTVkNWFlMDEwYTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_030c60ed09a74ecdb952b5681a920976",
+      "statement": "GitHub publication can start only from an already approved ChangeSet revision and content hash, derives a deterministic branch from the ChangeSet id and approved content hash, and reserves publication state idempotently on the hashed idempotency key plus canonical request hash before any external step proceeds.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/publication/internal/github.py#L1179-L1219",
+          "version": "repo-lines-v1:sha256:4224cffb32b1e3c8d31e658b9d963faeb31bd008879714b82db99d6605ce77ae:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczZWIxNmY4NThjZGMxZmI5ZTU4ZmZiOTk3ZGZmODVkNTJmOTE3YTUzMDYyOGRmZGNhZmIyMzEyNzg4NzUxOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4MTVhOTRjZDNjOGRmMTMwZWUxNGRkYjAzNWMzOWRmMWExNjllMDU2NmY2MTVmZDE4M2VjNjUxODNmNTRjMTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBhOWQxOGNlNmJkMjdjZTIzMThlZGM2N2QyODhlZDM5ZjY0OWI3YjIxNTBkYWYwNTc3OWU2ZjQ1ZDRmMzU2YzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcwNDUzZDJjNWQ5Mzc1ZjgwMDUwMzJkODAxY2E0ZmU1ZGU4YjhhMzQ5OTEyYjM0NDk4MDM1MTMxYzYxYzdhODIifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/internal/github.py#L285-L366",
+          "version": "repo-lines-v1:sha256:361c0ecc9153089c571f4ccf20a0438a9b3327229f7a4dc40590e660be569b7e:eyJzZWxlY3RlZExpbmVDb3VudCI6ODIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiOGFjZjUyM2Y0NzI4YjA1ZjhlNmM5NWUxYTYwMDYzZTVmZGVlOWRmZTcwY2MxZWNiZjkzMjA1YjlkMTQ1MjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2OGFhNGE3ZWJmYTIyOWIyYmIzODM3NWI1YzBiNGE5NmMyNWFjMzdkNTczNzAyMTZiZTFlNjY5NmI3MjQwMjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZhOGNkNDBkMzdlODM2ZjNkOGVhMjRjYjUzYzE2OGY4M2FmMWRhNDE1YjdmMTYwNWMxZGQ0ZThkOGU2N2VlZGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNlY2MwMThhNzU3YjcxN2VhM2VhYjJlZDU1NjljZTU2NzY2ZjI1NTZlOTEwMTRmZWQ5MmM2YTY4ODBiMmU1NGMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e671fa0acc1845508d1d3b27773709c5",
+      "statement": "The GitHub publication saga is approval-gated per native tool step, advancing through search, branch creation, file push, PR creation, and PR verification, and if an approved write step has an ambiguous external outcome the publication is forced into intervention-required state instead of being treated as a clean failure or success.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/publication/internal/github.py#L1221-L1338",
+          "version": "repo-lines-v1:sha256:9a9bdc265a45cca76db6aed7996d377290696a7461dcc380612209eb81d0cb8c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJhMjc2NDRmOTkzNzdjNTM3MDdjODUxMTJhYjY2NjNmYmI5M2Y5Y2NlZTA3ZTExNjZkMzg3NDQ2YmQ2ZGJlZWRiIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJiOTc5OTA4YjFmZGY0NzFiNGI4NzViMjk5YjcxNzUzOGYyNTM2YTA4NWZhYmZiNzhlZDMxNGM4ZDY5MTFiZTU4IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlMGE4OTQ1ZTQxYjkzMzNkZDM0ZDE1NDY4ZWM5NDY0MWQ3ZWI2YzE5ZmNlZDE4ZTI5OTJkZjE0MzAzNzdlZjQzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiIwMGY4Y2Y4ZDM1MWQxNTFkZjk2ZWU4ZGQ1YjM1YzUxMWNhZjM1OTcxZjM1MDk4Njc4YzZlZTBhZDIzYjdiOGYwIn0"
+        }
+      ]
+    },
+    {
+      "id": "claim_a2ee700c87fd440898ecc8dd140f609e",
+      "statement": "Reconciliation is the bridge from merged pull request to official resource materialization: it requires current publication state and merge evidence, converts ChangeSet operations into ordered materialization steps, journals them per tenant and area, and dispatches only supported agent, skill, and toolbox writes through OfficialFoundryMaterializer with publication provenance attached.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/publication/internal/github.py#L1348-L1387",
+          "version": "repo-lines-v1:sha256:10fd17ffe400b19351f8f3937336e824a41e12ab5f34111f3c33bdc061f70044:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmYWVkMDg0NDQ3ODcyNzY4YmM1ZTJiMzI2MTBjYjFlZDA3N2QyZjY3YjUxMGViM2VkZTE3OWNjNGNiZjA4YTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU5NzMwYzgxZGJkZjQ2ZTE0ZTIzNmY1NGFlNTJhOTg3NTQ2Y2JhOTMwOGFlY2UyNGYwOGYzODlhY2RlOTRmMjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE0MjU3YjcyZTU4MjQwMTgxZDg4NmNjODhjYWFiM2I0OGRmMTZjMTc2NDQxNTlmMzg5MjY1YzY0ZjFiY2E4YjUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/internal/reconciliation.py#L126-L197",
+          "version": "repo-lines-v1:sha256:881af9e7074be183b736eec15f741090bd2ce66080a4ea908082f455a779465d:eyJzZWxlY3RlZExpbmVDb3VudCI6NzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkN2NlOGM1OTBmNTQzYTgyNDI0Y2I1MmI2NGRhNzJjMTVkZWFjMDhhOTNlMzI1ZmI2Nzg1M2U2YmU2MWMwNzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3Mjc2ZDUyN2MzZDkwNmFkYzlhNWVkNWJjMjE4ZjZhMDVjN2E5ZjgxMDk4MDA4ZjU1Y2FmY2MzZmZiMDRmYzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIxZWIxOTFlNDkwYzE1YjZkMzFjZjhkZDA4NDE3ZDlmZTI4M2QzN2E2MTZmYzU0NThjNTE2ZmI4NjJkOGNhMzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM4NTFlMmVlNDk1ZmVjMjEwYTYzOWU5YzE1ZjgzMGVkYjNiZjE3MmYzNWZkYzAwNDY3M2YwYjU2ODJhZTQ0YmYifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/internal/reconciliation.py#L240-L260",
+          "version": "repo-lines-v1:sha256:a71df8fb5b289e093e2600a2105c2f18ab1611da3aa1aa1935013b746a0c37a9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM1YjQzMzBjYzI0OGRhOGUxNjE3YjA4ZmE2NTg5MmE5YzNjZmVlNzg0NzYzNmIzNjI5NzRlMTYxMTM2ZGU1ODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIzNmQxNDQyZTBkMGRhMGI3ZDIyODRkNjk4OTdiMWE1MDU3YmRiNzVkMDhiMWI5ZTIyZDRiOWQ4ODgzYWFjYzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhY2Y1YzFiNjJiODJmYTIyYjYyODg1YmMxYWI1NDZmMzRjYzRjYTIyMmYxNmNmZmQ3YTVmNWY4OThmNzM5MDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc2ZjM5N2RkMjY5MjQ0NTI0ODk4MzhkNjhkY2M0NTNhNTk4NTlkZjg4MDNiZGIwYjBlM2Y1MjRkZjIwZWE5YjEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/internal/reconciliation.py#L67-L97",
+          "version": "repo-lines-v1:sha256:c26cea3028b8a81ba47f23b7d6b5399e4cd7cd66558ca1427a6280e0c0034801:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwNTk5ZTgxOWY3OWE1NGUzNmY1MTMwM2ZmZjEzM2E3MDNmYTQxZTUxMWEzMTIwMDkyM2M2NzFlMDBkZDNjMzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJlY2MzZjc5NDY5YTc2MGIxNmZhNGVkMGY4MWQ4YTMwOGNlMTAzZDI5NzAzMDZmZDQ0ZTNiZTc2NmJhMzRkMDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY1MjIwNGQ5MzUyOTdlZjk5NzFkM2Q5YTM2MzliNzI3MTljMmZlYWYxMTk3MTJlZGZlNGU1NmFjYTJjNDkyY2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxNDk0YTAwODM4ZjhmMjE4Y2JjNjVjZTEzYzZhNWRkNWIyMzg2Y2YyNTI5YWIxNjM1OGNlOTlkMWIxOGRmNzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3ec85baf50ea4abe863bc0298e6fb8cd",
+      "statement": "Compensation is explicit and admin-gated: publication compensation requires the current publication ETag, delegates to reconciler compensation, and can delete created agent, skill, or toolbox versions when a version was recorded, but it does not promise that every external side effect is always automatically reversible.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/publication/api.py#L251-L277",
+          "version": "repo-lines-v1:sha256:d041d91cca5685900dd987b901c7390a1ab742571d2b240a81fefc31cddbde3c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1MzI2OTVmZjkxMTMzNTM5M2YyZWMyMjNmYWE0OWMwZTFjNTJjNDU2YzQ3MmU0ZWE0MzkzYmRkMTNmZDgxOTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlMTU3ZmYwMmNmOWE4OWMzYTE4ODEwYmQ2N2EyZTJlY2I4Y2Y2NjAyYTYzMDZkMzMyY2NmZjM0Njg4YjIzNjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE2NWI0MjY2NWY5YTAwNjczZTdiNjUxMWZhNDFhNGUyMmExZWM3YzVlNTM2MTJhMDNkYzUzNTM4NTE1NDdiYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMwYTNjYmRiNjRmYWMyNDlmYzBjZTY1NGNhMzliYjI0ZDllMWU3MWM3NmUxNTY1YzlhMWM5MmQ4YTYzYmEwNGYifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/internal/github.py#L1394-L1411",
+          "version": "repo-lines-v1:sha256:b2b6c8003359b472e5bbfb6942953e7c1dc26dd66500a7ae018331495a86a5e6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkM2YyMDg1ZDRiZTIxNzNkNzVmNWZlNTg0ODQ5ZTBjYjEwY2Q1Y2Y0MGUxYzUzNThlMWIzM2FjYjAzNzlhZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkODYxZWE5NWRjZDI5NDc2MDY2ZDA0MWNlMTUzNjM4ZTUyNjRhNTc1MWIwN2M3NjgwMmMzMjY1NTg2MWI0MzMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ1MThiOGM3MGQwZDdiYzU2ZDBkNWJmMGY3MTc3MjUwMjZjOTdiMzI5MzA2N2I5Njg3MDg1YWFhY2UwMjA4YjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhZWVmY2FhNjU0MDZlNGYzMDUxOWFjNzBhYzA2ZTU1NzJlMGE3ZTExMGRjZmZkNWU3NmIxMTYwNGU2MjQ5ZGUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/publication/internal/reconciliation.py#L97-L115",
+          "version": "repo-lines-v1:sha256:e91c870e374780c1cc39152239232def91982ac64be77fdcfaeafb7647d14d0f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJlY2MzZjc5NDY5YTc2MGIxNmZhNGVkMGY4MWQ4YTMwOGNlMTAzZDI5NzAzMDZmZDQ0ZTNiZTc2NmJhMzRkMDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5N2M3MTI0N2FmM2NkMWVkZjU1NWE3ZDEwNzU5MzE1N2Y2ZGMyYTIyYWYwZGU4MmU3Nzc0YWJmMTBmOGFkZTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRiZTA2ZDNlM2FmOWIzOWZiNjA2YjQxNzViYzk2OWIyN2ZjMDc5MTE5ODMyYzg2NTAzYmM3MDBmMjI0MDQxNDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI4NGI1NjlmYmIyZjNhNjRkNjAwNTMwNThjNTAxNzBkNjI3MGY1ODc5NTA3OGUwYTAwYzAyOTIxMjVjNzMzOTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0d9465b3166a4a1599a74af0525cf1c6",
+      "statement": "ADR-032 defines the architectural reason for this workflow: OKF should express intent and review state without becoming a second operational catalog, proposer and publication stay separate, and publication must be implemented as a compensable saga because downstream services do not offer one distributed transaction.",
+      "evidence": [
+        {
+          "resource": "repo://docs/adr/ADR-032-okf-projections-bindings-and-compensable-publication.md#L162-L173",
+          "version": "repo-lines-v1:sha256:e9ff6028ad005f3c3700d61748df915abe00cf90f6a3253b9225abb9f48fc5a2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1ZmI0NzA3NmZkMTk2MTE1MDQ1MDVjYjQ4MWJkMDM3YzRlYWQ2ZWFjY2UzN2U3YzlkYWE5OTA5M2JhM2VjMGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMGY0YTM0ODBiYmI1M2EyZWFjM2QyNzU1NGRkYTgyZWI1YzVhNWVkODNmY2Q3NmI2Nzg0NDEzNzdmYjQwNTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFhODk0ZjQ2MzYyYjVlODEzMTVmNTA5ZDM5YzgzY2NlZjJjMzMwNjlkZDA0MWI2N2I4M2M0M2Y5MGZjNGRiMDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFhYTQ2MzNiN2EyMGViMzc0OGUxOThiZWUwOWUzNzRkYzYzMmJhNjBjNjZhZDI2ZjI4ZjA2OWYxYjdjMTMwMTQifQ"
+        },
+        {
+          "resource": "repo://docs/adr/ADR-032-okf-projections-bindings-and-compensable-publication.md#L66-L109",
+          "version": "repo-lines-v1:sha256:8842055770a1e14377206adea05de5f2f8f8937fe31e784bda49585dfdadee3a:eyJzZWxlY3RlZExpbmVDb3VudCI6NDQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlYWRhZGE5M2MxMWM4MmE3ZWEyNWRjZDY3MjE2ODczNDRjZDI4NTIwZGM2ZjI3ZjMzZmFiYmM4MTRkOWE3N2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdmOTNmNjBjYmY2NTdmYTFkZGZjYjQ1MjdhOWEzODQwNzBmNjBhZTRmM2RjNTNmM2UxY2ExZmZhY2FlNDEzYWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwODI1ZWM4YTVjMzAxMDU4ZTczODE0NDc4NGQyNjUyODgzOTg0ZjU5MDM2MGY1Zjk5NmYyNDVlZTY5ZTQ4ZWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1ZWFjOGZjOTVmYjMwNWMxYzZjYzgwYTQyZGIzODNiYjI0ZDBkZWMzOWMzNDY4OGRiMzIyNzhkOWFmZGJhY2EifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_218d835b62364daf9e4575e993479fec",
+      "statement": "The focused GitHub publication contract test proves that each native tool is presented for approval before execution, file output is normalized and deterministic, completed publications replay safely under the same key, area isolation and exact Approver authority are enforced, sanitized persistence avoids secrets and raw responses, and ambiguous write outcomes require intervention rather than replay.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/tests/publication/github_publication_test.py#L151-L205",
+          "version": "repo-lines-v1:sha256:2e1b526ae22c7d5c5dd2e7d11e5421272871975c56f9f906cdfe1c6f4eb2404b:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMxY2VjNzMwZDE0ZTk1ZGNlNzQ0MTljNmE2ZjNjMDBiNDU5YjA0NzE3MjJiMGVkZGQ4NjM4NTQ3M2Q1MTI4NmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjODA2YjdiNzlhYzMwYmQyYWE2Mjg4YTlhNDdmM2MyMGQ4NDk2MzNmNDU2ZGY3MzI5ZGRiNzIyZjhjZjk3NWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE1MmEzZmRlMTJmZGE3YmIxYjRjODJiYjE5MTRmOGQ0YzIxN2M2NTRmNjhjNDVlYTNhMmE1NTk5NWI1M2RmYmYifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/publication/github_publication_test.py#L207-L259",
+          "version": "repo-lines-v1:sha256:0e7df39bfde68803094ca72e58c53418270e5d063458e41d77412a8baa7e41ae:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5ZGQ3ODBmOWQ3Njc0ODA1OGE1ODZhNjc5MGRkMDhmNjIzOGE1YzdkY2VlODkyMjY0OWZmZGFhY2EyYjU0MzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlNGMxM2YyZWYzZGIwZGViYjE2YTA2YzE1Yjk4NjMzMTkwMTQ1NGYxYWYzOTRmOTc0NTM0ZjUzMjk0NTRkMDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5NmI5OWYwMGZjYmFhZjdiYzllMmUyNmU3ZDQwMDBiNDY5ZDY4MDRlNmY3MDBmYTYyYzc3ODc5Yjk4ZWJiZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyMzE3ZDczZjZjODM5ZjM2Mzg4Yzc5ZDJkYjlkMGY3ZjMzMzFkZmRlMjZhZTFhZGYzMzdhMDc4MjRhMzgwNzIifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/publication/github_publication_test.py#L287-L338",
+          "version": "repo-lines-v1:sha256:1625d4904db7fee910a2dca66bcf534c83ffdfafc4512a56f526b68680f72f7d:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmMjcwMmQ4ZDU0NzJjYzdkNDQzODJlZWFlOTA2OGVlZTNjZDdmY2Q4N2Q0OGZkNWQxOTg1ZDI2ZTgwNjJkMzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlMWRjZTRlYjE1YTI4NWFhZDUxNzJmYzgxOGJmNmJiOTg3ZjdjMTc3Yzg2NDYwZmJmZWFmNTFmN2E0OTA5YmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJiY2IxNjQyZTdmOTBkNTA1ZjIwNzgwOGQxZTZjYzIzOTgzNWJhMTIyMTcwMWUyZGIwMDZiMWQyMjlkYTA3NzEifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-09-02T18:24:34.393Z"
+  }
+}
