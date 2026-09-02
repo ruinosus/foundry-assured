@@ -47,6 +47,10 @@ BUNDLES = {
     "agents/assured/flows": BACKEND / "agents" / "assured" / "flows",
     # Os copilotos e a política herdada — `type: copilot` e `type: policy`.
     "agents/assured/copilots": BACKEND / "agents" / "assured" / "copilots",
+    # O bundle que o domínio `selfwiki` consulta. Ficou fora deste gate até 2026-09 porque a
+    # adaptação retirava o frontmatter (auditoria, defeito 1) — o único artefato não medido,
+    # e o único que usuários de fato leem. Uma versão por diretório; todas são cobradas.
+    "knowledge/wiki-bundle": REPO / "knowledge" / "wiki-bundle",
 }
 
 #: Diretórios com cara de bundle que este gate NÃO mede, e por quê. Existe porque a saída
@@ -56,10 +60,6 @@ BUNDLES = {
 #:
 #: Entrar aqui é uma decisão, não um esquecimento: a lista é impressa em toda execução.
 EXCLUDED_BUNDLES = {
-    "knowledge/wiki-bundle": (
-        "o frontmatter é retirado na adaptação (adapt_openwiki.py:191-194) — É O ARTEFATO "
-        "QUE O DOMÍNIO selfwiki CONSULTA; entra no gate na Fase 4 do plano de adoção OKF"
-    ),
     "agents/assured/guardrails": (
         "dado de aplicação, deliberadamente não é conceito AgentSchema "
         "(guardrails/response-language.md:2)"

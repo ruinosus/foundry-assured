@@ -394,3 +394,36 @@ uv run --with pyyaml --no-project python vendor/okf_validate.py <dir> --json
 # the CI gate, over the four listed bundles
 uv run python -m tests.knowledge.okf_conformance_test
 ```
+
+---
+
+## 9. Closure notes (append-only)
+
+Added after the fact, without touching any measurement above. The counts, the "4 bundles",
+and the "19/19 pages fail" in §1/§5/§7 describe this repository **as of 2026-09-02**, before
+the OKF v0.2 adoption plan ran, and are the evidence the plan was written against. They are
+left as measured.
+
+**2026-09-02 — §7 defect 1 closed.** `knowledge/wiki-bundle` is no longer absent from
+`okf_conformance_test.py`'s `BUNDLES`; the gate now measures five bundles and names both of
+them it deliberately does not. Closed by `feat(okf): the bundle selfwiki queries joins the
+conformance gate` (this commit).
+
+**2026-09-02 — gap G1 closed.** The 19/19-pages-fail count in §5 no longer describes the
+committed bundle: the adapter stops stripping the frontmatter block
+(`31af521 feat(okf): adapter preserves the frontmatter block in the bundle`), ingest strips
+it at index time instead so no YAML reaches retrieval
+(`d1c964e feat(okf): strip frontmatter at index time, not at adaptation time`), and the wiki
+was regenerated and reclassified under that adapter
+(`364b08d docs(wiki): regenerate the wiki`,
+`a5ac33f feat(okf): reclassificar as páginas que a regeneração criou`). All 28 pages in the
+current `knowledge/wiki-bundle/foundry-assured/v0.20260902/` carry frontmatter; the vendored
+validator reports `conformant: True`, 0 errors.
+
+**2026-09-02 — open question Q1 dissolved, not answered.** Q1 asked whether a sidecar file
+"AO LADO do manifest" was needed to carry v0.2 trust fields, because `docbundle.schema.json`
+was assumed to constrain page content. It does not: the schema governs `manifest.json` only
+(`content`/`body`/`frontmatter`/`hash` per page, not the page's own frontmatter shape), so
+there was never a field to diverge from by preserving frontmatter on the page. No sidecar
+was built and none is needed. See the comment landed with the same commit that closed G1
+(`31af521`, `apps/backend/app/modules/knowledge/internal/adapt_openwiki.py:33-35`).
