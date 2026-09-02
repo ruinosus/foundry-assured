@@ -1880,8 +1880,8 @@ Report to the user, and wait:
 After the PR lands, run:
 ```bash
 cd "$(git rev-parse --show-toplevel)"
-echo "-- páginas sem generated (esperado: vazio):"
-grep -rL "^generated:" openwiki --include='*.md' | grep -v 'index\.md$' || true
+echo "-- cobertura de generated (REGISTRE o número, não o cobre):"
+grep -rL "^generated:" openwiki --include='*.md' | grep -v 'index\.md$' | wc -l
 echo "-- versão declarada:"; sed -n '1,3p' openwiki/index.md
 echo "-- verified escrito pelo gerador:"; grep -rl "^verified:" openwiki --include='*.md' | wc -l
 cd apps/backend && uv run --with pyyaml --no-project python vendor/okf_validate.py ../../openwiki --json \
@@ -1894,6 +1894,30 @@ reporting `conformant: True`, `errors: 0`, and **no** `§12` version warning.
 
 **If `okf_version` is still `"0.1"`, stop and report.** Task 4.2 must not be forced by
 hand-editing the file — that would restore the false claim in the other direction.
+
+- [ ] **Step 3b: Reclassify the pages the regeneration created — this is ACCESS DATA**
+
+Regenerating renames and adds pages, and `knowledge/techdocs-tiers.json` maps page **title**
+to component while `knowledge/techdocs-classification.json` gives each component its reader
+groups. A new title belongs to no component, so it vanishes from the `techdocs` domain; a
+mapped title the generator retired is a dead entry. `tests.knowledge.techdocs_tiers_test`
+catches both.
+
+```bash
+cd "$(git rev-parse --show-toplevel)/apps/backend" && uv run python -m tests.knowledge.techdocs_tiers_test
+```
+
+**Do not assign the new pages yourself.** Placing a page in `techdocs-overview` makes it
+readable by `public`. That is an access decision and RULE #6 says access is declared data,
+never inferred by whoever is coding. Report the orphans and the retired titles, propose a
+mapping with reasoning, default to the MORE restrictive tier when unsure, and wait.
+
+An orphan is fail-closed — invisible to everyone — so a red gate here is safe. Nothing
+leaks while the decision is pending.
+
+This step did not exist in the first draft: the plan never anticipated that regenerating
+the wiki creates an obligation to reclassify. Found on the 2026-09-02 run, where the
+regeneration orphaned 10 titles and retired one.
 
 - [ ] **Step 4: Record the measurement in the findings**
 
@@ -2198,8 +2222,18 @@ result, not a judgement.
       `bundle_frontmatter_roundtrip_test`).
 - [ ] `uv run python -m tests.knowledge.okf_conformance_test` exits zero, names the five
       bundles it measured, and prints the two it deliberately does not.
-- [ ] `grep -rL "^generated:" openwiki --include='*.md' | grep -v 'index\.md$'` prints
-      nothing but, at most, `INSTRUCTIONS.md`.
+- [ ] Every non-reserved page in `openwiki/` and in `knowledge/wiki-bundle/` carries a
+      non-empty `type`, and the vendored validator reports `conformant: true` with **0
+      errors** for both. That is the §11 bar and the one this plan holds itself to.
+- [ ] `generated` coverage is RECORDED, not required. Measured after the 2026-09-02
+      regeneration: 10 of 29 non-reserved `openwiki/` pages carry it. `openwiki --update`
+      is incremental, so a page it did not rewrite keeps the frontmatter of whichever
+      generation last touched it; coverage completes as later runs reach the rest.
+      `generated` is RECOMMENDED, not required (`SPEC.md:190-199`), so partial coverage is
+      conformant and `okf_version: "0.2"` stays honest — it names the version the bundle
+      targets, not the optional fields it fills. Requiring full coverage would force an
+      `--init` that rewrites every page with a paid model for an optional key, discarding
+      the incremental Claims state on the way. Owner decision, 2026-09-02.
 - [ ] No machine actor claims to be a person. Run, from the repository root:
       ```bash
       uv run --project apps/backend --no-sync python -c "
