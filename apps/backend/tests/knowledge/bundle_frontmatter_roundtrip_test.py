@@ -92,7 +92,10 @@ def main() -> int:
         check("collect_pages devolveu a página", len(itens) == 1)
         if itens:
             texto = itens[0][1].decode("utf-8")
-            check("nenhum delimitador de frontmatter no blob", not texto.lstrip().startswith("---"))
+            check(
+                "nenhuma linha do blob é um delimitador de frontmatter",
+                all(linha.strip() != "---" for linha in texto.splitlines()),
+            )
             check(
                 "nenhuma chave OKF vaza para o índice",
                 "generated:" not in texto and "type:" not in texto,
