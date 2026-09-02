@@ -49,6 +49,24 @@ BUNDLES = {
     "agents/assured/copilots": BACKEND / "agents" / "assured" / "copilots",
 }
 
+#: Diretórios com cara de bundle que este gate NÃO mede, e por quê. Existe porque a saída
+#: dizia "os 4 bundles são conformantes" sem dizer que o bundle que o `selfwiki` consulta não
+#: era um dos quatro — um verde que afirma mais do que mediu, que é exatamente a falha que o
+#: `docs/CASE-STUDY-LLM-WIKI-LOOP.md` documenta.
+#:
+#: Entrar aqui é uma decisão, não um esquecimento: a lista é impressa em toda execução.
+EXCLUDED_BUNDLES = {
+    "knowledge/wiki-bundle": (
+        "o frontmatter é retirado na adaptação (adapt_openwiki.py:191-194) — É O ARTEFATO "
+        "QUE O DOMÍNIO selfwiki CONSULTA; entra no gate na Fase 4 do plano de adoção OKF"
+    ),
+    "agents/assured/guardrails": (
+        "dado de aplicação, deliberadamente não é conceito AgentSchema "
+        "(guardrails/response-language.md:2)"
+    ),
+    "agents/assured/personas": "idem — persona compartilhada, não conceito",
+}
+
 
 def main() -> int:
     falhas: list[str] = []
@@ -98,7 +116,11 @@ def main() -> int:
         print(f"\n❌ bundle(s) não conformante(s): {', '.join(falhas)}")
         print("   §11: todo .md não-reservado precisa de frontmatter YAML com `type` não-vazio.")
         return 1
-    print(f"\n✅ os {len(BUNDLES)} bundles são OKF v0.2 conformantes (§11).")
+    print("\n  não medidos (decisão, não esquecimento):")
+    for nome, motivo in EXCLUDED_BUNDLES.items():
+        print(f"    – {nome}: {motivo}")
+    print(f"\n✅ os {len(BUNDLES)} bundles medidos são OKF v0.2 conformantes (§11): "
+          f"{', '.join(BUNDLES)}")
     return 0
 
 
