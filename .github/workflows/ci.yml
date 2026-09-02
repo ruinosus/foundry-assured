@@ -121,6 +121,12 @@ jobs:
       # descartado.
       - name: Wiki — procedência OKF nas páginas geradas
         run: uv run python -m tests.knowledge.wiki_frontmatter_test
+      # As duas metades da mesma decisão: o bloco atravessa a adaptação e para antes do índice.
+      # Preservar sem retirar colocaria YAML no corpus de retrieval, e o modelo passaria a citar
+      # `generated:` como conteúdo da página. O gate é ponta a ponta — roda o adaptador e o
+      # ingest de verdade sobre uma wiki de mentira, em vez de casar texto-fonte.
+      - name: Bundle — frontmatter preservado no arquivo, retirado no índice
+        run: uv run python -m tests.knowledge.bundle_frontmatter_roundtrip_test
       # Um bloco `---` que não parseia é indistinguível de um que parseia para quem só olha a
       # primeira linha — e `ingest.py:162-165` sai com erro num deles. `docs/` nunca é ingerido,
       # então este era o único lugar do repositório onde a falha não tinha sintoma.

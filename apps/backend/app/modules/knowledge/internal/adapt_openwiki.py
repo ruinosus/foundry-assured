@@ -19,23 +19,24 @@ the **commit** it documented and the **model** that wrote it, both read from
 `.last-update.json`. The manifest's `model` field records the producer so the
 three paths stay distinguishable in the KB.
 
-Front matter is stripped: it is OKF transport metadata (`okf_version`, `tags`,
-`type`), not content, and indexing it would put YAML in the retrieval corpus. The
-`title` is lifted out of it first.
+Front matter TRAVELS WITH THE PAGE: `okf_version`, `tags`, `type`, and — since OKF
+v0.2 — `generated {by,at}`, `verified [{by,at}]` and `sources [{id,resource}]` are
+exactly the trust signals this product wants, and they are written verbatim into
+`pages/page-N.md` ahead of the body. The `title` is lifted out of it first
+(`_title_of`, unchanged).
 
-E O QUE A v0.2 TROUXE JUNTO — `generated {by,at}`, `verified [{by,at}]` e `sources
-[{id,resource}]`, por página — **é descartado aqui, deliberadamente**, e não por
-falta de valor: são exatamente os sinais de confiança que este produto quer. O
-motivo é o destino. `manifest.json` segue um contrato **vendorizado**, que o
-próprio schema manda manter "idêntico byte a byte" com o projeto de origem
-(`docbundle.schema.json`), então não há campo onde recebê-los sem divergir de um
-contrato que não é nosso.
+It is retrieval text that must not carry YAML, not the bundle file, so the strip
+happens at index time in `ingest_docbundles.collect_pages` — the one place that
+turns a page into the corpus a model can cite. Doing it here would make the block
+survive the write but still never reach anyone, since nothing else reads it.
 
-O caminho, quando isso for feito: um arquivo AO LADO do manifest (não dentro
-dele), lido pelo ingest se existir. Medido e registrado em
-`docs/superpowers/specs/2026-08-27-openwiki-claims-medicao.md` §5.4 — que também
-prova que o front matter v0.2 real atravessa `_split_front_matter` sem vazar YAML
-para o corpo.
+`docbundle.schema.json` never governed this: it is a vendored contract over
+`manifest.json` — 13 properties, all manifest fields, zero occurrences of
+`content`/`body`/`frontmatter`/`hash` — so there was never a field to diverge from
+and no sidecar file is needed. Measured and recorded in
+`docs/superpowers/specs/2026-08-27-openwiki-claims-medicao.md` §5.4, which proves
+real v0.2 front matter survives `_split_front_matter` without leaking YAML into the
+body it returns.
 
 Output structure (per ingest_docbundles.collect_pages):
     <out>/<component>/<version>/{manifest.json, pages/page-N.md, llms.txt}
@@ -191,7 +192,12 @@ def adapt(repo: Path, component: str, version: str, out_dir: Path, wiki_dir: str
         front_matter, body = _split_front_matter(src.read_text(encoding="utf-8", errors="ignore"))
         title = _title_of(front_matter, body, src.stem.replace("-", " ").title())
         body = _flatten_internal_links(body)
-        (bundle / "pages" / f"{norm}.md").write_text(body.lstrip("\n"), encoding="utf-8")
+        # O bloco viaja COM a página (gap G1 da auditoria de 2026-09-02). Ele é retirado em
+        # `ingest_docbundles.collect_pages`, antes de virar texto indexado — que é onde o
+        # descarte sempre pertenceu, e não aqui.
+        (bundle / "pages" / f"{norm}.md").write_text(
+            front_matter + body.lstrip("\n"), encoding="utf-8"
+        )
         manifest_pages.append(
             {"id": norm, "title": title, "order": order, "file": f"pages/{norm}.md", "audience": "base"}
         )
