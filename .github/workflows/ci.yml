@@ -110,6 +110,11 @@ jobs:
         run: uv run python -m tests.okf.migration_test
       - name: OKF ChangeSet — multi-document proposal and review
         run: uv run python -m tests.okf.changeset_test
+      # A convenção de ator do OKF (SPEC.md:489-501) tem uma falha silenciosa: um ator de
+      # máquina que comece com `human:` sobe o trust tier para "human-reviewed" sem nenhum
+      # outro sintoma. Este gate é o que impede um produtor novo de reintroduzi-la.
+      - name: OKF — atores e timestamps
+        run: uv run python -m tests.okf.actors_test
       # Um bloco `---` que não parseia é indistinguível de um que parseia para quem só olha a
       # primeira linha — e `ingest.py:162-165` sai com erro num deles. `docs/` nunca é ingerido,
       # então este era o único lugar do repositório onde a falha não tinha sintoma.
