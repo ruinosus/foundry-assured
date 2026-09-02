@@ -67,6 +67,13 @@ EXCLUDED_BUNDLES = {
     "agents/assured/personas": "idem — persona compartilhada, não conceito",
 }
 
+#: Avisos que ESTE gate trata como erro. A spec manda o consumidor tentar consumir um bundle
+#: de versão desconhecida (SPEC.md:778-780) — e por isso o verificador está certo em avisar.
+#: Mas um bundle NOSSO declarando uma versão que não validamos não é consumo best-effort, é
+#: uma afirmação falsa; foi assim que `okf_version: "0.1"` sobreviveu a todo merge desde que
+#: o gate existe. O verificador é de terceiro e não se edita (vendor/README.md).
+AVISOS_FATAIS = ("okf_version",)
+
 
 def main() -> int:
     falhas: list[str] = []
@@ -105,10 +112,14 @@ def main() -> int:
 
         erros = rel.get("errors", [])
         avisos = rel.get("warnings", [])
-        ok = bool(rel.get("conformant")) and not erros
-        print(f"  {'✓' if ok else '✗'} {nome}: {len(erros)} erro(s) · {len(avisos)} aviso(s)")
+        promovidos = [a for a in avisos if any(t in a for t in AVISOS_FATAIS)]
+        ok = bool(rel.get("conformant")) and not erros and not promovidos
+        print(f"  {'✓' if ok else '✗'} {nome}: {len(erros)} erro(s) · "
+              f"{len(avisos)} aviso(s) · {len(promovidos)} aviso(s) fatal(is)")
         for e in erros[:10]:
             print(f"      ✗ {e}")
+        for a in promovidos:
+            print(f"      ✗ (aviso promovido a erro) {a}")
         if not ok:
             falhas.append(nome)
 
