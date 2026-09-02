@@ -55,6 +55,9 @@
     "proposer": [
       "registry.py"
     ],
+    "publication": [
+      "registry.py"
+    ],
     "shared": [
       "api_health.py",
       "main.py",
@@ -427,6 +430,19 @@
       "modules/proposer/api.py",
       "modules/proposer/internal/draft.py",
       "modules/proposer/internal/optimize.py"
+    ]
+  },
+  "publication": {
+    "authoring": [
+      "modules/publication/api.py",
+      "modules/publication/internal/github.py"
+    ],
+    "shared": [
+      "modules/publication/api.py",
+      "modules/publication/internal/github.py"
+    ],
+    "tenancy": [
+      "modules/publication/api.py"
     ]
   },
   "tenancy": {

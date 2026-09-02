@@ -26,7 +26,12 @@ interface BundleProjection {
   updated_at: string;
   bundle: BundleDocument;
   documents: BundleDocument[];
-  dependencies: Array<{ from: string; to: string; source: string; status: string }>;
+  dependencies: Array<{
+    from: string;
+    to: string;
+    source: string;
+    status: string;
+  }>;
   validations: Array<{ id: string; status: string; reason: string }>;
   content: { operations: Array<Record<string, unknown>>; gaps?: unknown[] };
   canSubmit: boolean;
@@ -41,23 +46,74 @@ interface DecisionRecord {
   correlation_id: string;
   created_at: string;
 }
+interface PublicationRecord {
+  id: string;
+  changeset_id: string;
+  revision: number;
+  content_hash: string;
+  owner: string;
+  repository: string;
+  base_branch: string;
+  branch: string;
+  pull_request_number: number;
+  pull_request_url: string;
+  state:
+    | "in_progress"
+    | "awaiting_approval"
+    | "executing"
+    | "intervention_required"
+    | "completed"
+    | "failed";
+  step: string;
+  error_code: string;
+  updated_at: string;
+}
+interface ToolApprovalRequest {
+  id: string;
+  tool: string;
+  arguments: Record<string, unknown>;
+}
+interface PublicationOutcome {
+  publication: PublicationRecord;
+  approval: ToolApprovalRequest | null;
+  replay: boolean;
+}
 
 async function request(path: string, init?: RequestInit) {
   const response = await authedFetch(`/api/authoring/${path}`, init);
   const body = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(body.error?.code || body.detail || `HTTP_${response.status}`);
-    Object.assign(error, { status: response.status });
+    const error = new Error(
+      body.error?.code || body.detail || `HTTP_${response.status}`,
+    );
+    Object.assign(error, {
+      status: response.status,
+      consentUrl: body.error?.consentUrl,
+      serverLabel: body.error?.serverLabel,
+    });
     throw error;
   }
   return body;
 }
 
-function textField(record: Record<string, unknown>, field: string, fallback: string) {
+function textField(
+  record: Record<string, unknown>,
+  field: string,
+  fallback: string,
+) {
   return typeof record[field] === "string" ? record[field] : fallback;
 }
 
-export function BundleWorkspace({ bundleId, editing = false }: Readonly<{ bundleId?: string; editing?: boolean }>) {
+function evidenceSource(item: unknown): string[] {
+  if (typeof item !== "object" || item === null) return [];
+  const source = (item as Record<string, unknown>).source;
+  return typeof source === "string" ? [source] : [];
+}
+
+export function BundleWorkspace({
+  bundleId,
+  editing = false,
+}: Readonly<{ bundleId?: string; editing?: boolean }>) {
   const t = useTranslations("bundles");
   const router = useRouter();
   const search = useSearchParams();
@@ -72,6 +128,20 @@ export function BundleWorkspace({ bundleId, editing = false }: Readonly<{ bundle
   const [conflict, setConflict] = useState(false);
   const [busy, setBusy] = useState(false);
   const [reason, setReason] = useState("");
+  const [publication, setPublication] = useState<PublicationRecord | null>(
+    null,
+  );
+  const [publicationOwner, setPublicationOwner] = useState("");
+  const [publicationRepository, setPublicationRepository] = useState("");
+  const [publicationBranch, setPublicationBranch] = useState("main");
+  const [publicationDirectory, setPublicationDirectory] = useState("okf");
+  const [publicationStatus, setPublicationStatus] = useState<string | null>(
+    null,
+  );
+  const [consentUrl, setConsentUrl] = useState<string | null>(null);
+  const [toolApproval, setToolApproval] = useState<ToolApprovalRequest | null>(
+    null,
+  );
 
   const load = useCallback(async () => {
     setNotice(null);
@@ -83,18 +153,41 @@ export function BundleWorkspace({ bundleId, editing = false }: Readonly<{ bundle
       }
       const revision = search.get("revision");
       const revisionQuery = revision ? `?revision=${revision}` : "";
-      const current: BundleProjection = await request(`bundles/${encodeURIComponent(bundleId)}${revisionQuery}`);
+      const current: BundleProjection = await request(
+        `bundles/${encodeURIComponent(bundleId)}${revisionQuery}`,
+      );
       setBundle(current);
-      const decisionHistory = await request(`changesets/${encodeURIComponent(bundleId)}/decisions`);
+      const decisionHistory = await request(
+        `changesets/${encodeURIComponent(bundleId)}/decisions`,
+      );
       setDecisions(decisionHistory.items ?? []);
-      const selected = current.documents.find((document) => document.key === (search.get("document") ?? activeKey)) ?? current.bundle;
+      const publicationId = search.get("publication");
+      if (publicationId) {
+        setPublication(
+          await request(`publications/${encodeURIComponent(publicationId)}`),
+        );
+      } else {
+        setPublication(null);
+      }
+      const selected =
+        current.documents.find(
+          (document) => document.key === (search.get("document") ?? activeKey),
+        ) ?? current.bundle;
       setActiveKey(selected.key);
       setDraft(selected.text);
       if (current.revision > 1) {
-        setPrevious(await request(`bundles/${encodeURIComponent(bundleId)}?revision=${current.revision - 1}`));
+        setPrevious(
+          await request(
+            `bundles/${encodeURIComponent(bundleId)}?revision=${current.revision - 1}`,
+          ),
+        );
       } else setPrevious(null);
     } catch (error) {
-      setNotice(t("failed", { code: error instanceof Error ? error.message : "UNKNOWN" }));
+      setNotice(
+        t("failed", {
+          code: error instanceof Error ? error.message : "UNKNOWN",
+        }),
+      );
     }
   }, [activeKey, bundleId, search, t]);
 
@@ -122,48 +215,85 @@ export function BundleWorkspace({ bundleId, editing = false }: Readonly<{ bundle
 
   const save = async () => {
     if (!bundle) return;
-    setBusy(true); setConflict(false); setNotice(null);
+    setBusy(true);
+    setConflict(false);
+    setNotice(null);
     const operations = bundle.content.operations.map((operation) => {
-      const document = bundle.documents.find((item) => item.text === operation.document);
-      return document?.key === activeKey ? { ...operation, document: draft } : operation;
+      const document = bundle.documents.find(
+        (item) => item.text === operation.document,
+      );
+      return document?.key === activeKey
+        ? { ...operation, document: draft }
+        : operation;
     });
     try {
       const updated = await request(`bundles/${bundle.id}`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "If-Match": bundle.etag },
+        headers: {
+          "Content-Type": "application/json",
+          "If-Match": bundle.etag,
+        },
         body: JSON.stringify({ content: { ...bundle.content, operations } }),
       });
       setBundle(updated);
-      router.replace(`/bundles/${bundle.id}/edit?revision=${updated.revision}&document=${encodeURIComponent(activeKey)}`);
+      router.replace(
+        `/bundles/${bundle.id}/edit?revision=${updated.revision}&document=${encodeURIComponent(activeKey)}`,
+      );
       setNotice(t("saved"));
     } catch (error) {
-      if ((error as Error & { status?: number }).status === 412) setConflict(true);
-      else setNotice(t("failed", { code: error instanceof Error ? error.message : "UNKNOWN" }));
-    } finally { setBusy(false); }
+      if ((error as Error & { status?: number }).status === 412)
+        setConflict(true);
+      else
+        setNotice(
+          t("failed", {
+            code: error instanceof Error ? error.message : "UNKNOWN",
+          }),
+        );
+    } finally {
+      setBusy(false);
+    }
   };
 
   const transition = async (action: "submit" | "revisions") => {
     if (!bundle) return;
-    setBusy(true); setConflict(false);
+    setBusy(true);
+    setConflict(false);
     try {
-      const updated = await request(`bundles/${bundle.id}/${action}`, { method: "POST", headers: { "If-Match": bundle.etag } });
+      const updated = await request(`bundles/${bundle.id}/${action}`, {
+        method: "POST",
+        headers: { "If-Match": bundle.etag },
+      });
       setBundle(updated);
-      router.replace(`/bundles/${bundle.id}${action === "revisions" ? "/edit" : ""}?revision=${updated.revision}`);
+      router.replace(
+        `/bundles/${bundle.id}${action === "revisions" ? "/edit" : ""}?revision=${updated.revision}`,
+      );
     } catch (error) {
-      if ((error as Error & { status?: number }).status === 412) setConflict(true);
-      else setNotice(t("failed", { code: error instanceof Error ? error.message : "UNKNOWN" }));
-    } finally { setBusy(false); }
+      if ((error as Error & { status?: number }).status === 412)
+        setConflict(true);
+      else
+        setNotice(
+          t("failed", {
+            code: error instanceof Error ? error.message : "UNKNOWN",
+          }),
+        );
+    } finally {
+      setBusy(false);
+    }
   };
 
   const decide = async (decision: "approve" | "reject") => {
     if (!bundle || !reason.trim()) return;
-    setBusy(true); setNotice(null);
+    setBusy(true);
+    setNotice(null);
     try {
       if (decision === "approve") {
         await request(`changesets/${bundle.id}/validations`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ revision: bundle.revision, phase: "approval" }),
+          body: JSON.stringify({
+            revision: bundle.revision,
+            phase: "approval",
+          }),
         });
       }
       await request(`changesets/${bundle.id}/decisions`, {
@@ -179,30 +309,610 @@ export function BundleWorkspace({ bundleId, editing = false }: Readonly<{ bundle
       setReason("");
       await load();
     } catch (error) {
-      setNotice(t("failed", { code: error instanceof Error ? error.message : "UNKNOWN" }));
-    } finally { setBusy(false); }
+      setNotice(
+        t("failed", {
+          code: error instanceof Error ? error.message : "UNKNOWN",
+        }),
+      );
+    } finally {
+      setBusy(false);
+    }
   };
 
-  if (!bundleId) return <div className="bundle-page"><header className="bundle-heading"><div><h1>{t("title")}</h1><p>{t("subtitle")}</p></div><span className="catalog-status">{t("count", { count: items.length })}</span></header>{notice && <p className="notice">{notice}</p>}<section className="bundle-catalog">{items.length === 0 ? <div className="catalog-state"><div><strong>{t("empty")}</strong><p>{t("emptyBody")}</p></div></div> : items.map((item) => <Link className="bundle-row" href={`/bundles/${item.id}?revision=${item.revision}`} key={item.id}><div><strong>{item.bundle.id}</strong><code>{item.id}</code></div><span>{t("revision", { revision: item.revision })}</span><span className={`catalog-status ${item.state === "draft" ? "unavailable" : "available"}`}>{t(`state.${item.state}`)}</span></Link>)}</section></div>;
+  const publish = async () => {
+    if (!bundle || !publicationOwner.trim() || !publicationRepository.trim())
+      return;
+    setBusy(true);
+    setPublicationStatus(t("publicationPreparing"));
+    setConsentUrl(null);
+    setNotice(null);
+    try {
+      setPublicationStatus(t("publicationSending"));
+      const result: PublicationOutcome = await request("publications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": `${bundle.id}:${bundle.content_hash}`,
+        },
+        body: JSON.stringify({
+          changeset_id: bundle.id,
+          revision: bundle.revision,
+          content_hash: bundle.content_hash,
+          owner: publicationOwner.trim(),
+          repository: publicationRepository.trim(),
+          base_branch: publicationBranch.trim(),
+          target_directory: publicationDirectory.trim(),
+        }),
+      });
+      setPublication(result.publication);
+      setToolApproval(result.approval);
+      if (result.publication.state === "completed") {
+        setPublication(result.publication);
+        setPublicationStatus(t("publicationVerified"));
+      } else {
+        setPublicationStatus(t("publicationApprovalPending"));
+      }
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "UNKNOWN";
+      const url = (error as Error & { consentUrl?: unknown }).consentUrl;
+      if (typeof url === "string" && url.startsWith("https://"))
+        setConsentUrl(url);
+      setPublicationStatus(t("publicationFailed", { code }));
+    } finally {
+      setBusy(false);
+    }
+  };
 
-  if (!bundle) return <div className="catalog-state"><div><strong>{notice ?? t("loading")}</strong></div></div>;
-  const active = bundle.documents.find((document) => document.key === activeKey) ?? bundle.bundle;
-  const before = previous?.documents.find((document) => document.type === active.type && document.id === active.id)?.text ?? "";
+  const decidePublicationTool = async (approved: boolean) => {
+    if (!bundle || !publication || !toolApproval) return;
+    setBusy(true);
+    setConsentUrl(null);
+    try {
+      const result: PublicationOutcome = await request(
+        `publications/${encodeURIComponent(publication.id)}/approvals`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            approval_id: toolApproval.id,
+            approved,
+          }),
+        },
+      );
+      setPublication(result.publication);
+      setToolApproval(result.approval);
+      if (result.publication.state === "completed") {
+        setPublicationStatus(t("publicationVerified"));
+        const query = new URLSearchParams(search.toString());
+        query.set("revision", String(bundle.revision));
+        query.set("publication", result.publication.id);
+        router.replace(`/bundles/${bundle.id}?${query}`);
+      } else {
+        setPublicationStatus(t("publicationApprovalPending"));
+      }
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "UNKNOWN";
+      const url = (error as Error & { consentUrl?: unknown }).consentUrl;
+      if (typeof url === "string" && url.startsWith("https://"))
+        setConsentUrl(url);
+      setToolApproval(null);
+      setPublicationStatus(t("publicationFailed", { code }));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!bundleId)
+    return (
+      <div className="bundle-page">
+        <header className="bundle-heading">
+          <div>
+            <h1>{t("title")}</h1>
+            <p>{t("subtitle")}</p>
+          </div>
+          <span className="catalog-status">
+            {t("count", { count: items.length })}
+          </span>
+        </header>
+        {notice && <p className="notice">{notice}</p>}
+        <section className="bundle-catalog">
+          {items.length === 0 ? (
+            <div className="catalog-state">
+              <div>
+                <strong>{t("empty")}</strong>
+                <p>{t("emptyBody")}</p>
+              </div>
+            </div>
+          ) : (
+            items.map((item) => (
+              <Link
+                className="bundle-row"
+                href={`/bundles/${item.id}?revision=${item.revision}`}
+                key={item.id}
+              >
+                <div>
+                  <strong>{item.bundle.id}</strong>
+                  <code>{item.id}</code>
+                </div>
+                <span>{t("revision", { revision: item.revision })}</span>
+                <span
+                  className={`catalog-status ${item.state === "draft" ? "unavailable" : "available"}`}
+                >
+                  {t(`state.${item.state}`)}
+                </span>
+              </Link>
+            ))
+          )}
+        </section>
+      </div>
+    );
+
+  if (!bundle)
+    return (
+      <div className="catalog-state">
+        <div>
+          <strong>{notice ?? t("loading")}</strong>
+        </div>
+      </div>
+    );
+  const active =
+    bundle.documents.find((document) => document.key === activeKey) ??
+    bundle.bundle;
+  const before =
+    previous?.documents.find(
+      (document) => document.type === active.type && document.id === active.id,
+    )?.text ?? "";
   const diff = diffWords(before, editing ? draft : active.text);
   const operations = bundle.content.operations;
-  const sources = Array.from(new Set(operations.flatMap((operation) => {
-    const evidence = Array.isArray(operation.evidence) ? operation.evidence : [];
-    return evidence.flatMap((item) => typeof item === "object" && item !== null && typeof (item as Record<string, unknown>).source === "string" ? [(item as Record<string, string>).source] : []);
-  })));
-  const gaps = Array.isArray(bundle.content.gaps) ? bundle.content.gaps.filter((gap): gap is Record<string, unknown> => typeof gap === "object" && gap !== null) : [];
-  const currentDecision = decisions.find((item) => item.revision === bundle.revision && item.content_hash === bundle.content_hash);
+  const sources = Array.from(
+    new Set(
+      operations.flatMap((operation) => {
+        const evidence = Array.isArray(operation.evidence)
+          ? operation.evidence
+          : [];
+        return evidence.flatMap(evidenceSource);
+      }),
+    ),
+  );
+  const gaps = Array.isArray(bundle.content.gaps)
+    ? bundle.content.gaps.filter(
+        (gap): gap is Record<string, unknown> =>
+          typeof gap === "object" && gap !== null,
+      )
+    : [];
+  const currentDecision = decisions.find(
+    (item) =>
+      item.revision === bundle.revision &&
+      item.content_hash === bundle.content_hash,
+  );
 
-  return <div className="bundle-page"><header className="bundle-heading"><div><Link className="back-link" href="/bundles">{t("back")}</Link><h1>{bundle.bundle.id}</h1><p>{t("revisionState", { revision: bundle.revision, state: t(`state.${bundle.state}`) })}</p><code className="bundle-hash">sha256:{bundle.content_hash}</code></div><div className="bundle-actions">{canAuthor(roles) && !editing && bundle.state === "draft" && <Link className="btn" href={`/bundles/${bundle.id}/edit?revision=${bundle.revision}&document=${encodeURIComponent(active.key)}`}>{t("edit")}</Link>}{canAuthor(roles) && bundle.state === "draft" && <button type="button" className="btn btn-solid" disabled={busy || !bundle.canSubmit} onClick={() => void transition("submit")}>{t("submit")}</button>}{canAuthor(roles) && bundle.state === "submitted" && <button type="button" className="btn" disabled={busy} onClick={() => void transition("revisions")}>{t("newRevision")}</button>}</div></header>
-  {notice && <p className="notice">{notice}</p>}{conflict && <div className="catalog-state blocked"><div><strong>{t("conflict")}</strong><p>{t("conflictBody")}</p></div><button type="button" className="btn" onClick={() => void load()}>{t("rebase")}</button></div>}
-  {!editing && <section className="bundle-review" aria-label={t("reviewSummary")}><div><h2>{t("impact")}</h2><ul>{operations.map((operation) => <li key={textField(operation, "id", JSON.stringify(operation))}><strong>{textField(operation, "operation", t("change"))}</strong> {textField(operation, "document_type", t("document"))} · {textField(operation, "id", t("document"))}</li>)}</ul></div><div><h2>{t("sources")}</h2>{sources.length ? <ul>{sources.map((source) => <li key={source}>{source}</li>)}</ul> : <p>{t("noSources")}</p>}</div><div><h2>{t("gaps")}</h2>{gaps.length ? <ul>{gaps.map((gap) => <li key={JSON.stringify(gap)}>{textField(gap, "reason", textField(gap, "capability", t("gapDeclared")))}</li>)}</ul> : <p>{t("noGaps")}</p>}</div><div><h2>{t("compensation")}</h2>{gaps.length ? <ul>{gaps.map((gap) => <li key={JSON.stringify(gap)}>{textField(gap, "compensation", t("compensationMissing"))}</li>)}</ul> : <p>{t("compensationNone")}</p>}</div></section>}
-  {!editing && bundle.state === "submitted" && canApprove(roles) && <section className="bundle-decision" aria-labelledby="bundle-decision-title"><div><span>{t("humanDecision")}</span><h2 id="bundle-decision-title">{t("decisionTitle", { revision: bundle.revision })}</h2><p>{t("decisionBody")}</p></div><label><span>{t("reason")}</span><textarea value={reason} maxLength={1000} onChange={(event) => setReason(event.target.value)} placeholder={t("reasonPlaceholder")} /></label><div className="bundle-decision-actions"><button type="button" className="btn btn-danger" disabled={busy || !reason.trim()} onClick={() => void decide("reject")}>{t("reject")}</button><button type="button" className="btn btn-solid" disabled={busy || !reason.trim()} onClick={() => void decide("approve")}>{t("approve")}</button></div></section>}
-  {currentDecision && <section className={`bundle-decision-record ${currentDecision.decision}`}><div><span>{t("recordedDecision")}</span><strong>{t(`decision.${currentDecision.decision}`)}</strong></div><p>{currentDecision.reason}</p><dl><div><dt>{t("actor")}</dt><dd>{currentDecision.approver_id}</dd></div><div><dt>{t("correlation")}</dt><dd><code>{currentDecision.correlation_id}</code></dd></div></dl></section>}
-  <div className="bundle-workspace"><aside className="bundle-tree" aria-label={t("tree")}><strong>{t("documents")}</strong>{bundle.documents.map((document) => <button type="button" className={document.key === active.key ? "selected" : ""} key={document.key} onClick={() => selectDocument(document)}><span>{document.type}</span><b>{document.id}</b><small>@{document.revision}</small></button>)}</aside>
-  <main className="bundle-document"><header><div><span>{active.type}</span><h2>{active.id}</h2></div><code>{active.key}</code></header>{editing ? <textarea aria-label={t("documentSource")} value={draft} onChange={(event) => setDraft(event.target.value)} spellCheck={false} /> : <pre>{active.text}</pre>}{editing && <footer><button type="button" className="btn btn-solid" disabled={busy || draft === active.text} onClick={() => void save()}>{t("save")}</button></footer>}</main>
-  <aside className="bundle-inspector"><section><h3>{t("validations")}</h3>{bundle.validations.map((check) => <div className={`bundle-check ${check.status}`} key={check.id}><strong>{check.id}</strong><p>{check.reason}</p></div>)}</section><section><h3>{t("dependencies")}</h3>{bundle.dependencies.length === 0 ? <p className="muted">{t("none")}</p> : bundle.dependencies.filter((dependency) => dependency.from === active.key).map((dependency) => <div className="bundle-dependency" key={`${dependency.from}-${dependency.to}`}><code>{dependency.to}</code><span>{dependency.source}</span></div>)}</section><section><h3>{t("diff")}</h3>{diff.truncated ? <p>{t("diffLarge")}</p> : <div className="bundle-diff">{diff.parts.map((part, index) => <span className={part.op} key={`${part.op}-${index}`}>{part.text}</span>)}</div>}</section></aside></div></div>;
+  return (
+    <div className="bundle-page">
+      <header className="bundle-heading">
+        <div>
+          <Link className="back-link" href="/bundles">
+            {t("back")}
+          </Link>
+          <h1>{bundle.bundle.id}</h1>
+          <p>
+            {t("revisionState", {
+              revision: bundle.revision,
+              state: t(`state.${bundle.state}`),
+            })}
+          </p>
+          <code className="bundle-hash">sha256:{bundle.content_hash}</code>
+        </div>
+        <div className="bundle-actions">
+          {canAuthor(roles) && !editing && bundle.state === "draft" && (
+            <Link
+              className="btn"
+              href={`/bundles/${bundle.id}/edit?revision=${bundle.revision}&document=${encodeURIComponent(active.key)}`}
+            >
+              {t("edit")}
+            </Link>
+          )}
+          {canAuthor(roles) && bundle.state === "draft" && (
+            <button
+              type="button"
+              className="btn btn-solid"
+              disabled={busy || !bundle.canSubmit}
+              onClick={() => void transition("submit")}
+            >
+              {t("submit")}
+            </button>
+          )}
+          {canAuthor(roles) && bundle.state === "submitted" && (
+            <button
+              type="button"
+              className="btn"
+              disabled={busy}
+              onClick={() => void transition("revisions")}
+            >
+              {t("newRevision")}
+            </button>
+          )}
+        </div>
+      </header>
+      {notice && <p className="notice">{notice}</p>}
+      {conflict && (
+        <div className="catalog-state blocked">
+          <div>
+            <strong>{t("conflict")}</strong>
+            <p>{t("conflictBody")}</p>
+          </div>
+          <button type="button" className="btn" onClick={() => void load()}>
+            {t("rebase")}
+          </button>
+        </div>
+      )}
+      {!editing && (
+        <section className="bundle-review" aria-label={t("reviewSummary")}>
+          <div>
+            <h2>{t("impact")}</h2>
+            <ul>
+              {operations.map((operation) => (
+                <li key={textField(operation, "id", JSON.stringify(operation))}>
+                  <strong>
+                    {textField(operation, "operation", t("change"))}
+                  </strong>{" "}
+                  {textField(operation, "document_type", t("document"))} ·{" "}
+                  {textField(operation, "id", t("document"))}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div>
+            <h2>{t("sources")}</h2>
+            {sources.length ? (
+              <ul>
+                {sources.map((source) => (
+                  <li key={source}>{source}</li>
+                ))}
+              </ul>
+            ) : (
+              <p>{t("noSources")}</p>
+            )}
+          </div>
+          <div>
+            <h2>{t("gaps")}</h2>
+            {gaps.length ? (
+              <ul>
+                {gaps.map((gap) => (
+                  <li key={JSON.stringify(gap)}>
+                    {textField(
+                      gap,
+                      "reason",
+                      textField(gap, "capability", t("gapDeclared")),
+                    )}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>{t("noGaps")}</p>
+            )}
+          </div>
+          <div>
+            <h2>{t("compensation")}</h2>
+            {gaps.length ? (
+              <ul>
+                {gaps.map((gap) => (
+                  <li key={JSON.stringify(gap)}>
+                    {textField(gap, "compensation", t("compensationMissing"))}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>{t("compensationNone")}</p>
+            )}
+          </div>
+        </section>
+      )}
+      {!editing && bundle.state === "submitted" && canApprove(roles) && (
+        <section
+          className="bundle-decision"
+          aria-labelledby="bundle-decision-title"
+        >
+          <div>
+            <span>{t("humanDecision")}</span>
+            <h2 id="bundle-decision-title">
+              {t("decisionTitle", { revision: bundle.revision })}
+            </h2>
+            <p>{t("decisionBody")}</p>
+          </div>
+          <label>
+            <span>{t("reason")}</span>
+            <textarea
+              value={reason}
+              maxLength={1000}
+              onChange={(event) => setReason(event.target.value)}
+              placeholder={t("reasonPlaceholder")}
+            />
+          </label>
+          <div className="bundle-decision-actions">
+            <button
+              type="button"
+              className="btn btn-danger"
+              disabled={busy || !reason.trim()}
+              onClick={() => void decide("reject")}
+            >
+              {t("reject")}
+            </button>
+            <button
+              type="button"
+              className="btn btn-solid"
+              disabled={busy || !reason.trim()}
+              onClick={() => void decide("approve")}
+            >
+              {t("approve")}
+            </button>
+          </div>
+        </section>
+      )}
+      {currentDecision && (
+        <section
+          className={`bundle-decision-record ${currentDecision.decision}`}
+        >
+          <div>
+            <span>{t("recordedDecision")}</span>
+            <strong>{t(`decision.${currentDecision.decision}`)}</strong>
+          </div>
+          <p>{currentDecision.reason}</p>
+          <dl>
+            <div>
+              <dt>{t("actor")}</dt>
+              <dd>{currentDecision.approver_id}</dd>
+            </div>
+            <div>
+              <dt>{t("correlation")}</dt>
+              <dd>
+                <code>{currentDecision.correlation_id}</code>
+              </dd>
+            </div>
+          </dl>
+        </section>
+      )}
+      {!editing && bundle.state === "approved" && canApprove(roles) && (
+        <section
+          className="bundle-publication"
+          aria-labelledby="bundle-publication-title"
+        >
+          <header>
+            <div>
+              <span>{t("publicationEyebrow")}</span>
+              <h2 id="bundle-publication-title">{t("publicationTitle")}</h2>
+              <p>{t("publicationBody")}</p>
+            </div>
+            <span className="catalog-status available">
+              {t("publicationApproved")}
+            </span>
+          </header>
+          {publication?.state === "completed" ? (
+            <div className="bundle-publication-result">
+              <div>
+                <span>{t("publicationPullRequest")}</span>
+                <a
+                  href={publication.pull_request_url}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  #{publication.pull_request_number} · {publication.owner}/
+                  {publication.repository}
+                </a>
+              </div>
+              <div>
+                <span>{t("publicationBranch")}</span>
+                <code>{publication.branch}</code>
+              </div>
+              <div>
+                <span>{t("publicationState")}</span>
+                <strong>{t(`publicationStates.${publication.state}`)}</strong>
+              </div>
+            </div>
+          ) : (
+            <>
+              <div className="bundle-publication-fields">
+                <label>
+                  <span>{t("publicationOwner")}</span>
+                  <input
+                    value={publicationOwner}
+                    maxLength={100}
+                    autoComplete="off"
+                    onChange={(event) =>
+                      setPublicationOwner(event.target.value)
+                    }
+                    placeholder={t("publicationOwnerPlaceholder")}
+                  />
+                </label>
+                <label>
+                  <span>{t("publicationRepository")}</span>
+                  <input
+                    value={publicationRepository}
+                    maxLength={100}
+                    autoComplete="off"
+                    onChange={(event) =>
+                      setPublicationRepository(event.target.value)
+                    }
+                    placeholder={t("publicationRepositoryPlaceholder")}
+                  />
+                </label>
+                <label>
+                  <span>{t("publicationBase")}</span>
+                  <input
+                    value={publicationBranch}
+                    maxLength={128}
+                    autoComplete="off"
+                    onChange={(event) =>
+                      setPublicationBranch(event.target.value)
+                    }
+                  />
+                </label>
+                <label>
+                  <span>{t("publicationDirectory")}</span>
+                  <input
+                    value={publicationDirectory}
+                    maxLength={128}
+                    autoComplete="off"
+                    onChange={(event) =>
+                      setPublicationDirectory(event.target.value)
+                    }
+                  />
+                </label>
+              </div>
+              <footer>
+                <p>{t("publicationConsent")}</p>
+                <button
+                  type="button"
+                  className="btn btn-solid"
+                  disabled={
+                    busy ||
+                    toolApproval !== null ||
+                    !publicationOwner.trim() ||
+                    !publicationRepository.trim() ||
+                    !publicationBranch.trim() ||
+                    !publicationDirectory.trim()
+                  }
+                  onClick={() => void publish()}
+                >
+                  {busy ? t("publicationPublishing") : t("publicationAction")}
+                </button>
+              </footer>
+            </>
+          )}
+          {toolApproval && (
+            <fieldset className="bundle-tool-approval">
+              <legend>{t("publicationApprovalTitle")}</legend>
+              <div>
+                <strong>{toolApproval.tool}</strong>
+              </div>
+              <pre>{JSON.stringify(toolApproval.arguments, null, 2)}</pre>
+              <div className="bundle-decision-actions">
+                <button
+                  type="button"
+                  className="btn btn-danger"
+                  disabled={busy}
+                  onClick={() => void decidePublicationTool(false)}
+                >
+                  {t("publicationRejectTool")}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-solid"
+                  disabled={busy}
+                  onClick={() => void decidePublicationTool(true)}
+                >
+                  {t("publicationApproveTool")}
+                </button>
+              </div>
+            </fieldset>
+          )}
+          {consentUrl && (
+            <a
+              className="bundle-consent-link"
+              href={consentUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t("publicationOpenConsent")}
+            </a>
+          )}
+          {publicationStatus && (
+            <output className="bundle-publication-status">
+              {publicationStatus}
+            </output>
+          )}
+        </section>
+      )}
+      <div className="bundle-workspace">
+        <aside className="bundle-tree" aria-label={t("tree")}>
+          <strong>{t("documents")}</strong>
+          {bundle.documents.map((document) => (
+            <button
+              type="button"
+              className={document.key === active.key ? "selected" : ""}
+              key={document.key}
+              onClick={() => selectDocument(document)}
+            >
+              <span>{document.type}</span>
+              <b>{document.id}</b>
+              <small>@{document.revision}</small>
+            </button>
+          ))}
+        </aside>
+        <main className="bundle-document">
+          <header>
+            <div>
+              <span>{active.type}</span>
+              <h2>{active.id}</h2>
+            </div>
+            <code>{active.key}</code>
+          </header>
+          {editing ? (
+            <textarea
+              aria-label={t("documentSource")}
+              value={draft}
+              onChange={(event) => setDraft(event.target.value)}
+              spellCheck={false}
+            />
+          ) : (
+            <pre>{active.text}</pre>
+          )}
+          {editing && (
+            <footer>
+              <button
+                type="button"
+                className="btn btn-solid"
+                disabled={busy || draft === active.text}
+                onClick={() => void save()}
+              >
+                {t("save")}
+              </button>
+            </footer>
+          )}
+        </main>
+        <aside className="bundle-inspector">
+          <section>
+            <h3>{t("validations")}</h3>
+            {bundle.validations.map((check) => (
+              <div className={`bundle-check ${check.status}`} key={check.id}>
+                <strong>{check.id}</strong>
+                <p>{check.reason}</p>
+              </div>
+            ))}
+          </section>
+          <section>
+            <h3>{t("dependencies")}</h3>
+            {bundle.dependencies.length === 0 ? (
+              <p className="muted">{t("none")}</p>
+            ) : (
+              bundle.dependencies
+                .filter((dependency) => dependency.from === active.key)
+                .map((dependency) => (
+                  <div
+                    className="bundle-dependency"
+                    key={`${dependency.from}-${dependency.to}`}
+                  >
+                    <code>{dependency.to}</code>
+                    <span>{dependency.source}</span>
+                  </div>
+                ))
+            )}
+          </section>
+          <section>
+            <h3>{t("diff")}</h3>
+            {diff.truncated ? (
+              <p>{t("diffLarge")}</p>
+            ) : (
+              <div className="bundle-diff">
+                {diff.parts.map((part, index) => (
+                  <span className={part.op} key={`${part.op}-${index}`}>
+                    {part.text}
+                  </span>
+                ))}
+              </div>
+            )}
+          </section>
+        </aside>
+      </div>
+    </div>
+  );
 }

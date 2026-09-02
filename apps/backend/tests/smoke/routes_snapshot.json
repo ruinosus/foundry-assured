@@ -98,6 +98,10 @@
     ],
     [
       "GET",
+      "/authoring/publications/{publication_id}"
+    ],
+    [
+      "GET",
       "/authoring/registry-bindings"
     ],
     [
@@ -346,6 +350,14 @@
     ],
     [
       "POST",
+      "/authoring/publications"
+    ],
+    [
+      "POST",
+      "/authoring/publications/{publication_id}/approvals"
+    ],
+    [
+      "POST",
       "/authoring/registry-bindings"
     ],
     [
@@ -569,6 +581,10 @@
     [
       "GET",
       "/authoring/mcp-sources/{source_id}"
+    ],
+    [
+      "GET",
+      "/authoring/publications/{publication_id}"
     ],
     [
       "GET",
@@ -828,6 +844,14 @@
     ],
     [
       "POST",
+      "/authoring/publications"
+    ],
+    [
+      "POST",
+      "/authoring/publications/{publication_id}/approvals"
+    ],
+    [
+      "POST",
       "/authoring/registry-bindings"
     ],
     [
@@ -1063,6 +1087,10 @@
     [
       "GET",
       "/authoring/mcp-sources/{source_id}"
+    ],
+    [
+      "GET",
+      "/authoring/publications/{publication_id}"
     ],
     [
       "GET",
@@ -1331,6 +1359,14 @@
     [
       "POST",
       "/authoring/mcp-snapshots/{snapshot_id}/review"
+    ],
+    [
+      "POST",
+      "/authoring/publications"
+    ],
+    [
+      "POST",
+      "/authoring/publications/{publication_id}/approvals"
     ],
     [
       "POST",

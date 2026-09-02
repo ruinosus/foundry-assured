@@ -75,6 +75,9 @@ MODULES = (
     # ADR-022: rascunha e mostra a otimização do Foundry. NUNCA publica — e isso é
     # verificado por `proposer_read_only_test`, não prometido em comentário.
     "proposer",
+    # Publica somente a revisão já aprovada. O adapter externo é oficial; autorização,
+    # idempotência e projeção sanitizada permanecem neste módulo.
+    "publication",
     # O assistente do WIZARD (não do chat de domínio). `tool` porque só o caminho do adapter
     # repassa a tool de frontend que ele precisa chamar; sem tools de servidor, ele só propõe.
     "builder",

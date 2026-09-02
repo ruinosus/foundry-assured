@@ -27,7 +27,7 @@ As fatias mantêm IDs, dependências e user stories, mas substituem CURA pelo As
 - [x] F08 [AFK] Bundle Editor versionado e consistente — deps: F04, F05, F06, F07 — US: US-010 — sec: auth, input-validation, logs → F08.md
 - [x] F09 [AFK] Conformidade honesta por fase — deps: F03, F04, F07, F08 — US: US-011 — sec: auth, input-validation, logs → F09.md
 - [x] F10 [HITL] Submissão, revisão e decisão do Approver — deps: F04, F08, F09 — US: US-012, US-017 — sec: auth, input-validation, logs, dados-sensiveis → F10.md
-- [ ] F11 [HITL] Pull request GitHub com identidade delegada — deps: F10 — US: US-013, US-015, US-017 — sec: auth, input-validation, rate-limit, criptografia, logs, dados-sensiveis → F11.md
+- [x] F11 [HITL] Pull request GitHub com identidade delegada — deps: F10 — US: US-013, US-015, US-017 — sec: auth, input-validation, rate-limit, criptografia, logs, dados-sensiveis → F11.md
 - [ ] F12 [HITL] Pull request Azure DevOps com OBO — deps: F10 — US: US-013, US-015, US-017 — sec: auth, input-validation, rate-limit, criptografia, logs, dados-sensiveis → F12.md
 - [ ] F13 [HITL] Reconciliação e materialização pós-merge — deps: F11, F12 — US: US-014, US-015, US-017 — sec: auth, input-validation, rate-limit, criptografia, logs, dados-sensiveis → F13.md
 - [ ] F14 [AFK] Redesign Assured UI das rotas legadas — deps: F01, F02 — US: US-002, US-018 — sec: auth, input-validation, logs, dados-sensiveis → F14.md

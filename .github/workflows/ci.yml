@@ -110,6 +110,14 @@ jobs:
         run: uv run python -m tests.okf.migration_test
       - name: OKF ChangeSet — multi-document proposal and review
         run: uv run python -m tests.okf.changeset_test
+      - name: GitHub publication — approved content and idempotent MCP writes
+        run: uv run python -m tests.publication.github_publication_test
+      - name: GitHub publication — HTTP contract and safe projection
+        run: uv run python -m tests.publication.publication_http_test
+      - name: GitHub publication — native Toolbox approval loop
+        run: uv run python -m tests.publication.toolbox_approval_test
+      - name: GitHub publication — infra-gated smoke
+        run: uv run python -m tests.publication.github_smoke_test
       - name: Proposer remains read-only
         run: uv run python -m tests.architecture.proposer_read_only_test
 

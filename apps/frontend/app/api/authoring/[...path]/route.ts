@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 const BACKEND = process.env.BACKEND_URL ?? "http://localhost:8000";
 
 function statusFor(status: number): number {
-  return [400, 401, 403, 404, 409, 412, 422].includes(status) ? status : 502;
+  return [400, 401, 403, 404, 409, 412, 422, 424].includes(status) ? status : 502;
 }
 
 async function proxy(

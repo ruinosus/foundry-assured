@@ -40,6 +40,9 @@ class PlatformSettings(BaseSettings):
     # in TenantConfig (app.modules.tenancy.internal.tenant), read via tenant_config().
     mcp_enabled: bool = False
     mcp_learn_url: str = "https://learn.microsoft.com/api/mcp"
+    # Foundry Toolbox MCP endpoint whose GitHub connection uses the managed
+    # `foundrygithubmcp` OAuth connector. Only this Foundry URL reaches the app.
+    publication_toolbox_endpoint: str = ""
 
     # The LangGraph on-call domain's model (ADR-020). Azure OpenAI deployment name — that
     # runtime uses LangChain's own client, so it does not go through FoundryChatClient.
