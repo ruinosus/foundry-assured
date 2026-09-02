@@ -74,6 +74,8 @@ const TITLE_KEYS: Record<string, string> = {
   "/skills": "skills",
   "/tickets": "tickets",
   "/evals": "evals",
+  "/assistants": "screenAssistants",
+  "/audit": "audit",
   "/registries": "registries",
   "/admin/areas": "areas",
   "/admin/users": "admin",

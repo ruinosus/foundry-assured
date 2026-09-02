@@ -289,6 +289,7 @@
   },
   "assistants": {
     "title": "Screen assistants",
+    "needAdmin": "This area requires the Admin role.",
     "subtitle": "Agents that help fill forms — and whether they are actually helping.",
     "empty": "No proposals yet. Use \"Write\" on a wizard field and come back.",
     "builderTitle": "Assistant builder",
@@ -306,6 +307,8 @@
   },
   "audit": {
     "title": "Audit",
+    "needAdmin": "This area requires the Admin role.",
+    "trailError": "The events for this trail could not be loaded. Try again.",
     "subtitle": "What was approved, read and blocked — and whether the record is still what was written.",
     "export": "Export package",
     "chainOk": "chain intact",
@@ -1063,6 +1066,7 @@
     "plano_continuar": "Continue"
   },
   "copilots": {
+    "needAuthor": "Creating a copilot requires the Author role.",
     "titulo": "Copilots",
     "subtitulo": "Each copilot is a document declaring where it acts and which fields it may write — nothing more.",
     "vazio": "No copilot published yet.",

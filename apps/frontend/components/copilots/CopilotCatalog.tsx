@@ -11,6 +11,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { authedFetch } from "@/lib/auth/api";
+import { canAuthor, useMyRoles } from "@/lib/auth/roles";
 import type { Copilot } from "@/lib/copilot";
 
 export function CopilotCatalog() {
@@ -18,6 +19,7 @@ export function CopilotCatalog() {
   const tc = useTranslations("common");
   const [itens, setItens] = useState<Copilot[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const roles = useMyRoles();
 
   useEffect(() => {
     let vivo = true;
@@ -65,9 +67,11 @@ export function CopilotCatalog() {
           <h3 className="section-title">{t("titulo")}</h3>
           <p className="muted t-sm">{t("subtitulo")}</p>
         </div>
-        <Link className="btn btn-solid" href="/copilots/novo">
-          {t("novo")}
-        </Link>
+        {roles !== null && canAuthor(roles) && (
+          <Link className="btn btn-solid" href="/copilots/novo">
+            {t("novo")}
+          </Link>
+        )}
       </header>
 
       {itens.length === 0 ? (

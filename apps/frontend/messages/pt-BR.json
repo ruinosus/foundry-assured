@@ -289,6 +289,7 @@
   },
   "assistants": {
     "title": "Assistentes de tela",
+    "needAdmin": "Esta área exige o papel Admin.",
     "subtitle": "Agentes que ajudam a preencher formulário — e se estão ajudando de verdade.",
     "empty": "Nenhuma proposta ainda. Use \"Escrever\" num campo do wizard e volte aqui.",
     "builderTitle": "Construtor de assistentes",
@@ -306,6 +307,8 @@
   },
   "audit": {
     "title": "Auditoria",
+    "needAdmin": "Esta área exige o papel Admin.",
+    "trailError": "Não foi possível carregar os eventos desta trilha. Tente novamente.",
     "subtitle": "O que foi aprovado, lido e barrado — e se o registro ainda é o que foi escrito.",
     "export": "Exportar pacote",
     "chainOk": "cadeia íntegra",
@@ -1063,6 +1066,7 @@
     "plano_continuar": "Continuar"
   },
   "copilots": {
+    "needAuthor": "Criar um copiloto exige o papel Author.",
     "titulo": "Copilotos",
     "subtitulo": "Cada copiloto é um documento que declara onde atua e em que campos pode escrever — nada além.",
     "vazio": "Nenhum copiloto publicado ainda.",

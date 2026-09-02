@@ -35,8 +35,9 @@ export function AuditView() {
   const tc = useTranslations("common");
   const [report, setReport] = useState<Report | null>(null);
   const [escopo, setEscopo] = useState<string>("approvals");
-  const [eventos, setEventos] = useState<Evento[]>([]);
+  const [eventos, setEventos] = useState<Evento[] | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [erroTrilha, setErroTrilha] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -57,17 +58,19 @@ export function AuditView() {
 
   const abrir = useCallback(async (s: string) => {
     setEscopo(s);
-    setEventos([]);
+    setEventos(null);
+    setErroTrilha(null);
     try {
       const r = await authedFetch(`/api/audit?op=trail&scope=${encodeURIComponent(s)}`, {
         cache: "no-store",
       });
       const b = await r.json().catch(() => ({}));
       if (r.ok) setEventos(b.events ?? []);
+      else setErroTrilha(t("trailError"));
     } catch {
-      /* a lista vazia já diz o suficiente; o estado geral está no relatório acima */
+      setErroTrilha(t("trailError"));
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     void carregar();
@@ -121,6 +124,8 @@ export function AuditView() {
         </div>
       )}
 
+      {!erro && report === null && <p className="muted t-sm">{tc("loading")}</p>}
+
       {report && (
         <>
           <div className="grid g3">
@@ -168,7 +173,13 @@ export function AuditView() {
 
       <div className="stack-sm">
         <h3 className="section-title">{t("eventsIn", { scope: t(`scope_${escopo}`) })}</h3>
-        {eventos.length === 0 ? (
+        {erroTrilha ? (
+          <div className="notice notice-block">
+            <p className="notice-body">{erroTrilha}</p>
+          </div>
+        ) : eventos === null ? (
+          <p className="muted t-sm">{tc("loading")}</p>
+        ) : eventos.length === 0 ? (
           <p className="muted t-sm">{t("noEvents")}</p>
         ) : (
           <div className="table-wrap">

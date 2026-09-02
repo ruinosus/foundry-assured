@@ -72,6 +72,8 @@ export function AssistantsView() {
         </div>
       )}
 
+      {!erro && dados === null && <p className="muted t-sm">{tc("loading")}</p>}
+
       {dados && dados.total === 0 && <p className="muted t-sm">{t("empty")}</p>}
 
       {dados && dados.total > 0 && (

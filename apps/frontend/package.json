@@ -22,7 +22,8 @@
     "verify:copilot-doc": "node scripts/verify-copilot-doc.mjs",
     "verify:shell-foundation": "node scripts/verify-shell-foundation.mjs",
     "verify:area-context": "node scripts/verify-area-context.mjs",
-    "verify:auth-challenge": "node scripts/verify-auth-challenge.mjs"
+    "verify:auth-challenge": "node scripts/verify-auth-challenge.mjs",
+    "verify:route-parity": "node scripts/verify-route-parity.mjs"
   },
   "dependencies": {
     "@ag-ui/client": "^0.0.57",
