@@ -115,6 +115,12 @@ jobs:
       # outro sintoma. Este gate é o que impede um produtor novo de reintroduzi-la.
       - name: OKF — atores e timestamps
         run: uv run python -m tests.okf.actors_test
+      # G2 da auditoria de 2026-09-02: nenhuma página carregava `generated`, então tudo lia
+      # como não-atribuído. O gate também segura a regra que importa mais que o campo: o
+      # frontmatter é escrito pelo builder, não pelo modelo — um bloco vindo do prompt é
+      # descartado.
+      - name: Wiki — procedência OKF nas páginas geradas
+        run: uv run python -m tests.knowledge.wiki_frontmatter_test
       # Um bloco `---` que não parseia é indistinguível de um que parseia para quem só olha a
       # primeira linha — e `ingest.py:162-165` sai com erro num deles. `docs/` nunca é ingerido,
       # então este era o único lugar do repositório onde a falha não tinha sintoma.

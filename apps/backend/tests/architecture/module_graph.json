@@ -327,6 +327,9 @@
     "foundry": [
       "modules/knowledge/internal/wiki_builder.py"
     ],
+    "okf": [
+      "modules/knowledge/internal/wiki_builder.py"
+    ],
     "shared": [
       "modules/knowledge/api.py",
       "modules/knowledge/internal/document.py",
