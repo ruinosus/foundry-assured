@@ -4,12 +4,14 @@
     "techdocs-overview": {
       "title": "Visão geral da plataforma",
       "pages": [
-        "OpenWiki Quickstart",
+        "Repository quickstart",
         "Repository Architecture Overview",
         "Backend Overview",
         "Frontend Overview",
         "Assurance Console",
-        "Grounded Domains"
+        "Grounded Domains",
+        "Runtime topology across backend, frontend, MCP, and infra",
+        "Domain catalog, routing kinds, and frontend/backend parity"
       ]
     },
     "techdocs-engineering": {
@@ -24,7 +26,13 @@
         "Hosted Agents",
         "Helpdesk Workflow Domain",
         "Oncall LangGraph Domain",
-        "Platform Ops Domain"
+        "Platform Ops Domain",
+        "Grounded answer and evidence flow",
+        "Assurance gates, boundary tests, and change-safety signals",
+        "Configuration, local/dev modes, and deployment paths",
+        "Separate MCP server surface and its contracts",
+        "Workflow, graph, and tool-driven approval flows",
+        "Authoring, proposer, OKF changesets, and publication saga"
       ]
     },
     "techdocs-restricted": {
@@ -32,7 +40,8 @@
       "pages": [
         "Backend State and Persistence",
         "Tenancy and Admin",
-        "Admin and Operations UI"
+        "Admin and Operations UI",
+        "Tenancy areas and access control"
       ]
     }
   }
