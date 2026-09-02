@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:4dd8c3780e4afe77f9b2332bfe288f65e50ad3353649b6456ef1af933efba761",
+  "claims": [
+    {
+      "id": "claim_23411856c7af467ba73668d5c4131379",
+      "statement": "The deployed system is split into a FastAPI backend monolith, a separate FastMCP app, and a Next.js frontend, with Azure deployment wiring exposing distinct backend, web, and MCP services and URLs.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/main.py#L1-L12",
+          "version": "repo-lines-v1:sha256:472a644d302cbfd12d9533b73c6f0fec7d153d2f4305cccd9a742be484758af1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxYzZlYTlmN2VmMjU5ZDBiZDVlM2YzY2Q2YTZjNzgzOWEzZmY0MmVlNjVjNTk1ZGU0MjU2NzdiMDZjYmEzNjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMDNlY2RkNGE0ZDEwZjE5YzczZmQ0MmZkMTI0MzdmZDMzNTRhODI2ODE2MDVkYTUyNTVhOTdhMzkwNjhkYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNlMTQ5MDE3YjdiODJjYjMwNzA3MzljNDY0ZDZmOTEwYTVmZjE1ZGQxNWJiMWYyMmIxMDczMzg1ODA4N2E2NWEifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L1-L27",
+          "version": "repo-lines-v1:sha256:10bdc56b88bf8e762c04563aea1900716fe9de3137dcac3f5f4024b899382da9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyMjdhNzg4NzQ5ZjE3YjY1MDZiN2ZhYTI4OGUxNjcxOTFlZGRiOWI0YzFkMzgxMjQ0NTFlZDYxY2I2YTliOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMDNlY2RkNGE0ZDEwZjE5YzczZmQ0MmZkMTI0MzdmZDMzNTRhODI2ODE2MDVkYTUyNTVhOTdhMzkwNjhkYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1YjZlODcwNmI0MzA0N2YyYTZkYjY3ZjEzMjYzODU5NTYwNGU2N2YzNjk2Njg3NmNlMDE1OGYwMDUzZTZiZDEifQ"
+        },
+        {
+          "resource": "repo://azure.yaml#L6-L25",
+          "version": "repo-lines-v1:sha256:15ed493e250321baf0b4492246bbe1b140aeeea03a4a4eda02d4166277ed5f82:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhNzNmY2NkYzk5ZWE4MzU5NjdjN2RlZTdlZmJlZDFmM2NhODcyNjBkOTI5MzE4NTBmZGQ2NmRhOGNiMTJmMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhNTM5NDAwZGI1Mjk1ZjY2ZTBhZTAxOTg2MTM2ZWVkM2Q2MmIwNDY4Njg2MmNlMjBhN2ViZmI1MTJjMjRlMWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdmYjc3MjRlNDAwY2U0YTBhMDYyY2ZhYzcwMzU0MTc4YmVmYTE5NTA2NTdlYmQ1NGE3Yjg3MjhlNTM1OWQxZDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0MTY1ZjU3NTlhOGUxZWQ5MDc3YjI3OTAzMmI3ZmRjMjQ2MDQ5OGJmNTMyMTE0OTMzMzI0ZDk4YmI5NDlkMjIifQ"
+        },
+        {
+          "resource": "repo://infra/main.bicep#L89-L125",
+          "version": "repo-lines-v1:sha256:308d19e30f7e4865c2bad373a3af8e2827765da136d17c14da223cec7175f9ba:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiNTMyMzgzMjUxYTIwY2M2ODAyMjU2Mzg5NmIxZTUyMjk0ZDk4NWI5NzY0MjkyMDBiNDE3N2EyYmJjODhmOTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmYzUwMzY5YjUyMWM0ZGM0YmIzMzNiY2QwMmQyNWMzMzA4YmVlYjdmYzYwNGY2ZGM2OTQyYTRmYWUxMWYwYWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3a79c0cf493b4db79531a59df4e6518e",
+      "statement": "The backend monolith’s entrypoint is intentionally thin: it bootstraps telemetry, tenancy, shared middleware, CORS, includes routers, and mounts live domain endpoints through a single composition-root flow rather than carrying business logic there.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/main.py#L108-L140",
+          "version": "repo-lines-v1:sha256:6a3eac0676a5f0c96afc48fe5aa1cde43aa642c973b951d0a9d6ad756881fe6a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg3Y2ZmM2YxNzg0MmRlYzZlN2U5MWMzZTNiOGZjZTBhODIyZmMzMTEyNzM4MWIwMGY0NGE5ZjEzMzMzMDNhMmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVjOTExN2NmMjA1NTg2MTk0YWJiZTBjNDEyODFmN2IzMzU4ZDlmZmQ4NDYwY2FjZWE1YjllYzM3YTBkYjNkM2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNmNDIyMDhhNjExMDM1YWQ3Njc4MWVhZWE4ZGQ5NzcxMmEzN2FjN2FhZGI3NTk2YTEwNTE4ZmUzZWE2ZTExMDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZhMTg2MmMxOTk2NTNhYTJiZjlhYmM1MjVhZDMxZGYyMjdiMjY1MmMyMDJjNzY3MzdkMTE2MGJkYmU0YmU1MmIifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/main.py#L32-L40",
+          "version": "repo-lines-v1:sha256:06f40f1e80f430fa775ba5bd174b492581e6d96c9a8b6987304014f7f0b6ff5c:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGU5Njg4ZjBhNDk2ZWU0ZDFlOTQzNGVkOTA5MDFlMzk2NzI4ZmRiOTRkZTViNTRjZTg4ZTJlODRmM2MwNDk5MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTVjMWM0NjJlMmEzOWQ3NDc1OWY1ZTFiMTI2Zjc2ODNhMmI3MzAxMThlMThmNTEyMmIwOGNlZGVlYjY1MGUyMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmUxNzJlYTA0ZDE5ZTgzNThhM2Y5MDY4YTViMGY5OWE5MjQxZTRhOTY0ZjU5YmE2MjM0NzllNWFhNzA1NWFhZSJ9"
+        },
+        {
+          "resource": "repo://apps/backend/app/main.py#L78-L106",
+          "version": "repo-lines-v1:sha256:6ccbdd7dc752052f6ce5cc3ff1814e979a59227a805ab8be4f0b6ea20b378fe9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViNDU1YzA5ODhmZDQ0MzU0MTQ3ZDRmNDI0ZDQzNzg5MjQxMTU5MjgzNmE5MTk4ODJhOTkwNDUwODVjMTQ5ZmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0YWRkOGM2NDQzMzM5OTQ4ZmJmODg1NjY4MWZlNTUyMmI3OWU2NDg5MjFkZjViMjM0NjY3MTAxM2YwMGNlZjAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjViNDNmNGNjNDk5YmU1M2EyYzMyZWFjODNlZWEyYjFjNjRkODUzMDBmYmU0ZjJkZjMyYTc3YjI2NTNkOGIzYjYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b16de3986d16449eb4c24a0eaf739460",
+      "statement": "Backend runtime domain endpoints are mounted by one loop in app/registry.py that dispatches by domain kind, while tenant-specific domain configuration is resolved per request rather than at boot.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/domains/internal/catalog.py#L110-L135",
+          "version": "repo-lines-v1:sha256:bf2ed6746074cfa8fda8f2018501df9ac72c1d15ba38002113a9fcaf593f3ce9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEwNjI0OGM0NGU0NTg3ODAyNjc0NDc4NjZlYjE5ZmQwYjY0MjUyNmQ2ZWZmZjJkNjYwZmM1YzE5NGI4ZWJmNjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA0NzRiYTFiYjE5NWNlNTc2YTFhZGRkNGRkYzIyMDI1NjllMDhmYmM0YzUzOTRjMmQzNzI1ODIxMmU2ZDIwNzMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA5ZjkzMDgzYzE5NzEyMWI5ODI3MDBiYThhZmFiZDE3MjJjZjFkM2U3NDA0NTA5ZTgwZWZhMjcyNDdmNjJmMDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3NGUwNjE1ZWI5NjM1ZDk0ZWM3YWFlZjMxMjhlMDcwOTk4Mzg4MDAyNzJmYmEyZDI4MGZjOGMwMDY3MjYwZWEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/domains/internal/catalog.py#L18-L23",
+          "version": "repo-lines-v1:sha256:49a892eb18c1392f3a9bdede71f1e482696211b5e0d4da3a16beef9c4933e583:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjE5YzYyYjQxYWEzZWFkMmViNjc2ZDBhMTRlZWZhM2Y2YjFmOGVmNDE2NGUxZGRlY2Q3NTFkMTZiNmJiM2Y4MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTMwM2VjZGQ0YTRkMTBmMTljNzNmZDQyZmQxMjQzN2ZkMzM1NGE4MjY4MTYwNWRhNTI1NWE5N2EzOTA2OGRiYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjBkNjdiYTExMDU5MDQ4ZDVlMzI2YmU5ODc5N2IxMzA1NzZiNjllZTFhYTY4OWM5ZmNiYjU3ODJkNzUzOWJkYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTViNmU4NzA2YjQzMDQ3ZjJhNmRiNjdmMTMyNjM4NTk1NjA0ZTY3ZjM2OTY2ODc2Y2UwMTU4ZjAwNTNlNmJkMSJ9"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/domains/internal/catalog.py#L81-L90",
+          "version": "repo-lines-v1:sha256:5482e901832e3c30bf4f2e9fc616a8f696d0e76063b2145d53d16be520bd5b61:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjMmU1MWQyZWI2M2I2ZTg5OTJmYjAzODZhODEwMmZmYTQ1OTE0ZGY2NTQ4ODU5ZjM5MzIzMDk0ODJkYzBiZDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmNTE2ZDc2MTk5M2Q3ZjBhZDMwNGUyY2ZhZDEwMGNiMjAzNjAwNjIxNzAwOTk1OWM5N2FhOTZkOWIwNzFjMGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU2ZGZiZjQ1M2Y3ZjFiZWJhYjcyODM2MWIwZjM5M2VlYjRjMWZiNjY4ZjllYTIyYjkxNmRhY2Y1ZGZmODFkODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk4YmIwMjY5YmQ1N2JjYjI5NGIxM2Q1OWRlNzRlZTlmMTRhNDUxYWRiOTlkNDQyODlkNTc0ODQwZjM1MzZmMDYifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L250-L270",
+          "version": "repo-lines-v1:sha256:e17f3d0570f8e4b1f3f7593b91ec88dbcda6a2aea5b274238c45e983ed2ed21b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzZmZmNmYxYTAxNDMwYzZhNmYxMjliMDZiNjNhN2Q5YzNkOTlhZmYzZmIwNmRjNzE0ODJmZjBmNTc1MGNiMzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5ODk5MTY5NDAzNDhlYWQzYmNhNGVhNWU2OTE0NTc2NTA4YjNlNDFjNmE4ZGIwMjQ2MDc5ODQwNTMxZGU0ZWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlZTUwNjgxNTMwMTMxMWM5ZWE1MDMzNjcxZGM3NDBmMWY2N2M2NjMwMDM3NzNhNmFiNTY3Y2JjYjY2OGZhODYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgzZjZhMzk1YTdiODFiMzdkYTE2MzEzMjQwOTIyZmI2YmE4YTcyOTVmOGRhNDZjNzFiOTUyYzQ1NWEzNTllOTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_055cf182bf324b2bb11e1ce0a2d75dcb",
+      "statement": "The backend mount loop hosts multiple runtime styles side by side: workflow domains via Agent Framework AG-UI, grounded domains via a streaming cited-QA path, tool domains via per-request tool agents, and graph domains via the LangGraph AG-UI adapter.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/registry.py#L103-L135",
+          "version": "repo-lines-v1:sha256:df7415aac4af45a190431d943730c7883e70fc6d993b83602dd5c0a741c4f9f0:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmMGU4MzdiZmI1ZjJkYzQ4MDU3ZGIyMWIwYTJiNDQ1MDI3NWI4OGU5NGQ0NTYyOTRkYTU4YmQ2MjA5NmIxNmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzMzg4ZDhlZjkxNjliNTA2OTNhN2YxYjJkOTE3YjdmMzg5OWMzMDczZTdmYjU2YWY2NzE0OWVkZGZkZGMzMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiNzgwNjkyZjc3NThhNjZhNzU2OWYzMjFjZGE4N2ZhNTNjMDIwMDVhOGFiM2YyM2E3MGFmN2NlOTE4OTM2OTQifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L168-L197",
+          "version": "repo-lines-v1:sha256:a18382ec3599e61b4333255d0f6d5a91b889c37232fabd57f18beaf4b8c680c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc2ZDIwNjAxMjliMzI4MDVjNDFjNjIzOTc1NTAxZWRiOTE3OWI0OWUyNjEzNTg2ZTY1NGJiZWJkNjQ4NjQ5YjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5MDM0ZjU2MmNiMDQ1YTJiODAyYmNkYmViZWIyMThmZjYxYmIwODhmYTdhNjMxODI4MGFkZjcyYzA3NGMwMTkifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L200-L247",
+          "version": "repo-lines-v1:sha256:ea72f5391b45eb0c5504ba6933a600a7bc932abd881e8be1c93992ffa13ea6dc:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMzYzFlMzIyN2E3ZjlkOWYxOWI4NzRhODZkNTEyYmY1NzU4YWE3NTM0MWFhYzVmYzZiMWNjMGQ1ZDI5Yzg0NGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlMjY2NGY4ZTgzMTFmYTRiZjc4N2RjZTdlOGZkZDFmZGVjMjZhZWUwYTk4M2UyNzlkNTZmZDA2ZTJjMmRmMzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzZGYyYWNmMDZlOGMzZjAzYzcxMzVjNmU4YWM1YTljYTU0MzJhYmUwNmE3NGFjYTBmZGQ5YTUzYTAwOGY5ODciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRiZjhhNWQ5YjQxYjQyMWJjMDdiM2FlOWEzYjFiZDkwOTU3MjY4M2MyNmFmMTc4YzkzMDQ2MWRjMjFkNzNkMDEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L250-L270",
+          "version": "repo-lines-v1:sha256:e17f3d0570f8e4b1f3f7593b91ec88dbcda6a2aea5b274238c45e983ed2ed21b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzZmZmNmYxYTAxNDMwYzZhNmYxMjliMDZiNjNhN2Q5YzNkOTlhZmYzZmIwNmRjNzE0ODJmZjBmNTc1MGNiMzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5ODk5MTY5NDAzNDhlYWQzYmNhNGVhNWU2OTE0NTc2NTA4YjNlNDFjNmE4ZGIwMjQ2MDc5ODQwNTMxZGU0ZWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlZTUwNjgxNTMwMTMxMWM5ZWE1MDMzNjcxZGM3NDBmMWY2N2M2NjMwMDM3NzNhNmFiNTY3Y2JjYjY2OGZhODYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgzZjZhMzk1YTdiODFiMzdkYTE2MzEzMjQwOTIyZmI2YmE4YTcyOTVmOGRhNDZjNzFiOTUyYzQ1NWEzNTllOTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4e7f7356cca240fc9b80a91908bb491d",
+      "statement": "The frontend is a Next.js plus CopilotKit web app whose runtime-facing domain registry defines stable domain ids, kinds, frameworks, and backend endpoint paths for routes like helpdesk, selfwiki, oncall, deepcall, and platform.",
+      "evidence": [
+        {
+          "resource": "repo://apps/frontend/lib/domains.ts#L1-L15",
+          "version": "repo-lines-v1:sha256:0faf8f242a172d8fc0a6f1bc011a52d57cc0446973aeb31969ef77fa4a692e9b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxNDM3MTkyMjE5NTQ3ZDE3NWRmYTE3ZDUyZWY3MTFiNDZmMmRiZDliZTdjY2QwOWU1YmU0Yjc2YjNjY2FmZDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlMGM0MjIxOGMxNTI1Y2RjNzZiMzZjMzM0NjA1OGZlZjFiYTQ0YzAwNjljZDljZGEzMzhhMTJmOWU0ZTlhOGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmYmQ4ZmY2YTA4ZWQ2OTE2YWIwNWRmNWYyNDA5OWQwNTRhMmE2M2FlN2I5YTkyMzM4ZGEwYjdmOWU2ZjgwZmQifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/lib/domains.ts#L24-L40",
+          "version": "repo-lines-v1:sha256:de6e36bbb59ed815eff9f59c6291ce9106326d6c23a9e15ac4eec571649cc8c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ4YTNhYmIzMjBmYjZkY2Q1YjJlOWRkYTRjMWU2Y2UxY2QyYjZkMTAwZTZkMmFiYjQyNzNhOGRmODkwZjI4MTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwM2RjMTVlZmNmOTAxYmY5ZWIyNmI5ZDE3NTE0NmI5MWQ2N2VhYmVkZDUzMGNlZWNkNjNjYzMyNGYwZDU0YTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhMmFhZWU0ZDhkY2M0NjM0N2JhODIzYTE4OTUwMGJiNTVhNjU4YjFiNDAwYjJhODU5ODBlMmI2MTc3ZDg3YmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZmNTY4NzAzZmI5YzUzMTU3NWJkM2RjYjNhMDY2NDM4MGY2NjQwYjIzNGIyYmMyMmU1YTkyZDBhNDZhNGYxZjAifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/lib/domains.ts#L43-L118",
+          "version": "repo-lines-v1:sha256:9052c27cd335a7dbec14aa424414c899e67317dd0fbf4c1837b5f554fa09b8bc:eyJzZWxlY3RlZExpbmVDb3VudCI6NzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlNmYyN2FiYzc2MThjMjdiYTgzYjVjZjZhYjFiM2NjYTM3N2Q4YjA4NThjMjExMWQxNzQ3YmNhNDM2YzFhMTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwOWYwOTk2NjIxNGFkYTVhYmEzMzMwZjRhYTM1NDVmOGU1NjY1MDBkMjJkMGUzZGI3YTNhYWZjMmZiNDY0NTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlNGQxOWFjMDI3ZTE4NjdkYWI3YjZjNDZhZTQzMDM3NjA4NTM0MGViNmIyZjhjZjA3MDczN2E3ZWQxMTc2ZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/package.json#L28-L43",
+          "version": "repo-lines-v1:sha256:db4627bc7b1387abdb4a9f3d521ebf5654c9ed68a36314867ee725d3d9e2d5ba:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhM2I0NjlkOWUwOTc1NzIyNDY2NjczNGM5ZWY3YjI1NGQ4ODUzNGY1ZDViYjcwOTg5NjA4MDVjNTUzZGMzMDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiNzVlMjYyMDg1ZDc1NmIwZTlkZjI5ZGUzZWU2OWU4ODJlODA3ZmVkNTMwMjAyODg4ODJkYzRiNzgyZGE4MDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA2MThlMjc1MjczZDlmZGQ0M2I4ZDIzOThjNDNmYmJkYzZhNDczNmYwNTMxMzBkMGE3NmYzZWJmOGU5YTQ1YWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY3Mzk0ZGFmZjZiOGY3NjM0MTdjZDk5MTBiZDRkMjFhMGZiNzdiN2RjZWVkMDdkMWViZDk1OTQ2NThhNjllMTEifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/package.json#L5-L18",
+          "version": "repo-lines-v1:sha256:0c6b13da104a7d130eb55a37df644b41dab7fbb454a8afc796d275f912d3c6db:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0ODMzZDU5NDljMDNhNDBjYTk1MjQ5MTYxMGE2NjU5NjQ0YjNhYTQ2NjM2MmY3OTkwMjBkYmYxOTgxNTQ3ZGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzODEzYTcxYTA1NmRiMTIwNWFiN2M5OGIyNmEyZmNmYzZmOTdiNzc5NDY3NzExZmIwODgyMDc0NGU4MWEwMjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhMjNhYmYwNGMwOWQ3ZDIyMjcxMzU2NmMzN2E0MDE4ZDNkMThkODc2NmNkNWE5ZjlmZTA3NTY5NDFjNTFjZTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhODQ2OWRjMzk5MWUzODQ1MGM5MzlhOTYyYjdkYWM1YTMxYzVhM2U3MGRjYjc0Mjg3ZGYwMTkwMTA4MTQyOGUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_dc2c92f13a5b4fb99edfba29b9a81db2",
+      "statement": "The frontend is a consumer of backend AG-UI endpoints rather than the MCP surface, while the MCP server is documented as a separate machine-facing surface for MCP clients.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L12-L16",
+          "version": "repo-lines-v1:sha256:e1c9a5f5d70925f7936c5b6a5f70dec4bef366a1952713ba814ea204e208dd7c:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2E1MTRjYWQyYjU3YWUyYjM2Y2EzM2I2Y2UxZDE1NmNlNzlkOTY4YWEwYjM1ZDdmNWExYTE1NTJhMDYxMjU1NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjNhM2VlMDkwNTNmNTgxMTcwYmY5ZTJhOGZiMWVmMzdkMWI5NTVkZGI2MjdkYmRmYjhmODhjZGQ4M2VkYWQwOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTA2MzdkMGViYjc2NzBmMzliMzMzMGRmMGZmYjYyNzczZTBkNzliYTg5MGM3Yzc0ZjM0ZTIwYzBjMDIwMDZlOSJ9"
+        },
+        {
+          "resource": "repo://README.md#L98-L115",
+          "version": "repo-lines-v1:sha256:a6104047f70929c5c025f81d3921653a99cee8a9df9333e67b7a4f464a0b64da:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVjMzEzZDNjYjA2MjVkOTM0ZTI0ZDcyYTRkZTUyYjg3ZmE2NzU3MDI4MWIyOGZjNjkwZjA4YTI4YjNlOTJkYjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhMjcyYjkzNzA1MDI5ODgyZjZmZTM0YjUzM2M5NzUyNzJjMGVhN2YwZjQwMzU4YWQ0OWJlZDJjMGVjZjExZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNlYzc3YzE4OGNjYjM2ODAzYmFiYmU4ODkyOGZkMWYwMDBhYmQwNWJhMjY0NGI4YzEzZTM3NjI3NTBmNGMxZmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcyMTA2ZGE4ZDU4NWJiYzY3MTZlYjFlMzE1NzVkY2Y3MDJjMWQ2MmRjYTI0ZTVkM2JlNmRiYTk3ZmU5N2Q3OTYifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/README.md#L254-L266",
+          "version": "repo-lines-v1:sha256:1e112777ff8f2c148a1ed556374cd0c53ba87199580474d70990e1ec74381255:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc0YTM2MDdlNWQwYmJhYWM2NDdiOTViMTM4ODcyZTc4OTMxMDdiNjFlOWZiN2E4NDM2ZGMwNTc4ZTczMjgwMWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlNzRiYjI1NGRmYzcyYmQwZGUyOTAyNjU0MzU2ZTQ2MmE3YTNiMDVkNWMzNTFkYTJlYjk5YzdjN2RhMjJhNDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxYWZmMWVjNTNkYmUyM2RiMTAwYzEyOGFlZDM4NGYwNDc0YzRhMjRjMjI1ZDJhOWNlNWU4N2JkMWVmYzhhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczNGNmMzI1MGU0ZDA4YWY1ODY2YTFhMDU3MjJlZTc2NjY4ZGY5MmEwNWFkYTM3ZWQ3M2EyNGJjZjJmMTBiYjYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_eb94909559ae45cb802c904a707615e9",
+      "statement": "The FastMCP app is a second thin composition root that bootstraps telemetry, wires shared seams, builds the FastMCP server, registers MCP surfaces, and serves the MCP ASGI app.",
+      "evidence": [
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L1-L13",
+          "version": "repo-lines-v1:sha256:c2e0e579b7770a75f1378296aca766a6cc1c421e9a56e4e94dc085c33985addc:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyMjdhNzg4NzQ5ZjE3YjY1MDZiN2ZhYTI4OGUxNjcxOTFlZGRiOWI0YzFkMzgxMjQ0NTFlZDYxY2I2YTliOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiYzJiMGJlMDBlMGVjZGZiYWZhZDcyOTI0MDA2NzljN2FlYjExYzM5ZmQwOTczZmU4ZjUyNTE2YmRkNzVjZjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjRjZTgwODdjZTc0ZmQ0NzZmOThjMTU5OGZhMzk1MzQwYjU3YjllYzMzNDgwZDM5YWQwMDgyYjIyNmY4ZGY2MjYifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L203-L231",
+          "version": "repo-lines-v1:sha256:70bbf46a33e0c3bfd99b33cdb41ec775f0be387c030ab8315f829811381f2ba7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4ZDkwN2VjMGQzODNmMTNlMTFlYTNjODRkODU4Zjk5MTJlMmUzMWQ1MDNlNzlkYjlkMmEzYzMyN2QwOWI0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkZjQxMjgyMmNkMjY1YzI2M2NkOTU5MTBhNzQzZmQ0NDAwMTdkNTE1OWNlZGY0MGViMDRjNjk2MjU0YzQ2ZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5NzQwNDIzOWJiZGIwYjBjYzdjYTJlZjU2MzZlMDk1NGM2ZWQzNDg0NWQ5NTRjNGVlY2JiNmQ0MGRlZjcwZDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkNDEzNDBjYzIzOWExNTljZTliNjAyMmU5ZjYzMjI4MzJlMmVhZDc2Y2FlOWU0NzU0ZDIxMGViOGZiNmQ1ZTgifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L58-L99",
+          "version": "repo-lines-v1:sha256:0b430fdeb93983e2fa63d64d40448ec83f44329a1e0f070738e473ffce5af226:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBkYjNhMDZmNDNkM2FjZGMwZmIwMzA0Y2VmZjdiNDJlMGRhMWNmY2RjMjEzNjg0YTZhMjZlMmEwNTNiNmY4MWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzYmIyODZhOTc5MGUxMzMwNzYxOTEyNDI5MDcwOWFhZDRkNjAwYzgxNjZkYzFkNDA4ZDE4MDczZGExZGEzM2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdmNzBhN2IxNjg4MTgxMjAxMmZjMTQ5YTM1Y2RiZTI4Mzg5ZThhYmFmMDVlZGQ5NTM0MDFhYzUwZThlMTMwNDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImIxZTNiNjUzZTQ0YTgxNzM3OWQxOTI5MjQ0MmM0ODNjN2YwYjczOTcwMTdkMWFlYjc0ZTY0MTQ5ODdhMjM1YzEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_f082b95e07a8495780775eee273f3b27",
+      "statement": "The MCP app is now the only MCP surface of the product; the backend explicitly no longer serves /mcp, to avoid two different surfaces serving the same tool behavior.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/main.py#L136-L140",
+          "version": "repo-lines-v1:sha256:aaf05365ff459b21788a0524cc9431ca48c951f0c0fa0f356d07428eec9ee93d:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzQ2NjdhOWFkZGNjMjA4ZTQwMDFhYzQ3ZjM1YjI5MTJiZDhiZTRiZGY5MGZkYmRjNmFjZmEwNmY2NGNlZGMzYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZWM5MTE3Y2YyMDU1ODYxOTRhYmJlMGM0MTI4MWY3YjMzNThkOWZmZDg0NjBjYWNlYTViOWVjMzdhMGRiM2QzYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGEzM2I2MjQ4YjljZTRiOGQxMWU0M2M2NzA0NDM1ZGU2YmM1ZTQxZTk0M2YzMWJiOGM5ZjI4MGQxNTUzZTE1YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjIsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmExODYyYzE5OTY1M2FhMmJmOWFiYzUyNWFkMzFkZjIyN2IyNjUyYzIwMmM3NjczN2QxMTYwYmRiZTRiZTUyYiJ9"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L6-L10",
+          "version": "repo-lines-v1:sha256:8f282e80135d7fc72d46a8a6d099d0f863595b71afd52ffc5a8156c03a381646:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjJlOTA1MDc2NDQ1ODMwZWNjNmIxNmRiOWM4YWE2NDY0ZjBkZDE4MmEwNmE3ZjM3ZjNjODExMTc0YzRhYjljYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMGQ3ODRkMDc2YTY2NjA1NDRiZTViMTFhMzJlOTlkMGY3OTVhMWY0Nzg2OWE2ZWQ3ODAxMWNkN2NiOThlOTdlMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWNiYjIzZjVmN2NjMzBiODFlY2M0ZTFhODhkNjNhODA5Y2ExZWJhZDdiZTA1NmZmOWI5ODY2MzdjZjhmMGYxNSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_dbd2c60539f0495496a38a5ac42a80f5",
+      "statement": "Both server-side composition roots share the backend-owned domains module as the seam for domain inventory and tenant-aware domain specs, instead of the MCP app importing backend composition code or keeping a duplicate domain list.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/domains/internal/catalog.py#L4-L14",
+          "version": "repo-lines-v1:sha256:001979e65525109830cf25acd2979f1de7291191cdb9c6ea309f8bd031554d0b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA0ZDI1OWIxNDVlM2RkYmZjMjcwZDZlZjhjMmY0NTE4NWU4NzMzZWM0NGRmMzE5M2FhMGVkZDEwNDJjM2I0ZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ0ZGYyYzE0MmJjOTdmZGE1ZWQ0M2NhOGJiYThjOTdjZTM0MjgxMDRmOWI4ODVhOWNhN2JmMTRmYmU0YjA0OGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNhZjQwN2JmMzU2NGVlZjIyYzcyYWNmYWRmNzU0NTRmNWY2NWY0ZmQ2ZGIzNzQ1OTk3NzcwZTZmZDllM2M1ZjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIwZDY3YmExMTA1OTA0OGQ1ZTMyNmJlOTg3OTdiMTMwNTc2YjY5ZWUxYWE2ODljOWZjYmI1NzgyZDc1MzliZGIifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/domains/public.py#L1-L18",
+          "version": "repo-lines-v1:sha256:179d4a5ccb271e97a5c348afaa8255481820b5d08189f2e081afcd6d219044b6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk0MWVlNzBlMGI0YzU1ZWYyMmM2YThlOGIzMzQxM2ZjNjIwYjVmZjUyZjNjZjY5NjNhMzZmZDA0ZTcyNDQzMDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ3ODVhNzBlZTk4Mjc0YTZmM2I1MjgwYzYyOWVjN2Q2MTBlY2NiNzk5YWRjN2I5NWE5OTllYWFkNDhkOWFjYTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L34-L50",
+          "version": "repo-lines-v1:sha256:1d5719f0104eaf362de2250acbc47348573abae62ca50524a3a8933aba49f284:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ0MmVmZjA4MjVlMjU3MjliMjJmNjMyNzBmMzgwNmQzYjRkOGI4NjMxYjAzNGY0ZjhmYTM2OTM5ZGQ1MDBkMTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFiMTU4NjA2ZmRlMjRkMzMyZjZiNzgyMWE5MTZiNzQwNzNhZDc4YWU1YzM3MDgwNGYyNGQ2Y2U1YjdmNzAwZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNjMzNmMzUyNTAwMzM4YTQ5MGZiMTRhNDQzMGM4Zjg5OGUzNDE5YmEwYjJiZmZjM2U3YTFkZmQxMTI0NTc0ZWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_08ce02a1a9ef4ff59b9d08e552c0be3d",
+      "statement": "The MCP app derives its allowed grounded domains, document-resource behavior, and tenant wiring from the shared domain catalog in wire_registry(), so MCP surfaces stay aligned with backend domain topology.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/domains/internal/catalog.py#L90-L107",
+          "version": "repo-lines-v1:sha256:7e10eda1e974a5965576976263b762edf8abc4e65fb6e946e1ce95d3050bf893:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmNTE2ZDc2MTk5M2Q3ZjBhZDMwNGUyY2ZhZDEwMGNiMjAzNjAwNjIxNzAwOTk1OWM5N2FhOTZkOWIwNzFjMGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjViNGM4NDJlZjM2N2QzYjQyYTBhN2ZiYjJhMjk5YjNiZjIzYmUzOWU1Y2ZhZDM3MmU3MGEzY2M2YThhNjExNGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVhY2Y1YzRlMDcwMWU0Mjg2N2RlNjk2YjkxYmU1YzYxNWZhMzMzYzM3MjhkMzE5MWM4MmQwN2NkMWEzYTk4ODcifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L102-L137",
+          "version": "repo-lines-v1:sha256:3b6c443aec9e3cd27e1e25fb71dce92da3a90a9ce980f08daf4fc082464ece33:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyNGFmN2Q4NTE5MjdjZTkzODkwM2ZhNjFjODMxYTI3MjEzZjVkYWYyZTI0NDViMGM5NmY3N2ViY2Q5ZTVjYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhMzY0YjBiYWJkM2QwMWQzODIxZDg5ZmRmZmNjNDY4OTU4ZmI3N2NiYzQ2YmI2NTEwOGM2YTE2NmE0MzEwMGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhkOGU0YTEwZGM0NGE5OTRiMmI1MzZmZGY3ZmE3NDQyNGYzYzg4MDU4MWI3NjljOWE3ZjM5NzRiNjRkODVjNDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9cf1c4982aed4be799d103b8b7c7ae0c",
+      "statement": "The MCP app publishes its HTTP surface at /mcp/ and builds auth from the MCP app’s own base URL, preserving a stable public endpoint while advertising OAuth resource metadata for that dedicated MCP host.",
+      "evidence": [
+        {
+          "resource": "repo://apps/mcp/mcp_app/auth.py#L26-L36",
+          "version": "repo-lines-v1:sha256:84161a6ff0fe54de85b655ec0a2aae5722ca6ba71e7f9d03a6eab9cdebd98ec7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3NmVmOTUyMGM0MjRlMDc0Njg4NDdjZDNiOTE0NGM0MDM1M2QyNzQ5NTcxYzUyZTEzMjlhNGU3ZmRhMDRlZjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyY2RhMmNjYjg1OGQ2MWU5OGE0NDJjMjZjY2ViMTA0ZWZhYjIyZDY5OGNhMjMzZGU2NTExMTg1MGM4MTgzMGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI0MDI3ZDYzOWRkMjQ1MjBiMGE2MDI0MGFjZWE3MjA1MDQzNzY1MzFhZDZjYzlhOTc0OWE4NGI3MWI5OWUzZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1NTgxYjA1MmM2OTExOGI3ZGVmMDA0ZGViN2M5ZWQwMzAxMDY0YmM4MjFmYjUyOTU4ZGYzMTE1YTgxNjIxYzYifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/auth.py#L39-L69",
+          "version": "repo-lines-v1:sha256:e60fab7e8df868f8a1b70b997b6ca819cefe3a02be08efd92d6fee406b44490e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4MDI3NmRhOWU0MzJiZTNlMTMzYzNmMGVkZDg0ODczMjlhYTA2YTlhOGViMjViYjFmMTE3ZjVhNjNkNTAxYjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlkMmZhZTFhODU2YmZkNTBmMWM5ZGEzNjk0ZDFhZmY4YzM5ZDRmMzdhY2QwZDg4NTljNzE3OGRhOTU5NGU1ZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1NzYyYjIyZTk4MzM4NDRmNzhhMWM5MGNjNDU2OGY3NGZiNzgyYmIxOGE3ZjBlNTMwYjc3ZjEzMThhYzg4NGQifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L225-L228",
+          "version": "repo-lines-v1:sha256:df22f6c5700c28b622c1e0463a71da40b2e11a195f23d5457ee7f42333b9a81c:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDc2NWZkMzZkNjcwMDVjNmU3OTZiNjc3NDE0YThiOTNjOGE0ODEwYzUwYmMwY2RhNjAwYzQ2MjM2ZWFkNDZjYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTRlY2U4ZDhiMjY5N2NjMGIwY2U3ZDc3NDk3ZGY5M2EyYTkzN2UyYjBkMzNlYWFhMzg4ODg5NjQ5ZjMzMTkyOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGEzNmJkOTI1ZWY0NzlhNjFmODUyZDFmZmM5ZWY4YjNiYjk5ODRjMmM4ZTYyM2FhYzlhNTg2MmViZGI2ZGJhYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYjQyOGQ3MzllMzk1ODMxZjJmNWQ1YmE0NDZjOWFmYTRjYWY5YjAzODFjNThlOGJmMzNiMWQ1N2M0OTkzZGE0ZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_8c70e402edf94108bc6d53757b394006",
+      "statement": "Azure deployment keeps backend, web, and MCP as separate Container Apps, while hosted assistants are deployed separately again as Azure AI Agent services.",
+      "evidence": [
+        {
+          "resource": "repo://azure.yaml#L27-L85",
+          "version": "repo-lines-v1:sha256:e3ae40f7a6f765ad8ea3174ef564d1da368b53a2bde86398cb327342a0d6ce19:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmVmOTRjODNlZmNmM2ZmZjA4Y2ZjODVhN2Y2MmExNGRmZTU1ZTQ1ZGJhN2Y0ZjVlNWU2ZDliODk0MjMyNjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxMmJkMjkzMTA3MjY2MTgwMmYzNGViOWZmYmFhODBiY2IwMmZkYzIzZWRhMmRjMzZkNWFlOTViOTdjNTcwNzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU0YThjNDMxYTYyOTlkZDBiZjExNTYyMmRkZjAxM2JmODgzYzkyMTYwYTY3OTE3MDJkMTEzNWJiZTI4YzUxNjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0MDM0ZjRlZDc0NjNlMGZiY2M5YzgxYjkwYWE2NDRkMmRjMjEwZDY1MGVmNTc4YWM0MzYwNGY2MjQwM2ZmY2IifQ"
+        },
+        {
+          "resource": "repo://azure.yaml#L6-L26",
+          "version": "repo-lines-v1:sha256:394869dbb5ca3e2cb1a0dcad56e44b5853ca2e951cbb9dfc6049f69d999a97fa:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhNzNmY2NkYzk5ZWE4MzU5NjdjN2RlZTdlZmJlZDFmM2NhODcyNjBkOTI5MzE4NTBmZGQ2NmRhOGNiMTJmMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiMDBjNDYwMTE4MGIxN2Q5OGQ0NTE0Mjg0OTc4YzI0MGRlODZkMzRjYmVkOTdhMWMwMzdhNTMzMWRjNzMyYTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdmYjc3MjRlNDAwY2U0YTBhMDYyY2ZhYzcwMzU0MTc4YmVmYTE5NTA2NTdlYmQ1NGE3Yjg3MjhlNTM1OWQxZDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE3ZWViMTRiNjFkOTBiNDkyYjRkN2YxMzA1YjcxZWEwMWFjYzFlNzk5YWM5ZGYzNTlmN2RjMTkwZDYxNGUzNzAifQ"
+        },
+        {
+          "resource": "repo://infra/main.bicep#L89-L125",
+          "version": "repo-lines-v1:sha256:308d19e30f7e4865c2bad373a3af8e2827765da136d17c14da223cec7175f9ba:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiNTMyMzgzMjUxYTIwY2M2ODAyMjU2Mzg5NmIxZTUyMjk0ZDk4NWI5NzY0MjkyMDBiNDE3N2EyYmJjODhmOTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVmYzUwMzY5YjUyMWM0ZGM0YmIzMzNiY2QwMmQyNWMzMzA4YmVlYjdmYzYwNGY2ZGM2OTQyYTRmYWUxMWYwYWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e34444f661354ae68d2134dabf55a31d",
+      "statement": "The MCP container gets its own public base URL and shared data volume mount, and is intentionally constrained to at most one replica because MCP HTTP transport keeps session state in-process even though scale-to-zero is allowed.",
+      "evidence": [
+        {
+          "resource": "repo://infra/containerapps.bicep#L567-L617",
+          "version": "repo-lines-v1:sha256:2c100bf532430a308149dcf775e171152b4dea64282ab94abcda4df60efc1c45:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ0YTg0Yjc2OTZjOTkzNzcwMDAzMjY3MDNiMzdlOGU0ZDk0OGYzZmVjYmJmZTkwNDA1YzlhOGY0ZTAyOWIwYWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyYmRhNzI3MWQxMzZhNGNhZDIzY2VkYzlkMDI2NmVhM2QzY2EyMDM1MThmMzcyNmYyYjE1YTRiMzFmMjlhZjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBmYzVmYWMyNjAwMzBjNTBiMGIzNThhNzUyNDYzM2E4YTkwMjcyYTNlNWY4NTUxMDhmNTZmYzA1NmJlODM0NmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVjODlhZDQzYzg5M2Q3OTdlYWQwZmE5MmVmYTNjZTM3YTU1NzlmNDg1MDQyMjU3YWFmNTUxM2M1YTRhYjc3YWYifQ"
+        },
+        {
+          "resource": "repo://infra/containerapps.bicep#L623-L633",
+          "version": "repo-lines-v1:sha256:b0a2609555b5b1443ae53ea0b081bc69168b46181c194556c520a5ea0b797cf0:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkM2IwYjBlMjFkNGYzMzQ0NDEzMTcwZmMwODBmYjEwZGM4OWY1N2ZhMzMxZTRjMWIyYWNjODQ3NDI5ZTFlZmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY2NDlhYTQ4YjZiOTFkMWZhYTAxMmU0ZGRlMWFkOTQ4MmYzMDYwZGM3MDZmNjliMTgzN2FjZGU1NzFlYzFkYTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZiNTgwZTk2NGY4M2E0NzNmNDNkNDQzODQ2Mjk0OWQ2OGI1NjAwZmRhNzg3ZjE2Mzc0NWQwMGRlODljYmYzNmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_185f2314061f4d0686bde6a3e3d782e0",
+      "statement": "Boot order matters: telemetry is configured first in both backend and MCP entrypoints, tenancy must be installed before the backend serves requests, and the MCP registry must be wired before MCP surfaces are registered.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/main.py#L32-L40",
+          "version": "repo-lines-v1:sha256:06f40f1e80f430fa775ba5bd174b492581e6d96c9a8b6987304014f7f0b6ff5c:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGU5Njg4ZjBhNDk2ZWU0ZDFlOTQzNGVkOTA5MDFlMzk2NzI4ZmRiOTRkZTViNTRjZTg4ZTJlODRmM2MwNDk5MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTVjMWM0NjJlMmEzOWQ3NDc1OWY1ZTFiMTI2Zjc2ODNhMmI3MzAxMThlMThmNTEyMmIwOGNlZGVlYjY1MGUyMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmUxNzJlYTA0ZDE5ZTgzNThhM2Y5MDY4YTViMGY5OWE5MjQxZTRhOTY0ZjU5YmE2MjM0NzllNWFhNzA1NWFhZSJ9"
+        },
+        {
+          "resource": "repo://apps/backend/app/main.py#L78-L86",
+          "version": "repo-lines-v1:sha256:aff5d360dba9faec5a1887d1ea96b2f2e12e110f94d461d56cb39d78097fb723:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWI0NTVjMDk4OGZkNDQzNTQxNDdkNGY0MjRkNDM3ODkyNDExNTkyODM2YTkxOTg4MmE5OTA0NTA4NWMxNDlmZSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTlhNWY4YzMxOGJhM2JiMzdlZDk1M2ZiZTVkMDIzOTQ2NTQwYjFiZTJiYjJmOTlkZWFiNDc0NGE3ZjUxMDI0MSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDRhZGQ4YzY0NDMzMzk5NDhmYmY4ODU2NjgxZmU1NTIyYjc5ZTY0ODkyMWRmNWIyMzQ2NjcxMDEzZjAwY2VmMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjFlOTk2MzkzNTFjN2E5YTM2NmM2N2VjZTRmMzMxZmE5YTJkZDUzMDdlZDU2M2ZhOWQ4OTUxMjdiMDBjZTM0OSJ9"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L102-L120",
+          "version": "repo-lines-v1:sha256:10e789ba694208997c1d816deec4dbb3f08190d1f59d366edce6ca1496c33da8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyNGFmN2Q4NTE5MjdjZTkzODkwM2ZhNjFjODMxYTI3MjEzZjVkYWYyZTI0NDViMGM5NmY3N2ViY2Q5ZTVjYmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVhMzY0YjBiYWJkM2QwMWQzODIxZDg5ZmRmZmNjNDY4OTU4ZmI3N2NiYzQ2YmI2NTEwOGM2YTE2NmE0MzEwMGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNkYjk1YTVjYTk3NzM2MzU2NDM2YzQ3YTQzMjM0ZjY3NjE1YjRlYTFjZmIyYTYwMTYwN2Y2ODMxODE0NzcyZGIifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L225-L227",
+          "version": "repo-lines-v1:sha256:7c233aee67beb5f012bbe34f2eafc4f363e4d7ab3be4c073d6b47218e4712320:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDc2NWZkMzZkNjcwMDVjNmU3OTZiNjc3NDE0YThiOTNjOGE0ODEwYzUwYmMwY2RhNjAwYzQ2MjM2ZWFkNDZjYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOTZkYTY0MzU1YjdhZDM2NzM3YTViY2QxMzllYTE0NTNiYTc1N2QzMmVlYzgzMmIyMDg0NzY0YWE0ZDUyOTExZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGEzNmJkOTI1ZWY0NzlhNjFmODUyZDFmZmM5ZWY4YjNiYjk5ODRjMmM4ZTYyM2FhYzlhNTg2MmViZGI2ZGJhYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGVkYTdiZTA3MjA0N2VkYTdmMTVjZDdlYTk4ODQ2MmU5YjQyNTcxN2Q2M2VhN2Q2NGMwYTZiNDNlM2E5MGYyMiJ9"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L58-L61",
+          "version": "repo-lines-v1:sha256:bea05abba1c8b55ea4b22d1a16917734fc346ddc9f5fba78ea3ed8dcc24c2934:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGRiM2EwNmY0M2QzYWNkYzBmYjAzMDRjZWZmN2I0MmUwZGExY2ZjZGMyMTM2ODRhNmEyNmUyYTA1M2I2ZjgxZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDY5Y2UwYzAxOGYwYWUyZGE3NTBiYzZjMjgwYjM1NzJjNzFiNjkyNmQwYzZjYTZhMmM5MWI3NzljN2M1ODlhNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2Y3MGE3YjE2ODgxODEyMDEyZmMxNDlhMzVjZGJlMjgzODllOGFiYWYwNWVkZDk1MzQwMWFjNTBlOGUxMzA0MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjZkMmI0OWFmNDk4MDlmZGRlMTJmMTY2NjA5ZDMyNDg0YzA0ODBiM2IxMjNiZjFlZDg2Yzk5MjUxZjM5YTFmMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_5b45dada1c6f47acb51a711ca0526299",
+      "statement": "The MCP app intentionally does not enable browser CORS because the browser frontend talks to the backend over AG-UI, not directly to MCP.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L12-L16",
+          "version": "repo-lines-v1:sha256:e1c9a5f5d70925f7936c5b6a5f70dec4bef366a1952713ba814ea204e208dd7c:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2E1MTRjYWQyYjU3YWUyYjM2Y2EzM2I2Y2UxZDE1NmNlNzlkOTY4YWEwYjM1ZDdmNWExYTE1NTJhMDYxMjU1NyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjNhM2VlMDkwNTNmNTgxMTcwYmY5ZTJhOGZiMWVmMzdkMWI5NTVkZGI2MjdkYmRmYjhmODhjZGQ4M2VkYWQwOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTA2MzdkMGViYjc2NzBmMzliMzMzMGRmMGZmYjYyNzczZTBkNzliYTg5MGM3Yzc0ZjM0ZTIwYzBjMDIwMDZlOSJ9"
+        },
+        {
+          "resource": "repo://apps/mcp/README.md#L254-L266",
+          "version": "repo-lines-v1:sha256:1e112777ff8f2c148a1ed556374cd0c53ba87199580474d70990e1ec74381255:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc0YTM2MDdlNWQwYmJhYWM2NDdiOTViMTM4ODcyZTc4OTMxMDdiNjFlOWZiN2E4NDM2ZGMwNTc4ZTczMjgwMWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlNzRiYjI1NGRmYzcyYmQwZGUyOTAyNjU0MzU2ZTQ2MmE3YTNiMDVkNWMzNTFkYTJlYjk5YzdjN2RhMjJhNDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQxYWZmMWVjNTNkYmUyM2RiMTAwYzEyOGFlZDM4NGYwNDc0YzRhMjRjMjI1ZDJhOWNlNWU4N2JkMWVmYzhhNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczNGNmMzI1MGU0ZDA4YWY1ODY2YTFhMDU3MjJlZTc2NjY4ZGY5MmEwNWFkYTM3ZWQ3M2EyNGJjZjJmMTBiYjYifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/main.py#L206-L224",
+          "version": "repo-lines-v1:sha256:f7a59165e2e44b189d5cdde66383f7e7e2d40aa0dfa6f7a2862ab293a3d71130:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2YTcxNTI1NzJlZTg0ZjEwOTA2Yzc0YjlmMmE5MjQzNGRkYWIwZTNjNDI4MTNiMDRlNTk3ZWZjZWM5NTFiMjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUzYzI0Y2RkMjkxN2JkZGY4ZGMyMzgxYzA3NDliZDJmMWQ3ZGVjM2E4ZDg5YzZhZTU5NDM2NjcxZWNhNDgwNDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdjMjMzYWVlNjdiZWI1ZjAxMmJiZTM0ZjJlYWZjNGYzNjNlNGQ3YWIzYmU0YzA3M2Q2YjQ3MjE4ZTQ3MTIzMjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9f488626d35a4b22a972c881c5283288",
+      "statement": "The frontend and backend each maintain a domain registry contract, so adding a user-facing domain means updating the backend domain catalog and the frontend domain registry together rather than hard-coding routes ad hoc.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/domains/internal/catalog.py#L90-L107",
+          "version": "repo-lines-v1:sha256:7e10eda1e974a5965576976263b762edf8abc4e65fb6e946e1ce95d3050bf893:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmNTE2ZDc2MTk5M2Q3ZjBhZDMwNGUyY2ZhZDEwMGNiMjAzNjAwNjIxNzAwOTk1OWM5N2FhOTZkOWIwNzFjMGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjViNGM4NDJlZjM2N2QzYjQyYTBhN2ZiYjJhMjk5YjNiZjIzYmUzOWU1Y2ZhZDM3MmU3MGEzY2M2YThhNjExNGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVhY2Y1YzRlMDcwMWU0Mjg2N2RlNjk2YjkxYmU1YzYxNWZhMzMzYzM3MjhkMzE5MWM4MmQwN2NkMWEzYTk4ODcifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/lib/domains.ts#L1-L15",
+          "version": "repo-lines-v1:sha256:0faf8f242a172d8fc0a6f1bc011a52d57cc0446973aeb31969ef77fa4a692e9b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxNDM3MTkyMjE5NTQ3ZDE3NWRmYTE3ZDUyZWY3MTFiNDZmMmRiZDliZTdjY2QwOWU1YmU0Yjc2YjNjY2FmZDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlMGM0MjIxOGMxNTI1Y2RjNzZiMzZjMzM0NjA1OGZlZjFiYTQ0YzAwNjljZDljZGEzMzhhMTJmOWU0ZTlhOGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhmYmQ4ZmY2YTA4ZWQ2OTE2YWIwNWRmNWYyNDA5OWQwNTRhMmE2M2FlN2I5YTkyMzM4ZGEwYjdmOWU2ZjgwZmQifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/lib/domains.ts#L43-L118",
+          "version": "repo-lines-v1:sha256:9052c27cd335a7dbec14aa424414c899e67317dd0fbf4c1837b5f554fa09b8bc:eyJzZWxlY3RlZExpbmVDb3VudCI6NzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlNmYyN2FiYzc2MThjMjdiYTgzYjVjZjZhYjFiM2NjYTM3N2Q4YjA4NThjMjExMWQxNzQ3YmNhNDM2YzFhMTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwOWYwOTk2NjIxNGFkYTVhYmEzMzMwZjRhYTM1NDVmOGU1NjY1MDBkMjJkMGUzZGI3YTNhYWZjMmZiNDY0NTIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlNGQxOWFjMDI3ZTE4NjdkYWI3YjZjNDZhZTQzMDM3NjA4NTM0MGViNmIyZjhjZjA3MDczN2E3ZWQxMTc2ZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_967c6200e4f24677a80fe3984c2c0e88",
+      "statement": "Repository tests and gates explicitly cover these runtime boundaries, including MCP auth and tenancy behavior, instrumentation coverage, durability and image layout, and backend route normalization for /mcp path shape.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/tests/smoke/_capture_routes.py#L124-L128",
+          "version": "repo-lines-v1:sha256:0ef74f06a05e280808a629e7f28566ac7a55fe11e83bae322ad9e626778dd226:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjQyM2E3YTkzMGE3NTI0OTVkYmVhODZmYTM3NTczMzM2NzY2ZTZkNjc1Njk3NTM3MTcyOGMyMTBlYTE0NzE3YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDAwMDZiOTRjNWIyYmRkMDJjZDY1OTZiZDczNzVkNTE2MWE3ZjYyODhlY2QyOGFmNDZkYjkwZDk0N2E2ZTVhMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjY4Mjg1NzYxNGZlNmU2NzJjZjkyNzk0MmVhODdhODhmNGUxMDAxNmIxNzc4ZjA2YTYyOWRlMzk0ODQ4NWYyYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMjI3ZmE1ZTNjNDQ4OTMwNTNhZTZhOGM2OWVjZDgxMjI1YTA0MzZjNzE4ZjJmMTQ2OGM0YzE5ZTNmMjgyNmFlMCJ9"
+        },
+        {
+          "resource": "repo://apps/mcp/README.md#L268-L325",
+          "version": "repo-lines-v1:sha256:313694c7bc6d551d8d698a8b541b339d38c10b16aebf19db5b8d5c69fad03c86:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkOTJiYzllY2MzYmI4ZDU3MzIxZjIxOGJmNDNiOTI2YTg3ODFjZjllYmY4MzlhOGZiNDI0YjkyYmMzZDM2ZTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzNGQ3NmIzZmNhMTFkNTc2NjQ1MjQ0ODE4NTZjY2Y0NmExYWE2ZjdjNGNhODljMTQ3ZWJhODY2YWIyODg2MTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM5NTI3YTVhNTJjM2YyYmMxOGE4NTFiNzA3ZDQ5OTkwNDkwMWExODI2YmU5YmM0OGM5Nzg0MTJkMTQ0ZDE2MjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhYzhmMTI3MWExYWFmZDdmM2E4MzgxYTc3ZDcxM2Y1MGZiYTE2NjRlNmNhOTM3MWQ5ZDYxOWIwZjljMTY2OWQifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-09-02T18:24:34.393Z"
+  }
+}

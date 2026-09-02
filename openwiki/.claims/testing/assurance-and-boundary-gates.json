@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:070baaa18a0f6d870a984b3847edd2f70167225891dee713c583502aa123b43d",
+  "claims": [
+    {
+      "id": "claim_79bdd03adc43464e822f8c5d27d48f97",
+      "statement": "The CI workflow is the merge gate of record for this repository: on pull requests and pushes to `main` it runs backend lint plus a large set of deterministic assurance tests, including wiki fidelity, OKF authoring/profile checks, publication contracts, route snapshots, architecture/import-boundary gates, MCP discovery/auth/drift gates, and tenancy/access-control tests.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L1-L18",
+          "version": "repo-lines-v1:sha256:a5283bdf52007048a09aa7bf9a8cad91a6be0282e79d86f086d0c61d356d5633:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2ZTFiMzJmYTA5MDc5YWUyZjAwMDFmZmYwZWNhMjdiNDk4NTk1N2Q0ZWI0ODU3OTI5YjNjZjA1OGZhYWU1NDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjMjJmNmFkNTMwNDkzYTdlZTFmNDhmZDA0ODk1YmI3Mjc0N2ZhN2IyYWExZTg5MGUyZmRkMTVhYjc0YmU4NGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA5NDA2MWM2ZmVlZDA5NWNhYjRmMzE0ZTY0ODUwMDhlZTI0NTM0NmM4ZGEzMzYwNmIwMzNjZmM0MTgwMmJlNDIifQ"
+        },
+        {
+          "resource": "repo://.github/workflows/ci.yml#L135-L191",
+          "version": "repo-lines-v1:sha256:ca3de8e2e688c7679194d5776c42cae903a36b890af015275e1cdca167bd9a88:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5NjhmODEzZmJkNWMxMjU0OGNhZWYwMGE0OWEwMmQ0MzE1NmE0NTI0ODVkOTc2NWVmY2Y1OWNhOWY3ZmNmMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2OGE3MzdiYjg1YTk5NDA0YWNkZGEwNmIxYTU0OTQzMGRiNjE1MzIyMmI5ZTZjOWZhYTcyNTJlZTA0YTE3YzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3OGYzZWU5OGRjM2Q0NGM5YmYwNGNiODM3MTdlN2Q3MDNhOWNiNDY3NjQ1MjM3OTZiOGQzOTNlNjgwNGQxNWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0NDI1Y2QzODBjNGE0NjQ5NzQyMGU1MjY3NWJmZGYyYmY2YWY3YzRlMTBkZGEwZTRlNDMzZDE0NzIxMzYyZDgifQ"
+        },
+        {
+          "resource": "repo://.github/workflows/ci.yml#L220-L280",
+          "version": "repo-lines-v1:sha256:c6af6590726d877fb0099ae65f01f707031b2d8c71464749e2a8b475c5e78388:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwNGRmMDNkMzk1N2JmMWY2YzIzZjVhNzQyOTg4NTlkZDA0OTExN2YxZDM0MGU3ZGZmOTRiYTFiMzE2NjI3NWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlMWU2MGNkNjhhZGQ0YzBlZjZhZTBlZjdlODYxMWE3MDBkYWZjODY5M2NkODMzYWU1M2I2YmEwNTFhN2IzMDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiMThiYzZhYmFkNjU3YzA2NGZjYzhmMzE5ZjFiYmNmOGQ1Y2M2YTJjNTlmNzdlOTMwYzRkYzY2ZjRmNWFhMjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE2NTU1NmNiMGM2ZmZlMWQ1ODE4MGQ3OWM5ZDA3NDQxMTBkOWYzMDA2ZmQxYmY1ZDc4ZWNiODJiODg0MTBkODYifQ"
+        },
+        {
+          "resource": "repo://.github/workflows/ci.yml#L34-L39",
+          "version": "repo-lines-v1:sha256:17c4f447079bfab874263bdf7e13223edcd9cbd7ea04a866d18ce88bce2b41bc:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTE2ODM3YjNjZjY3OWE5M2E5NjFiZGYyNGMzNmE4MDc0ODI5ZTFkNzc5N2QxOTE3YWY4ZDI3OTZkMTVkMzdhYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg3YTk3OWRkOWVhZDFkOGQ5MTc2ZDFmYTBlODNhYjYzOWUwYWZhYjZlMGU1Y2ZmNDlhNjQyNzg5ZGU0OGIwNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjM2YjFmZDM2MGNlOGY2MTVlYWJmMjBkMTNlYWQzZDA5MTk0ZTk4M2JhN2ZkNWQ1NDEwYmI1MDMxNDg4MDM4NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGY3YWE1OGU1OWE4YTk3NDY5N2IwNjUwMWJiZDNhYjg4MjJjYzg0MGEyNTk3YTU3ZTgwMjY4Mzk2NDg4N2M0NyJ9"
+        },
+        {
+          "resource": "repo://.github/workflows/ci.yml#L80-L107",
+          "version": "repo-lines-v1:sha256:ecc08c09ac9a6d5f88c0600d7fa48e7f1fa863f20cd498eaf5b23206a0570a78:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmYTFkMTFkZWZmMmVkOGJmZTI0MjIyN2MxNjdhYTBlZmJmOWJmN2QyODc3OWMzN2Y5NjMxNjZmNDU5MjRiZmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzNjdjYTgyN2UxOGFlNjE0ODM4NmQwNTM4M2UyZWRmMjNhMzdjYmNhNjU5ZDE5NzhkODNiZDg4ODdhMjJkNzciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJmNjViYjI0NTAyM2M0YjFiNTI1MjNkNTNhZmU3MTY5MmE0NDg0OWI5OTI0ZTk1NmZkNWU4YTgwYWUxMGM4NjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY3MTQ3NjFhM2JlMjI2MTlmY2NlNDQ2MDBmMGRlODU5NWRiNTk1ZjA3ODlkYzdmZmJhYTAyOTc2YjFiMTU2MDgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c74bb949d2e04b54b6259f19ec151a9b",
+      "statement": "`scripts/gates.py` deliberately derives local gate execution from `.github/workflows/ci.yml` instead of keeping a second hand-maintained list: it parses executable `run:` steps, respects job and step `working-directory`, skips setup-only commands, defaults to the offline deterministic `backend` and `mcp-app` jobs, supports filtering and listing, and reports missing local executables as loud skips rather than false greens.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/gates.py#L1-L22",
+          "version": "repo-lines-v1:sha256:b10692f324164d8cafcc03cc84574acde3d4f4eb1dc6a9f22a3dd768d597d68c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2ODJjYmRiNGM4YjA3NTE4YmY0ODZjNTg5OTBmYzM5MTc4M2FhMjBhOTE2YmZiMjdhZDIxMWViMWQ1YzM2NDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMDNlY2RkNGE0ZDEwZjE5YzczZmQ0MmZkMTI0MzdmZDMzNTRhODI2ODE2MDVkYTUyNTVhOTdhMzkwNjhkYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1YjZlODcwNmI0MzA0N2YyYTZkYjY3ZjEzMjYzODU5NTYwNGU2N2YzNjk2Njg3NmNlMDE1OGYwMDUzZTZiZDEifQ"
+        },
+        {
+          "resource": "repo://scripts/gates.py#L100-L136",
+          "version": "repo-lines-v1:sha256:68c2da46ce80a7312a4f616b456c042c67367bfd572ede5b1b4a6f27b23d73a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzNDc2ZTAzODNkMDk3NmJmZDNjMTM3NmI2M2EzYTk3OTA4ODYzMjczZjE2MGQ2ZmI5N2E1NzEwM2MwNjkxZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2MjMzYjNmZmVhMzJhMjNkZjUzMDY1MzQzNDhmMmRlZTc3NmE1YTZmNzRmYjUzMzE3NWRkYzUzOWE4ZmU0NjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiMmYwOGNkZjBlNTY5MDg5YmMxNzRlMDMxMjRhMjJhYzI5OTIxOGRiZDA4OTRhZTU4MDMwZDBkMWFkMTFhNzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkNDEzNDBjYzIzOWExNTljZTliNjAyMmU5ZjYzMjI4MzJlMmVhZDc2Y2FlOWU0NzU0ZDIxMGViOGZiNmQ1ZTgifQ"
+        },
+        {
+          "resource": "repo://scripts/gates.py#L35-L50",
+          "version": "repo-lines-v1:sha256:a784e8c3e6c7740a4ebf9df0f7ea5deb17f765584e1faea1f5f772c11660ee0f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxZTY2YmJhZjc3MGJiOWQ3N2VhNGQyZGJkYjdjMDU5OGY2ZDIxNTk1NjA3MGVjZDFiN2YzY2RmZjNkNTFjODMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxNmJjNDJiNGM3OWNmNTEwYWFkOWI4OWE1YzlmZjkzYjkyOTVjMzk0NDg2MDZhNDI3NDczMzhhYzliMWYxNjEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRiZDJlNjBkMDFiYzYwMDM1OTQ1ZjBkZDIxOWQ4OTYwMDBkZDQ5ZWI5ZDRjNGY0YTEyNDdjNDRjNWJkNGY3MWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3YmJmM2Y4ZGY1MDk3NTM0ZGZiYTI3ODEzYWIwOWUyNjJjNDZlMTczOTcxNTNhMmVhMzc4ZDEyYzhmZjljNjMifQ"
+        },
+        {
+          "resource": "repo://scripts/gates.py#L53-L79",
+          "version": "repo-lines-v1:sha256:8ec7c9d1b327778e157b6ef4c10ec6bf719224c329c012ebc2355afc9610a307:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiNjU3NjQ2OTMwNTM3ODI1NjhjMzUxYzA0MjE1Njk1OTdiMGE1MjdjMmU4M2RlYzIxODM1YTcxNmY0MTdkNmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1NzU3NGNmYzVjZTgxNGExYzM4NjdmMGE2NTNmZmUzMGJiZDU1ODI1YjVkOTc4OGJhY2QxNjViODhmNjUwOTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJhZTZjZWQxYTJjZjYzZDUyOTIxMDIzOTljMDVkZjRjMjU5Nzc2NzY2YTY4YTllZDdiNjBiY2RjYmU5OTM1ZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0OGQ3NDgzZDA2MGYxNzIyZTI0NTM2ODg4MzM0MjU2YjU0OTBlOGJiZTg2OTgyMDY3NmNhOWVhZjM1MDljYzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d25328fef5124a3aa3f70ae8bac6aaba",
+      "statement": "`apps/backend/tests/architecture/module_graph_test.py` is a refactor-honesty gate that assigns every Python file under `app/` to a target module, builds a cross-module import graph from the AST, fails if a file is unmapped, and fails on any newly introduced cross-module edge while naming the files that created it.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/tests/architecture/module_graph_test.py#L1-L19",
+          "version": "repo-lines-v1:sha256:8df33c2d6032334cd666cdf0cc268ce96a7c5042952ff701d646e9741e3e33ab:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcyNGE2ODQ0YjgxNGJmYjMxOTUwMTg0ZjUzNjE2NzM4N2UxNWUxM2ZmOTYwZWFiYzBiYWZhODVmYWY4YzJiNTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMDNlY2RkNGE0ZDEwZjE5YzczZmQ0MmZkMTI0MzdmZDMzNTRhODI2ODE2MDVkYTUyNTVhOTdhMzkwNjhkYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1YjZlODcwNmI0MzA0N2YyYTZkYjY3ZjEzMjYzODU5NTYwNGU2N2YzNjk2Njg3NmNlMDE1OGYwMDUzZTZiZDEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/architecture/module_graph_test.py#L107-L149",
+          "version": "repo-lines-v1:sha256:95ff0970dd683c880a747cfdf12844905675df6379585059ee01fdd43ce7543f:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExZmI1YWQzOGI3MWNmZTdkMTczYTdiMTA2YjY5Y2VhNjU2NTQyMTExNGFiYTA2M2JlMmQyMGRiYjkxZTc2Y2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVkMWQwYTFjNDJjMzc5MGFjYmYyODk5Yzk2NjU2NzdkM2QwMGM5ZDBlMzlkMDc1ZGNhZTVjM2IyZDVlZWNlNTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMxZmEyYWJmZmZhMzNmN2VkN2IyZGFiNTVjNzIzZjJmZjMyMjk1NDkyZmJkMjliYmYxMDBmMTk0YzE2N2YxNDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0OGQ3NDgzZDA2MGYxNzIyZTI0NTM2ODg4MzM0MjU2YjU0OTBlOGJiZTg2OTgyMDY3NmNhOWVhZjM1MDljYzkifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/architecture/module_graph_test.py#L152-L199",
+          "version": "repo-lines-v1:sha256:c6bf50f9180760fb77182aa7741cdc18285453f7d792c87403d8883da99c0b4c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMzk3OTMzYTI0YTgwMWVlOTIzMzI3YmQ2OWEwMTA0OWMwNzc5MTUwMjFjZjJlYzM5ZGRhNGY4MWFhODM3ZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2MjMzYjNmZmVhMzJhMjNkZjUzMDY1MzQzNDhmMmRlZTc3NmE1YTZmNzRmYjUzMzE3NWRkYzUzOWE4ZmU0NjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE4NjVkZDNhZjM1YWY5NjEwNTM5MTMxZmJjZTAwMGVlNDZlZjg2OWIwNmFjYTBmMjYyMmU4ZWM5NGQ4NzhjZDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkNDEzNDBjYzIzOWExNTljZTliNjAyMmU5ZjYzMjI4MzJlMmVhZDc2Y2FlOWU0NzU0ZDIxMGViOGZiNmQ1ZTgifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/architecture/module_graph_test.py#L33-L45",
+          "version": "repo-lines-v1:sha256:b508b7473de95799a8c98c05a39b5d305dfda91f72c847b21eed7ee47e2c6edc:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1MTNjZmQxOWFiNjEzMThkYmRlNWU1YzRlNzhjODkxZjVmY2U2NzAzYWRkMzVlZjA3NzU1NzBlY2ZlNTQ5YmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExMTBkYTY4OTE1ODU4MDBhMDdkNDY4NWE3NzQyNTVhZWZkOGIzN2ExMmI1MzhlNWIxMWZkMjZiZDM3Yjc5ZTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVmOWFhYmMxY2ZhYTYwZWU0NDc5Nzk4YTlhODRiYjg2ZDBiNWVlMWFhNTdlMDkwNmY5ZmFiMjMxYTk5ZjYxMDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQzZTg2OTRkNmI2NDM2N2E1NDk4Nzg2MzQ4YWY1MjVjYWI1ZjRiYzU4ZjA5YmVlZWQwY2ZkMTczNDA3YTAxYjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b4c87f14572542f1a06f4f3e11d1bd41",
+      "statement": "`apps/backend/tests/architecture/proposer_read_only_test.py` enforces the architectural invariant that the proposer drafts but does not publish: it scans `app/modules/proposer` with the AST and fails if resource-writing functions are imported or called, including direct SDK writes, alias-based writes, or `getattr`-based indirection, while still allowing read/inference operations.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/tests/architecture/proposer_read_only_test.py#L1-L18",
+          "version": "repo-lines-v1:sha256:b49038e0c273bfa7372f3f812534573cc934a4124552015a149a811b1348e676:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjODI2MzZkMzljOTEwMTQ3MGM1MGNlMDZjM2NmMDNhNzk0ODg1ZTcwMzMzMzU2NDAyYTVmNjEwZTg5YWIyZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMDNlY2RkNGE0ZDEwZjE5YzczZmQ0MmZkMTI0MzdmZDMzNTRhODI2ODE2MDVkYTUyNTVhOTdhMzkwNjhkYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1YjZlODcwNmI0MzA0N2YyYTZkYjY3ZjEzMjYzODU5NTYwNGU2N2YzNjk2Njg3NmNlMDE1OGYwMDUzZTZiZDEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/architecture/proposer_read_only_test.py#L109-L149",
+          "version": "repo-lines-v1:sha256:e450df5c675cb366d6c7026f6cdbc9f7be13936de425f0e60547513c0a530627:eyJzZWxlY3RlZExpbmVDb3VudCI6NDEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMzk3OTMzYTI0YTgwMWVlOTIzMzI3YmQ2OWEwMTA0OWMwNzc5MTUwMjFjZjJlYzM5ZGRhNGY4MWFhODM3ZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2MjMzYjNmZmVhMzJhMjNkZjUzMDY1MzQzNDhmMmRlZTc3NmE1YTZmNzRmYjUzMzE3NWRkYzUzOWE4ZmU0NjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc0ZTJlOTIwMDY0Mjk5NWFlYzMyYmU3NzM3Y2U1YzM5MzEyOThlY2Y4YWVjZGI2Y2QxZDhhYzU2MmEwMTA0NjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkNDEzNDBjYzIzOWExNTljZTliNjAyMmU5ZjYzMjI4MzJlMmVhZDc2Y2FlOWU0NzU0ZDIxMGViOGZiNmQ1ZTgifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/architecture/proposer_read_only_test.py#L28-L49",
+          "version": "repo-lines-v1:sha256:ac194962f797f0274aa4f5d13b52e6e0ea8a9489861abc04c354ccdb00ff05dc:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlN2RkNDBhN2QwZjFmY2RjM2MwMWYwYzNkNzdjMTMwYTE4MzJkNzBmNmQ5NmNiYThlYjhmMTYxMjk4MjRlNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1ZTA4NTVhYjkyZDk3YmI0ZTU2YzBiOWRkYjRkYzI4YjZlNWYyYzdiMWFhN2U4NWIxMjAxMzFlYmRjYzJlZmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAxM2ViMzQ4ZDI2ODUxOGE4NDBmYjk1ZTIwZjZhMzdlNDAxODU1ZTk1NDYzNzU2M2FhYzMxZTRmZWQzOTVkOTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYwNjVlNWM0Y2EzNzk2Y2E0YjU4NjE1Mzc0Y2Y5MTVlNTAzZjRjYzI5M2Y2YWMzZWQ5Y2YwMzQxOTBiMzAxYWYifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/architecture/proposer_read_only_test.py#L62-L106",
+          "version": "repo-lines-v1:sha256:8d3676752970b3320a9e80ebc2ff5c6a12754023e2eeb56b9601f7178caf57f2:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2NWQwOWU1ODVkZmJmZmIyMzQ3YTA4MGM1MmE0YmNiNTRiNzI1OTk1M2JjNWY5Y2QzZWRhMjgxYjU0ZDQyOGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViYmYyNTA4MTJlZjU0YWE2MTU2MjI1MjY3ODg2Mzk2NTc4NTVlMTRhYmNhNmNhM2VlN2MxNTdjMDg4ODBmNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA4YThkZTQ3ODdkMzc2MjUwNWIxNTI4MzJmYjRiMGRlYTUwNjdiZTliZWExNzBkODAzOGU0MzM4NGEwMzUyZjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0OGQ3NDgzZDA2MGYxNzIyZTI0NTM2ODg4MzM0MjU2YjU0OTBlOGJiZTg2OTgyMDY3NmNhOWVhZjM1MDljYzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_702da17d4a74417eb668e422ce8b85fd",
+      "statement": "The repository protects route-surface parity as a separate assurance concern: CI includes a route snapshot gate that boots the backend under `self_hosted` and `shared` profiles and compares the resulting method+path surface to recorded fixtures, alongside supporting gates that keep module-invocation and filesystem-anchor assumptions from silently breaking under code moves.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L163-L169",
+          "version": "repo-lines-v1:sha256:03c7fe2b872b4c33fabb40228a38dceda8787ff9c086ef1fc74bf5629120d399:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGFiY2NkZTYxMjYxOTFiMTI2ZGMxZDdiYWUyY2U5NTEyMDhmNzkwZTVlYWUxM2I3ZTkwYmFlNzk5Zjc0MmQ2NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDQ3ZWQxZjIyOGYzYTk3NTNhZDA0NzI2NTM1ZGMxZTY4YzY1ZDJjM2YxODcyYjZmMDgyMjhlZjI1ODY5YjlmMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMDE5MzYzNWViYTUxZWVjNTUxYmI4Mjc4ZjYxM2NjMzIwZGEzMTk2NWYyNWIwNzQ4NmZiNGI5YjAzZThkMWY5NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWM0N2M1YjRiZTk2ZTg0MWZjOTNiMTBjZmNhZjQxYzJjNjQxZTcyN2Q2ZjJkNGE1YzNkZDQ3ZmYyM2U0OGQ5MyJ9"
+        },
+        {
+          "resource": "repo://.github/workflows/ci.yml#L193-L199",
+          "version": "repo-lines-v1:sha256:6f507d5ce5d95c3056c7e570c3effcdd6816879f9d0c91dc74357c042b90214e:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDhmOGRkNjBjMjU5Njc3ODQ2YjkxOTY5ODllMTFjYWUxNDNlNzBjMmNlZTA0OGE2YzIyOTg3OTU0ODNiZGE4OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2YxZDBkYTNiZDdmZDc2YTYwODAxYWE2MzgzMWQ3MWJhZGIxZjVkYTAxZTdlMjQwN2MyMzYwZTIzMmI1NGNiNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTFiZDJhZGNiNmZhNDY3NmVjNDZiOTc1ZTk3ZjIyNDczZmU5ZTBlMzMyMDFjNTUyZWQ5NjQxNDYyYWU3MDlkNCJ9"
+        },
+        {
+          "resource": "repo://.github/workflows/ci.yml#L223-L229",
+          "version": "repo-lines-v1:sha256:c40573d0cc37143acc40bf5b39cf26724b4a5e58e6a5a088c94d8bb34113fdd9:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDUyYTcwZGU0NmNiZDdjMmMzNjhmODE1OWNkNjU5NWQ0MzZhMWJlNThkOGEyM2YwNjYzMzJhODYyYWZlYWYyYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTcyMDM5NzYwNmUyZTkzNWNkNWU0M2EwMzJmYjg3ODRiYjFlYjA0NTU5YmNjODNlNTExNzhjNDRiZjA0OGVlNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMTU0MDRhYjVmNmI2ZGRmODg3OGM0NDdhZDBmZjMwNzhiY2NiODA0Mzk2NWVlMmU4OTQyMGViMTBiMTVlYmM4MCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_7b237d5bb416472a85eb68a5fa55225c",
+      "statement": "`apps/backend/eval/wiki_fidelity_test.py` is the ingest-safety gate for externally generated wiki bundles: it loads pages from `knowledge/wiki-bundle/<component>/<version>/pages`, computes fidelity with the same `_fidelity_report` logic used by the wiki builder, rejects bundles with any worktree citation, and enforces the configured fidelity floor before a bundle may be ingested.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/eval/wiki_fidelity_test.py#L1-L20",
+          "version": "repo-lines-v1:sha256:3515085f760ab3eb9cc71445276798e212862d16b9b4e706a2deb249b5c39ca6:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0MTVkY2U2YWU5NDhmYjNjNWFiMGI4ZTc1ZGQ2MDhmNzVmMmVmYzdhYTAzOWVkMGViZWU2NjYwNTgzM2QyMTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMDNlY2RkNGE0ZDEwZjE5YzczZmQ0MmZkMTI0MzdmZDMzNTRhODI2ODE2MDVkYTUyNTVhOTdhMzkwNjhkYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU1YjZlODcwNmI0MzA0N2YyYTZkYjY3ZjEzMjYzODU5NTYwNGU2N2YzNjk2Njg3NmNlMDE1OGYwMDUzZTZiZDEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/eval/wiki_fidelity_test.py#L64-L103",
+          "version": "repo-lines-v1:sha256:da7ca4de73d12ca9df4298b1c1e37e96224684cbfbdb246a1f1e6e8be442177f:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMzk3OTMzYTI0YTgwMWVlOTIzMzI3YmQ2OWEwMTA0OWMwNzc5MTUwMjFjZjJlYzM5ZGRhNGY4MWFhODM3ZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2MjMzYjNmZmVhMzJhMjNkZjUzMDY1MzQzNDhmMmRlZTc3NmE1YTZmNzRmYjUzMzE3NWRkYzUzOWE4ZmU0NjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzMGYyMDQ3ODMwNTEzM2UzNTkwMTlhN2I3YWFkMzc1NzE0ZWUwNTg5Zjg1ZDRlYzY3NWMxMzUzMzA1NjAyNTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkNDEzNDBjYzIzOWExNTljZTliNjAyMmU5ZjYzMjI4MzJlMmVhZDc2Y2FlOWU0NzU0ZDIxMGViOGZiNmQ1ZTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_54eff56e1f924d7d97f28a3e7e92af28",
+      "statement": "The CI workflow treats document-level access control as a fail-closed boundary, with dedicated gates for mutation-based whole-document denial, the HTTP `/source` contract, authorized-count behavior, `session` container coherence, and preservation of source-declared access metadata while keeping frontmatter out of retrieval text.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L47-L70",
+          "version": "repo-lines-v1:sha256:20c97009f935a11c3d59f9e574330a2c7bcbf163915de1f7fe2199f92d5def36:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMyZTQ4ZjA4OGVkMDljZWQwNWM4NjY4MzU0MDVhM2M1MzM5YmJmZmZjNWJlNDc4NjkxNDllOTgzMzcwN2Y5ZTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjZGE2OTI0ZGNjYWRhNWQzMTA4MGU5M2EwM2MwMmU5NjYyOWQ2MWYzZWM2NWFhZGE2MzYyZjlmY2I1MTEyMDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmY2VjNDMxY2Q2ZDI1MGIzM2ZmZWVlMDJhNTFkYTUzM2JmYTFjN2UyMDY1ODkzMjFlMWZiNzk1MmMxZjIwNzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRiMzQwNDMzZGI2ZDNjNjQ4MGQyMTMzYzU2MzEyMTAzNDFlMmJiZTRkZDY1NWRhOGNkZDY0M2I3ZWI0NjA4ODMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_771aceb9ded44507ac8f69d7fe4c98b5",
+      "statement": "`apps/backend/tests/platform_ops/mcp_discovery_auth_test.py` verifies that MCP endpoint discovery authenticates late and only through approved seams: public endpoints send no auth header provider, connection-backed credentials are resolved lazily and once per session, connection refs are looked up in the current tenant, invalid or incompatible connections fail closed with `MCP_AUTH_NOT_AVAILABLE` before discovery runs, and OBO uses an allowlisted audience scope.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/tests/platform_ops/mcp_discovery_auth_test.py#L1-L17",
+          "version": "repo-lines-v1:sha256:35a370b665c6e778bddd269359dcfde5c26290c394fd3e118f3a26beb8a3b8f3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4OGJmODIxNGNmMDNiOGFhY2Q1Y2NkZTZjMGVmNWQ5NzAwNjAzNTJhZTZmZTVjNmZjNTZiNTdlZGNlZDUyMTAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwYWFlNzM1MGFjZTllYmY0NTc1M2VjNTA2ODE2NGFhOTg2ODU5MWVmYzYzMTVkNTQ0MWRkODQ3MzI0OWIwMzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRhZWVmNTM4YjAxYzFmM2ZlYjQyYjRjZDQ5OTU0YmM2MGE4OTMxNGZlM2U5MTczNTc4ZjFkY2Q0MThjM2YzZDEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/platform_ops/mcp_discovery_auth_test.py#L104-L167",
+          "version": "repo-lines-v1:sha256:4d46f6c41d5ca4393f814a223ae33d092e59a31c9d455a37165180c966ff575c:eyJzZWxlY3RlZExpbmVDb3VudCI6NjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRkOWVkOWU5YzcwM2NmYmMxZjkzMjEyNDdhNjE2Y2MyZWZhNmJkZWQ3YzYzY2EzNGYwN2MzZTVmODhmNjY2ZGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ0YmUyM2EyN2RhNjQxYTk4YjVhYjRmYjI1NmI3MjMzOTk4Y2I5NDIzMzg2N2E2MzhiYjg2ZTRhNjdkMjMwOWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0OGQ3NDgzZDA2MGYxNzIyZTI0NTM2ODg4MzM0MjU2YjU0OTBlOGJiZTg2OTgyMDY3NmNhOWVhZjM1MDljYzkifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/platform_ops/mcp_discovery_auth_test.py#L36-L102",
+          "version": "repo-lines-v1:sha256:6198c8d53f7e7403ba3ce6431411a064d68c1031891fdeee074ba4cf22168d71:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE1MGI3OWVhZjMxMzY0MGI2MmQyYmFkYzBhNWFkNjg1ZDE2ZDI3OWNiZTU0MjMzYjM0NGQ5Yjg2NWQwYmJlYmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczMzcyYWYyMzE5NGNjNTAwMzQxMzRkZWE5YjVhOGE2NTVmOTUzYWQxMzAwMjk0ZTYzOTY3ZjE5YTEyZTI5MjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_28a676fb4d2d43ac82264fe6f1221145",
+      "statement": "The MCP assurance shelf in CI is broader than one auth test: the workflow also runs gates for direct-endpoint approval behavior, egress isolation, classification, conformity, canonical drift hashing, selective drift quarantine, stale-review fail-closed behavior, secret-canary handling, adversarial discovery limits, stable content-free errors, observability, and tenant-isolated connections.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L220-L280",
+          "version": "repo-lines-v1:sha256:c6af6590726d877fb0099ae65f01f707031b2d8c71464749e2a8b475c5e78388:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwNGRmMDNkMzk1N2JmMWY2YzIzZjVhNzQyOTg4NTlkZDA0OTExN2YxZDM0MGU3ZGZmOTRiYTFiMzE2NjI3NWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJlMWU2MGNkNjhhZGQ0YzBlZjZhZTBlZjdlODYxMWE3MDBkYWZjODY5M2NkODMzYWU1M2I2YmEwNTFhN2IzMDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiMThiYzZhYmFkNjU3YzA2NGZjYzhmMzE5ZjFiYmNmOGQ1Y2M2YTJjNTlmNzdlOTMwYzRkYzY2ZjRmNWFhMjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE2NTU1NmNiMGM2ZmZlMWQ1ODE4MGQ3OWM5ZDA3NDQxMTBkOWYzMDA2ZmQxYmY1ZDc4ZWNiODJiODg0MTBkODYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b5804616224b406285778ea513aca0ad",
+      "statement": "`apps/mcp/tests/client_surface_test.py` is the end-to-end protocol-surface gate for the standalone MCP app: it builds the real ASGI app, swaps in an offline static token verifier and fake domain/document seams, then uses a real `fastmcp.Client` over in-process HTTP to prove that a `Reader` can list read surfaces and read the document resource while a caller with no roles sees no tools, prompts, or templates, gets no completion suggestions, and cannot read or leak document content.",
+      "evidence": [
+        {
+          "resource": "repo://apps/mcp/tests/client_surface_test.py#L1-L17",
+          "version": "repo-lines-v1:sha256:095c279c9dda240319b1ac6056614342ec2e2c14d6e98dbdbf30ab0d936673b3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE5ZTQxZjU2YmM5M2Q1ZDI5ZTYxNzc1YmFmN2E4NmE2ODM2OGU4YzI1MjRmOTAzYzM5MTUyNTYzNzM1OWE1ZjIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0MjAxNTllZDk1MTQ4NWNjOTE2ZTA3NzE4ZWQxNjZhZGM5NDg2NzBmOThjNTdhY2UwMzZmNWQyNDI4YmMyYTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZmYjI2Y2Q1MGRlZjY3MDUxZTAyMWJhNjNlNGQ0MjdkZGJlMTQyMDQ3YTVmYmQzMzA1ZDhkY2I5ODEyYjg4Y2IifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/tests/client_surface_test.py#L122-L143",
+          "version": "repo-lines-v1:sha256:257a6d90732ddbce2044937f8bb2d0509a6c1a23be977bb1bcc493aacf3814fc:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFmZGQyZTQzNGU5NzIwY2U1ZTgzNjMzNDUyOGUzYWIwNGIxYzIyNjUxMzhmZTFlOWE5OTlhYjIyZDI4MGE0MzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVjNDA3NjZmYzczYTZkNjA2ZmUxY2YzMDBjMzliNWJjMmRmMTQxNjA3NGQ2ZDQyOThjODU3MjFjMTZjZjExYjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0OGQ3NDgzZDA2MGYxNzIyZTI0NTM2ODg4MzM0MjU2YjU0OTBlOGJiZTg2OTgyMDY3NmNhOWVhZjM1MDljYzkifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/tests/client_surface_test.py#L157-L189",
+          "version": "repo-lines-v1:sha256:ac2d881ac7f4ef375283b6d9993ef96ae0b304d6b744332b5de0849bff2e960b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY3ZWIwNTdlODdkMDZkMTVkMDNmNWNiMTAwZDk0YTg1M2E2Zjc3NzkzNDY4NzgxMWNjZTI3MWQyYTE3YmY2YWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlOGJkZjEyMDBlYjUzZTYwNTdiOTQwMDk4N2JiZmMzMTYwZDgzY2E4MDQzZTMwOGVhN2Q2ZTEyMzdiNTBiOTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNmZTViMzBjYWMyODA4NDI1OTI1NjRhYjAxMjE2MjlmYzEzMmM1YjdkYzkzNTdiY2U5MGM5YWRmN2ZiMzlhNzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwNmRiYTBiYTc3ZGQxNDIxNTQyY2MwNzhkMjdhYzMzNjhlM2JmZmM3NDJmMzljMDljNDViMzAxNmVjNzQxOTcifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/tests/client_surface_test.py#L197-L239",
+          "version": "repo-lines-v1:sha256:ee891c47e449f04b1780a9e8e8b6029586dbbd992dd66af45d8eb59d5e740c51:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxYWYxYjUyMDMwNTkwODFhN2ZiOWY3ZDVkNzE3OWRhOTY5MTIwNjVkMGViODkwMTJhYmM3NTg2MWI3Nzc4ZTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwYjVlZDMzZWYyNTk4ZDM3MDA1MzJkZjkzZDNkY2U2OGFmZTNhMTA1YzAxOGRhMDQ3MGMxMDFiNjg2OTliZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY3MTMzZjgyYjU3ZTJjN2Q3NWM5NjFiOTRiNDc1NjI4YzE3OTQ2YTcxM2Y3NDEzN2ZmOGEwNzEyMzBhYjgxODkifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/tests/client_surface_test.py#L92-L119",
+          "version": "repo-lines-v1:sha256:7ee30e10753aed9b6c214ffe7541c3b6d5bbffde97f7ef91ef07c6c5ecdbb0a9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdiNWQwZDJkYzQ1OTg1OGEwZWE2NjgzM2Y0YzllZmJhMTIxNWU3MzY3OGU4ODA4MjFmNWEyMjdlYjZjMjdjMmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlYTJlYzU5NDI5MGMxMjQzYWYxM2Y3OTUwZmEzNDliMDQ5MWY5MTRlZTFjNjBjY2EyMTk5ZWQzNWYzMzkwNDUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFjYjg4MTYxMmZjYzA2MjdkN2M1YTgyMjc3ZjE1NGFkYjZhMDMwNTM0Y2EwYzY4ZTU3YjgyMmY1NGNiZWU0ZjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_3cccb1058b204682a951741489257c67",
+      "statement": "`apps/backend/tests/publication/github_publication_test.py` is a publication contract test for GitHub that verifies publication proceeds through explicit native-tool approvals, materializes deterministic normalized outputs, persists only a safe PR projection, replays idempotently for the same idempotency key, rejects content-hash reuse under the same key, enforces exact publication roles and area isolation, and never persists tokens or raw remote responses.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/tests/publication/github_publication_test.py#L151-L205",
+          "version": "repo-lines-v1:sha256:2e1b526ae22c7d5c5dd2e7d11e5421272871975c56f9f906cdfe1c6f4eb2404b:eyJzZWxlY3RlZExpbmVDb3VudCI6NTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMxY2VjNzMwZDE0ZTk1ZGNlNzQ0MTljNmE2ZjNjMDBiNDU5YjA0NzE3MjJiMGVkZGQ4NjM4NTQ3M2Q1MTI4NmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjODA2YjdiNzlhYzMwYmQyYWE2Mjg4YTlhNDdmM2MyMGQ4NDk2MzNmNDU2ZGY3MzI5ZGRiNzIyZjhjZjk3NWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE1MmEzZmRlMTJmZGE3YmIxYjRjODJiYjE5MTRmOGQ0YzIxN2M2NTRmNjhjNDVlYTNhMmE1NTk5NWI1M2RmYmYifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/publication/github_publication_test.py#L207-L259",
+          "version": "repo-lines-v1:sha256:0e7df39bfde68803094ca72e58c53418270e5d063458e41d77412a8baa7e41ae:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5ZGQ3ODBmOWQ3Njc0ODA1OGE1ODZhNjc5MGRkMDhmNjIzOGE1YzdkY2VlODkyMjY0OWZmZGFhY2EyYjU0MzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlNGMxM2YyZWYzZGIwZGViYjE2YTA2YzE1Yjk4NjMzMTkwMTQ1NGYxYWYzOTRmOTc0NTM0ZjUzMjk0NTRkMDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk5NmI5OWYwMGZjYmFhZjdiYzllMmUyNmU3ZDQwMDBiNDY5ZDY4MDRlNmY3MDBmYTYyYzc3ODc5Yjk4ZWJiZDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUyMzE3ZDczZjZjODM5ZjM2Mzg4Yzc5ZDJkYjlkMGY3ZjMzMzFkZmRlMjZhZTFhZGYzMzdhMDc4MjRhMzgwNzIifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/publication/github_publication_test.py#L24-L53",
+          "version": "repo-lines-v1:sha256:f1a82c0e33c94b7938bd3eaf32b1f6a4fc56cb9b028baa4c6484631f1352c3a4:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiNzYzNjBkNjM0NDAwNTY3ZGMxYjhlNmEwZmUwODMwYjFmMTQ2MzUyODY3MDdjM2RjYjU0YjdhZGY0ZDc2MTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkODY4Y2EwMDc4YWNiYTAzYTE0ODdiMjU3YmIwMGE2OTA3OWEzNTNhNDc2YTM0ZjI4MDI1NjA0MjczY2MwYzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZmYzcwYmExZjE0ZDQ3YjZhZmE0ODJhMTljN2NkYmI3NWMzZDA3NTY1OGFlZjFiOWU2YjZkNGYzN2ZjMTQyOGIifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/publication/github_publication_test.py#L260-L340",
+          "version": "repo-lines-v1:sha256:656818032041015fedca0ee22db1fff3d0e1468ba9954af547e530e9207d1d64:eyJzZWxlY3RlZExpbmVDb3VudCI6ODEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJhMGI1NWIxN2U3NGRjMjE1NjA3Mjg4MjI0ZjRjOGJkY2E5ZmZhYzJkNzc4NGUxYmRhNDVjMDBmNTU5NzVhYWEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3NDI3NTE0MzI2NzFkMzE5OTgzMzc0NTM0NGVjM2NhODE4NDYzZDlkZWIxODQxZmY0ZTBkYjE0ODQ1N2RmZjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlMGM5ZjY4ZTBiOTJiM2Q0Y2QzZjJjY2E0ZjJiMjU4NTU5NDdhMDA5ZTgyMzlhZjZkYzAxNDgwNGIzZTcwMjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA1NzIyYjhjNGYyODMxYTA4YTZmZjE2OGQxNjUxMTRiNmZkYmFjZjk4NDIxNTM2NjI3NzY5M2JkY2IzYmQwMjAifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/publication/github_publication_test.py#L93-L149",
+          "version": "repo-lines-v1:sha256:961b537cc334121ef8fef033ab520c3a5b09e475ec4cf4bc4455e92d9b0a5a37:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMzk3OTMzYTI0YTgwMWVlOTIzMzI3YmQ2OWEwMTA0OWMwNzc5MTUwMjFjZjJlYzM5ZGRhNGY4MWFhODM3ZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY1YjAzNmNjN2RjMDFiZTFlNGNmZGVkNDk2ZTNkMDI3YjJlNDA5MTU3MjRhZjA5NzhmM2ZmNjU3MzJlMmY3ZWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcxMjYzODgyOWZlZDVjMzE0NjI1MzAyOGIyNjI4MTZlNGZjM2JiYTA2ZGNhYmYzNTYwNzliZjYyYmMzNzA0YTcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a34b41938d2e41e5880db4a0c920144c",
+      "statement": "The CI workflow treats authoring and publication as contract surfaces rather than one opaque feature test by running separate OKF gates for envelope/identity/publication state, references and tenancy-safe immutable revisions, write permissions, schemas and fixtures, migration compatibility, multi-document ChangeSet proposal/review, and actor/timestamp rules before publication and reconciliation tests run.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L135-L152",
+          "version": "repo-lines-v1:sha256:64d3be4e03275beb568934eda2c05babe234ad2e62bb01f622d61bb2878e0ad1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5NjhmODEzZmJkNWMxMjU0OGNhZWYwMGE0OWEwMmQ0MzE1NmE0NTI0ODVkOTc2NWVmY2Y1OWNhOWY3ZmNmMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4Y2MyY2Q0OWU3NDUzZWJiZGY3ZGRjMWYyZjY0MjkwMWFhYjYwNzU4ZDU5OTE4YmMyOGM2YThmODVjMjY0ZGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3OGYzZWU5OGRjM2Q0NGM5YmYwNGNiODM3MTdlN2Q3MDNhOWNiNDY3NjQ1MjM3OTZiOGQzOTNlNjgwNGQxNWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA4YzMzN2EwMzJkNzQwYTBjMmVlY2Y2NTg0ZjBjOTljZjA0YmNkOWJiOTc0YjVmMmE4ZjEzZWRiOGU0ZDNmMjkifQ"
+        },
+        {
+          "resource": "repo://.github/workflows/ci.yml#L98-L117",
+          "version": "repo-lines-v1:sha256:e4be50cc24207a212ffc4ebec623768b65884b711e1c147aa257b6d4d0371343:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzMzU2MjU3NWQwNzZmYzA5Yjk0MTQ3MWQyMWI2NTZhMzQwMDkxZWNmODE3ZDRiZGNlNWFiMmYyMWZiM2Q1MDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJmZWU1ZTA1YjhiOWZiZmQwN2Y3YTU2NTBlODk1ZWQ1OGM3YWFhMTIyYmU1OGIzOWU1YmJlNWQyNjU2NWQxNzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYxNmIzYmU4ZmFhOTE1OTU5NzVlMjZlOWM3N2M4ODkwMWJkNTkyZmEyOWVkMjQxZTNkMTJhYmM5MDUwNjI0ZDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEyNDVlNTJmYzM5NDg2OWFiM2M5ZDQ1MmI1ZmQzNzU1ZjE5OTU5M2JjMWE5OTA1OWViYTljYjRhOGVjNDcwZWUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-09-02T18:24:34.393Z"
+  }
+}

@@ -1,16 +1,20 @@
 ---
-okf_version: "0.1"
+okf_version: "0.2"
 ---
 
 # Files
 
-- [OpenWiki Quickstart](quickstart.md) - Entry point to the repository wiki, with task routing for backend, frontend, hosted agents, infrastructure, and the repository’s evidence and validation flows.
+- [Repository quickstart](quickstart.md)
 
 # Directories
 
 - [architecture](architecture/)
 - [backend](backend/)
+- [concepts](concepts/)
 - [frontend](frontend/)
 - [hosted-agents](hosted-agents/)
 - [infrastructure](infrastructure/)
+- [integrations](integrations/)
+- [operations](operations/)
 - [testing](testing/)
+- [workflows](workflows/)

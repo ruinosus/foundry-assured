@@ -46,6 +46,7 @@ from azure.search.documents.indexes.models import (
 )
 from azure.storage.blob import BlobServiceClient
 
+from app.modules.knowledge.internal import frontmatter
 from app.modules.knowledge.internal.ingest import (
     CALL_TIMEOUT_S,
     _require,
@@ -246,7 +247,12 @@ def collect_pages(docbundles: Path) -> tuple[list[tuple[str, bytes]], dict[str, 
             page_file = bundle_dir / page.get("file", f"pages/{page['id']}.md")
             if not page_file.exists():
                 continue
-            body = page_file.read_text(encoding="utf-8")
+            # O bloco OKF viaja no arquivo (adapt_openwiki) e PARA aqui: o que segue vira o
+            # texto indexado, e YAML no corpus faria o modelo citar `generated:` como se fosse
+            # conteúdo. `split` não interpreta nada — quem lê METADADO usa `parse` e aceita
+            # falhar alto; aqui só se quer o corpo.
+            _, body = frontmatter.split(page_file.read_text(encoding="utf-8"))
+            body = body.lstrip("\n")
             lines = body.split("\n")
             if lines and lines[0].startswith("# "):  # drop the generic original H1
                 body = "\n".join(lines[1:]).lstrip("\n")

@@ -110,6 +110,28 @@ jobs:
         run: uv run python -m tests.okf.migration_test
       - name: OKF ChangeSet — multi-document proposal and review
         run: uv run python -m tests.okf.changeset_test
+      # A convenção de ator do OKF (SPEC.md:489-501) tem uma falha silenciosa: um ator de
+      # máquina que comece com `human:` sobe o trust tier para "human-reviewed" sem nenhum
+      # outro sintoma. Este gate é o que impede um produtor novo de reintroduzi-la.
+      - name: OKF — atores e timestamps
+        run: uv run python -m tests.okf.actors_test
+      # G2 da auditoria de 2026-09-02: nenhuma página carregava `generated`, então tudo lia
+      # como não-atribuído. O gate também segura a regra que importa mais que o campo: o
+      # frontmatter é escrito pelo builder, não pelo modelo — um bloco vindo do prompt é
+      # descartado.
+      - name: Wiki — procedência OKF nas páginas geradas
+        run: uv run python -m tests.knowledge.wiki_frontmatter_test
+      # As duas metades da mesma decisão: o bloco atravessa a adaptação e para antes do índice.
+      # Preservar sem retirar colocaria YAML no corpus de retrieval, e o modelo passaria a citar
+      # `generated:` como conteúdo da página. O gate é ponta a ponta — roda o adaptador e o
+      # ingest de verdade sobre uma wiki de mentira, em vez de casar texto-fonte.
+      - name: Bundle — frontmatter preservado no arquivo, retirado no índice
+        run: uv run python -m tests.knowledge.bundle_frontmatter_roundtrip_test
+      # Um bloco `---` que não parseia é indistinguível de um que parseia para quem só olha a
+      # primeira linha — e `ingest.py:162-165` sai com erro num deles. `docs/` nunca é ingerido,
+      # então este era o único lugar do repositório onde a falha não tinha sintoma.
+      - name: Frontmatter de docs/ parseia
+        run: uv run python -m tests.knowledge.frontmatter_parseavel_test
       - name: GitHub publication — approved content and idempotent MCP writes
         run: uv run python -m tests.publication.github_publication_test
       - name: GitHub publication — HTTP contract and safe projection
@@ -793,6 +815,20 @@ jobs:
           cache-dependency-path: apps/frontend/package-lock.json
       - name: Install dependencies
         run: npm ci
+      # `verify:copilot-doc` roda o backend de verdade para provar que o documento que a tela
+      # gera CARREGA lá — é o ponto do gate, e é o que o torna capaz de pegar uma divergência
+      # entre os dois lados. Isso custa `uv` neste job, que é de frontend e não o tinha: o
+      # passo falhava com `ENOENT: spawnSync uv` desde que entrou (7ccc4a5), e ninguém viu
+      # porque a branch nunca havia sido publicada.
+      #
+      # `uv sync` é obrigatório junto, não decorativo: o script chama `uv run --no-sync`, que
+      # exige um venv já existente em vez de criá-lo na hora.
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - name: Backend env para os gates que atravessam a fronteira
+        working-directory: apps/backend
+        run: uv sync --frozen
       # Uma chave presente só num dicionário aparece como o próprio identificador na tela do
       # outro idioma — falha silenciosa que passa no build e só quem abre aquela tela percebe.
       - name: Paridade dos dicionários de idioma

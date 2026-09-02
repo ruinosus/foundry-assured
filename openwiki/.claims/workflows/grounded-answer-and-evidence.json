@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:c48663356869ee2da8ce5bccad6209dbc23712bfe9f795af9ff71bee492ebffc",
+  "claims": [
+    {
+      "id": "claim_ff96480083a84fe89a2f407fca1c528a",
+      "statement": "The frontend treats `techdocs` and `selfwiki` as grounded assistant domains with stable ids and endpoints, and the backend mounts grounded domains through a shared `_mount_grounded` path that resolves each domain spec per request instead of at boot.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/registry.py#L250-L270",
+          "version": "repo-lines-v1:sha256:e17f3d0570f8e4b1f3f7593b91ec88dbcda6a2aea5b274238c45e983ed2ed21b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzZmZmNmYxYTAxNDMwYzZhNmYxMjliMDZiNjNhN2Q5YzNkOTlhZmYzZmIwNmRjNzE0ODJmZjBmNTc1MGNiMzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5ODk5MTY5NDAzNDhlYWQzYmNhNGVhNWU2OTE0NTc2NTA4YjNlNDFjNmE4ZGIwMjQ2MDc5ODQwNTMxZGU0ZWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlZTUwNjgxNTMwMTMxMWM5ZWE1MDMzNjcxZGM3NDBmMWY2N2M2NjMwMDM3NzNhNmFiNTY3Y2JjYjY2OGZhODYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgzZjZhMzk1YTdiODFiMzdkYTE2MzEzMjQwOTIyZmI2YmE4YTcyOTVmOGRhNDZjNzFiOTUyYzQ1NWEzNTllOTgifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L46-L91",
+          "version": "repo-lines-v1:sha256:d42259d97e4e76e47a2edaabf6f2af3f8cda7cb49055a1f2c7f3c272cf1acda1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzOWRmMGExYjY5MDNkZWMwZTkyZjIxNTFmMzcxNDE4YmQ2OWU1OGQwZDU2OGI4YjVhYjMzMTQwZDlmMjhlZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUwYWFlNzIxNTBmYjNjY2U5MDc3MWYyOTU1NzIwMWYxNWMwY2U5ZWE3OTYxYTgyZGEzMzgxY2UwOGY3MmQ1YjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjYwZDgwMWI0ZmVmMzljNDA3ZDQ5N2MyMDk0M2Y3NWMzMTM0OWU2YzZkMzIyMGJkMzdhNGI2ZTcxNTM2NmYyMmQifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/lib/domains.ts#L24-L40",
+          "version": "repo-lines-v1:sha256:de6e36bbb59ed815eff9f59c6291ce9106326d6c23a9e15ac4eec571649cc8c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ4YTNhYmIzMjBmYjZkY2Q1YjJlOWRkYTRjMWU2Y2UxY2QyYjZkMTAwZTZkMmFiYjQyNzNhOGRmODkwZjI4MTciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwM2RjMTVlZmNmOTAxYmY5ZWIyNmI5ZDE3NTE0NmI5MWQ2N2VhYmVkZDUzMGNlZWNkNjNjYzMyNGYwZDU0YTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhMmFhZWU0ZDhkY2M0NjM0N2JhODIzYTE4OTUwMGJiNTVhNjU4YjFiNDAwYjJhODU5ODBlMmI2MTc3ZDg3YmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjZmNTY4NzAzZmI5YzUzMTU3NWJkM2RjYjNhMDY2NDM4MGY2NjQwYjIzNGIyYmMyMmU1YTkyZDBhNDZhNGYxZjAifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/lib/domains.ts#L66-L81",
+          "version": "repo-lines-v1:sha256:efe468766dda59af0cfbfd970bd38ddee35853f157cd0dba7b3743657e3e3a69:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxMTFmMjM5YWM2NWM5ZmVjZDRmNzk3NWQ0ZWUwYzY3N2I1OGE4ZWE2Nzg1MmVhMjVkMjc5MjM5MjUxOGQyZjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkNWNkMmZiNGYzZGY4ODQ1MTUyNTViMzk1MjNmMmY4YjU0NzJiZWVhOWY1NjZmZmNhMjA0ZGI4MDI1NjEwNDEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcyZWQxYjViYTJhMjM4YTI3MWFmMDI5OTFmMDJlMDNkYmEyOTMwOGUwZmFjYjEwZjU2MmEzOGFiZTczYWFjNDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjcwNGUwNGNkY2FlMGI3YzE4Zjc0MjNiYWI3ZmI3MTIzMTRlNjVlOTVkOTI3NWE5OTEzYzkwYTMyYjcyY2RkNDMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6fbaff3603cc4b69a314d41ba1e2b02c",
+      "statement": "Grounded requests enter the backend through `_mount_grounded`, which captures `current_user()` and the first valid `Accept-Language` tag before wrapping `stream_grounded()` in a `StreamingResponse`, so request-scoped identity and language are passed explicitly into the generator.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/registry.py#L31-L43",
+          "version": "repo-lines-v1:sha256:0d2d6ba897f622c0b5d2adb7857b3e2f7033181c5ee2825245de486f55f0be6f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhYzQ4YzZkYTdlMzgyMDc5NzJhNTY2ZTgyNzU4NDZlYzAzYzBkMzRjODY0YTJmYzdlOGRjNTAwMzQ3MTRjOWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk3OWVlODJhZTA3MTJkODQ0Y2VjNDA2MWE5YmVmNTUyMTkxOGJmNDliYjQ4MzJjM2Y4YWQ4M2FhMzU1YjA1ODIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNkZGU1YTUwMTM3OWQ4MmZlZTMzZDE4NjU4ZTQ3NTc4Y2VlMThkMmIxNjM2NGU3MzQzNzcxYmYyMzYwNWNkNjkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2ZmJiZjRkZmEwZjg2NDY2MmQxZDE4OWNlYjQzNTM3M2MxMmMzNTZiZjJjMGFhZjAzNWNkYWI4NjY5MGEzNmYifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L57-L84",
+          "version": "repo-lines-v1:sha256:ded68673cfad0451b826bef3dc521cee4ff87f720a1afd74b85fa6939c10f610:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU2ZDQ1MWRhNWQ4MTQwOTFmYjJkM2MzOWM5ODA5OWQyNzZlMzIyMzlhMThlZDJkOWZlMWI3NmJiMmM2YmYzOGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEwMDU4ZmRjMTA4MjlmMmY4YmFlMjQwNmU5ZjNjZjQ1NTE5YWM0MWQ2YWI4ZDlmYWJhOGFjZGI5ODY1OWZiZWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ1ZmVhODQzMzY4NTdmMGRlMmExMzIwODM0ODVjMjBiMjRjNzg2NmE5MTc0Y2U4YTY0ZmRlNzY3NzdlNGU5ZjYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9ba791dbed844c5580a211ab92b84b4a",
+      "statement": "`DomainSpec` is the declarative contract for grounded retrieval and document access: grounded domains must have a `kb_name` or `search_index`, domains with `document_access=\"acl\"` must also have a `search_index`, and the configured `techdocs` and `selfwiki` specs both use ACL-based document access.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/domains/internal/catalog.py#L174-L205",
+          "version": "repo-lines-v1:sha256:b110ad5eaa4f67bb3ea2d3a609463c61983616d7b818daf79371ab1f57a5b6a1:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA3MmRkZWFhYTgyNzkxY2ExNWE2MjJiMWMxMWY5MWI3MWZiZjI2YzY4NjJiNmE5ZTUxODRjZTE0NWI3ZTM3NzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNmZmUxZWY4MzI2MTg0MWU2Yzk4OWY3YWY3MjcyOTc2OWE5Yzc4YmZlNzEwOGNkOTQ5NzI3MTA4Yzc5ZGU2NWMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjcxZDdlY2Q3MWUzMTQ4OWZjODU5ZjI1YjdmMDMzNjhmMTM2YjAxZjk5Y2VmODJmNzJhNDhjMWVmMWQ0MDE3YWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFkZDI0NDU4MmI2ZmIwM2QyM2I4NDE1YWJlY2QzNDZiMGM5ZjQ2NmI2Zjc1MmIwNjgxODljZTdlOWEyZGMzNTAifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/domains/internal/catalog.py#L33-L78",
+          "version": "repo-lines-v1:sha256:2529f3b8a9c0e39042e3702e20eef5c8ad43d0ba5829086238d28731d28b55d1:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2OWExMzk3NWMyNTZlYzgzMjBlMjAxNjA4M2M5NmRmNjM3Y2EzZDM1YmViZGUyMzE0YmVlM2E0NzExYjU2Y2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA3NzBkNjg4MzAwMWNjOTZlNTMzNDZlYjBkMWRhZjBmMjhkMjRiYzE5MjBhYzY1YTFjNWFhYmYzZTY5YzQzOTgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJjMTgxZGM0OTY4ODBkMzg0YWZjODQ0ZmMyN2M5ZTgwM2UwYzg2NDI3MjgwYjAyYTkzMzU4MWQ5MzZmOTY4NmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_18db5a1ffa26412db51a437ef4fe363a",
+      "statement": "`knowledge.retrieve()` is the shared grounding seam for assistants: it uses native KB retrieval when `domain.kb_name` is present and direct search otherwise, sends the service call as the app identity, attaches the user OBO search token only for `document_access=\"acl\"` domains, and records retrieval access events without failing the answer path if auditing breaks.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/internal/retrieval.py#L155-L219",
+          "version": "repo-lines-v1:sha256:48c6e6a7c3e5865162d08ffc02a201a3817cab095ab45b0c822c7dbe7fcd678f:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2NjMzNmQzNTE3MzZmMmEwMDllNzRiOGQwMGJmNmIxOGIzNjJlYWM3ZTIxNzAyMTQxMTE2YjVhYTZiZDg0YmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1YjEwYjU0ZTVhOTU3NDdlNGI2MzYwMGU5ZDA0OWRkYTIyNzVkOTU1MmZmYjJiNjk2OGY0YWFhNGZlYTA0MjgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNlYTNkYTM2M2FmOGM0MGVhMDUwMzNiMDZkNDA1OGNiNDU4NWY1MDFhNTE1ODIzOTRhMGMxNmJmODkwNmU5YTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ1MTlmMWYzOTkwMTk4NjUyZjJjM2JmZjVjYmM4ZWUxOTY1MzQ1YTkyZWJmMDBmNzQ3MGJkNjk0MDRkNjllMTYifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/internal/retrieval.py#L49-L128",
+          "version": "repo-lines-v1:sha256:972bc42eddbc34b3bdadf4c78c8e1f37628332779cccf74f767a5c4c6e8b4008:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxYTllMDA4NGFjNWU5ODYwZDUwMGE2MmEwMDUwYzc1ODU4NDc5ODc3NjRjNzc5NWJmMjlkM2FlOTg2MmFjMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1ZWI0MjFiYTVkYTU0MDg2N2Q4OTIxMzliMmE4ZTBlZWU1MjhmZDQzZGJmZGQ4NTNlYThhNzM4YmJjMjE4ZDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY4YjUyMmJmYTM0OWM1OTM4NzUzNzM1MjNlY2YxMmRmNTE4OTc0ODM2OGExMDUyZThkOTZiNmU4MjFmOGZjMzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImI3NDY0OWNkZjkyMWJmMzFhOTFiYzEyMTAwZDYwNTcyOGNmYmIxYjMxMDFmZGQ5YmJiMTQ4YzNhNzhkY2E0MzIifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/public.py#L13-L36",
+          "version": "repo-lines-v1:sha256:110507393aa23aac8c9caf9fe4f5f2e8f68be3610993d5c038ed1a6057ffa978:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBmYmVhNWUxNjA5MWZhMDY1NDRmZGNlMGJkZDRiY2Q1NzY0Y2MyNWFiNGM2NjJiN2RkZTY3YmFjM2Q4NWY0MzYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdmY2I1OWY4NWM0MTI2NjE3MDViY2JiZTlmNjJjZmE1MWI4NGI4ZjBiMjkyMDhhMTE3ZjJiYzMzMDYwZjViYjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI1ZDdkMGI0MjA0NDIyMTNhZGY3ODkzZjdiMTk0MGI0Y2RhOTIxOGM1YzRiMzNjNmJmZGUxZWI2OTgxMTc4ZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY5NDE2ZTA5Zjc4YmEzMTZjMDMyNTY4MjEzYjg1NWVlNzU2ZTQxNTY1ZDkxOGYwOTUxOWM4MWZkNjIwZjQwNjAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b2843d09a4224fa39e4879d5cb89aff7",
+      "statement": "The default grounded archetype in `stream_grounded()` retrieves authorized docs first, synthesizes the answer only from those docs, streams AG-UI text events, persists the turn and usage, and emits a `CustomEvent` named `sources` carrying the assistant `message_id` plus citation objects shaped with `type`, `title`, `url`, `snippet`, and `index`.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/grounded/internal/grounded.py#L111-L167",
+          "version": "repo-lines-v1:sha256:434462037caceea3b58f05a0ef4128ca29de3e3f20e4b24c44ff56b650bb9253:eyJzZWxlY3RlZExpbmVDb3VudCI6NTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3ZjdjMDZjOTUzNTU0MmM3MzczMmMwYjQ4ZWFiNDQxODlkMzY1YzIxZGNkZDc4YWExOWUwZmE2M2Y0Mjc5ZjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkYjFmMTQ0ZTVjYjdkY2IyMTcyMWU2NzY4NDk2ZjAzNjRlMDkwOTlkYmQzNzhkMjRjZDM2ZmQzYzk5MzA5OWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhlOWY2NzI0YmY2ZmMwMTNmZWM0Zjc5MjQwMzMzMjdhODRmZGJiZDlmNDU2MjIyOGQ5NzA3N2Q5N2Y2ODE0ZmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImFmNzVjNzA2ZDk0NGJjMDIzNTcxZTgzZGZlNDYzNzA4OTNlZTYwNTA4YjA1Mjk1YThjMmZjNDkzZWE2NDNiMGIifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/grounded/internal/grounded.py#L186-L267",
+          "version": "repo-lines-v1:sha256:33609b560c299f983d110fd0bcdbd44bb40938fe33e6e3b269d7e1800cd41088:eyJzZWxlY3RlZExpbmVDb3VudCI6ODIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlOTEyMjVkZDRiZmQ1MGQ4ZmRlMmE1MDRkZTg0YWE2MjY1ZWQ1ODU5ZjI4M2ZjNjBlMGE1ZDEyMWM5M2E0MDIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhhZDAwNjRiNjVkMjRlZDUyNDlhNzMyNWRmMmQ2YTAwNzlmMDUwOGZkNTFiMzEzNzIwOWJkNjYwZWMwM2JmNWQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJlZDUwODc4NTJhMjllMWRmMmM2ODc0MzE4YmE1ZDYwZTNiZjIzNGY0ZWY1ODA1N2IwNWM0N2I3ZjkyODlmN2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRjNjNjYThkMDlmNjI5NmU4ODJkMmU1NTZjZTQ3NGJjOGU1MGFjZGNmYWQ5YTVmMTU5ZGZlMTVlMGYxNWRlODgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b284560f7a614942bb2acbec40b574e9",
+      "statement": "The console evidence UI keeps citations attached to each assistant message by looking them up with `useCitationsFor(props.message.id)`, rewriting valid markdown citation markers into buttons after markdown parsing, and rendering a per-message evidence list whose buttons dispatch `abrir-fonte` with the current domain id, document title, and snippet.",
+      "evidence": [
+        {
+          "resource": "repo://apps/frontend/components/console/MessageEvidence.tsx#L120-L225",
+          "version": "repo-lines-v1:sha256:341b0335880a26d39d7f7ca7b9d2d48c693154e8877e778dd1e5130ea12a5906:eyJzZWxlY3RlZExpbmVDb3VudCI6MTA2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJkMzBjNjg2NDM1YTUwYzdlZWQ1MGUzOThkYWJjNTE4NmZlMWVmM2VlNDdkY2NjZjE0MTBiOWEyMDk4ZWU3ZmI5IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiI4NGU0MjA4Y2Q2ZmZiOGM0YTM1NDdiMmY1NGFkYTE5OTc4YzNmMzY1ZTc4Zjk1MDJlZjUxNDVjZGQyYWE4NTQzIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJiOTI5OGE0YjY5ZDc2MGU1Y2JkYWQ0MDU4ZGNjOGFjY2ZmNzlhZjUyZjc0OWNkYmZiMjU1MzMzYjZhOWVjYjMzIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiI0NjYwZWJjMTgzYzM4YTE1NjUwYTE1OGU2MjM3MTA1YjcwNmJlOTFhYWZmNTVlODQ4NGQxZDI2ZjQxN2JmMGE5In0"
+        },
+        {
+          "resource": "repo://apps/frontend/components/console/MessageEvidence.tsx#L49-L87",
+          "version": "repo-lines-v1:sha256:62c2ff3f9fe975a3f990a3eb40545989619622d2ccf382ce9bc806484209093e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlY2I5NWVmYjQ4ODI5N2Q3NmUwYjYzZDg3ZDEzYjk5OGEwM2M5NzFiYTJjNzFkYTRiNjlmNzk4ZWQ3OTg2MGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlmYjNmYmU3YzQ3OTVhMGJmMzkzY2EzYmExMjlmNWU0MTM0NmZkMDA1YWEyOTM2OTAyZjlmNjUxNDNjMmJkYjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNmZjY3ZjdlZWVlN2M2NTA1NGEwYzVhNDJiYWM5ZTM2ZmM5NDA3ZGIxNDY0YzM2OGViOGQ2Njk0MmU4MWZkOTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_af8411e2e3b840a99b340994db1ea500",
+      "statement": "Opening a cited source on the web goes through `GET /source/{domain_id}/{name}`, which requires authentication, applies shared-tenant entitlement before document access, reuses `authorized_document()` for ACL-aware full-document reauthorization, marks responses `Cache-Control: no-store`, truncates over-1MB payloads with an explicit `truncated` flag, and records both successful and denied reads.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/api.py#L28-L29",
+          "version": "repo-lines-v1:sha256:c493af2c70b3b72809a31f1dbaf83a57c13510c134deda1ed74054c55faa450e:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjRlOTY3OGY5ZjRkYTJiYTYxNzIwNGIzNWRiNzYxY2VjMWI1MWM5YzYwMzQ1Mjg1ZTRjNzk4NjIzYjI0MGI5OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTVjMWM0NjJlMmEzOWQ3NDc1OWY1ZTFiMTI2Zjc2ODNhMmI3MzAxMThlMThmNTEyMmIwOGNlZGVlYjY1MGUyMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2FhYmVhMjIyYWJiZTUxZTFiZDViOTRkYjZkNDVmNTQzZWViZmM0YzA4OWUyYzc2YzRmZjJkNDA1YTFjYjA4MyJ9"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/api.py#L57-L117",
+          "version": "repo-lines-v1:sha256:fd7f5fe33f6e97d536838a133a4fb4e4e40278d8d25b6cb4c5275ae573028264:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRlOGRiOTQ4YWM2MGJkZjM1MWE1ZDQ4NWJhMjRiNWUzZGI3NzVmNGE0MTRhOGYyOTBkZTYwMzU0NzU2NzJiYmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBhYzBlYWUxMWJjOTllYmEyNjM3Yjk3MTFlMDUzNTVlOWQ4ZGNmYTZmNWI4ZDEwNDJhY2YwMjhiNGVmNmJhZmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU3YWFlMDliNzNhZTFkZjM0ZTZiZGE4MjlhMzI4MmRjNzc3YjhjZGFmYWMyMDdkYTQ0OTU5NTk1ODUzMjRlYjIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/internal/document.py#L106-L166",
+          "version": "repo-lines-v1:sha256:a868adfcfc32d7eba3c89111aa7dc1d2945e56862a059c5ab50ebd80bbade0eb:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5OTI5OTk4ZTQ5NTU2MzMwZDhhMTllOTNiYWFlYmY1MjA5YmI5ZWM4Y2QyMjBjMTAxOTkwN2ZlYzY5MDdhMTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyMTUxMzMwZWQwOWFiNDEyNTA1NDQ5NzQ3ZmZjZjA1ZTZjY2I0NWRlZTljZDI4N2EzZmZjOWY4OGE5ZGNmM2MiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgzYWQ4Zjc3NTFlYWFiZDI1MDMxYzY5MWE1M2UyMDUxNjEzM2M3NTA0ZjhjZGMwN2VmOWE0M2M1N2EwNzI2YTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzZDQ4MGFlZDhiYmM2ZmE4ZjIzZmU2NTc2OWJmOTdiM2FlYWJjN2Y2MDc1NGQ2OTdmMjAwYmFjOGQ1ODc0ZjgifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/internal/document.py#L194-L224",
+          "version": "repo-lines-v1:sha256:fe72dd3894ecedb7e24d98b5fbe1a36fec039a4cfb34a37582d0789e13511f91:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA1YzI5ODdkNjNiZTY5YjUxZTc2NmFiOWE3ZTA0MjE5ZWNlYmU3ZTMwYTI2YmQ3ZGI3M2U5MGY5ZTJjNzRmMTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNlYTNkYTM2M2FmOGM0MGVhMDUwMzNiMDZkNDA1OGNiNDU4NWY1MDFhNTE1ODIzOTRhMGMxNmJmODkwNmU5YTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b4e9fdef08b24b038ee03802059fca17",
+      "statement": "`authorized_document()` fails closed for ACL domains: it validates the blob name, builds the blob URL from tenant storage and the domain corpus container, requires a user OBO search token when auth is enabled on `document_access=\"acl\"` domains, reauthorizes access against the search index with a `blob_url` filter, and only downloads the blob after authorization succeeds.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/internal/document.py#L106-L166",
+          "version": "repo-lines-v1:sha256:a868adfcfc32d7eba3c89111aa7dc1d2945e56862a059c5ab50ebd80bbade0eb:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5OTI5OTk4ZTQ5NTU2MzMwZDhhMTllOTNiYWFlYmY1MjA5YmI5ZWM4Y2QyMjBjMTAxOTkwN2ZlYzY5MDdhMTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyMTUxMzMwZWQwOWFiNDEyNTA1NDQ5NzQ3ZmZjZjA1ZTZjY2I0NWRlZTljZDI4N2EzZmZjOWY4OGE5ZGNmM2MiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgzYWQ4Zjc3NTFlYWFiZDI1MDMxYzY5MWE1M2UyMDUxNjEzM2M3NTA0ZjhjZGMwN2VmOWE0M2M1N2EwNzI2YTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzZDQ4MGFlZDhiYmM2ZmE4ZjIzZmU2NTc2OWJmOTdiM2FlYWJjN2Y2MDc1NGQ2OTdmMjAwYmFjOGQ1ODc0ZjgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fcb19915dee74770a404c460f103bd8b",
+      "statement": "The MCP document evidence surface reuses the same backend ownership boundaries: `resources_knowledge.read_document()` resolves domains via the injected registry, checks tenant licensing before resolution, calls the shared `authorized_document()` function, records access with `record_document_access()`, and serves the document through the `document://{domain}/{name}` resource template.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/knowledge/internal/document.py#L115-L166",
+          "version": "repo-lines-v1:sha256:11d14961ece552cb907b140ce5cf3d10a801e43cecaf7fdc60c6d91be11c5b75:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMyNTY1OWMxYTUyYzc0MzFkZDUzMGM3NjdlMjZjOGEzNjkzZmYyMzIyMjk5YWJlMzAzNjI3MGZiOWU0NWVlZjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyMTUxMzMwZWQwOWFiNDEyNTA1NDQ5NzQ3ZmZjZjA1ZTZjY2I0NWRlZTljZDI4N2EzZmZjOWY4OGE5ZGNmM2MiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImM5ZDg0MTk1MjI4YjM1NTgyNTQ5MDllMDFmNTNkZmRmOGNjNTFhMWY3OTdiNDk5MTdkOWYyZWEyNTY0NWY3MzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjUzZDQ4MGFlZDhiYmM2ZmE4ZjIzZmU2NTc2OWJmOTdiM2FlYWJjN2Y2MDc1NGQ2OTdmMjAwYmFjOGQ1ODc0ZjgifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/resources_knowledge.py#L123-L147",
+          "version": "repo-lines-v1:sha256:2b481695aaca0934faf91c63b540f535315ed62a7bcabb815228b9aefa6cc2c5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk5OTg2NmRiMTlmNzRlNzgxNmFjZTBhODE0ZGViNDMzNTdmMWQ0ZGY0ZTg3NTY2MDY0NWVhNjdlZGM2ODk5ZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVhOTM2NDE3ZWI3Mzg1NjY0MjEwNGNhMjUxNmZiYjliYjY4ODQ5MWFkMzhlYTk4NWVmNzk4NmRlNzI2NDQxMTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJjODIzMmI0YWIzOGIxZmUwMTE5NzhlM2U3NDNjZTdjY2QwYjVmOTU5MWI2OTg5NmFhNWQxY2M2NjRmYzUyMTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU2ZTJjMTlhMjUxODg4YmQxNDY1NTlkOWI4M2FhNTRjZTZhMTNmNTQ0N2Y3ODRkOGZiNTEyMTQ0NzNlMmI1OTEifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/resources_knowledge.py#L171-L204",
+          "version": "repo-lines-v1:sha256:a456d19a30aabcaa116e8ec89738264a834b1288a23450799ce9196cee508ecb:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwZmM1ZmZkZDgzNTQ5OWVhNTE1N2Y0MmQ5MzMxYTcwMWUyMmE2NmE1ZTk4OTRmMGMwMTM5NTZjM2U4MWJjYTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIyMjZlMWJhNzk2ZmZhYmYwMmY2M2Y0NDdmZjM5NmQ2YzE1NWNkNDE0MDJlN2E0NzNkODNmZDUzYzBkZDY3MzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA2YWVjZGVjYjk3M2NkNTA1NzhlNzEzNWFhZmE5ZGVlNmJlY2FlYWVhMGQ0YTFiYjI0M2VmODBkNWU4NGIyY2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM1MWE4NGY2M2E0NGFiZjdiOTc0NjQ2ZDVmMzAzYTdhNTRhMjA1NmM3ZDE1MjYxOWU2ZWNiMTE0MTc0MzVlOGQifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/mcp_app/resources_knowledge.py#L85-L120",
+          "version": "repo-lines-v1:sha256:2c6f82708bf13f2d8dad1781c5d21fd744757e0802428e75a0a0cd081b97322e:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxYjllODVkNTI0NjkxNGMyYjJmMjQ2YmFkNjdkZmY0ODc0ZWI3NDRjYTI5M2JlYzU0YmJjM2QzZWQ0ZmE5NmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc4MzNmMTE4YTU5OWYxY2RhYTc2OTA1OWE0ODJjZWFmNTcxOGQxZGJjNTgxMDU0YjI2Yjc4MTFkOTgwZTQ1ODIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQxOGY4OWI3ZTc2NGVmNjhiYWEyZjdlZmVhOGQzMGI5OGU1OTIyMGI3NGE3YzY3NjhkYjg2MTdjY2YyOTU3MmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0ZWU1YTQzMWM4ZjZlMjRiNTg3MWRjMjkxOTJlMzZmMTZkMzcyZjc4YzFhMWYxOGY5NWRhM2EzZWQ3NzgyNDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_983a3c39655841f6a6f7027b8e280bbc",
+      "statement": "The MCP resource completion path intentionally suggests only grounded, tenant-licensed domains and derives document-name suggestions from `retrieve()` rather than container listing, so completion only reveals documents the caller is already authorized to open.",
+      "evidence": [
+        {
+          "resource": "repo://apps/mcp/mcp_app/resources_knowledge.py#L212-L269",
+          "version": "repo-lines-v1:sha256:a9d899d2b3438530a3f7b52c52b1beb77eb72d37ac347ac11f79f6c8e6caf445:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU4Mzg3MGQ4OTc2ZDM5YWI1MGNmYjRlMGYyM2QxMWIyMTJjYjFjMzI3OWQzYzRlMDJlZTAwNGJjMWMzMWJmMTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAyZGU0Y2VhZWUyYmQxYWU5OWZmODIyNDdmZGU4MjZhNzFkM2EwM2JiZjNkODc3OTJmZDM2NmNkNTM3Yzk1ZjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE5OWEyMjkzMTM1YjY0NTZmZTkzMjViYTJlODM5Y2NkNjU3YzllMzJhMDRjOThjZTc0ZTVkMzA3YjQ5ZTZiZmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJjOGJjNzk4Zjk5MTYwNmY0NzdhMzAzYWJmNGM3OWMwZTI2OWVlN2I0ZTEyMWEyMzZhMzA1NzJjYTcyMDMyNDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2d0392ec0a0245abbd4a69a443a8933c",
+      "statement": "`apps/backend/tests/knowledge/helpdesk_retrieval_test.py` guards a shared retrieval invariant by checking that every retrieval-using domain routes through either native KB or fallback search configuration, that helpdesk fallback URLs do not degrade to `.../indexes/None/docs/search`, and that helpdesk still declares `document_access=\"session\"`.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/tests/knowledge/helpdesk_retrieval_test.py#L41-L99",
+          "version": "repo-lines-v1:sha256:af6889f8abebca88816bbb493dd2527e20196be7f20d15fec34609ee75258136:eyJzZWxlY3RlZExpbmVDb3VudCI6NTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFiMzk3OTMzYTI0YTgwMWVlOTIzMzI3YmQ2OWEwMTA0OWMwNzc5MTUwMjFjZjJlYzM5ZGRhNGY4MWFhODM3ZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE2MjMzYjNmZmVhMzJhMjNkZjUzMDY1MzQzNDhmMmRlZTc3NmE1YTZmNzRmYjUzMzE3NWRkYzUzOWE4ZmU0NjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNjNDQ1NWUxMGU2MGVjZTY3NGRmYWMxZDcxMzgzMzdhZDUzMGJmYWIwZmVlYWY3ZGU0NWZkNWZlYzU1OWUxNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkNDEzNDBjYzIzOWExNTljZTliNjAyMmU5ZjYzMjI4MzJlMmVhZDc2Y2FlOWU0NzU0ZDIxMGViOGZiNmQ1ZTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_52a0281f224e4a1e830a2a48cfd84e33",
+      "statement": "`apps/mcp/tests/client_surface_test.py` verifies with a real FastMCP client over the app ASGI stack that a Reader can list the reading surfaces and read `document://techdocs/page-11.md`, while a caller with no roles sees no tools, prompts, or resource templates and gets a refused direct read, proving the authorization decisions reach the protocol surface.",
+      "evidence": [
+        {
+          "resource": "repo://apps/mcp/tests/client_surface_test.py#L108-L143",
+          "version": "repo-lines-v1:sha256:98a433c2bb055030c65bf466d86dca943796b752b4e8f611f72bc0e22d2a559d:eyJzZWxlY3RlZExpbmVDb3VudCI6MzYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjMDQ1N2FmZDU1YjA1MjlkY2IzMWM2YzRjZDMzODlmOTBiMDBjMmRjN2U3NjdmODE3ZDk4MDAwNDYwMDVkOTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVjNDA3NjZmYzczYTZkNjA2ZmUxY2YzMDBjMzliNWJjMmRmMTQxNjA3NGQ2ZDQyOThjODU3MjFjMTZjZjExYjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0OGQ3NDgzZDA2MGYxNzIyZTI0NTM2ODg4MzM0MjU2YjU0OTBlOGJiZTg2OTgyMDY3NmNhOWVhZjM1MDljYzkifQ"
+        },
+        {
+          "resource": "repo://apps/mcp/tests/client_surface_test.py#L171-L257",
+          "version": "repo-lines-v1:sha256:dbb656a2841741acff399a76774fbbf378ab6fb3fff17dd333b886420f98697a:eyJzZWxlY3RlZExpbmVDb3VudCI6ODcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTVjNjZlMTdiMTQ1Mzk3ODM0YjhjODU0ZGM0MTkzZTIxMjUxODBhODk5NmExNGMzMTg4MzMyNmIyZWZiY2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkMmNjNjNiZmUzYTBkZTVjNmM4ZWQxNmFjNzcwNDFkNzg5MDg0NzlhMDYxMjIyODY0MmViODEyYzMxMzA1YWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE4Y2QzMzgyNDk3NzkzODBiNjMxYjBiN2Q5MmU0MmQ5Yzg0ZDkzOTRmMmQ3NmU4NmY3YmU1MTJiZmJlYjIyY2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA1NzIyYjhjNGYyODMxYTA4YTZmZjE2OGQxNjUxMTRiNmZkYmFjZjk4NDIxNTM2NjI3NzY5M2JkY2IzYmQwMjAifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-09-02T18:24:34.393Z"
+  }
+}

@@ -1,5 +1,13 @@
 """Superfície pública do perfil de autoria que estende OKF v0.2."""
 
+from app.modules.okf.internal.actors import (
+    agent_actor,
+    generated_block,
+    human_actor,
+    okf_timestamp,
+    process_actor,
+    verified_entry,
+)
 from app.modules.okf.internal.authoring import OPERATIONS, copilot_allows
 from app.modules.okf.internal.bindings import McpBinding, parse_mcp_binding
 from app.modules.okf.internal.catalog import AuthoringCatalog
@@ -48,10 +56,16 @@ __all__ = [
     "FieldChange",
     "McpBinding",
     "OkfChangeSet",
+    "agent_actor",
     "copilot_allows",
+    "generated_block",
+    "human_actor",
     "migrate_legacy_manifest",
+    "okf_timestamp",
     "parse_authoring_document",
     "parse_mcp_binding",
+    "process_actor",
     "serialize_authoring_document",
     "spec_references",
+    "verified_entry",
 ]

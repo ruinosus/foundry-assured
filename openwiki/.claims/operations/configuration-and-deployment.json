@@ -1,0 +1,266 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:795c287eb3317de77ebb8ce9ee511a569f71c472bc5c3b32eca6b93e0bbc3813",
+  "claims": [
+    {
+      "id": "claim_9bb710b1bba04891ad619dd72098ec7c",
+      "statement": "The repository deploys the backend, frontend web app, and MCP server as separate `azd` services, with `mcp` hosted as its own Container App and built from the repository root context because it depends on `apps/backend` by path.",
+      "evidence": [
+        {
+          "resource": "repo://azure.yaml#L6-L26",
+          "version": "repo-lines-v1:sha256:394869dbb5ca3e2cb1a0dcad56e44b5853ca2e951cbb9dfc6049f69d999a97fa:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhNzNmY2NkYzk5ZWE4MzU5NjdjN2RlZTdlZmJlZDFmM2NhODcyNjBkOTI5MzE4NTBmZGQ2NmRhOGNiMTJmMWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZiMDBjNDYwMTE4MGIxN2Q5OGQ0NTE0Mjg0OTc4YzI0MGRlODZkMzRjYmVkOTdhMWMwMzdhNTMzMWRjNzMyYTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdmYjc3MjRlNDAwY2U0YTBhMDYyY2ZhYzcwMzU0MTc4YmVmYTE5NTA2NTdlYmQ1NGE3Yjg3MjhlNTM1OWQxZDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE3ZWViMTRiNjFkOTBiNDkyYjRkN2YxMzA1YjcxZWEwMWFjYzFlNzk5YWM5ZGYzNTlmN2RjMTkwZDYxNGUzNzAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d54144ba7d734e9087039dfc759a3047",
+      "statement": "The backend `.env.example` is organized around operational seams including Foundry, Search/Storage, Entra auth, ACLs, per-domain knowledge bases, MCP settings, shared-mode tenant store settings, and optional observability/tuning values.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/.env.example#L13-L128",
+          "version": "repo-lines-v1:sha256:7965b3224c15e404ce40585b5609e5375d5f2b1ae46310ecf3b64a9df66d3855:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE2LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI2YTk5YTc4NWQ0NWRhYTY4YzEzYTJmMTI4YThjZDRlNzQwNzlmNWRkNWYwNTE0MjVhZTYzOTU0ODk4Y2ZkNjMzIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIxZGNkZTc4MzZhNTIyNGVhNzlmNjQ1MDhiNWM4MjU2YTMyZGNkZGJkMzdhZTZiNTU4MmE1YjMxOTEzZTFmZWJiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiJmZjY5NWUwN2JjNjNjZDA3MWYzZTNkYjVjOTlmNDdmOTFkNTFmY2EyYWI0NDdhZWExMTU5Nzg1MWY5YTMwOTNmIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_5e381277611c4126b0c5a90ccb34b090",
+      "statement": "`app/shared/settings.py` intentionally keeps only platform-global settings, defaults `deployment_mode` to `self_hosted`, treats auth as enabled only when the Entra API registration is configured, and uses `http://localhost:8001` as the default public base URL for the standalone MCP server in development.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/shared/settings.py#L1-L128",
+          "version": "repo-lines-v1:sha256:ebe09693dc91c4938a6244190a4e790daf19da8b695dbc00d668fd93c7dc6baa:eyJzZWxlY3RlZExpbmVDb3VudCI6MTI4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI3OGFlZjgzMjlhOTJiYzQ3OGQzODBhMzUyYTRhODA4MmI3NWRkN2E3MTc5YzM4YzY0YWJjNDYwZDNjNDcyNzBkIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJhOGQ4ZDhhNjk0ZTU3MzYwYzEwNmQ1ZTNmMmNmYThjZjUxYTY3NjVjNzlhYjJhMzM2NWVkMmUxZjY5YWNmMDE1IiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MCwicHJlY2VkaW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1IiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_e67a71df4cce474194f739ece55bc7a6",
+      "statement": "The frontend configuration is intentionally thin: `BACKEND_URL` is the base seam, domain AG-UI URLs derive from it unless overridden, and browser-visible switches include `NEXT_PUBLIC_FRONTEND_MODE`, `NEXT_PUBLIC_DATA_MODE`, `NEXT_PUBLIC_ENTRA_*`, and optional `NEXT_PUBLIC_DEMO_MODE`.",
+      "evidence": [
+        {
+          "resource": "repo://apps/frontend/.env.example#L1-L28",
+          "version": "repo-lines-v1:sha256:eb76617a6d80f23204a9d9db1db923dce3f38c4284e362e32925bbdc62d7f736:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMyYzYwNjUxMmY4M2M2Mzg1OTEzNDZjOTNjMzg3NDA5ZmVlZTFhYWU3NTExMDU0YjhhYjllMmI1YzRkNmFkMGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1OTZjYjcxNGYyMTkyOTM5YzNhZTI5N2RiOTJlMmJmMGE5MGZlZDlmZDk3MWIwMTA4NmZkYTI1MmZjY2YzZTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_004d07d559d34982a350db4208eaaab9",
+      "statement": "Frontend mode and data mode are validated against fixed allowed values and fall back to `legacy` and `connected` respectively, with `isLocalDataMode` derived from the normalized data mode.",
+      "evidence": [
+        {
+          "resource": "repo://apps/frontend/lib/frontend-mode.ts#L1-L23",
+          "version": "repo-lines-v1:sha256:87ea89e8cf07e0d1d3b71fb4c57246e34d978c4507af3ad8abff85fa04a5c615:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdmODEzOTU4Y2YzZmRhZWIyYjkyOWNmZGQyMGVkYjRiYmU0NGFmZWU0MDJkMGVkMzk2ZGMwZmI2NWU1NDFhMDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJiYmJlYWEwM2EzZGQxODc1MmY1NDBhMzFjOTJiNzI2YzEwYjM5NWZhNmE1NjkzZmIzNmVlMTk3OGQ0YjIxMmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b8b7210e49864422be2d3531f76b2fd8",
+      "statement": "The primary local development path is to authenticate with Azure, run `azd up`, optionally create Entra registrations, bootstrap the data plane, and then run the backend and frontend locally.",
+      "evidence": [
+        {
+          "resource": "repo://README.md#L117-L130",
+          "version": "repo-lines-v1:sha256:64f8d65118c668683e97338cad4fc22392f5aea031e5d51fa545f9e2f33b33ec:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhYjRmODE0ZjU1YjUwOWY0M2I4ZDBjYzg0OWRlZDk5OTcxMTE0NzMxMzRjZmUyYzg2YjE2ZmYxZjc3ZTVlNmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkZmY2MTY2Zjc3MTVhMzYyYzMxM2MyOWUzYjQ0ODFkOWMyYTdhNzg5MDgzZTU5NDg5MjU0MTZhNWUzNzExNmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQzMjNjYzNhNjE2MjU2MDg3MWFjYjVkYzEyMjUzMDE3YWQ4OWZiZDdiZWIzYzZiMTk5MGI1ZjA3NjcyMTBhNjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM5ZGU3ZWNkOTVlNTIzNDg3OTg3OTdhMzkzZWIzMWQ1NzVkYmM1NjY0ZGQzY2E2YzU0YmJhNjdjYzc4MTZlMjEifQ"
+        },
+        {
+          "resource": "repo://docs/DEPLOYMENT.md#L18-L43",
+          "version": "repo-lines-v1:sha256:07ffe7887b4cb722033a213c7d09ac0d676419c628f7f699463278b0bdb1b7c5:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5NjM0ZjY2NGU5MWZiOGY2MjlmM2U2ZTZjMWUzNTgzMjJmY2MxMTVmMGFmNDRmMGQ4YTJmOGRhNjIwMWE0MTYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmYmVlNjY0MmYxYWYyZjBlY2IzZWJlZDcxN2JjMjY2OTE2ZWQ4ZDFmZjVlMDI2M2I3MmFmMTk2Y2E2YTQwMDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhhOTU0MjdlOTE2MTNlM2Y3ODk5MGM1ZWU0ZmE5ZDQwMzAxNjk1NDdlMGU4ZjQ3MWEzMzM5NWI4ZDA0ZTNiODIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZjMTZhYzAxYzM0NWY1YmU3ZTVjMzBlMWY0ZGExY2FlMzMzZDY5YmNiNjU2YjQ3MDhmNDJiNGY2YjZhOTk1ZmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_617d13ccdc594d92b59fdcd3247c3fa7",
+      "statement": "The repository explicitly supports a no-sign-in local mode by leaving the backend `ENTRA_*` values and frontend `NEXT_PUBLIC_ENTRA_*` values blank, which causes the backend to disable OBO auth and fall back to the local single-identity path.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/.env.example#L29-L38",
+          "version": "repo-lines-v1:sha256:8fc48376c6a754a5eb8fd36ef3e538367e811c25c8cd71fe58deaf70cb966760:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI0N2Q5ODE3NmNkOWI5NWY5YzM3YjYxODMwZGQxZjNiZDBmZmI5ODM5ZTE1NDRkMmUwMTYyN2M5ZjUwOWUwZjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVjMmU3YjcxZWQyZDc3YWZhYTA1NTgyOWMzZTRkNThmYmVkZjZjYWJjOTQyZDFkMWNkYTBmNjAyMmU0OTRiNmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNjMWIwMWU5MjI0MzM4MzhmOGZiMjQzOWFmYTU4ZGY3MjZkNWNjMTEyY2Y4MDUxM2U1ODhkYzQxZWNkYTM1MGMifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/shared/settings.py#L114-L121",
+          "version": "repo-lines-v1:sha256:0aa9e171e5356c860b3facce910c77fca34a577794e33eb09e46b812b4eceffc:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjNkMDBjZjI3MDk2NGQ0NGExM2RmYWM4NzUyYjA5ZmNjNDM1YjBmMTliMzE2YWJjZjgxYTdhYTY0YmIxMjJkNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTM0ZGY1ZGM2OWMxZTBmODlmODdhODYzY2MwNTRiOTY3YzVlMjlmZDk1NjYxZjEwMWFjMzc0MWY5OGRhNjY3YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2RhNmM4ZTgwOWExZGVjZmUwMTk3OWEzODM4NDI3ZGE0ODQ0N2FkOTBmNjI0OWRhODIxMWQ5MjUyZWIzNGFmZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDgxMWVlZDg0N2UzYTc4OWY3ZTcwNzM5ZTRjMjgxZjUxMmFjZmZhMTkwMDc3MWE1YjU4ZTg4MDMzNTA0ZDRhNyJ9"
+        },
+        {
+          "resource": "repo://apps/frontend/.env.example#L21-L25",
+          "version": "repo-lines-v1:sha256:802ba493bab2d8e9fc5ee2b0893391d39ddaab08d8e63fe92c6ba7b5f0cec02d:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTQ3ZjM5YzY5MDQ4M2MzZDQxYmNiMzA2NWQ0YTRmOTAwYjIyYWFhODgwMzNmMjA4ZjVhMGVjZDQ5MDQ5YzlkYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMmJjMTc2MDUwYzllOGZlYjJiMjJkYmViYzcyYzQxMmE4YjZjZDcyMmVlNDkxYjkzMWRjYWEyNWY5MmFjOWMzNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2JhMjQ1ZDVlMmFkZGRhNTYzOTZlODk0YWVjZTE3YjMyY2IwNjU0MjA0OTExMDVmNWIxYWFlOGRlYzAwNWI0OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDJjYTYxYzRiNTYwYjJmMTFiOTlkMDFlNWU4Y2JiY2UwYTg4MDM0OTRjYzQ5NmQ4YjY0YTgwOTdjMTUwNDkzZCJ9"
+        },
+        {
+          "resource": "repo://docs/DEPLOYMENT.md#L30-L43",
+          "version": "repo-lines-v1:sha256:3095ccbf939231c0e44509ebbb1c41a095301f21e4cbaeba94d78fff68b1ca9e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM1NDEwYmRkNGYxMGMyMDQ1NWU0ZWYyZTc2MWJhNWQ0ZWM4ZDg4ZTliMmQ3YThkMTAxMGZhMzU2YzI4NWRiNDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFmYmVlNjY0MmYxYWYyZjBlY2IzZWJlZDcxN2JjMjY2OTE2ZWQ4ZDFmZjVlMDI2M2I3MmFmMTk2Y2E2YTQwMDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjUwYzBhZjI3ZTEyMzRkM2RiMjE0ZDkzZGE5OGI3NDA2NGUzNWVkMzY4ZGIxMmMwZTE2MTFiMzkwMGQ0ZjlmNmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZjMTZhYzAxYzM0NWY1YmU3ZTVjMzBlMWY0ZGExY2FlMzMzZDY5YmNiNjU2YjQ3MDhmNDJiNGY2YjZhOTk1ZmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_265832ef26bd4f72a3ec0c5056f760f3",
+      "statement": "`scripts/up-all.sh` is the highest-level local orchestration entrypoint: it performs preflight checks, can create Entra apps and app roles before provisioning, runs `azd up`, and then runs bootstrap explicitly because ingest is slow and data-plane fragile.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/up-all.sh#L2-L16",
+          "version": "repo-lines-v1:sha256:3ac25723c4bd74ba6f6ddfa7b1dac1c56228c4ba7ce123bca57e4f047d0ee0f7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg4OTgxNTA1NTlmOGZjOGMwZDhhMDAzODU1MTU2ZGY3ZDdiMjJkZWJhMmNlNjUxODNjOTdkNTM2OGU1MmYxMDYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmMmY2OTM3NGZhZDNmYjc4OTkwMGY0N2UxMzdkZTJjZmExZDM4ZWEwNDM0MzFjYmI3NGRlYjE1NjQ3MGU2YzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoxLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEwODg3NWU4ODhkODgxY2FmYzk2ODU5YTdkMjIyYTc1OWM1ZWE2MmFmMzZjYjAwOGYwZmVjNzM3ZGJjZDMwNTgifQ"
+        },
+        {
+          "resource": "repo://scripts/up-all.sh#L68-L110",
+          "version": "repo-lines-v1:sha256:7e4b1fc5b57c267e84fcb508708037e893d2e9d595aead5e233f3483c22dc052:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjZTYzOWI4MTQxMGFmYjY3N2IyZGYwYWQxNjIzMWJjZTIwZGJmODVhMGVkM2UzNDJkNDkwZmQzNDFlYWNhODAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxYmNlZDJmYzgyZjk2NThmY2RkMzRlODk0ZjQ3MGMwYmRkMTZmNWVmNmU4YjMwZTcxZWUwMjZkOTJkYmVmZjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYyN2NjNWFkODE1MWEyZGM0MWYxNzhkNDg5NDdkODJmYjJjNGI4MWMxNzE3NmM4Mjk1YjJiY2M2ZjlmN2RiOWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ1MzA3YTkzMzEzNWI3NDI4ZDk5YjVkM2JjZTA5NDI0NmE3YTJmOTE4MDczNTRjNjNiNmNiZDUwZTY5YzRhOGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a8243dcf017d4dadaefabcb1773b46b2",
+      "statement": "The backend `compose.yaml` is a narrow local edit loop for prompt/agent definitions: it bind-mounts `./agents` read-only over the image copy so prompt changes are picked up by restarting the backend container rather than rebuilding the image.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/compose.yaml#L1-L25",
+          "version": "repo-lines-v1:sha256:8454602d6ab2b013602dc3cb7f5dc2af8206971a5c345e4423af7f24da3ecbde:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3NDU3NmVjZWM2NzczMTQ0YjVjMDgyZjcwNTgwYWNjMzFhZmU5OTQ4MzA3NjhjYzA0NzBkZDFiNDBkN2FlYmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyYjA3OTM2YTM1MGIxYjU1NGEzZTBlNjgwMGJkYTQzNGM4MTkwNzRjYmU5Zjk0NzU3NGQ4NzFjY2M3ZjEzMDMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_fa482676e20e4e83ae27c742fa0aaa8a",
+      "statement": "Demo mode is a separate frontend-only runtime path: `npm run demo` invokes `scripts/demo.sh`, which requires recorded fixtures, starts CopilotKit `aimock`, sets AG-UI URLs plus `NEXT_PUBLIC_DEMO_MODE=1`, and runs the real Next.js frontend without Azure or a Python backend.",
+      "evidence": [
+        {
+          "resource": "repo://apps/frontend/lib/demo.ts#L1-L5",
+          "version": "repo-lines-v1:sha256:f45010e9bfacc81bc5057aa2e19dcbd676567cb06a4895e13f82fdfd603d883c:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWQ4NDQxYjVjYTFlOGE0ZGNiNzI1NDM4MDQ1OTkxZjgzYmQ3YWFmMzcyNzJkNjM5NDI1MDg4MDhhMTMyYTFmYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNWU3MjEwYTFhNTUzZTY0Y2ExMWYzYTllNDU1NjhkYzI1ZDM1OWZhOTA1YzE0NTM3ZGNlZjQyMGRkZjhhNzhkMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://apps/frontend/package.json#L5-L13",
+          "version": "repo-lines-v1:sha256:150f14b643c0b4c87d1b39c495114956f09152b428521647176b0d47df8f5b51:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzQ4MzNkNTk0OWMwM2E0MGNhOTUyNDkxNjEwYTY2NTk2NDRiM2FhNDY2MzYyZjc5OTAyMGRiZjE5ODE1NDdkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGE5ZWYwNjBkOWMxMDk2ZTlkMmFlMWQ0Yjc2ZmVlMGI1NTU4Y2UyNDI2MDg4YmQ5MTBhYmYzYmVjYmVhMjRmYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWEyM2FiZjA0YzA5ZDdkMjIyNzEzNTY2YzM3YTQwMThkM2QxOGQ4NzY2Y2Q1YTlmOWZlMDc1Njk0MWM1MWNlMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTU3YjZiYWM2MWViZWU4MWVlZjgxYjc1NzI2NDAzNDZiY2MxZjIyMzJmNmU3Y2MyZjIyNTlkZWIyNDM3ZDQzYyJ9"
+        },
+        {
+          "resource": "repo://scripts/demo.sh#L1-L47",
+          "version": "repo-lines-v1:sha256:994904444f8e098d6ec0e42bcd6cacf21eb7481a7f63a52df608fe47de0da252:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5MjM4ZmZjOGFiNDVmZjgxODc4Y2IxMDIwMDYyOGU1M2NhNTAwYWYxNTFjY2VmZDFjNGQ1OGZjNDBkMzBiM2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ea4a8dd6baed4cf9a026e9c44b7c2ac7",
+      "statement": "Demo fixtures are produced by `scripts/demo-record.sh`, which proxies the real backend through `aimock` and records AG-UI traffic into `apps/frontend/demo/fixtures` for later replay.",
+      "evidence": [
+        {
+          "resource": "repo://apps/frontend/package.json#L11-L12",
+          "version": "repo-lines-v1:sha256:77717f1e515d0bfcd8cec71fa8dec3e3b1476607879665d74b0fc1d283a91b8b:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiY2E3MGNkNjA5ZGZmYjJhMDBiM2YxYWFhNTdkZDAzNmU5MGNjOGViY2IwOGQ1ZTY2ODUwODA2MjlhY2MyOThhMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzIwYmZlNTRlNTY2ZDgxYmI0NzZiMTM3ZjFlZmEyNmMzYmZkN2E1OTg2MDYyZDdhZjE3MWI4MGM1NjBlZDEyNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjJkMDIyOGJiNTE3Njg3N2UyYzU2NDdkNTlkMTQxZjhhODVjYzk1YzFiN2RmNDBiMmRkOWIwYzkzZjFjOGRmYiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2U3MzRjNTlhODI3MjI4NWY2ZTg4YmZkNDUyZDJiMGIzNDYwZGI4OWYyMTgyODUxNDAxZDIwMjNlNTE5YzM4OCJ9"
+        },
+        {
+          "resource": "repo://scripts/demo-record.sh#L1-L27",
+          "version": "repo-lines-v1:sha256:0367c6a045de0410c1304dfa43d0a304e9c890b35526be33f1512babfeb011ae:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlYWVlMTcwNjU2NWYwNjY2MjZhMjczMzYzNmE4YTM0M2EwODE4NTgxMWM2ODE5M2EwMDIzZTU5N2ExZmZkNmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_87e6c17abbe047a6a911744c0397f6ed",
+      "statement": "`azure.yaml` is the authoritative deployment graph for engineers and CI, and it adds a `postprovision` hook for pushing local env into the `azd` environment plus a `postdeploy` hook for hosted-agent RBAC and SPA redirect reconciliation.",
+      "evidence": [
+        {
+          "resource": "repo://azure.yaml#L75-L94",
+          "version": "repo-lines-v1:sha256:a13c5e5455f4639d3b7a2bc5b7a22b196f1fd4c2c0d06d22c3f761ad4a03cdcc:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0MDc1NGQ5OTc5NWVmOTdlZWQyNzE3NThiMDMyMDgwMjY5ZWU0ZWZkZGRkNTNjYmI5NDY0OGU1NmU5MDUyOGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEyY2U2YzdlOTA0NjBhNzdmZThhZjc2YjUwNGE0YzQ3YTkyZTdmZjUyYzA1YzI4MTg2NTU3YjM5NDczZjNjN2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiMmE5MDA0Mzk0NGZmMmRhMzJmMWIyN2QwOThhMzE1ZmM2Yzk2MzY2MTQ3MDc3MTc5ODg0MzE3MmE3ZjIyN2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://scripts/hook-postdeploy.sh#L1-L86",
+          "version": "repo-lines-v1:sha256:3bf97d468da2509809a62936b517331c0512a3fd18fcc7e307dbb8ad2887d8d1:eyJzZWxlY3RlZExpbmVDb3VudCI6ODYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NjlkMjM3Y2Q0MjBiOWQzOGI5ODFhMGE0ZjY3NzAxOTBhNGE4M2RjYTFmZTU2YzRmNWJhMWUyY2JjMGVmNzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://scripts/hook-postprovision.sh#L1-L17",
+          "version": "repo-lines-v1:sha256:5f96a61dc960cd6cf859e482dfcacf74ced5d54e8312b2d69abccbff280abd1b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NjlkMjM3Y2Q0MjBiOWQzOGI5ODFhMGE0ZjY3NzAxOTBhNGE4M2RjYTFmZTU2YzRmNWJhMWUyY2JjMGVmNzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_8171224128c046018bbfd3dd7be3ba36",
+      "statement": "The postprovision hook exists because the web image bakes sign-in config at build time, so `NEXT_PUBLIC_*` and related Entra values must be present in the `azd` environment before deployment builds the frontend image.",
+      "evidence": [
+        {
+          "resource": "repo://azure.yaml#L75-L85",
+          "version": "repo-lines-v1:sha256:446acb70c0306b75320bcbcb43d1846848a6bf66cc6e9ba74f62464f20985622:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY0MDc1NGQ5OTc5NWVmOTdlZWQyNzE3NThiMDMyMDgwMjY5ZWU0ZWZkZGRkNTNjYmI5NDY0OGU1NmU5MDUyOGQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxMmJkMjkzMTA3MjY2MTgwMmYzNGViOWZmYmFhODBiY2IwMmZkYzIzZWRhMmRjMzZkNWFlOTViOTdjNTcwNzUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNiMmE5MDA0Mzk0NGZmMmRhMzJmMWIyN2QwOThhMzE1ZmM2Yzk2MzY2MTQ3MDc3MTc5ODg0MzE3MmE3ZjIyN2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY0MDM0ZjRlZDc0NjNlMGZiY2M5YzgxYjkwYWE2NDRkMmRjMjEwZDY1MGVmNTc4YWM0MzYwNGY2MjQwM2ZmY2IifQ"
+        },
+        {
+          "resource": "repo://scripts/hook-postprovision.sh#L2-L17",
+          "version": "repo-lines-v1:sha256:74903a05bfe2208f181ae8338bc481f65c89aa7403d2c4924320b3bcb2a342db:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlhYzg5YmNhZGFmYjNjNGFkNGI0ZDg0NDBlNjc2ZjI5OTQ5ODA1M2U4ZjQ5ZDEyMjQ2ZWNiZTVhMzI3OWQ2ZTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NjlkMjM3Y2Q0MjBiOWQzOGI5ODFhMGE0ZjY3NzAxOTBhNGE4M2RjYTFmZTU2YzRmNWJhMWUyY2JjMGVmNzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoxLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFkOTVmYzA0YTgwYzk1MmY0OWNlNDE4ODYyN2M1M2IwZmJlOGM0NDA0MWI5NTJkNTkyYWNkMWRlOTk4NjE0NjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://scripts/up-all.sh#L68-L72",
+          "version": "repo-lines-v1:sha256:a3c880ff1d3bd01908ea554da02bb9a724567cfcd28cf9de654263f0508d88d8:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGNlNjM5YjgxNDEwYWZiNjc3YjJkZjBhZDE2MjMxYmNlMjBkYmY4NWEwZWQzZTM0MmQ0OTBmZDM0MWVhY2E4MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGM0ZDk2YjNlNTY3MjYxNGEwODc0ZDg0MDA0NmM5ZGU5YzRhM2IzNGFjZmFjMjlmNDNkYzk0ODAwMDIwOTIzMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjI3Y2M1YWQ4MTUxYTJkYzQxZjE3OGQ0ODk0N2Q4MmZiMmM0YjgxYzE3MTc2YzgyOTViMmJjYzZmOWY3ZGI5ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjExYzFmZGFlNjhiMWE3MmFjNTdlNjAyMGExZDI4ODU2YjNkODY2NTY0YzJkMjU2ZTE1YjEwZjFiY2JlOTc0MCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_27f45a09dc1343a88da6cf96a5ac5aed",
+      "statement": "The postdeploy hook reconciles hosted-agent runtime RBAC after deployment because each hosted agent receives a fresh managed identity at deploy time, and it also patches the SPA app registration with the deployed web URL as a redirect URI.",
+      "evidence": [
+        {
+          "resource": "repo://scripts/hook-postdeploy.sh#L2-L7",
+          "version": "repo-lines-v1:sha256:e12ce3b8c9b29519e8192ef35d31d143f564517c0ece45047c47a96594907347:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODQzNTFmYTA0MzMxYjVlNDk5NzQ4ZjNlZmM1YjQ4NDlkODI1Zjg4M2YyYmYzOTc2NWM2ZDRlNTMyMGQ3MWY0MCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNTFjMDUyOWY3MmNjODBiNzlkNzAxNTcxNTNjM2FjNWQ5ODBhMTAzNzkwMDliNDE3ZjMyZDliYzNhNTNmMzE5YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjEsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWQ5NWZjMDRhODBjOTUyZjQ5Y2U0MTg4NjI3YzUzYjBmYmU4YzQ0MDQxYjk1MmQ1OTJhY2QxZGU5OTg2MTQ2NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzQ1Mjc1NWUzOWI2ZjE3Y2E4NDAzZjljMjdhNjRjOTE2MzQyYzU4OGViNzZiNTFjYzI5NGEwM2Y0MWM5ZDY4OCJ9"
+        },
+        {
+          "resource": "repo://scripts/hook-postdeploy.sh#L41-L59",
+          "version": "repo-lines-v1:sha256:7ba001cf062e8ab46ab50afa8439e105afb9e1a39d565dd9e52a2799b2bbf1c4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmYTg4ZmE2YTZlNjYxODZmNTNkNzFlYTAwOGNjOTljZDYxMzBkYjQ1MjE4OWVmODAwNjc3MDA5MWI5MjRhNzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMzNDc0NTc2MzA0YWQwODU1ZTM4ZjRiOGZiNzZmZTA4MDE4OThjMmVjYzI1YjY3NzIxOGY3MDMwNTMxOTgyNDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZkNzJiZDkxNDQwMzA4ZTgzYjg1ZWE0MmRiMTEyYjNkNThkY2IyZjg1NGZhYTBjNDIwOGYyZDkwZWY5YjVmZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg3ZjFmMmE5NzdiNzZhZDc2ZDE3NmI2NDY0OGJiMDEyMzdjNzAzZGJmOGU4NTU2OWY1NDdjZWQ3M2QxOGE0NGYifQ"
+        },
+        {
+          "resource": "repo://scripts/hook-postdeploy.sh#L61-L86",
+          "version": "repo-lines-v1:sha256:8b280860f9d69e3bff35c082c74dbc1e2e307ce6224c0e901c02c3265861c90d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1MDZhMGI4YTQzMzcwNmIxMzE2YzY5OWU4MzgwMWVkYmFjOTkwYzg3YTA4OGMyNmQxYWViNzc1ZDc5MzU4ZjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NjlkMjM3Y2Q0MjBiOWQzOGI5ODFhMGE0ZjY3NzAxOTBhNGE4M2RjYTFmZTU2YzRmNWJhMWUyY2JjMGVmNzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdlZGY5Y2Q2NDZmMWZhYTRlOTExMDg2Nzk5ZmZhYTNjZTEwMDgzMmE3MWQ2MjExMWE0MTBlYzgzY2UxNDI5ZjYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c432b9ecf148424ebdb58482c241405b",
+      "statement": "The production deployment workflow runs on published releases or manual dispatch but is always gated by the GitHub `production` Environment, so a reviewer must approve the deployment before it proceeds.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/deploy.yml#L1-L18",
+          "version": "repo-lines-v1:sha256:a9afd9fdd49aea8229b0e9661c8ccbd854bb9ec835336e3d36e0ec97d1572be8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ0MGFiNTY3NDk5NmFlMjkxMGRhNTdlNGYyMmJiZjdmZTZmNzg3YzgyNDNhZDlhOGU2MGEyMWQ5ZTc2MGU1NjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlNWQzNGVmYjMwNTUxOTFmMGYzM2JiZGJhYTVjOTY2MTRmMmVjZTM0OTkxYWEwZDgwMmRiMDNiZmYyN2FiYWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgxY2M0NTA5Mzc1ZjZkNDRiYTY2NGVlMDU0MDU5NzRiYWRiNGNlNDU1YjMwODE2M2ZlNWFjMDZjNzA0OTVkYWQifQ"
+        },
+        {
+          "resource": "repo://.github/workflows/deploy.yml#L34-L45",
+          "version": "repo-lines-v1:sha256:39c4b403fd8b8696b007605dcebfe322dbcdd520ec06b0a5ed0990e8d0cd51a6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5ZDgwMTU0ZWQ0MmZjNWM3NzliMTMzMTU3OGI1OGI4OWM4MDFlYWNlNzRmMjRjZDQ4ZWI0YTIzNTc5NDBhOTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4OTk5MTEwM2Y2YmE4ODhlM2RlNzY1MWM1YTMwNWM3N2U1NTQ3Njc3M2FiYTgzOTU5MWVjYzViZDBmMmFiMWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZkMzUyNGU1YWQxYmMxMzAxYjRkYzM2Y2Y1YWMyYzZlM2VmMjJmNDM4ODNhMWIxZDU1N2YxOThlMGJmODU5YzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0MDIzMTgyN2FlODNlN2FiYTNkMDAyY2UzYWNlOGUwZDEzNzlkMjllNGY3OWZiZjIyNWNmMjYwYTA2MGM4YTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_28a5a37d1b484434a4a55a29e3407154",
+      "statement": "The deploy workflow installs the `azure.ai.agents` azd extension, logs into both `azd` and `az` via OIDC, writes required `azd env` values, provisions idempotently, deploys selected services with a default of `backend web mcp`, and then validates effective backend and MCP container-app configuration after deployment.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/deploy.yml#L130-L161",
+          "version": "repo-lines-v1:sha256:f470aa1d33507de93df5c9a700344c6f2acf37ec2268b63827bde97b03bd4a61:eyJzZWxlY3RlZExpbmVDb3VudCI6MzIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwNGYzYjkzYmFkOThiNDgxMTI1Y2QwMjAxNjE5YzY5ZjE1MTg0OGQ2NWRlMWE1YzQ2MDFmZmMyOTI5YjI4NzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjI5OTJiMDE1MjhhNzFlNTQ3ZDA5MWJhZDgyNDdiMGQyMTIzNTRjZjc2NDg5N2E5M2ZmMmRlNWZiOTM3Y2IzZTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijc4ODQ4N2ExZDFhNTFhOGM3N2Y2YzY2YTQ0NGViODJjN2JmNmQ4NzU2MGQxMmViNDEwNjlhZjk5ZjBjNmNhY2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY1ZjlhMWFjZWJjMTYwOGVlMjNjNWY5MWYzMTZmZDIyZmMyNmU4MDU5MGJhNzIwNzYzNDA1MjUxYmQzNmI5OWYifQ"
+        },
+        {
+          "resource": "repo://.github/workflows/deploy.yml#L46-L115",
+          "version": "repo-lines-v1:sha256:11e24b32788a97802a4573112e15f3f12aed19a5b274805f1460e37de0bef482:eyJzZWxlY3RlZExpbmVDb3VudCI6NzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ5NWVhZmFjMTU4YzE2NTMwNGJlMGQ5M2FjOGY2ZjY5M2NmZTAzZmQwMjEwYjU3MjUyMzNiZGIxYjRhNTE4NzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJmMmM0ZjBkOWI4MTdkYTE0ZGI2MWRmYjIzODdlOTU1NDAyOGEwZWI3MGYwMGQxMzRiZmMxMGZjZmY1NTIxYjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNjOTNmYzEyODY4OWU4ODMwMjFmYmU1NzM2MGFmZGYwZTNjM2VlNDU4ZTI0YjhjNTc4ZmMwMmZjZjQ0MDdmNzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU2YTJiMWM2ZDBkOWZkYmUxZjA2MmMzMjRmM2I1ZDVlYjBiYjAxZTIwNDRjNDAxZThlZWMyZGU1YjFhMDZmMzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_375fb6fbe3174c078b53bf75f54d3add",
+      "statement": "The repository’s CI workflow is verification-first rather than deployment-oriented: on PRs and pushes it installs backend dependencies with `uv sync --frozen`, runs lint, and then executes a large set of policy, access-control, wiki, architecture, MCP, publication, and deployment-config tests.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L1-L45",
+          "version": "repo-lines-v1:sha256:d0296c51f3da478c8d21a1039709297c86a89c7bf485e77dc563479ab505d93c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjA2ZTFiMzJmYTA5MDc5YWUyZjAwMDFmZmYwZWNhMjdiNDk4NTk1N2Q0ZWI0ODU3OTI5YjNjZjA1OGZhYWU1NDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3MWRmYjQ2MTA5MmQyZjFkZTRjODlkNDNiZmQyMDk2YmY2NDNlN2U5MWNjYjEyNTdmZDFkODc5NmVhYmQ4ZDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVkZTFlYzZmYTM2YTIxMTU4OTMxNjY2MWY4ZTFlYWMwNDMyYjAyMWE1MzVjNTBhZDU2NTViYTIwZGU4NzM3ODUifQ"
+        },
+        {
+          "resource": "repo://.github/workflows/ci.yml#L163-L249",
+          "version": "repo-lines-v1:sha256:bcee34e9271ecfcd35dfe4cc8fea6abb602a2c7754931b753cdf16e7f50c4ca1:eyJzZWxlY3RlZExpbmVDb3VudCI6ODcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRhYmNjZGU2MTI2MTkxYjEyNmRjMWQ3YmFlMmNlOTUxMjA4Zjc5MGU1ZWFlMTNiN2U5MGJhZTc5OWY3NDJkNjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiZGU5YTc0MDExNTgxMWVmZjlmYWRkYzFjYjdkZjNhODU1MzFmOGU2YzJlYTQ5YWUzYTZhNGY0NDhkNzUzMDQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAxOTM2MzVlYmE1MWVlYzU1MWJiODI3OGY2MTNjYzMyMGRhMzE5NjVmMjViMDc0ODZmYjRiOWIwM2U4ZDFmOTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijc3M2FmMDU0OTJhNTU1Nzk1ZmRjZWI1NDAxMDkwMzZhMzdmNzczYWIxNmNlOGZlZGZiNWJlYWY3MTQzZjE5Y2IifQ"
+        },
+        {
+          "resource": "repo://.github/workflows/ci.yml#L80-L140",
+          "version": "repo-lines-v1:sha256:58b05d3a9849472f58241664a8ed49548198cf8842a85ef2e6df5ef8ab6c4316:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmYTFkMTFkZWZmMmVkOGJmZTI0MjIyN2MxNjdhYTBlZmJmOWJmN2QyODc3OWMzN2Y5NjMxNjZmNDU5MjRiZmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkNTAyNmJhOTM5OGE4ODcwODVlMGQ4NGJhZWNiZmM0NjM3ODc4ODVhN2Q0OTJlZGFlMTE0OGU5YjM1OTk3NDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJmNjViYjI0NTAyM2M0YjFiNTI1MjNkNTNhZmU3MTY5MmE0NDg0OWI5OTI0ZTk1NmZkNWU4YTgwYWUxMGM4NjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJlMmZiNGQwNmZmMDNhMTMxMmJhNTFlZWMyNWFmMzU1ODYxY2I2OTBiMzk3OTUzM2I3ZDJhMWVhNmU5MGViY2IifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_702165c0952745df99314236d91722ed",
+      "statement": "The backend MCP-related settings intentionally allow partial feature degradation: blank `MCP_REQUEST_STATE_KEY` disables MCP write approval cleanly, while Redis-backed durable tasks additionally require both `MCP_REDIS_URL` and `FASTMCP_TASKS_ENCRYPTION_KEY`.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/.env.example#L82-L108",
+          "version": "repo-lines-v1:sha256:20ed34cd7457435fd1669a76bcb50bdf6f8356d85f97ae59b0cb894f849f4ba9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlMTI1OTI0MmJlODMxNTdkMGM0Mjg3YTUxMzY2MjVlNzExOGU3ZWNlZTYzMmM1NjE5YTY0Nzk3NDQ3MWNiMDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJlODk4MjZhYWQ4YTA4Mjk5Zjg5YWVlZmYwNWIzYjc0MGE0NTc0YjliNjE2NWVjNjU5ZDUzY2IwZDIyMDBjMzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAxYjU3ZDBmY2FlMzg4YzIxYzhlZWU4ZGZmMTg5ZTZiYjNiNGY0Zjg2YmNkOWY5ZTJkNTZlOWIwZGIxOGYyYzEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI0YTBkZjYzZDUyMDJjNjczNDljN2ExNTUwNjQxNGI3ZjQ0YzgxM2VlMTUwOTRjZTA2YTY4ZmQ0NmM3NzNlMDUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/shared/settings.py#L84-L112",
+          "version": "repo-lines-v1:sha256:673afed1b9686bc03638ede8af73e4cd365e3d392693e4bd3247ad8ffb620301:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNkNDZkNDdlMDBkMDM0MzMyMmNmYzRhZWE1YTgxYjBlY2FkYTA3NmMwYzZmN2YzODQzYmVmNzBkMDQ0MzM0OWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ1YTU0ZTM0MzA2NzRjNDFhY2Y4N2M2YzQxNmIxODkzYzg2NzI0ODRkNWE4NTQyZjVmZjM5Yjg2YWQzZjQzMzQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImEyMmE5N2ZkNzYyN2E1OGFlZjcyYzgwYzkwMjJiNDVjOGNjYTM2NTU1YzBlNzVjOTU3Zjg3Y2M5ZDE4ODA1ZjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczNzZmMDNkZWRmODI0MmFjMzZlYzgzZGQ0MWM4Y2VjNGJmZjIwZDRjODhhODJiMmU3NTc4MzNkN2ZmYzA3OGUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-09-02T18:24:34.393Z"
+  }
+}

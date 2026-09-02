@@ -45,14 +45,10 @@ Before generating any page, you MUST determine the source repository context:
 
 ## Mandatory Requirements
 
-### VitePress Frontmatter
-Every page must have:
-```
----
-title: "Page Title"
-description: "One-line description"
----
-```
+### Frontmatter
+
+Do not emit frontmatter. The pipeline writes it after you return, so that `type` and the
+producer actor stay out of reach of a prompt — see `wiki_builder.render_page`.
 
 ### Mermaid Diagrams
 - **Minimum 3–5 per page** (scaled by scope: small=3, medium=4, large=5+)

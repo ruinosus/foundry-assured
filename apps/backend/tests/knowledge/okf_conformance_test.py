@@ -47,7 +47,39 @@ BUNDLES = {
     "agents/assured/flows": BACKEND / "agents" / "assured" / "flows",
     # Os copilotos e a política herdada — `type: copilot` e `type: policy`.
     "agents/assured/copilots": BACKEND / "agents" / "assured" / "copilots",
+    # O bundle que o domínio `selfwiki` consulta. Ficou fora deste gate até 2026-09 porque a
+    # adaptação retirava o frontmatter (auditoria, defeito 1) — o único artefato não medido,
+    # e o único que usuários de fato leem. Uma versão por diretório; todas são cobradas.
+    "knowledge/wiki-bundle": REPO / "knowledge" / "wiki-bundle",
 }
+
+#: Diretórios com cara de bundle que este gate NÃO mede, e por quê. Existe porque a saída
+#: dizia "os 4 bundles são conformantes" sem dizer que o bundle que o `selfwiki` consulta não
+#: era um dos quatro — um verde que afirma mais do que mediu, que é exatamente a falha que o
+#: `docs/CASE-STUDY-LLM-WIKI-LOOP.md` documenta.
+#:
+#: Entrar aqui é uma decisão, não um esquecimento: a lista é impressa em toda execução.
+EXCLUDED_BUNDLES = {
+    "agents/assured/guardrails": (
+        "dado de aplicação, deliberadamente não é conceito AgentSchema "
+        "(guardrails/response-language.md:2)"
+    ),
+    "agents/assured/personas": "idem — persona compartilhada, não conceito",
+}
+
+#: Avisos que ESTE gate trata como erro. A spec manda o consumidor tentar consumir um bundle
+#: de versão desconhecida (SPEC.md:778-780) — e por isso o verificador está certo em avisar.
+#: Mas um bundle NOSSO declarando uma versão que não validamos não é consumo best-effort, é
+#: uma afirmação falsa; foi assim que `okf_version: "0.1"` sobreviveu a todo merge desde que
+#: o gate existe. O verificador é de terceiro e não se edita (vendor/README.md).
+#:
+#: O match é no TEXTO do aviso de versão, não no nome do campo `okf_version`: o verificador
+#: emite dois avisos cujo texto contém `okf_version` (vendor/okf_validate.py:330 e :332-333) —
+#: um por frontmatter extra no `index.md` raiz (nada a ver com versão) e só o outro pela
+#: própria versão. Promover pelo nome do campo promove os dois, e o primeiro vira uma falha
+#: que lê como problema de versão sem ser. Por isso a string é o prefixo da frase inteira do
+#: aviso de versão, não um substring genérico que reaparece em outro aviso.
+AVISOS_FATAIS = ("§12 bundle declares",)
 
 
 def main() -> int:
@@ -87,10 +119,14 @@ def main() -> int:
 
         erros = rel.get("errors", [])
         avisos = rel.get("warnings", [])
-        ok = bool(rel.get("conformant")) and not erros
-        print(f"  {'✓' if ok else '✗'} {nome}: {len(erros)} erro(s) · {len(avisos)} aviso(s)")
+        promovidos = [a for a in avisos if any(t in a for t in AVISOS_FATAIS)]
+        ok = bool(rel.get("conformant")) and not erros and not promovidos
+        print(f"  {'✓' if ok else '✗'} {nome}: {len(erros)} erro(s) · "
+              f"{len(avisos)} aviso(s) · {len(promovidos)} aviso(s) fatal(is)")
         for e in erros[:10]:
             print(f"      ✗ {e}")
+        for a in promovidos:
+            print(f"      ✗ (aviso promovido a erro) {a}")
         if not ok:
             falhas.append(nome)
 
@@ -98,7 +134,11 @@ def main() -> int:
         print(f"\n❌ bundle(s) não conformante(s): {', '.join(falhas)}")
         print("   §11: todo .md não-reservado precisa de frontmatter YAML com `type` não-vazio.")
         return 1
-    print(f"\n✅ os {len(BUNDLES)} bundles são OKF v0.2 conformantes (§11).")
+    print("\n  não medidos (decisão, não esquecimento):")
+    for nome, motivo in EXCLUDED_BUNDLES.items():
+        print(f"    – {nome}: {motivo}")
+    print(f"\n✅ os {len(BUNDLES)} bundles medidos são OKF v0.2 conformantes (§11): "
+          f"{', '.join(BUNDLES)}")
     return 0
 
 

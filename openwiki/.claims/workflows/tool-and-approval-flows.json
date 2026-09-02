@@ -1,0 +1,248 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:d8ff7da26b54291da8c24751db5a5e5b0ce63d1e16766b14029f41877c301b16",
+  "claims": [
+    {
+      "id": "claim_cc90fdef38f94ad6a97d4c806817f80f",
+      "statement": "The composition root mounts non-grounded domains by `kind`: `workflow` goes through the helpdesk Agent Framework workflow mount, `tool` goes through builder or platform Agent Framework mounts, and `graph` goes through a LangGraph-specific mount. Because the LangGraph adapter does not accept FastAPI dependencies, the graph mount wraps it in an `APIRouter` and then includes that router with the normal domain dependencies so auth and entitlement still apply.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/registry.py#L182-L247",
+          "version": "repo-lines-v1:sha256:55bba11a7aa6fa9bdb02048b328dee0d8d0b3e932bf5a64277f73e5fd977ef42:eyJzZWxlY3RlZExpbmVDb3VudCI6NjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5MDY3YjAzMGZmMThkMTM2NjA3MGZlZDRmYzQwMDkzYjZhYThlZDE3MDIyYTZlOTZlYmFiYmJkMzk1MmQ4ZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNlMjY2NGY4ZTgzMTFmYTRiZjc4N2RjZTdlOGZkZDFmZGVjMjZhZWUwYTk4M2UyNzlkNTZmZDA2ZTJjMmRmMzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImRiZjhhNWQ5YjQxYjQyMWJjMDdiM2FlOWEzYjFiZDkwOTU3MjY4M2MyNmFmMTc4YzkzMDQ2MWRjMjFkNzNkMDEifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L250-L270",
+          "version": "repo-lines-v1:sha256:e17f3d0570f8e4b1f3f7593b91ec88dbcda6a2aea5b274238c45e983ed2ed21b:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzZmZmNmYxYTAxNDMwYzZhNmYxMjliMDZiNjNhN2Q5YzNkOTlhZmYzZmIwNmRjNzE0ODJmZjBmNTc1MGNiMzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5ODk5MTY5NDAzNDhlYWQzYmNhNGVhNWU2OTE0NTc2NTA4YjNlNDFjNmE4ZGIwMjQ2MDc5ODQwNTMxZGU0ZWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFlZTUwNjgxNTMwMTMxMWM5ZWE1MDMzNjcxZGM3NDBmMWY2N2M2NjMwMDM3NzNhNmFiNTY3Y2JjYjY2OGZhODYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgzZjZhMzk1YTdiODFiMzdkYTE2MzEzMjQwOTIyZmI2YmE4YTcyOTVmOGRhNDZjNzFiOTUyYzQ1NWEzNTllOTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b509f2eb20e54b1ba9d33b63629d62fa",
+      "statement": "The frontend domain registry and console treat `helpdesk` as `workflow`, `platform` and `builder` as `tool`, and `oncall` plus `deepcall` as `graph`, and the console mounts `TicketApproval` for Agent Framework `workflow` and `tool` domains while mounting `GraphApproval` only for `graph` domains.",
+      "evidence": [
+        {
+          "resource": "repo://apps/frontend/components/console/AssuranceConsole.tsx#L150-L167",
+          "version": "repo-lines-v1:sha256:abf2c181d83b025bff4eb8980b2f7f89ee48dcb3f7ca5ec6865cfe3f0f5e953a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE4YjBkM2RkMjQxMjZiZjdkZDhmMjJjYWZmNjVkYzIxNzBiMTczZTNmOGM3MmUwNDI4NTVjMjdmNjUyYTQ5NTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBjMGYyNTVhYThiZjU3NGZiZmQ3ZjlmMzk1YTIyNjk1ZWNiNjQ2MzUwMjRmODgxZDQ0YTZjZGExZmQ3MTIyMTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAyNmUzNDYwYTYwZDI0OGY5NjQwNjIzOTMyMDA1MzdiN2YxZTcwODUwY2RhM2RiMzRmOWE5NDZmZWEwNDZiMTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU5NDA3ODA1OGJjOTI1N2Y3OTliNWY0YzMzMzBjMDg5MDg3ZTVjNmQ4Zjg2Y2VmMTg4YjYwM2I1OWFjMTJlOTMifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/components/console/AssuranceConsole.tsx#L44-L53",
+          "version": "repo-lines-v1:sha256:3852d98d7b2bef5c1ba467c34a2f90f44dccdc675c378eb371b14a74679d8cc5:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg1ZTQ4MmI0N2I5YzZjZTcwZGU0MzBlZjcyYjFiMzA3ZjE1MGM5MGFkYTZiZjViOTgyZDc4Yzc0ODE5YjBmODYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBjZDEyMDRiMGRjZTNjNjdlOTdlOTlhYTZkYjhhMTNiMjMwYzhkODdhMDA5YTljMTA1NmU1NGMxMDFkMGJiNzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJlMmUzZDYwOWI5ZjNjNmVlM2NkNjhkNTdlYTk2MWNjZDMxZDcyODYxZDhjN2RiYmVkNmFiZDNiODM1MjY4ZGMifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/lib/domains.ts#L43-L107",
+          "version": "repo-lines-v1:sha256:22aa33216ffb7b809568217f7e980482071cd3a54839fdc7420a8bf4e93587f9:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlNmYyN2FiYzc2MThjMjdiYTgzYjVjZjZhYjFiM2NjYTM3N2Q4YjA4NThjMjExMWQxNzQ3YmNhNDM2YzFhMTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwMmQyYzBkNmRjNWU3NGQ5MmZhMTRiOTFkYmVhMjY0MDkwYmViMzVmZGI5MTg4ZDliMzQxMTgxZGNlOWY0Y2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjZlNGQxOWFjMDI3ZTE4NjdkYWI3YjZjNDZhZTQzMDM3NjA4NTM0MGViNmIyZjhjZjA3MDczN2E3ZWQxMTc2ZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEyNjE5NDcxY2E3YThhNjJjN2IyZjcwMTdjOGQyODFmM2QzMGI1M2ZlNWU1MmUzM2Q0NGFiNzZjOWM1YjU0M2QifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6aa43b733ef14199be3a02b2c5b3666c",
+      "statement": "Helpdesk's runtime safety gate is structural inside the workflow: `build_helpdesk_workflow` builds the `triage -> retrieve -> resolve -> escalate` chain, `EscalationExecutor` pauses with `ctx.request_info(...)` when resolve emits a `TICKET:` result, and the ticket is created only in the response handler after the approval decision is interpreted and authorized.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/helpdesk/internal/escalation.py#L101-L163",
+          "version": "repo-lines-v1:sha256:d01b71d82c39a5c9db41e3dcedafc9748b8eda3427c2dc77b61c000dba8cd64f:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxYjZmNzBkZTNkZjI4ODk0YzRiMDlmZTE4ZDQ4MmFmYzYzMDUzOWYxMWFkYjBjYzUxODk0MThhMWI3Mzc4ZDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4MDIxYjBkZGRhNmUzNjE3OWY2NGNmM2JmMzdkNjFkMTdiMzEyNzI2ZTYxMjZhOGJhMzBiNDY5ODBiMzNhMTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkZGI0YTJlOWUyODUzYzg1ZjJmNTk0NzVmYTg3NTNhZWVmNWQzZGUyNDVhM2E4OTk3NDFiMDU5OGM4ZWY3ZGMifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/helpdesk/internal/escalation.py#L69-L99",
+          "version": "repo-lines-v1:sha256:2b27b586f932f4997e3a2bbb4e91c85c7e3b6f7326f4f87b70e6ee4828539de5:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzZDVhYjJmYWEyNTZkMWZlYzQyOTIyZGRjOGZmYzNlMDlmY2QwZmQ1Mjc3ZmFiODdlNjcxMzc4ODlmMzU2YTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzNjI3ZTEyOWI3OTNjNTA3MmU5Y2JhNTEwMmYzZDQ2MTc3Y2M2YmY3OWEyMjUwOTViNmQzNmM1YWUxY2QxNjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkxZTRjNjgyZjA2YzgxZDc3OTAxMDFlMWRkMmI5N2JkZTJmNGZkYjkyOGE5YTU0YTViNzMyYWQ4MTIxZmIxMWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjgwYzA5OGMyZjE0OGM5OGI0Y2VlYTJiMTA3ZTZhY2UwN2U0OWU4MmVkN2E0YmExZDdmYTIwNjhkYTc0ODkwODQifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/helpdesk/internal/graph.py#L82-L100",
+          "version": "repo-lines-v1:sha256:a44b1f570b58c668b7c7e8e0d98ffd309933b3d1019d14d89cdee300d6f6ce32:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcxNDA5YWVmZDE2Yzc1OGYzODQ1ZGI1MGQ4YTg1NDQ3MzcwOGUyZWViNzk5YmFjMTU0ZmU0OTc3NDJhMWY4YWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjllNzE5NDgwMGViNDk1OThlYzVkMDEzYmI1NTFhOWQ0MDJiZTJlNjNlOWEwMzNmY2ZjZTQxZGIzYjRlYzNjZDAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI5OWU4NzIyYzkwZTJjMTI3M2I1MmZiOWYzZGIzMDc3YmRlOGM5ZjQ5YjFlN2Y1OTQwZDhiYTIyMWVlM2U5MjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoxLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9213a544577b414dab23ca1bccf128ab",
+      "statement": "Helpdesk approval parsing is fail-closed: the response handler accepts both legacy booleans and decision objects, but `_read_answer()` only recognizes `approve`, `edit`, or `reject` and converts anything malformed or unrecognized into `reject`, so a bad payload cannot be the reason a ticket opens.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/helpdesk/internal/escalation.py#L166-L190",
+          "version": "repo-lines-v1:sha256:ac90037d56687a6d1f76b745db870895f123fbc7f59ca24f2da42639008eefb8:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYxY2UxZTM5OTBlNjBmMjkxNGI5NWZhYzc0OTBhNTZkZDEzYTgwNWJkYTRlYjc2ZTg2ZDJhNzE2ZjgxMDM4ZTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgwNmFlZjg1OGFiYTY3ZDRjZDZlNWM1MWQ2ZWIxZmFkOWI1ZjQ0ZWNkM2U2OWU3MzhiNjdhMjgzMjkzNWZjNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzZGYyYWNmMDZlOGMzZjAzYzcxMzVjNmU4YWM1YTljYTU0MzJhYmUwNmE3NGFjYTBmZGQ5YTUzYTAwOGY5ODciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5da5ac5494924d22b0ba6a17178e22f6",
+      "statement": "The mounted helpdesk endpoint uses a per-request workflow factory so each run binds the current request's credential, memory scope, conversation history, and optionally grounded retrieval with the current user and domain spec rather than a boot-time shared workflow object.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/helpdesk/internal/graph.py#L34-L80",
+          "version": "repo-lines-v1:sha256:562b5c08fdfbfd9392310f933939e96d926dac348fd43a401962d9238fedcdad:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2YzRlYzhkMmVjOTkwOWJjMWM0NTZjZTc4NTYxYmE4NTU0NWJkMWFkMmQxYWY5Mzc3NWMzMGQ0YzJiYmM1OTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1YmI0N2QzMGM4Zjk2MDNjM2QzODE2NWYyN2ZmMjhkNmUwZmM1MWZjY2I4NTVjOTU5MDRjNGUyODk2Mzg3ZTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ4NWEwMTJmZDU4Nzc1M2ZhNGVjMmJiNzM0MzBkMjczYzNhMmY2YWNjZTE0YzhiMDFiYzZkNDc5NzlhNjMzMDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjEyMDRiNThkODdmZjI2OGVkYmY0ZGMyOTJlYzA3ODNkZTQwYmNhN2I0NjQ5MzFiNmQzNTM4ZGRlNTA0MTAwMjIifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L103-L135",
+          "version": "repo-lines-v1:sha256:df7415aac4af45a190431d943730c7883e70fc6d993b83602dd5c0a741c4f9f0:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmMGU4MzdiZmI1ZjJkYzQ4MDU3ZGIyMWIwYTJiNDQ1MDI3NWI4OGU5NGQ0NTYyOTRkYTU4YmQ2MjA5NmIxNmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzMzg4ZDhlZjkxNjliNTA2OTNhN2YxYjJkOTE3YjdmMzg5OWMzMDczZTdmYjU2YWY2NzE0OWVkZGZkZGMzMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiNzgwNjkyZjc3NThhNjZhNzU2OWYzMjFjZGE4N2ZhNTNjMDIwMDVhOGFiM2YyM2E3MGFmN2NlOTE4OTM2OTQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_12ef46d0fb9940178a780cfa49a9f673",
+      "statement": "The declarative helpdesk workflow test proves that a declared human step really becomes the same runtime gate shape: it builds the published helpdesk YAML into a `Workflow`, verifies that a minimal YAML `Question` step emits `request_info`, resumes it with `ExternalInputResponse`, and checks that later executors run, while nonexistent referenced agents fail at workflow construction time.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/tests/helpdesk/declarative_workflow_test.py#L112-L141",
+          "version": "repo-lines-v1:sha256:4e0d56535144ba1adfac22736b0189caf92a9e1841b25ecbeabdc28ace86f6a3:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzYzMzMTZiOTBjYjUwM2JiNGM0ZGMxODQ5YjY4OGZkOTQzYmI1Yjc0Nzc5YjAwM2U3NTIzNTI1NDQ5MWI0NDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyM2VjOGJhZGM0MGVmZDg5OWNjODhhODMyN2ZkMzFlMjBkNmExZjhhZDFiNWI0YzViNDJlZDRmYzJjYzMzNDAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg0ZmZiNGI1NTJlNTY2MDVmMGY0NjUxMWI2ZjY5YzY2Mjc5YmE1N2ZmZGJmODRlY2FjNjRmN2UwYWU5ZGViMGQifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/helpdesk/declarative_workflow_test.py#L79-L99",
+          "version": "repo-lines-v1:sha256:62914d4bdb66fb018f26887542e1c833b821f84c36e54ae5483c12d6e24d7860:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUxNTUwZTY5MjBhM2E4ZjVlZGM4OTZmZWQyNjU3ZDdiZGNjNDdiMDc1ZWM0YmFiYWIyYzFjYzY0ZTNmYjhiMWIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwZDNiZjY3MDNjN2JiYjI2YWEzNmZjNzM3NTcwOTc5NWE4MDI0YzI1NDU5MzY4NjhlNzBlZGFhNTQ5YjQ0OGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4YWU2MGEwOWE3ODRiNDdlYTA4NTMxNmJmZjkyYzY4MDExZGQ2NzBkODlmMjhkYWY1ZGE5YmI2YWU0MWJjNDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0OGQ3NDgzZDA2MGYxNzIyZTI0NTM2ODg4MzM0MjU2YjU0OTBlOGJiZTg2OTgyMDY3NmNhOWVhZjM1MDljYzkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_79206a648c0e421295e42905e53641ca",
+      "statement": "`TicketApproval` handles Agent Framework approval flows by subscribing directly to the agent event stream for `request_info` custom events, discriminating between helpdesk ticket approvals and platform tool approvals, and resuming the paused run with `agent.runAgent({ resume: [{ interruptId, status: \"resolved\", payload }] })`.",
+      "evidence": [
+        {
+          "resource": "repo://apps/frontend/components/chat/TicketApproval.tsx#L107-L134",
+          "version": "repo-lines-v1:sha256:20b4a178a6786ecd82daa14fe9b3c1f59cb5cd81d0a63bb5f10708a58ea8b40d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMzMGIzZTkwNzcyYWUyYmIxMzZhOGE5NGFiNDY1Mjg5Y2MwOWYzZTBhZWJiMmYxNGQ2NjRkZTFhOWVjMjZiYzciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyYTJjYjI1YTEyMmI0NDIyMWE2MjM0ZWM2NjBhN2I1ZmI3ZjliZGU3YjNiOWUyYjNjNTU5YTBkOTZmYWM3MzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk1Yzc0NGYwODZhMjdmMDhhMjdhYTI1YTcxNDA5YzhjY2YyOWE4ZmYzNDNmZmE4ZWZjNDI2ZTE4ZjJmYTk1NWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhMTJhNmZhNThkMzhiMGY3OGIxZTYzYWI3NWUwYzI4OThiODZmYzAxZWEwNjA2NzQ4Yzc5MWZlZGFjMDBhMGYifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/components/chat/TicketApproval.tsx#L3-L21",
+          "version": "repo-lines-v1:sha256:ba05a9d959f9fb70d9514b30a6a0dbbfc01a828d94fb55e5d3074e9178ebb09b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI5YzgxNjk2YmYzMzQzN2E2ZjJiNDNhZTFlYzljZDI4ZGY0ZmViMmRmYWY4ZjcyZDY1YzI4ZWUzNDIyMTljZmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiM2U0OGE3YWUzNGUyYjI5MDYyYTY1NDVlZWE4OGUxZWZlNDQ5ODA3MjM4MTdlOGFmZTU0MWM1MDQ1MDdjY2MiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjoyLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMxZTk4MjA2ZTJiZjBiYjQzMmQxNzk3NTc5ZDljYTU5MDgxZmZiNmM1MDRmMTI1NjM3NmUzMjA3MzgzZTdkNzgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ2YWViMDI3ZDYyYjlhYmNhNjRjOTllYjg5NGU4Mzk2MWRhMGJmZGU1NGE1NGVkZWQxNGZjNTcyNTg0NzIzMDYifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/components/chat/TicketApproval.tsx#L69-L103",
+          "version": "repo-lines-v1:sha256:2bb7f8abfb6d3a0389b6fd52227e73310eadfa7664c6bb02a31b36452d5929ed:eyJzZWxlY3RlZExpbmVDb3VudCI6MzUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5NjZmYmZhODg5OThkYTc0NjU2YzUwMTk0OTU2YzI1ZjA4NDk0NTc2NjBjMDA5ZmU2M2QxZTlmYTlkYzkzMWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY5MTgzNDJiNDYyYjdmMDAxOTRmZDliMGM4NWJmMmI0MTI0YThiY2YxZjkxOWE1ZWMyMjQxZjRiNjI5MmM0MjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg2NThiY2U3NTliYjNhZGYzNDIzYTNiZjIxN2Y1ZDUxZGEyNWYwNzEzNTE5N2Q1YWI3MTc3YjMxNDhiODZiM2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1Yzc0NGYwODZhMjdmMDhhMjdhYTI1YTcxNDA5YzhjY2YyOWE4ZmYzNDNmZmE4ZWZjNDI2ZTE4ZjJmYTk1NWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_35d6a5428452480bb7105f237d1a29c3",
+      "statement": "The `TicketApproval` UI mirrors but does not replace server authorization: it tells users that `Approver` or `Admin` can approve, disables approve and edit actions for callers without those roles when auth is configured, and still allows reject without a privileged role.",
+      "evidence": [
+        {
+          "resource": "repo://apps/frontend/components/chat/TicketApproval.tsx#L136-L141",
+          "version": "repo-lines-v1:sha256:327017da2a045f998a80750d372785e2b0a5f0dae48b29acfefd765df01c6e28:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGY2ZWIzZDI4MjZiMGRlMjg4MGZiOWMwNTVhODZkOTRkMzc4OTEzNWE5ZmM5MzgwMDcwMzQ0ZDkzN2Y2NzRkMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGM1YzU5ODc4MzhlMTU2Njk0NmFkZGMwZmM1MTM1NTc3NmNhNGM2YTY3OTI5YTkxMDlmYjViOTExMzliZmUwOSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTFlMzcyNWRhMDAyYjQ2ZWQ4YjRkZTg4MDAzYWQ5NzEwZGNhZjE4ZDU3YzQ3MDFkYzNiZWZmMGIyYzVjYjEzZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZjdhNDllOTYyZmQ4NjM4M2JmNDNkNTA0MzllOTBhMTI5NWJiMmFmNWRiMzU2ODkxNzI0YTI3ODk2MjRkMDY3MSJ9"
+        },
+        {
+          "resource": "repo://apps/frontend/components/chat/TicketApproval.tsx#L265-L293",
+          "version": "repo-lines-v1:sha256:f07e8b016d60815e7cef783955df7ac7accb39c8a23ff139c80f924fa9f46f3d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlhOWMwZjMyOTZhMzAzMjc2NTg3ODQxMjAyZGJlYzYyNGY0YWE5MGNkMTI5NjdmZjMwMDVkOTBjYjUxZWUyOGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0NjgwNDU4MDNhYjM2N2U3ZjE3ZTQxYTM2OTA2NGZiODExNmQxNjA0NTI3ZThmZjhjYTZmMzZmMTFhNjM1NjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5ZjFkNmU1ODNhMjljYzc0OGJhODhhYjg5ZDg3NDYzNGI5NTdkZWU1MjZjY2E0ZTBhNDM4MzY3MzNlMDM2YzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdjYzRlZDU2MWFjMmUyMWEwMjE5OWE1MTNkMTY0NjIyZGVjYmQ3YmZkMDIwYjZkODRlZGE2ZjczODRkNzk5YzgifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/components/chat/TicketApproval.tsx#L30-L33",
+          "version": "repo-lines-v1:sha256:311774bfd39b184dec3557358785b00789bffd614645457fc1c1756cf6c8fee5:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzkyNzM3YWUzMjE0ZTMwZmI1NTc0ZTRiODUzY2I0ZjZkYzVhMzA4MWVlYzJkOTRmMGZiZjUzM2QxMTNkZGIyMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzg5MzYzMjA0YWI4NjVjNDdhNzgwNDhkYTdiMmY5YmNkOTUwNjc4OWQ5ZWU5MWM0NzYzNDQ1NDcwNDAzNTQ0OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGIxNWM3YWI5MGVmOGNkZTU2YWM4OWVjY2Y3ZmVkNWNlYjQyODkyNWI5ODc4NzU0MTNlNzU5YjE0MGE1OTE0YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGNhMmViMDM0NGEwYTBiYWRiODhmNDliYzcwZjFlZDlkYjA1ODVhMzJlYTNkNDQ2YzA5MDdjN2Q0OTJjMDA3MiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_bb81a176e2e44f35a7617afbc6553589",
+      "statement": "Platform is a per-request tool-driven agent: the registry mounts `platform_agent_proxy`, which rebuilds the platform agent on each run so the tool set reflects the current caller, and `build_platform_agent()` composes the agent from `PLATFORM_INSTRUCTIONS`, `build_mcp_tools()`, and a `ToolApprovalMiddleware` subclass that records decisions while leaving approval state management to the framework.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/platform_ops/internal/platform.py#L112-L121",
+          "version": "repo-lines-v1:sha256:0cb15c9c4d640769c10931f5b1675315fcb4353315cd457f654948c340928461:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM0MGJhN2Q3NmRlZmU0NTI4NTFiYjBmM2QzOTM2ZWU5OWYxMDUyNDQwM2M3MGY2Mjc1NWQxOTIxMzA1ZmIxNjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/platform_ops/internal/platform.py#L46-L109",
+          "version": "repo-lines-v1:sha256:11619a599cf3613a3d8bf7ba3317332de8fe751529944ae993673a938a4c53d4:eyJzZWxlY3RlZExpbmVDb3VudCI6NjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFkODYxMzczZTQ3ZGI2YzQyNWExZmIzMGNlMzE4NWE5MGMwMDgzMzVmZGVlZGQ0NmJhNjAwYTA5MTE4YTEzZjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImFhYzA3NjZlNzIzOGQ0N2YzNWFiNWE4ZDhjMjUxYjE0ZmQ0ZjU1YzUxYmZjYTFmMDgwZGU0YWYxY2NkNWMwMDgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzZTIyN2IwMzM0ZDgwNmE5ZDhiYjc5MDY0MDE0ZjFiNTNiMGI2NjJkNTZlOTI1Njc2MWM3YTJjY2VlOWQzMTIifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/registry.py#L182-L197",
+          "version": "repo-lines-v1:sha256:9bc2e057ce40698815d15a27b689bbc3c4bba1d1109a1a359e99eccd5e057ae6:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5MDY3YjAzMGZmMThkMTM2NjA3MGZlZDRmYzQwMDkzYjZhYThlZDE3MDIyYTZlOTZlYmFiYmJkMzk1MmQ4ZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk5MDM0ZjU2MmNiMDQ1YTJiODAyYmNkYmViZWIyMThmZjYxYmIwODhmYTdhNjMxODI4MGFkZjcyYzA3NGMwMTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e5b1ee7c049048d5ba36525b7d2c1aeb",
+      "statement": "Platform write safety is split between role-filtered tool exposure and native tool approval: the MCP registry classifies any tool not explicitly listed as a read as a write, `visible_tools_for()` only exposes tools whose server-level and connection-level grants are both satisfied, and the platform module relies on that ordering so approval middleware is only consulted for tools the caller is already entitled to run.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/platform_ops/internal/mcp_registry.py#L130-L175",
+          "version": "repo-lines-v1:sha256:23daf67700a7d442d8ec9aa4c8f39cd894263c427ae5dc3147df3b0f7218ddc6:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiMmQyMDcyZDI2NzlkZTM2MDRhMzU4OGExMDZjYzNlNjg4N2YwYTQ3Y2Q3Y2ZkMjZlYzMzOGMxMGZkMDk3NTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2MjJkN2YwNzFkOGQxMmE5OGRiYzQzNjJiYjhkNzM2OWE3Yjc4MWYzNmZmMjZhZjRiNDFhZGNmOTA1NjE5YTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU4ZGMwMTc4YzczMDdmOWRlNzVjOGYzNzNmYWQ5YzM5Mjg1MDg4MWJhZDRiMWUyOGYyNDc4MTgxZTdlOThiNzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/platform_ops/internal/mcp_registry.py#L5-L12",
+          "version": "repo-lines-v1:sha256:588ae5606c34a89fc107fdb6782aa89bb95a942bd66178209842ed74c177f40f:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTA1ZGFkMGQxYmZiOGJiNTMyNTk1MzZhNGNiNmIyYjA1ZWRkOGM3ZGE2YTc5OTlmMjZkZTI3YWM1ZDgxNzJkMSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTMwM2VjZGQ0YTRkMTBmMTljNzNmZDQyZmQxMjQzN2ZkMzM1NGE4MjY4MTYwNWRhNTI1NWE5N2EzOTA2OGRiYiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTIxMDMzNDZhMWM1NGE1NjgxYmJiMjM4OTM5NjM0YWMxYTlmNzA1MmI1NDQ0ZWRkOWIxYWNiYmRhOTgxMDMzMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTViNmU4NzA2YjQzMDQ3ZjJhNmRiNjdmMTMyNjM4NTk1NjA0ZTY3ZjM2OTY2ODc2Y2UwMTU4ZjAwNTNlNmJkMSJ9"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/platform_ops/internal/platform.py#L41-L45",
+          "version": "repo-lines-v1:sha256:32f976f51fb30a0560f027481b83a9605382f93267cc6a180c55df2fd3f3e213:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMmMzODhjZjMxOTI1NDI1ZmJiZmQ2MDk1NzYzNjE5ZDQwY2M5ZjZhZTMwNDIyYjFiNjkzZDYyZWY3MGNmMDVjMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiN2QxMDhmN2UyOGMzYmE2NDliN2JmMzVkNThhZTdmYzBkODdhYzZmMjAwMDk0ZjNhMjY0MWZmMWFhNjYyNmQ0YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjNhZWE0NDgxYTgzMWVkZDk2YThmZjRmNjg0MGY3NGVjNTliNjY3NDhiMmNlOTY2NmJiNzEzMGNmNjg2Y2M4MiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiN2MwNGU3OWM4MzdmODc4NTNmNWY3NGFkMmRiYTNlNjJhYjVjZGM3MGM3Y2ZkOGM2ODljNDdjZmE3ZDk3OWJjOSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_296afd74c20345a89c60e5e90eaceb80",
+      "statement": "MCP endpoint discovery authenticates late and only against approved tenant-local origins: `discover_endpoint()` refuses missing or unapproved endpoints, derives a header provider only after loading the approved endpoint, validates the origin and public egress, lazily resolves `connection` or `obo` bearers through cached providers, and fails with `MCP_AUTH_NOT_AVAILABLE` when the connection or registered-origin checks do not match.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/platform_ops/internal/mcp_egress.py#L181-L196",
+          "version": "repo-lines-v1:sha256:8522fd874c2db510b7ca047773b9b97918a83add32f202a760aaf9a7836c8e41:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM3NGYwYTllMDEzMWVlMjYzY2Q2NmI0NjQwZDExZWJlNDE3OTY3MDM4ZGM3MWQ2MTVhZGI2MTQ2NDRmMDVhMjciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkzMmFhZmQzMjZjMTk1NzdjNzQ2MmU0OTk0ZTAyYjA4OWM2ZTFjMjU3OWFiZmIyOTkzMjRjYWUzODZjMjU3N2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2MjE0MmY0YzcxNTZhMmZiYzMzMDIyODc0MWRkNmVkNTc3N2M1MzY2NzBkMWVjMWVmZWJmNjVlZDdkZWIxNDcifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/platform_ops/internal/mcp_egress.py#L227-L269",
+          "version": "repo-lines-v1:sha256:1974a8f06c6860ea984ede1bebcafd2392220695acb002345702e181b05cdffe:eyJzZWxlY3RlZExpbmVDb3VudCI6NDMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5NmZlY2ZlYzc2NDAxNjVmZGI1ZDc1NzgzY2Y5YzBhYWNlZjljZTYyNWQzYjk3ZGRmYzUwMzFiZDQ4ZGI5NzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlMDBlMTM2NWY5NzhkMDY3ZDliNDZkZGIyZTI2NTc3ZDY1MGUwYjQ3Yjg0ODFkN2Y1M2JjNGRhZTI1YTg1OTkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhiODM1MWM0MzIwODZkZWNlNzI5NTllYjY3NmU1YWM1NjA2YTc1ZjkxOGI1MGJkZjI1ZjY3ZTY4NjFjYjEzZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdmYTE4Y2UwMjBhZGFkMWRiMzA1NGUzMDY0NmY5MjI5MzRmYjI2NzM4MTkzYTk0NWFmMGI2OWE2YjZhZjk5YTMifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/platform_ops/internal/mcp_egress.py#L272-L322",
+          "version": "repo-lines-v1:sha256:77e3e8f278e8e99e500acb9a47beeb41d10ebca34b03f1322768140f56367818:eyJzZWxlY3RlZExpbmVDb3VudCI6NTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlM2M4M2JlOGIzOThjOTNiNjNhOTBjYTRkYTcxM2IyNWMxMjEyNjA1NjEzZGFjYzkyY2NlMDdjM2VmNGUyMDMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU0Mjc1ZWZiYzA1NWE5Y2VjNDRjYzVkYjk5MGZiMmFhZThjMWViZDY5MTY4YzczZDQ2Mjk0ODMyMTMxOThiN2EiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE2ZDQ4M2EwMGRhOTBiMTA1NzZkZmE5Nzc1NDNhNTc4NmM5MzY2ODE1YmMwZmIwYmI4ZDAxODE5MzE1NDljM2YiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_dbedd594414e4f8b8bece157758dd798",
+      "statement": "The platform discovery auth test covers the late-auth invariant end to end: it verifies that public discovery sends no auth header provider, connection-backed discovery resolves the tenant-local connection reference and only brokers the approved origin once per session, incompatible or missing connections fail before discovery executes, and OBO discovery derives its audience from the registry allowlist.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/tests/platform_ops/mcp_discovery_auth_test.py#L103-L167",
+          "version": "repo-lines-v1:sha256:6e1245e5c218c4347a4af609c04dea8eef53ec9e83eb12ce86ac305084dad721:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRlZTY3ZDIyYmIxZTZkNmU3ZjA3MTg2NzFhN2IyZWMzY2ZlMGIzNmVjOTMyM2YyMjZiODVkY2ZhNzZkNTk2ZDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU0OGQ3NDgzZDA2MGYxNzIyZTI0NTM2ODg4MzM0MjU2YjU0OTBlOGJiZTg2OTgyMDY3NmNhOWVhZjM1MDljYzkifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/platform_ops/mcp_discovery_auth_test.py#L36-L56",
+          "version": "repo-lines-v1:sha256:66bf61793e8acab89f8c95e10b8e68b813c1eff8784d34b4bed176aedfe1b58d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE1MGI3OWVhZjMxMzY0MGI2MmQyYmFkYzBhNWFkNjg1ZDE2ZDI3OWNiZTU0MjMzYjM0NGQ5Yjg2NWQwYmJlYmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYyMDM4MjE3ODc0ODA5ZWNjZThlODA0NmU5NDU4Zjg1MjNjZjQxMDNmODQ2ZDA3ZTc4MzVmODY2ZDRjMTM2ZTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhjYzRhN2QxY2M3OTZhYmEzZTQ2NzIzMzI3ZjUxN2U5ZjgxMTk4MmQyNTBmMDcwMjk4NmU0YjU3NjRhZDk1ODkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVmYmYwMmUwY2IxN2E1MGRlMmZmZDAxYzNjMGE3MDdiMWU2MDcyYjAyZDQ5ZWIzYTEzMjg4MGNkNTJkMjc4YzcifQ"
+        },
+        {
+          "resource": "repo://apps/backend/tests/platform_ops/mcp_discovery_auth_test.py#L58-L102",
+          "version": "repo-lines-v1:sha256:969d829f9907244297df74af48d9bdea951e926e9a9d87c73fecee15285bfda9:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjMDg2NGQzYWUzMGJmZjY1OTc5MDM1NDIzZjhlM2E4YTZmM2I5ODgyMDZkMmU4MmFhYTVjYjkyYTQ4Nzk3YjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNmMmY5MDNlNGQzYzAzYjhjNjc5YWFkYjI4YTA1NTJjYjA4OTJmMDQ0M2E2YzMxNDQ2ODEyNmE4MWM2NjYxMzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjczMzcyYWYyMzE5NGNjNTAwMzQxMzRkZWE5YjVhOGE2NTVmOTUzYWQxMzAwMjk0ZTYzOTY3ZjE5YTEyZTI5MjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e89131fe852f439f90a3207cf56419c3",
+      "statement": "Graph domains use a separate approval idiom from Agent Framework domains: `GraphApproval` uses CopilotKit's `useInterrupt`, reads graph action requests from standard or legacy LangGraph interrupt payloads, and resumes with LangGraph's own `{ decisions: [{ type, edited_action? }] }` payload instead of the Agent Framework `request_info` resume shape.",
+      "evidence": [
+        {
+          "resource": "repo://apps/frontend/components/chat/GraphApproval.tsx#L18-L31",
+          "version": "repo-lines-v1:sha256:03a0630927eacf6d309329904e8195f6696eec09c63506db20133e8b547fd3b7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJkNzUzNTUwYjNhNjU5ZmMyYzQ0ZjVkOGI2MmI5NzVkYjM1Y2VkMGY5ODljMzkxNTg0YzU0Y2M3NTU3NzUxNTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiMjlmNTA2Y2JiMjBiYjQyNDllOTE4YTk0MWVmZDExYjFkMDJjNDAxN2MyZWFkODAzM2UwOWY4NmYwMjllZGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEwNTJhYmVjMDdhMjg1MTgxMTI5MjZmMmRlYmE3YjI1Nzg2NDhmNzFlMDZhMjU5YmUxMDlkNzQxNTAyNTBlMDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjFkNjIyZGMwNjAwNDllMTE4ZGEwMzg3ZGVhMTc0YzU4YmI5YzkzM2M1OWRiZjNiZDhiZDFkMmMyOTU3NmNmZjMifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/components/chat/GraphApproval.tsx#L40-L69",
+          "version": "repo-lines-v1:sha256:c2ae923de6e73eded8550a16482bbcf0c9cfb6c2aed8ae558ba8c49d82fca9da:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVmMjMzZDE4NGI3NjZiMzVjYjBlYjBmZTg0YzYxODFmYTZkOTdkNjQ1N2FiMGIxNzIzY2ZjZTBlYjI4NGU3YmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAzODZkZTgzNDNkYmJjOGVjMTdkMDc3YTQ0YzEwOGU0ZDQzNjlkMzNhYzkzYTM3NDgxMjgzNGYzYjNiNjI4ZGUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjI0MjcxZjRmNDMxNmY4YWNkOGU3NjQzY2I2YTI1M2JiN2ZjN2U2NGE5NjJjYTdiZThkMzgyMDYwMDBlYzJlOWQifQ"
+        },
+        {
+          "resource": "repo://apps/frontend/components/chat/GraphApproval.tsx#L93-L100",
+          "version": "repo-lines-v1:sha256:6baa6521ccd2b813869c36add6401b2fa20e58835041e20f5b47f299004f677d:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzVmZjEzMWU3OTU0ZDEzMTM4NThiMGZjODRmYWYwMjJlYTIwOGI1ZjgyZDczMjZhMzYzMGQ4YTgyN2FiMDI4MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDUzNTBhNzJkYjE1N2Q5MTc1MjcxOWM5Mzk1ZmQzYWIyZjEwMDM5OTU4ZDUwNzI5MDQ3MGQxNzkzOTgzYmYwYSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTkzZmNmZjJkOGYxYjJjMTFlMDYyYmM0NmJjNDgyYzEyNDAwMGMzZWZlN2U4YTc3MjVlZWNlMTA3MmViYmNjMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNmY2ZGM2Njg5ZTQyYmUyY2IyZTYxYjhiZjJkNDEwN2Q1YWFhZWJiMjk0MTYyMjk5MDdhNmE0ODU0YWUxMzE2NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_223ddbc2a3ff49b6bc07a08aba3e814c",
+      "statement": "`oncall` is deliberately disabled in shared deployment mode because its current checkpointer is not durable enough for interrupts across replicas, so the mount gate fails closed rather than exposing graph-domain human approval semantics that cannot safely survive multi-replica serving.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/oncall/public.py#L1-L14",
+          "version": "repo-lines-v1:sha256:8f1638823737a35ad582292e2bff770b29837f493f0f5aee00bb33a4154e3d84:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYzYzUyMDVhNGFlNDBmY2NmYWQzMmYxNjllYTBjZjlkMzQ5ZWQ0MzU1OGM0NzYzOTYzOTZiMTdlNjk4ZjUzYjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMDNlY2RkNGE0ZDEwZjE5YzczZmQ0MmZkMTI0MzdmZDMzNTRhODI2ODE2MDVkYTUyNTVhOTdhMzkwNjhkYmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY2YTgwMGQyMjJiNjFkMzcyMDkwMjdhZDFiNGI0OTM1N2E2ZTUyMGE0ZTZmN2ViNDNiNjUxMjAyZTY4NWE1NWUifQ"
+        },
+        {
+          "resource": "repo://apps/backend/app/modules/oncall/public.py#L26-L34",
+          "version": "repo-lines-v1:sha256:563075329ab87a98c5805b2024777d54edace1937ea1c351fca671e9e5723753:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjhmZjMwZTM5NTJiZTcyM2M4ZjE4NjEzODA2MTg1NjNiMDM4NjgwYzUwY2E4Y2UyNWZkOTJkODQ3ZDYzMDE5MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNzk4NGI4YWU2MDJjYzBiZGI2ZTEwN2U0N2U3ZTI5YmI4YTQwZWRkZDQ3YWE5Yjk1OWU2Mzc1M2JhNmU2NmJlZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNTRiYzFlYTVmZjM1NGY3ZTAwNTdjMmQyYTRlNTE4ZDlkNzc2M2U0NjBjMmVhODBlMmExNjZjZDQ0Mjc4YTEyNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_dc6ff961e2604563b68d771b60414d1e",
+      "statement": "`deepcall` exists as the deepagents twin of `oncall`, intended for side-by-side comparison with the same problem, tools, prompt contract, and HITL behavior while changing only the harness, so it is a graph-domain comparison surface rather than a separate approval model.",
+      "evidence": [
+        {
+          "resource": "repo://apps/backend/app/modules/deepcall/public.py#L1-L18",
+          "version": "repo-lines-v1:sha256:0c53a58943b97b5e595bca00801bcbebbdbd3c0d778eddee22eed218bd734249:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhNzc5NTc5ZjZmYzZlMTZkNzZhZmZmOWViODExM2YzZmMwYTA4OTZkMTZmN2E0N2M3N2JhNzk0YTRmYTUxMWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhZmJhMDUyN2MzOTUzYzRiNmUwZTViNTczOWJhODM2MTJmODA1M2JjZGM5NDY2NzMwMTkzY2QxZDU5MGI0MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJiYzliMzM2ODlmMTQ2Y2Q1YjZmYjAyZWQ1ODE2OWNjNmI3MjY0MDc2ZGQ4MDUwYjMwYTU3YzZhZjkzZDI4NmQifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.4.3",
+    "at": "2026-09-02T18:24:34.393Z"
+  }
+}

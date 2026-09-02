@@ -44,6 +44,7 @@ import re
 from datetime import UTC, datetime
 from pathlib import Path
 
+import yaml
 from azure.identity import DefaultAzureCredential
 
 import app as _app
@@ -59,7 +60,14 @@ def _backend_root() -> Path:
     import app as _app
 
     return Path(_app.__file__).resolve().parent.parent
+from app.modules.knowledge.internal import frontmatter
 from app.modules.knowledge.internal.docbundle_schema import validate_manifest
+from app.modules.okf.public import (
+    agent_actor,
+    generated_block,
+    process_actor,
+    verified_entry,
+)
 from app.shared.telemetry.cost import CostMeter
 
 logger = logging.getLogger(__name__)
@@ -82,6 +90,56 @@ _SOURCE_EXT = {".cs", ".py", ".ts", ".tsx", ".js", ".go", ".java", ".json", ".ya
                ".yml", ".toml", ".md", ".csproj", ".sln", ".sql", ".sh", ".tf"}
 _MAX_FILE_CHARS = 16_000
 _PAGE_DELAY_S = 8  # pace page calls to stay under the model TPM cap
+
+#: O produtor, no vocabulário de ator do OKF (SPEC.md:494). A versão é o deployment de
+#: modelo resolvido em runtime, porque é ele que muda o texto — não a versão deste arquivo.
+_PRODUCER = "foundry-wiki-builder"
+#: O passe de verificação, como ator de processo (SPEC.md:497). Nome estável; a versão é o
+#: deployment que rodou, pelo mesmo motivo de `_PRODUCER`.
+_VERIFIER = "wiki-verifier"
+#: `type` é a única chave sempre obrigatória (SPEC.md:187). O valor não é registrado
+#: centralmente (SPEC.md:182-186); `reference` casa com a lista de exemplo da spec e com o
+#: vocabulário do DOCS-STANDARD.md.
+_PAGE_TYPE = "reference"
+
+
+def render_page(
+    *,
+    body: str,
+    title: str,
+    producer: str,
+    version: str,
+    description: str | None = None,
+    type_: str = _PAGE_TYPE,
+) -> str:
+    """A página com frontmatter OKF v0.2, escrito AQUI e não pelo modelo.
+
+    Um bloco que o modelo tenha emitido é descartado antes: `frontmatter.split` devolve
+    (bloco, corpo) e só o corpo é usado. Ver o docstring do gate para o porquê."""
+    _, corpo = frontmatter.split(body)
+    meta: dict[str, object] = {"type": type_, "title": title}
+    if description:
+        meta["description"] = description
+    meta["generated"] = generated_block(agent_actor(producer, version))
+    bloco = yaml.safe_dump(meta, sort_keys=False, allow_unicode=True).rstrip("\n")
+    corpo = corpo.lstrip("\n")
+    return f"---\n{bloco}\n---\n\n{corpo}"
+
+
+def stamp_verified(page: str, *, verifier: str, version: str | None = None) -> str:
+    """Acrescenta um evento de verificação ao frontmatter, sem tocar no corpo.
+
+    ACRESCENTA, e nunca substitui: `verified` é uma LISTA de verificações independentes
+    (SPEC.md:388-391), e uma passagem nova não desfaz a anterior. Um mapa solto legado é
+    normalizado para lista de um elemento, como o §5.2 manda o consumidor tratá-lo."""
+    meta, corpo = frontmatter.parse(page)
+    atual = meta.get("verified")
+    eventos = [atual] if isinstance(atual, dict) else list(atual or [])
+    eventos.append(verified_entry(process_actor(verifier, version)))
+    meta["verified"] = eventos
+    bloco = yaml.safe_dump(meta, sort_keys=False, allow_unicode=True).rstrip("\n")
+    corpo = corpo.lstrip("\n")
+    return f"---\n{bloco}\n---\n\n{corpo}"
 
 
 # --- Phase 1: deterministic fidelity gate -------------------------------------
@@ -385,7 +443,7 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
                 )
                 meter.add(v_resp)
                 md = v_resp.text
-            pages.append({"title": p["title"], "content": md})
+            pages.append({"title": p["title"], "content": md, "verified": verify})
             print(f"  ✓ page {i}/{len(plan)}: {p['title']}" + (" (verificada)" if verify else ""), flush=True)
             if i < len(plan):
                 await asyncio.sleep(_PAGE_DELAY_S)
@@ -396,7 +454,15 @@ async def build_component_wiki(repo: Path, component: str, version: str, out_dir
     manifest_pages, llms = [], [f"# {component} {version}\n"]
     for order, page in enumerate(pages, 1):
         norm = f"page-{order}"
-        (bundle / "pages" / f"{norm}.md").write_text(page["content"], encoding="utf-8")
+        rendered = render_page(
+            body=page["content"],
+            title=page["title"],
+            producer=_PRODUCER,
+            version=resolved_model,
+        )
+        if page.get("verified"):
+            rendered = stamp_verified(rendered, verifier=_VERIFIER, version=resolved_model)
+        (bundle / "pages" / f"{norm}.md").write_text(rendered, encoding="utf-8")
         manifest_pages.append(
             {"id": norm, "title": page["title"], "order": order, "file": f"pages/{norm}.md", "audience": "base"}
         )
