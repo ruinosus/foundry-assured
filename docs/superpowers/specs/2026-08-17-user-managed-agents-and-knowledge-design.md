@@ -1,6 +1,6 @@
 ---
 title: 'Design: agentes, bases e skills que o usuário final cria e mantém'
-description: Trazer um perfil de usuário que não tem acesso ao portal do Foundry para consumir os recursos do Foundry — criar, usar e manter agentes, bases de conhecimento e skills. Levantamento feito ANTES do desenho, pela MÁXIMA MAIOR do CLAUDE.md, e o resultado é que praticamente tudo já existe como API oficial: 23 operações de agente (incluindo versionamento e sessões), 11 de skill, 11 de knowledge. A única lacuna real é o GitHub.
+description: "Trazer um perfil de usuário que não tem acesso ao portal do Foundry para consumir os recursos do Foundry — criar, usar e manter agentes, bases de conhecimento e skills. Levantamento feito ANTES do desenho, pela MÁXIMA MAIOR do CLAUDE.md, e o resultado é que praticamente tudo já existe como API oficial: 23 operações de agente (incluindo versionamento e sessões), 11 de skill, 11 de knowledge. A única lacuna real é o GitHub."
 type: design
 audience: contributor
 status: shipped

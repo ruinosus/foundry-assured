@@ -110,6 +110,11 @@ jobs:
         run: uv run python -m tests.okf.migration_test
       - name: OKF ChangeSet — multi-document proposal and review
         run: uv run python -m tests.okf.changeset_test
+      # Um bloco `---` que não parseia é indistinguível de um que parseia para quem só olha a
+      # primeira linha — e `ingest.py:162-165` sai com erro num deles. `docs/` nunca é ingerido,
+      # então este era o único lugar do repositório onde a falha não tinha sintoma.
+      - name: Frontmatter de docs/ parseia
+        run: uv run python -m tests.knowledge.frontmatter_parseavel_test
       - name: GitHub publication — approved content and idempotent MCP writes
         run: uv run python -m tests.publication.github_publication_test
       - name: GitHub publication — HTTP contract and safe projection
