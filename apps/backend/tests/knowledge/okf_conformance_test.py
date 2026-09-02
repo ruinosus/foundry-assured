@@ -72,7 +72,14 @@ EXCLUDED_BUNDLES = {
 #: Mas um bundle NOSSO declarando uma versão que não validamos não é consumo best-effort, é
 #: uma afirmação falsa; foi assim que `okf_version: "0.1"` sobreviveu a todo merge desde que
 #: o gate existe. O verificador é de terceiro e não se edita (vendor/README.md).
-AVISOS_FATAIS = ("okf_version",)
+#:
+#: O match é no TEXTO do aviso de versão, não no nome do campo `okf_version`: o verificador
+#: emite dois avisos cujo texto contém `okf_version` (vendor/okf_validate.py:330 e :332-333) —
+#: um por frontmatter extra no `index.md` raiz (nada a ver com versão) e só o outro pela
+#: própria versão. Promover pelo nome do campo promove os dois, e o primeiro vira uma falha
+#: que lê como problema de versão sem ser. Por isso a string é o prefixo da frase inteira do
+#: aviso de versão, não um substring genérico que reaparece em outro aviso.
+AVISOS_FATAIS = ("§12 bundle declares",)
 
 
 def main() -> int:

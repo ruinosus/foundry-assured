@@ -106,6 +106,27 @@ def main() -> int:
     )
     check("o corpo sobrevive ao carimbo", carimbada.endswith(CORPO))
 
+    meta_legado = {
+        "type": "doc",
+        "verified": {"by": "process:legacy-verifier/1", "at": "2026-01-01T00:00:00+00:00"},
+    }
+    bloco_legado = yaml.safe_dump(meta_legado, sort_keys=False, allow_unicode=True).rstrip("\n")
+    pagina_legada = f"---\n{bloco_legado}\n---\n\n{CORPO}"
+    carimbada_legado = stamp_verified(pagina_legada, verifier="wiki-verifier", version="1")
+    verified_legado = frontmatter(carimbada_legado).get("verified")
+    # Forma defensiva (não `e["by"] for e in ...`): se a normalização regredir, o formato de
+    # `verified_legado` pode deixar de ser uma lista de mapas — e a checagem deve reportar
+    # `✗` pelo nome, não estourar exceção antes de chegar em `check()`.
+    obtidos_legado = (
+        [e.get("by") if isinstance(e, dict) else e for e in verified_legado]
+        if isinstance(verified_legado, list)
+        else verified_legado
+    )
+    check(
+        "normalização do mapa `verified` solto legado: vira lista de um antes de acrescentar (§5.2)",
+        obtidos_legado == ["process:legacy-verifier/1", "process:wiki-verifier/1"],
+    )
+
     duas = stamp_verified(carimbada, verifier="fidelity-gate", version="1")
     check(
         "carimbar de novo ACRESCENTA, não substitui",
