@@ -594,7 +594,19 @@ fim de vida.
 
 ### Segurança e privacidade
 
-- [ ] Threat model do fluxo “descrição → catálogo → modelo → ChangeSet → publicação → execução”.
+- [x] Threat model do fluxo “descrição → catálogo → modelo → ChangeSet → publicação → execução”.
+  - Fronteira Azure DevOps: token OBO existe somente durante o egress TLS e solicita o recurso
+    `499b84ac-1321-427f-aa17-267ca6975798/.default`; a app registration concede apenas a permissão
+    delegada `vso.code_write`. Token, headers e resposta externa bruta não entram em estado ou log.
+  - Elevação/confusão de identidade: a rota exige App Role `Approver`, usa o access token validado
+    do próprio request como `user_assertion` e revalida tenant, área, revisão e hash antes de cada
+    operação. Não há fallback para PAT, app-only ou identidade do processo quando auth está ativa.
+  - Tampering/replay: organização, projeto, repositório, refs, caminhos, conteúdo e limites são
+    validados; branch e chave são derivadas da revisão aprovada; replay concluído retorna o mesmo PR.
+  - Corrida/resultado ambíguo: push usa compare-and-swap por `oldObjectId`; conflito de ref, 4xx e
+    decisão humana não recebem retry. Falha após escrita entra em `intervention_required`.
+  - Disponibilidade: timeout de 30 s; retry com `Retry-After`/backoff somente em leituras idempotentes
+    para transporte, 408, 429 e 5xx. Respostas persistidas são projeções mínimas de commit, PR e merge.
 - [ ] Tratar descrição de tool/documento externo como dado não confiável contra prompt injection.
 - [ ] SSRF e egress policy para MCP remoto e redirects.
 - [ ] Least privilege para OBO/connections e separação Admin/Approver/Owner.

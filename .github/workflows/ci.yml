@@ -118,6 +118,12 @@ jobs:
         run: uv run python -m tests.publication.toolbox_approval_test
       - name: GitHub publication — infra-gated smoke
         run: uv run python -m tests.publication.github_smoke_test
+      - name: Azure DevOps publication — OBO scope and REST 7.1 contract
+        run: uv run python -m tests.publication.azure_devops_gateway_test
+      - name: Azure DevOps publication — approved saga and idempotent replay
+        run: uv run python -m tests.publication.azure_devops_publication_test
+      - name: Azure DevOps publication — infra-gated OBO smoke
+        run: uv run python -m tests.publication.azure_devops_smoke_test
       - name: Proposer remains read-only
         run: uv run python -m tests.architecture.proposer_read_only_test
 
@@ -798,6 +804,8 @@ jobs:
         run: npm run typecheck
       - name: Contexto de área (seleção, headers e concorrência)
         run: npm run verify:area-context
+      - name: Conditional Access preserva aprovação e retoma com claims
+        run: npm run verify:auth-challenge
       # O destaque do trecho citado (source-highlight.ts) roda contra um DOM real via jsdom —
       # sem este gate, uma regressão na normalização de espaço em branco só aparece quando
       # alguém clica numa citação e o trecho não acende.

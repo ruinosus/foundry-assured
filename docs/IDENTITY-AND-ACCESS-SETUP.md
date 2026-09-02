@@ -74,11 +74,13 @@ flowchart LR
   SPA -->|"token (aud = API app)"| API[API app]
   API -->|"OBO exchange"| AI["ai.azure.com<br/>(Foundry inference)"]
   API -->|"OBO exchange"| S["search.azure.com<br/>(KB retrieval)"]
+  API -->|"OBO exchange"| ADO["Azure DevOps<br/>(approved publication)"]
 ```
 
 | # | Requirement | Where | Symptom if missing |
 | --- | --- | --- | --- |
 | 1 | API app holds the **delegated** `user_impersonation` on **ai.azure.com** (`18a66f5f-…`) + **search.azure.com** | `setup-entra.sh` (`az ad app permission add`) | OBO can't get a downstream token |
+| 1a | API app holds only delegated **`vso.code_write`** for Azure DevOps (`499b84ac-…`) | `setup-entra.sh` resolves the scope ID and rejects additional Azure DevOps permissions | `/.default` is unavailable or grants more access than publication requires |
 | 2 | **Admin consent** on the API app for those delegated permissions | `setup-entra.sh` (`admin-consent`) | OBO returns `interaction_required` / consent error |
 | 3 | **SPA registered as a `knownClientApplications` of the API app** | `setup-entra.sh` (`az rest PATCH … knownClientApplications`) | **The browser 403s on inference** — the OBO of a *SPA-issued* token to the downstream returns a token that isn't authorized, even though (1)+(2) are in place. A *direct* API-app token OBO's fine, which is why it's easy to miss. |
 

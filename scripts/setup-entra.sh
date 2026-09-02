@@ -30,6 +30,7 @@ REDIRECT="${REDIRECT:-http://localhost:3000}"
 # never requested. Both are required.
 AML_APPID="18a66f5f-dbdf-4c17-9dd7-1634712a9cbe"
 COGSVC_APPID="7d312290-28c8-473c-a0ed-8e53749b6d6d"
+AZURE_DEVOPS_APPID="499b84ac-1321-427f-aa17-267ca6975798"
 
 command -v az >/dev/null || { echo "✖ az not found."; exit 1; }
 command -v uuidgen >/dev/null || { echo "✖ uuidgen not found."; exit 1; }
@@ -115,6 +116,31 @@ for res in "$AML_APPID" "$COGSVC_APPID" "$SEARCH_APPID"; do
     az ad app permission add --id "$API_APPID" --api "$res" --api-permissions "$sid=Scope" 2>/dev/null && echo "  ✔ delegated perm on $res"
   fi
 done
+
+# Azure DevOps publication uses OBO with one delegated permission. `/.default` mints every
+# statically registered scope for this resource, so merely adding vso.code_write is not enough:
+# fail closed when a reused app registration carries any broader Azure DevOps permission.
+AZURE_DEVOPS_SCOPE_ID="$(az ad sp show --id "$AZURE_DEVOPS_APPID" \
+  --query "oauth2PermissionScopes[?value=='vso.code_write'].id | [0]" -o tsv 2>/dev/null || true)"
+if [ -z "$AZURE_DEVOPS_SCOPE_ID" ]; then
+  echo "  ✖ Azure DevOps delegated scope vso.code_write could not be resolved"
+  exit 1
+fi
+AZURE_DEVOPS_REGISTERED_IDS="$(az ad app show --id "$API_APPID" \
+  --query "requiredResourceAccess[?resourceAppId=='$AZURE_DEVOPS_APPID'].resourceAccess[].id" \
+  -o tsv 2>/dev/null || true)"
+if ! bash "$ROOT/scripts/validate-azure-devops-permissions.sh" \
+  "$AZURE_DEVOPS_SCOPE_ID" "$AZURE_DEVOPS_REGISTERED_IDS"; then
+  echo "  ✖ API app has Azure DevOps permissions beyond vso.code_write; remove them before continuing"
+  exit 1
+fi
+if printf '%s\n' "$AZURE_DEVOPS_REGISTERED_IDS" | grep -Fqx "$AZURE_DEVOPS_SCOPE_ID"; then
+  echo "  · delegated Azure DevOps vso.code_write (already present)"
+else
+  az ad app permission add --id "$API_APPID" --api "$AZURE_DEVOPS_APPID" \
+    --api-permissions "$AZURE_DEVOPS_SCOPE_ID=Scope" 2>/dev/null
+  echo "  ✔ delegated Azure DevOps vso.code_write"
+fi
 
 # ---- SPA app ---------------------------------------------------------------
 echo "▸ SPA app ($SPA_NAME)…"

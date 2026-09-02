@@ -125,6 +125,7 @@ whole step to run without auth (single shared `DefaultAzureCredential` identity)
 5. **API permissions →** add the **delegated** permissions the OBO exchange needs, then **Grant admin consent**:
    - **Azure Machine Learning Services** (`user_impersonation`) — this is the app behind the `https://ai.azure.com` scope the Foundry client requests (it is *not* "Azure Cognitive Services").
    - **Azure Cognitive Search** (`user_impersonation`) — for `https://search.azure.com` (the knowledge base).
+  - **Azure DevOps** (`vso.code_write`) — only when approved publication to Azure DevOps is enabled. Remove any other Azure DevOps delegated permission: OBO requests `499b84ac-1321-427f-aa17-267ca6975798/.default`, which includes every statically registered scope for that resource.
    > Find them by app id if the picker hides them: `az ad sp show --id 18a66f5f-dbdf-4c17-9dd7-1634712a9cbe` (AML) and `--id 880da380-985e-4c44-bf9a-...` (Search). They appear under *APIs my organization uses*.
 
 ### 3b. SPA app registration (the frontend)

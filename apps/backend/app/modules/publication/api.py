@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import json
 import logging
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import uuid4
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Path
@@ -12,14 +13,16 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from app.modules.authoring.public import ChangeSetScope
 from app.modules.publication.public import (
-    GitHubPublicationService,
+    AzureDevOpsAuthenticationRequired,
+    AzureDevOpsPublicationRequest,
     PublicationConflict,
     PublicationConsentRequired,
     PublicationExternalError,
     PublicationInvalid,
     PublicationNotFound,
     PublicationRequest,
-    default_publication_service,
+    PublicationServiceRouter,
+    default_publication_router,
 )
 from app.modules.tenancy.public import current_area, current_tenant_id, require_area
 from app.shared.auth import auth_dependencies, current_roles, current_user, require_role
@@ -52,6 +55,7 @@ IdempotencyKey = Annotated[
 class CreatePublicationBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    provider: Literal["github", "azure_devops"] = "github"
     changeset_id: str = Field(
         min_length=36,
         max_length=36,
@@ -60,6 +64,7 @@ class CreatePublicationBody(BaseModel):
     revision: int = Field(ge=1)
     content_hash: str = Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
     owner: str = Field(min_length=1, max_length=100)
+    project: str | None = Field(default=None, min_length=1, max_length=128)
     repository: str = Field(min_length=1, max_length=100)
     base_branch: str = Field(default="main", min_length=1, max_length=128)
     target_directory: str = Field(default="okf", min_length=1, max_length=128)
@@ -101,6 +106,18 @@ def _error(exc: Exception) -> JSONResponse:
             },
             headers={"Cache-Control": "no-store"},
         )
+    if isinstance(exc, AzureDevOpsAuthenticationRequired):
+        return JSONResponse(
+            status_code=401,
+            content={"error": {"code": str(exc)}},
+            headers={
+                "Cache-Control": "no-store",
+                "WWW-Authenticate": (
+                    'Bearer error="insufficient_claims", claims='
+                    f"{json.dumps(exc.claims)}"
+                ),
+            },
+        )
     if isinstance(exc, PublicationExternalError):
         correlation_id = uuid4().hex
         logger.warning(
@@ -127,15 +144,30 @@ async def create_publication(
     body: CreatePublicationBody,
     idempotency_key: IdempotencyKey,
     scope: Annotated[ChangeSetScope, Depends(_scope)],
-    service: Annotated[GitHubPublicationService, Depends(default_publication_service)],
+    service: Annotated[PublicationServiceRouter, Depends(default_publication_router)],
 ) -> JSONResponse:
     try:
+        values = body.model_dump()
+        provider = values.pop("provider")
+        project = values.pop("project")
+        if provider == "azure_devops":
+            if project is None:
+                raise PublicationInvalid("PUBLICATION_PROJECT_REQUIRED")
+            organization = values.pop("owner")
+            request = AzureDevOpsPublicationRequest(
+                **values,
+                organization=organization,
+                project=project,
+                idempotency_key=idempotency_key,
+            )
+        else:
+            request = PublicationRequest(
+                **values,
+                idempotency_key=idempotency_key,
+            )
         outcome = await service.publish(
             scope,
-            PublicationRequest(
-                **body.model_dump(),
-                idempotency_key=idempotency_key,
-            ),
+            request,
             roles=current_roles(),
         )
         return JSONResponse(
@@ -159,7 +191,7 @@ async def decide_publication_tool(
     publication_id: PublicationId,
     body: PublicationApprovalBody,
     scope: Annotated[ChangeSetScope, Depends(_scope)],
-    service: Annotated[GitHubPublicationService, Depends(default_publication_service)],
+    service: Annotated[PublicationServiceRouter, Depends(default_publication_router)],
 ) -> JSONResponse:
     try:
         outcome = await service.decide(
@@ -182,7 +214,7 @@ async def decide_publication_tool(
 def get_publication(
     publication_id: PublicationId,
     scope: Annotated[ChangeSetScope, Depends(_scope)],
-    service: Annotated[GitHubPublicationService, Depends(default_publication_service)],
+    service: Annotated[PublicationServiceRouter, Depends(default_publication_router)],
 ) -> JSONResponse:
     try:
         publication = service.get(scope, publication_id)

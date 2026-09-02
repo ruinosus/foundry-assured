@@ -17,6 +17,35 @@ function chosenLocale(): string | null {
   return hit ? decodeURIComponent(hit.split("=")[1]) : null;
 }
 
+export function claimsFromChallenge(header: string | null): string | null {
+  if (!header || !/^Bearer\s/i.test(header) || !/error="insufficient_claims"/i.test(header))
+    return null;
+  const match = header.match(/(?:^|,\s*)claims=("(?:\\.|[^"\\])*")/i);
+  if (!match) return null;
+  try {
+    const claims = JSON.parse(match[1]);
+    return typeof claims === "string" && claims.length <= 8192 ? claims : null;
+  } catch {
+    return null;
+  }
+}
+
+async function tokenWithClaims(claims: string): Promise<string | null> {
+  if (!authConfigured || !msalInstance) return null;
+  const account = msalInstance.getAllAccounts()[0];
+  if (!account) return null;
+  const request = { scopes: apiScopes, account, claims };
+  try {
+    return (await msalInstance.acquireTokenSilent(request)).accessToken;
+  } catch {
+    try {
+      return (await msalInstance.acquireTokenPopup(request)).accessToken;
+    } catch {
+      return null;
+    }
+  }
+}
+
 export async function authedFetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
   const headers = new Headers(init.headers);
   if (authConfigured && msalInstance) {
@@ -42,5 +71,13 @@ export async function authedFetch(input: RequestInfo | URL, init: RequestInit = 
   const areaId = selectedAreaId();
   if (areaId && !headers.has("X-Area-ID")) headers.set("X-Area-ID", areaId);
 
+  const response = await fetch(input, { ...init, headers });
+  if (response.status !== 401) return response;
+
+  const claims = claimsFromChallenge(response.headers.get("WWW-Authenticate"));
+  if (!claims) return response;
+  const steppedUpToken = await tokenWithClaims(claims);
+  if (!steppedUpToken) return response;
+  headers.set("Authorization", `Bearer ${steppedUpToken}`);
   return fetch(input, { ...init, headers });
 }

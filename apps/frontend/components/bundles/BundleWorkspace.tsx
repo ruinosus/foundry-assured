@@ -52,6 +52,8 @@ interface PublicationRecord {
   revision: number;
   content_hash: string;
   owner: string;
+  provider: "github" | "azure_devops";
+  project: string;
   repository: string;
   base_branch: string;
   branch: string;
@@ -110,6 +112,19 @@ function evidenceSource(item: unknown): string[] {
   return typeof source === "string" ? [source] : [];
 }
 
+function publicationFieldsReady(
+  provider: "github" | "azure_devops",
+  owner: string,
+  project: string,
+  repository: string,
+) {
+  return Boolean(
+    owner.trim() &&
+      repository.trim() &&
+      (provider === "github" || project.trim()),
+  );
+}
+
 export function BundleWorkspace({
   bundleId,
   editing = false,
@@ -132,6 +147,10 @@ export function BundleWorkspace({
     null,
   );
   const [publicationOwner, setPublicationOwner] = useState("");
+  const [publicationProvider, setPublicationProvider] = useState<
+    "github" | "azure_devops"
+  >("github");
+  const [publicationProject, setPublicationProject] = useState("");
   const [publicationRepository, setPublicationRepository] = useState("");
   const [publicationBranch, setPublicationBranch] = useState("main");
   const [publicationDirectory, setPublicationDirectory] = useState("okf");
@@ -320,7 +339,15 @@ export function BundleWorkspace({
   };
 
   const publish = async () => {
-    if (!bundle || !publicationOwner.trim() || !publicationRepository.trim())
+    if (
+      !bundle ||
+      !publicationFieldsReady(
+        publicationProvider,
+        publicationOwner,
+        publicationProject,
+        publicationRepository,
+      )
+    )
       return;
     setBusy(true);
     setPublicationStatus(t("publicationPreparing"));
@@ -332,13 +359,18 @@ export function BundleWorkspace({
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Idempotency-Key": `${bundle.id}:${bundle.content_hash}`,
+          "Idempotency-Key": `${publicationProvider}:${bundle.id}:${bundle.content_hash}`,
         },
         body: JSON.stringify({
           changeset_id: bundle.id,
+          provider: publicationProvider,
           revision: bundle.revision,
           content_hash: bundle.content_hash,
           owner: publicationOwner.trim(),
+          project:
+            publicationProvider === "azure_devops"
+              ? publicationProject.trim()
+              : undefined,
           repository: publicationRepository.trim(),
           base_branch: publicationBranch.trim(),
           target_directory: publicationDirectory.trim(),
@@ -395,7 +427,8 @@ export function BundleWorkspace({
       const url = (error as Error & { consentUrl?: unknown }).consentUrl;
       if (typeof url === "string" && url.startsWith("https://"))
         setConsentUrl(url);
-      setToolApproval(null);
+      const status = (error as Error & { status?: unknown }).status;
+      if (status !== 401) setToolApproval(null);
       setPublicationStatus(t("publicationFailed", { code }));
     } finally {
       setBusy(false);
@@ -679,8 +712,12 @@ export function BundleWorkspace({
           <header>
             <div>
               <span>{t("publicationEyebrow")}</span>
-              <h2 id="bundle-publication-title">{t("publicationTitle")}</h2>
-              <p>{t("publicationBody")}</p>
+              <h2 id="bundle-publication-title">
+                {t("publicationTitle", {
+                  provider: t(`publicationProviders.${publicationProvider}`),
+                })}
+              </h2>
+              <p>{t(`publicationBody.${publicationProvider}`)}</p>
             </div>
             <span className="catalog-status available">
               {t("publicationApproved")}
@@ -712,7 +749,25 @@ export function BundleWorkspace({
             <>
               <div className="bundle-publication-fields">
                 <label>
-                  <span>{t("publicationOwner")}</span>
+                  <span>{t("publicationProvider")}</span>
+                  <select
+                    value={publicationProvider}
+                    onChange={(event) =>
+                      setPublicationProvider(
+                        event.target.value as "github" | "azure_devops",
+                      )
+                    }
+                  >
+                    <option value="github">
+                      {t("publicationProviders.github")}
+                    </option>
+                    <option value="azure_devops">
+                      {t("publicationProviders.azure_devops")}
+                    </option>
+                  </select>
+                </label>
+                <label>
+                  <span>{t(`publicationOwner.${publicationProvider}`)}</span>
                   <input
                     value={publicationOwner}
                     maxLength={100}
@@ -723,6 +778,20 @@ export function BundleWorkspace({
                     placeholder={t("publicationOwnerPlaceholder")}
                   />
                 </label>
+                {publicationProvider === "azure_devops" && (
+                  <label>
+                    <span>{t("publicationProject")}</span>
+                    <input
+                      value={publicationProject}
+                      maxLength={128}
+                      autoComplete="off"
+                      onChange={(event) =>
+                        setPublicationProject(event.target.value)
+                      }
+                      placeholder={t("publicationProjectPlaceholder")}
+                    />
+                  </label>
+                )}
                 <label>
                   <span>{t("publicationRepository")}</span>
                   <input
@@ -759,15 +828,19 @@ export function BundleWorkspace({
                 </label>
               </div>
               <footer>
-                <p>{t("publicationConsent")}</p>
+                <p>{t(`publicationConsent.${publicationProvider}`)}</p>
                 <button
                   type="button"
                   className="btn btn-solid"
                   disabled={
                     busy ||
                     toolApproval !== null ||
-                    !publicationOwner.trim() ||
-                    !publicationRepository.trim() ||
+                    !publicationFieldsReady(
+                      publicationProvider,
+                      publicationOwner,
+                      publicationProject,
+                      publicationRepository,
+                    ) ||
                     !publicationBranch.trim() ||
                     !publicationDirectory.trim()
                   }

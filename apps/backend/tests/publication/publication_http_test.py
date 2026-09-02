@@ -12,6 +12,8 @@ class PublicationService:
     def __init__(self, projection) -> None:
         self.projection = projection
         self.calls = 0
+        self.requests = []
+        self.require_step_up = False
 
     async def publish(self, scope, request, *, roles):
         from app.modules.publication.public import (
@@ -22,6 +24,7 @@ class PublicationService:
         assert roles == {"Approver"}
         assert scope.area_id == "area-a"
         self.calls += 1
+        self.requests.append(request)
         return PublicationOutcome(
             self.projection,
             ToolApprovalRequest(
@@ -33,12 +36,19 @@ class PublicationService:
         )
 
     async def decide(self, scope, publication_id, approval_id, *, approved, roles):
-        from app.modules.publication.public import PublicationOutcome
+        from app.modules.publication.public import (
+            AzureDevOpsAuthenticationRequired,
+            PublicationOutcome,
+        )
 
         assert publication_id == self.projection.id
         assert approval_id == "a" * 32
         assert approved is True
         assert roles == {"Approver"}
+        if self.require_step_up:
+            raise AzureDevOpsAuthenticationRequired(
+                '{"access_token":{"polids":{"essential":true}}}'
+            )
         return PublicationOutcome(self.projection, None, False)
 
     def get(self, scope, publication_id: str):
@@ -78,7 +88,7 @@ def main() -> int:
     application.dependency_overrides[api._scope] = lambda: ChangeSetScope(
         "tenant-a", "area-a", "approver-a"
     )
-    application.dependency_overrides[api.default_publication_service] = lambda: service
+    application.dependency_overrides[api.default_publication_router] = lambda: service
     user = SimpleNamespace(oid="approver-a", roles=["Approver"])
     application.dependency_overrides[auth.require_user] = lambda: user
     if auth.azure_scheme is not None:
@@ -110,6 +120,43 @@ def main() -> int:
     assert "raw_response" not in created.text.lower()
     assert "token" not in created.text.lower()
 
+    azure_created = client.post(
+        "/authoring/publications",
+        headers={"Idempotency-Key": "publish-http-azure-001"},
+        json={
+            **body,
+            "provider": "azure_devops",
+            "project": "platform",
+        },
+    )
+    assert azure_created.status_code == 202, azure_created.text
+    azure_request = service.requests[-1]
+    assert azure_request.provider == "azure_devops"
+    assert azure_request.organization == "acme"
+    assert azure_request.project == "platform"
+
+    missing_project = client.post(
+        "/authoring/publications",
+        headers={"Idempotency-Key": "publish-http-azure-002"},
+        json={**body, "provider": "azure_devops"},
+    )
+    assert missing_project.status_code == 422, missing_project.text
+
+    service.require_step_up = True
+    step_up = client.post(
+        f"/authoring/publications/{projection.id}/approvals",
+        json={"approval_id": "a" * 32, "approved": True},
+    )
+    assert step_up.status_code == 401, step_up.text
+    assert step_up.json()["error"]["code"] == (
+        "PUBLICATION_AZURE_DEVOPS_AUTHENTICATION_REQUIRED"
+    )
+    assert step_up.headers["WWW-Authenticate"].startswith(
+        'Bearer error="insufficient_claims", claims='
+    )
+    assert "delegated-token" not in step_up.text
+
+    service.require_step_up = False
     approved = client.post(
         f"/authoring/publications/{projection.id}/approvals",
         json={"approval_id": "a" * 32, "approved": True},

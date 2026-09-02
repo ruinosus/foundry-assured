@@ -35,6 +35,7 @@ _BRANCH = re.compile(
 _DIRECTORY = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]{0,127}$", re.ASCII)
 _MAX_FILE_BYTES = 256 * 1024
 _MAX_PUBLICATION_BYTES = 1024 * 1024
+_EMPTY_TEXT_COLUMN = "TEXT NOT NULL DEFAULT ''"
 _TOOL_NAMESPACE = "foundrygithubmcp"
 _TOOLS = frozenset(
     {
@@ -134,6 +135,11 @@ class StoredPublication:
     error_code: str
     created_at: str
     updated_at: str
+    provider: str = "github"
+    project: str = ""
+    base_object_id: str = ""
+    commit_id: str = ""
+    merge_status: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -220,7 +226,12 @@ class SQLitePublicationRepository:
             for name, definition in (
                 ("target_directory", "TEXT NOT NULL DEFAULT 'okf'"),
                 ("step", "TEXT NOT NULL DEFAULT 'search'"),
-                ("approval_id", "TEXT NOT NULL DEFAULT ''"),
+                ("approval_id", _EMPTY_TEXT_COLUMN),
+                ("provider", "TEXT NOT NULL DEFAULT 'github'"),
+                ("project", _EMPTY_TEXT_COLUMN),
+                ("base_object_id", _EMPTY_TEXT_COLUMN),
+                ("commit_id", _EMPTY_TEXT_COLUMN),
+                ("merge_status", _EMPTY_TEXT_COLUMN),
             ):
                 if name not in columns:
                     connection.execute(
@@ -253,6 +264,11 @@ class SQLitePublicationRepository:
             error_code=row[14],
             created_at=row[15],
             updated_at=row[16],
+            provider=row[17] if len(row) > 17 else "github",
+            project=row[18] if len(row) > 18 else "",
+            base_object_id=row[19] if len(row) > 19 else "",
+            commit_id=row[20] if len(row) > 20 else "",
+            merge_status=row[21] if len(row) > 21 else "",
         )
 
     def reserve(
@@ -274,17 +290,18 @@ class SQLitePublicationRepository:
                 """SELECT publication_id, changeset_id, revision, content_hash,
                           owner, repository, base_branch, target_directory, branch,
                           pull_request_number, pull_request_url, state, step, approval_id,
-                          error_code, created_at, updated_at, request_hash
+                         error_code, created_at, updated_at, provider, project,
+                         base_object_id, commit_id, merge_status, request_hash
                    FROM github_publications
                    WHERE tenant_id = ? AND area_id = ? AND key_hash = ?""",
                 (scope.tenant_id, scope.area_id, key_hash),
             ).fetchone()
             if existing is not None:
-                if existing[17] != request_hash:
+                if existing[22] != request_hash:
                     raise PublicationConflict("PUBLICATION_IDEMPOTENCY_KEY_REUSED")
                 if existing[11] == "completed":
                     connection.commit()
-                    return self._record(existing[:17]), True
+                    return self._record(existing[:22]), True
                 if existing[11] in {
                     "in_progress",
                     "awaiting_approval",
@@ -299,14 +316,16 @@ class SQLitePublicationRepository:
                     (now, scope.tenant_id, scope.area_id, existing[0]),
                 )
                 connection.commit()
-                return self._record(existing[:17]), False
+                return self._record(existing[:22]), False
+            provider = getattr(request, "provider", "github")
+            project = getattr(request, "project", "")
             cursor.execute(
                 """INSERT INTO github_publications
                    (tenant_id, area_id, publication_id, changeset_id, revision,
                     content_hash, owner, repository, base_branch, target_directory, branch,
                     pull_request_number, pull_request_url, state, error_code, key_hash,
-                    request_hash, created_at, updated_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, '', 'in_progress', '', ?, ?, ?, ?)""",
+                    request_hash, created_at, updated_at, provider, project)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, '', 'in_progress', '', ?, ?, ?, ?, ?, ?)""",
                 (
                     scope.tenant_id,
                     scope.area_id,
@@ -323,6 +342,8 @@ class SQLitePublicationRepository:
                     request_hash,
                     now,
                     now,
+                    provider,
+                    project,
                 ),
             )
             connection.commit()
@@ -369,6 +390,8 @@ class SQLitePublicationRepository:
         next_step: str,
         pull_request_number: int = 0,
         pull_request_url: str = "",
+        base_object_id: str = "",
+        commit_id: str = "",
         now: str,
     ) -> StoredPublication:
         connection = self._connect()
@@ -378,6 +401,8 @@ class SQLitePublicationRepository:
                    SET state = 'in_progress', step = ?, approval_id = '',
                        pull_request_number = CASE WHEN ? > 0 THEN ? ELSE pull_request_number END,
                        pull_request_url = CASE WHEN ? != '' THEN ? ELSE pull_request_url END,
+                       base_object_id = CASE WHEN ? != '' THEN ? ELSE base_object_id END,
+                       commit_id = CASE WHEN ? != '' THEN ? ELSE commit_id END,
                        updated_at = ?
                    WHERE tenant_id = ? AND area_id = ? AND publication_id = ?
                                          AND state = 'executing' AND approval_id = ?""",
@@ -387,6 +412,10 @@ class SQLitePublicationRepository:
                     pull_request_number,
                     pull_request_url,
                     pull_request_url,
+                    base_object_id,
+                    base_object_id,
+                    commit_id,
+                    commit_id,
                     now,
                     scope.tenant_id,
                     scope.area_id,
@@ -437,6 +466,39 @@ class SQLitePublicationRepository:
         finally:
             connection.close()
 
+    def restore_approval(
+        self,
+        scope: ChangeSetScope,
+        publication_id: str,
+        approval_id: str,
+        *,
+        now: str,
+    ) -> StoredPublication:
+        connection = self._connect()
+        try:
+            changed = connection.execute(
+                """UPDATE github_publications
+                   SET state = 'awaiting_approval', updated_at = ?
+                   WHERE tenant_id = ? AND area_id = ? AND publication_id = ?
+                     AND state = 'executing' AND approval_id = ?""",
+                (
+                    now,
+                    scope.tenant_id,
+                    scope.area_id,
+                    publication_id,
+                    approval_id,
+                ),
+            ).rowcount
+            if changed != 1:
+                raise PublicationConflict("PUBLICATION_APPROVAL_STALE")
+            connection.commit()
+            result = self.get(scope, publication_id)
+            if result is None:
+                raise PublicationNotFound("PUBLICATION_NOT_FOUND")
+            return result
+        finally:
+            connection.close()
+
     def require_intervention(
         self,
         scope: ChangeSetScope,
@@ -465,6 +527,7 @@ class SQLitePublicationRepository:
         *,
         pull_request_number: int,
         pull_request_url: str,
+        merge_status: str = "",
         now: str,
     ) -> StoredPublication:
         connection = self._connect()
@@ -472,12 +535,13 @@ class SQLitePublicationRepository:
             changed = connection.execute(
                 """UPDATE github_publications
                    SET pull_request_number = ?, pull_request_url = ?, state = 'completed',
-                       step = 'completed', approval_id = '', updated_at = ?
+                       merge_status = ?, step = 'completed', approval_id = '', updated_at = ?
                    WHERE tenant_id = ? AND area_id = ? AND publication_id = ?
                                          AND state = 'executing'""",
                 (
                     pull_request_number,
                     pull_request_url,
+                    merge_status,
                     now,
                     scope.tenant_id,
                     scope.area_id,
@@ -524,7 +588,8 @@ class SQLitePublicationRepository:
                 """SELECT publication_id, changeset_id, revision, content_hash,
                           owner, repository, base_branch, target_directory, branch,
                           pull_request_number, pull_request_url, state, step, approval_id,
-                          error_code, created_at, updated_at
+                         error_code, created_at, updated_at, provider, project,
+                         base_object_id, commit_id, merge_status
                    FROM github_publications
                    WHERE tenant_id = ? AND area_id = ? AND publication_id = ?""",
                 (scope.tenant_id, scope.area_id, publication_id),

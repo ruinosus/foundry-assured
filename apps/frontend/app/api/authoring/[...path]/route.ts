@@ -30,6 +30,8 @@ async function proxy(
     const responseHeaders = new Headers({ "Cache-Control": "no-store" });
     const etag = response.headers.get("etag");
     if (etag) responseHeaders.set("ETag", etag);
+    const challenge = response.headers.get("www-authenticate");
+    if (challenge) responseHeaders.set("WWW-Authenticate", challenge);
     return NextResponse.json(responseBody, {
       status: response.ok ? response.status : statusFor(response.status),
       headers: responseHeaders,

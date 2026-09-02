@@ -1,5 +1,16 @@
 """Publicação de revisões aprovadas por adapters externos oficiais."""
 
+from app.modules.publication.internal.azure_devops import (
+    AZURE_DEVOPS_PERMISSION,
+    AZURE_DEVOPS_TOKEN_SCOPE,
+    AzureDevOpsAuthenticationRequired,
+    AzureDevOpsPublicationRequest,
+    AzureDevOpsPublicationService,
+    AzureDevOpsRestGateway,
+    PublicationServiceRouter,
+    default_azure_devops_publication_service,
+    default_publication_router,
+)
 from app.modules.publication.internal.github import (
     FoundryToolboxGateway,
     GitHubPublicationService,
@@ -17,6 +28,12 @@ from app.modules.publication.internal.github import (
 )
 
 __all__ = [
+    "AZURE_DEVOPS_PERMISSION",
+    "AZURE_DEVOPS_TOKEN_SCOPE",
+    "AzureDevOpsAuthenticationRequired",
+    "AzureDevOpsPublicationRequest",
+    "AzureDevOpsPublicationService",
+    "AzureDevOpsRestGateway",
     "FoundryToolboxGateway",
     "GitHubPublicationService",
     "PublicationConflict",
@@ -26,8 +43,11 @@ __all__ = [
     "PublicationNotFound",
     "PublicationOutcome",
     "PublicationRequest",
+    "PublicationServiceRouter",
     "SQLitePublicationRepository",
     "StoredPublication",
     "ToolApprovalRequest",
+    "default_azure_devops_publication_service",
+    "default_publication_router",
     "default_publication_service",
 ]
