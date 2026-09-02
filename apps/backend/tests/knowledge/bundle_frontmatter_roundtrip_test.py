@@ -38,18 +38,32 @@ PAGINA = (
     "Prosa citando `apps/backend/app/main.py`.\n"
 )
 
+PAGINA_COM_H1 = (
+    "---\n"
+    "type: concept\n"
+    "title: Página com H1 próprio\n"
+    'generated: { by: "openwiki/0.4.3", at: "2026-09-02T14:30:00+00:00" }\n'
+    "---\n"
+    "\n"
+    "# Título próprio da página\n"
+    "\n"
+    "Prosa citando `apps/backend/app/registry.py`.\n"
+)
+
 
 def _wiki_falsa(raiz: Path) -> Path:
-    """Um repositório mínimo com saída de OpenWiki: um índice e uma página de conteúdo."""
+    """Um repositório mínimo com saída de OpenWiki: um índice e duas páginas de conteúdo."""
     wiki = raiz / "repo" / "openwiki"
     (wiki / "backend").mkdir(parents=True)
     (wiki / "index.md").write_text(
         "# Directories\n\n- [backend](backend/)\n", encoding="utf-8"
     )
     (wiki / "backend" / "index.md").write_text(
-        "# Files\n\n- [Pipeline](knowledge-pipeline.md) - o pipeline\n", encoding="utf-8"
+        "# Files\n\n- [Pipeline](knowledge-pipeline.md) - o pipeline\n"
+        "- [Content](content-pipeline.md) - conteúdo com H1\n", encoding="utf-8"
     )
     (wiki / "backend" / "knowledge-pipeline.md").write_text(PAGINA, encoding="utf-8")
+    (wiki / "backend" / "content-pipeline.md").write_text(PAGINA_COM_H1, encoding="utf-8")
     return raiz / "repo"
 
 
@@ -89,19 +103,31 @@ def main() -> int:
 
         # --- metade 2: o ingest RETIRA
         itens, _ = collect_pages(raiz / "out")
-        check("collect_pages devolveu a página", len(itens) == 1)
-        if itens:
-            texto = itens[0][1].decode("utf-8")
+        check("collect_pages devolveu as duas páginas", len(itens) == 2)
+        if len(itens) >= 1:
+            texto_pipeline = itens[0][1].decode("utf-8")
             check(
                 "nenhuma linha do blob é um delimitador de frontmatter",
-                all(linha.strip() != "---" for linha in texto.splitlines()),
+                all(linha.strip() != "---" for linha in texto_pipeline.splitlines()),
             )
             check(
                 "nenhuma chave OKF vaza para o índice",
-                "generated:" not in texto and "type:" not in texto,
+                "generated:" not in texto_pipeline and "type:" not in texto_pipeline,
             )
-            check("o cabeçalho do ingest continua na frente", texto.startswith("# "))
-            check("a prosa sobreviveu", "apps/backend/app/main.py" in texto)
+            check("o cabeçalho do ingest continua na frente", texto_pipeline.startswith("# "))
+            check("a prosa sobreviveu", "apps/backend/app/main.py" in texto_pipeline)
+        if len(itens) >= 2:
+            texto_content = itens[1][1].decode("utf-8")
+            # Check that the original H1 line is stripped. After stripping, the blob should start with
+            # "# comp v1 — Página com H1 próprio" (the qualified header from collect_pages), then blank line,
+            # then "Prosa citando..." (the body without the original H1). The original "# Título próprio da página"
+            # should not survive.
+            lines = texto_content.split("\n")
+            has_original_h1 = any(line == "# Título próprio da página" for line in lines)
+            check(
+                "o H1 próprio da página não sobrevive ao índice (guarda a ordem strip→H1)",
+                not has_original_h1
+            )
 
     print(f"\n{'❌' if falhas else '✅'} {len(falhas)} failure(s)")
     return 1 if falhas else 0
