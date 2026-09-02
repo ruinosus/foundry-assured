@@ -18,7 +18,7 @@ import sys
 
 import yaml
 
-from app.modules.knowledge.internal.wiki_builder import render_page
+from app.modules.knowledge.internal.wiki_builder import render_page, stamp_verified
 
 CORPO = "## Visão geral\n\nProsa citando `apps/backend/app/main.py`.\n"
 
@@ -85,6 +85,33 @@ def main() -> int:
         producer="p", version="v",
     )
     check("description passa quando dada", frontmatter(com_desc)["description"] == "Uma frase.")
+
+    carimbada = stamp_verified(pagina(), verifier="wiki-verifier", version="1")
+    meta_v = frontmatter(carimbada)
+    check(
+        "verified é lista com um evento de processo",
+        [e["by"] for e in meta_v.get("verified", [])] == ["process:wiki-verifier/1"],
+    )
+    check(
+        "verified[].at tem offset explícito",
+        str(meta_v["verified"][0]["at"]).endswith("+00:00"),
+    )
+    check(
+        "o verificador nunca é human: (ADR-023)",
+        not meta_v["verified"][0]["by"].startswith("human:"),
+    )
+    check(
+        "generated sobrevive ao carimbo",
+        meta_v["generated"] == frontmatter(pagina())["generated"],
+    )
+    check("o corpo sobrevive ao carimbo", carimbada.endswith(CORPO))
+
+    duas = stamp_verified(carimbada, verifier="fidelity-gate", version="1")
+    check(
+        "carimbar de novo ACRESCENTA, não substitui",
+        [e["by"] for e in frontmatter(duas)["verified"]]
+        == ["process:wiki-verifier/1", "process:fidelity-gate/1"],
+    )
 
     print(f"\n{'❌' if falhas else '✅'} {len(falhas)} failure(s)")
     return 1 if falhas else 0
