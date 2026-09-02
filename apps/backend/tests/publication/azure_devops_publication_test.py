@@ -173,7 +173,7 @@ def main() -> int:
         )
         outcome = _complete(service, scope, request)
         publication = outcome.publication
-        assert publication.state == "completed"
+        assert publication.state == "pr_open"
         assert publication.provider == "azure_devops"
         assert publication.project == "platform"
         assert publication.base_object_id == "a" * 40
@@ -294,7 +294,7 @@ def main() -> int:
             )
         )
         completed_after_step_up = _finish(challenged_service, scope, resumed)
-        assert completed_after_step_up.publication.state == "completed"
+        assert completed_after_step_up.publication.state == "pr_open"
         assert [tool for tool, _ in challenged_gateway.calls].count(
             "find_pull_request"
         ) == 1

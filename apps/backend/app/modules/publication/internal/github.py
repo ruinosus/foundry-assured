@@ -8,7 +8,7 @@ import json
 import random
 import re
 import sqlite3
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from hashlib import sha256
@@ -23,6 +23,10 @@ from app.modules.authoring.public import (
     ChangeSetScope,
     default_changeset_service,
     default_decision_service,
+)
+from app.modules.publication.internal.reconciliation import (
+    MergeEvidence,
+    ReconciliationBlocked,
 )
 
 if TYPE_CHECKING:
@@ -142,13 +146,20 @@ class StoredPublication:
     merge_status: str = ""
 
     def to_dict(self) -> dict[str, Any]:
-        return asdict(self)
+        return {**asdict(self), "etag": self.etag}
+
+    @property
+    def etag(self) -> str:
+        value = f"{self.id}:{self.state}:{self.step}:{self.updated_at}"
+        return f'"{sha256(value.encode()).hexdigest()}"'
 
 
 class PublicationGateway(Protocol):
     async def request_approval(
         self, tool: str, arguments: dict[str, Any]
     ) -> ToolApprovalRequest: ...
+
+    async def execute_read(self, tool: str, arguments: dict[str, Any]) -> Any: ...
 
     async def decide(self, approval_id: str, *, approved: bool) -> Any: ...
 
@@ -299,7 +310,7 @@ class SQLitePublicationRepository:
             if existing is not None:
                 if existing[22] != request_hash:
                     raise PublicationConflict("PUBLICATION_IDEMPOTENCY_KEY_REUSED")
-                if existing[11] == "completed":
+                if existing[11] in {"pr_open", "completed"}:
                     connection.commit()
                     return self._record(existing[:22]), True
                 if existing[11] in {
@@ -534,8 +545,8 @@ class SQLitePublicationRepository:
         try:
             changed = connection.execute(
                 """UPDATE github_publications
-                   SET pull_request_number = ?, pull_request_url = ?, state = 'completed',
-                       merge_status = ?, step = 'completed', approval_id = '', updated_at = ?
+                   SET pull_request_number = ?, pull_request_url = ?, state = 'pr_open',
+                       merge_status = ?, step = 'reconcile', approval_id = '', updated_at = ?
                    WHERE tenant_id = ? AND area_id = ? AND publication_id = ?
                                          AND state = 'executing'""",
                 (
@@ -546,6 +557,52 @@ class SQLitePublicationRepository:
                     scope.tenant_id,
                     scope.area_id,
                     publication_id,
+                ),
+            ).rowcount
+            if changed != 1:
+                raise PublicationConflict("PUBLICATION_STATE_CONFLICT")
+            connection.commit()
+            result = self.get(scope, publication_id)
+            if result is None:
+                raise PublicationNotFound("PUBLICATION_NOT_FOUND")
+            return result
+        finally:
+            connection.close()
+
+    def transition_reconciliation(
+        self,
+        scope: ChangeSetScope,
+        publication_id: str,
+        *,
+        expected_states: Sequence[str],
+        state: str,
+        step: str,
+        commit_id: str = "",
+        merge_status: str = "",
+        error_code: str = "",
+        now: str,
+    ) -> StoredPublication:
+        allowed = {
+            "pr_open", "merge_confirmed", "materializing", "completed",
+            "compensating", "compensated", "compensation_required",
+        }
+        if state not in allowed or not expected_states or not set(expected_states) <= allowed:
+            raise PublicationConflict("PUBLICATION_STATE_INVALID")
+        placeholders = ", ".join("?" for _ in expected_states)
+        connection = self._connect()
+        try:
+            changed = connection.execute(
+                f"""UPDATE github_publications
+                    SET state = ?, step = ?,
+                        commit_id = CASE WHEN ? != '' THEN ? ELSE commit_id END,
+                        merge_status = CASE WHEN ? != '' THEN ? ELSE merge_status END,
+                        error_code = ?, updated_at = ?
+                    WHERE tenant_id = ? AND area_id = ? AND publication_id = ?
+                      AND state IN ({placeholders})""",
+                (
+                    state, step, commit_id, commit_id, merge_status, merge_status,
+                    error_code, now, scope.tenant_id, scope.area_id, publication_id,
+                    *expected_states,
                 ),
             ).rowcount
             if changed != 1:
@@ -825,6 +882,12 @@ class FoundryToolboxGateway:
         finally:
             await self._close(pending.toolbox, pending.credential)
 
+    async def execute_read(self, tool: str, arguments: dict[str, Any]) -> Any:
+        if tool not in _READ_TOOLS:
+            raise PublicationExternalError("PUBLICATION_TOOL_NOT_ALLOWED")
+        approval = await self.request_approval(tool, arguments)
+        return await self.decide(approval.id, approved=True)
+
 
 def _thaw(value: Any) -> Any:
     if isinstance(value, Mapping):
@@ -959,6 +1022,42 @@ def _validated_pull_request(
     raise PublicationExternalError("PUBLICATION_PR_VERIFICATION_FAILED")
 
 
+def _result_mappings(result: Any):
+    values: list[Any] = [result]
+    while values:
+        value = values.pop()
+        if isinstance(value, Mapping):
+            yield value
+            values.extend(value.values())
+        elif isinstance(value, (list, tuple)):
+            values.extend(value)
+        elif isinstance(value, str):
+            try:
+                values.append(json.loads(value))
+            except json.JSONDecodeError:
+                continue
+        elif hasattr(value, "text"):
+            values.append(value.text)
+
+
+def _github_merge_evidence(
+    result: Any, *, owner: str, repository: str, number: int
+) -> MergeEvidence:
+    expected_url = f"https://github.com/{owner}/{repository}/pull/{number}"
+    for value in _result_mappings(result):
+        url = value.get("html_url") or value.get("url")
+        if value.get("number") != number or url != expected_url:
+            continue
+        body = str(value.get("body") or "")
+        match = re.search(r"Content-SHA256:\s*`([0-9a-f]{64})`", body)
+        return MergeEvidence(
+            merged=value.get("merged") is True,
+            commit_id=str(value.get("merge_commit_sha") or ""),
+            content_hash=match.group(1) if match else "",
+        )
+    raise PublicationExternalError("PUBLICATION_PR_VERIFICATION_FAILED")
+
+
 class GitHubPublicationService:
     def __init__(
         self,
@@ -967,11 +1066,13 @@ class GitHubPublicationService:
         decisions: DecisionService,
         repository: SQLitePublicationRepository,
         gateway: PublicationGateway,
+        reconciler: Any | None = None,
     ) -> None:
         self._changesets = changesets
         self._decisions = decisions
         self._repository = repository
         self._gateway = gateway
+        self._reconciler = reconciler
 
     def _assert_current(
         self,
@@ -1244,6 +1345,71 @@ class GitHubPublicationService:
             raise PublicationNotFound("PUBLICATION_NOT_FOUND")
         return publication
 
+    async def reconcile(
+        self, scope: ChangeSetScope, publication_id: str, *, roles: set[str],
+        expected_etag: str,
+    ) -> tuple[StoredPublication, tuple[Any, ...]]:
+        publication = self.get(scope, publication_id)
+        if publication.etag != expected_etag:
+            raise PublicationConflict("PUBLICATION_REVISION_STALE")
+        changeset = self._assert_current(scope, publication, roles=roles)
+        if self._reconciler is None:
+            raise PublicationExternalError("PUBLICATION_RECONCILIATION_NOT_CONFIGURED")
+        if publication.state == "completed":
+            return publication, self._reconciler.journal(scope, publication.id)
+        if publication.state not in {"pr_open", "materializing"}:
+            raise PublicationConflict("PUBLICATION_STATE_INVALID")
+        arguments = {
+            "owner": publication.owner,
+            "repo": publication.repository,
+            "pullNumber": publication.pull_request_number,
+            "method": "get",
+        }
+        result = await self._gateway.execute_read("pull_request_read", arguments)
+        evidence = _github_merge_evidence(
+            result,
+            owner=publication.owner,
+            repository=publication.repository,
+            number=publication.pull_request_number,
+        )
+        try:
+            reconciled = self._reconciler.reconcile(
+                publication,
+                evidence,
+                scope=scope,
+                operations=changeset.content["operations"],
+            )
+        except Exception as exc:
+            if isinstance(exc, ReconciliationBlocked):
+                raise PublicationConflict(str(exc)) from exc
+            raise
+        return self.get(scope, publication.id), reconciled.journal
+
+    def journal(self, scope: ChangeSetScope, publication_id: str) -> tuple[Any, ...]:
+        publication = self.get(scope, publication_id)
+        if self._reconciler is None:
+            return ()
+        return self._reconciler.journal(scope, publication.id)
+
+    def compensate(
+        self, scope: ChangeSetScope, publication_id: str, *, roles: set[str],
+        expected_etag: str,
+    ) -> tuple[StoredPublication, tuple[Any, ...]]:
+        publication = self.get(scope, publication_id)
+        if "Admin" not in roles:
+            raise PublicationConflict("PUBLICATION_ADMIN_REQUIRED")
+        if publication.etag != expected_etag:
+            raise PublicationConflict("PUBLICATION_REVISION_STALE")
+        if self._reconciler is None:
+            raise PublicationExternalError("PUBLICATION_RECONCILIATION_NOT_CONFIGURED")
+        try:
+            journal = self._reconciler.compensate(scope, publication)
+        except Exception as exc:
+            if isinstance(exc, ReconciliationBlocked):
+                raise PublicationConflict(str(exc)) from exc
+            raise
+        return self.get(scope, publication.id), journal
+
 
 _default_service: GitHubPublicationService | None = None
 
@@ -1254,12 +1420,23 @@ def default_publication_service() -> GitHubPublicationService:
         from app.shared.settings import settings
 
         data_directory = Path(app.__file__).resolve().parent.parent / "data"
+        database = data_directory / "authoring.sqlite3"
+        repository = SQLitePublicationRepository(database)
+        from app.modules.publication.internal.reconciliation import (
+            OfficialFoundryMaterializer,
+            ReconciliationService,
+            SQLiteMaterializationJournal,
+        )
+
         _default_service = GitHubPublicationService(
             changesets=default_changeset_service(),
             decisions=default_decision_service(),
-            repository=SQLitePublicationRepository(
-                data_directory / "authoring.sqlite3"
-            ),
+            repository=repository,
             gateway=FoundryToolboxGateway(settings.publication_toolbox_endpoint),
+            reconciler=ReconciliationService(
+                OfficialFoundryMaterializer(),
+                journal=SQLiteMaterializationJournal(database),
+                publications=repository,
+            ),
         )
     return _default_service

@@ -358,6 +358,14 @@
     ],
     [
       "POST",
+      "/authoring/publications/{publication_id}/compensations"
+    ],
+    [
+      "POST",
+      "/authoring/publications/{publication_id}/reconcile"
+    ],
+    [
+      "POST",
       "/authoring/registry-bindings"
     ],
     [
@@ -849,6 +857,14 @@
     [
       "POST",
       "/authoring/publications/{publication_id}/approvals"
+    ],
+    [
+      "POST",
+      "/authoring/publications/{publication_id}/compensations"
+    ],
+    [
+      "POST",
+      "/authoring/publications/{publication_id}/reconcile"
     ],
     [
       "POST",
@@ -1367,6 +1383,14 @@
     [
       "POST",
       "/authoring/publications/{publication_id}/approvals"
+    ],
+    [
+      "POST",
+      "/authoring/publications/{publication_id}/compensations"
+    ],
+    [
+      "POST",
+      "/authoring/publications/{publication_id}/reconcile"
     ],
     [
       "POST",

@@ -962,11 +962,20 @@
     "publicationPreparing": "Validating approval, revision, and hash…",
     "publicationSending": "Creating the branch, sending documents, and verifying the pull request…",
     "publicationVerified": "Pull request verified. Repeating this action will not create another PR.",
+    "publicationReconcile": "Confirm merge and materialize",
+    "publicationCompensate": "Retry compensation",
+    "publicationReconciling": "Reading the merge, validating the hash, and resuming pending operations…",
+    "publicationCompensating": "Compensating completed operations in reverse order…",
+    "publicationMaterialized": "Merge confirmed and resources materialized.",
+    "publicationStateChanged": "Publication advanced to: {state}.",
+    "publicationJournal": "Materialization journal",
+    "publicationJournalEmpty": "No materialization operation has started.",
+    "publicationStepStates": { "pending": "pending", "executing": "executing", "completed": "completed", "skipped": "Git only", "compensated": "compensated", "compensation_required": "requires remediation" },
     "publicationFailed": "Publication stopped ({code}). Complete consent when requested and retry with the same data.",
     "publicationPullRequest": "Pull request",
     "publicationBranch": "Branch",
     "publicationState": "State",
-    "publicationStates": { "in_progress": "in progress", "awaiting_approval": "awaiting approval", "executing": "executing", "intervention_required": "requires intervention", "completed": "PR open", "failed": "stopped" }
+    "publicationStates": { "in_progress": "in progress", "awaiting_approval": "awaiting approval", "executing": "executing", "intervention_required": "requires intervention", "pr_open": "PR open", "merge_confirmed": "merge confirmed", "materializing": "materializing", "completed": "materialized", "compensating": "compensating", "compensated": "compensated", "compensation_required": "requires remediation", "failed": "stopped" }
   },
   "compliance": {
     "title": "Compliance",

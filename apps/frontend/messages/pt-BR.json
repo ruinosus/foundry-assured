@@ -962,11 +962,20 @@
     "publicationPreparing": "Validando aprovação, revisão e hash…",
     "publicationSending": "Criando branch, enviando documentos e verificando o pull request…",
     "publicationVerified": "Pull request verificado. Repetir esta ação não cria outro PR.",
+    "publicationReconcile": "Confirmar merge e materializar",
+    "publicationCompensate": "Tentar compensação",
+    "publicationReconciling": "Consultando o merge, validando o hash e retomando operações pendentes…",
+    "publicationCompensating": "Compensando operações concluídas em ordem reversa…",
+    "publicationMaterialized": "Merge confirmado e recursos materializados.",
+    "publicationStateChanged": "A publicação avançou para: {state}.",
+    "publicationJournal": "Journal de materialização",
+    "publicationJournalEmpty": "Nenhuma operação de materialização foi iniciada.",
+    "publicationStepStates": { "pending": "pendente", "executing": "executando", "completed": "concluída", "skipped": "somente Git", "compensated": "compensada", "compensation_required": "requer remediação" },
     "publicationFailed": "A publicação foi interrompida ({code}). Conclua o consentimento quando solicitado e tente novamente com os mesmos dados.",
     "publicationPullRequest": "Pull request",
     "publicationBranch": "Branch",
     "publicationState": "Estado",
-    "publicationStates": { "in_progress": "em andamento", "awaiting_approval": "aguardando aprovação", "executing": "executando", "intervention_required": "requer intervenção", "completed": "PR aberto", "failed": "interrompida" }
+    "publicationStates": { "in_progress": "em andamento", "awaiting_approval": "aguardando aprovação", "executing": "executando", "intervention_required": "requer intervenção", "pr_open": "PR aberto", "merge_confirmed": "merge confirmado", "materializing": "materializando", "completed": "materializado", "compensating": "compensando", "compensated": "compensado", "compensation_required": "requer remediação", "failed": "interrompida" }
   },
   "compliance": {
     "title": "Conformidade",

@@ -271,6 +271,18 @@ def create_skill_from_files(
 
 
 @audited("skill", "delete")
+def delete_skill_version(name: str, version: str) -> dict:
+    qualified = qualify(name)
+    client = _client()
+    try:
+        client.beta.skills.delete_version(qualified, version)
+        return {"name": qualified, "version": version, "deleted": True}
+    finally:
+        with contextlib.suppress(Exception):
+            client.close()
+
+
+@audited("skill", "delete")
 def delete_skill(name: str) -> dict:
     """Apaga a skill e todas as suas versões."""
     qualified = qualify(name)

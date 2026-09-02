@@ -124,6 +124,10 @@ jobs:
         run: uv run python -m tests.publication.azure_devops_publication_test
       - name: Azure DevOps publication — infra-gated OBO smoke
         run: uv run python -m tests.publication.azure_devops_smoke_test
+      - name: Post-merge publication — idempotent journal and compensation
+        run: uv run python -m tests.publication.reconciliation_test
+      - name: Post-merge publication — infra-gated Foundry materialization smoke
+        run: uv run python -m tests.publication.materialization_smoke_test
       - name: Proposer remains read-only
         run: uv run python -m tests.architecture.proposer_read_only_test
 

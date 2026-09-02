@@ -301,7 +301,9 @@ def parse_toolbox(body: dict) -> dict:
 
 
 @audited("toolbox", "create")
-def create_toolbox_version(name: str, body: dict) -> dict:
+def create_toolbox_version(
+    name: str, body: dict, *, ensure_connection: bool = True
+) -> dict:
     """Publica uma versão do toolbox com as tools e as skills informadas."""
     from azure.ai.projects.models import ToolboxSkillReference
 
@@ -328,6 +330,15 @@ def create_toolbox_version(name: str, body: dict) -> dict:
         conn: str | None = None
         conn_error: str | None = None
         try:
+            if not ensure_connection:
+                return {
+                    "name": qualified,
+                    "version": getattr(version, "version", None),
+                    "tools": len(parsed["tools"]),
+                    "skills": len(parsed["skills"]),
+                    "connection": None,
+                    "connection_error": None,
+                }
             from app.modules.foundry.internal.connections import (
                 ensure_toolbox_connection,
             )
@@ -345,6 +356,18 @@ def create_toolbox_version(name: str, body: dict) -> dict:
             "connection": conn,
             "connection_error": conn_error,
         }
+    finally:
+        with contextlib.suppress(Exception):
+            client.close()
+
+
+@audited("toolbox", "delete")
+def delete_toolbox_version(name: str, version: str) -> dict:
+    qualified = qualify(name)
+    client = _client()
+    try:
+        client.toolboxes.delete_version(qualified, version)
+        return {"name": qualified, "version": version, "deleted": True}
     finally:
         with contextlib.suppress(Exception):
             client.close()

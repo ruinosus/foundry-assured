@@ -105,7 +105,7 @@ def _run(config: dict[str, str]) -> None:
         tools: list[str] = []
         outcome = created
         for _ in range(8):
-            if outcome["publication"]["state"] == "completed":
+            if outcome["publication"]["state"] == "pr_open":
                 break
             approval = outcome.get("approval")
             if not isinstance(approval, dict):
@@ -128,7 +128,7 @@ def _run(config: dict[str, str]) -> None:
         assert replay["publication"]["pull_request_url"] == completed["pull_request_url"]
 
         read = _json(client.get(f"/authoring/publications/{publication_id}"), {200})
-        assert read["state"] == "completed"
+        assert read["state"] == "pr_open"
         assert read["pull_request_url"] == completed["pull_request_url"]
         assert "merge_status" in read
         print(f"Azure DevOps publication smoke: PASS ({read['pull_request_url']})")

@@ -50,6 +50,15 @@ PublicationId = Annotated[
 IdempotencyKey = Annotated[
     str, Header(alias="Idempotency-Key", min_length=8, max_length=128)
 ]
+PublicationEtag = Annotated[
+    str,
+    Header(
+        alias="If-Match",
+        min_length=66,
+        max_length=66,
+        pattern=r'^"[0-9a-f]{64}"$',
+    ),
+]
 
 
 class CreatePublicationBody(BaseModel):
@@ -210,6 +219,64 @@ async def decide_publication_tool(
         return _error(exc)
 
 
+@router.post(
+    "/{publication_id}/reconcile",
+    response_model=None,
+    dependencies=[Depends(require_role("Approver"))],
+)
+async def reconcile_publication(
+    publication_id: PublicationId,
+    idempotency_key: IdempotencyKey,
+    expected_etag: PublicationEtag,
+    scope: Annotated[ChangeSetScope, Depends(_scope)],
+    service: Annotated[PublicationServiceRouter, Depends(default_publication_router)],
+) -> JSONResponse:
+    del idempotency_key
+    try:
+        publication, journal = await service.reconcile(
+            scope, publication_id, roles=current_roles(), expected_etag=expected_etag
+        )
+        return JSONResponse(
+            status_code=200 if publication.state == "completed" else 202,
+            content={
+                "publication": publication.to_dict(),
+                "journal": [entry.to_dict() for entry in journal],
+            },
+            headers={"Cache-Control": "no-store", "ETag": publication.etag},
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
+
+
+@router.post(
+    "/{publication_id}/compensations",
+    response_model=None,
+    dependencies=[Depends(require_role("Admin"))],
+)
+def compensate_publication(
+    publication_id: PublicationId,
+    idempotency_key: IdempotencyKey,
+    expected_etag: PublicationEtag,
+    scope: Annotated[ChangeSetScope, Depends(_scope)],
+    service: Annotated[PublicationServiceRouter, Depends(default_publication_router)],
+) -> JSONResponse:
+    del idempotency_key
+    try:
+        publication, journal = service.compensate(
+            scope, publication_id, roles=current_roles(), expected_etag=expected_etag
+        )
+        return JSONResponse(
+            status_code=202,
+            content={
+                "publication": publication.to_dict(),
+                "journal": [entry.to_dict() for entry in journal],
+            },
+            headers={"Cache-Control": "no-store", "ETag": publication.etag},
+        )
+    except Exception as exc:  # noqa: BLE001
+        return _error(exc)
+
+
 @router.get("/{publication_id}", response_model=None)
 def get_publication(
     publication_id: PublicationId,
@@ -218,10 +285,14 @@ def get_publication(
 ) -> JSONResponse:
     try:
         publication = service.get(scope, publication_id)
+        journal = service.journal(scope, publication_id)
         return JSONResponse(
             status_code=200,
-            content=publication.to_dict(),
-            headers={"Cache-Control": "no-store"},
+            content={
+                **publication.to_dict(),
+                "journal": [entry.to_dict() for entry in journal],
+            },
+            headers={"Cache-Control": "no-store", "ETag": publication.etag},
         )
     except Exception as exc:  # noqa: BLE001
         return _error(exc)

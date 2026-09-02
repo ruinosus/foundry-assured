@@ -255,6 +255,18 @@ def set_agent_enabled(name: str, enabled: bool) -> dict:
 
 
 @audited("agent", "delete")
+def delete_agent_version(name: str, version: str) -> dict:
+    qualified = qualify(name)
+    client = _client()
+    try:
+        client.agents.delete_version(qualified, version)
+        return {"name": qualified, "version": version, "deleted": True}
+    finally:
+        with contextlib.suppress(Exception):
+            client.close()
+
+
+@audited("agent", "delete")
 def delete_agent(name: str) -> dict:
     """Apaga o agente e todas as suas versões.
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from types import SimpleNamespace
 
 from fastapi import FastAPI
@@ -14,6 +15,19 @@ class PublicationService:
         self.calls = 0
         self.requests = []
         self.require_step_up = False
+        self.journal_entry = SimpleNamespace(
+            to_dict=lambda: {
+                "position": 0,
+                "operation_id": "agent-one",
+                "kind": "agent",
+                "name": "agent-one",
+                "status": "completed",
+                "external_id": "agent-one",
+                "version": "1",
+                "error_code": "",
+                "updated_at": "2026-09-01T12:00:02+00:00",
+            }
+        )
 
     async def publish(self, scope, request, *, roles):
         from app.modules.publication.public import (
@@ -54,6 +68,36 @@ class PublicationService:
     def get(self, scope, publication_id: str):
         assert publication_id == self.projection.id
         return self.projection
+
+    def journal(self, scope, publication_id: str):
+        assert publication_id == self.projection.id
+        return (self.journal_entry,)
+
+    async def reconcile(self, scope, publication_id, *, roles, expected_etag):
+        assert publication_id == self.projection.id
+        assert roles == {"Approver"}
+        assert expected_etag == self.projection.etag
+        self.projection = replace(
+            self.projection,
+            state="completed",
+            step="completed",
+            commit_id="merge-commit-1",
+            merge_status="merged",
+            updated_at="2026-09-01T12:00:03+00:00",
+        )
+        return self.projection, (self.journal_entry,)
+
+    def compensate(self, scope, publication_id, *, roles, expected_etag):
+        assert publication_id == self.projection.id
+        assert roles == {"Admin"}
+        assert expected_etag == self.projection.etag
+        self.projection = replace(
+            self.projection,
+            state="compensated",
+            step="compensated",
+            updated_at="2026-09-01T12:00:04+00:00",
+        )
+        return self.projection, (self.journal_entry,)
 
 
 def main() -> int:
@@ -168,8 +212,50 @@ def main() -> int:
     read = client.get(f"/authoring/publications/{projection.id}")
     assert read.status_code == 200, read.text
     assert read.json()["state"] == "completed"
+    assert read.json()["journal"] == [service.journal_entry.to_dict()]
+    assert "payload" not in read.text.lower()
+    assert "raw_response" not in read.text.lower()
     assert service.calls == before
 
+    missing_etag = client.post(
+        f"/authoring/publications/{projection.id}/reconcile",
+        headers={"Idempotency-Key": "reconcile-http-001"},
+    )
+    assert missing_etag.status_code == 422, missing_etag.text
+
+    reconciled = client.post(
+        f"/authoring/publications/{projection.id}/reconcile",
+        headers={
+            "Idempotency-Key": "reconcile-http-001",
+            "If-Match": service.projection.etag,
+        },
+    )
+    assert reconciled.status_code == 200, reconciled.text
+    assert reconciled.json()["publication"]["merge_status"] == "merged"
+    assert reconciled.json()["journal"] == [service.journal_entry.to_dict()]
+    assert reconciled.headers["ETag"] == service.projection.etag
+
+    service.projection = replace(
+        service.projection,
+        state="compensation_required",
+        step="compensation_required",
+        updated_at="2026-09-01T12:00:03.500000+00:00",
+    )
+    user.roles = ["Admin"]
+    api.current_roles = lambda: {"Admin"}
+    compensated = client.post(
+        f"/authoring/publications/{projection.id}/compensations",
+        headers={
+            "Idempotency-Key": "compensate-http-001",
+            "If-Match": service.projection.etag,
+        },
+    )
+    assert compensated.status_code == 202, compensated.text
+    assert compensated.json()["publication"]["state"] == "compensated"
+    assert compensated.headers["ETag"] == service.projection.etag
+
+    user.roles = ["Approver"]
+    api.current_roles = lambda: {"Approver"}
     invalid = client.post(
         "/authoring/publications",
         headers={"Idempotency-Key": "publish-http-002"},

@@ -64,9 +64,29 @@ interface PublicationRecord {
     | "awaiting_approval"
     | "executing"
     | "intervention_required"
+    | "pr_open"
+    | "merge_confirmed"
+    | "materializing"
     | "completed"
+    | "compensating"
+    | "compensated"
+    | "compensation_required"
     | "failed";
   step: string;
+  error_code: string;
+  updated_at: string;
+  etag: string;
+  commit_id: string;
+  merge_status: string;
+}
+interface MaterializationJournalEntry {
+  position: number;
+  operation_id: string;
+  kind: string;
+  name: string;
+  status: string;
+  external_id: string;
+  version: string;
   error_code: string;
   updated_at: string;
 }
@@ -125,6 +145,220 @@ function publicationFieldsReady(
   );
 }
 
+function publicationAdvanceStatus(
+  state: string,
+  materialized: string,
+  stateChanged: string,
+) {
+  return state === "completed" ? materialized : stateChanged;
+}
+
+function journalEntries(value: unknown): MaterializationJournalEntry[] {
+  return Array.isArray(value) ? value : [];
+}
+
+async function loadPublication(publicationId: string | null): Promise<{
+  publication: PublicationRecord | null;
+  journal: MaterializationJournalEntry[];
+}> {
+  if (!publicationId) return { publication: null, journal: [] };
+  const publication = await request(
+    `publications/${encodeURIComponent(publicationId)}`,
+  );
+  return { publication, journal: journalEntries(publication.journal) };
+}
+
+async function loadPreviousRevision(
+  bundleId: string,
+  revision: number,
+): Promise<BundleProjection | null> {
+  if (revision <= 1) return null;
+  return request(
+    `bundles/${encodeURIComponent(bundleId)}?revision=${revision - 1}`,
+  );
+}
+
+function useMaterializationAction(
+  setBusy: (value: boolean) => void,
+  setNotice: (value: string | null) => void,
+  setPublication: (value: PublicationRecord | null) => void,
+  setJournal: (value: MaterializationJournalEntry[]) => void,
+  setStatus: (value: string | null) => void,
+) {
+  const t = useTranslations("bundles");
+  return async (
+    currentPublication: PublicationRecord,
+    action: "reconcile" | "compensations",
+  ) => {
+    setBusy(true);
+    setNotice(null);
+    setStatus({
+      reconcile: t("publicationReconciling"),
+      compensations: t("publicationCompensating"),
+    }[action]);
+    try {
+      const result = await request(
+        `publications/${encodeURIComponent(currentPublication.id)}/${action}`,
+        {
+          method: "POST",
+          headers: {
+            "Idempotency-Key": `${action}:${currentPublication.id}:${currentPublication.content_hash}`,
+            "If-Match": currentPublication.etag,
+          },
+        },
+      );
+      setPublication(result.publication);
+      setJournal(journalEntries(result.journal));
+      setStatus(
+        publicationAdvanceStatus(
+          result.publication.state,
+          t("publicationMaterialized"),
+          t("publicationStateChanged", {
+            state: t(`publicationStates.${result.publication.state}`),
+          }),
+        ),
+      );
+    } catch (error) {
+      setStatus(
+        t("publicationFailed", {
+          code: error instanceof Error ? error.message : "UNKNOWN",
+        }),
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+}
+
+function MaterializationPanel({
+  publication,
+  journal,
+  busy,
+  roles,
+  onAdvance,
+}: Readonly<{
+  publication: PublicationRecord;
+  journal: MaterializationJournalEntry[];
+  busy: boolean;
+  roles: string[] | null;
+  onAdvance: (action: "reconcile" | "compensations") => void;
+}>) {
+  const t = useTranslations("bundles");
+  const canReconcile = publication.state === "pr_open" && canApprove(roles);
+  const canCompensate =
+    publication.state === "compensation_required" && roles?.includes("Admin");
+
+  return (
+    <>
+      <div className="bundle-publication-result">
+        <div>
+          <span>{t("publicationPullRequest")}</span>
+          <a
+            href={publication.pull_request_url}
+            target="_blank"
+            rel="noreferrer"
+          >
+            #{publication.pull_request_number} · {publication.owner}/
+            {publication.repository}
+          </a>
+        </div>
+        <div>
+          <span>{t("publicationBranch")}</span>
+          <code>{publication.branch}</code>
+        </div>
+        <div>
+          <span>{t("publicationState")}</span>
+          <strong>{t(`publicationStates.${publication.state}`)}</strong>
+        </div>
+      </div>
+      <div className="bundle-decision-actions">
+        {canReconcile && (
+          <button
+            type="button"
+            className="btn btn-solid"
+            disabled={busy}
+            onClick={() => onAdvance("reconcile")}
+          >
+            {t("publicationReconcile")}
+          </button>
+        )}
+        {canCompensate && (
+          <button
+            type="button"
+            className="btn btn-danger"
+            disabled={busy}
+            onClick={() => onAdvance("compensations")}
+          >
+            {t("publicationCompensate")}
+          </button>
+        )}
+      </div>
+      <section
+        className="bundle-materialization-journal"
+        aria-labelledby="materialization-journal-title"
+      >
+        <h3 id="materialization-journal-title">{t("publicationJournal")}</h3>
+        {journal.length === 0 ? (
+          <p>{t("publicationJournalEmpty")}</p>
+        ) : (
+          <ol>
+            {journal.map((entry) => (
+              <li key={entry.operation_id}>
+                <div>
+                  <strong>{entry.name}</strong>
+                  <span>{entry.kind}</span>
+                </div>
+                <span>{t(`publicationStepStates.${entry.status}`)}</span>
+                {entry.version && <code>{entry.version}</code>}
+              </li>
+            ))}
+          </ol>
+        )}
+      </section>
+    </>
+  );
+}
+
+function ToolApprovalPanel({
+  approval,
+  busy,
+  onDecision,
+}: Readonly<{
+  approval: ToolApprovalRequest | null;
+  busy: boolean;
+  onDecision: (approved: boolean) => void;
+}>) {
+  const t = useTranslations("bundles");
+  if (!approval) return null;
+  return (
+    <fieldset className="bundle-tool-approval">
+      <legend>{t("publicationApprovalTitle")}</legend>
+      <div>
+        <strong>{approval.tool}</strong>
+      </div>
+      <pre>{JSON.stringify(approval.arguments, null, 2)}</pre>
+      <div className="bundle-decision-actions">
+        <button
+          type="button"
+          className="btn btn-danger"
+          disabled={busy}
+          onClick={() => onDecision(false)}
+        >
+          {t("publicationRejectTool")}
+        </button>
+        <button
+          type="button"
+          className="btn btn-solid"
+          disabled={busy}
+          onClick={() => onDecision(true)}
+        >
+          {t("publicationApproveTool")}
+        </button>
+      </div>
+    </fieldset>
+  );
+}
+
 export function BundleWorkspace({
   bundleId,
   editing = false,
@@ -161,6 +395,16 @@ export function BundleWorkspace({
   const [toolApproval, setToolApproval] = useState<ToolApprovalRequest | null>(
     null,
   );
+  const [publicationJournal, setPublicationJournal] = useState<
+    MaterializationJournalEntry[]
+  >([]);
+  const advanceMaterialization = useMaterializationAction(
+    setBusy,
+    setNotice,
+    setPublication,
+    setPublicationJournal,
+    setPublicationStatus,
+  );
 
   const load = useCallback(async () => {
     setNotice(null);
@@ -180,27 +424,18 @@ export function BundleWorkspace({
         `changesets/${encodeURIComponent(bundleId)}/decisions`,
       );
       setDecisions(decisionHistory.items ?? []);
-      const publicationId = search.get("publication");
-      if (publicationId) {
-        setPublication(
-          await request(`publications/${encodeURIComponent(publicationId)}`),
-        );
-      } else {
-        setPublication(null);
-      }
+      const publicationResult = await loadPublication(
+        search.get("publication"),
+      );
+      setPublication(publicationResult.publication);
+      setPublicationJournal(publicationResult.journal);
       const selected =
         current.documents.find(
           (document) => document.key === (search.get("document") ?? activeKey),
         ) ?? current.bundle;
       setActiveKey(selected.key);
       setDraft(selected.text);
-      if (current.revision > 1) {
-        setPrevious(
-          await request(
-            `bundles/${encodeURIComponent(bundleId)}?revision=${current.revision - 1}`,
-          ),
-        );
-      } else setPrevious(null);
+      setPrevious(await loadPreviousRevision(bundleId, current.revision));
     } catch (error) {
       setNotice(
         t("failed", {
@@ -378,7 +613,7 @@ export function BundleWorkspace({
       });
       setPublication(result.publication);
       setToolApproval(result.approval);
-      if (result.publication.state === "completed") {
+      if (["pr_open", "completed"].includes(result.publication.state)) {
         setPublication(result.publication);
         setPublicationStatus(t("publicationVerified"));
       } else {
@@ -413,7 +648,7 @@ export function BundleWorkspace({
       );
       setPublication(result.publication);
       setToolApproval(result.approval);
-      if (result.publication.state === "completed") {
+      if (["pr_open", "completed"].includes(result.publication.state)) {
         setPublicationStatus(t("publicationVerified"));
         const query = new URLSearchParams(search.toString());
         query.set("revision", String(bundle.revision));
@@ -723,28 +958,16 @@ export function BundleWorkspace({
               {t("publicationApproved")}
             </span>
           </header>
-          {publication?.state === "completed" ? (
-            <div className="bundle-publication-result">
-              <div>
-                <span>{t("publicationPullRequest")}</span>
-                <a
-                  href={publication.pull_request_url}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  #{publication.pull_request_number} · {publication.owner}/
-                  {publication.repository}
-                </a>
-              </div>
-              <div>
-                <span>{t("publicationBranch")}</span>
-                <code>{publication.branch}</code>
-              </div>
-              <div>
-                <span>{t("publicationState")}</span>
-                <strong>{t(`publicationStates.${publication.state}`)}</strong>
-              </div>
-            </div>
+          {publication && ["pr_open", "merge_confirmed", "materializing", "completed", "compensating", "compensated", "compensation_required"].includes(publication.state) ? (
+            <MaterializationPanel
+              publication={publication}
+              journal={publicationJournal}
+              busy={busy}
+              roles={roles}
+              onAdvance={(action) =>
+                void advanceMaterialization(publication, action)
+              }
+            />
           ) : (
             <>
               <div className="bundle-publication-fields">
@@ -851,33 +1074,11 @@ export function BundleWorkspace({
               </footer>
             </>
           )}
-          {toolApproval && (
-            <fieldset className="bundle-tool-approval">
-              <legend>{t("publicationApprovalTitle")}</legend>
-              <div>
-                <strong>{toolApproval.tool}</strong>
-              </div>
-              <pre>{JSON.stringify(toolApproval.arguments, null, 2)}</pre>
-              <div className="bundle-decision-actions">
-                <button
-                  type="button"
-                  className="btn btn-danger"
-                  disabled={busy}
-                  onClick={() => void decidePublicationTool(false)}
-                >
-                  {t("publicationRejectTool")}
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-solid"
-                  disabled={busy}
-                  onClick={() => void decidePublicationTool(true)}
-                >
-                  {t("publicationApproveTool")}
-                </button>
-              </div>
-            </fieldset>
-          )}
+          <ToolApprovalPanel
+            approval={toolApproval}
+            busy={busy}
+            onDecision={(approved) => void decidePublicationTool(approved)}
+          />
           {consentUrl && (
             <a
               className="bundle-consent-link"

@@ -73,6 +73,13 @@ it is `shared/`; if it is "nobody's, it just wires things", it is the compositio
 Inter-module communication stays **direct, in-process, through `public`**. No event bus: the
 current coupling is synchronous and works, and introducing events would be a behavior change.
 
+The post-merge publication saga adds the intentional edge `publication → foundry.public`.
+`publication` owns merge confirmation, the idempotent operation journal and compensation order;
+`foundry` remains the sole owner of the official SDK calls that create and delete agent, skill
+and toolbox versions. Moving those calls into `publication` would duplicate the SDK boundary,
+while moving the saga into `foundry` would mix ChangeSet lifecycle with resource management.
+The graph fixture records this edge and import-linter still forbids access to `foundry.internal`.
+
 **`agentdefs`** is the module that owns every declarative agent definition — `prompts.py` and
 `definitions.py`, and from the spec's Phase 3.5 also the approval policy and per-tool role
 gates. The spec's first revision called it `prompts` and described it as a re-export; with

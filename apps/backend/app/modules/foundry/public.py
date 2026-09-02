@@ -17,6 +17,7 @@ os arquivos e escreve no blob, e do blob em diante volta a ser oficial.
 from app.modules.foundry.internal.agent_write import (
     create_agent_version,
     delete_agent,
+    delete_agent_version,
     set_agent_enabled,
 )
 from app.modules.foundry.internal.agents import get_agent, list_agents
@@ -45,12 +46,14 @@ from app.modules.foundry.internal.skills import (
     create_skill,
     create_skill_from_files,
     delete_skill,
+    delete_skill_version,
     get_skill,
     list_skills,
 )
 from app.modules.foundry.internal.toolboxes import (
     create_toolbox_version,
     delete_toolbox,
+    delete_toolbox_version,
     get_toolbox,
     list_toolbox_projection,
     list_toolboxes,
@@ -69,9 +72,12 @@ __all__ = [
     "create_skill_from_files",
     "create_toolbox_version",
     "delete_agent",
+    "delete_agent_version",
     "delete_knowledge",
     "delete_skill",
+    "delete_skill_version",
     "delete_toolbox",
+    "delete_toolbox_version",
     "get_agent",
     "get_knowledge",
     "get_skill",

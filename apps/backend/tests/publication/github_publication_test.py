@@ -178,10 +178,10 @@ def main() -> int:
             )
         published = outcome.publication
         check(
-            "publication completes after the verification approval",
-            published.state == "completed",
+            "publication waits for reconciliation after PR verification",
+            published.state == "pr_open",
         )
-        check("completed publication has no pending approval", outcome.approval is None)
+        check("open PR has no pending approval", outcome.approval is None)
         check(
             "official GitHub MCP tools materialize and verify the PR",
             [tool for tool, _ in gateway.calls] == expected,

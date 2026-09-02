@@ -437,6 +437,9 @@
       "modules/publication/api.py",
       "modules/publication/internal/github.py"
     ],
+    "foundry": [
+      "modules/publication/internal/reconciliation.py"
+    ],
     "shared": [
       "modules/publication/api.py",
       "modules/publication/internal/github.py"

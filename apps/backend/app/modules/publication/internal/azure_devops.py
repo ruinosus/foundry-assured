@@ -29,6 +29,10 @@ from app.modules.publication.internal.github import (
     ToolApprovalRequest,
     _files,
 )
+from app.modules.publication.internal.reconciliation import (
+    MergeEvidence,
+    ReconciliationBlocked,
+)
 
 AZURE_DEVOPS_PERMISSION = "vso.code_write"
 AZURE_DEVOPS_TOKEN_SCOPE = "499b84ac-1321-427f-aa17-267ca6975798/.default"
@@ -189,6 +193,11 @@ class AzureDevOpsRestGateway:
             raise
         self._pending.pop(approval_id, None)
         return result
+
+    async def execute_read(self, tool: str, arguments: dict[str, Any]) -> Any:
+        if tool not in _READ_TOOLS:
+            raise PublicationExternalError("PUBLICATION_TOOL_NOT_ALLOWED")
+        return await self._execute(tool, self._validate(tool, arguments))
 
     @staticmethod
     def _validate(tool: str, arguments: Mapping[str, Any]) -> dict[str, Any]:
@@ -525,6 +534,12 @@ class AzureDevOpsRestGateway:
             "target_ref": arguments["target_ref"],
             "status": str(payload.get("status") or ""),
             "merge_status": str(payload.get("mergeStatus") or ""),
+            "description": str(payload.get("description") or ""),
+            "merge_commit_id": str(
+                (payload.get("lastMergeCommit") or {}).get("commitId")
+                if isinstance(payload.get("lastMergeCommit"), Mapping)
+                else ""
+            ),
         }
 
     @staticmethod
@@ -745,6 +760,52 @@ class AzureDevOpsPublicationService(GitHubPublicationService):
             scope, publication.id, error_code=str(error), now=now
         )
 
+    async def reconcile(
+        self, scope, publication_id: str, *, roles: set[str], expected_etag: str
+    ):
+        publication = self.get(scope, publication_id)
+        if publication.etag != expected_etag:
+            raise PublicationConflict("PUBLICATION_REVISION_STALE")
+        changeset = self._assert_current(scope, publication, roles=roles)
+        if self._reconciler is None:
+            raise PublicationExternalError("PUBLICATION_RECONCILIATION_NOT_CONFIGURED")
+        if publication.state == "completed":
+            return publication, self._reconciler.journal(scope, publication.id)
+        if publication.state not in {"pr_open", "materializing"}:
+            raise PublicationConflict("PUBLICATION_STATE_INVALID")
+        arguments = {
+            "organization": publication.owner,
+            "project": publication.project,
+            "repository": publication.repository,
+            "source_ref": f"refs/heads/{publication.branch}",
+            "target_ref": f"refs/heads/{publication.base_branch}",
+            "pull_request_id": publication.pull_request_number,
+        }
+        result = await self._gateway.execute_read("read_pull_request", arguments)
+        description = str(result.get("description") or "")
+        match = re.search(r"Content-SHA256:\s*`([0-9a-f]{64})`", description)
+        evidence = MergeEvidence(
+            merged=result.get("status") == "completed",
+            commit_id=str(result.get("merge_commit_id") or ""),
+            content_hash=match.group(1) if match else "",
+        )
+        try:
+            reconciled = self._reconciler.reconcile(
+                publication, evidence, scope=scope,
+                operations=changeset.content["operations"],
+            )
+        except Exception as exc:
+            if isinstance(exc, ReconciliationBlocked):
+                raise PublicationConflict(str(exc)) from exc
+            raise
+        return self.get(scope, publication.id), reconciled.journal
+
+    def journal(self, scope, publication_id: str):
+        publication = self.get(scope, publication_id)
+        if self._reconciler is None:
+            return ()
+        return self._reconciler.journal(scope, publication.id)
+
 
 _default_service: AzureDevOpsPublicationService | None = None
 
@@ -759,11 +820,24 @@ def default_azure_devops_publication_service() -> AzureDevOpsPublicationService:
         )
 
         data_directory = Path(app.__file__).resolve().parent.parent / "data"
+        database = data_directory / "authoring.sqlite3"
+        repository = SQLitePublicationRepository(database)
+        from app.modules.publication.internal.reconciliation import (
+            OfficialFoundryMaterializer,
+            ReconciliationService,
+            SQLiteMaterializationJournal,
+        )
+
         _default_service = AzureDevOpsPublicationService(
             changesets=default_changeset_service(),
             decisions=default_decision_service(),
-            repository=SQLitePublicationRepository(data_directory / "authoring.sqlite3"),
+            repository=repository,
             gateway=AzureDevOpsRestGateway(),
+            reconciler=ReconciliationService(
+                OfficialFoundryMaterializer(),
+                journal=SQLiteMaterializationJournal(database),
+                publications=repository,
+            ),
         )
     return _default_service
 
@@ -808,6 +882,23 @@ class PublicationServiceRouter:
 
     def get(self, scope, publication_id: str) -> StoredPublication:
         return self._service(scope, publication_id).get(scope, publication_id)
+
+    def journal(self, scope, publication_id: str):
+        return self._service(scope, publication_id).journal(scope, publication_id)
+
+    async def reconcile(
+        self, scope, publication_id: str, *, roles: set[str], expected_etag: str
+    ):
+        return await self._service(scope, publication_id).reconcile(
+            scope, publication_id, roles=roles, expected_etag=expected_etag
+        )
+
+    def compensate(
+        self, scope, publication_id: str, *, roles: set[str], expected_etag: str
+    ):
+        return self._service(scope, publication_id).compensate(
+            scope, publication_id, roles=roles, expected_etag=expected_etag
+        )
 
 
 def default_publication_router() -> PublicationServiceRouter:
